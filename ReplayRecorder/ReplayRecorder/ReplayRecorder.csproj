@@ -31,8 +31,4 @@
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Patches\" />
-	</ItemGroup>
-
 </Project>
