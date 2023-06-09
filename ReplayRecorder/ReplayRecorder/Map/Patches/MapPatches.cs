@@ -61,17 +61,20 @@ namespace ReplayRecorder.Map.Patches
         [HarmonyPostfix]
         private static void OnNavmeshDone(LG_BuildUnityGraphJob __instance)
         {
-            if (dimensions == null) return;
-            else APILogger.Error("No dimensions found, this should not happen.");
-
             // Check if the navmesh has finished
             if (__instance.m_dimension.NavmeshOperation.isDone)
             {
+                if (dimensions == null)
+                {
+                    APILogger.Error("No dimensions found, this should not happen.");
+                    return;
+                }
+
                 ++dimensionsLoaded; // Update number of dimensions that have finished loading
                 if (dimensionsLoaded == dimensions.Count) 
                 {
                     // When all have finished loading, finalize
-                    Map.OnAllNavMeshGenerated(dimensions);
+                    Map.GenerateMapInfo(dimensions);
                 }
             }
         }

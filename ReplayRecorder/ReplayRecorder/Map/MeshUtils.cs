@@ -9,8 +9,8 @@ namespace ReplayRecorder.Map
 {
     public static class MeshUtils
     {
-        // light structure to describe a mesh
-        public struct Surface
+        // light class to describe a mesh
+        public class Surface
         {
             public List<Vector3> vertices = new List<Vector3>();
             public List<int> indices = new List<int>();
