@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
-using LevelGeneration;
-using API;
 using UnityEngine.AI;
 
-using ReplayRecorder.Map.Patches;
-using System.Linq;
+using Il2CppSystem.Text;
+
+using API;
+using LevelGeneration;
+using static Il2CppSystem.Globalization.CultureInfo;
+using static ReplayRecorder.Map.MeshUtils;
 
 namespace ReplayRecorder.Map
 {
@@ -58,6 +60,10 @@ namespace ReplayRecorder.Map
             /// - door locations (referred to as "gates")
             /// - warp locations
             /// which can all be used to discern which surfaces are important.
+            /// - doors
+            ///     - the 2 nearest surfaces (aka the surfaces the door connects) are probably relevant to the level
+            /// - spawn / warp locations
+            ///     - the nearest surface is most likely relevant to the level if enemies and players can spawn there
 
             if (meshes.Length > 1) // Check we actually need to filter surfaces
             {
@@ -79,13 +85,32 @@ namespace ReplayRecorder.Map
                         {
                             LG_Area area = zone.m_areas[a];
 
+                            // Add surface closest to position of area
+                            {
+                                Mesh _closest = meshes[0];
+                                float _distance = (area.Position - meshes[0].bounds.ClosestPoint(area.Position)).sqrMagnitude;
+                                for (int i = 1; i < meshes.Length; ++i)
+                                {
+                                    Mesh mesh = meshes[i];
+                                    float sqrdist = (area.Position - mesh.bounds.ClosestPoint(area.Position)).sqrMagnitude;
+                                    if (sqrdist < _distance)
+                                    {
+                                        _closest = mesh;
+                                        _distance = sqrdist;
+                                    }
+                                }
+                                relevantSurfaces.Add(_closest);
+                            }
+
                             // For each gate (door) get the 2 closest surfaces and add them to relevant list
                             for (int g = 0; g < area.m_gates.Count; ++g)
                             {
                                 LG_Gate gate = area.m_gates[g];
                                 Vector3 gateLocation = gate.transform.position;
                                 closest[0] = meshes[0];
+                                distances[0] = (gateLocation - meshes[0].bounds.ClosestPoint(gateLocation)).sqrMagnitude;
                                 closest[1] = meshes[1];
+                                distances[1] = (gateLocation - meshes[1].bounds.ClosestPoint(gateLocation)).sqrMagnitude;
                                 for (int i = 2; i < meshes.Length; ++i)
                                 {
                                     Mesh mesh = meshes[i];
@@ -111,8 +136,46 @@ namespace ReplayRecorder.Map
                     }
                 }
 
+                APILogger.Debug($"Found {relevantSurfaces.Count} relevant surfaces.");
                 meshes = relevantSurfaces.ToArray();
             }
+
+            // TODO(randomuserhi): Check what dimensions actually exist on this level and only include those
+            //                     Not the biggest deal, since I keep track of which dimensions are visited
+            //                     but would be nice to reduce file size.
+            if (meshes.Length == 0)
+            {
+                APILogger.Warn($"No relevent surfaces found");
+                return;
+            }
+
+            // Write meshes to disk
+            StringBuilder json = new StringBuilder();
+            json.Append($"[");
+            string seperator = string.Empty;
+            for (int i = 0; i < meshes.Length; ++i)
+            {
+                Mesh mesh = meshes[i];
+                json.Append($"{seperator}{{\"vertices\":[");
+                string _seperator = string.Empty;
+                for (int j = 0; j < mesh.vertices.Count; ++j)
+                {
+                    json.Append($"{_seperator}{mesh.vertices[j].x},{mesh.vertices[j].y},{mesh.vertices[j].z}");
+                    _seperator = ",";
+                }
+                json.Append("],\"indices\":[");
+                _seperator = string.Empty;
+                for (int j = 0; j < mesh.triangles.Count; ++j)
+                {
+                    json.Append($"{_seperator}{mesh.triangles[j]}");
+                    _seperator = ",";
+                }
+                json.Append("]}");
+                seperator = ",";
+            }
+            json.Append("]");
+
+            File.WriteAllText($"Map_{dimension.DimensionIndex}.json", json.ToString());
         }
 
         public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions)
