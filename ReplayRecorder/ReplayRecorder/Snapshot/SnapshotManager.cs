@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace ReplayRecorder
 {
+    interface ISerializable
+    {
+        void Serialize(FileStream fs);
+    }
+
     // TODO(randomuserhi): add an interface for serializable objects or something
 
     public abstract class GameplayEvent
@@ -23,7 +28,7 @@ namespace ReplayRecorder
         private static GameObject? obj = null;
         private static SnapshotManager? instance = null;
 
-        public static FileStream? file = null;
+        public static FileStream? fs = null;
 
         private const float tickRate = 1 / 20;
         private float timer = 0;
@@ -45,7 +50,13 @@ namespace ReplayRecorder
 
         private void Tick() 
         {
+            if (fs == null) return;
+
             // TODO(randomuserhi)
+            
+
+            // Flush file stream
+            fs.Flush();
 
             // Flush event buffer
             events.Clear();
@@ -56,14 +67,14 @@ namespace ReplayRecorder
             obj = new GameObject();
             instance = obj.AddComponent<SnapshotManager>();
 
-            if (file == null)
+            if (fs == null)
                 APILogger.Error("Filestream was not started yet, this should not happen.");
         }
 
         public static void Dispose()
         {
-            if (file == null) APILogger.Warn("Filestream was never started, this should not happen.");
-            else file.Dispose();
+            if (fs == null) APILogger.Warn("Filestream was never started, this should not happen.");
+            else fs.Dispose();
 
             if (obj == null) 
             {

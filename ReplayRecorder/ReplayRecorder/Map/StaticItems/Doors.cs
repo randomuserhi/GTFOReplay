@@ -7,7 +7,7 @@ namespace ReplayRecorder.Map
 {
     public static partial class Map
     {
-        public class rDoor
+        public class rDoor : ISerializable
         {
             public enum Type
             {
@@ -52,6 +52,16 @@ namespace ReplayRecorder.Map
 
                 // m_gate.m_linksTo.m_zone.m_settings.m_zoneData.IsCheckpointDoor;
                 isCheckpoint = gate.IsCheckpointDoor;
+            }
+
+            public void Serialize(FileStream fs)
+            {
+                /// Format:
+                /// byte => type
+                /// byte => size
+                /// byte => healthMax
+                /// position
+                /// rotation
             }
         }
 

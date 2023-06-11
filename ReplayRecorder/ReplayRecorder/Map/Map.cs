@@ -18,7 +18,7 @@ namespace ReplayRecorder.Map
     /// </summary>
     public static partial class Map
     {
-        public class rMap
+        public class rMap : ISerializable
         {
             public struct Location
             {
@@ -57,6 +57,26 @@ namespace ReplayRecorder.Map
             {
                 this.dimension = dimension;
                 this.surfaces = surfaces;
+            }
+
+            public void Serialize(FileStream fs)
+            {
+                /// Format:
+                /// byte => number of dimensions
+                /// [
+                ///     byte => dimension index
+                ///     ushort => number of surfaces
+                ///     [
+                ///         ushort => number of vertices
+                ///         uint => number of indices
+                ///         [ float => x, y, z vertices ]
+                ///         [ ushort => indicies ]
+                ///     ](repeated for each surface)
+                ///     ushort => number of doors
+                ///     [
+                ///         { door.serialize }
+                ///     ](repeated for each door)
+                /// ](repeated for each dimension)
             }
         }
         // Maps dimension to the surface map of that dimension
@@ -114,7 +134,7 @@ namespace ReplayRecorder.Map
             if (meshes.Length > 1) // Check we actually need to filter surfaces
             {
                 APILogger.Debug("Getting relevant surfaces.");
-                long start = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+                long start = Raudy.Now;
 
                 Dictionary<Mesh, rMap.Surface> relevantSurfaces = new Dictionary<Mesh, rMap.Surface>();
 
@@ -191,7 +211,7 @@ namespace ReplayRecorder.Map
                     }
                 }
 
-                long end = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+                long end = Raudy.Now;
                 APILogger.Debug($"Found {relevantSurfaces.Count} relevant surfaces in {(end - start) / 1000f} seconds.");
                 surfaces = relevantSurfaces.Values.ToArray();
             }
@@ -298,14 +318,14 @@ namespace ReplayRecorder.Map
         // Open filestream and Save the map to replay file
         public static void InitAndSaveMap()
         {
-            if (SnapshotManager.file != null)
+            if (SnapshotManager.fs != null)
             {
-                SnapshotManager.file.Dispose();
+                SnapshotManager.fs.Dispose();
                 APILogger.Error("Filestream was still open, this should not happen.");
             }
 
             // TODO(randomuserhi): replay name needs to have level + date => config for save location 
-            SnapshotManager.file = new FileStream("./replay.gtfo", FileMode.Append, FileAccess.Write);
+            SnapshotManager.fs = new FileStream("./replay.gtfo", FileMode.OpenOrCreate, FileAccess.Write);
 
             // TODO(randomuserhi) Write map info...
         }
