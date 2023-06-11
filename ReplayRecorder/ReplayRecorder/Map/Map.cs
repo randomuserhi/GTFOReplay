@@ -291,6 +291,23 @@ namespace ReplayRecorder.Map
                     APILogger.Debug($"from: zone {door.from.zone} area {door.from.area}");*/
                 }
             }
+
+            InitAndSaveMap();
+        }
+
+        // Open filestream and Save the map to replay file
+        public static void InitAndSaveMap()
+        {
+            if (SnapshotManager.file != null)
+            {
+                SnapshotManager.file.Dispose();
+                APILogger.Error("Filestream was still open, this should not happen.");
+            }
+
+            // TODO(randomuserhi): replay name needs to have level + date => config for save location 
+            SnapshotManager.file = new FileStream("./replay.gtfo", FileMode.Append, FileAccess.Write);
+
+            // TODO(randomuserhi) Write map info...
         }
 
         public static void Reset()
