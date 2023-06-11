@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using HarmonyLib;
 using API;
+using UnityEngine;
 
 namespace ReplayRecorder
 {
     [HarmonyPatch]
     public class GameEventManager
     {
-        [HarmonyPatch(typeof(GS_InLevel), nameof(GS_InLevel.Enter))]
-        [HarmonyPrefix]
-        private static void InLevelEnter(GS_InLevel __instance)
+        public static void OnGameplayStart()
         {
-            APILogger.Debug($"Entered Level!");
+            APILogger.Debug($"Gameplay started!");
+
+            SnapshotManager.Init();
         }
 
         [HarmonyPatch(typeof(RundownManager), nameof(RundownManager.EndGameSession))]
@@ -24,6 +22,11 @@ namespace ReplayRecorder
         private static void EndGameSession()
         {
             APILogger.Debug($"Level ended!");
+
+            SnapshotManager.Dispose();
+
+            // TODO(randomuserhi): Move reset to expedition start? This should be fine tho...
+            Map.Map.Reset();
         }
     }
 }

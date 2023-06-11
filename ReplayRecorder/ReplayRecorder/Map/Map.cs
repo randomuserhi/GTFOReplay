@@ -5,8 +5,8 @@ using Il2CppSystem.Text;
 
 using API;
 using LevelGeneration;
-using static Il2CppSystem.Globalization.CultureInfo;
-using static ReplayRecorder.Map.MeshUtils;
+using ReplayRecorder.Map.Patches;
+using System.Drawing;
 
 namespace ReplayRecorder.Map
 {
@@ -16,8 +16,53 @@ namespace ReplayRecorder.Map
     /// - Zones
     /// - Crates
     /// </summary>
-    public static class Map
+    public static partial class Map
     {
+        public class rMap
+        {
+            public struct Location
+            {
+                public bool valid = false;
+                public char area;
+                public int zone;
+
+                public Location(int zone, char area)
+                {
+                    this.area = area;
+                    this.zone = zone;
+                    valid = true;
+                }
+                public Location()
+                {
+                    valid = false;
+                    area = 'Z';
+                    zone = 0;
+                }
+            }
+
+            public class Surface
+            {
+                public Mesh mesh;
+
+                public Surface(Mesh mesh)
+                {
+                    this.mesh = mesh;
+                }
+            }
+
+            public eDimensionIndex dimension;
+            public Surface[] surfaces;
+
+            public rMap(eDimensionIndex dimension, Surface[] surfaces) 
+            {
+                this.dimension = dimension;
+                this.surfaces = surfaces;
+            }
+        }
+        // Maps dimension to the surface map of that dimension
+        public static Dictionary<eDimensionIndex, rMap> map = new Dictionary<eDimensionIndex, rMap>(); 
+        
+        // private collection that maintains which dimensions have been processed
         private static HashSet<eDimensionIndex> processed = new HashSet<eDimensionIndex>();
 
         private static void GenerateMeshSurfaces(Dimension dimension)
@@ -65,11 +110,13 @@ namespace ReplayRecorder.Map
             /// - spawn / warp locations
             ///     - the nearest surface is most likely relevant to the level if enemies and players can spawn there
 
+            rMap.Surface[] surfaces;
             if (meshes.Length > 1) // Check we actually need to filter surfaces
             {
                 APILogger.Debug("Getting relevant surfaces.");
+                long start = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
 
-                HashSet<Mesh> relevantSurfaces = new HashSet<Mesh>();
+                Dictionary<Mesh, rMap.Surface> relevantSurfaces = new Dictionary<Mesh, rMap.Surface>();
 
                 // Buffers for later use
                 Mesh[] closest = new Mesh[2];
@@ -84,23 +131,6 @@ namespace ReplayRecorder.Map
                         for (int a = 0; a < zone.m_areas.Count; ++a)
                         {
                             LG_Area area = zone.m_areas[a];
-
-                            // Add surface closest to position of area
-                            {
-                                Mesh _closest = meshes[0];
-                                float _distance = (area.Position - meshes[0].bounds.ClosestPoint(area.Position)).sqrMagnitude;
-                                for (int i = 1; i < meshes.Length; ++i)
-                                {
-                                    Mesh mesh = meshes[i];
-                                    float sqrdist = (area.Position - mesh.bounds.ClosestPoint(area.Position)).sqrMagnitude;
-                                    if (sqrdist < _distance)
-                                    {
-                                        _closest = mesh;
-                                        _distance = sqrdist;
-                                    }
-                                }
-                                relevantSurfaces.Add(_closest);
-                            }
 
                             // For each gate (door) get the 2 closest surfaces and add them to relevant list
                             for (int g = 0; g < area.m_gates.Count; ++g)
@@ -129,33 +159,70 @@ namespace ReplayRecorder.Map
                                         closest[1] = mesh;
                                     }
                                 }
-                                relevantSurfaces.Add(closest[0]);
-                                relevantSurfaces.Add(closest[1]);
+
+                                Vector3 forward = gate.transform.rotation * Vector3.forwardVector;
+                                for (int i = 0; i < closest.Length; ++i)
+                                {
+                                    if (!relevantSurfaces.ContainsKey(closest[i]))
+                                        relevantSurfaces.Add(closest[i], new rMap.Surface(closest[i]));
+                                }
+                            }
+
+                            // Add surface closest to position of area => should handle locations without doors
+                            // NOTE(randomuserhi): Not sure if this will catch all surfaces tho
+                            //                     needs testing on maps like R6A1
+                            {
+                                Mesh _closest = meshes[0];
+                                float _distance = (area.Position - meshes[0].bounds.ClosestPoint(area.Position)).sqrMagnitude;
+                                for (int i = 1; i < meshes.Length; ++i)
+                                {
+                                    Mesh mesh = meshes[i];
+                                    float sqrdist = (area.Position - mesh.bounds.ClosestPoint(area.Position)).sqrMagnitude;
+                                    if (sqrdist < _distance)
+                                    {
+                                        _closest = mesh;
+                                        _distance = sqrdist;
+                                    }
+                                }
+                                if (!relevantSurfaces.ContainsKey(_closest))
+                                    relevantSurfaces.Add(_closest, new rMap.Surface(_closest));
                             }
                         }
                     }
                 }
 
-                APILogger.Debug($"Found {relevantSurfaces.Count} relevant surfaces.");
-                meshes = relevantSurfaces.ToArray();
+                long end = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+                APILogger.Debug($"Found {relevantSurfaces.Count} relevant surfaces in {(end - start) / 1000f} seconds.");
+                surfaces = relevantSurfaces.Values.ToArray();
+            }
+            else
+            {
+                surfaces = new rMap.Surface[meshes.Length];
+                for (int i = 0; i < meshes.Length; ++i)
+                {
+                    surfaces[i] = new rMap.Surface(meshes[i]);
+                }
             }
 
             // TODO(randomuserhi): Check what dimensions actually exist on this level and only include those
             //                     Not the biggest deal, since I keep track of which dimensions are visited
             //                     but would be nice to reduce file size.
-            if (meshes.Length == 0)
+            if (surfaces.Length == 0)
             {
                 APILogger.Warn($"No relevent surfaces found");
                 return;
             }
 
-            // Write meshes to disk
+            // Add surfaces to map data
+            map.Add(dimension.DimensionIndex, new rMap(dimension.DimensionIndex, surfaces));
+
+            // Write meshes to disk => DEBUG
             StringBuilder json = new StringBuilder();
             json.Append($"[");
             string seperator = string.Empty;
-            for (int i = 0; i < meshes.Length; ++i)
+            for (int i = 0; i < surfaces.Length; ++i)
             {
-                Mesh mesh = meshes[i];
+                Mesh mesh = surfaces[i].mesh;
                 json.Append($"{seperator}{{\"vertices\":[");
                 string _seperator = string.Empty;
                 for (int j = 0; j < mesh.vertices.Count; ++j)
@@ -180,8 +247,6 @@ namespace ReplayRecorder.Map
 
         public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions)
         {
-            Reset();
-
             APILogger.Debug($"Saving individual dimensions...");
 
             for (int i = 0; i < dimensions.Count; ++i)
@@ -201,13 +266,44 @@ namespace ReplayRecorder.Map
                 dimensions[i].NavmeshInstance = NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
             }
 
-            // TODO(randomuserhi): obtian static information like doors, zones etc...
+            APILogger.Debug($"Fetching door linkage data...");
+            for (int i = 0; i < dimensions.Count; ++i)
+            {
+                if (!doors.ContainsKey(dimensions[i].DimensionIndex)) continue;
+                for (int j = 0; j < doors[dimensions[i].DimensionIndex].Count; ++j)
+                {
+                    rDoor door = doors[dimensions[i].DimensionIndex][j];
+                    LG_Gate gate = door.gate;
+                    if (gate.m_linksTo.m_zone != null && gate.m_linksTo.m_navInfo != null)
+                        door.to = new rMap.Location(gate.m_linksTo.m_zone.Alias, gate.m_linksTo.m_navInfo.Suffix[0]);
+                    else
+                        door.to = new rMap.Location();
+
+                    if (gate.m_linksFrom.m_zone != null && gate.m_linksFrom.m_navInfo != null)
+                        door.from = new rMap.Location(gate.m_linksFrom.m_zone.Alias, gate.m_linksFrom.m_navInfo.Suffix[0]);
+                    else
+                        door.from = new rMap.Location();
+
+                    /*APILogger.Debug($"door: {door.size} {door.type}");
+                    APILogger.Debug($"{door.position.x} {door.position.y} {door.position.z}");
+                    APILogger.Debug($"{door.rotation.eulerAngles.x} {door.rotation.eulerAngles.y} {door.rotation.eulerAngles.z}");
+                    APILogger.Debug($"to: zone {door.to.zone} area {door.to.area}");
+                    APILogger.Debug($"from: zone {door.from.zone} area {door.from.area}");*/
+                }
+            }
         }
 
         public static void Reset()
         {
             APILogger.Debug("Resetting internal map data...");
+            
             processed.Clear();
+            
+            map.Clear();
+            MapPatches.dimensions = null;
+
+            doors.Clear();
+            MapDoorPatches.doors.Clear();
         }
     }
 }

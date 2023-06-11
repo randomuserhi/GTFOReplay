@@ -1,9 +1,12 @@
-﻿using System;
+﻿using FluffyUnderware.DevTools.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityStandardAssets.ImageEffects;
+using static Il2CppSystem.Net.Http.Headers.Parser;
 
 namespace ReplayRecorder.Map
 {
@@ -107,6 +110,84 @@ namespace ReplayRecorder.Map
             }
 
             return surfaces.Values.ToArray();
+        }
+
+        private static Vector3 ClosestPoint(Vector3 point, Vector3 line1, Vector3 line2)
+        {
+            Vector3 dir = (line2 - line1);
+            Vector3 v = point - line1;
+            float t = Vector3.Dot(v, dir) / Vector3.Dot(dir, dir);
+            if (t < 0) return line1;
+            else if (t > 1) return line2;
+            return line1 + dir * t;
+        }
+        private static Vector3 EstimateClosestPoint(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3)
+        {
+            Vector3 planeNormal = Vector3.Cross(tri2 - tri1, tri3 - tri1);
+            point = point - Vector3.Dot(planeNormal, point - tri1) * planeNormal;
+
+            Vector3 c1 = ClosestPoint(point, tri1, tri2);
+            Vector3 c2 = ClosestPoint(point, tri2, tri3);
+            Vector3 c3 = ClosestPoint(point, tri3, tri1);
+
+            float mag1 = (point - c1).sqrMagnitude;
+            float mag2 = (point - c2).sqrMagnitude;
+            float mag3 = (point - c3).sqrMagnitude;
+
+            float min = Mathf.Min(mag1, mag2);
+            min = Mathf.Min(min, mag3);
+
+            if (min == mag1)
+            {
+                return c1;
+            }
+            else if (min == mag2)
+            {
+                return c2;
+            }
+            return c3;
+        }
+
+        public static Mesh[] GetNearbyMeshes(Vector3 point, float radius, Mesh[] meshes)
+        {
+            List<Mesh> nearbyMeshes = new List<Mesh>();
+            for (int i = 0; i < meshes.Length; ++i)
+            {
+                Mesh mesh = meshes[i];
+                Vector3 C1 = mesh.bounds.min;
+                Vector3 C2 = mesh.bounds.max;
+                float radiusSqr = radius * radius;
+                if (point.x < C1.x) radiusSqr -= (point.x - C1.x) * (point.x - C1.x);
+                else if (point.x > C2.x) radiusSqr -= (point.x - C2.x) * (point.x - C2.x);
+                if (point.y < C1.y) radiusSqr -= (point.y - C1.y) * (point.y - C1.y);
+                else if (point.y > C2.y) radiusSqr -= (point.y - C2.y) * (point.y - C2.y);
+                if (point.z < C1.z) radiusSqr -= (point.z - C1.z) * (point.z - C1.z);
+                else if (point.z > C2.z) radiusSqr -= (point.z - C2.z) * (point.z - C2.z);
+                if (radiusSqr > 0) nearbyMeshes.Add(mesh);
+            }
+            return nearbyMeshes.ToArray();
+        }
+
+        // TODO(randomuserhi): Optimize using spatial partition / oct tree
+        public static Vector3 EstimateClosestPoint(Vector3 point, Mesh mesh)
+        {
+            Vector3 closest = Vector3.zero;
+            float distance = float.MaxValue;
+            for (int i = 0; i < mesh.triangles.Length;)
+            {
+                Vector3 tri1 = mesh.vertices[mesh.triangles[i++]];
+                Vector3 tri2 = mesh.vertices[mesh.triangles[i++]];
+                Vector3 tri3 = mesh.vertices[mesh.triangles[i++]];
+
+                Vector3 p = EstimateClosestPoint(point, tri1, tri2, tri3);
+                float dist = (p - point).sqrMagnitude;
+                if (dist < distance)
+                {
+                    distance = dist;
+                    closest = p;
+                }
+            }
+            return closest;
         }
 
         // Merge vertices that are within a threshhold of each other

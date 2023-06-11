@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Map\StaticItems\" />
+	  <Folder Include="Snapshot\Events\" />
 	</ItemGroup>
 
 </Project>

@@ -4,6 +4,8 @@ using HarmonyLib;
 using API;
 
 using BetterChat;
+using Il2CppInterop.Runtime.Injection;
+using UnityEngine;
 
 namespace ReplayRecorder;
 
@@ -25,6 +27,11 @@ public class Plugin : BasePlugin
         }
 
         APILogger.Debug("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
+
+        // Register snapshot behaviour
+        ClassInjector.RegisterTypeInIl2Cpp<SnapshotManager>();
+
+        RundownManager.add_OnExpeditionGameplayStarted((Action)GameEventManager.OnGameplayStart);
     }
 
     private static Harmony? harmony;

@@ -1,17 +1,12 @@
 ﻿using API;
 using HarmonyLib;
-using Il2CppSystem.Text;
 
 using LevelGeneration;
-
-using UnityEngine.AI;
-using UnityEngine;
-using Player;
 
 namespace ReplayRecorder.Map.Patches
 {
     [HarmonyPatch]
-    public class MapPatches
+    class MapPatches
     {
         /*private static Mesh[] surfaces = new Mesh[0];
         private static HashSet<int> contacts = new HashSet<int>();
@@ -44,15 +39,17 @@ namespace ReplayRecorder.Map.Patches
             contacts.Add(closest);
         }*/
 
-        
+
 
         // Get number of dimensions that need loading
-        private static Il2CppSystem.Collections.Generic.List<Dimension>? dimensions;
+        public static Il2CppSystem.Collections.Generic.List<Dimension>? dimensions;
+        
         [HarmonyPatch(typeof(LG_SetupFloor), nameof(LG_SetupFloor.Build))]
         [HarmonyPostfix]
         private static void OnSetupFloor(LG_SetupFloor __instance)
         {
             dimensions = __instance.m_floor.m_dimensions;
+            dimensionsLoaded = 0;
         }
 
         // Called when a dimension's navmesh is building
