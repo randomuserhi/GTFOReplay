@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using UnityEngine;
+using static Il2CppSystem.Globalization.CultureInfo;
 
 namespace ReplayRecorder
 {
@@ -114,6 +116,22 @@ namespace ReplayRecorder
             _WriteBytes((byte*)&to32, sizeof(int), destination, ref index);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(string value, byte[] destination, ref int index)
+        {
+            byte[] temp = Encoding.UTF8.GetBytes(value);
+            WriteBytes((ushort)temp.Length, destination, ref index);
+            Array.Copy(temp, 0, destination, index, temp.Length);
+            index += temp.Length;
+        }
+
+        // Special function to halve precision of float
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteHalf(float value, byte[] destination, ref int index)
+        {
+            WriteBytes(FloatToHalf(value), destination, ref index);
+        }
+
         // https://stackoverflow.com/questions/1659440/32-bit-to-16-bit-floating-point-conversion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -223,6 +241,12 @@ namespace ReplayRecorder
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ReadHalf(byte[] source, ref int index)
+        {
+            return HalfToFloat(ReadUShort(source, ref index));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe float ReadFloat(byte[] source, ref int index)
         {
             fixed (byte* converted = source)
@@ -237,6 +261,15 @@ namespace ReplayRecorder
                 }
                 return *(float*)ptr;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ReadString(byte[] source, ref int index)
+        {
+            int length = ReadUShort(source, ref index);
+            string temp = Encoding.UTF8.GetString(source, index, length);
+            index += length;
+            return temp;
         }
 
         // UNITY BitHelper functions:
@@ -378,11 +411,8 @@ namespace ReplayRecorder
         }
 
         // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
-        public void WriteHalf(Quaternion value)
+        public void WriteHalf(Quaternion value, byte[] destination, ref int index)
         {
-            const int size = sizeof(float) * 3 + sizeof(byte);
-            if (index + size > data.Length) throw new Exception("Not enough space in buffer for Quaternion.");
-
             float largest = value.x;
             byte i = 0;
             if (value.y > largest)
@@ -401,102 +431,102 @@ namespace ReplayRecorder
                 i = 3;
             }
 
-            Write(i);
+            WriteBytes(i, destination, ref index);
             switch (i)
             {
                 case 0:
                     if (value.x >= 0)
                     {
-                        WriteHalf(value.y);
-                        WriteHalf(value.z);
-                        WriteHalf(value.w);
+                        WriteHalf(value.y, destination, ref index);
+                        WriteHalf(value.z, destination, ref index);
+                        WriteHalf(value.w, destination, ref index);
                     }
                     else
                     {
-                        WriteHalf(-value.y);
-                        WriteHalf(-value.z);
-                        WriteHalf(-value.w);
+                        WriteHalf(-value.y, destination, ref index);
+                        WriteHalf(-value.z, destination, ref index);
+                        WriteHalf(-value.w, destination, ref index);
                     }
                     break;
                 case 1:
                     if (value.y >= 0)
                     {
-                        WriteHalf(value.x);
-                        WriteHalf(value.z);
-                        WriteHalf(value.w);
+                        WriteHalf(value.x, destination, ref index);
+                        WriteHalf(value.z, destination, ref index);
+                        WriteHalf(value.w, destination, ref index);
                     }
                     else
                     {
-                        WriteHalf(-value.x);
-                        WriteHalf(-value.z);
-                        WriteHalf(-value.w);
+                        WriteHalf(-value.x, destination, ref index);
+                        WriteHalf(-value.z, destination, ref index);
+                        WriteHalf(-value.w, destination, ref index);
                     }
                     break;
                 case 2:
                     if (value.z >= 0)
                     {
-                        WriteHalf(value.x);
-                        WriteHalf(value.y);
-                        WriteHalf(value.w);
+                        WriteHalf(value.x, destination, ref index);
+                        WriteHalf(value.y, destination, ref index);
+                        WriteHalf(value.w, destination, ref index);
                     }
                     else
                     {
-                        WriteHalf(-value.x);
-                        WriteHalf(-value.y);
-                        WriteHalf(-value.w);
+                        WriteHalf(-value.x, destination, ref index);
+                        WriteHalf(-value.y, destination, ref index);
+                        WriteHalf(-value.w, destination, ref index);
                     }
                     break;
                 case 3:
                     if (value.w >= 0)
                     {
-                        WriteHalf(value.x);
-                        WriteHalf(value.y);
-                        WriteHalf(value.z);
+                        WriteHalf(value.x, destination, ref index);
+                        WriteHalf(value.y, destination, ref index);
+                        WriteHalf(value.z, destination, ref index);
                     }
                     else
                     {
-                        WriteHalf(-value.x);
-                        WriteHalf(-value.y);
-                        WriteHalf(-value.z);
+                        WriteHalf(-value.x, destination, ref index);
+                        WriteHalf(-value.y, destination, ref index);
+                        WriteHalf(-value.z, destination, ref index);
                     }
                     break;
             }
         }
 
-        public Vector3 ReadHalfVector3()
+        public Vector3 ReadHalfVector3(byte[] source, ref int index)
         {
-            return new Vector3(ReadHalf(), ReadHalf(), ReadHalf());
+            return new Vector3(ReadHalf(source, ref index), ReadHalf(source, ref index), ReadHalf(source, ref index));
         }
 
         // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
-        public Quaternion ReadHalfQuaternion()
+        public Quaternion ReadHalfQuaternion(byte[] source, ref int index)
         {
-            byte i = ReadByte();
+            byte i = ReadByte(source, ref index);
             float x = 0, y = 0, z = 0, w = 0;
             switch (i)
             {
                 case 0:
-                    y = ReadHalf();
-                    z = ReadHalf();
-                    w = ReadHalf();
+                    y = ReadHalf(source, ref index);
+                    z = ReadHalf(source, ref index);
+                    w = ReadHalf(source, ref index);
                     x = Mathf.Sqrt(1f - y * y - z * z - w * w);
                     break;
                 case 1:
-                    x = ReadHalf();
-                    z = ReadHalf();
-                    w = ReadHalf();
+                    x = ReadHalf(source, ref index);
+                    z = ReadHalf(source, ref index);
+                    w = ReadHalf(source, ref index);
                     y = Mathf.Sqrt(1f - x * x - z * z - w * w);
                     break;
                 case 2:
-                    x = ReadHalf();
-                    y = ReadHalf();
-                    w = ReadHalf();
+                    x = ReadHalf(source, ref index);
+                    y = ReadHalf(source, ref index);
+                    w = ReadHalf(source, ref index);
                     z = Mathf.Sqrt(1f - x * x - y * y - w * w);
                     break;
                 case 3:
-                    x = ReadHalf();
-                    y = ReadHalf();
-                    z = ReadHalf();
+                    x = ReadHalf(source, ref index);
+                    y = ReadHalf(source, ref index);
+                    z = ReadHalf(source, ref index);
                     w = Mathf.Sqrt(1f - x * x - y * y - z * z);
                     break;
             }
