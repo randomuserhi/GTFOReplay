@@ -25,9 +25,31 @@ namespace ReplayRecorder
             private Vector3 oldPosition;
             private Quaternion oldRotation;
 
-            public const int SizeOf = sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOf = sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOfHalf = sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
             private static byte[] buffer = new byte[SizeOf];
+            
+            // NOTE(randomuserhi): High precision for fixed position
             public void Serialize(FileStream fs, bool force = false)
+            {
+                // Don't serialize if object doesn't move
+                if (!force && gameObject.transform.position == oldPosition && gameObject.transform.rotation == oldRotation)
+                    return;
+
+                int index = 0;
+
+                BitHelper.WriteHalf(instanceID, buffer, ref index);
+                BitHelper.WriteBytes(gameObject.transform.position, buffer, ref index);
+                BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
+
+                oldPosition = gameObject.transform.position;
+                oldRotation = gameObject.transform.rotation;
+
+                fs.Write(buffer);
+            }
+
+            // NOTE(randomuserhi): Less precision for delta position
+            public void SerializeHalf(FileStream fs, bool force = false)
             {
                 // Don't serialize if object doesn't move
                 if (!force && gameObject.transform.position == oldPosition && gameObject.transform.rotation == oldRotation)
@@ -42,7 +64,7 @@ namespace ReplayRecorder
                 oldPosition = gameObject.transform.position;
                 oldRotation = gameObject.transform.rotation;
 
-                fs.Write(buffer);
+                fs.Write(buffer, 0, SizeOfHalf);
             }
         }
 

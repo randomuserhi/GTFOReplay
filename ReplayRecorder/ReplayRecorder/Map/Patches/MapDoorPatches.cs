@@ -2,6 +2,7 @@
 using HarmonyLib;
 
 using LevelGeneration;
+using System.Numerics;
 
 namespace ReplayRecorder.Map.Patches
 {

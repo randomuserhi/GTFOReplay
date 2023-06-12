@@ -115,6 +115,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
             });
             let meshes: Mesh[] = [];
+            let doors: {pos: THREE.Vector3, rot: THREE.Quaternion}[] = [];
             let currentLoaded = 0;
             let onload = () => {
                 console.log("Loaded!");
@@ -133,6 +134,19 @@ RHU.import(RHU.module({ trace: new Error(),
                 const light = new THREE.DirectionalLight(0xFFFFFF, 1);
                 this.scene.add(light);
                 
+                for (let i = 0; i < doors.length; ++i)
+                {
+                    const geometry = new THREE.BoxGeometry(2, 1, 1.5);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: 0x00ff00
+                    });
+                    
+                    const door = new THREE.Mesh(geometry, material);
+                    door.position.set(doors[i].pos.x, doors[i].pos.y, doors[i].pos.z);
+                    door.rotation.setFromQuaternion(doors[i].rot);
+                    this.scene.add(door);
+                }
+
                 for (let i = 0; i < meshes.length; ++i) 
                 {
                     const geometry = new THREE.BufferGeometry();
@@ -170,12 +184,45 @@ RHU.import(RHU.module({ trace: new Error(),
                         reader.onload = (event: any) => {
                             if (RHU.exists(event.target)) 
                             {
-                                let bytes: Uint8Array = new Uint8Array(event.target.result);
+                                let bytes: DataView = new DataView(event.target.result);
                                 console.log(bytes);
                                 let reader: Reader = new Reader();
-                                console.log(BitHelper.ReadByte(bytes, reader)); // number of dimensions
-                                console.log(BitHelper.ReadByte(bytes, reader)); // dimension
-                                console.log(BitHelper.ReadUShort(bytes, reader)); // number of surfaces
+                                let nDimensions = BitHelper.readByte(bytes, reader); // number of dimensions
+
+                                for (let j = 0; j < nDimensions; ++j)
+                                {
+                                    let dimension = BitHelper.readByte(bytes, reader); // dimension
+                                    let nSurfaces = BitHelper.readUShort(bytes, reader); // number of surfaces
+
+                                    // For debugging only read 1 dimension
+                                    for (let i = 0; i < nSurfaces; ++i)
+                                    {
+                                        let nVertices = BitHelper.readUShort(bytes, reader); // number of vertices
+                                        let nIndices = BitHelper.readUInt(bytes, reader); // number of indices
+                                        meshes.push({
+                                            vertices: new Float32Array(BitHelper.readVectorArray(bytes, reader, nVertices)),
+                                            indices: BitHelper.readUShortArray(bytes, reader, nIndices)
+                                        });
+                                    }
+
+                                    // doors
+                                    let nDoors = BitHelper.readUShort(bytes, reader);
+                                    for (let i = 0; i < nDoors; ++i)
+                                    {
+                                        let type = BitHelper.readByte(bytes, reader);
+                                        let size = BitHelper.readByte(bytes, reader);
+                                        let healthMax = BitHelper.readByte(bytes, reader);
+
+                                        let position = BitHelper.readVector(bytes, reader);
+                                        let rotation = BitHelper.readHalfQuaternion(bytes, reader);
+
+                                        doors.push({
+                                            pos: position,
+                                            rot: rotation
+                                        });
+                                    }
+                                }
+                                
                                 /*let surfaces = JSON.parse(event.target.result);
                                 for (let surface of surfaces) 
                                 {
@@ -183,11 +230,12 @@ RHU.import(RHU.module({ trace: new Error(),
                                         vertices: new Float32Array(surface.vertices),
                                         indices: surface.indices
                                     });
-                                }
+                                }*/
+
                                 if (++currentLoaded === loaded) 
                                 {
                                     onload();
-                                }*/
+                                }
                             }
                         };
                         reader.onprogress = (event) => {

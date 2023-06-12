@@ -54,7 +54,7 @@ namespace ReplayRecorder.Map
                 isCheckpoint = gate.IsCheckpointDoor;
             }
 
-            public const int SizeOf = 3 + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOf = 3 + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
             private static byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
@@ -70,7 +70,7 @@ namespace ReplayRecorder.Map
                 BitHelper.WriteBytes((byte)size, buffer, ref index);
                 BitHelper.WriteBytes((byte)healthMax, buffer, ref index);
 
-                BitHelper.WriteHalf(position, buffer, ref index);
+                BitHelper.WriteBytes(position, buffer, ref index);
                 BitHelper.WriteHalf(rotation, buffer, ref index);
 
                 fs.Write(buffer);

@@ -71,6 +71,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
             });
             let meshes = [];
+            let doors = [];
             let currentLoaded = 0;
             let onload = () => {
                 console.log("Loaded!");
@@ -83,6 +84,16 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.scene.add(ambient);
                 const light = new THREE.DirectionalLight(0xFFFFFF, 1);
                 this.scene.add(light);
+                for (let i = 0; i < doors.length; ++i) {
+                    const geometry = new THREE.BoxGeometry(2, 1, 1.5);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: 0x00ff00
+                    });
+                    const door = new THREE.Mesh(geometry, material);
+                    door.position.set(doors[i].pos.x, doors[i].pos.y, doors[i].pos.z);
+                    door.rotation.setFromQuaternion(doors[i].rot);
+                    this.scene.add(door);
+                }
                 for (let i = 0; i < meshes.length; ++i) {
                     const geometry = new THREE.BufferGeometry();
                     geometry.setIndex(meshes[i].indices);
@@ -113,12 +124,37 @@ RHU.import(RHU.module({ trace: new Error(),
                         let reader = new FileReader();
                         reader.onload = (event) => {
                             if (RHU.exists(event.target)) {
-                                let bytes = new Uint8Array(event.target.result);
+                                let bytes = new DataView(event.target.result);
                                 console.log(bytes);
                                 let reader = new Reader();
-                                console.log(BitHelper.ReadByte(bytes, reader));
-                                console.log(BitHelper.ReadByte(bytes, reader));
-                                console.log(BitHelper.ReadUShort(bytes, reader));
+                                let nDimensions = BitHelper.readByte(bytes, reader);
+                                for (let j = 0; j < nDimensions; ++j) {
+                                    let dimension = BitHelper.readByte(bytes, reader);
+                                    let nSurfaces = BitHelper.readUShort(bytes, reader);
+                                    for (let i = 0; i < nSurfaces; ++i) {
+                                        let nVertices = BitHelper.readUShort(bytes, reader);
+                                        let nIndices = BitHelper.readUInt(bytes, reader);
+                                        meshes.push({
+                                            vertices: new Float32Array(BitHelper.readVectorArray(bytes, reader, nVertices)),
+                                            indices: BitHelper.readUShortArray(bytes, reader, nIndices)
+                                        });
+                                    }
+                                    let nDoors = BitHelper.readUShort(bytes, reader);
+                                    for (let i = 0; i < nDoors; ++i) {
+                                        let type = BitHelper.readByte(bytes, reader);
+                                        let size = BitHelper.readByte(bytes, reader);
+                                        let healthMax = BitHelper.readByte(bytes, reader);
+                                        let position = BitHelper.readVector(bytes, reader);
+                                        let rotation = BitHelper.readHalfQuaternion(bytes, reader);
+                                        doors.push({
+                                            pos: position,
+                                            rot: rotation
+                                        });
+                                    }
+                                }
+                                if (++currentLoaded === loaded) {
+                                    onload();
+                                }
                             }
                         };
                         reader.onprogress = (event) => {

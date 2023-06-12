@@ -96,7 +96,7 @@ namespace ReplayRecorder.Map
                         return;
                     }
 
-                    size += sizeof(ushort) + sizeof(uint) + BitHelper.SizeOfHalfVector3 * vertices.Length + sizeof(ushort) * indices.Length;
+                    size += sizeof(ushort) + sizeof(uint) + BitHelper.SizeOfVector3 * vertices.Length + sizeof(ushort) * indices.Length;
                     if (buffer.Length < size)
                     {
                         byte[] temp = new byte[size];
@@ -106,7 +106,7 @@ namespace ReplayRecorder.Map
 
                     BitHelper.WriteBytes((ushort)vertices.Length, buffer, ref index);
                     BitHelper.WriteBytes((uint)indices.Length, buffer, ref index);
-                    for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteHalf(vertices[j], buffer, ref index);
+                    for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteBytes(vertices[j], buffer, ref index);
                     for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], buffer, ref index);
                 }
 
