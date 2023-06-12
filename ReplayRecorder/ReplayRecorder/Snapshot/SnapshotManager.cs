@@ -20,9 +20,30 @@ namespace ReplayRecorder
     {
         public struct DynamicObject
         {
-            public GameObject gameObject;
+            public readonly GameObject gameObject;
+            public readonly int instanceID;
             private Vector3 oldPosition;
             private Quaternion oldRotation;
+
+            public const int SizeOf = sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
+            private static byte[] buffer = new byte[SizeOf];
+            public void Serialize(FileStream fs, bool force = false)
+            {
+                // Don't serialize if object doesn't move
+                if (!force && gameObject.transform.position == oldPosition && gameObject.transform.rotation == oldRotation)
+                    return;
+
+                int index = 0;
+
+                BitHelper.WriteHalf(instanceID, buffer, ref index);
+                BitHelper.WriteHalf(gameObject.transform.position, buffer, ref index);
+                BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
+
+                oldPosition = gameObject.transform.position;
+                oldRotation = gameObject.transform.rotation;
+
+                fs.Write(buffer);
+            }
         }
 
         private static GameObject? obj = null;
@@ -52,8 +73,13 @@ namespace ReplayRecorder
         {
             if (fs == null) return;
 
-            // TODO(randomuserhi)
-            
+            // Serialize dynamic objects
+            for (int i = 0; i < dynamic.Count; i++) 
+            {
+                dynamic[i].Serialize(fs);
+            }
+
+            // TODO(randomuserhi): Serialize events
 
             // Flush file stream
             fs.Flush();

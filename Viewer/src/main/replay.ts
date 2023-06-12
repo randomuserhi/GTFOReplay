@@ -170,7 +170,13 @@ RHU.import(RHU.module({ trace: new Error(),
                         reader.onload = (event: any) => {
                             if (RHU.exists(event.target)) 
                             {
-                                let surfaces = JSON.parse(event.target.result);
+                                let bytes: Uint8Array = new Uint8Array(event.target.result);
+                                console.log(bytes);
+                                let reader: Reader = new Reader();
+                                console.log(BitHelper.ReadByte(bytes, reader)); // number of dimensions
+                                console.log(BitHelper.ReadByte(bytes, reader)); // dimension
+                                console.log(BitHelper.ReadUShort(bytes, reader)); // number of surfaces
+                                /*let surfaces = JSON.parse(event.target.result);
                                 for (let surface of surfaces) 
                                 {
                                     meshes.push({
@@ -181,13 +187,13 @@ RHU.import(RHU.module({ trace: new Error(),
                                 if (++currentLoaded === loaded) 
                                 {
                                     onload();
-                                }
+                                }*/
                             }
                         };
                         reader.onprogress = (event) => {
                             console.log(`${event.loaded / event.total}`);
                         };
-                        reader.readAsText(file);
+                        reader.readAsArrayBuffer(file);
                     }
                 }
                 catch (err) 
@@ -198,7 +204,7 @@ RHU.import(RHU.module({ trace: new Error(),
         } as Function as replayConstructor;
         RHU.Macro(replay, "replay", //html
             `
-            <input rhu-id="file" type="file" accept="application/json"/>
+            <input rhu-id="file" type="file"/> <!-- TODO(randomuserhi): Specific accept clause -->
             <canvas rhu-id="canvas" width="1920" height="1080"></canvas>
             `, {
             element: //html

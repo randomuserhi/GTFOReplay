@@ -6,12 +6,12 @@ using static Il2CppSystem.Globalization.CultureInfo;
 
 namespace ReplayRecorder
 {
-    internal class Raudy
+    internal static class Raudy
     {
         public static long Now => ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
     }
 
-    internal partial class BitHelper
+    internal static partial class BitHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RotateLeft(uint value, int offset)
@@ -70,8 +70,10 @@ namespace ReplayRecorder
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void _WriteBytes(byte* source, int size, byte[] destination, ref int index)
         {
-            Marshal.Copy((IntPtr)source, destination, index, size);
-            index += size;
+            for (int i = 0; i < size;)
+            {
+                destination[index++] = source[i++];
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -125,9 +127,10 @@ namespace ReplayRecorder
             index += temp.Length;
         }
 
+        public const int SizeOfHalf = sizeof(ushort);
         // Special function to halve precision of float
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteHalf(float value, byte[] destination, ref int index)
+        public static void WriteHalf(float value, byte[] destination, ref int index)
         {
             WriteBytes(FloatToHalf(value), destination, ref index);
         }
@@ -274,15 +277,17 @@ namespace ReplayRecorder
 
         // UNITY BitHelper functions:
 
+        public const int SizeOfVector3 = sizeof(float) * 3;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBytes(Vector3 value, byte[] destination, ref int index)
+        public static void WriteBytes(Vector3 value, byte[] destination, ref int index)
         {
             WriteBytes(value.x, destination, ref index);
             WriteBytes(value.y, destination, ref index);
             WriteBytes(value.z, destination, ref index);
         }
 
-        public void WriteBytes(Quaternion value, byte[] destination, ref int index)
+        public const int SizeOfQuaternion = 1 + sizeof(float) * 3;
+        public static void WriteBytes(Quaternion value, byte[] destination, ref int index)
         {
             float largest = value.x;
             byte i = 0;
@@ -364,12 +369,12 @@ namespace ReplayRecorder
             }
         }
 
-        public Vector3 ReadVector3(byte[] source, ref int index)
+        public static Vector3 ReadVector3(byte[] source, ref int index)
         {
             return new Vector3(ReadFloat(source, ref index), ReadFloat(source, ref index), ReadFloat(source, ref index));
         }
 
-        public Quaternion ReadQuaternion(byte[] source, ref int index)
+        public static Quaternion ReadQuaternion(byte[] source, ref int index)
         {
             byte i = ReadByte(source, ref index);
             float x = 0, y = 0, z = 0, w = 0;
@@ -403,15 +408,17 @@ namespace ReplayRecorder
             return new Quaternion(x, y, z, w);
         }
 
-        public void WriteHalf(Vector3 value, byte[] destination, ref int index)
+        public const int SizeOfHalfVector3 = SizeOfHalf * 3;
+        public static void WriteHalf(Vector3 value, byte[] destination, ref int index)
         {
             WriteHalf(value.x, destination, ref index);
             WriteHalf(value.y, destination, ref index);
             WriteHalf(value.z, destination, ref index);
         }
 
+        public const int SizeOfHalfQuaternion = 1 + SizeOfHalf * 3;
         // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
-        public void WriteHalf(Quaternion value, byte[] destination, ref int index)
+        public static void WriteHalf(Quaternion value, byte[] destination, ref int index)
         {
             float largest = value.x;
             byte i = 0;
@@ -493,13 +500,13 @@ namespace ReplayRecorder
             }
         }
 
-        public Vector3 ReadHalfVector3(byte[] source, ref int index)
+        public static Vector3 ReadHalfVector3(byte[] source, ref int index)
         {
             return new Vector3(ReadHalf(source, ref index), ReadHalf(source, ref index), ReadHalf(source, ref index));
         }
 
         // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
-        public Quaternion ReadHalfQuaternion(byte[] source, ref int index)
+        public static Quaternion ReadHalfQuaternion(byte[] source, ref int index)
         {
             byte i = ReadByte(source, ref index);
             float x = 0, y = 0, z = 0, w = 0;

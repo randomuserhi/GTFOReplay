@@ -59,24 +59,58 @@ namespace ReplayRecorder.Map
                 this.surfaces = surfaces;
             }
 
+            private static byte[] buffer = new byte[1 + sizeof(ushort)];
             public void Serialize(FileStream fs)
             {
                 /// Format:
-                /// byte => number of dimensions
+                /// byte => dimension index
+                /// ushort => number of surfaces
                 /// [
-                ///     byte => dimension index
-                ///     ushort => number of surfaces
-                ///     [
-                ///         ushort => number of vertices
-                ///         uint => number of indices
-                ///         [ float => x, y, z vertices ]
-                ///         [ ushort => indicies ]
-                ///     ](repeated for each surface)
-                ///     ushort => number of doors
-                ///     [
-                ///         { door.serialize }
-                ///     ](repeated for each door)
-                /// ](repeated for each dimension)
+                ///     ushort => number of vertices
+                ///     uint => number of indices
+                ///     [ half => x, y, z vertices ]
+                ///     [ ushort => indicies ]
+                /// ](repeated for each surface)
+
+                int index = 0;
+                int size = 1 + sizeof(ushort);
+                if (buffer.Length < size) buffer = new byte[size];
+
+                if (surfaces.Length > ushort.MaxValue)
+                {
+                    APILogger.Error($"There were more than {ushort.MaxValue} surfaces");
+                    return;
+                }
+
+                BitHelper.WriteBytes((byte)dimension, buffer, ref index);
+                BitHelper.WriteBytes((ushort)surfaces.Length, buffer, ref index);
+                for (int i = 0; i < surfaces.Length; ++i)
+                {
+                    Surface surface = surfaces[i];
+                    Vector3[] vertices = surface.mesh.vertices;
+                    int[] indices = surface.mesh.triangles;
+
+                    if (vertices.Length > ushort.MaxValue)
+                    {
+                        APILogger.Error($"There were more than {ushort.MaxValue} vertices");
+                        return;
+                    }
+
+                    size += sizeof(ushort) + sizeof(uint) + BitHelper.SizeOfHalfVector3 * vertices.Length + sizeof(ushort) * indices.Length;
+                    if (buffer.Length < size)
+                    {
+                        byte[] temp = new byte[size];
+                        Array.Copy(buffer, temp, buffer.Length);
+                        buffer = temp;
+                    }
+
+                    BitHelper.WriteBytes((ushort)vertices.Length, buffer, ref index);
+                    BitHelper.WriteBytes((uint)indices.Length, buffer, ref index);
+                    for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteHalf(vertices[j], buffer, ref index);
+                    for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], buffer, ref index);
+                }
+
+                fs.Write(buffer, 0, size);
             }
         }
         // Maps dimension to the surface map of that dimension
@@ -111,7 +145,6 @@ namespace ReplayRecorder.Map
                 APILogger.Error("Dimension already has been constructed, this should not happen");
                 return;
             }
-
 
             // Convert surfaces to meshes
             Mesh[] meshes = new Mesh[surfaceBuffer.Length];
@@ -327,7 +360,36 @@ namespace ReplayRecorder.Map
             // TODO(randomuserhi): replay name needs to have level + date => config for save location 
             SnapshotManager.fs = new FileStream("./replay.gtfo", FileMode.OpenOrCreate, FileAccess.Write);
 
-            // TODO(randomuserhi) Write map info...
+            // Write map info...
+            byte[] buffer = new byte[100];
+            SnapshotManager.fs.WriteByte((byte)map.Count); // Write number of dimensions
+            foreach (rMap m in map.Values)
+            {
+                // Serialize map
+                m.Serialize(SnapshotManager.fs);
+
+                // Serialize doors for the given map
+                int index = 0;
+                if (!doors.ContainsKey(m.dimension))
+                {
+                    BitHelper.WriteBytes((ushort)0, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 doors present
+                    continue;
+                }
+                BitHelper.WriteBytes((ushort)doors[m.dimension].Count, buffer, ref index);
+                SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of doors
+                foreach (rDoor d in doors[m.dimension])
+                {
+                    d.Serialize(SnapshotManager.fs);
+                }
+
+                // Serialize -- for the given map
+                index = 0;
+                //...
+            }
+
+            // Flush to ensure map gets written to file
+            SnapshotManager.fs.Flush();
         }
 
         public static void Reset()

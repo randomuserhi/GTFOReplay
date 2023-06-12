@@ -113,22 +113,18 @@ RHU.import(RHU.module({ trace: new Error(),
                         let reader = new FileReader();
                         reader.onload = (event) => {
                             if (RHU.exists(event.target)) {
-                                let surfaces = JSON.parse(event.target.result);
-                                for (let surface of surfaces) {
-                                    meshes.push({
-                                        vertices: new Float32Array(surface.vertices),
-                                        indices: surface.indices
-                                    });
-                                }
-                                if (++currentLoaded === loaded) {
-                                    onload();
-                                }
+                                let bytes = new Uint8Array(event.target.result);
+                                console.log(bytes);
+                                let reader = new Reader();
+                                console.log(BitHelper.ReadByte(bytes, reader));
+                                console.log(BitHelper.ReadByte(bytes, reader));
+                                console.log(BitHelper.ReadUShort(bytes, reader));
                             }
                         };
                         reader.onprogress = (event) => {
                             console.log(`${event.loaded / event.total}`);
                         };
-                        reader.readAsText(file);
+                        reader.readAsArrayBuffer(file);
                     }
                 }
                 catch (err) {
@@ -137,7 +133,7 @@ RHU.import(RHU.module({ trace: new Error(),
             });
         };
         RHU.Macro(replay, "replay", `
-            <input rhu-id="file" type="file" accept="application/json"/>
+            <input rhu-id="file" type="file"/> <!-- TODO(randomuserhi): Specific accept clause -->
             <canvas rhu-id="canvas" width="1920" height="1080"></canvas>
             `, {
             element: `<div></div>`
