@@ -28,7 +28,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 <rhu-macro rhu-type="replay"></rhu-macro>
             `, {
                 element: //html
-                `<div></div>`
+                `<div style="position: relative; width: 100%; height: 100%"></div>`
             });
     }
 }));

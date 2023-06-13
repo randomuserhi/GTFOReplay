@@ -1,5 +1,11 @@
 interface replay extends HTMLDivElement
 {
+    resize(): void;
+    onload(): void;
+    update(): void;
+
+    replay: GTFOReplay;
+
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     file: HTMLInputElement;
@@ -30,27 +36,6 @@ declare namespace RHU { namespace Macro {
     }
 }}
 
-interface Vector
-{
-    x: number;
-    y: number;
-    z: number;
-}
-
-interface Quaternion
-{
-    x: number;
-    y: number;
-    z: number;
-    w: number;
-}
-
-interface Mesh
-{
-    vertices: Vector[];
-    indices: number[];
-}
-
 RHU.import(RHU.module({ trace: new Error(),
     name: "Replay Display", hard: ["RHU.Macro"],
     callback: function () 
@@ -58,11 +43,15 @@ RHU.import(RHU.module({ trace: new Error(),
         let { RHU } = window.RHU.require(window, this);
         let replay: replayConstructor = function (this: replay) {
             this.ctx = this.canvas.getContext("2d")!;
+
+            window.addEventListener("resize", () => { this.resize(); });
+
             this.camera = {
                 x: 0,
                 y: 0,
                 scale: 1
             };
+
             this.mouse = {
                 x: 0,
                 y: 0,
@@ -128,6 +117,7 @@ RHU.import(RHU.module({ trace: new Error(),
                     if (this.camera.scale < 0.01)
                     this.camera.scale = 0.01;
 
+                    // Move camera based on where you are zooming
                     let oldx = this.mouse.x + this.camera.x;
                     let deltax = oldx / scale * this.camera.scale;
                     this.camera.x += deltax - oldx;
@@ -137,77 +127,8 @@ RHU.import(RHU.module({ trace: new Error(),
                     this.camera.y += deltay - oldy;
                 }
             });
-            let meshes: Mesh[] = [];
-            let doors: {pos: Vector, rot: Quaternion}[] = [];
+
             let currentLoaded = 0;
-            let onload = () => {
-                console.log("Loaded!");
-                let meshToCanvas = (mesh: Mesh): { canvas: HTMLCanvasElement, position: Vector } => {
-                    let vertex = mesh.vertices[mesh.indices[0]];
-                    let min: Vector = { x: vertex.x, y: -vertex.z, z: 0 };
-                    let max: Vector = { x: vertex.x, y: -vertex.z, z: 0 };
-                    for (let i = 1; i < mesh.indices.length; ++i)
-                    {
-                        vertex = mesh.vertices[mesh.indices[i]];
-                        if (vertex.x < min.x)
-                            min.x = vertex.x;
-                        else if (vertex.x > max.x)
-                            max.x = vertex.x;
-
-                        if (-vertex.z < min.y)
-                            min.y = -vertex.z;
-                        else if (-vertex.z > max.y)
-                            max.y = -vertex.z;
-                    }
-                    let scale = 30;
-                    let canvas = document.createElement("canvas");
-                    canvas.width = (max.x - min.x) * scale;
-                    canvas.height = (max.y - min.y) * scale;
-
-                    let ctx = canvas.getContext("2d")!;
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    for (let i = 0; i < mesh.indices.length;)
-                    {
-                        ctx.beginPath();
-                        let index = mesh.indices[i++];
-                        ctx.moveTo((mesh.vertices[index].x - min.x) * scale, (-mesh.vertices[index].z - min.y) * scale);
-                        for (let j = 0; j < 2; ++j)
-                        {
-                            let index = mesh.indices[i++];
-                            let pos = mesh.vertices[index];
-                            ctx.lineTo((pos.x - min.x) * scale, (-pos.z - min.y) * scale);
-                        }
-                        ctx.closePath();
-                        ctx.lineWidth = 1;
-                        ctx.strokeStyle = "#000"
-                        ctx.fillStyle = "#000";
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-
-                    return { canvas: canvas, position: { x: min.x * scale, y: min.y * scale, z: 0 } };
-                };
-
-                let surfaces: { canvas: HTMLCanvasElement, position: Vector }[] = [];
-                for (let i = 0; i < meshes.length; ++i)
-                {
-                    let img = meshToCanvas(meshes[i]);
-                    if (img.canvas.width != 0 && img.canvas.height != 0)
-                        surfaces.push(img);
-                }
-
-                let update = () => {
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    this.ctx.save();
-                    this.ctx.translate(-this.camera.x, -this.camera.y);
-                    this.ctx.scale(this.camera.scale, this.camera.scale);
-                    for (let i = 0; i < surfaces.length; ++i)
-                        this.ctx.drawImage(surfaces[i].canvas, surfaces[i].position.x, surfaces[i].position.y);
-                    this.ctx.restore();
-                    requestAnimationFrame(update);
-                };
-                update();
-            };
             this.file.addEventListener("change", (e: any) => {
                 try 
                 {
@@ -223,95 +144,16 @@ RHU.import(RHU.module({ trace: new Error(),
                         reader.onload = (event: any) => {
                             if (RHU.exists(event.target)) 
                             {
-                                let bytes: DataView = new DataView(event.target.result);
-                                console.log(bytes);
-                                let reader: Reader = new Reader();
-                                let nDimensions = BitHelper.readByte(bytes, reader); // number of dimensions
-
-                                for (let j = 0; j < nDimensions; ++j)
-                                {
-                                    let dimension = BitHelper.readByte(bytes, reader); // dimension
-                                    let nSurfaces = BitHelper.readUShort(bytes, reader); // number of surfaces
-
-                                    // For debugging only read 1 dimension
-                                    for (let i = 0; i < nSurfaces; ++i)
-                                    {
-                                        let nVertices = BitHelper.readUShort(bytes, reader); // number of vertices
-                                        let nIndices = BitHelper.readUInt(bytes, reader); // number of indices
-                                        meshes.push({
-                                            vertices: BitHelper.readVectorArray(bytes, reader, nVertices),
-                                            indices: BitHelper.readUShortArray(bytes, reader, nIndices)
-                                        });
-                                    }
-
-                                    // doors
-                                    let nDoors = BitHelper.readUShort(bytes, reader);
-                                    for (let i = 0; i < nDoors; ++i)
-                                    {
-                                        let type = BitHelper.readByte(bytes, reader);
-                                        let size = BitHelper.readByte(bytes, reader);
-                                        let healthMax = BitHelper.readByte(bytes, reader);
-
-                                        let position = BitHelper.readVector(bytes, reader);
-                                        let rotation = BitHelper.readHalfQuaternion(bytes, reader);
-
-                                        doors.push({
-                                            pos: position,
-                                            rot: rotation
-                                        });
-                                    }
-                                }
-                                
-                                // DEBUG some stuff
-                                let prevTimestamp = 0;
-                                let tick = 0;
-                                while(reader.index < bytes.byteLength)
-                                {
-                                    let timestamp = BitHelper.readUInt(bytes, reader);
-                                    console.log(`${reader.index} ${bytes.byteLength} ${tick++} Tick timestamp: ${timestamp}`); // Tick timestamp
-
-                                    let nEvents = BitHelper.readUShort(bytes, reader);
-                                    console.log(`nEvents: ${nEvents}`); // number of events
-
-                                    for (let i = 0; i < nEvents; ++i)
-                                    {
-                                        console.log(BitHelper.readByte(bytes, reader)); // type of events (player spawn event)
-                                        console.log(BitHelper.readUShort(bytes, reader)); // relative time
-                                        console.log(`playerid: ${BitHelper.readULong(bytes, reader)}`); // player id
-                                        console.log(`instanceID: ${BitHelper.readInt(bytes, reader)}`); // player instance id
-                                    }
-
-                                    let nDynamics = BitHelper.readUShort(bytes, reader);
-                                    console.log(`nDynamics: ${nDynamics}`); // number of dynamic objects
-                                    for (let i = 0; i < nDynamics; ++i)
-                                    {
-                                        let abs = BitHelper.readByte(bytes, reader);
-                                        let absolute = abs == 1;
-                                        console.log(`absolute: ${abs} ${absolute}`);
-                                        console.log(`instanceID: ${BitHelper.readInt(bytes, reader)}`);
-                                        if (absolute) console.log(BitHelper.readVector(bytes, reader));
-                                        else console.log(BitHelper.readHalfVector(bytes, reader));
-                                        console.log(BitHelper.readHalfQuaternion(bytes, reader));
-                                    }
-                                }
-
-                                /*let surfaces = JSON.parse(event.target.result);
-                                for (let surface of surfaces) 
-                                {
-                                    meshes.push({
-                                        vertices: new Float32Array(surface.vertices),
-                                        indices: surface.indices
-                                    });
-                                }*/
+                                this.replay = new GTFOReplay(event.target.result);
 
                                 if (++currentLoaded === loaded) 
                                 {
-                                    onload();
+                                    this.onload();
                                 }
                             }
                         };
                         reader.onprogress = (event) => {
-                            console.log(`${event.loaded / event.total}`);
+                            console.log(`${event.loaded / event.total * 100}`);
                         };
                         reader.readAsArrayBuffer(file);
                     }
@@ -322,10 +164,43 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
             });
         } as Function as replayConstructor;
+        replay.prototype.resize = function()
+        {
+            let computed = getComputedStyle(this.canvas);
+            this.canvas.width = parseInt(computed.width);
+            this.canvas.height = parseInt(computed.height);
+        };
+        replay.prototype.onload = function()
+        {
+            this.resize();
+            this.update();
+        };
+        replay.prototype.update = function()
+        {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            this.ctx.save();
+            
+            this.ctx.translate(-this.camera.x, -this.camera.y);
+            this.ctx.scale(this.camera.scale, this.camera.scale);
+            
+            // Draw Map => perhaps move to a seperate function
+            let dimension = this.replay.dimensions.get(0)!;
+            let map = dimension.map;
+            for (let i = 0; i < map.surfaces.length; ++i)
+                this.ctx.drawImage(map.surfaces[i].canvas, map.surfaces[i].position.x, map.surfaces[i].position.y);
+           
+            this.ctx.restore();
+
+            requestAnimationFrame(() => { this.update(); });
+        };
         RHU.Macro(replay, "replay", //html
             `
             <input rhu-id="file" type="file"/> <!-- TODO(randomuserhi): Specific accept clause -->
-            <canvas rhu-id="canvas" width="1920" height="1080"></canvas>
+            <canvas style="
+                width: 100%;
+                height: 100%;
+            " rhu-id="canvas" width="1920" height="1080"></canvas>
             `, {
             element: //html
                 `<div></div>`
