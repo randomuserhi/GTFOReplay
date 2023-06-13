@@ -35,8 +35,8 @@ namespace ReplayRecorder
     {
         public enum Type
         {
-            AddDynamic,
-            RemoveDynamic
+            AddPlayer,
+            RemovePlayer
         }
 
         public long timestamp;
@@ -142,22 +142,42 @@ namespace ReplayRecorder
             }
         }
 
-        public void AddEvent(GameplayEvent.Type type, ISerializable? e)
+        public static void AddEvent(GameplayEvent.Type type, ISerializable? e)
         {
-            events.Add(new GameplayEvent(Now, type, e));
+            if (instance == null)
+            {
+                APILogger.Error("Tried to add an event before snapshotmanager was ready.");
+                return;
+            }
+            instance.events.Add(new GameplayEvent(instance.Now, type, e));
         }
 
-        public void AddDynamicObject(DynamicObject obj)
+        public static void AddDynamicObject(DynamicObject obj)
         {
-            dynamic.Add(obj);
-            mapOfDynamics.Add(obj.instanceID, obj);
+            if (instance == null)
+            {
+                APILogger.Error("Tried to add a dynamic object before snapshotmanager was ready.");
+                return;
+            }
+            instance.dynamic.Add(obj);
+            instance.mapOfDynamics.Add(obj.instanceID, obj);
         }
 
-        public void RemoveDynamicObject(DynamicObject obj)
+        public static void RemoveDynamicObject(int instanceID)
         {
-            if (!mapOfDynamics.ContainsKey(obj.instanceID)) return;
-            mapOfDynamics[obj.instanceID].remove = true;
-            mapOfDynamics.Remove(obj.instanceID);
+            if (instance == null)
+            {
+                APILogger.Error("Tried to remove a dynamic object before snapshotmanager was ready.");
+                return;
+            }
+            if (!instance.mapOfDynamics.ContainsKey(instanceID)) return;
+            instance.mapOfDynamics[instanceID].remove = true;
+            instance.mapOfDynamics.Remove(instanceID);
+        }
+
+        public static void RemoveDynamicObject(DynamicObject obj)
+        {
+            RemoveDynamicObject(obj.instanceID);
         }
 
         public static Action? OnTick;
@@ -176,6 +196,23 @@ namespace ReplayRecorder
             BitHelper.WriteBytes((uint)_Now, buffer, ref index);
             fs.Write(buffer, 0, sizeof(uint));
 
+            // Serialize events
+            index = 0;
+            BitHelper.WriteBytes((ushort)events.Count, buffer, ref index);
+            fs.Write(buffer, 0, sizeof(ushort));
+            for (int i = 0; i < events.Count; ++i)
+            {
+                GameplayEvent e = events[i];
+
+                // Event header
+                index = 0;
+                BitHelper.WriteBytes((byte)e.type, buffer, ref index);
+                BitHelper.WriteBytes((ushort)(e.timestamp - Prev), buffer, ref index);
+                fs.Write(buffer, 0, 1 + sizeof(ushort));
+
+                if (e.detail != null) e.detail.Serialize(fs);
+            }
+
             // Serialize dynamic objects
             index = 0;
             BitHelper.WriteBytes((ushort)dynamic.Count, buffer, ref index);
@@ -191,23 +228,6 @@ namespace ReplayRecorder
             List<DynamicObject> temp = dynamic;
             dynamic = _dynamic;
             _dynamic = temp;
-
-            // Serialize events
-            index = 0;
-            BitHelper.WriteBytes((ushort)events.Count, buffer, ref index);
-            fs.Write(buffer, 0, sizeof(ushort));
-            for (int i = 0; i < events.Count; ++i)
-            {
-                GameplayEvent e = events[i];
-
-                // Event header
-                index = 0;
-                BitHelper.WriteBytes((byte)e.type, buffer, ref index);
-                BitHelper.WriteBytes((ushort)(Prev - e.timestamp), buffer, ref index);
-                fs.Write(buffer, 0, 1 + sizeof(ushort));
-
-                if (e.detail != null) e.detail.Serialize(fs);
-            }
 
             // Flush file stream
             fs.Flush();
@@ -225,7 +245,7 @@ namespace ReplayRecorder
             instance = obj.AddComponent<SnapshotManager>();
 
             instance.start = Raudy.Now;
-            instance.Prev = instance.start;
+            instance.Prev = 0;
             active = true;
 
             if (fs == null)

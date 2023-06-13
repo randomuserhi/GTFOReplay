@@ -17,6 +17,7 @@ interface BitHelper
     readUShort(buffer: DataView, reader: Reader): number;
 
     readLong(buffer: DataView, reader: Reader): bigint;
+    readInt(buffer: DataView, reader: Reader): number;
     
     readHalf(buffer: DataView, reader: Reader): number;
     readFloat(buffer: DataView, reader: Reader): number;
@@ -54,6 +55,12 @@ let BitHelper: BitHelper = {
         let index = reader.index;
         reader.index += 8;
         return buffer.getBigInt64(index, this.littleEndian);
+    },
+    readInt: function(buffer: DataView , reader: Reader): number
+    {
+        let index = reader.index;
+        reader.index += 4;
+        return buffer.getInt32(index, this.littleEndian);
     },
     readULong: function(buffer: DataView , reader: Reader): bigint
     {

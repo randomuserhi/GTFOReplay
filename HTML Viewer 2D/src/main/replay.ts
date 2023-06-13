@@ -262,6 +262,33 @@ RHU.import(RHU.module({ trace: new Error(),
                                     }
                                 }
                                 
+                                // DEBUG some stuff
+                                console.log(BitHelper.readUInt(bytes, reader)); // Tick timestamp
+
+                                console.log(BitHelper.readUShort(bytes, reader)); // number of events
+
+                                console.log(BitHelper.readByte(bytes, reader)); // type of events (player spawn event)
+                                console.log(BitHelper.readUShort(bytes, reader)); // relative time
+                                console.log(BitHelper.readULong(bytes, reader)); // player id
+                                console.log(BitHelper.readInt(bytes, reader)); // player instance id
+
+                                console.log(BitHelper.readByte(bytes, reader)); // type of events (player spawn event)
+                                console.log(BitHelper.readUShort(bytes, reader)); // relative time
+                                console.log(BitHelper.readULong(bytes, reader)); // player id
+                                console.log(BitHelper.readInt(bytes, reader)); // player instance id
+
+                                console.log(BitHelper.readUShort(bytes, reader)); // number of dynamic objects
+
+                                console.log(BitHelper.readByte(bytes, reader)); // dynamic object 1 - absolute or relative (0, rel, 1, absolute)
+                                console.log(BitHelper.readInt(bytes, reader)); // dynamic object 1 - instance id
+                                console.log(BitHelper.readHalfVector(bytes, reader)); // position
+                                console.log(BitHelper.readHalfQuaternion(bytes, reader)); // rotation
+
+                                console.log(BitHelper.readByte(bytes, reader)); // dynamic object 2 - absolute or relative (0, rel, 1, absolute)
+                                console.log(BitHelper.readInt(bytes, reader)); // dynamic object 2 - instance id
+                                console.log(BitHelper.readVector(bytes, reader)); // position
+                                console.log(BitHelper.readHalfQuaternion(bytes, reader)); // rotation
+
                                 /*let surfaces = JSON.parse(event.target.result);
                                 for (let surface of surfaces) 
                                 {
