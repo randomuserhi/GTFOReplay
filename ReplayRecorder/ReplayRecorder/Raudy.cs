@@ -13,6 +13,8 @@ namespace ReplayRecorder
 
     internal static partial class BitHelper
     {
+        // https://github.com/dotnet/runtime/blob/20c8ae6457caa652a34fc42ff5f92b6728231039/src/libraries/System.Private.CoreLib/src/System/Buffers/Binary/Reader.cs
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RotateLeft(uint value, int offset)
             => (value << offset) | (value >> (32 - offset));
@@ -20,6 +22,9 @@ namespace ReplayRecorder
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RotateRight(uint value, int offset)
             => (value >> offset) | (value << (32 - offset));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long ReverseEndianness(long value) => (long)ReverseEndianness((ulong)value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReverseEndianness(int value) => (int)ReverseEndianness((uint)value);
@@ -68,6 +73,13 @@ namespace ReplayRecorder
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong ReverseEndianness(ulong value)
+        {
+            return ((ulong)ReverseEndianness((uint)value) << 32)
+                + ReverseEndianness((uint)(value >> 32));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void _WriteBytes(byte* source, int size, byte[] destination, ref int index)
         {
             for (int i = 0; i < size;)
@@ -83,6 +95,13 @@ namespace ReplayRecorder
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(ulong value, byte[] destination, ref int index)
+        {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ulong), destination, ref index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(uint value, byte[] destination, ref int index)
         {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
@@ -94,6 +113,13 @@ namespace ReplayRecorder
         {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ushort), destination, ref index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(long value, byte[] destination, ref int index)
+        {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(long), destination, ref index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -173,6 +199,40 @@ namespace ReplayRecorder
         public static byte ReadByte(byte[] source, ref int index)
         {
             return source[index++];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe ulong ReadULong(byte[] source, ref int index)
+        {
+            fixed (byte* converted = source)
+            {
+                byte* ptr = converted + index;
+                index += sizeof(ulong);
+
+                ulong result = *(ulong*)ptr;
+                if (!BitConverter.IsLittleEndian)
+                {
+                    result = ReverseEndianness(result);
+                }
+                return result;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe long ReadLong(byte[] source, ref int index)
+        {
+            fixed (byte* converted = source)
+            {
+                byte* ptr = converted + index;
+                index += sizeof(long);
+
+                long result = *(long*)ptr;
+                if (!BitConverter.IsLittleEndian)
+                {
+                    result = ReverseEndianness(result);
+                }
+                return result;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

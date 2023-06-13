@@ -15,6 +15,7 @@ namespace ReplayRecorder
             APILogger.Debug($"Gameplay started!");
 
             SnapshotManager.Init();
+            Player.Player.Init();
         }
 
         [HarmonyPatch(typeof(RundownManager), nameof(RundownManager.EndGameSession))]

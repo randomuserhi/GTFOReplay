@@ -1,0 +1,23 @@
+{
+  "name": "gtfo-replay-viewer",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "transpile": "./node_modules/.bin/tsc",
+    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.js build/",
+    "copy-assets": "copyfiles -u 1 assets/**/*.* build/",
+    "copy-js3party": "copyfiles -u 1 js3party/**/*.* build/js3party/",
+    "build": "rimraf build/ && npm run transpile && npm run copy-files && npm run copy-js3party && npm run copy-assets"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomuserhi/GTFOReplay.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.0.4"
+  }
+}

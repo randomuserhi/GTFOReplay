@@ -3,68 +3,113 @@ using UnityEngine;
 
 namespace ReplayRecorder
 {
-    interface ISerializable
+    public interface ISerializable
     {
         void Serialize(FileStream fs);
     }
 
-    // TODO(randomuserhi): add an interface for serializable objects or something
-
-    public abstract class GameplayEvent
+    public class Dynamic : ISerializable
     {
+        public enum Type
+        {
+            Player
+        }
+
+        public Type type;
+        public ISerializable? detail;
+
+        public Dynamic(Type type, ISerializable? detail)
+        {
+            this.type = type;
+            this.detail = detail;
+        }
+
+        public void Serialize(FileStream fs)
+        {
+            fs.WriteByte((byte)type);
+            if (detail != null) detail.Serialize(fs);
+        }
+    }
+
+    public class GameplayEvent
+    {
+        public enum Type
+        {
+            AddDynamic,
+            RemoveDynamic
+        }
+
         public long timestamp;
+        public Type type;
+        public ISerializable? detail;
+
+        public GameplayEvent(long timestamp, Type type, ISerializable? detail)
+        {
+            this.timestamp = timestamp;
+            this.type = type;
+            this.detail = detail;
+        }
     }
 
     // Manages saving a snapshot and delta snapshot every tick
     public class SnapshotManager : MonoBehaviour
     {
-        public struct DynamicObject
+        public class DynamicObject
         {
+            public bool remove = false;
+
             public readonly GameObject gameObject;
             public readonly int instanceID;
             private Vector3 oldPosition;
-            private Quaternion oldRotation;
 
-            public const int SizeOf = sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
-            public const int SizeOfHalf = sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const float threshold = 50;
+
+            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
             private static byte[] buffer = new byte[SizeOf];
-            
-            // NOTE(randomuserhi): High precision for fixed position
-            public void Serialize(FileStream fs, bool force = false)
+
+            public DynamicObject(int instanceID, GameObject gameObject)
             {
-                // Don't serialize if object doesn't move
-                if (!force && gameObject.transform.position == oldPosition && gameObject.transform.rotation == oldRotation)
-                    return;
-
-                int index = 0;
-
-                BitHelper.WriteHalf(instanceID, buffer, ref index);
-                BitHelper.WriteBytes(gameObject.transform.position, buffer, ref index);
-                BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
-
-                oldPosition = gameObject.transform.position;
-                oldRotation = gameObject.transform.rotation;
-
-                fs.Write(buffer);
+                this.instanceID = instanceID;
+                this.gameObject = gameObject;
             }
 
-            // NOTE(randomuserhi): Less precision for delta position
-            public void SerializeHalf(FileStream fs, bool force = false)
+            public void Serialize(FileStream fs, bool force = false)
             {
+                /// Format:
+                /// byte => absolute or relative position
+                /// int => instance ID of object (not necessarily the gameobject)
+                /// Vector3(Half) => full precision / half precision based on absolute or relative position
+                /// Quaternion(Half) => rotation
+
                 // Don't serialize if object doesn't move
-                if (!force && gameObject.transform.position == oldPosition && gameObject.transform.rotation == oldRotation)
+                if (!force && gameObject.transform.position == oldPosition)
                     return;
 
                 int index = 0;
 
-                BitHelper.WriteHalf(instanceID, buffer, ref index);
-                BitHelper.WriteHalf(gameObject.transform.position, buffer, ref index);
-                BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
+                // If object has moved too far, write absolute position
+                if (force || (gameObject.transform.position - oldPosition).sqrMagnitude > threshold * threshold)
+                {
+                    BitHelper.WriteBytes((byte)(1), buffer, ref index);
+                    BitHelper.WriteBytes(instanceID, buffer, ref index);
+                    BitHelper.WriteBytes(gameObject.transform.position, buffer, ref index);
+                    BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
 
-                oldPosition = gameObject.transform.position;
-                oldRotation = gameObject.transform.rotation;
+                    oldPosition = gameObject.transform.position;
 
-                fs.Write(buffer, 0, SizeOfHalf);
+                    fs.Write(buffer, 0, SizeOf);
+                }
+                // If object has not moved too far, write relative to last absolute position
+                else
+                {
+                    BitHelper.WriteBytes((byte)(0), buffer, ref index);
+                    BitHelper.WriteBytes(instanceID, buffer, ref index);
+                    BitHelper.WriteHalf(gameObject.transform.position - oldPosition, buffer, ref index);
+                    BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
+
+                    fs.Write(buffer, 0, SizeOfHalf);
+                }
             }
         }
 
@@ -72,15 +117,21 @@ namespace ReplayRecorder
         private static SnapshotManager? instance = null;
 
         public static FileStream? fs = null;
+        public static bool active = false;
 
         private const float tickRate = 1 / 20;
         private float timer = 0;
+        private long start = 0;
+        public long Now => Raudy.Now - start;
+        private long Prev = 0;
 
         // List of events to add on next tick
         private List<GameplayEvent> events = new List<GameplayEvent>(100);
-        
+
         // Object positions to track
+        private List<DynamicObject> _dynamic = new List<DynamicObject>(100);
         private List<DynamicObject> dynamic = new List<DynamicObject>(100);
+        private Dictionary<int, DynamicObject> mapOfDynamics = new Dictionary<int, DynamicObject>();
 
         private void FixedUpdate()
         {
@@ -91,23 +142,81 @@ namespace ReplayRecorder
             }
         }
 
+        public void AddEvent(GameplayEvent.Type type, ISerializable? e)
+        {
+            events.Add(new GameplayEvent(Now, type, e));
+        }
+
+        public void AddDynamicObject(DynamicObject obj)
+        {
+            dynamic.Add(obj);
+            mapOfDynamics.Add(obj.instanceID, obj);
+        }
+
+        public void RemoveDynamicObject(DynamicObject obj)
+        {
+            if (!mapOfDynamics.ContainsKey(obj.instanceID)) return;
+            mapOfDynamics[obj.instanceID].remove = true;
+            mapOfDynamics.Remove(obj.instanceID);
+        }
+
+        public static Action? OnTick;
+
+        private static byte[] buffer = new byte[sizeof(uint)];
         private void Tick() 
         {
             if (fs == null) return;
 
+            // Trigger pre-tick processes
+            OnTick?.Invoke();
+
+            // Tick header
+            int index = 0;
+            long _Now = Now;
+            BitHelper.WriteBytes((uint)_Now, buffer, ref index);
+            fs.Write(buffer, 0, sizeof(uint));
+
             // Serialize dynamic objects
+            index = 0;
+            BitHelper.WriteBytes((ushort)dynamic.Count, buffer, ref index);
+            fs.Write(buffer, 0, sizeof(ushort));
+            _dynamic.Clear();
             for (int i = 0; i < dynamic.Count; i++) 
             {
-                dynamic[i].Serialize(fs);
-            }
+                DynamicObject obj = dynamic[i];
 
-            // TODO(randomuserhi): Serialize events
+                obj.Serialize(fs);
+                if (!obj.remove) _dynamic.Add(obj);
+            }
+            List<DynamicObject> temp = dynamic;
+            dynamic = _dynamic;
+            _dynamic = temp;
+
+            // Serialize events
+            index = 0;
+            BitHelper.WriteBytes((ushort)events.Count, buffer, ref index);
+            fs.Write(buffer, 0, sizeof(ushort));
+            for (int i = 0; i < events.Count; ++i)
+            {
+                GameplayEvent e = events[i];
+
+                // Event header
+                index = 0;
+                BitHelper.WriteBytes((byte)e.type, buffer, ref index);
+                BitHelper.WriteBytes((ushort)(Prev - e.timestamp), buffer, ref index);
+                fs.Write(buffer, 0, 1 + sizeof(ushort));
+
+                if (e.detail != null) e.detail.Serialize(fs);
+            }
 
             // Flush file stream
             fs.Flush();
 
             // Flush event buffer
             events.Clear();
+
+            // set previous time
+            Prev = _Now;
         }
 
         public static void Init()
@@ -115,12 +224,18 @@ namespace ReplayRecorder
             obj = new GameObject();
             instance = obj.AddComponent<SnapshotManager>();
 
+            instance.start = Raudy.Now;
+            instance.Prev = instance.start;
+            active = true;
+
             if (fs == null)
                 APILogger.Error("Filestream was not started yet, this should not happen.");
         }
 
         public static void Dispose()
         {
+            active = false;
+
             if (fs == null) APILogger.Warn("Filestream was never started, this should not happen.");
             else fs.Dispose();
 
