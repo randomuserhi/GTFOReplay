@@ -17,7 +17,7 @@ namespace API
 
         static APILogger()
         {
-            logger = new ManualLogSource("RandB-API");
+            logger = new ManualLogSource("Rand-API");
             Logger.Sources.Add(logger);
         }
         private static string Format(string module, object msg) => $"[{module}]: {msg}";

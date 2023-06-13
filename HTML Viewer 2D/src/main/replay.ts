@@ -263,31 +263,37 @@ RHU.import(RHU.module({ trace: new Error(),
                                 }
                                 
                                 // DEBUG some stuff
-                                console.log(BitHelper.readUInt(bytes, reader)); // Tick timestamp
+                                let prevTimestamp = 0;
+                                let tick = 0;
+                                while(reader.index < bytes.byteLength)
+                                {
+                                    let timestamp = BitHelper.readUInt(bytes, reader);
+                                    console.log(`${reader.index} ${bytes.byteLength} ${tick++} Tick timestamp: ${timestamp}`); // Tick timestamp
 
-                                console.log(BitHelper.readUShort(bytes, reader)); // number of events
+                                    let nEvents = BitHelper.readUShort(bytes, reader);
+                                    console.log(`nEvents: ${nEvents}`); // number of events
 
-                                console.log(BitHelper.readByte(bytes, reader)); // type of events (player spawn event)
-                                console.log(BitHelper.readUShort(bytes, reader)); // relative time
-                                console.log(BitHelper.readULong(bytes, reader)); // player id
-                                console.log(BitHelper.readInt(bytes, reader)); // player instance id
+                                    for (let i = 0; i < nEvents; ++i)
+                                    {
+                                        console.log(BitHelper.readByte(bytes, reader)); // type of events (player spawn event)
+                                        console.log(BitHelper.readUShort(bytes, reader)); // relative time
+                                        console.log(`playerid: ${BitHelper.readULong(bytes, reader)}`); // player id
+                                        console.log(`instanceID: ${BitHelper.readInt(bytes, reader)}`); // player instance id
+                                    }
 
-                                console.log(BitHelper.readByte(bytes, reader)); // type of events (player spawn event)
-                                console.log(BitHelper.readUShort(bytes, reader)); // relative time
-                                console.log(BitHelper.readULong(bytes, reader)); // player id
-                                console.log(BitHelper.readInt(bytes, reader)); // player instance id
-
-                                console.log(BitHelper.readUShort(bytes, reader)); // number of dynamic objects
-
-                                console.log(BitHelper.readByte(bytes, reader)); // dynamic object 1 - absolute or relative (0, rel, 1, absolute)
-                                console.log(BitHelper.readInt(bytes, reader)); // dynamic object 1 - instance id
-                                console.log(BitHelper.readHalfVector(bytes, reader)); // position
-                                console.log(BitHelper.readHalfQuaternion(bytes, reader)); // rotation
-
-                                console.log(BitHelper.readByte(bytes, reader)); // dynamic object 2 - absolute or relative (0, rel, 1, absolute)
-                                console.log(BitHelper.readInt(bytes, reader)); // dynamic object 2 - instance id
-                                console.log(BitHelper.readVector(bytes, reader)); // position
-                                console.log(BitHelper.readHalfQuaternion(bytes, reader)); // rotation
+                                    let nDynamics = BitHelper.readUShort(bytes, reader);
+                                    console.log(`nDynamics: ${nDynamics}`); // number of dynamic objects
+                                    for (let i = 0; i < nDynamics; ++i)
+                                    {
+                                        let abs = BitHelper.readByte(bytes, reader);
+                                        let absolute = abs == 1;
+                                        console.log(`absolute: ${abs} ${absolute}`);
+                                        console.log(`instanceID: ${BitHelper.readInt(bytes, reader)}`);
+                                        if (absolute) console.log(BitHelper.readVector(bytes, reader));
+                                        else console.log(BitHelper.readHalfVector(bytes, reader));
+                                        console.log(BitHelper.readHalfQuaternion(bytes, reader));
+                                    }
+                                }
 
                                 /*let surfaces = JSON.parse(event.target.result);
                                 for (let surface of surfaces) 

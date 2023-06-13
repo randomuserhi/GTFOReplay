@@ -358,7 +358,7 @@ namespace ReplayRecorder.Map
             }
 
             // TODO(randomuserhi): replay name needs to have level + date => config for save location 
-            SnapshotManager.fs = new FileStream("./replay.gtfo", FileMode.OpenOrCreate, FileAccess.Write);
+            SnapshotManager.fs = new FileStream("./replay.gtfo", FileMode.Create, FileAccess.Write);
 
             // Write map info...
             byte[] buffer = new byte[100];

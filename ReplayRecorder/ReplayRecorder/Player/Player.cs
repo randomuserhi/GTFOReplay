@@ -9,12 +9,12 @@ namespace ReplayRecorder.Player
     {
         public class rPlayerAgent : ISerializable
         {
-            public SNet_Player player;
+            public SNet_Player owner;
             public int instanceID;
 
             public rPlayerAgent(PlayerAgent agent)
             {
-                player = agent.Owner;
+                owner = agent.Owner;
                 instanceID = agent.GetInstanceID();
             }
 
@@ -23,7 +23,7 @@ namespace ReplayRecorder.Player
             public void Serialize(FileStream fs)
             {
                 int index = 0;
-                BitHelper.WriteBytes(player.Lookup, buffer, ref index);
+                BitHelper.WriteBytes(owner.Lookup, buffer, ref index);
                 BitHelper.WriteBytes(instanceID, buffer, ref index);
                 fs.Write(buffer);
             }
@@ -34,50 +34,53 @@ namespace ReplayRecorder.Player
             players.Clear();
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel)
             {
-                players.Add(player);
+                rPlayerAgent rPlayer = new rPlayerAgent(player);
+                players.Add(rPlayer);
                 APILogger.Debug($"{player.Owner.NickName} has joined.");
 
-                rPlayerAgent rPlayer = new rPlayerAgent(player);
                 SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, rPlayer);
                 SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, player.gameObject));
             }
         }
 
         // TODO(randomuserhi): Better way of detecting player joining other than checking every tick
-        private static List<PlayerAgent> _players = new List<PlayerAgent>();
-        private static List<PlayerAgent> players = new List<PlayerAgent>();
+        private static List<PlayerAgent> buffer = new List<PlayerAgent>();
+        private static List<rPlayerAgent> _players = new List<rPlayerAgent>();
+        private static List<rPlayerAgent> players = new List<rPlayerAgent>();
         public static void OnTick()
         {
-            _players.Clear();
+            buffer.Clear();
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel)
             {
-                _players.Add(player);
+                buffer.Add(player);
             }
-            foreach (PlayerAgent player in players)
+            foreach (rPlayerAgent player in players)
             {
-                SNet_Player owner = player.Owner;
-                if (!_players.Any(p => p.Owner.Lookup == owner.Lookup))
+                SNet_Player owner = player.owner;
+                if (!buffer.Any(p => p.Owner.Lookup == owner.Lookup))
                 {
                     APILogger.Debug($"{owner.NickName} has left.");
 
-                    rPlayerAgent rPlayer = new rPlayerAgent(player);
-                    SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, rPlayer);
-                    SnapshotManager.RemoveDynamicObject(rPlayer.instanceID);
+                    SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, player);
+                    SnapshotManager.RemoveDynamicObject(player.instanceID);
                 }
             }
-            foreach (PlayerAgent player in _players)
+            _players.Clear();
+            foreach (PlayerAgent player in buffer)
             {
                 SNet_Player owner = player.Owner;
-                if (!players.Any(p => p.Owner.Lookup == owner.Lookup))
+                rPlayerAgent? rPlayer = players.Find(p => p.owner.Lookup == owner.Lookup);
+                if (rPlayer == null)
                 {
                     APILogger.Debug($"{owner.NickName} has joined.");
 
-                    rPlayerAgent rPlayer = new rPlayerAgent(player);
+                    rPlayer = new rPlayerAgent(player);
                     SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, rPlayer);
                     SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, player.gameObject));
                 }
+                _players.Add(rPlayer);
             }
-            List<PlayerAgent> temp = _players;
+            List<rPlayerAgent> temp = _players;
             _players = players;
             players = temp;
         }

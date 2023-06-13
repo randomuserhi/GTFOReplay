@@ -60,7 +60,7 @@ namespace ReplayRecorder
 
             public readonly GameObject gameObject;
             public readonly int instanceID;
-            private Vector3 oldPosition;
+            private Vector3 oldPosition = Vector3.zero;
 
             public const float threshold = 50;
 
@@ -74,7 +74,9 @@ namespace ReplayRecorder
                 this.gameObject = gameObject;
             }
 
-            public void Serialize(FileStream fs, bool force = false)
+            public bool Serializable => (remove == false && gameObject != null && gameObject.transform.position != oldPosition);
+
+            public void Serialize(FileStream fs)
             {
                 /// Format:
                 /// byte => absolute or relative position
@@ -82,21 +84,15 @@ namespace ReplayRecorder
                 /// Vector3(Half) => full precision / half precision based on absolute or relative position
                 /// Quaternion(Half) => rotation
 
-                // Don't serialize if object doesn't move
-                if (!force && gameObject.transform.position == oldPosition)
-                    return;
-
                 int index = 0;
 
                 // If object has moved too far, write absolute position
-                if (force || (gameObject.transform.position - oldPosition).sqrMagnitude > threshold * threshold)
+                if ((gameObject.transform.position - oldPosition).sqrMagnitude > threshold * threshold)
                 {
                     BitHelper.WriteBytes((byte)(1), buffer, ref index);
                     BitHelper.WriteBytes(instanceID, buffer, ref index);
                     BitHelper.WriteBytes(gameObject.transform.position, buffer, ref index);
                     BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
-
-                    oldPosition = gameObject.transform.position;
 
                     fs.Write(buffer, 0, SizeOf);
                 }
@@ -107,6 +103,8 @@ namespace ReplayRecorder
                     BitHelper.WriteBytes(instanceID, buffer, ref index);
                     BitHelper.WriteHalf(gameObject.transform.position - oldPosition, buffer, ref index);
                     BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
+
+                    oldPosition = gameObject.transform.position;
 
                     fs.Write(buffer, 0, SizeOfHalf);
                 }
@@ -183,12 +181,20 @@ namespace ReplayRecorder
         public static Action? OnTick;
 
         private static byte[] buffer = new byte[sizeof(uint)];
+        private static int tick = 0;
         private void Tick() 
         {
-            if (fs == null) return;
+            if (!active || fs == null) return;
 
             // Trigger pre-tick processes
             OnTick?.Invoke();
+
+            // Check if this tick needs to be done
+            // - are there any dynamics to serialize?
+            // - are there any events to serialize?
+            int nSerializable = (ushort)dynamic.Where(d => d.Serializable).Count();
+            if (nSerializable == 0 && events.Count == 0)
+                return;
 
             // Tick header
             int index = 0;
@@ -215,16 +221,22 @@ namespace ReplayRecorder
 
             // Serialize dynamic objects
             index = 0;
-            BitHelper.WriteBytes((ushort)dynamic.Count, buffer, ref index);
+            int serialized = 0;
+            BitHelper.WriteBytes(nSerializable, buffer, ref index);
             fs.Write(buffer, 0, sizeof(ushort));
             _dynamic.Clear();
             for (int i = 0; i < dynamic.Count; i++) 
             {
                 DynamicObject obj = dynamic[i];
 
-                obj.Serialize(fs);
+                if (obj.Serializable) 
+                {
+                    ++serialized;
+                    obj.Serialize(fs); 
+                }
                 if (!obj.remove) _dynamic.Add(obj);
             }
+            if (serialized != nSerializable) APILogger.Error($"Number of serialized and nSerializable don't match: {serialized} {nSerializable}");
             List<DynamicObject> temp = dynamic;
             dynamic = _dynamic;
             _dynamic = temp;
@@ -241,6 +253,12 @@ namespace ReplayRecorder
 
         public static void Init()
         {
+            if (instance != null)
+            {
+                APILogger.Error("Instance has already started, this should not happen");
+                return;
+            }
+
             obj = new GameObject();
             instance = obj.AddComponent<SnapshotManager>();
 
@@ -257,7 +275,11 @@ namespace ReplayRecorder
             active = false;
 
             if (fs == null) APILogger.Warn("Filestream was never started, this should not happen.");
-            else fs.Dispose();
+            else
+            {
+                fs.Dispose();
+                fs = null;
+            }
 
             if (obj == null) 
             {
