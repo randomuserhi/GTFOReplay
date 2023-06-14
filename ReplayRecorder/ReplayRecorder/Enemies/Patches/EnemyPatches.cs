@@ -14,15 +14,17 @@ namespace ReplayRecorder.Enemies.Patches
         {
             if (!SnapshotManager.active) return;
 
-            Enemy.Enemy.rEB_States rState = Enemy.Enemy.toRState(state);
-            if (Enemy.Enemy.toRState(__instance.m_currentStateName) != rState)
-            {
-                Enemy.Enemy.StateChange(__instance.m_ai.m_enemyAgent, rState);
-            }
             // TODO(randomuserhi): Check if this works on client side
             if (__instance.m_currentStateName != state && state == EB_States.Dead)
             {
                 Enemy.Enemy.DeadEnemy(__instance.m_ai.m_enemyAgent);
+                return;
+            }
+
+            Enemy.Enemy.rEB_States rState = Enemy.Enemy.toRState(state);
+            if (Enemy.Enemy.toRState(__instance.m_currentStateName) != rState)
+            {
+                Enemy.Enemy.StateChange(__instance.m_ai.m_enemyAgent, rState);
             }
         }
 
