@@ -22,15 +22,21 @@ namespace ReplayRecorder.Enemy
                 case EB_States.InCombat_MoveToNextNode_PathBlocked:
                 case EB_States.InCombat_MoveToNextNode_PathOpen:
                 case EB_States.InCombat_MoveToNextNode_DestroyDoor:
+                case EB_States.InCombat_ChargedAttack:
+                case EB_States.Incombat_GraphTraversal_Flyer:
+                case EB_States.Incombat_FlyOutOfBoss_Flyer:
+                case EB_States.InCombat_Dash:
+                case EB_States.InCombat_HeldPlayer:
+                case EB_States.InCombat_AfterHeldPlayer:
+                case EB_States.InCombat_Consume:
+                case EB_States.InCombat_SpitOut:
+                case EB_States.InCombat_Stagger:
                 case EB_States.SquidBoss_Hibernating:
                 case EB_States.SquidBoss_Intro:
                 case EB_States.SquidBoss_Combat:
                 case EB_States.SquidBoss_Raging:
                 case EB_States.SquidBoss_Spawning:
                 case EB_States.SquidBoss_Cooldown:
-                case EB_States.InCombat_ChargedAttack:
-                case EB_States.Incombat_GraphTraversal_Flyer:
-                case EB_States.Incombat_FlyOutOfBoss_Flyer:
                     return rEB_States.InCombat;
                 default:
                     return rEB_States.Hibernating;
