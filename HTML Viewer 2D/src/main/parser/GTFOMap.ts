@@ -27,7 +27,7 @@ interface GTFOMapConstructor
 
 (function() {
 
-    let meshToCanvas = (mesh: Mesh): GTFOSurface => {
+    let meshToCanvas = (mesh: Mesh, scale: number): GTFOSurface => {
         let vertex = mesh.vertices[mesh.indices[0]];
         let min: Vector = { x: vertex.x, y: -vertex.z, z: 0 };
         let max: Vector = { x: vertex.x, y: -vertex.z, z: 0 };
@@ -44,7 +44,6 @@ interface GTFOMapConstructor
             else if (-vertex.z > max.y)
                 max.y = -vertex.z;
         }
-        let scale = 30;
         let canvas = document.createElement("canvas");
         canvas.width = (max.x - min.x) * scale;
         canvas.height = (max.y - min.y) * scale;
@@ -81,7 +80,7 @@ interface GTFOMapConstructor
         this.surfaces = [];
         for (let i = 0; i < this.meshes.length; ++i)
         {
-            let img: GTFOSurface = meshToCanvas(meshes[i]);
+            let img: GTFOSurface = meshToCanvas(meshes[i], GTFOSpecification.scale);
             if (img.canvas.width != 0 && img.canvas.height != 0)
                 this.surfaces.push(img);
         }

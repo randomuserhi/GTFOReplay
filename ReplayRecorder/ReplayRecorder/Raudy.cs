@@ -1,8 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine;
-using static Il2CppSystem.Globalization.CultureInfo;
 
 namespace ReplayRecorder
 {
@@ -151,6 +149,14 @@ namespace ReplayRecorder
             WriteBytes((ushort)temp.Length, destination, ref index);
             Array.Copy(temp, 0, destination, index, temp.Length);
             index += temp.Length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(byte[] buffer, byte[] destination, ref int index)
+        {
+            WriteBytes((ushort)buffer.Length, destination, ref index);
+            Array.Copy(buffer, 0, destination, index, buffer.Length);
+            index += buffer.Length;
         }
 
         public const int SizeOfHalf = sizeof(ushort);

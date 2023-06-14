@@ -22,7 +22,7 @@ interface Mesh
 declare var GTFOReplay: GTFOReplayConstructor;
 interface Window
 {
-    currentReplay: GTFOReplay; // for debugging
+    current: GTFOReplay; // for debugging
     GTFOReplay: GTFOReplayConstructor;
 }
 
@@ -45,11 +45,16 @@ interface GTFOReplayConstructor
 (function() {
 
     let eventParseMap: Record<GTFOEventType, (bytes: DataView, reader: Reader) => GTFOEvent> = {
+        "unknown": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            throw new Error("Unknown event type");
+        },
         "playerJoin": function(bytes: DataView, reader: Reader): GTFOEvent
         {
             let e: GTFOEventPlayerJoin = {
                 player: BitHelper.readULong(bytes, reader), // player id
-                instance: BitHelper.readInt(bytes, reader) // player instance id
+                instance: BitHelper.readInt(bytes, reader), // player instance id
+                name: BitHelper.readString(bytes, reader)
             };
             return {
                 type: "playerJoin",
@@ -64,6 +69,48 @@ interface GTFOReplayConstructor
             };
             return {
                 type: "playerLeave",
+                detail: e
+            };
+        },
+        "enemySpawn": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventEnemySpawn = {
+                instance: BitHelper.readInt(bytes, reader), // enemy instance id
+                state: GTFOEnemyStateMap[BitHelper.readByte(bytes, reader)] // enemy state
+            };
+            return {
+                type: "enemySpawn",
+                detail: e
+            };
+        },
+        "enemyDespawn": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventEnemyDespawn = {
+                instance: BitHelper.readInt(bytes, reader) // enemy instance id
+            };
+            return {
+                type: "enemyDespawn",
+                detail: e
+            };
+        },
+        "enemyDead": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventEnemyDead = {
+                instance: BitHelper.readInt(bytes, reader) // enemy instance id
+            };
+            return {
+                type: "enemyDead",
+                detail: e
+            };
+        },
+        "enemyChangeState": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventEnemyChangeState = {
+                instance: BitHelper.readInt(bytes, reader), // enemy instance id
+                state: GTFOEnemyStateMap[BitHelper.readByte(bytes, reader)] // state
+            };
+            return {
+                type: "enemyChangeState",
                 detail: e
             };
         }
@@ -107,6 +154,8 @@ interface GTFOReplayConstructor
             }
             let startIdx = this.timeline.length;
 
+            let oldDynamics = new Map(parser.dynamics);
+
             // Number of events
             let nEvents = BitHelper.readUShort(bytes, reader);
             for (let i = 0; i < nEvents; ++i)
@@ -114,7 +163,7 @@ interface GTFOReplayConstructor
                 // type of event
                 let type = eventMap[BitHelper.readByte(bytes, reader)];
                 let rel = BitHelper.readUShort(bytes, reader); // relative time to last tick
-                let timestamp = prev + rel;
+                let timestamp = now - rel;
 
                 let e = eventParseMap[type](bytes, reader);
                 let t: GTFOTimeline = {
@@ -138,17 +187,22 @@ interface GTFOReplayConstructor
                 else position = BitHelper.readHalfVector(bytes, reader);
                 let rotation = BitHelper.readHalfQuaternion(bytes, reader);
 
+                // scale positions accordingly
+                position.x *= GTFOSpecification.scale;
+                position.y *= GTFOSpecification.scale;
+                position.z *= GTFOSpecification.scale;
+
                 // Update dynamic position
                 if (!parser.dynamics.has(instance))
                     throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
-                else
+                else if (oldDynamics.has(instance))
                 {
                     // If dynamic existed previously and delta exceeds 1.5 ticks, add intermediate to prevent sliding
                     if (delta > 1.5 * msBetweenTicks)
                     {
                         let dynamic = parser.dynamics.get(instance)!;
                         this.timeline.push({
-                            tick: tick,
+                            tick: tick - 1,
                             type: "dynamic",
                             time: now - msBetweenTicks,
                             detail: {
@@ -212,7 +266,7 @@ interface GTFOReplayConstructor
             }
             return a.time - b.time
         });
-        window.currentReplay = this;
+        window.current = this;
     } as Function as GTFOReplayConstructor;
     GTFOReplay.prototype.getNearestSnapshot = function(time: number): GTFOSnapshot
     {
@@ -254,6 +308,7 @@ interface GTFOReplayConstructor
             let t = this.timeline[i];
             snapshot.lerp(time, t);
         }
+        snapshot.time = time;
 
         return snapshot;
     };

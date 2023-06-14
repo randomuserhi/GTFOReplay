@@ -2,8 +2,10 @@ interface replay extends HTMLDivElement
 {
     resize(): void;
     onload(): void;
-    update(): void;
+    update(t: number): void;
 
+    prev: number;
+    time: number;
     replay: GTFOReplay;
 
     canvas: HTMLCanvasElement;
@@ -36,12 +38,22 @@ declare namespace RHU { namespace Macro {
     }
 }}
 
+interface Window
+{
+    replay: replay; // for debugging
+}
+
 RHU.import(RHU.module({ trace: new Error(),
     name: "Replay Display", hard: ["RHU.Macro"],
     callback: function () 
     {
         let { RHU } = window.RHU.require(window, this);
         let replay: replayConstructor = function (this: replay) {
+            window.replay = this;
+
+            this.time = 0;
+            this.prev = 0;
+
             this.ctx = this.canvas.getContext("2d")!;
 
             window.addEventListener("resize", () => { this.resize(); });
@@ -173,26 +185,123 @@ RHU.import(RHU.module({ trace: new Error(),
         replay.prototype.onload = function()
         {
             this.resize();
-            this.update();
+            this.time = 0;
+            this.prev = 0;
+            this.update(0);
         };
-        replay.prototype.update = function()
+        replay.prototype.update = function(t: number)
         {
+            let delta = t - this.prev;
+            this.prev = t;
+            this.time += delta;
+
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            
+
             this.ctx.save();
-            
+
             this.ctx.translate(-this.camera.x, -this.camera.y);
             this.ctx.scale(this.camera.scale, this.camera.scale);
-            
+
             // Draw Map => perhaps move to a seperate function
             let dimension = this.replay.dimensions.get(0)!;
             let map = dimension.map;
             for (let i = 0; i < map.surfaces.length; ++i)
                 this.ctx.drawImage(map.surfaces[i].canvas, map.surfaces[i].position.x, map.surfaces[i].position.y);
+
+            // Get snapshot and draw dynamics
+            let snapshot = this.replay.getSnapshot(this.time);
+            // Draw snapshot => perhaps move to a seperate function
+            for (let kv of snapshot.dynamics)
+            {
+                let instance = kv[0];
+                let dynamic = kv[1];
+
+                this.ctx.save();
+
+                // get euler angles
+                let q1: Quaternion = dynamic.rotation;
+                let euler: Vector = {x: 0, y: 0, z: 0};
+                let sqw = q1.w*q1.w;
+                let sqx = q1.x*q1.x;
+                let sqy = q1.y*q1.y;
+                let sqz = q1.z*q1.z;
+                let unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+                let test = q1.x*q1.y + q1.z*q1.w;
+                if (test > 0.499*unit) 
+                { // singularity at north pole
+                    euler.y = 2 * Math.atan2(q1.x,q1.w);
+                    euler.x = Math.PI/2;
+                    euler.z = 0;
+                }
+                else if (test < -0.499*unit) 
+                { // singularity at south pole
+                    euler.y = -2 * Math.atan2(q1.x,q1.w);
+                    euler.x = -Math.PI/2;
+                    euler.z = 0;
+                }
+                else
+                {
+                    euler.y = Math.atan2(2*q1.y*q1.w-2*q1.x*q1.z , sqx - sqy - sqz + sqw);
+                    euler.x = Math.asin(2*test/unit);
+                    euler.z = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw);
+                }
+
+                this.ctx.translate(dynamic.position.x, -dynamic.position.z);
+
+                this.ctx.rotate(euler.y);
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -25);
+                this.ctx.lineTo(-20, 12);
+                this.ctx.lineTo(20, 12);
+                this.ctx.closePath();
+                if (snapshot.players.has(instance))
+                {
+                    this.ctx.fillStyle = "#00ff00";
+                }
+                else if (snapshot.enemies.has(instance))
+                {
+                    let enemy = snapshot.enemies.get(instance)!;
+                    if (enemy.state == "InCombat") this.ctx.fillStyle = "#ff0000";
+                    else if (enemy.state == "Patrolling") this.ctx.fillStyle = "#0000ff";
+                    else this.ctx.fillStyle = "#aaaaaa";
+                }
+                this.ctx.fill();
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, 0);
+                this.ctx.lineTo(0, -25);
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = "#ffffff";
+                this.ctx.stroke();
+
+                this.ctx.restore();
+            }
+
+            /*{
+                this.ctx.save();
+
+                this.ctx.translate(28, -391);
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, 0);
+                this.ctx.lineTo(0, -25);
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = "#ff0000";
+                this.ctx.stroke();
+
+                this.ctx.restore();
+            }*/
            
             this.ctx.restore();
 
-            requestAnimationFrame(() => { this.update(); });
+            /*this.ctx.font = "20px Oxanium";
+            let text = `${(this.mouse.x + this.camera.x).toFixed(2)}, ${(-this.mouse.y - this.camera.y).toFixed(2)}`;
+            let metrics = this.ctx.measureText(text);
+            this.ctx.fillStyle = "#ff0000";
+            this.ctx.fillText(text, this.mouse.x - metrics.width / 2, this.mouse.y - 20);*/
+
+            requestAnimationFrame((t) => { this.update(t); });
         };
         RHU.Macro(replay, "replay", //html
             `

@@ -1,4 +1,6 @@
-﻿using API;
+﻿using Agents;
+using API;
+using Player;
 using UnityEngine;
 
 namespace ReplayRecorder
@@ -36,7 +38,11 @@ namespace ReplayRecorder
         public enum Type
         {
             AddPlayer,
-            RemovePlayer
+            RemovePlayer,
+            SpawnEnemy,
+            DespawnEnemy,
+            EnemyDead,
+            EnemyChangeState
         }
 
         public long timestamp;
@@ -54,13 +60,34 @@ namespace ReplayRecorder
     // Manages saving a snapshot and delta snapshot every tick
     public class SnapshotManager : MonoBehaviour
     {
+        public struct rObject : ITransform
+        {
+            private GameObject go;
+            public bool active => go != null;
+            public Vector3 position => go.transform.position;
+            public Quaternion rotation => go.transform.rotation;
+
+            public rObject(GameObject go)
+            {
+                this.go = go;
+            }
+        }
+
+        public interface ITransform
+        {
+            public bool active { get; }
+            public Vector3 position { get; }
+            public Quaternion rotation { get; }
+        }
+
         public class DynamicObject
         {
             public bool remove = false;
 
-            public readonly GameObject gameObject;
+            public readonly ITransform transform;
             public readonly int instanceID;
-            private Vector3 oldPosition = Vector3.zero;
+            public Vector3 oldPosition = Vector3.zero;
+            public Quaternion oldRotation = Quaternion.identity;
 
             public const float threshold = 50;
 
@@ -68,13 +95,16 @@ namespace ReplayRecorder
             public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
             private static byte[] buffer = new byte[SizeOf];
 
-            public DynamicObject(int instanceID, GameObject gameObject)
+            public DynamicObject(int instanceID, ITransform transform)
             {
                 this.instanceID = instanceID;
-                this.gameObject = gameObject;
+                this.transform = transform;
             }
 
-            public bool Serializable => (remove == false && gameObject != null && gameObject.transform.position != oldPosition);
+            public bool Serializable => 
+                remove == false && transform.active && 
+                (transform.position != oldPosition ||
+                transform.rotation != oldRotation);
 
             public void Serialize(FileStream fs)
             {
@@ -87,12 +117,12 @@ namespace ReplayRecorder
                 int index = 0;
 
                 // If object has moved too far, write absolute position
-                if ((gameObject.transform.position - oldPosition).sqrMagnitude > threshold * threshold)
+                if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold)
                 {
                     BitHelper.WriteBytes((byte)(1), buffer, ref index);
                     BitHelper.WriteBytes(instanceID, buffer, ref index);
-                    BitHelper.WriteBytes(gameObject.transform.position, buffer, ref index);
-                    BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
+                    BitHelper.WriteBytes(transform.position, buffer, ref index);
+                    BitHelper.WriteHalf(transform.rotation, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOf);
                 }
@@ -101,13 +131,14 @@ namespace ReplayRecorder
                 {
                     BitHelper.WriteBytes((byte)(0), buffer, ref index);
                     BitHelper.WriteBytes(instanceID, buffer, ref index);
-                    BitHelper.WriteHalf(gameObject.transform.position - oldPosition, buffer, ref index);
-                    BitHelper.WriteHalf(gameObject.transform.rotation, buffer, ref index);
-
-                    oldPosition = gameObject.transform.position;
+                    BitHelper.WriteHalf(transform.position - oldPosition, buffer, ref index);
+                    BitHelper.WriteHalf(transform.rotation, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOfHalf);
                 }
+
+                oldPosition = transform.position;
+                oldRotation = transform.rotation;
             }
         }
 
@@ -121,7 +152,6 @@ namespace ReplayRecorder
         private float timer = 0;
         private long start = 0;
         public long Now => Raudy.Now - start;
-        private long Prev = 0;
 
         // List of events to add on next tick
         private List<GameplayEvent> events = new List<GameplayEvent>(100);
@@ -181,13 +211,17 @@ namespace ReplayRecorder
         public static Action? OnTick;
 
         private static byte[] buffer = new byte[sizeof(uint)];
-        private static int tick = 0;
         private void Tick() 
         {
             if (!active || fs == null) return;
 
             // Trigger pre-tick processes
             OnTick?.Invoke();
+            
+            /*foreach (var d in dynamic)
+            {
+                APILogger.Debug($"{d.instanceID} : {d.transform.position != d.oldPosition} {d.transform.rotation != d.oldRotation}");
+            }*/
 
             // Check if this tick needs to be done
             // - are there any dynamics to serialize?
@@ -213,7 +247,7 @@ namespace ReplayRecorder
                 // Event header
                 index = 0;
                 BitHelper.WriteBytes((byte)e.type, buffer, ref index);
-                BitHelper.WriteBytes((ushort)(e.timestamp - Prev), buffer, ref index);
+                BitHelper.WriteBytes((ushort)(_Now - e.timestamp), buffer, ref index);
                 fs.Write(buffer, 0, 1 + sizeof(ushort));
 
                 if (e.detail != null) e.detail.Serialize(fs);
@@ -246,9 +280,6 @@ namespace ReplayRecorder
 
             // Flush event buffer
             events.Clear();
-
-            // set previous time
-            Prev = _Now;
         }
 
         public static void Init()
@@ -263,7 +294,6 @@ namespace ReplayRecorder
             instance = obj.AddComponent<SnapshotManager>();
 
             instance.start = Raudy.Now;
-            instance.Prev = 0;
             active = true;
 
             if (fs == null)

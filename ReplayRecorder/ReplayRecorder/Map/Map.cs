@@ -268,34 +268,6 @@ namespace ReplayRecorder.Map
 
             // Add surfaces to map data
             map.Add(dimension.DimensionIndex, new rMap(dimension.DimensionIndex, surfaces));
-
-            // Write meshes to disk => DEBUG
-            StringBuilder json = new StringBuilder();
-            json.Append($"[");
-            string seperator = string.Empty;
-            for (int i = 0; i < surfaces.Length; ++i)
-            {
-                Mesh mesh = surfaces[i].mesh;
-                json.Append($"{seperator}{{\"vertices\":[");
-                string _seperator = string.Empty;
-                for (int j = 0; j < mesh.vertices.Count; ++j)
-                {
-                    json.Append($"{_seperator}{mesh.vertices[j].x},{mesh.vertices[j].y},{mesh.vertices[j].z}");
-                    _seperator = ",";
-                }
-                json.Append("],\"indices\":[");
-                _seperator = string.Empty;
-                for (int j = 0; j < mesh.triangles.Count; ++j)
-                {
-                    json.Append($"{_seperator}{mesh.triangles[j]}");
-                    _seperator = ",";
-                }
-                json.Append("]}");
-                seperator = ",";
-            }
-            json.Append("]");
-
-            File.WriteAllText($"Map_{dimension.DimensionIndex}.json", json.ToString());
         }
 
         public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions)

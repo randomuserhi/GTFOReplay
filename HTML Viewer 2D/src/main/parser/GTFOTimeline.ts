@@ -24,26 +24,52 @@ interface GTFOEventMap
 
     "playerJoin": GTFOEventPlayerJoin;
     "playerLeave": GTFOEventPlayerLeave;
+    "enemySpawn": GTFOEventEnemySpawn;
+    "enemyDespawn": GTFOEventEnemyDespawn;
+    "enemyDead": GTFOEventEnemyDead;
+    "enemyChangeState": GTFOEventEnemyChangeState;
 }
+type GTFOEventType = keyof GTFOEventMap;
+let eventMap: GTFOEventType[] = [
+    "playerJoin",
+    "playerLeave",
+    "enemySpawn",
+    "enemyDespawn",
+    "enemyDead",
+    "enemyChangeState"
+];
 
-type GTFOEventType = "playerJoin" | "playerLeave";
 interface Window
 {
     eventMap: GTFOEventType[];
 }
-let eventMap: GTFOEventType[] = [
-    "playerJoin", 
-    "playerLeave"
-];
 
 interface GTFOEventPlayerJoin
 {
     player: bigint;
     instance: number;
+    name: string;
 }
-
 interface GTFOEventPlayerLeave
 {
     player: bigint;
     instance: number;
+}
+interface GTFOEventEnemySpawn
+{
+    instance: number;
+    state: GTFOEnemyState;
+}
+interface GTFOEventEnemyDespawn
+{
+    instance: number;
+}
+interface GTFOEventEnemyDead
+{
+    instance: number;
+}
+interface GTFOEventEnemyChangeState
+{
+    instance: number;
+    state: GTFOEnemyState;
 }

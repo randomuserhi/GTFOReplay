@@ -1,21 +1,44 @@
-﻿using API;
+﻿using System.Text;
+using API;
 using Player;
 using SNetwork;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace ReplayRecorder.Player
 {
     public static class Player
     {
-        public class rPlayerAgent : ISerializable
+        public struct PlayerJoin : ISerializable
         {
-            public SNet_Player owner;
-            public int instanceID;
+            rPlayerAgent player;
 
-            public rPlayerAgent(PlayerAgent agent)
+            public PlayerJoin(rPlayerAgent player)
             {
-                owner = agent.Owner;
-                instanceID = agent.GetInstanceID();
+                this.player = player;
+            }
+
+            private const int SizeOf = sizeof(ulong) + sizeof(int) + sizeof(ushort);
+            private byte[] buffer = new byte[SizeOf];
+            public void Serialize(FileStream fs)
+            {
+                byte[] temp = Encoding.UTF8.GetBytes(player.owner.NickName);
+                int size = SizeOf + temp.Length;
+                if (buffer.Length < size) buffer = new byte[size];
+
+                int index = 0;
+                BitHelper.WriteBytes(player.owner.Lookup, buffer, ref index);
+                BitHelper.WriteBytes(player.instanceID, buffer, ref index);
+                BitHelper.WriteBytes(temp, buffer, ref index);
+                fs.Write(buffer, 0, size);
+            }
+        }
+
+        public struct PlayerLeave : ISerializable
+        {
+            rPlayerAgent player;
+
+            public PlayerLeave(rPlayerAgent player)
+            {
+                this.player = player;
             }
 
             public const int SizeOf = sizeof(ulong) + sizeof(int);
@@ -23,14 +46,30 @@ namespace ReplayRecorder.Player
             public void Serialize(FileStream fs)
             {
                 int index = 0;
-                BitHelper.WriteBytes(owner.Lookup, buffer, ref index);
-                BitHelper.WriteBytes(instanceID, buffer, ref index);
+                BitHelper.WriteBytes(player.owner.Lookup, buffer, ref index);
+                BitHelper.WriteBytes(player.instanceID, buffer, ref index);
                 fs.Write(buffer);
+            }
+        }
+
+        public class rPlayerAgent
+        {
+            public PlayerAgent agent;
+            public SNet_Player owner;
+            public int instanceID;
+
+            public rPlayerAgent(PlayerAgent agent)
+            {
+                this.agent = agent;
+                owner = agent.Owner;
+                instanceID = agent.GetInstanceID();
             }
         }
 
         public static void Init()
         {
+            APILogger.Debug($"Initializing...");
+
             players.Clear();
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel)
             {
@@ -38,8 +77,45 @@ namespace ReplayRecorder.Player
                 players.Add(rPlayer);
                 APILogger.Debug($"{player.Owner.NickName} has joined.");
 
-                SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, rPlayer);
-                SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, player.gameObject));
+                SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
+                SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rObject(player.gameObject)));
+            }
+        }
+
+        // NOTE(randomuserhi): Players that join are spawned as 2 agents
+        //                     the first is as an agent in the elevator and the second is as
+        //                     an agent in the level. This is why the player joining algorithm is weird.
+
+        public static void SpawnPlayer(PlayerAgent agent)
+        {
+            rPlayerAgent? old = players.Find(p => p.owner.Lookup == agent.Owner.Lookup);
+            if (old != null)
+            {
+                // Replace old elevator agent with agent in level
+                APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} was replaced by spawned agent.");
+                SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(old));
+                SnapshotManager.RemoveDynamicObject(old.instanceID);
+
+                players.Remove(old);
+            }
+            else APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
+
+            rPlayerAgent player = new rPlayerAgent(agent);
+            SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(player));
+            SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(player.instanceID, new SnapshotManager.rObject(agent.gameObject)));
+            players.Add(player);
+        }
+        public static void DespawnPlayer(PlayerAgent agent)
+        {
+            rPlayerAgent? player = players.Find(p => p.owner.Lookup == agent.Owner.Lookup);
+            if (player != null)
+            {
+                APILogger.Debug($"{agent.Owner.NickName} has left.");
+
+                SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(player));
+                SnapshotManager.RemoveDynamicObject(player.instanceID);
+
+                players.Remove(player);
             }
         }
 
@@ -59,9 +135,9 @@ namespace ReplayRecorder.Player
                 SNet_Player owner = player.owner;
                 if (!buffer.Any(p => p.Owner.Lookup == owner.Lookup))
                 {
-                    APILogger.Debug($"{owner.NickName} has left.");
+                    APILogger.Debug($"(Tick) {owner.NickName} has left.");
 
-                    SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, player);
+                    SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(player));
                     SnapshotManager.RemoveDynamicObject(player.instanceID);
                 }
             }
@@ -72,11 +148,11 @@ namespace ReplayRecorder.Player
                 rPlayerAgent? rPlayer = players.Find(p => p.owner.Lookup == owner.Lookup);
                 if (rPlayer == null)
                 {
-                    APILogger.Debug($"{owner.NickName} has joined.");
+                    APILogger.Debug($"(Tick) {owner.NickName} has joined.");
 
                     rPlayer = new rPlayerAgent(player);
-                    SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, rPlayer);
-                    SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, player.gameObject));
+                    SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
+                    SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rObject(player.gameObject)));
                 }
                 _players.Add(rPlayer);
             }

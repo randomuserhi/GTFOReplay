@@ -1,27 +1,26 @@
 ﻿using API;
 using HarmonyLib;
 using Player;
-using SNetwork;
 
 namespace ReplayRecorder.Player.Patches
 {
+    [HarmonyPatch]
     class PlayerPatches
     {
-        [HarmonyPatch(typeof(GS_Base), nameof(GS_Base.OnPlayerEvent))]
+        [HarmonyPatch(typeof(PlayerSync), nameof(PlayerSync.OnSpawn))]
         [HarmonyPostfix]
-        private void OnPlayerEvent(SNet_Player player, SNet_PlayerEvent playerEvent, SNet_PlayerEventReason reason)
+        private static void OnSpawn(PlayerSync __instance)
         {
             if (!SnapshotManager.active) return;
+            Player.SpawnPlayer(__instance.m_agent);
+        }
 
-            switch (playerEvent)
-            {
-            case SNet_PlayerEvent.PlayerAgentDeSpawned:
-                APILogger.Debug($"{player.NickName} has left.");
-                break;
-            case SNet_PlayerEvent.PlayerAgentSpawned:
-                APILogger.Debug($"{player.NickName} has joined.");
-                break;
-            }
+        [HarmonyPatch(typeof(PlayerSync), nameof(PlayerSync.OnDespawn))]
+        [HarmonyPostfix]
+        private static void OnDespawn(PlayerSync __instance)
+        {
+            if (!SnapshotManager.active) return;
+            Player.DespawnPlayer(__instance.m_agent);
         }
     }
 }

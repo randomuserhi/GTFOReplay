@@ -12,6 +12,9 @@ interface BitHelper
 {
     readonly littleEndian: boolean;
     readByte(buffer: DataView, reader: Reader): number;
+
+    readString(buffer: DataView, reader: Reader): string;
+
     readULong(buffer: DataView, reader: Reader): bigint;
     readUInt(buffer: DataView, reader: Reader): number;
     readUShort(buffer: DataView, reader: Reader): number;
@@ -49,8 +52,13 @@ let BitHelper: BitHelper = {
     {
         return buffer.getUint8(reader.index++);
     },
+    readString: function(buffer: DataView, reader: Reader): string
+    {
+        let length = BitHelper.readUShort(buffer, reader);
+        return new TextDecoder().decode(buffer.buffer.slice(reader.index, reader.index += length));
+    },
     // TODO(randomuserhi): Need to check if these unsigned operations actually work as intended
-    readLong: function(buffer: DataView , reader: Reader): bigint
+    readLong: function(buffer: DataView, reader: Reader): bigint
     {
         let index = reader.index;
         reader.index += 8;
