@@ -2,8 +2,16 @@ interface GTFOTimeline<T = unknown>
 {
     type: "event" | "dynamic";
     time: number;
+    order: number;
     tick: number;
     detail: T;
+}
+
+interface GTFOTracer
+{
+    a: Vector;
+    b: Vector;
+    time: number;
 }
 
 interface GTFODynamic
@@ -28,6 +36,8 @@ interface GTFOEventMap
     "enemyDespawn": GTFOEventEnemyDespawn;
     "enemyDead": GTFOEventEnemyDead;
     "enemyChangeState": GTFOEventEnemyChangeState;
+    "enemyBulletDamage": GTFOEventEnemyBulletDamage;
+    "enemyMeleeDamage": GTFOEventEnemyMeleeDamage;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -36,7 +46,9 @@ let eventMap: GTFOEventType[] = [
     "enemySpawn",
     "enemyDespawn",
     "enemyDead",
-    "enemyChangeState"
+    "enemyChangeState",
+    "enemyBulletDamage",
+    "enemyMeleeDamage"
 ];
 
 interface Window
@@ -48,6 +60,7 @@ interface GTFOEventPlayerJoin
 {
     player: bigint;
     instance: number;
+    slot: number;
     name: string;
 }
 interface GTFOEventPlayerLeave
@@ -59,6 +72,7 @@ interface GTFOEventEnemySpawn
 {
     instance: number;
     state: GTFOEnemyState;
+    type: string;
 }
 interface GTFOEventEnemyDespawn
 {
@@ -72,4 +86,16 @@ interface GTFOEventEnemyChangeState
 {
     instance: number;
     state: GTFOEnemyState;
+}
+interface GTFOEventEnemyBulletDamage
+{
+    instance: number;
+    damage: number;
+    slot: number;
+}
+interface GTFOEventEnemyMeleeDamage
+{
+    instance: number;
+    damage: number;
+    slot: number;
 }

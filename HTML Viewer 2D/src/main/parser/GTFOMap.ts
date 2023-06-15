@@ -80,7 +80,7 @@ interface GTFOMapConstructor
         this.surfaces = [];
         for (let i = 0; i < this.meshes.length; ++i)
         {
-            let img: GTFOSurface = meshToCanvas(meshes[i], GTFOSpecification.scale);
+            let img: GTFOSurface = meshToCanvas(meshes[i], GTFOReplaySettings.scale);
             if (img.canvas.width != 0 && img.canvas.height != 0)
                 this.surfaces.push(img);
         }

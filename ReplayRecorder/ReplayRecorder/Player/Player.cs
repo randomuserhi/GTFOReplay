@@ -10,13 +10,15 @@ namespace ReplayRecorder.Player
         public struct PlayerJoin : ISerializable
         {
             rPlayerAgent player;
+            byte slot;
 
             public PlayerJoin(rPlayerAgent player)
             {
                 this.player = player;
+                slot = (byte)player.agent.PlayerSlotIndex;
             }
 
-            private const int SizeOf = sizeof(ulong) + sizeof(int) + sizeof(ushort);
+            private const int SizeOf = sizeof(ulong) + sizeof(int) + 1 + sizeof(ushort);
             private byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
@@ -27,6 +29,7 @@ namespace ReplayRecorder.Player
                 int index = 0;
                 BitHelper.WriteBytes(player.owner.Lookup, buffer, ref index);
                 BitHelper.WriteBytes(player.instanceID, buffer, ref index);
+                BitHelper.WriteBytes(slot, buffer, ref index);
                 BitHelper.WriteBytes(temp, buffer, ref index);
                 fs.Write(buffer, 0, size);
             }
@@ -123,7 +126,7 @@ namespace ReplayRecorder.Player
         private static List<PlayerAgent> buffer = new List<PlayerAgent>();
         private static List<rPlayerAgent> _players = new List<rPlayerAgent>();
         private static List<rPlayerAgent> players = new List<rPlayerAgent>();
-        public static void OnTick()
+        private static void CheckPlayersJoined()
         {
             buffer.Clear();
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel)
@@ -159,6 +162,12 @@ namespace ReplayRecorder.Player
             List<rPlayerAgent> temp = _players;
             _players = players;
             players = temp;
+        }
+        
+        public static void OnTick()
+        {
+            CheckPlayersJoined();
+            // TODO(randomuserhi): check what players have equipped
         }
     }
 }

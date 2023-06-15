@@ -2,10 +2,32 @@
 using Agents;
 using Enemies;
 
-namespace ReplayRecorder.Enemy
+namespace ReplayRecorder.Enemies
 {
+    public class rEnemyAgent : ISerializable
+    {
+        public EnemyAgent agent;
+        public int instanceID;
+
+        public rEnemyAgent(EnemyAgent agent)
+        {
+            this.agent = agent;
+            instanceID = agent.GetInstanceID();
+        }
+
+        public const int SizeOf = sizeof(int);
+        private byte[] buffer = new byte[SizeOf];
+        public void Serialize(FileStream fs)
+        {
+            int index = 0;
+            BitHelper.WriteBytes(instanceID, buffer, ref index);
+            fs.Write(buffer);
+        }
+    }
+
     public static class Enemy
     {
+        // TODO(randomuserhi): Move statemap to GTFOSpecification
         public static rEB_States toRState(EB_States state)
         {
             switch (state)
@@ -94,50 +116,32 @@ namespace ReplayRecorder.Enemy
             else APILogger.Error("Can't change state of enemy that was not tracked.");
         }
 
-        public class rEnemyAgent : ISerializable
-        {
-            public EnemyAgent agent;
-            public int instanceID;
-
-            public rEnemyAgent(EnemyAgent agent)
-            {
-                this.agent = agent;
-                instanceID = agent.GetInstanceID();
-            }
-
-            public const int SizeOf = sizeof(int);
-            private byte[] buffer = new byte[SizeOf];
-            public void Serialize(FileStream fs)
-            {
-                int index = 0;
-                BitHelper.WriteBytes(instanceID, buffer, ref index);
-                fs.Write(buffer);
-            }
-        }
-
         public struct SpawnEnemy : ISerializable
         {
             private rEnemyAgent enemy;
+            private byte type;
             private rEB_States state;
 
             public SpawnEnemy(rEnemyAgent enemy, AgentMode mode)
             {
                 this.enemy = enemy;
-                this.state = toRState(mode);
+                state = toRState(mode);
+                type = GTFOSpecification.GetEnemyType(enemy.agent.EnemyData.name);
             }
 
-            public const int SizeOf = sizeof(int) + 1;
+            public const int SizeOf = sizeof(int) + 2;
             private byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
                 int index = 0;
                 BitHelper.WriteBytes(enemy.instanceID, buffer, ref index);
                 BitHelper.WriteBytes((byte)state, buffer, ref index);
+                BitHelper.WriteBytes((byte)type, buffer, ref index);
                 fs.Write(buffer);
             }
         }
 
-        private static Dictionary<int, rEnemyAgent> enemies = new Dictionary<int, rEnemyAgent>();
+        public static Dictionary<int, rEnemyAgent> enemies = new Dictionary<int, rEnemyAgent>();
         public static void OnSpawnEnemy(EnemyAgent enemy, AgentMode mode)
         {
             rEnemyAgent rEnemy = new rEnemyAgent(enemy);

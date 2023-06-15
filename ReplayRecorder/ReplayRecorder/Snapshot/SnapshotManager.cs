@@ -42,7 +42,9 @@ namespace ReplayRecorder
             SpawnEnemy,
             DespawnEnemy,
             EnemyDead,
-            EnemyChangeState
+            EnemyChangeState,
+            EnemyBulletDamage,
+            EnemyMeleeDamage
         }
 
         public long timestamp;
@@ -148,7 +150,7 @@ namespace ReplayRecorder
         public static FileStream? fs = null;
         public static bool active = false;
 
-        private const float tickRate = 1 / 20;
+        private float tickRate = 1f / 5f;
         private float timer = 0;
         private long start = 0;
         public long Now => Raudy.Now - start;
@@ -161,11 +163,32 @@ namespace ReplayRecorder
         private List<DynamicObject> dynamic = new List<DynamicObject>(100);
         private Dictionary<int, DynamicObject> mapOfDynamics = new Dictionary<int, DynamicObject>();
 
-        private void FixedUpdate()
+        private void Update()
         {
+            float rate;
+            // Change tick rate based on state:
+            switch (DramaManager.CurrentStateEnum)
+            {
+                case DRAMA_State.Encounter:
+                case DRAMA_State.Survival:
+                case DRAMA_State.IntentionalCombat:
+                case DRAMA_State.Combat:
+                    rate = 1f / 15f;
+                    break;
+                default:
+                    rate = 1f / 5f;
+                    break;
+            }
+            if (tickRate != rate)
+            {
+                timer = 0;
+                tickRate = rate;
+            }
+
             timer += Time.deltaTime;
             if (timer > tickRate)
             {
+                timer = 0;
                 Tick();
             }
         }

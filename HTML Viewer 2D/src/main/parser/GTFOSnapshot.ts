@@ -6,6 +6,8 @@ interface Window
 
 interface GTFOSnapshot
 {
+    owner: GTFOReplay;
+
     index: number; // When in the timeline the snapshot was taken
     time: number; // Time of snapshot
     tick: number; // Tick snapshot is from
@@ -13,9 +15,11 @@ interface GTFOSnapshot
     // snapshot data
     snet: Map<bigint, GTFOPlayer>;
     players: Map<number, bigint>;
+    slots: (bigint | null | undefined)[];
     enemies: Map<number, GTFOEnemy>;
 
     dynamics: Map<number, GTFODynamic>;
+    tracers: GTFOTracer[];
 
     clone(snapshot: GTFOSnapshot): void;
     do(t: GTFOTimeline): void;
@@ -23,7 +27,7 @@ interface GTFOSnapshot
 }
 interface GTFOSnapshotConstructor
 {
-    new(tick?: number, index?: number, time?: number, parser?: GTFOSnapshot): GTFOSnapshot;
+    new(owner: GTFOReplay, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot): GTFOSnapshot;
     prototype: GTFOSnapshot;
     clone(snapshot: GTFOSnapshot): GTFOSnapshot;
 }
@@ -42,7 +46,7 @@ interface GTFOSnapshotConstructor
             if (time >= t.time)
             {
                 let ev = t.detail as GTFOEvent;
-                eventMap[ev.type](snapshot, ev);
+                eventMap[ev.type](snapshot, ev, t.time);
             }
         },
         "dynamic": function(snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number)
@@ -69,13 +73,20 @@ interface GTFOSnapshotConstructor
                 z: d.position.z + (dynamic.position.z - d.position.z) * l
             };
 
-            d.rotation = dynamic.rotation;
+            //d.rotation = dynamic.rotation;
 
             // slerp quaternion TODO(randomuserhi): Fix it jumps about when crossing the 0 degree to 359 degree angle
             // https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
-            /*let qa = d.rotation;
+            let qa = d.rotation;
             let qb = dynamic.rotation;
             let cosHalfTheta = qa.w * qb.w + qa.x * qb.x + qa.y * qb.y + qa.z * qb.z;
+            if (cosHalfTheta < 0) // flip the quarternion if they face opposite directions to prevent slerp going the long way
+            {
+                qa.x = -qa.x;
+                qa.y = -qa.y;
+                qa.z = -qa.z;
+                qa.w = -qa.w;
+            }
             if (Math.abs(cosHalfTheta) >= 1.0)
             {
                 d.rotation = qa;
@@ -100,11 +111,31 @@ interface GTFOSnapshotConstructor
                 x: (qa.x * ratioA + qb.x * ratioB),
                 y: (qa.y * ratioA + qb.y * ratioB),
                 z: (qa.z * ratioA + qb.z * ratioB)
-            };*/
+            };
         }
     };
 
-    let eventMap: Record<GTFOEventType, (snapshot: GTFOSnapshot, ev: GTFOEvent) => void> = {
+    const xor = (seed: number) => 
+    {
+        const baseSeeds = [123456789, 362436069, 521288629, 88675123]
+
+        let [x, y, z, w] = baseSeeds
+
+        const random = () => 
+        {
+            const t = x ^ (x << 11);
+            [x, y, z] = [y, z, w];
+            w = w ^ (w >> 19) ^ (t ^ (t >> 8));
+            return w / 0x7fffffff;
+        }
+
+        [x, y, z, w] = baseSeeds.map(i => i + seed);
+        [x, y, z, w] = [0, 0, 0, 0].map(() => Math.round(random() * 1e16));
+
+        return random
+    }
+
+    let eventMap: Record<GTFOEventType, (snapshot: GTFOSnapshot, ev: GTFOEvent, time: number) => void> = {
         "unknown": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
             throw new Error("Unkown event type");
@@ -112,8 +143,9 @@ interface GTFOSnapshotConstructor
         "playerJoin": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
             let e = ev.detail as GTFOEventPlayerJoin;
-            snapshot.snet.set(e.player, new GTFOPlayer(e.instance, e.name));
+            snapshot.snet.set(e.player, new GTFOPlayer(e.instance, e.name, e.slot));
             snapshot.players.set(e.instance, e.player);
+            snapshot.slots[e.slot] = e.player;
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 }
@@ -124,14 +156,16 @@ interface GTFOSnapshotConstructor
             // TODO(randomuserhi) : error checking for deleting a player that doesnt exist
             //                      or atleast a warning
             let e = ev.detail as GTFOEventPlayerLeave;
+            let p = snapshot.snet.get(e.player);
             snapshot.snet.delete(e.player);
             snapshot.players.delete(e.instance);
+            if (RHU.exists(p)) snapshot.slots[p.slot] = undefined;
             snapshot.dynamics.delete(e.instance);
         },
         "enemySpawn": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
             let e = ev.detail as GTFOEventEnemySpawn;
-            snapshot.enemies.set(e.instance, new GTFOEnemy(e.instance, e.state));
+            snapshot.enemies.set(e.instance, new GTFOEnemy(e.instance, e.type, e.state));
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 }
@@ -158,11 +192,54 @@ interface GTFOSnapshotConstructor
                 enemy.state = e.state;
             }
             else throw new ReferenceError("Enemy does not exist to change state of.");
+        },
+        "enemyBulletDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let replay = snapshot.owner;
+            let e = ev.detail as GTFOEventEnemyBulletDamage;
+            let enemy = snapshot.enemies.get(e.instance);
+            let eDynamic = snapshot.dynamics.get(e.instance);
+            if (RHU.exists(enemy) && RHU.exists(eDynamic))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                // TODO(randomuserhi): Improve performance of this...
+                let r = xor(time + e.damage ^ 0x190104029);
+                r(); r(); r();
+                let dx = -15 + r() * 30;
+                let dz = -15 + r() * 30;
+                snapshot.tracers.push({
+                    a: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
+                    b: { x: eDynamic.position.x + dx, y: eDynamic.position.y, z: eDynamic.position.z + dz },
+                    time: time
+                });
+            }
+            else throw new ReferenceError("Enemy does not exist to do bullet damage.");
+        },
+        "enemyMeleeDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let replay = snapshot.owner;
+            let e = ev.detail as GTFOEventEnemyBulletDamage;
+            let enemy = snapshot.enemies.get(e.instance);
+            let eDynamic = snapshot.dynamics.get(e.instance);
+            if (RHU.exists(enemy) && RHU.exists(eDynamic))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                snapshot.tracers.push({
+                    a: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
+                    b: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
+                    time: time
+                });
+            }
+            else throw new ReferenceError("Enemy does not exist to do melee damage.");
         }
     };
 
-    let GTFOSnapshot: GTFOSnapshotConstructor = window.GTFOSnapshot = function(this: GTFOSnapshot, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot)
+    let GTFOSnapshot: GTFOSnapshotConstructor = window.GTFOSnapshot = function(this: GTFOSnapshot, owner: GTFOReplay, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot)
     {
+        this.owner = owner;
+
         if (RHU.exists(parser)) 
         {
             this.clone(parser);
@@ -173,6 +250,8 @@ interface GTFOSnapshotConstructor
             this.snet = new Map();
             this.players = new Map();
             this.dynamics = new Map();
+            this.slots = new Array(4);
+            this.tracers = [];
         }
 
         if (RHU.exists(tick)) this.tick = tick;
@@ -184,6 +263,10 @@ interface GTFOSnapshotConstructor
     } as Function as GTFOSnapshotConstructor;
     GTFOSnapshot.prototype.do = function(t: GTFOTimeline): void
     {
+        // Cleanup continuous things like tracers
+        this.tracers = this.tracers.filter(tr => (t.time - tr.time) < GTFOReplaySettings.tracerLingerTime);
+
+        // Perform timeline event
         timelineMap[t.type](this, t);
         this.tick = t.tick;
         this.time = t.time;
@@ -197,15 +280,21 @@ interface GTFOSnapshotConstructor
     };
     GTFOSnapshot.prototype.clone = function(snapshot: GTFOSnapshot)
     {
+        this.owner = snapshot.owner;
         this.tick = snapshot.tick;
         this.index = snapshot.index;
         this.time = snapshot.time;
         
+        this.tracers = [...snapshot.tracers];
+
         this.enemies = new Map();
         for (let kv of snapshot.enemies) this.enemies.set(kv[0], GTFOEnemy.clone(kv[1]));
-
+        
         this.snet = new Map();
         for (let kv of snapshot.snet) this.snet.set(kv[0], GTFOPlayer.clone(kv[1]));
+        
+        this.slots = new Array(4);
+        for (let i = 0; i < 4; ++i) this.slots[i] = snapshot.slots[i];
 
         this.players = new Map();
         for (let kv of snapshot.players) this.players.set(kv[0], kv[1]);
@@ -218,7 +307,7 @@ interface GTFOSnapshotConstructor
     }
     GTFOSnapshot.clone = function(snapshot: GTFOSnapshot): GTFOSnapshot
     {
-        let clone = new GTFOSnapshot();
+        let clone = new GTFOSnapshot(snapshot.owner);
         clone.clone(snapshot);
         return clone;
     };

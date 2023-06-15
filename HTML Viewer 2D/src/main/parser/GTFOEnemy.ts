@@ -4,6 +4,7 @@ interface Window
     GTFOEnemy: GTFOEnemyConstructor;
 }
 
+// TODO(randomuserhi): Move state map to GTFOSpecification
 type GTFOEnemyState = 
     "Hibernating" |
     "Patrolling" |
@@ -17,20 +18,22 @@ let GTFOEnemyStateMap: GTFOEnemyState[] = [
 interface GTFOEnemy
 {
     instance: number;
+    type: string;
     state: GTFOEnemyState;
 }
 interface GTFOEnemyConstructor
 {
-    new(instance: number, state: GTFOEnemyState): GTFOEnemy;
+    new(instance: number, type: string, state: GTFOEnemyState): GTFOEnemy;
     prototype: GTFOEnemy;
     clone(enemy: GTFOEnemy): GTFOEnemy;
 }
 
 (function() {
 
-    let GTFOEnemy: GTFOEnemyConstructor = window.GTFOEnemy = function(this: GTFOEnemy, instance: number, state: GTFOEnemyState)
+    let GTFOEnemy: GTFOEnemyConstructor = window.GTFOEnemy = function(this: GTFOEnemy, instance: number, type: string, state: GTFOEnemyState)
     {
         this.instance = instance;
+        this.type = type;
         this.state = state;
     } as Function as GTFOEnemyConstructor;
     GTFOEnemy.clone = function(enemy: GTFOEnemy): GTFOEnemy

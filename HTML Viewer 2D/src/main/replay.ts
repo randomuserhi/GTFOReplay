@@ -210,7 +210,32 @@ RHU.import(RHU.module({ trace: new Error(),
 
             // Get snapshot and draw dynamics
             let snapshot = this.replay.getSnapshot(this.time);
+            
             // Draw snapshot => perhaps move to a seperate function
+
+            // Draw tracers
+            for (let tracer of snapshot.tracers)
+            {
+                if (tracer.time > snapshot.time)
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                let alpha = (snapshot.time - tracer.time) / GTFOReplaySettings.tracerLingerTime;
+                if (alpha < 0) continue;
+                else if (alpha > 1) alpha = 1;
+                alpha = 1 - alpha;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(tracer.a.x, -tracer.a.z);
+                this.ctx.lineTo(tracer.b.x, -tracer.b.z);
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeStyle = `rgba(233, 181, 41, ${alpha})`
+                this.ctx.stroke();
+            }
+
+            // Draw dynamics
             for (let kv of snapshot.dynamics)
             {
                 let instance = kv[0];
@@ -257,7 +282,14 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.closePath();
                 if (snapshot.players.has(instance))
                 {
-                    this.ctx.fillStyle = "#00ff00";
+                    let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
+                    let colors: string[] = [
+                        "#C21F4E",
+                        "#18935E",
+                        "#20558C",
+                        "#7A1A8E"
+                    ];
+                    this.ctx.fillStyle = colors[p.slot];
                 }
                 else if (snapshot.enemies.has(instance))
                 {

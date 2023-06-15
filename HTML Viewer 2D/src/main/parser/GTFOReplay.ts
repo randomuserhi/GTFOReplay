@@ -54,6 +54,7 @@ interface GTFOReplayConstructor
             let e: GTFOEventPlayerJoin = {
                 player: BitHelper.readULong(bytes, reader), // player id
                 instance: BitHelper.readInt(bytes, reader), // player instance id
+                slot: BitHelper.readByte(bytes, reader), // player slot
                 name: BitHelper.readString(bytes, reader)
             };
             return {
@@ -76,7 +77,8 @@ interface GTFOReplayConstructor
         {
             let e: GTFOEventEnemySpawn = {
                 instance: BitHelper.readInt(bytes, reader), // enemy instance id
-                state: GTFOEnemyStateMap[BitHelper.readByte(bytes, reader)] // enemy state
+                state: GTFOEnemyStateMap[BitHelper.readByte(bytes, reader)], // enemy state
+                type: GTFOSpecification.enemies[BitHelper.readByte(bytes, reader)] // enemy type
             };
             return {
                 type: "enemySpawn",
@@ -113,7 +115,31 @@ interface GTFOReplayConstructor
                 type: "enemyChangeState",
                 detail: e
             };
-        }
+        },
+        "enemyBulletDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventEnemyBulletDamage = {
+                instance: BitHelper.readInt(bytes, reader), // enemy instance id
+                damage: BitHelper.readHalf(bytes, reader), // damage
+                slot: BitHelper.readByte(bytes, reader) // player slot
+            };
+            return {
+                type: "enemyBulletDamage",
+                detail: e
+            };
+        },
+        "enemyMeleeDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventEnemyMeleeDamage = {
+                instance: BitHelper.readInt(bytes, reader), // enemy instance id
+                damage: BitHelper.readHalf(bytes, reader), // damage
+                slot: BitHelper.readByte(bytes, reader) // player slot
+            };
+            return {
+                type: "enemyMeleeDamage",
+                detail: e
+            };
+        },
     }
 
     let GTFOReplay: GTFOReplayConstructor = window.GTFOReplay = function(this: GTFOReplay, binary: ArrayBuffer)
@@ -134,27 +160,21 @@ interface GTFOReplayConstructor
         // Parse timeline data
         this.timeline = [];
         this.ticks = new Map();
-        const tickRate = 20;
-        const msBetweenTicks = 1000 / tickRate;
         const snapshotRate = 50;
         let tick = 0;
-        let prev = 0;
-        let parser: GTFOSnapshot = new GTFOSnapshot();
+        let parser: GTFOSnapshot = new GTFOSnapshot(this);
         this.snapshots = [GTFOSnapshot.clone(parser)];
         while(reader.index < bytes.byteLength)
         {
             // Tick timestamp
             let now = BitHelper.readUInt(bytes, reader);
-            let delta = now - prev;
 
             // Create snapshot checkpoint
-            if (tick++ % 50 == 0)
+            if (tick++ % snapshotRate == 0)
             {
-                this.snapshots.push(new GTFOSnapshot(tick, this.timeline.length, now, parser));
+                this.snapshots.push(new GTFOSnapshot(this, tick, this.timeline.length, now, parser));
             }
             let startIdx = this.timeline.length;
-
-            let oldDynamics = new Map(parser.dynamics);
 
             // Number of events
             let nEvents = BitHelper.readUShort(bytes, reader);
@@ -170,6 +190,7 @@ interface GTFOReplayConstructor
                     tick: tick,
                     type: "event",
                     time: timestamp,
+                    order: i,
                     detail: e
                 };
                 parser.do(t);
@@ -188,40 +209,14 @@ interface GTFOReplayConstructor
                 let rotation = BitHelper.readHalfQuaternion(bytes, reader);
 
                 // scale positions accordingly
-                position.x *= GTFOSpecification.scale;
-                position.y *= GTFOSpecification.scale;
-                position.z *= GTFOSpecification.scale;
+                position.x *= GTFOReplaySettings.scale;
+                position.y *= GTFOReplaySettings.scale;
+                position.z *= GTFOReplaySettings.scale;
 
                 // Update dynamic position
                 if (!parser.dynamics.has(instance))
                     throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
-                else if (oldDynamics.has(instance))
-                {
-                    // If dynamic existed previously and delta exceeds 1.5 ticks, add intermediate to prevent sliding
-                    if (delta > 1.5 * msBetweenTicks)
-                    {
-                        let dynamic = parser.dynamics.get(instance)!;
-                        this.timeline.push({
-                            tick: tick - 1,
-                            type: "dynamic",
-                            time: now - msBetweenTicks,
-                            detail: {
-                                instance: instance,
-                                position: {
-                                    x: dynamic.position.x,
-                                    y: dynamic.position.y,
-                                    z: dynamic.position.z
-                                },
-                                rotation: {
-                                    x: dynamic.rotation.x,
-                                    y: dynamic.rotation.y,
-                                    z: dynamic.rotation.z,
-                                    w: dynamic.rotation.w
-                                }
-                            }
-                        });
-                    } 
-                }
+
                 let dynamic = parser.dynamics.get(instance)!;
                 if (absolute) dynamic.position = position;
                 else
@@ -237,6 +232,7 @@ interface GTFOReplayConstructor
                     tick: tick,
                     type: "dynamic",
                     time: now,
+                    order: i,
                     detail: {
                         instance: instance,
                         position: {
@@ -255,14 +251,20 @@ interface GTFOReplayConstructor
             }
 
             this.ticks.set(tick, [startIdx, this.timeline.length]);
-            prev = now;
         }
         this.timeline.sort((a, b) => {
-            // Give precedence to events
-            if (a.time == b.time && a.type != b.type)
+            if (a.time == b.time)
             {
-                if (a.type == "event") return -1;
-                else return 1;
+                // If time is the same, sort by tick
+                if (a.tick != b.tick) return a.tick - b.tick;
+                // If type is the same, give precedence to order
+                else if (a.type == b.type) return a.order - b.order;
+                // otherwise give precedence to event
+                else
+                {
+                    if (a.type == "event") return -1;
+                    else return 1;
+                }
             }
             return a.time - b.time
         });
