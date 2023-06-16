@@ -31,9 +31,9 @@ public class Plugin : BasePlugin
         // Register snapshot behaviour
         ClassInjector.RegisterTypeInIl2Cpp<SnapshotManager>();
 
-        // Setup events
-        SnapshotManager.OnTick += Player.Player.OnTick;
-        RundownManager.add_OnExpeditionGameplayStarted((Action)GameEventManager.OnGameplayStart);
+        // Setup
+        SnapshotManager.Setup();
+        //RundownManager.add_OnExpeditionGameplayStarted((Action)GameEventManager.OnGameplayStart);
     }
 
     private static Harmony? harmony;

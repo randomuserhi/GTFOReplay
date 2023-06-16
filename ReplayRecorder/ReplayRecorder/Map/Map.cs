@@ -325,13 +325,19 @@ namespace ReplayRecorder.Map
         {
             if (SnapshotManager.fs != null)
             {
-                SnapshotManager.fs.Dispose();
+                SnapshotManager.Dispose();
                 APILogger.Error("Filestream was still open, this should not happen.");
             }
 
-            // TODO(randomuserhi): replay name needs to have level + date => config for save location 
-            SnapshotManager.fs = new FileStream("./replay.gtfo", FileMode.Create, FileAccess.Write);
+            // Start snapshot manager
+            SnapshotManager.Init();
 
+            if (SnapshotManager.fs == null)
+            {
+                APILogger.Error("Filestream was not started yet, this should not happen.");
+                return;
+            }
+            
             // Write map info...
             byte[] buffer = new byte[100];
             SnapshotManager.fs.WriteByte((byte)map.Count); // Write number of dimensions

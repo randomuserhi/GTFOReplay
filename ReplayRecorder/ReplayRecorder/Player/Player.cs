@@ -5,6 +5,35 @@ using SNetwork;
 
 namespace ReplayRecorder.Player
 {
+    public struct rPlayer : ISerializable
+    {
+        private byte slot;
+
+        public rPlayer(PlayerAgent agent)
+        {
+            slot = (byte)agent.PlayerSlotIndex;
+        }
+
+        public void Serialize(FileStream fs)
+        {
+            fs.WriteByte(slot);
+        }
+    }
+
+    public class rPlayerAgent
+    {
+        public PlayerAgent agent;
+        public SNet_Player owner;
+        public int instanceID;
+
+        public rPlayerAgent(PlayerAgent agent)
+        {
+            this.agent = agent;
+            owner = agent.Owner;
+            instanceID = agent.GetInstanceID();
+        }
+    }
+
     public static class Player
     {
         public struct PlayerJoin : ISerializable
@@ -55,29 +84,46 @@ namespace ReplayRecorder.Player
             }
         }
 
-        public class rPlayerAgent
+        public struct rPlayerRevive : ISerializable
         {
-            public PlayerAgent agent;
-            public SNet_Player owner;
-            public int instanceID;
+            private byte player;
+            private byte source;
 
-            public rPlayerAgent(PlayerAgent agent)
+            public rPlayerRevive(PlayerAgent player, PlayerAgent source)
             {
-                this.agent = agent;
-                owner = agent.Owner;
-                instanceID = agent.GetInstanceID();
+                this.player = (byte)player.PlayerSlotIndex;
+                this.source = (byte)source.PlayerSlotIndex;
             }
+
+            public void Serialize(FileStream fs)
+            {
+                fs.WriteByte(player);
+                fs.WriteByte(source);
+            }
+        }
+
+        public static void OnPlayerDead(PlayerAgent player)
+        {
+            APILogger.Debug($"{player.Owner.NickName} has died.");
+            SnapshotManager.AddEvent(GameplayEvent.Type.PlayerDead, new rPlayer(player));
+        }
+
+        public static void OnPlayerRevive(PlayerAgent player, PlayerAgent source)
+        {
+            APILogger.Debug($"{player.Owner.NickName} was revived by {source.Owner.NickName}.");
+            SnapshotManager.AddEvent(GameplayEvent.Type.PlayerRevive, new rPlayerRevive(player, source));
         }
 
         public static void Init()
         {
             APILogger.Debug($"Initializing...");
 
-            players.Clear();
+            playerList.Clear();
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel)
             {
                 rPlayerAgent rPlayer = new rPlayerAgent(player);
-                players.Add(rPlayer);
+                playerList.Add(rPlayer);
+                players.Add(rPlayer.instanceID, rPlayer);
                 APILogger.Debug($"{player.Owner.NickName} has joined.");
 
                 SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
@@ -91,7 +137,7 @@ namespace ReplayRecorder.Player
 
         public static void SpawnPlayer(PlayerAgent agent)
         {
-            rPlayerAgent? old = players.Find(p => p.owner.Lookup == agent.Owner.Lookup);
+            rPlayerAgent? old = playerList.Find(p => p.owner.Lookup == agent.Owner.Lookup);
             if (old != null)
             {
                 // Replace old elevator agent with agent in level
@@ -99,33 +145,38 @@ namespace ReplayRecorder.Player
                 SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(old));
                 SnapshotManager.RemoveDynamicObject(old.instanceID);
 
-                players.Remove(old);
+                playerList.Remove(old);
+                players.Remove(old.instanceID);
             }
             else APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
 
             rPlayerAgent player = new rPlayerAgent(agent);
             SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(player));
             SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(player.instanceID, new SnapshotManager.rObject(agent.gameObject)));
-            players.Add(player);
+            
+            playerList.Add(player);
+            players.Add(player.instanceID, player);
         }
         public static void DespawnPlayer(PlayerAgent agent)
         {
-            rPlayerAgent? player = players.Find(p => p.owner.Lookup == agent.Owner.Lookup);
+            rPlayerAgent? player = playerList.Find(p => p.owner.Lookup == agent.Owner.Lookup);
             if (player != null)
             {
                 APILogger.Debug($"{agent.Owner.NickName} has left.");
 
                 SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(player));
                 SnapshotManager.RemoveDynamicObject(player.instanceID);
+                players.Remove(player.instanceID);
 
-                players.Remove(player);
+                playerList.Remove(player);
             }
         }
 
         // TODO(randomuserhi): Better way of detecting player joining other than checking every tick
         private static List<PlayerAgent> buffer = new List<PlayerAgent>();
         private static List<rPlayerAgent> _players = new List<rPlayerAgent>();
-        private static List<rPlayerAgent> players = new List<rPlayerAgent>();
+        private static List<rPlayerAgent> playerList = new List<rPlayerAgent>();
+        public static Dictionary<int, rPlayerAgent> players = new Dictionary<int, rPlayerAgent>();
         private static void CheckPlayersJoined()
         {
             buffer.Clear();
@@ -133,7 +184,7 @@ namespace ReplayRecorder.Player
             {
                 buffer.Add(player);
             }
-            foreach (rPlayerAgent player in players)
+            foreach (rPlayerAgent player in playerList)
             {
                 SNet_Player owner = player.owner;
                 if (!buffer.Any(p => p.Owner.Lookup == owner.Lookup))
@@ -142,13 +193,14 @@ namespace ReplayRecorder.Player
 
                     SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(player));
                     SnapshotManager.RemoveDynamicObject(player.instanceID);
+                    players.Remove(player.instanceID);
                 }
             }
             _players.Clear();
             foreach (PlayerAgent player in buffer)
             {
                 SNet_Player owner = player.Owner;
-                rPlayerAgent? rPlayer = players.Find(p => p.owner.Lookup == owner.Lookup);
+                rPlayerAgent? rPlayer = playerList.Find(p => p.owner.Lookup == owner.Lookup);
                 if (rPlayer == null)
                 {
                     APILogger.Debug($"(Tick) {owner.NickName} has joined.");
@@ -156,18 +208,19 @@ namespace ReplayRecorder.Player
                     rPlayer = new rPlayerAgent(player);
                     SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
                     SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rObject(player.gameObject)));
+                    players.Add(rPlayer.instanceID, rPlayer);
                 }
                 _players.Add(rPlayer);
             }
             List<rPlayerAgent> temp = _players;
-            _players = players;
-            players = temp;
+            _players = playerList;
+            playerList = temp;
         }
         
         public static void OnTick()
         {
             CheckPlayersJoined();
-            // TODO(randomuserhi): check what players have equipped
+            // TODO(randomuserhi): check what players have equipped => different script honestly
         }
     }
 }

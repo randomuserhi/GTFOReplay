@@ -39,12 +39,29 @@ namespace ReplayRecorder
         {
             AddPlayer,
             RemovePlayer,
+
             SpawnEnemy,
             DespawnEnemy,
+
             EnemyDead,
             EnemyChangeState,
+
             EnemyBulletDamage,
-            EnemyMeleeDamage
+            EnemyMeleeDamage,
+            EnemyMineDamage, // TODO(randomuserhi)
+
+            PlayerDead,
+            PlayerRevive,
+
+            PlayerTongueDamage,
+            PlayerMeleeDamage,
+            PlayerPelletDamage,
+            PlayerBulletDamage,
+            PlayerMineDamage, // TODO(randomuserhi)
+            PlayerFallDamage,
+
+            PlayerPelletDodge,
+            PlayerTongueDodge
         }
 
         public long timestamp;
@@ -165,6 +182,8 @@ namespace ReplayRecorder
 
         private void Update()
         {
+            if (!active) return;
+
             float rate;
             // Change tick rate based on state:
             switch (DramaManager.CurrentStateEnum)
@@ -173,7 +192,7 @@ namespace ReplayRecorder
                 case DRAMA_State.Survival:
                 case DRAMA_State.IntentionalCombat:
                 case DRAMA_State.Combat:
-                    rate = 1f / 15f;
+                    rate = 1f / 20f;
                     break;
                 default:
                     rate = 1f / 5f;
@@ -305,6 +324,13 @@ namespace ReplayRecorder
             events.Clear();
         }
 
+        // Called once on plugin load
+        public static void Setup()
+        {
+            OnTick += Player.Player.OnTick;
+        }
+
+        // Called after map has loaded
         public static void Init()
         {
             if (instance != null)
@@ -313,14 +339,17 @@ namespace ReplayRecorder
                 return;
             }
 
+            active = true;
+
             obj = new GameObject();
             instance = obj.AddComponent<SnapshotManager>();
 
             instance.start = Raudy.Now;
-            active = true;
 
-            if (fs == null)
-                APILogger.Error("Filestream was not started yet, this should not happen.");
+            fs = new FileStream("./replay.gtfo", FileMode.Create, FileAccess.Write);
+
+            // Initialize other components
+            Player.Player.Init();
         }
 
         public static void Dispose()
@@ -333,6 +362,9 @@ namespace ReplayRecorder
                 fs.Dispose();
                 fs = null;
             }
+
+            // Send report => TODO(randomuserhi): rewrite
+            Network.SendReplay(File.ReadAllBytes("replay.gtfo"));
 
             if (obj == null) 
             {

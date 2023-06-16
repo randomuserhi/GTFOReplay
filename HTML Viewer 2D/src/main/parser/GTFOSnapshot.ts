@@ -143,7 +143,15 @@ interface GTFOSnapshotConstructor
         "playerJoin": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
             let e = ev.detail as GTFOEventPlayerJoin;
-            snapshot.snet.set(e.player, new GTFOPlayer(e.instance, e.name, e.slot));
+            if (snapshot.snet.has(e.player))
+            {
+                // player rejoined, simply update credentials
+                let player = snapshot.snet.get(e.player)!;
+                player.name = e.name;
+                player.slot = e.slot;
+                player.instance = e.instance;
+            }
+            else snapshot.snet.set(e.player, new GTFOPlayer(e.instance, e.name, e.slot));
             snapshot.players.set(e.instance, e.player);
             snapshot.slots[e.slot] = e.player;
             snapshot.dynamics.set(e.instance, {
@@ -157,7 +165,7 @@ interface GTFOSnapshotConstructor
             //                      or atleast a warning
             let e = ev.detail as GTFOEventPlayerLeave;
             let p = snapshot.snet.get(e.player);
-            snapshot.snet.delete(e.player);
+            //snapshot.snet.delete(e.player); // NOTE(randomuserhi): We don't remove the player data in case they rejoin
             snapshot.players.delete(e.instance);
             if (RHU.exists(p)) snapshot.slots[p.slot] = undefined;
             snapshot.dynamics.delete(e.instance);
@@ -211,7 +219,9 @@ interface GTFOSnapshotConstructor
                 snapshot.tracers.push({
                     a: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     b: { x: eDynamic.position.x + dx, y: eDynamic.position.y, z: eDynamic.position.z + dz },
-                    time: time
+                    damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
+                    time: time,
+                    color: "233, 181, 41"
                 });
             }
             else throw new ReferenceError("Enemy does not exist to do bullet damage.");
@@ -229,10 +239,191 @@ interface GTFOSnapshotConstructor
                 snapshot.tracers.push({
                     a: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     b: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
-                    time: time
+                    damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
+                    time: time,
+                    color: "233, 181, 41"
                 });
             }
             else throw new ReferenceError("Enemy does not exist to do melee damage.");
+        },
+        "enemyMineDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            // TODO(randomuserhi)
+        },
+        "playerDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventPlayerDead;
+            if (RHU.exists(snapshot.slots[e.slot]))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                player.alive = false;
+            }
+            else throw new ReferenceError("Player that died does not exist");
+        },
+        "playerRevive": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventPlayerRevive;
+            if (RHU.exists(snapshot.slots[e.slot]) && RHU.exists(snapshot.slots[e.source]))
+            {
+                let target = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                target.alive = true;
+                // TODO(randomuserhi): set hp??
+            }
+            else throw new ReferenceError("Either target or source of revive did not exist.");
+        },
+        "playerTongueDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventPlayerTongueDamage;
+            if (RHU.exists(snapshot.slots[e.slot]) && snapshot.enemies.has(e.source))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                let eDynamic = snapshot.dynamics.get(e.source)!;
+
+                snapshot.tracers.push({
+                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
+                    b: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
+                    damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
+                    time: time,
+                    color: "233, 0, 41"
+                });
+            }
+            else throw new ReferenceError("Either enemy or player did not exist.");
+        },
+        "playerMeleeDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventPlayerMeleeDamage;
+            if (RHU.exists(snapshot.slots[e.slot]) && snapshot.enemies.has(e.source))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                let eDynamic = snapshot.dynamics.get(e.source)!;
+                
+                snapshot.tracers.push({
+                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
+                    b: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
+                    damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
+                    time: time,
+                    color: "233, 0, 41"
+                });
+            }
+            else throw new ReferenceError("Either enemy or player did not exist.");
+        },
+        "playerPelletDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventPlayerPelletDamage;
+            if (RHU.exists(snapshot.slots[e.slot]) && snapshot.enemies.has(e.source))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                let eDynamic = snapshot.dynamics.get(e.source)!;
+                
+                // TODO(randomuserhi): Improve performance of this
+                let r = xor(time + e.damage ^ 0x190104029);
+                r(); r(); r();
+                let dx = -15 + r() * 30;
+                let dz = -15 + r() * 30;
+                snapshot.tracers.push({
+                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
+                    b: { x: pDynamic.position.x + dx, y: pDynamic.position.y, z: pDynamic.position.z + dz },
+                    damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
+                    time: time,
+                    color: "233, 0, 41"
+                });
+            }
+            else throw new ReferenceError("Either enemy or player did not exist.");
+        },
+        "playerBulletDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventPlayerPelletDamage;
+            if (RHU.exists(snapshot.slots[e.slot]) && RHU.exists(snapshot.slots[e.source]))
+            {
+                let target = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                let source = snapshot.snet.get(snapshot.slots[e.source]!)!;
+
+                let tDynamic = snapshot.dynamics.get(target.instance)!;
+                let sDynamic = snapshot.dynamics.get(source.instance)!;
+                
+                // TODO(randomuserhi): Improve performance of this
+                let r = xor(time + e.damage ^ 0x190104029);
+                r(); r(); r();
+                let dx = -15 + r() * 30;
+                let dz = -15 + r() * 30;
+                snapshot.tracers.push({
+                    a: { x: sDynamic.position.x, y: sDynamic.position.y, z: sDynamic.position.z },
+                    b: { x: tDynamic.position.x + dx, y: tDynamic.position.y, z: tDynamic.position.z + dz },
+                    time: time,
+                    damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings 
+                    color: "233, 181, 41"
+                });
+            }
+            else throw new ReferenceError("Either enemy or player did not exist.");
+        },
+        "playerMineDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            // TODO(randomuserhi)
+        },
+        "playerFallDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            // TODO(randomuserhi)
+        },
+        "playerPelletDodge": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventPlayerPelletDodge;
+            if (RHU.exists(snapshot.slots[e.slot]))
+            {
+                // NOTE(randomuserhi): You can still be hit by a shooter pellet long after the enemy is dead, so its not an error
+                //                     if the enemy no longer exists
+                if (snapshot.enemies.has(e.source))
+                {
+                    let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                    let pDynamic = snapshot.dynamics.get(player.instance)!;
+                    let eDynamic = snapshot.dynamics.get(e.source)!;
+                    
+                    // TODO(randomuserhi): Improve performance of this
+                    let r = xor(time + e.source ^ 0x190104029);
+                    r(); r(); r();
+                    let dx = -15 + r() * 30;
+                    let dz = -15 + r() * 30;
+                    snapshot.tracers.push({
+                        a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
+                        b: { x: pDynamic.position.x + dx, y: pDynamic.position.y, z: pDynamic.position.z + dz },
+                        damage: 0,
+                        time: time,
+                        color: "255, 255, 255"
+                    });
+                }
+            }
+            else throw new ReferenceError("Player did not exist.");
+        },
+        "playerTongueDodge": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventPlayerPelletDodge;
+            if (RHU.exists(snapshot.slots[e.slot]) && snapshot.enemies.has(e.source))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                let eDynamic = snapshot.dynamics.get(e.source)!;
+                
+                // TODO(randomuserhi): Improve performance of this
+                let r = xor(time + e.source ^ 0x190104029);
+                r(); r(); r();
+                let dx = -15 + r() * 30;
+                let dz = -15 + r() * 30;
+                snapshot.tracers.push({
+                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
+                    b: { x: pDynamic.position.x + dx, y: pDynamic.position.y, z: pDynamic.position.z + dz },
+                    damage: 0,
+                    time: time,
+                    color: "255, 255, 255"
+                });
+            }
+            else throw new ReferenceError("Either enemy or player did not exist.");
         }
     };
 
@@ -264,7 +455,13 @@ interface GTFOSnapshotConstructor
     GTFOSnapshot.prototype.do = function(t: GTFOTimeline): void
     {
         // Cleanup continuous things like tracers
-        this.tracers = this.tracers.filter(tr => (t.time - tr.time) < GTFOReplaySettings.tracerLingerTime);
+        this.tracers = this.tracers.filter(tr => {
+            let bonusLinger = tr.damage * 500;
+            if (bonusLinger > 500) bonusLinger = 500;
+            else if (bonusLinger < 0) bonusLinger = 0;
+
+            return (t.time - tr.time) < GTFOReplaySettings.tracerLingerTime + bonusLinger;
+        });
 
         // Perform timeline event
         timelineMap[t.type](this, t);

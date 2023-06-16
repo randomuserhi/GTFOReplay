@@ -140,6 +140,118 @@ interface GTFOReplayConstructor
                 detail: e
             };
         },
+        "enemyMineDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            // TODO(randomuserhi)
+            throw new Error("Not Implemented");
+        },
+        "playerDead": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerDead = {
+                slot: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                type: "playerDead",
+                detail: e
+            };
+        },
+        "playerRevive": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerRevive = {
+                slot: BitHelper.readByte(bytes, reader),
+                source: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                type: "playerRevive",
+                detail: e
+            };
+        },
+        "playerTongueDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerTongueDamage = {
+                slot: BitHelper.readByte(bytes, reader),
+                damage: BitHelper.readHalf(bytes, reader),
+                source: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "playerTongueDamage",
+                detail: e
+            };
+        },
+        "playerMeleeDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerMeleeDamage = {
+                slot: BitHelper.readByte(bytes, reader),
+                damage: BitHelper.readHalf(bytes, reader),
+                source: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "playerMeleeDamage",
+                detail: e
+            };
+        },
+        "playerPelletDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerPelletDamage = {
+                slot: BitHelper.readByte(bytes, reader),
+                damage: BitHelper.readHalf(bytes, reader),
+                source: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "playerPelletDamage",
+                detail: e
+            };
+        },
+        "playerBulletDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerBulletDamage = {
+                slot: BitHelper.readByte(bytes, reader),
+                damage: BitHelper.readHalf(bytes, reader),
+                source: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                type: "playerBulletDamage",
+                detail: e
+            };
+        },
+        "playerMineDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            // TODO(randomuserhi)
+            throw new Error("Not Implemented");
+        },
+        "playerFallDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerFallDamage = {
+                slot: BitHelper.readByte(bytes, reader),
+                damage: BitHelper.readHalf(bytes, reader)
+            };
+            return {
+                type: "playerFallDamage",
+                detail: e
+            };
+        },
+        "playerPelletDodge": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerPelletDodge = {
+                slot: BitHelper.readByte(bytes, reader),
+                source: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "playerPelletDodge",
+                detail: e
+            };
+        },
+        "playerTongueDodge": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerTongueDodge = {
+                slot: BitHelper.readByte(bytes, reader),
+                source: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "playerTongueDodge",
+                detail: e
+            };
+        },
     }
 
     let GTFOReplay: GTFOReplayConstructor = window.GTFOReplay = function(this: GTFOReplay, binary: ArrayBuffer)

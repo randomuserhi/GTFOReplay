@@ -4,18 +4,19 @@ using Enemies;
 using HarmonyLib;
 using Player;
 using ReplayRecorder.Player;
-using UnityEngine;
+using SNetwork;
 
 namespace ReplayRecorder.Enemies.Patches
 {
     [HarmonyPatch]
     class EnemyDamagePatches
     {
-
         [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveBulletDamage))]
         [HarmonyPrefix]
         public static void Prefix_BulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data)
         {
+            if (!SNet.IsMaster) return;
+
             EnemyAgent owner = __instance.Owner;
 
             // Record damage data
@@ -49,6 +50,8 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         public static void Prefix_MeleeDamage(Dam_EnemyDamageBase __instance, pFullDamageData data)
         {
+            if (!SNet.IsMaster) return;
+
             EnemyAgent owner = __instance.Owner;
 
             // Record damage data

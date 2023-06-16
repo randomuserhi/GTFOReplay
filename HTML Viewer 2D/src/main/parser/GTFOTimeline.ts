@@ -11,7 +11,9 @@ interface GTFOTracer
 {
     a: Vector;
     b: Vector;
+    damage: number;
     time: number;
+    color: string;
 }
 
 interface GTFODynamic
@@ -38,6 +40,17 @@ interface GTFOEventMap
     "enemyChangeState": GTFOEventEnemyChangeState;
     "enemyBulletDamage": GTFOEventEnemyBulletDamage;
     "enemyMeleeDamage": GTFOEventEnemyMeleeDamage;
+    "enemyMineDamage": GTFOEventEnemyMineDamage;
+    "playerDead": GTFOEventPlayerDead;
+    "playerRevive": GTFOEventPlayerRevive;
+    "playerTongueDamage": GTFOEventPlayerTongueDamage;
+    "playerMeleeDamage": GTFOEventPlayerMeleeDamage;
+    "playerPelletDamage": GTFOEventPlayerPelletDamage;
+    "playerBulletDamage": GTFOEventPlayerBulletDamage;
+    "playerMineDamage": GTFOEventPlayerMineDamage;
+    "playerFallDamage": GTFOEventPlayerFallDamage;
+    "playerPelletDodge": GTFOEventPlayerTongueDodge;
+    "playerTongueDodge": GTFOEventPlayerTongueDodge;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -48,7 +61,18 @@ let eventMap: GTFOEventType[] = [
     "enemyDead",
     "enemyChangeState",
     "enemyBulletDamage",
-    "enemyMeleeDamage"
+    "enemyMeleeDamage",
+    "enemyMineDamage",
+    "playerDead",
+    "playerRevive",
+    "playerTongueDamage",
+    "playerMeleeDamage",
+    "playerPelletDamage",
+    "playerBulletDamage",
+    "playerMineDamage",
+    "playerFallDamage",
+    "playerPelletDodge",
+    "playerTongueDodge"
 ];
 
 interface Window
@@ -98,4 +122,62 @@ interface GTFOEventEnemyMeleeDamage
     instance: number;
     damage: number;
     slot: number;
+}
+interface GTFOEventEnemyMineDamage
+{
+    // TODO...
+}
+interface GTFOEventPlayerDead
+{
+    slot: number;
+}
+interface GTFOEventPlayerRevive
+{
+    slot: number;
+    source: number;
+}
+interface GTFOEventPlayerTongueDamage
+{
+    slot: number;
+    damage: number;
+    source: number;
+}
+interface GTFOEventPlayerMeleeDamage
+{
+    slot: number;
+    damage: number;
+    source: number;
+}
+interface GTFOEventPlayerPelletDamage
+{
+    slot: number;
+    damage: number;
+    source: number;
+}
+interface GTFOEventPlayerBulletDamage
+{
+    slot: number;
+    damage: number;
+    source: number; // source is another player slot
+}
+interface GTFOEventPlayerMineDamage
+{
+    slot: number;
+    damage: number;
+    source: number; // source is another player slot
+}
+interface GTFOEventPlayerFallDamage
+{
+    slot: number;
+    damage: number;
+}
+interface GTFOEventPlayerPelletDodge
+{
+    slot: number;
+    source: number;
+}
+interface GTFOEventPlayerTongueDodge
+{
+    slot: number;
+    source: number;
 }

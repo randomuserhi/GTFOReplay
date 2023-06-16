@@ -5,6 +5,7 @@ interface replay extends HTMLDivElement
     update(t: number): void;
 
     prev: number;
+    play: boolean;
     time: number;
     replay: GTFOReplay;
 
@@ -51,6 +52,7 @@ RHU.import(RHU.module({ trace: new Error(),
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
 
+            this.play = true;
             this.time = 0;
             this.prev = 0;
 
@@ -73,16 +75,26 @@ RHU.import(RHU.module({ trace: new Error(),
             let origin = { x: 0, y: 0 };
             let old = { x: 0, y: 0 };
             window.addEventListener("keydown", (e) => {
-                switch (e.keyCode) 
+                e.preventDefault();
+                switch (e.keyCode)
                 {
-                case 68:
-                    break;
-                case 65:
-                    break;
-                case 87:
-                    break;
-                case 83:
-                    break;
+                    case 37:
+                        this.time -= 1000;
+                        break;
+                    case 39:
+                        this.time += 1000;
+                        break;
+
+                    case 38:
+                        this.time += 10000;
+                        break;
+                    case 40:
+                        this.time -= 10000;
+                        break;
+
+                    case 32:
+                        this.play = !this.play;
+                        break;
                 }
             });
             this.canvas.addEventListener("mousedown", (e) => {
@@ -193,7 +205,7 @@ RHU.import(RHU.module({ trace: new Error(),
         {
             let delta = t - this.prev;
             this.prev = t;
-            this.time += delta;
+            if (this.play && this.time <= this.replay.timeline[this.replay.timeline.length - 1].time) this.time += delta;
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -222,16 +234,24 @@ RHU.import(RHU.module({ trace: new Error(),
                     continue;
                 }
 
-                let alpha = (snapshot.time - tracer.time) / GTFOReplaySettings.tracerLingerTime;
+                let bonusLinger = tracer.damage * 500;
+                if (bonusLinger > 500) bonusLinger = 500;
+                else if (bonusLinger < 0) bonusLinger = 0;
+
+                let alpha = (snapshot.time - tracer.time) / (GTFOReplaySettings.tracerLingerTime + bonusLinger);
                 if (alpha < 0) continue;
                 else if (alpha > 1) alpha = 1;
                 alpha = 1 - alpha;
 
+                let width = tracer.damage * 7;
+                if (width < 1) width = 1;
+                else if (width > 7) width = 7;
+
                 this.ctx.beginPath();
                 this.ctx.moveTo(tracer.a.x, -tracer.a.z);
                 this.ctx.lineTo(tracer.b.x, -tracer.b.z);
-                this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = `rgba(233, 181, 41, ${alpha})`
+                this.ctx.lineWidth = width;
+                this.ctx.strokeStyle = `rgba(${tracer.color}, ${alpha})`
                 this.ctx.stroke();
             }
 
@@ -275,11 +295,6 @@ RHU.import(RHU.module({ trace: new Error(),
 
                 this.ctx.rotate(euler.y);
 
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, -25);
-                this.ctx.lineTo(-20, 12);
-                this.ctx.lineTo(20, 12);
-                this.ctx.closePath();
                 if (snapshot.players.has(instance))
                 {
                     let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
@@ -290,6 +305,12 @@ RHU.import(RHU.module({ trace: new Error(),
                         "#7A1A8E"
                     ];
                     this.ctx.fillStyle = colors[p.slot];
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, -25);
+                    this.ctx.lineTo(-20, 12);
+                    this.ctx.lineTo(20, 12);
+                    this.ctx.closePath();
                 }
                 else if (snapshot.enemies.has(instance))
                 {
@@ -297,6 +318,40 @@ RHU.import(RHU.module({ trace: new Error(),
                     if (enemy.state == "InCombat") this.ctx.fillStyle = "#ff0000";
                     else if (enemy.state == "Patrolling") this.ctx.fillStyle = "#0000ff";
                     else this.ctx.fillStyle = "#aaaaaa";
+
+                    let polygon = function(ctx: CanvasRenderingContext2D, radius: number, sides: number) 
+                    {
+                        if (sides < 3) return;
+                        ctx.beginPath();
+                        var a = ((Math.PI * 2)/sides);
+                        ctx.moveTo(radius,0);
+                        for (var i = 1; i < sides; i++) 
+                        {
+                            ctx.lineTo(radius*Math.cos(a*i),radius*Math.sin(a*i));
+                        }
+                        ctx.closePath();
+                    }
+
+                    switch (enemy.type)
+                    {
+                        case "Striker":
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(0, -25);
+                            this.ctx.lineTo(-20, 12);
+                            this.ctx.lineTo(20, 12);
+                            this.ctx.closePath();
+                            break;
+                        case "Big Striker":
+                            polygon(this.ctx, 20, 4);
+                            break;
+                        case "Shooter":
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                            break;
+                        default:
+                            polygon(this.ctx, 20, 5);
+                            break;
+                    }
                 }
                 this.ctx.fill();
 
@@ -342,6 +397,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 width: 100%;
                 height: 100%;
             " rhu-id="canvas" width="1920" height="1080"></canvas>
+            <canvas style=""></canvas>
             `, {
             element: //html
                 `<div></div>`

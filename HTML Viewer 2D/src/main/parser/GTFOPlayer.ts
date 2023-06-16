@@ -10,6 +10,7 @@ interface GTFOPlayer
     name: string;
     slot: number;
 
+    alive: boolean;
     health: number;
 }
 interface GTFOPlayerConstructor
@@ -27,6 +28,7 @@ interface GTFOPlayerConstructor
         this.name = name;
         this.slot = slot;
         
+        this.alive = true;
         this.health = GTFOSpecification.player.maxHealth;
     } as Function as GTFOPlayerConstructor;
     GTFOPlayer.clone = function(player: GTFOPlayer): GTFOPlayer

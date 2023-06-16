@@ -25,7 +25,7 @@ namespace ReplayRecorder.Enemies
         }
     }
 
-    public static class Enemy
+    public static partial class Enemy
     {
         // TODO(randomuserhi): Move statemap to GTFOSpecification
         public static rEB_States toRState(EB_States state)
@@ -147,6 +147,7 @@ namespace ReplayRecorder.Enemies
             rEnemyAgent rEnemy = new rEnemyAgent(enemy);
             enemies.Add(rEnemy.instanceID, rEnemy);
 
+            APILogger.Debug($"[{rEnemy.instanceID}] was spawned ({enemy.EnemyData.name})");
             SnapshotManager.AddEvent(GameplayEvent.Type.SpawnEnemy, new SpawnEnemy(rEnemy, mode));
             SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rEnemy.instanceID, new SnapshotManager.rObject(enemy.gameObject)));
         }
@@ -157,6 +158,7 @@ namespace ReplayRecorder.Enemies
             rEnemyAgent rEnemy = enemies[instanceID];
             enemies.Remove(instanceID);
 
+            APILogger.Debug($"[{rEnemy.instanceID}] was despawned");
             SnapshotManager.AddEvent(GameplayEvent.Type.DespawnEnemy, rEnemy);
             SnapshotManager.RemoveDynamicObject(instanceID);
         }
@@ -165,12 +167,13 @@ namespace ReplayRecorder.Enemies
             int instanceID = enemy.GetInstanceID();
             if (!enemies.ContainsKey(instanceID))
             {
-                APILogger.Error($"Enemy {instanceID} was not spawned...");
+                APILogger.Error($"Enemy {instanceID} was never spawned");
                 return;
             }
             rEnemyAgent rEnemy = enemies[instanceID];
             enemies.Remove(instanceID);
 
+            APILogger.Debug($"[{rEnemy.instanceID}] died");
             SnapshotManager.AddEvent(GameplayEvent.Type.EnemyDead, rEnemy);
             SnapshotManager.RemoveDynamicObject(instanceID);
         }

@@ -14,34 +14,33 @@ namespace ReplayRecorder.Enemies.Patches
         {
             if (!SnapshotManager.active) return;
 
-            // TODO(randomuserhi): Check if this works on client side
+            // TODO(randomuserhi): This works on client side => move to killindicatorfix
             if (__instance.m_currentStateName != state && state == EB_States.Dead)
             {
-                Enemies.Enemy.DeadEnemy(__instance.m_ai.m_enemyAgent);
+                Enemy.DeadEnemy(__instance.m_ai.m_enemyAgent);
                 return;
             }
 
-            Enemies.Enemy.rEB_States rState = Enemies.Enemy.toRState(state);
-            if (Enemies.Enemy.toRState(__instance.m_currentStateName) != rState)
+            Enemy.rEB_States rState = Enemy.toRState(state);
+            if (Enemy.toRState(__instance.m_currentStateName) != rState)
             {
-                Enemies.Enemy.StateChange(__instance.m_ai.m_enemyAgent, rState);
+                Enemy.StateChange(__instance.m_ai.m_enemyAgent, rState);
             }
         }
 
-        // TODO(randomuserhi): Enemy spawn and despawn patch doesn't work for clients
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]
         [HarmonyPostfix]
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData)
         {
             if (!SnapshotManager.active) return;
-            Enemies.Enemy.OnSpawnEnemy(__instance.m_agent, spawnData.mode);
+            Enemy.OnSpawnEnemy(__instance.m_agent, spawnData.mode);
         }
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnDespawn))]
         [HarmonyPostfix]
         private static void OnDespawn(EnemySync __instance)
         {
             if (!SnapshotManager.active) return;
-            Enemies.Enemy.OnDespawnEnemy(__instance.m_agent);
+            Enemy.OnDespawnEnemy(__instance.m_agent);
         }
 
         // TODO:: Change the method of detecting when an enemy dies via network => Either dont use EnemyAppearance and look at what SNet things GTFO uses (refer to GTFO-API Network Receive Hooks) or look

@@ -10,14 +10,6 @@ namespace ReplayRecorder
     [HarmonyPatch]
     public class GameEventManager
     {
-        public static void OnGameplayStart()
-        {
-            APILogger.Debug($"Gameplay started!");
-
-            SnapshotManager.Init();
-            Player.Player.Init();
-        }
-
         [HarmonyPatch(typeof(RundownManager), nameof(RundownManager.EndGameSession))]
         [HarmonyPrefix]
         private static void EndGameSession()

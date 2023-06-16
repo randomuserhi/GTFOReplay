@@ -32,30 +32,32 @@ namespace ReplayRecorder.Enemies
             }
         }
 
-        public static void OnBulletDamage(EnemyAgent receiver, PlayerAgent source, float damageTaken)
+        public static void OnBulletDamage(EnemyAgent receiver, PlayerAgent source, float damage)
         {
-            if (damageTaken <= 0) return;
+            //if (damage <= 0) return;
             int instance = receiver.GetInstanceID();
             if (!Enemy.enemies.ContainsKey(instance))
             {
-                APILogger.Error("(BulletDamage) Enemy instance was not found.");
+                APILogger.Error("(EnemyBulletDamage) Enemy instance was not found.");
                 return;
             }
             rEnemyAgent rEnemy = Enemy.enemies[instance];
-            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBulletDamage, new rEnemyDamage(rEnemy, damageTaken, source));
+            APILogger.Debug($"{source.Owner.NickName} did {damage} bullet damage to [{instance}].");
+            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBulletDamage, new rEnemyDamage(rEnemy, damage, source));
         }
 
-        public static void OnMeleeDamage(EnemyAgent receiver, PlayerAgent source, float damageTaken)
+        public static void OnMeleeDamage(EnemyAgent receiver, PlayerAgent source, float damage)
         {
-            if (damageTaken <= 0) return;
+            //if (damage <= 0) return;
             int instance = receiver.GetInstanceID();
             if (!Enemy.enemies.ContainsKey(instance))
             {
-                APILogger.Error("(MeleeDamage) Enemy instance was not found.");
+                APILogger.Error("(EnemyMeleeDamage) Enemy instance was not found.");
                 return;
             }
             rEnemyAgent rEnemy = Enemy.enemies[instance];
-            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyMeleeDamage, new rEnemyDamage(rEnemy, damageTaken, source));
+            APILogger.Debug($"{source.Owner.NickName} did {damage} melee damage to [{instance}].");
+            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyMeleeDamage, new rEnemyDamage(rEnemy, damage, source));
         }
     }
 }
