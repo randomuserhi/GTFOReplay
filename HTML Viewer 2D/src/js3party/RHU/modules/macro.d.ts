@@ -57,9 +57,9 @@ interface Node
 interface Document
 {
     
-    createMacro<T extends keyof RHU.Macro.TemplateMap>(type: T): RHU.Macro.TemplateMap[T];
+    createMacro<T extends string & keyof RHU.Macro.TemplateMap>(type: T): RHU.Macro.TemplateMap[T];
     
-    Macro(type: string, attributes: Record<string, string>): string;
+    Macro<T extends string & keyof RHU.Macro.TemplateMap>(type: T, attributes: Record<string, string>): string;
 }
 
 interface Element

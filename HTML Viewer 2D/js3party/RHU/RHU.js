@@ -566,7 +566,7 @@
         }
         for (let module of core.config.extensions) {
             core.moduleLoader.importList.add({
-                path: core.loader.root.path(core.path.join("modules", `${module}.js`)),
+                path: core.loader.root.path(core.path.join("extensions", `${module}.js`)),
                 name: module,
                 type: RHU.EXTENSION
             });

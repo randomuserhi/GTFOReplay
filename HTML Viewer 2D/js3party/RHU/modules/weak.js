@@ -9,7 +9,6 @@
             let Map_set = Map.prototype.set;
             let Map_keys = Map.prototype.keys;
             let Map_get = Map.prototype.get;
-            let a = new Map();
             RHU.WeakRefMap = RHU.reflectConstruct(Map, "WeakRefMap", function () {
                 this._registry = new FinalizationRegistry((key) => {
                     this.delete(key);

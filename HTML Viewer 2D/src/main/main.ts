@@ -14,7 +14,7 @@ declare namespace RHU { namespace Macro {
 }}
 
 RHU.import(RHU.module({ trace: new Error(),
-    name: "Main", hard: ["RHU.Macro"],
+    name: "Main", hard: ["RHU.Macro", "RHU.Bezier"],
     callback: function()
     {
         let { RHU } = window.RHU.require(window, this);

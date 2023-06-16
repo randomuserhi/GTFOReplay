@@ -7,6 +7,14 @@ interface GTFOTimeline<T = unknown>
     detail: T;
 }
 
+interface GTFOCross
+{
+    pos: Vector;
+    time: number;
+    deviation: number;
+    shake: (number[])[];
+}
+
 interface GTFOTracer
 {
     a: Vector;
@@ -51,6 +59,7 @@ interface GTFOEventMap
     "playerFallDamage": GTFOEventPlayerFallDamage;
     "playerPelletDodge": GTFOEventPlayerTongueDodge;
     "playerTongueDodge": GTFOEventPlayerTongueDodge;
+    "playerWield": GTFOEventPlayerWield;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -72,7 +81,8 @@ let eventMap: GTFOEventType[] = [
     "playerMineDamage",
     "playerFallDamage",
     "playerPelletDodge",
-    "playerTongueDodge"
+    "playerTongueDodge",
+    "playerWield"
 ];
 
 interface Window
@@ -180,4 +190,9 @@ interface GTFOEventPlayerTongueDodge
 {
     slot: number;
     source: number;
+}
+interface GTFOEventPlayerWield
+{
+    slot: number;
+    item: number;
 }

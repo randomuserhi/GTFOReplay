@@ -23,6 +23,7 @@ namespace ReplayRecorder.Player
     public class rPlayerAgent
     {
         public PlayerAgent agent;
+        public ItemEquippable? lastEquipped;
         public SNet_Player owner;
         public int instanceID;
 
@@ -31,6 +32,7 @@ namespace ReplayRecorder.Player
             this.agent = agent;
             owner = agent.Owner;
             instanceID = agent.GetInstanceID();
+            lastEquipped = null;
         }
     }
 
@@ -112,6 +114,48 @@ namespace ReplayRecorder.Player
         {
             APILogger.Debug($"{player.Owner.NickName} was revived by {source.Owner.NickName}.");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerRevive, new rPlayerRevive(player, source));
+        }
+
+        public struct rPlayerWield : ISerializable
+        {
+            byte slot;
+            byte item;
+
+            public rPlayerWield(PlayerAgent player, byte item)
+            {
+                slot = (byte)player.PlayerSlotIndex;
+                this.item = item;
+            }
+
+            private const int SizeOf = 2;
+            private byte[] buffer = new byte[SizeOf];
+            public void Serialize(FileStream fs)
+            {
+                fs.WriteByte(slot);
+                fs.WriteByte(item);
+            }
+        }
+
+        public static void CheckPlayerWield()
+        {
+            foreach (rPlayerAgent p in playerList)
+            {
+                ItemEquippable i = p.agent.Inventory.WieldedItem;
+                if (i != p.lastEquipped)
+                {
+                    p.lastEquipped = i;
+                    if (p.lastEquipped != null)
+                    {
+                        OnPlayerWield(p.agent, p.lastEquipped);
+                    }
+                }
+            }
+        }
+
+        public static void OnPlayerWield(PlayerAgent player, ItemEquippable item)
+        {
+            APILogger.Debug($"{player.Owner.NickName} is wielding {item.PublicName}");
+            SnapshotManager.AddEvent(GameplayEvent.Type.PlayerWield, new rPlayerWield(player, GTFOSpecification.GetItem(item.PublicName)));
         }
 
         public static void Init()
@@ -220,6 +264,7 @@ namespace ReplayRecorder.Player
         public static void OnTick()
         {
             CheckPlayersJoined();
+            CheckPlayerWield();
             // TODO(randomuserhi): check what players have equipped => different script honestly
         }
     }

@@ -12,6 +12,7 @@ interface GTFOPlayer
 
     alive: boolean;
     health: number;
+    equipped: string;
 }
 interface GTFOPlayerConstructor
 {
@@ -30,6 +31,7 @@ interface GTFOPlayerConstructor
         
         this.alive = true;
         this.health = GTFOSpecification.player.maxHealth;
+        this.equipped = "Unknown";
     } as Function as GTFOPlayerConstructor;
     GTFOPlayer.clone = function(player: GTFOPlayer): GTFOPlayer
     {

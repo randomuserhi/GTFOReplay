@@ -61,7 +61,9 @@ namespace ReplayRecorder
             PlayerFallDamage,
 
             PlayerPelletDodge,
-            PlayerTongueDodge
+            PlayerTongueDodge,
+
+            PlayerWield
         }
 
         public long timestamp;

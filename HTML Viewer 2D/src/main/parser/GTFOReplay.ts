@@ -252,6 +252,17 @@ interface GTFOReplayConstructor
                 detail: e
             };
         },
+        "playerWield": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventPlayerWield = {
+                slot: BitHelper.readByte(bytes, reader),
+                item: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                type: "playerWield",
+                detail: e
+            };
+        },
     }
 
     let GTFOReplay: GTFOReplayConstructor = window.GTFOReplay = function(this: GTFOReplay, binary: ArrayBuffer)

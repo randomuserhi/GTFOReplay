@@ -14,35 +14,35 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireAtAgent))]
         [HarmonyPrefix]
-        public static void Prefix_FireAtAgent(EAB_ProjectileShooter __instance)
+        private static void Prefix_FireAtAgent(EAB_ProjectileShooter __instance)
         {
             currentShooter = __instance.m_owner;
         }
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireAtAgent))]
         [HarmonyPostfix]
-        public static void Postfix_FireAtAgent(EAB_ProjectileShooter __instance)
+        private static void Postfix_FireAtAgent(EAB_ProjectileShooter __instance)
         {
             currentShooter = null;
         }
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireChaos))]
         [HarmonyPrefix]
-        public static void Prefix_FireChaos(EAB_ProjectileShooter __instance)
+        private static void Prefix_FireChaos(EAB_ProjectileShooter __instance)
         {
             currentShooter = __instance.m_owner;
         }
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireChaos))]
         [HarmonyPostfix]
-        public static void Postfix_FireChaos(EAB_ProjectileShooter __instance)
+        private static void Postfix_FireChaos(EAB_ProjectileShooter __instance)
         {
             currentShooter = null;
         }
 
         [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]
         [HarmonyPrefix]
-        public static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data)
+        private static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data)
         {
             if (!SNet.IsMaster) return true;
 
@@ -63,7 +63,7 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(ProjectileTargeting), nameof(ProjectileTargeting.OnDestroy))]
         [HarmonyPrefix]
-        public static void OnDestroy(ProjectileTargeting __instance)
+        private static void OnDestroy(ProjectileTargeting __instance)
         {
             if (!SNet.IsMaster) return;
 
@@ -75,7 +75,7 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]
         [HarmonyPrefix]
-        public static void Prefix_Collision(ProjectileBase __instance)
+        private static void Prefix_Collision(ProjectileBase __instance)
         {
             if (!SNet.IsMaster) return;
 
@@ -89,14 +89,14 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]
         [HarmonyPostfix]
-        public static void Postfix_Collision()
+        private static void Postfix_Collision()
         {
             hitByShooter = null;
         }
 
         [HarmonyPatch(typeof(Dam_SyncedDamageBase), nameof(Dam_SyncedDamageBase.ShooterProjectileDamage))]
         [HarmonyPrefix]
-        public static bool ShooterProjectileDamage(Dam_SyncedDamageBase __instance, float dam, Vector3 position)
+        private static bool ShooterProjectileDamage(Dam_SyncedDamageBase __instance, float dam, Vector3 position)
         {
             if (!SNet.IsMaster) return true;
 

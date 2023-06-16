@@ -45,10 +45,22 @@ interface Window
 }
 
 RHU.import(RHU.module({ trace: new Error(),
-    name: "Replay Display", hard: ["RHU.Macro"],
+    name: "Replay Display", hard: ["RHU.Macro", "RHU.Bezier"],
     callback: function () 
     {
         let { RHU } = window.RHU.require(window, this);
+
+        let icons: Record<string, HTMLImageElement> = {}
+        for (let item of GTFOSpecification.items)
+        {
+            let img = document.createElement("img");
+            img.src = `./icons/items/${item}.webp`;
+            img.onerror = () => {
+                img.toggleAttribute("data-failed", true);
+            }
+            icons[item] = img;
+        }
+
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
 
@@ -75,25 +87,29 @@ RHU.import(RHU.module({ trace: new Error(),
             let origin = { x: 0, y: 0 };
             let old = { x: 0, y: 0 };
             window.addEventListener("keydown", (e) => {
-                e.preventDefault();
                 switch (e.keyCode)
                 {
                     case 37:
                         this.time -= 1000;
+                        e.preventDefault();
                         break;
                     case 39:
                         this.time += 1000;
+                        e.preventDefault();
                         break;
 
                     case 38:
                         this.time += 10000;
+                        e.preventDefault();
                         break;
                     case 40:
                         this.time -= 10000;
+                        e.preventDefault();
                         break;
 
                     case 32:
                         this.play = !this.play;
+                        e.preventDefault();
                         break;
                 }
             });
@@ -208,6 +224,8 @@ RHU.import(RHU.module({ trace: new Error(),
             if (this.play && this.time <= this.replay.timeline[this.replay.timeline.length - 1].time) this.time += delta;
 
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.fillStyle="#3f484e";
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
             this.ctx.save();
 
@@ -220,10 +238,13 @@ RHU.import(RHU.module({ trace: new Error(),
             for (let i = 0; i < map.surfaces.length; ++i)
                 this.ctx.drawImage(map.surfaces[i].canvas, map.surfaces[i].position.x, map.surfaces[i].position.y);
 
-            // Get snapshot and draw dynamics
+            // Get snapshot
             let snapshot = this.replay.getSnapshot(this.time);
             
             // Draw snapshot => perhaps move to a seperate function
+
+            // Draw doors
+            // TODO(randomuserhi): ...
 
             // Draw tracers
             for (let tracer of snapshot.tracers)
@@ -292,20 +313,26 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
 
                 this.ctx.translate(dynamic.position.x, -dynamic.position.z);
-
                 this.ctx.rotate(euler.y);
-
+                
                 if (snapshot.players.has(instance))
                 {
                     let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
                     let colors: string[] = [
-                        "#C21F4E",
-                        "#18935E",
-                        "#20558C",
-                        "#7A1A8E"
+                        "194, 31, 78",
+                        "24, 147, 94",
+                        "32, 85, 140",
+                        "122, 26, 142"
                     ];
-                    this.ctx.fillStyle = colors[p.slot];
+                    this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.5"})`;
 
+                    // Draw equipped item above player
+                    /*let img = icons[p.equipped];
+                    let ratio = img.height / img.width;
+                    let width = 70;
+                    if (!img.hasAttribute("data-failed")) this.ctx.drawImage(img, -width / 2, -80, width, width * ratio);*/
+
+                    // Draw player
                     this.ctx.beginPath();
                     this.ctx.moveTo(0, -25);
                     this.ctx.lineTo(-20, 12);
@@ -314,14 +341,26 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
                 else if (snapshot.enemies.has(instance))
                 {
+                    let color: string;
                     let enemy = snapshot.enemies.get(instance)!;
-                    if (enemy.state == "InCombat") this.ctx.fillStyle = "#ff0000";
-                    else if (enemy.state == "Patrolling") this.ctx.fillStyle = "#0000ff";
-                    else this.ctx.fillStyle = "#aaaaaa";
+                    let charger = enemy.type.includes("Charger");
+                    if (enemy.state == "InCombat") {
+                        if (charger) color = "130, 0, 0";
+                        else color = "255, 0, 0";
+                    }
+                    else if (enemy.state == "Patrolling") {
+                        if (charger) color = "0, 0, 190";
+                        else color = "0, 0, 255";
+                    }
+                    else if (charger) color = "80, 80, 80";
+                    else color = "136, 136, 136";
+                    this.ctx.fillStyle = `rgba(${color}, ${enemy.type.includes("Shadow") ? 0.3 : 1})`;
 
                     let polygon = function(ctx: CanvasRenderingContext2D, radius: number, sides: number) 
                     {
                         if (sides < 3) return;
+                        ctx.save();
+                        ctx.rotate(-Math.PI / 2);
                         ctx.beginPath();
                         var a = ((Math.PI * 2)/sides);
                         ctx.moveTo(radius,0);
@@ -330,10 +369,16 @@ RHU.import(RHU.module({ trace: new Error(),
                             ctx.lineTo(radius*Math.cos(a*i),radius*Math.sin(a*i));
                         }
                         ctx.closePath();
+                        ctx.restore();
                     }
 
+                    if (charger) this.ctx.scale(1.05, 1.05);
                     switch (enemy.type)
                     {
+                        case "Baby":
+                            this.ctx.scale(0.6, 0.6);
+                        case "Charger":
+                        case "Shadow":
                         case "Striker":
                             this.ctx.beginPath();
                             this.ctx.moveTo(0, -25);
@@ -341,15 +386,39 @@ RHU.import(RHU.module({ trace: new Error(),
                             this.ctx.lineTo(20, 12);
                             this.ctx.closePath();
                             break;
+                        case "Big Charger":
+                        case "Big Shadow":
                         case "Big Striker":
-                            polygon(this.ctx, 20, 4);
+                            polygon(this.ctx, 25, 4);
+                            break;
+                        case "Tank":
+                            polygon(this.ctx, 30, 6);
+                            break;
+                        case "Mother":
+                            this.ctx.scale(1, 1.3);
+                            polygon(this.ctx, 25, 6);
+                            break;
+                        case "Big Shooter":
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
                             break;
                         case "Shooter":
                             this.ctx.beginPath();
                             this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
                             break;
+                        case "Snatcher":
+                            this.ctx.scale(1, 1.3);
+                        case "Charger Scout":
+                        case "Shadow Scout":
+                        case "Scout":
+                            polygon(this.ctx, 20, 8);
+                            break;
+                        case "Hybrid":
+                            polygon(this.ctx, 25, 5);
+                            break;
                         default:
                             polygon(this.ctx, 20, 5);
+                            this.ctx.fillStyle = "#ffe92e";
                             break;
                     }
                 }
@@ -360,6 +429,76 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.lineTo(0, -25);
                 this.ctx.lineWidth = 2;
                 this.ctx.strokeStyle = "#ffffff";
+                this.ctx.stroke();
+
+                // TODO(randomuserhi): Clean this up with the above code
+                /*if (snapshot.players.has(instance))
+                {
+                    let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
+                    let colors: string[] = [
+                        "194, 31, 78",
+                        "24, 147, 94",
+                        "32, 85, 140",
+                        "122, 26, 142"
+                    ];
+
+                    // Draw player name
+                    this.ctx.font = "10px Oxanium";
+                    let text = `${p.name}`;
+                    let metrics = this.ctx.measureText(text);
+                    this.ctx.fillStyle = "#000";
+                    this.ctx.fillRect(-metrics.width / 2, -10, metrics.width, 15);
+                    this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.5"})`;
+                    this.ctx.fillText(text, - metrics.width / 2, 0);
+                }*/
+
+                this.ctx.restore();
+            }
+
+            // Draw crosses
+            let bezier = RHU.Bezier(.81,-0.11,.58,1.1);
+            for (let cross of snapshot.cross)
+            {
+                if (cross.time > snapshot.time)
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                let t = (snapshot.time - cross.time) / (GTFOReplaySettings.crossLingerTime + cross.deviation);
+                const size = 15;
+
+                let dx = 0;
+                let dy = 0;
+                let scale = 1;
+                if (t < 0.15)
+                {
+                    t = t / 0.15;
+                    scale = 1 + 5 * bezier(1 - t);
+                
+                    let i = Math.round(t * (cross.shake.length - 1));
+                    dx = cross.shake[i][0];
+                    dy = cross.shake[i][1];
+                }
+                else
+                {
+                    t -= 0.15;
+                    t = t / (1 - 0.15);
+                    let c = Math.sin(2 * Math.PI * ((6/2) * t * t + 2 * t));
+                    if (c < 0) continue;
+                }
+
+                this.ctx.save();
+                this.ctx.translate(cross.pos.x + dx, -cross.pos.z + dy);
+                this.ctx.scale(scale, scale);
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(-size, -size);
+                this.ctx.lineTo(size, size);
+                this.ctx.moveTo(size, -size);
+                this.ctx.lineTo(-size, size);
+                this.ctx.lineWidth = 4;
+                this.ctx.strokeStyle = `#ff0000`
                 this.ctx.stroke();
 
                 this.ctx.restore();

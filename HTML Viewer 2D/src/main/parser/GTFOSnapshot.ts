@@ -20,6 +20,7 @@ interface GTFOSnapshot
 
     dynamics: Map<number, GTFODynamic>;
     tracers: GTFOTracer[];
+    cross: GTFOCross[];
 
     clone(snapshot: GTFOSnapshot): void;
     do(t: GTFOTimeline): void;
@@ -185,11 +186,32 @@ interface GTFOSnapshotConstructor
             snapshot.enemies.delete(e.instance);
             snapshot.dynamics.delete(e.instance);
         },
-        "enemyDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "enemyDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventEnemySpawn;
+            let dyn = snapshot.dynamics.get(e.instance);
             snapshot.enemies.delete(e.instance);
             snapshot.dynamics.delete(e.instance);
+
+            if (RHU.exists(dyn))
+            {
+                let r = xor(time + e.instance ^ 0x190104029);
+                r(); r(); r();
+                let d = r() * 300;
+                const shakeAmount = 13;
+                let shake = new Array(10);
+                for (let i = 0; i < 10; ++i)
+                {
+                    shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
+                }
+                snapshot.cross.push({
+                    pos: dyn.position,
+                    time: time,
+                    deviation: d,
+                    shake: shake
+                });
+            }
+            else throw new ReferenceError("Referenced enemy does not exist.");
         },
         "enemyChangeState": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
@@ -424,7 +446,17 @@ interface GTFOSnapshotConstructor
                 });
             }
             else throw new ReferenceError("Either enemy or player did not exist.");
-        }
+        },
+        "playerWield": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventPlayerWield;
+            if (RHU.exists(snapshot.slots[e.slot]))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                player.equipped = GTFOSpecification.items[e.item];
+            }
+            else throw new ReferenceError("Player did not exist.");
+        } 
     };
 
     let GTFOSnapshot: GTFOSnapshotConstructor = window.GTFOSnapshot = function(this: GTFOSnapshot, owner: GTFOReplay, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot)
@@ -443,6 +475,7 @@ interface GTFOSnapshotConstructor
             this.dynamics = new Map();
             this.slots = new Array(4);
             this.tracers = [];
+            this.cross = [];
         }
 
         if (RHU.exists(tick)) this.tick = tick;
@@ -454,7 +487,7 @@ interface GTFOSnapshotConstructor
     } as Function as GTFOSnapshotConstructor;
     GTFOSnapshot.prototype.do = function(t: GTFOTimeline): void
     {
-        // Cleanup continuous things like tracers
+        // Cleanup continuous things like tracers, crosses
         this.tracers = this.tracers.filter(tr => {
             let bonusLinger = tr.damage * 500;
             if (bonusLinger > 500) bonusLinger = 500;
@@ -462,6 +495,9 @@ interface GTFOSnapshotConstructor
 
             return (t.time - tr.time) < GTFOReplaySettings.tracerLingerTime + bonusLinger;
         });
+        this.cross = this.cross.filter(c => {
+            return (t.time - c.time) < GTFOReplaySettings.crossLingerTime + c.deviation;
+        })
 
         // Perform timeline event
         timelineMap[t.type](this, t);
@@ -482,7 +518,9 @@ interface GTFOSnapshotConstructor
         this.index = snapshot.index;
         this.time = snapshot.time;
         
+        // NOTE(randomuserhi): Since the data inside tracers / cross don't change these do not need to be deep copied
         this.tracers = [...snapshot.tracers];
+        this.cross = [...snapshot.cross];
 
         this.enemies = new Map();
         for (let kv of snapshot.enemies) this.enemies.set(kv[0], GTFOEnemy.clone(kv[1]));
