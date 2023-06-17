@@ -177,5 +177,10 @@ namespace ReplayRecorder.Enemies
             SnapshotManager.AddEvent(GameplayEvent.Type.EnemyDead, rEnemy);
             SnapshotManager.RemoveDynamicObject(instanceID);
         }
+
+        public static void Reset()
+        {
+            enemies.Clear();
+        }
     }
 }

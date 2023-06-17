@@ -60,6 +60,12 @@ interface GTFOEventMap
     "playerPelletDodge": GTFOEventPlayerTongueDodge;
     "playerTongueDodge": GTFOEventPlayerTongueDodge;
     "playerWield": GTFOEventPlayerWield;
+    "doorChangeState": GTFOEventDoorChangeState,
+    "doorDamage": GTFOEventDoorDamage;
+    "spawnMine": GTFOEventMineSpawn;
+    "despawnMine": GTFOEventMineDespawn;
+    "explodeMine": GTFOEventMineExplode;
+    "tripline": GTFOEventMineTripLine;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -82,7 +88,13 @@ let eventMap: GTFOEventType[] = [
     "playerFallDamage",
     "playerPelletDodge",
     "playerTongueDodge",
-    "playerWield"
+    "playerWield",
+    "doorChangeState",
+    "doorDamage",
+    "spawnMine",
+    "despawnMine",
+    "explodeMine",
+    "tripline"
 ];
 
 interface Window
@@ -195,4 +207,34 @@ interface GTFOEventPlayerWield
 {
     slot: number;
     item: number;
+}
+interface GTFOEventDoorChangeState
+{
+    id: number;
+    state: GTFODoorState;
+}
+interface GTFOEventDoorDamage
+{
+    id: number;
+}
+interface GTFOEventMineSpawn
+{
+    slot: number;
+    type: string;
+    instance: number;
+    position: Vector;
+    rotation: Quaternion;
+}
+interface GTFOEventMineDespawn
+{
+    instance: number;
+}
+interface GTFOEventMineExplode
+{
+    instance: number;
+}
+interface GTFOEventMineTripLine
+{
+    instance: number;
+    length: number;
 }

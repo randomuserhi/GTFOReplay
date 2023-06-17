@@ -1,5 +1,6 @@
 ﻿using Agents;
 using API;
+using Decals;
 using Player;
 using UnityEngine;
 
@@ -8,6 +9,25 @@ namespace ReplayRecorder
     public interface ISerializable
     {
         void Serialize(FileStream fs);
+    }
+
+    public struct rInstance : ISerializable
+    {
+        private int instance;
+
+        public rInstance(int instance)
+        { 
+            this.instance = instance;
+        }
+
+        public const int SizeOf = sizeof(int);
+        private static byte[] buffer = new byte[SizeOf];
+        public void Serialize(FileStream fs)
+        {
+            int index = 0;
+            BitHelper.WriteBytes(instance, buffer, ref index);
+            fs.Write(buffer);
+        }
     }
 
     public class Dynamic : ISerializable
@@ -63,7 +83,15 @@ namespace ReplayRecorder
             PlayerPelletDodge,
             PlayerTongueDodge,
 
-            PlayerWield
+            PlayerWield,
+
+            DoorChangeState,
+            DoorDamage,
+
+            SpawnMine,
+            DespawnMine,
+            ExplodeMine,
+            MineTripLine
         }
 
         public long timestamp;

@@ -20,6 +20,8 @@ namespace ReplayRecorder
 
             // TODO(randomuserhi): Move reset to expedition start? This should be fine tho...
             Map.Map.Reset();
+            Mines.Mine.Reset();
+            Enemies.Enemy.Reset();
         }
     }
 }

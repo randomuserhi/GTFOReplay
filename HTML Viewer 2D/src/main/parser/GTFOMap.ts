@@ -105,8 +105,11 @@ interface GTFOMapConstructor
         // doors
         let nDoors = BitHelper.readUShort(bytes, reader);
         let doors: GTFODoor[] = new Array(nDoors);
-        for (let i = 0; i < nDoors; ++i) doors[i] = GTFODoor.parse(bytes, reader);
-
+        for (let i = 0; i < nDoors; ++i) 
+        {
+            let d = GTFODoor.parse(bytes, reader);
+            doors[d.id] = d;
+        }
         return new GTFOMap(meshes, doors);
     }
 

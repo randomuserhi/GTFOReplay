@@ -380,6 +380,7 @@ namespace ReplayRecorder.Map
             MapPatches.dimensions = null;
 
             doors.Clear();
+            rDoor._id = 0; // reset ids
             MapDoorPatches.doors.Clear();
         }
     }

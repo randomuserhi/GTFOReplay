@@ -9,6 +9,8 @@ namespace ReplayRecorder.Map
     {
         public class rDoor : ISerializable
         {
+            public static byte _id = 0;
+
             public enum Type
             {
                 WeakDoor,
@@ -19,6 +21,9 @@ namespace ReplayRecorder.Map
             }
 
             public Type type;
+
+            public byte id = 0;
+
             public LG_GateType size;
             public float healthMax;
 
@@ -41,6 +46,8 @@ namespace ReplayRecorder.Map
                     APILogger.Warn($"Weird gate type was created as a door: {gate.Type}");
                 }
 
+                id = _id++;
+
                 this.gate = gate;
 
                 this.healthMax = healthMax;
@@ -54,7 +61,7 @@ namespace ReplayRecorder.Map
                 isCheckpoint = gate.IsCheckpointDoor;
             }
 
-            public const int SizeOf = 3 + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOf = 4 + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
             private static byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
@@ -66,6 +73,7 @@ namespace ReplayRecorder.Map
                 /// rotation
                 
                 int index = 0;
+                BitHelper.WriteBytes(id, buffer, ref index);
                 BitHelper.WriteBytes((byte)type, buffer, ref index);
                 BitHelper.WriteBytes((byte)size, buffer, ref index);
                 BitHelper.WriteBytes((byte)healthMax, buffer, ref index);
@@ -77,6 +85,63 @@ namespace ReplayRecorder.Map
             }
         }
 
+        public struct rDoorID : ISerializable
+        {
+            public byte id;
+
+            public rDoorID(rDoor door)
+            {
+                id = door.id;
+            }
+
+            public void Serialize(FileStream fs)
+            {
+                fs.WriteByte(id);
+            }
+        }
+
         public static Dictionary<eDimensionIndex, List<rDoor>> doors = new Dictionary<eDimensionIndex, List<rDoor>>();
+
+        public struct rDoorState : ISerializable
+        {
+            public byte id;
+            public byte state;
+
+            public rDoorState(rDoor door, eDoorStatus state)
+            {
+                id = door.id;
+                switch (state)
+                {
+                    case eDoorStatus.Open:
+                        this.state = 1;
+                        break;
+                    case eDoorStatus.GluedMax:
+                        this.state = 2;
+                        break;
+                    case eDoorStatus.Destroyed:
+                        this.state = 3;
+                        break;
+                    default:
+                        this.state = 0;
+                        break;
+                }
+            }
+
+            public void Serialize(FileStream fs)
+            {
+                fs.WriteByte(id); 
+                fs.WriteByte(state);
+            }
+        }
+
+        public static void OnDoorStateChange(rDoor door, eDoorStatus state)
+        {
+            SnapshotManager.AddEvent(GameplayEvent.Type.DoorChangeState, new rDoorState(door, state));
+        }
+
+        public static void OnDoorDamage(rDoor door)
+        {
+            SnapshotManager.AddEvent(GameplayEvent.Type.DoorDamage, new rDoorID(door));
+        }
     }
 }

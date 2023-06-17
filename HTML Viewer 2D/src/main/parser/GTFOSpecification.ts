@@ -5,6 +5,7 @@ interface GTFOSpecification
     player: {
         maxHealth: number
     },
+    mines: string[],
     enemies: string[],
     items: string[]
 }
@@ -13,6 +14,10 @@ let GTFOSpecification: GTFOSpecification = {
     player: {
         maxHealth: 25
     },
+    mines: [
+        "Explosive Mine",
+        "C-foam Mine"
+    ],
     enemies: [
         "Unknown",
         

@@ -14,9 +14,50 @@ namespace ReplayRecorder.Map.Patches
 
         private static void AddDoorToMap(Map.rDoor door, LG_Gate gate)
         {
+            APILogger.Debug("Added door.");
+
             if (!Map.doors.ContainsKey(gate.DimensionIndex))
                 Map.doors.Add(gate.DimensionIndex, new List<Map.rDoor>());
             Map.doors[gate.DimensionIndex].Add(door);
+        }
+
+        [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorStateChange))]
+        [HarmonyPostfix]
+        private static void Weak_DoorStateChange(LG_WeakDoor __instance, pDoorState state)
+        {
+            int instanceID = __instance.gameObject.GetInstanceID();
+            if (!doors.ContainsKey(instanceID))
+            {
+                APILogger.Error("Door does not exist in map data, this should not happen.");
+                return;
+            }
+            Map.OnDoorStateChange(doors[instanceID], state.status);
+        }
+
+        [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnSyncDoorStatusChange))]
+        [HarmonyPostfix]
+        private static void Security_DoorStateChange(LG_SecurityDoor __instance, pDoorState state)
+        {
+            int instanceID = __instance.gameObject.GetInstanceID();
+            if (!doors.ContainsKey(instanceID))
+            {
+                APILogger.Error("Door does not exist in map data, this should not happen.");
+                return;
+            }
+            Map.OnDoorStateChange(doors[instanceID], state.status);
+        }
+
+        [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorGotDamage))]
+        [HarmonyPostfix]
+        private static void DoorGotDamage(LG_WeakDoor __instance)
+        {
+            int instanceID = __instance.gameObject.GetInstanceID();
+            if (!doors.ContainsKey(instanceID))
+            {
+                APILogger.Error("Door does not exist in map data, this should not happen.");
+                return;
+            }
+            Map.OnDoorDamage(doors[instanceID]);
         }
 
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.Setup))]

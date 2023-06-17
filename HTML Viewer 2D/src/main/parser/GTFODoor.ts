@@ -6,9 +6,17 @@ interface Window
 
 type GTFODoorType = "weak" | "security" | "bulkhead" | "bulkheadMain" | "apex";
 type GTFODoorSize = "small" | "medium" | "large";
+type GTFODoorState = "closed" | "open" | "glued" | "destroyed";
+let GTFODoorStateMap: GTFODoorState[] = [
+    "closed",
+    "open",
+    "glued",
+    "destroyed"
+]
 
 interface GTFODoor
 {
+    id: number;
     type: GTFODoorType;
     size: GTFODoorSize;
     healthMax: number;
@@ -18,7 +26,7 @@ interface GTFODoor
 }
 interface GTFODoorConstructor
 {
-    new(type: GTFODoorType, size: GTFODoorSize, healthMax: number, position: Vector, rotation: Quaternion): GTFODoor;
+    new(id: number, type: GTFODoorType, size: GTFODoorSize, healthMax: number, position: Vector, rotation: Quaternion): GTFODoor;
     prototype: GTFODoor;
     
     parse(bytes: DataView, reader: Reader): GTFODoor;
@@ -26,8 +34,9 @@ interface GTFODoorConstructor
 
 (function() {
 
-    let GTFODoor: GTFODoorConstructor = window.GTFODoor = function(this: GTFODoor, type: GTFODoorType, size: GTFODoorSize, healthMax: number, position: Vector, rotation: Quaternion)
+    let GTFODoor: GTFODoorConstructor = window.GTFODoor = function(this: GTFODoor, id: number, type: GTFODoorType, size: GTFODoorSize, healthMax: number, position: Vector, rotation: Quaternion)
     {
+        this.id = id;
         this.type = type;
         this.size = size;
         this.healthMax = healthMax;
@@ -40,15 +49,19 @@ interface GTFODoorConstructor
 
     GTFODoor.parse = function(bytes: DataView, reader: Reader): GTFODoor
     {
+        let id = BitHelper.readByte(bytes, reader)
         let type = doorTypes[BitHelper.readByte(bytes, reader)];
         let size = doorSizes[BitHelper.readByte(bytes, reader)];
 
         let healthMax = BitHelper.readByte(bytes, reader);
 
         let position = BitHelper.readVector(bytes, reader);
+        position.x *= GTFOReplaySettings.scale;
+        position.y *= GTFOReplaySettings.scale;
+        position.z *= GTFOReplaySettings.scale;
         let rotation = BitHelper.readHalfQuaternion(bytes, reader);
 
-        return new GTFODoor(type, size, healthMax, position, rotation);
+        return new GTFODoor(id, type, size, healthMax, position, rotation);
     }
 
 })();

@@ -17,6 +17,8 @@ interface GTFOSnapshot
     players: Map<number, bigint>;
     slots: (bigint | null | undefined)[];
     enemies: Map<number, GTFOEnemy>;
+    doors: Map<number, GTFODoorState>;
+    mines: Map<number, GTFOMine>;
 
     dynamics: Map<number, GTFODynamic>;
     tracers: GTFOTracer[];
@@ -456,7 +458,45 @@ interface GTFOSnapshotConstructor
                 player.equipped = GTFOSpecification.items[e.item];
             }
             else throw new ReferenceError("Player did not exist.");
-        } 
+        },
+        "doorChangeState": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventDoorChangeState;
+            snapshot.doors.set(e.id, e.state);
+        },
+        "doorDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventDoorChangeState;
+            // TODO(randomuserhi): Door Shake => probably add a new dictionary for door shake
+            //                     and do the same as I did for the crosses
+        },
+        "spawnMine": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventMineSpawn;
+            let owner = snapshot.slots[e.slot];
+            if (!RHU.exists(owner)) throw ReferenceError("Player that owns this mine does not exist.");
+            let mine = new GTFOMine(e.instance, owner, e.type, e.position, e.rotation);
+            snapshot.mines.set(mine.instance, mine);
+        },
+        "despawnMine": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventMineDespawn;
+            snapshot.mines.delete(e.instance);
+        },
+        "explodeMine": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventMineExplode;
+            snapshot.mines.delete(e.instance);
+        },
+        "tripline": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventMineTripLine;
+            if (snapshot.mines.has(e.instance))
+            {
+                snapshot.mines.get(e.instance)!.length = e.length * GTFOReplaySettings.scale;
+            }
+            else throw ReferenceError("Mine does not exist.");
+        },
     };
 
     let GTFOSnapshot: GTFOSnapshotConstructor = window.GTFOSnapshot = function(this: GTFOSnapshot, owner: GTFOReplay, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot)
@@ -473,7 +513,9 @@ interface GTFOSnapshotConstructor
             this.snet = new Map();
             this.players = new Map();
             this.dynamics = new Map();
+            this.doors = new Map();
             this.slots = new Array(4);
+            this.mines = new Map();
             this.tracers = [];
             this.cross = [];
         }
@@ -522,8 +564,15 @@ interface GTFOSnapshotConstructor
         this.tracers = [...snapshot.tracers];
         this.cross = [...snapshot.cross];
 
+        // NOTE(randomuserhi): Since the data inside mines don't change these do not need to be deep copied
+        this.mines = new Map();
+        for (let kv of snapshot.mines) this.mines.set(kv[0], kv[1]);
+
         this.enemies = new Map();
         for (let kv of snapshot.enemies) this.enemies.set(kv[0], GTFOEnemy.clone(kv[1]));
+
+        this.doors = new Map();
+        for (let kv of snapshot.doors) this.doors.set(kv[0], kv[1]);
         
         this.snet = new Map();
         for (let kv of snapshot.snet) this.snet.set(kv[0], GTFOPlayer.clone(kv[1]));

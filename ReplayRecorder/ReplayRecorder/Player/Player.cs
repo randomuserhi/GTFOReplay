@@ -163,6 +163,7 @@ namespace ReplayRecorder.Player
             APILogger.Debug($"Initializing...");
 
             playerList.Clear();
+            players.Clear();
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel)
             {
                 rPlayerAgent rPlayer = new rPlayerAgent(player);

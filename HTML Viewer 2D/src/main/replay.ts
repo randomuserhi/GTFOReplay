@@ -232,7 +232,7 @@ RHU.import(RHU.module({ trace: new Error(),
             this.ctx.translate(-this.camera.x, -this.camera.y);
             this.ctx.scale(this.camera.scale, this.camera.scale);
 
-            // Draw Map => perhaps move to a seperate function
+            // Draw Map => perhaps move to a seperate function => TODO(randomuserhi): Manage different dimensions
             let dimension = this.replay.dimensions.get(0)!;
             let map = dimension.map;
             for (let i = 0; i < map.surfaces.length; ++i)
@@ -244,7 +244,158 @@ RHU.import(RHU.module({ trace: new Error(),
             // Draw snapshot => perhaps move to a seperate function
 
             // Draw doors
-            // TODO(randomuserhi): ...
+            for (let door of map.doors)
+            {
+                this.ctx.save();
+
+                let q1: Quaternion = door.rotation;
+                let euler: Vector = {x: 0, y: 0, z: 0};
+                let sqw = q1.w*q1.w;
+                let sqx = q1.x*q1.x;
+                let sqy = q1.y*q1.y;
+                let sqz = q1.z*q1.z;
+                let unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+                let test = q1.x*q1.y + q1.z*q1.w;
+                if (test > 0.499*unit) 
+                { // singularity at north pole
+                    euler.y = 2 * Math.atan2(q1.x,q1.w);
+                    euler.x = Math.PI/2;
+                    euler.z = 0;
+                }
+                else if (test < -0.499*unit) 
+                { // singularity at south pole
+                    euler.y = -2 * Math.atan2(q1.x,q1.w);
+                    euler.x = -Math.PI/2;
+                    euler.z = 0;
+                }
+                else
+                {
+                    euler.y = Math.atan2(2*q1.y*q1.w-2*q1.x*q1.z , sqx - sqy - sqz + sqw);
+                    euler.x = Math.asin(2*test/unit);
+                    euler.z = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw);
+                }
+
+                this.ctx.translate(door.position.x, -door.position.z);
+                this.ctx.rotate(euler.y)
+
+                let state: GTFODoorState = "closed";
+                if (RHU.exists(snapshot.doors.has(door.id)))
+                    state = snapshot.doors.get(door.id)!;
+
+                const width = door.size == "small" ? 100 : 200;
+                const height = 20;
+                
+                switch (state)
+                {
+                    case "destroyed":
+                        this.ctx.fillStyle = "rgba(50, 50, 50, 0.5)";
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                        this.ctx.fillStyle = "rgba(50, 50, 50, 1)";
+                        this.ctx.fillRect(-width / 2, -height / 2, 10, height);
+                        this.ctx.fillRect(width / 2 - 10, -height / 2, 10, height);
+                        break;
+                    case "open":
+                        this.ctx.fillStyle = "rgba(50, 50, 50, 0.8)";
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                        if (door.type == "weak") this.ctx.fillStyle = "#00cc00";
+                        else this.ctx.fillStyle = "#cc0000";
+                        this.ctx.fillRect(-width / 2, -height / 2, 10, height);
+                        this.ctx.fillRect(width / 2 - 10, -height / 2, 10, height);
+                        break;
+                    case "glued":
+                        this.ctx.fillStyle = "#0000cc";
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                        break;
+                    default:
+                        if (door.type == "weak") this.ctx.fillStyle = "#00cc00";
+                        else this.ctx.fillStyle = "#cc0000";
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                        break;
+                }
+                this.ctx.restore();
+            }
+
+            // Draw mines
+            for (let mine of snapshot.mines.values())
+            {
+                this.ctx.save();
+
+                let q1: Quaternion = mine.rotation;
+                let euler: Vector = {x: 0, y: 0, z: 0};
+                let sqw = q1.w*q1.w;
+                let sqx = q1.x*q1.x;
+                let sqy = q1.y*q1.y;
+                let sqz = q1.z*q1.z;
+                let unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+                let test = q1.x*q1.y + q1.z*q1.w;
+                if (test > 0.499*unit) 
+                { // singularity at north pole
+                    euler.y = 2 * Math.atan2(q1.x,q1.w);
+                    euler.x = Math.PI/2;
+                    euler.z = 0;
+                }
+                else if (test < -0.499*unit) 
+                { // singularity at south pole
+                    euler.y = -2 * Math.atan2(q1.x,q1.w);
+                    euler.x = -Math.PI/2;
+                    euler.z = 0;
+                }
+                else
+                {
+                    euler.y = Math.atan2(2*q1.y*q1.w-2*q1.x*q1.z , sqx - sqy - sqz + sqw);
+                    euler.x = Math.asin(2*test/unit);
+                    euler.z = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw);
+                }
+
+                this.ctx.translate(mine.position.x, -mine.position.z);
+                this.ctx.rotate(euler.y);
+
+                const width = 10;
+                const height = 20;
+
+                switch (mine.type)
+                {
+                    case "C-foam Mine":
+                        this.ctx.fillStyle = "#0000ff";
+                        break;
+                    default:
+                        this.ctx.fillStyle = "#ff0000";
+                        break;
+                }
+                this.ctx.fillRect(-height / 2, -width / 2, height, width);
+
+                // https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+                let dir: Vector = {
+                    x: 0,
+                    y: 0,
+                    z: mine.length
+                }
+                let dotuv = q1.x * dir.x + q1.y * dir.y + q1.z * dir.z;
+                let dotuu = q1.x * q1.x + q1.y * q1.y + q1.z * q1.z;
+                let crossuv: Vector = {
+                    x: q1.y * dir.z - q1.z * dir.y,
+                    y: - q1.x * dir.z + q1.z * dir.x,
+                    z: q1.x * dir.y - q1.y * dir.x
+                };
+                let laser: Vector = {
+                    x: 2 * dotuv * q1.x + (q1.w * q1.w - dotuu) * dir.x + 2 * q1.w * crossuv.x,
+                    y: 2 * dotuv * q1.y + (q1.w * q1.w - dotuu) * dir.y + 2 * q1.w * crossuv.y,
+                    z: 2 * dotuv * q1.z + (q1.w * q1.w - dotuu) * dir.z + 2 * q1.w * crossuv.z
+                };
+                let length = Math.sqrt(laser.x * laser.x + laser.z * laser.z);
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, 0);
+                this.ctx.lineTo(0, length);
+                this.ctx.lineWidth = 4;
+                let grd = this.ctx.createLinearGradient(0,0,0,length);
+                grd.addColorStop(0,"rgba(255, 0, 0, 0.8)");
+                grd.addColorStop(1,"rgba(255, 0, 0, 0)");
+                this.ctx.strokeStyle = grd;
+                this.ctx.stroke();
+
+                this.ctx.restore();
+            }
 
             // Draw tracers
             for (let tracer of snapshot.tracers)

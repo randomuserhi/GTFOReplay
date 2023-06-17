@@ -44,7 +44,7 @@ interface GTFOReplayConstructor
 
 (function() {
 
-    let eventParseMap: Record<GTFOEventType, (bytes: DataView, reader: Reader) => GTFOEvent> = {
+    let eventParseMap: Record<GTFOEventType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {
         "unknown": function(bytes: DataView, reader: Reader): GTFOEvent
         {
             throw new Error("Unknown event type");
@@ -263,6 +263,75 @@ interface GTFOReplayConstructor
                 detail: e
             };
         },
+        "doorChangeState": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventDoorChangeState = {
+                id: BitHelper.readByte(bytes, reader),
+                state: GTFODoorStateMap[BitHelper.readByte(bytes, reader)]
+            };
+            return {
+                type: "doorChangeState",
+                detail: e
+            };
+        },
+        "doorDamage": function(bytes: DataView, reader: Reader): GTFOEvent
+        {
+            let e: GTFOEventDoorDamage = {
+                id: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                type: "doorDamage",
+                detail: e
+            };
+        },
+        "spawnMine": function(bytes: DataView, reader: Reader, parser: GTFOSnapshot): GTFOEvent
+        {
+            let e: GTFOEventMineSpawn = {
+                slot: BitHelper.readByte(bytes, reader),
+                type: GTFOSpecification.mines[BitHelper.readByte(bytes, reader)],
+                instance: BitHelper.readInt(bytes, reader),
+                position: BitHelper.readVector(bytes, reader),
+                rotation: BitHelper.readHalfQuaternion(bytes, reader)
+            };
+            e.position.x *= GTFOReplaySettings.scale;
+            e.position.y *= GTFOReplaySettings.scale;
+            e.position.z *= GTFOReplaySettings.scale;
+            return {
+                type: "spawnMine",
+                detail: e
+            };
+        },
+        "despawnMine": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventMineDespawn = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "despawnMine",
+                detail: e
+            };
+        },
+        "explodeMine": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventMineExplode = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "explodeMine",
+                detail: e
+            };
+        },
+        "tripline": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventMineTripLine = {
+                instance: BitHelper.readInt(bytes, reader),
+                length: BitHelper.readHalf(bytes, reader)
+            };
+            return {
+                type: "tripline",
+                detail: e
+            };
+        },
     }
 
     let GTFOReplay: GTFOReplayConstructor = window.GTFOReplay = function(this: GTFOReplay, binary: ArrayBuffer)
@@ -308,7 +377,7 @@ interface GTFOReplayConstructor
                 let rel = BitHelper.readUShort(bytes, reader); // relative time to last tick
                 let timestamp = now - rel;
 
-                let e = eventParseMap[type](bytes, reader);
+                let e = eventParseMap[type](bytes, reader, parser);
                 let t: GTFOTimeline = {
                     tick: tick,
                     type: "event",
