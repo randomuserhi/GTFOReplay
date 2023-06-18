@@ -23,6 +23,7 @@ interface GTFOSnapshot
     dynamics: Map<number, GTFODynamic>;
     tracers: GTFOTracer[];
     cross: GTFOCross[];
+    sentries: Map<number, GTFOSentry>;
 
     clone(snapshot: GTFOSnapshot): void;
     do(t: GTFOTimeline): void;
@@ -210,7 +211,8 @@ interface GTFOSnapshotConstructor
                     pos: dyn.position,
                     time: time,
                     deviation: d,
-                    shake: shake
+                    shake: shake,
+                    color: "#f00"
                 });
             }
             else throw new ReferenceError("Referenced enemy does not exist.");
@@ -233,8 +235,14 @@ interface GTFOSnapshotConstructor
             let eDynamic = snapshot.dynamics.get(e.instance);
             if (RHU.exists(enemy) && RHU.exists(eDynamic))
             {
+                let pDynamic;
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
-                let pDynamic = snapshot.dynamics.get(player.instance)!;
+                if (e.sentry) 
+                {
+                    if (RHU.exists(player.sentry)) pDynamic = snapshot.dynamics.get(player.sentry)!;
+                    else throw ReferenceError("Player damaged an enemy with a sentry, yet a sentry was not placed by them.");
+                }
+                else pDynamic = snapshot.dynamics.get(player.instance)!;
                 // TODO(randomuserhi): Improve performance of this...
                 let r = xor(time + e.damage ^ 0x190104029);
                 r(); r(); r();
@@ -274,13 +282,35 @@ interface GTFOSnapshotConstructor
         {
             // TODO(randomuserhi)
         },
-        "playerDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "playerDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventPlayerDead;
             if (RHU.exists(snapshot.slots[e.slot]))
             {
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
                 player.alive = false;
+
+                let dyn = snapshot.dynamics.get(player.instance);
+                if (RHU.exists(dyn))
+                {
+                    let r = xor(time + player.instance ^ 0x190104029);
+                    r(); r(); r();
+                    let d = r() * 300;
+                    const shakeAmount = 13;
+                    let shake = new Array(10);
+                    for (let i = 0; i < 10; ++i)
+                    {
+                        shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
+                    }
+                    snapshot.cross.push({
+                        pos: dyn.position,
+                        time: time,
+                        deviation: d,
+                        shake: shake,
+                        color: "#fff"
+                    });
+                }
+                else throw new ReferenceError("Referenced player does not exist.");
             }
             else throw new ReferenceError("Player that died does not exist");
         },
@@ -497,6 +527,34 @@ interface GTFOSnapshotConstructor
             }
             else throw ReferenceError("Mine does not exist.");
         },
+        "spawnSentry": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventSentrySpawn;
+            let owner = snapshot.slots[e.slot];
+            if (!RHU.exists(owner)) throw ReferenceError("Player that owns this sentry does not exist.");
+            let player = snapshot.snet.get(owner)!;
+            if (player.sentry != null) throw Error("Player has already spawned a sentry.");
+            player.sentry = e.instance;
+            snapshot.sentries.set(e.instance, new GTFOSentry(e.instance, owner));
+            snapshot.dynamics.set(e.instance, {
+                position: { x: e.position.x, y: e.position.y, z: e.position.z },
+                rotation: { x: 0, y: 0, z: 0, w: 0 }
+            });
+        },
+        "despawnSentry": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventSentryDespawn;
+            if (snapshot.sentries.has(e.instance))
+            {
+                let sentry = snapshot.sentries.get(e.instance)!;
+                if (!RHU.exists(sentry.owner)) throw ReferenceError("Player that owns this sentry does not exist.");
+                let player = snapshot.snet.get(sentry.owner)!;
+                player.sentry = null;
+                snapshot.sentries.delete(e.instance);
+                snapshot.dynamics.delete(e.instance);
+            }
+            else throw ReferenceError("Sentry does not exist.");
+        },
     };
 
     let GTFOSnapshot: GTFOSnapshotConstructor = window.GTFOSnapshot = function(this: GTFOSnapshot, owner: GTFOReplay, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot)
@@ -518,6 +576,7 @@ interface GTFOSnapshotConstructor
             this.mines = new Map();
             this.tracers = [];
             this.cross = [];
+            this.sentries = new Map();
         }
 
         if (RHU.exists(tick)) this.tick = tick;
@@ -563,10 +622,14 @@ interface GTFOSnapshotConstructor
         // NOTE(randomuserhi): Since the data inside tracers / cross don't change these do not need to be deep copied
         this.tracers = [...snapshot.tracers];
         this.cross = [...snapshot.cross];
-
+        
         // NOTE(randomuserhi): Since the data inside mines don't change these do not need to be deep copied
         this.mines = new Map();
         for (let kv of snapshot.mines) this.mines.set(kv[0], kv[1]);
+        
+        // NOTE(randomuserhi): Since the data inside sentries don't change these do not need to be deep copied
+        this.sentries = new Map();
+        for (let kv of snapshot.sentries) this.sentries.set(kv[0], kv[1]);
 
         this.enemies = new Map();
         for (let kv of snapshot.enemies) this.enemies.set(kv[0], GTFOEnemy.clone(kv[1]));

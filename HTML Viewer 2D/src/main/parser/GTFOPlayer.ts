@@ -13,6 +13,7 @@ interface GTFOPlayer
     alive: boolean;
     health: number;
     equipped: string;
+    sentry: number | null | undefined; //active sentry instance
 }
 interface GTFOPlayerConstructor
 {
@@ -32,6 +33,7 @@ interface GTFOPlayerConstructor
         this.alive = true;
         this.health = GTFOSpecification.player.maxHealth;
         this.equipped = "Unknown";
+        this.sentry = null;
     } as Function as GTFOPlayerConstructor;
     GTFOPlayer.clone = function(player: GTFOPlayer): GTFOPlayer
     {

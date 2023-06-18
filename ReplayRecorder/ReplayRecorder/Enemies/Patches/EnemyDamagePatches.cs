@@ -39,7 +39,7 @@ namespace ReplayRecorder.Enemies.Patches
                 }
                 else if (PlayerSentry.sentryName != null) // Damage done by sentry
                 {
-                    // TODO(randomuserhi): Manage sentries
+                    EnemyDamage.OnBulletDamage(__instance.Owner, p, damage, true);
                 }
                 else APILogger.Debug($"Sentry name was null, this should not happen.");
             }

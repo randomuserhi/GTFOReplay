@@ -121,8 +121,12 @@ interface GTFOReplayConstructor
             let e: GTFOEventEnemyBulletDamage = {
                 instance: BitHelper.readInt(bytes, reader), // enemy instance id
                 damage: BitHelper.readHalf(bytes, reader), // damage
-                slot: BitHelper.readByte(bytes, reader) // player slot
+                slot: 255, // player slot
+                sentry: false
             };
+            let temp = BitHelper.readByte(bytes, reader);
+            e.slot = temp & 0b1111;
+            e.sentry = (temp & 0b10000000) == 0b10000000;
             return {
                 type: "enemyBulletDamage",
                 detail: e
@@ -329,6 +333,28 @@ interface GTFOReplayConstructor
             };
             return {
                 type: "tripline",
+                detail: e
+            };
+        },
+        "spawnSentry": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventSentrySpawn = {
+                slot: BitHelper.readByte(bytes, reader),
+                instance: BitHelper.readInt(bytes, reader),
+                position: BitHelper.readVector(bytes, reader)
+            };
+            return {
+                type: "spawnSentry",
+                detail: e
+            };
+        },
+        "despawnSentry": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventSentryDespawn = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "despawnSentry",
                 detail: e
             };
         },

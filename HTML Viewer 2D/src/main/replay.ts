@@ -490,6 +490,22 @@ RHU.import(RHU.module({ trace: new Error(),
                     this.ctx.lineTo(20, 12);
                     this.ctx.closePath();
                 }
+                else if (snapshot.sentries.has(instance))
+                {
+                    let sentry = snapshot.sentries.get(instance)!;
+                    let p = snapshot.snet.get(sentry.owner)!;
+                    let colors: string[] = [
+                        "194, 31, 78",
+                        "24, 147, 94",
+                        "32, 85, 140",
+                        "122, 26, 142"
+                    ];
+                    this.ctx.fillStyle = `rgba(${colors[p.slot]},1)`;
+
+                    const width = 15;
+                    const height = 30;
+                    this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                }
                 else if (snapshot.enemies.has(instance))
                 {
                     let color: string;
@@ -649,7 +665,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.moveTo(size, -size);
                 this.ctx.lineTo(-size, size);
                 this.ctx.lineWidth = 4;
-                this.ctx.strokeStyle = `#ff0000`
+                this.ctx.strokeStyle = `${cross.color}`
                 this.ctx.stroke();
 
                 this.ctx.restore();

@@ -13,11 +13,13 @@ namespace ReplayRecorder.Enemies
             private float damage;
             private byte source;
 
-            public rEnemyDamage(rEnemyAgent enemy, float damage, PlayerAgent source)
+            public rEnemyDamage(rEnemyAgent enemy, float damage, PlayerAgent source, bool sentry)
             {
                 this.enemy = enemy;
                 this.damage = damage;
-                this.source = (byte)source.PlayerSlotIndex;
+                this.source = (byte)(source.PlayerSlotIndex | (sentry ? 0b10000000 : 0));
+                // The most significant bit of the byte flags whether it is a sentry or not
+                // the remaining bytes is the player slot
             }
 
             public const int SizeOf = sizeof(int) + sizeof(ushort) + 1;
@@ -32,7 +34,7 @@ namespace ReplayRecorder.Enemies
             }
         }
 
-        public static void OnBulletDamage(EnemyAgent receiver, PlayerAgent source, float damage)
+        public static void OnBulletDamage(EnemyAgent receiver, PlayerAgent source, float damage, bool sentry = false)
         {
             //if (damage <= 0) return;
             int instance = receiver.GetInstanceID();
@@ -43,7 +45,7 @@ namespace ReplayRecorder.Enemies
             }
             rEnemyAgent rEnemy = Enemy.enemies[instance];
             APILogger.Debug($"{source.Owner.NickName} did {damage} bullet damage to [{instance}].");
-            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBulletDamage, new rEnemyDamage(rEnemy, damage, source));
+            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBulletDamage, new rEnemyDamage(rEnemy, damage, source, sentry));
         }
 
         public static void OnMeleeDamage(EnemyAgent receiver, PlayerAgent source, float damage)
@@ -57,7 +59,7 @@ namespace ReplayRecorder.Enemies
             }
             rEnemyAgent rEnemy = Enemy.enemies[instance];
             APILogger.Debug($"{source.Owner.NickName} did {damage} melee damage to [{instance}].");
-            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyMeleeDamage, new rEnemyDamage(rEnemy, damage, source));
+            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyMeleeDamage, new rEnemyDamage(rEnemy, damage, source, false));
         }
     }
 }

@@ -22,6 +22,7 @@ namespace ReplayRecorder
             Map.Map.Reset();
             Mines.Mine.Reset();
             Enemies.Enemy.Reset();
+            Player.PlayerSentry.Reset();
         }
     }
 }

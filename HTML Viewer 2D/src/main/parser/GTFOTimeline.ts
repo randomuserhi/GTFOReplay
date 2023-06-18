@@ -13,6 +13,7 @@ interface GTFOCross
     time: number;
     deviation: number;
     shake: (number[])[];
+    color: string;
 }
 
 interface GTFOTracer
@@ -66,6 +67,8 @@ interface GTFOEventMap
     "despawnMine": GTFOEventMineDespawn;
     "explodeMine": GTFOEventMineExplode;
     "tripline": GTFOEventMineTripLine;
+    "spawnSentry": GTFOEventSentrySpawn;
+    "despawnSentry": GTFOEventSentryDespawn;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -94,7 +97,9 @@ let eventMap: GTFOEventType[] = [
     "spawnMine",
     "despawnMine",
     "explodeMine",
-    "tripline"
+    "tripline",
+    "spawnSentry",
+    "despawnSentry"
 ];
 
 interface Window
@@ -138,6 +143,7 @@ interface GTFOEventEnemyBulletDamage
     instance: number;
     damage: number;
     slot: number;
+    sentry: boolean;
 }
 interface GTFOEventEnemyMeleeDamage
 {
@@ -237,4 +243,14 @@ interface GTFOEventMineTripLine
 {
     instance: number;
     length: number;
+}
+interface GTFOEventSentrySpawn
+{
+    instance: number;
+    slot: number;
+    position: Vector;
+}
+interface GTFOEventSentryDespawn
+{
+    instance: number;
 }

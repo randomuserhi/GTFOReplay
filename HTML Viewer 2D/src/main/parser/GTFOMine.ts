@@ -18,8 +18,6 @@ interface GTFOMineConstructor
 {
     new(instance: number, owner: bigint, type: string, position: Vector, rotation: Quaternion): GTFOMine;
     prototype: GTFOMine;
-    
-    parse(bytes: DataView, reader: Reader, parser: GTFOSnapshot): GTFOMine;
 }
 
 (function() {
