@@ -5,10 +5,12 @@ interface GTFOReplaySettings
     scale: number;
     tracerLingerTime: number;
     crossLingerTime: number;
+    hitLingerTime: number;
 }
 
 let GTFOReplaySettings: GTFOReplaySettings = {
     scale: 30,
     tracerLingerTime: 200,
-    crossLingerTime: 1000
+    crossLingerTime: 1000,
+    hitLingerTime: 200
 }

@@ -7,6 +7,18 @@ interface GTFOTimeline<T = unknown>
     detail: T;
 }
 
+interface GTFOTrail
+{
+    points: GTFOTimedPoint[];
+    duration: number;
+}
+
+interface GTFOTimedPoint
+{
+    position: Vector;
+    time: number; 
+}
+
 interface GTFOCross
 {
     pos: Vector;
@@ -23,6 +35,12 @@ interface GTFOTracer
     damage: number;
     time: number;
     color: string;
+}
+
+interface GTFOHit
+{
+    pos: Vector;
+    time: number;
 }
 
 interface GTFODynamic
@@ -69,6 +87,8 @@ interface GTFOEventMap
     "tripline": GTFOEventMineTripLine;
     "spawnSentry": GTFOEventSentrySpawn;
     "despawnSentry": GTFOEventSentryDespawn;
+    "spawnPellet": GTFOEventPelletSpawn;
+    "despawnPellet": GTFOEventPelletDespawn;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -99,7 +119,9 @@ let eventMap: GTFOEventType[] = [
     "explodeMine",
     "tripline",
     "spawnSentry",
-    "despawnSentry"
+    "despawnSentry",
+    "spawnPellet",
+    "despawnPellet"
 ];
 
 interface Window
@@ -248,9 +270,16 @@ interface GTFOEventSentrySpawn
 {
     instance: number;
     slot: number;
-    position: Vector;
 }
 interface GTFOEventSentryDespawn
 {
     instance: number;
+}
+interface GTFOEventPelletSpawn
+{
+    instance: number,
+}
+interface GTFOEventPelletDespawn
+{
+    instance: number
 }

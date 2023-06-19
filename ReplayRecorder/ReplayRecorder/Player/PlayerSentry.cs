@@ -25,14 +25,13 @@ namespace ReplayRecorder.Player
             this.pos = pos;
         }
 
-        public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3;
+        public const int SizeOf = 1 + sizeof(int);
         private static byte[] buffer = new byte[SizeOf];
         public void Serialize(FileStream fs)
         {
             int index = 0;
             BitHelper.WriteBytes(slot, buffer, ref index);
             BitHelper.WriteBytes(instance, buffer, ref index);
-            BitHelper.WriteBytes(pos, buffer, ref index);
 
             fs.Write(buffer);
         }

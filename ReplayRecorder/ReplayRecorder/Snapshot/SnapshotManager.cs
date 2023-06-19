@@ -94,7 +94,10 @@ namespace ReplayRecorder
             MineTripLine,
 
             SpawnSentry,
-            DespawnSentry
+            DespawnSentry,
+
+            SpawnPellet,
+            DespawnPellet
         }
 
         public long timestamp;

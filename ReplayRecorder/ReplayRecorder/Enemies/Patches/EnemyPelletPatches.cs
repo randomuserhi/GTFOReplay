@@ -44,19 +44,24 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         private static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data)
         {
-            if (!SNet.IsMaster) return true;
-
-            Agent? comp = null;
+            Agent comp;
             data.target.TryGet(out comp);
-            GameObject projectile = ProjectileManager.SpawnProjectileType(data.type, data.position, Quaternion.LookRotation(data.forward));
+            Vector3 pos = data.position;
+            Quaternion rot = Quaternion.LookRotation(data.forward);
+            GameObject projectile = ProjectileManager.SpawnProjectileType(data.type, pos, rot);
             IProjectile component = projectile.GetComponent<IProjectile>();
             ProjectileTargeting targeting = projectile.GetComponent<ProjectileTargeting>();
             if (targeting != null)
                 __instance.m_projectiles.Add(targeting);
             component.OnFire(comp);
 
-            if (currentShooter != null) Enemy.RegisterPellet(currentShooter, projectile);
-            else APILogger.Debug($"currentShooter was null, this should not happen.");
+            if (SNet.IsMaster)
+            {
+                if (currentShooter != null) Enemy.RegisterPellet(currentShooter, projectile);
+                else APILogger.Debug($"currentShooter was null, this should not happen.");
+            }
+
+            Enemy.OnPelletSpawn(projectile, targeting!);
 
             return false;
         }
@@ -65,10 +70,9 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         private static void OnDestroy(ProjectileTargeting __instance)
         {
-            if (!SNet.IsMaster) return;
-
             int instance = __instance.gameObject.GetInstanceID();
-            Enemy.UnregisterPellet(instance);
+            Enemy.OnPelletDespawn(instance);
+            if (!SNet.IsMaster) Enemy.UnregisterPellet(instance);
         }
 
         private static EnemyAgent? hitByShooter = null;
@@ -77,14 +81,17 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         private static void Prefix_Collision(ProjectileBase __instance)
         {
-            if (!SNet.IsMaster) return;
-
             int instance = __instance.gameObject.GetInstanceID();
-            if (Enemy.pellets.ContainsKey(instance))
-                hitByShooter = Enemy.pellets[instance].owner;
-            else APILogger.Debug($"Projectile was not tracked, this should not happen.");
+            Enemy.OnPelletDespawn(instance);
 
-            Enemy.UnregisterPellet(instance);
+            if (SNet.IsMaster)
+            {
+                if (Enemy.pellets.ContainsKey(instance))
+                    hitByShooter = Enemy.pellets[instance].owner;
+                else APILogger.Debug($"Projectile was not tracked, this should not happen.");
+
+                Enemy.UnregisterPellet(instance);
+            }
         }
 
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]

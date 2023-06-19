@@ -427,6 +427,64 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.stroke();
             }
 
+            // Draw trails
+            for (let kv of snapshot.trails)
+            {
+                let trail = kv[1];
+                if (trail.points.length < 1) continue;
+
+                let fadeAmount = 1 / trail.points.length;
+                let fade = 0;
+                let color = "255, 255, 255"
+                for (let i = 1; i < trail.points.length; ++i)
+                {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(trail.points[i - 1].position.x, -trail.points[i - 1].position.z);
+                    this.ctx.lineTo(trail.points[i].position.x, -trail.points[i].position.z);
+
+                    this.ctx.lineWidth = 2;
+                    let grd = this.ctx.createLinearGradient(trail.points[i - 1].position.x, -trail.points[i - 1].position.z,trail.points[i].position.x, -trail.points[i].position.z);
+                    grd.addColorStop(0,`rgba(${color}, ${fade})`);
+                    grd.addColorStop(1,`rgba(${color}, ${fade += fadeAmount})`);
+                    this.ctx.strokeStyle = grd;
+                    this.ctx.stroke();
+                }
+                
+                let dynamic = snapshot.dynamics.get(kv[0]);
+                if (RHU.exists(dynamic)) 
+                {
+                    let last = trail.points.length - 1;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(trail.points[last].position.x, -trail.points[last].position.z);
+                    this.ctx.lineTo(dynamic.position.x, -dynamic.position.z);
+
+                    this.ctx.lineWidth = 2;
+                    let grd = this.ctx.createLinearGradient(trail.points[last].position.x, -trail.points[last].position.z,dynamic.position.x,-dynamic.position.z);
+                    grd.addColorStop(0,`rgba(${color}, 1)`);
+                    grd.addColorStop(1,`rgba(${color}, 1)`);
+                    this.ctx.strokeStyle = grd;
+                    this.ctx.stroke();
+                }                
+            }
+
+            // Draw hits
+            for (let hit of snapshot.hits)
+            {
+                if (hit.time > snapshot.time)
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                let t = (snapshot.time - hit.time) / GTFOReplaySettings.hitLingerTime;
+
+                this.ctx.beginPath();
+                this.ctx.arc(hit.pos.x, -hit.pos.z, 12 * t, 0, 2 * Math.PI);
+                this.ctx.lineWidth = 1 + 3 * (1 - t);
+                this.ctx.strokeStyle = `rgba(255, 255, 255, 1)`;
+                this.ctx.stroke();
+            }
+
             // Draw dynamics
             for (let kv of snapshot.dynamics)
             {
@@ -466,137 +524,149 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.translate(dynamic.position.x, -dynamic.position.z);
                 this.ctx.rotate(euler.y);
                 
-                if (snapshot.players.has(instance))
+                if (snapshot.pellets.has(instance))
                 {
-                    let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
-                    let colors: string[] = [
-                        "194, 31, 78",
-                        "24, 147, 94",
-                        "32, 85, 140",
-                        "122, 26, 142"
-                    ];
-                    this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.5"})`;
-
-                    // Draw equipped item above player
-                    /*let img = icons[p.equipped];
-                    let ratio = img.height / img.width;
-                    let width = 70;
-                    if (!img.hasAttribute("data-failed")) this.ctx.drawImage(img, -width / 2, -80, width, width * ratio);*/
-
-                    // Draw player
                     this.ctx.beginPath();
-                    this.ctx.moveTo(0, -25);
-                    this.ctx.lineTo(-20, 12);
-                    this.ctx.lineTo(20, 12);
-                    this.ctx.closePath();
+                    this.ctx.moveTo(0, 0);
+                    //this.ctx.bezierCurveTo(10, -15, -10, -15, 0, 0);
+                    this.ctx.bezierCurveTo(-10, 15, 10, 15, 0, 0);
+                    this.ctx.fillStyle = "#edbc66";
+                    this.ctx.fill();
                 }
-                else if (snapshot.sentries.has(instance))
-                {
-                    let sentry = snapshot.sentries.get(instance)!;
-                    let p = snapshot.snet.get(sentry.owner)!;
-                    let colors: string[] = [
-                        "194, 31, 78",
-                        "24, 147, 94",
-                        "32, 85, 140",
-                        "122, 26, 142"
-                    ];
-                    this.ctx.fillStyle = `rgba(${colors[p.slot]},1)`;
-
-                    const width = 15;
-                    const height = 30;
-                    this.ctx.fillRect(-width / 2, -height / 2, width, height);
-                }
-                else if (snapshot.enemies.has(instance))
-                {
-                    let color: string;
-                    let enemy = snapshot.enemies.get(instance)!;
-                    let charger = enemy.type.includes("Charger");
-                    if (enemy.state == "InCombat") {
-                        if (charger) color = "130, 0, 0";
-                        else color = "255, 0, 0";
-                    }
-                    else if (enemy.state == "Patrolling") {
-                        if (charger) color = "0, 0, 190";
-                        else color = "0, 0, 255";
-                    }
-                    else if (charger) color = "80, 80, 80";
-                    else color = "136, 136, 136";
-                    this.ctx.fillStyle = `rgba(${color}, ${enemy.type.includes("Shadow") ? 0.3 : 1})`;
-
-                    let polygon = function(ctx: CanvasRenderingContext2D, radius: number, sides: number) 
+                else
+                { 
+                    if (snapshot.players.has(instance))
                     {
-                        if (sides < 3) return;
-                        ctx.save();
-                        ctx.rotate(-Math.PI / 2);
-                        ctx.beginPath();
-                        var a = ((Math.PI * 2)/sides);
-                        ctx.moveTo(radius,0);
-                        for (var i = 1; i < sides; i++) 
-                        {
-                            ctx.lineTo(radius*Math.cos(a*i),radius*Math.sin(a*i));
+                        let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
+                        let colors: string[] = [
+                            "194, 31, 78",
+                            "24, 147, 94",
+                            "32, 85, 140",
+                            "122, 26, 142"
+                        ];
+                        this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.5"})`;
+
+                        // Draw equipped item above player
+                        /*let img = icons[p.equipped];
+                        let ratio = img.height / img.width;
+                        let width = 70;
+                        if (!img.hasAttribute("data-failed")) this.ctx.drawImage(img, -width / 2, -80, width, width * ratio);*/
+
+                        // Draw player
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, -25);
+                        this.ctx.lineTo(-20, 12);
+                        this.ctx.lineTo(20, 12);
+                        this.ctx.closePath();
+                    }
+                    else if (snapshot.sentries.has(instance))
+                    {
+                        let sentry = snapshot.sentries.get(instance)!;
+                        let p = snapshot.snet.get(sentry.owner)!;
+                        let colors: string[] = [
+                            "194, 31, 78",
+                            "24, 147, 94",
+                            "32, 85, 140",
+                            "122, 26, 142"
+                        ];
+                        this.ctx.fillStyle = `rgba(${colors[p.slot]},1)`;
+
+                        const width = 15;
+                        const height = 30;
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                    }
+                    else if (snapshot.enemies.has(instance))
+                    {
+                        let color: string;
+                        let enemy = snapshot.enemies.get(instance)!;
+                        let charger = enemy.type.includes("Charger");
+                        if (enemy.state == "InCombat") {
+                            if (charger) color = "130, 0, 0";
+                            else color = "255, 0, 0";
                         }
-                        ctx.closePath();
-                        ctx.restore();
-                    }
+                        else if (enemy.state == "Patrolling") {
+                            if (charger) color = "0, 0, 190";
+                            else color = "0, 0, 255";
+                        }
+                        else if (charger) color = "80, 80, 80";
+                        else color = "136, 136, 136";
+                        this.ctx.fillStyle = `rgba(${color}, ${enemy.type.includes("Shadow") ? 0.3 : 1})`;
 
-                    if (charger) this.ctx.scale(1.05, 1.05);
-                    switch (enemy.type)
-                    {
-                        case "Baby":
-                            this.ctx.scale(0.6, 0.6);
-                        case "Charger":
-                        case "Shadow":
-                        case "Striker":
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(0, -25);
-                            this.ctx.lineTo(-20, 12);
-                            this.ctx.lineTo(20, 12);
-                            this.ctx.closePath();
-                            break;
-                        case "Big Charger":
-                        case "Big Shadow":
-                        case "Big Striker":
-                            polygon(this.ctx, 25, 4);
-                            break;
-                        case "Tank":
-                            polygon(this.ctx, 30, 6);
-                            break;
-                        case "Mother":
-                            this.ctx.scale(1, 1.3);
-                            polygon(this.ctx, 25, 6);
-                            break;
-                        case "Big Shooter":
-                            this.ctx.beginPath();
-                            this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
-                            break;
-                        case "Shooter":
-                            this.ctx.beginPath();
-                            this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
-                            break;
-                        case "Snatcher":
-                            this.ctx.scale(1, 1.3);
-                        case "Charger Scout":
-                        case "Shadow Scout":
-                        case "Scout":
-                            polygon(this.ctx, 20, 8);
-                            break;
-                        case "Hybrid":
-                            polygon(this.ctx, 25, 5);
-                            break;
-                        default:
-                            polygon(this.ctx, 20, 5);
-                            this.ctx.fillStyle = "#ffe92e";
-                            break;
+                        let polygon = function(ctx: CanvasRenderingContext2D, radius: number, sides: number) 
+                        {
+                            if (sides < 3) return;
+                            ctx.save();
+                            ctx.rotate(-Math.PI / 2);
+                            ctx.beginPath();
+                            var a = ((Math.PI * 2)/sides);
+                            ctx.moveTo(radius,0);
+                            for (var i = 1; i < sides; i++) 
+                            {
+                                ctx.lineTo(radius*Math.cos(a*i),radius*Math.sin(a*i));
+                            }
+                            ctx.closePath();
+                            ctx.restore();
+                        }
+
+                        if (charger) this.ctx.scale(1.05, 1.05);
+                        switch (enemy.type)
+                        {
+                            case "Baby":
+                                this.ctx.scale(0.6, 0.6);
+                            case "Charger":
+                            case "Shadow":
+                            case "Striker":
+                                this.ctx.beginPath();
+                                this.ctx.moveTo(0, -25);
+                                this.ctx.lineTo(-20, 12);
+                                this.ctx.lineTo(20, 12);
+                                this.ctx.closePath();
+                                break;
+                            case "Big Charger":
+                            case "Big Shadow":
+                            case "Big Striker":
+                                polygon(this.ctx, 25, 4);
+                                break;
+                            case "Tank":
+                                polygon(this.ctx, 30, 6);
+                                break;
+                            case "Mother":
+                                this.ctx.scale(1, 1.3);
+                                polygon(this.ctx, 25, 6);
+                                break;
+                            case "Big Shooter":
+                                this.ctx.beginPath();
+                                this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
+                                break;
+                            case "Shooter":
+                                this.ctx.beginPath();
+                                this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                                break;
+                            case "Snatcher":
+                                this.ctx.scale(1, 1.3);
+                            case "Charger Scout":
+                            case "Shadow Scout":
+                            case "Scout":
+                                polygon(this.ctx, 20, 8);
+                                break;
+                            case "Hybrid":
+                                polygon(this.ctx, 25, 5);
+                                break;
+                            default:
+                                polygon(this.ctx, 20, 5);
+                                this.ctx.fillStyle = "#ffe92e";
+                                break;
+                        }
                     }
+                    this.ctx.fill();
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, 0);
+                    this.ctx.lineTo(0, -25);
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeStyle = "#ffffff";
+                    this.ctx.stroke();
                 }
-                this.ctx.fill();
-
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, 0);
-                this.ctx.lineTo(0, -25);
-                this.ctx.lineWidth = 2;
-                this.ctx.strokeStyle = "#ffffff";
-                this.ctx.stroke();
 
                 // TODO(randomuserhi): Clean this up with the above code
                 /*if (snapshot.players.has(instance))

@@ -340,8 +340,7 @@ interface GTFOReplayConstructor
         {
             let e: GTFOEventSentrySpawn = {
                 slot: BitHelper.readByte(bytes, reader),
-                instance: BitHelper.readInt(bytes, reader),
-                position: BitHelper.readVector(bytes, reader)
+                instance: BitHelper.readInt(bytes, reader)
             };
             return {
                 type: "spawnSentry",
@@ -355,6 +354,26 @@ interface GTFOReplayConstructor
             };
             return {
                 type: "despawnSentry",
+                detail: e
+            };
+        },
+        "spawnPellet": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventPelletSpawn = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "spawnPellet",
+                detail: e
+            };
+        },
+        "despawnPellet": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFOEventPelletDespawn = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                type: "despawnPellet",
                 detail: e
             };
         },
@@ -381,7 +400,8 @@ interface GTFOReplayConstructor
         const snapshotRate = 50;
         let tick = 0;
         let parser: GTFOSnapshot = new GTFOSnapshot(this);
-        this.snapshots = [GTFOSnapshot.clone(parser)];
+        let cache: GTFOSnapshot = new GTFOSnapshot(this);
+        this.snapshots = [GTFOSnapshot.clone(cache)];
         while(reader.index < bytes.byteLength)
         {
             // Tick timestamp
@@ -390,7 +410,7 @@ interface GTFOReplayConstructor
             // Create snapshot checkpoint
             if (tick++ % snapshotRate == 0)
             {
-                this.snapshots.push(new GTFOSnapshot(this, tick, this.timeline.length, now, parser));
+                this.snapshots.push(new GTFOSnapshot(this, tick, this.timeline.length, now, cache));
             }
             let startIdx = this.timeline.length;
 
@@ -412,6 +432,7 @@ interface GTFOReplayConstructor
                     detail: e
                 };
                 parser.do(t);
+                cache.do(t);
                 this.timeline.push(t);
             }
 
@@ -446,7 +467,7 @@ interface GTFOReplayConstructor
                 dynamic.rotation = rotation;
 
                 // Add to timeline
-                this.timeline.push({
+                let t : GTFOTimeline = {
                     tick: tick,
                     type: "dynamic",
                     time: now,
@@ -465,7 +486,9 @@ interface GTFOReplayConstructor
                             w: dynamic.rotation.w
                         }
                     }
-                });
+                };
+                this.timeline.push(t);
+                cache.do(t);
             }
 
             this.ticks.set(tick, [startIdx, this.timeline.length]);

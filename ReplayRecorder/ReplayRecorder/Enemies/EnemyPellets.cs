@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static RootMotion.FinalIK.AimPoser;
 using static UnityEngine.UIElements.UIRAtlasAllocator;
 
 namespace ReplayRecorder.Enemies
@@ -31,6 +32,40 @@ namespace ReplayRecorder.Enemies
     public static partial class Enemy
     {
         public static Dictionary<int, EnemyPellet> pellets = new Dictionary<int, EnemyPellet>();
+
+        private struct Pellet : SnapshotManager.ITransform
+        {
+            ProjectileTargeting targeting;
+
+            public bool active => targeting != null;
+            public Vector3 position => targeting.m_myPos;
+            public Quaternion rotation => Quaternion.LookRotation(targeting.m_myFwd);
+
+            public Pellet(ProjectileTargeting targeting)
+            {
+                this.targeting = targeting;
+            }
+        }
+
+        public static void OnPelletSpawn(GameObject projectile, ProjectileTargeting targeting)
+        {
+            APILogger.Debug($"Visual pellet spawned.");
+
+            int instance = projectile.GetInstanceID();
+            SnapshotManager.AddEvent(GameplayEvent.Type.SpawnPellet, new rInstance(instance));
+            SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(instance, new Pellet(targeting)));
+        }
+
+        public static void OnPelletDespawn(int instance)
+        {
+            if (pellets.ContainsKey(instance) && !pellets[instance].markForRemoval)
+            {
+                APILogger.Debug($"Visual pellet despawned.");
+
+                SnapshotManager.AddEvent(GameplayEvent.Type.DespawnPellet, new rInstance(instance));
+                SnapshotManager.RemoveDynamicObject(instance);
+            }
+        }
 
         public static void RegisterPellet(EnemyAgent agent, GameObject projectile)
         {
