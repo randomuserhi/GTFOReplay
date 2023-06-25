@@ -1,6 +1,6 @@
 interface GTFOTimeline<T = unknown>
 {
-    type: "event" | "dynamic" | "dynamicProp";
+    type: "event" | "dynamic" | "dynamicProp" | "EVENTSECTION" | "DYNAMICSECTION";
     time: number;
     order: number;
     tick: number;

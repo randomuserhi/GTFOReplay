@@ -43,7 +43,9 @@ interface GTFOSnapshotConstructor
 
 (function() {
 
-    let timelineMap: Record<"event" | "dynamic" | "dynamicProp", (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number) => void> = {
+    let timelineMap: Record<"event" | "dynamic" | "dynamicProp" | "EVENTSECTION" | "DYNAMICSECTION", (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number) => void> = {
+        "EVENTSECTION": function() {},
+        "DYNAMICSECTION": function() {},
         "event": function (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number)
         {
             let time = t.time;

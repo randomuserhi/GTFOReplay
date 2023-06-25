@@ -7,6 +7,7 @@ interface replay extends HTMLDivElement
     prev: number;
     play: boolean;
     time: number;
+    timescale: number;
     replay: GTFOReplay;
 
     canvas: HTMLCanvasElement;
@@ -67,6 +68,7 @@ RHU.import(RHU.module({ trace: new Error(),
 
             this.play = true;
             this.time = 0;
+            this.timescale = 1;
             this.prev = 0;
 
             this.ctx = this.canvas.getContext("2d")!;
@@ -220,7 +222,7 @@ RHU.import(RHU.module({ trace: new Error(),
         };
         replay.prototype.update = function(t: number)
         {
-            let delta = t - this.prev;
+            let delta = (t - this.prev) * this.timescale;
             this.prev = t;
             if (this.play && this.time <= this.replay.timeline[this.replay.timeline.length - 1].time) this.time += delta;
 

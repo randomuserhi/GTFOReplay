@@ -31,7 +31,6 @@ interface GTFOReplay
     dimensions: Map<number, GTFODimension>;
     timeline: GTFOTimeline[];
     snapshots: GTFOSnapshot[];
-    ticks: Map<number, number[]>; // Map of tick to range in timeline
 
     getNearestSnapshot(time: number): GTFOSnapshot;
     getSnapshot(time: number): GTFOSnapshot;
@@ -657,7 +656,6 @@ interface GTFOReplayConstructor
     
         // Parse timeline data
         this.timeline = [];
-        this.ticks = new Map();
         const snapshotRate = 50;
         let tick = 0;
         let parser: GTFOSnapshot = new GTFOSnapshot(this);
@@ -673,7 +671,6 @@ interface GTFOReplayConstructor
             {
                 this.snapshots.push(new GTFOSnapshot(this, tick, this.timeline.length, now, cache));
             }
-            let startIdx = this.timeline.length;
 
             // Number of events
             let nEvents = BitHelper.readUShort(bytes, reader);
@@ -687,6 +684,18 @@ interface GTFOReplayConstructor
                 let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
                 parser.do(t);
                 cache.do(t);
+                this.timeline.push(t);
+            }
+
+            // Add EVENTSECTION marker
+            {
+                let t : GTFOTimeline = {
+                    tick: tick,
+                    type: "EVENTSECTION",
+                    time: now,
+                    order: -1,
+                    detail: null
+                };
                 this.timeline.push(t);
             }
 
@@ -764,7 +773,17 @@ interface GTFOReplayConstructor
                 cache.do(t);
             }
 
-            this.ticks.set(tick, [startIdx, this.timeline.length]);
+            // Add DYNAMICSECTION marker
+            {
+                let t : GTFOTimeline = {
+                    tick: tick,
+                    type: "DYNAMICSECTION",
+                    time: now,
+                    order: -1,
+                    detail: null
+                };
+                this.timeline.push(t);
+            }
         }
         this.timeline.sort((a, b) => {
             if (a.time == b.time)
@@ -773,10 +792,12 @@ interface GTFOReplayConstructor
                 if (a.tick != b.tick) return a.tick - b.tick;
                 // If type is the same, give precedence to order
                 else if (a.type == b.type) return a.order - b.order;
-                // otherwise give precedence to event
+                // otherwise with different type and same tick and time, give precedence to event followed by EVENTSECTION followed by dynamics and then DYNAMIC SECTION
                 else
                 {
                     if (a.type == "event") return -1;
+                    else if (a.type == "EVENTSECTION" && b.type != "event") return -1;
+                    else if (a.type == "DYNAMICSECTION") return 1;
                     else return 1;
                 }
             }
@@ -808,23 +829,36 @@ interface GTFOReplayConstructor
         let snapshot = GTFOSnapshot.clone(this.getNearestSnapshot(time));
 
         // extrapolate snapshot until time
-        for (let i = snapshot.index; i < this.timeline.length; ++i)
+        let i = snapshot.index;
+        let tickTime = snapshot.time; // Time of last processed tick
+        for (; i < this.timeline.length; ++i)
         {
             let t = this.timeline[i];
             if (t.time > time) break;
             snapshot.do(t);
+            // Tick time is the timestamp of the last tick that was processed,
+            // the last tick can be identified as the timestamp of the last dynamic section crossed
+            if (t.type == "DYNAMICSECTION") 
+                tickTime = snapshot.time;
         }
+        snapshot.time = tickTime; // Its important that the timestamp is set to the last tick to ensure lerping occures from the last tick
 
-        // lerp dynamics to next tick
-        let tickRange = this.ticks.get(snapshot.tick + 1);
-        if (!RHU.exists(tickRange)) return snapshot; // end of timeline
-        
-        for (let i = tickRange[0]; i < tickRange[1]; ++i)
+        // lerp to next event section
+        for (; i < this.timeline.length; ++i)
         {
             let t = this.timeline[i];
+            if (t.type == "EVENTSECTION") break;
+            snapshot.lerp(time, t);
+        }
+        // lerp to next dynamic section
+        for (; i < this.timeline.length; ++i)
+        {
+            let t = this.timeline[i];
+            if (t.type == "DYNAMICSECTION") break;
             snapshot.lerp(time, t);
         }
         snapshot.time = time;
+        snapshot.tick = this.timeline[i].tick;
 
         return snapshot;
     };
