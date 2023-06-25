@@ -692,8 +692,8 @@ RHU.import(RHU.module({ trace: new Error(),
                 let yc = 0;
                 for (let i = 1; i < end; ++i)
                 {
-                    let l = 1;
-                    if (i == end - 1) l = 1 - (tongue.lerp - i / tongue.spline.length);
+                    let l = tongue.spline.length * tongue.lerp - i;
+                    if (l > 1) l = 1;
 
                     xc = pos.x;
                     yc = -pos.z;
