@@ -82,6 +82,10 @@ interface GTFOSnapshotConstructor
             let l = 1;
             if (RHU.exists(lerp)) l = lerp;
 
+            // If position is 0, just set lerp to 1 to prevent weird lerping from origin
+            if (d.position.x == 0 && d.position.y == 0 && d.position.z == 0)
+                l = 1;
+
             let old = d.position;
 
             // lerp vector
