@@ -858,7 +858,7 @@ interface GTFOReplayConstructor
             snapshot.lerp(time, t);
         }
         snapshot.time = time;
-        snapshot.tick = this.timeline[i].tick;
+        snapshot.tick = this.timeline[i - 1].tick;
 
         return snapshot;
     };
