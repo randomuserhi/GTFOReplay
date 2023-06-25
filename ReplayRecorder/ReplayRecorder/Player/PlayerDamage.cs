@@ -3,8 +3,6 @@ using Player;
 using Enemies;
 using API;
 using ReplayRecorder.Enemies;
-using static ReplayRecorder.Enemies.EnemyDamage;
-using UnityEngine;
 
 namespace ReplayRecorder.Player
 {
@@ -103,6 +101,7 @@ namespace ReplayRecorder.Player
             }
             APILogger.Debug($"{player.Owner.NickName} took {damage} tongue damage from [{instance}].");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerTongueDamage, new rPlayerDamage(player, damage, instance));
+            SnapshotManager.AddEvent(GameplayEvent.Type.SetTongue, new Enemy.TongueEvent(instance));
         }
 
         public static void OnPelletDamage(PlayerAgent player, float damage, EnemyAgent source)
@@ -164,6 +163,7 @@ namespace ReplayRecorder.Player
         {
             APILogger.Debug($"{player.Owner.NickName} dodged tongue from [{source}]");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerTongueDodge, new rPlayerDodge(player, source));
+            SnapshotManager.AddEvent(GameplayEvent.Type.SetTongue, new Enemy.TongueEvent(source));
         }
     }
 }

@@ -1,6 +1,6 @@
 interface GTFOTimeline<T = unknown>
 {
-    type: "event" | "dynamic";
+    type: "event" | "dynamic" | "dynamicProp";
     time: number;
     order: number;
     tick: number;
@@ -10,7 +10,7 @@ interface GTFOTimeline<T = unknown>
 interface GTFOTrail
 {
     points: GTFOTimedPoint[];
-    duration: number;
+    duration?: number | null | undefined;
 }
 
 interface GTFOTimedPoint
@@ -41,6 +41,7 @@ interface GTFOHit
 {
     pos: Vector;
     time: number;
+    color: string;
 }
 
 interface GTFODynamic
@@ -51,7 +52,7 @@ interface GTFODynamic
 
 interface GTFOEvent<T extends keyof GTFOEventMap = "unknown"> 
 {
-    type: GTFOEventType;
+    type: string;
     detail: GTFOEventMap[T];
 }
 
@@ -89,6 +90,9 @@ interface GTFOEventMap
     "despawnSentry": GTFOEventSentryDespawn;
     "spawnPellet": GTFOEventPelletSpawn;
     "despawnPellet": GTFOEventPelletDespawn;
+    "spawnTongue": GTFOEventTongueSpawn;
+    "despawnTongue": GTFOEventTongueDespawn;
+    "setTongue": GTFODynamicPropType;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -121,7 +125,10 @@ let eventMap: GTFOEventType[] = [
     "spawnSentry",
     "despawnSentry",
     "spawnPellet",
-    "despawnPellet"
+    "despawnPellet",
+    "spawnTongue",
+    "despawnTongue",
+    "setTongue"
 ];
 
 interface Window
@@ -277,9 +284,35 @@ interface GTFOEventSentryDespawn
 }
 interface GTFOEventPelletSpawn
 {
-    instance: number,
+    instance: number;
 }
 interface GTFOEventPelletDespawn
 {
-    instance: number
+    instance: number;
+}
+interface GTFOEventTongueSpawn
+{
+    instance: number;
+}
+interface GTFOEventTongueDespawn
+{
+    instance: number;
+}
+
+interface GTFODynamicPropMap
+{
+    "unknown": unknown;
+
+    "tongue": GTFODynamicPropTongue;
+}
+type GTFODynamicPropType = keyof GTFODynamicPropMap;
+let dynamicPropMap: GTFODynamicPropType[] = [
+    "tongue"
+];
+
+interface GTFODynamicPropTongue
+{
+    instance: number;
+    lerp: number;
+    spline: Vector[];
 }

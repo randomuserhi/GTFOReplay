@@ -42,16 +42,5 @@ namespace ReplayRecorder.Enemies.Patches
             if (!SnapshotManager.active) return;
             Enemy.OnDespawnEnemy(__instance.m_agent);
         }
-
-        // TODO:: Change the method of detecting when an enemy dies via network => Either dont use EnemyAppearance and look at what SNet things GTFO uses (refer to GTFO-API Network Receive Hooks) or look
-        //        at the proper OnDead event triggers etc (see how to avoid triggering it on head limb kill)
-        //        Maybe look at ES_Dead or ES_DeadBase (probs ES_Dead => needs more testing)
-        /*[HarmonyPatch(typeof(EnemyAppearance), nameof(EnemyAppearance.OnDead))]
-        [HarmonyPostfix]
-        private static void OnDead(EnemyAppearance __instance)
-        {
-            if (!SnapshotManager.active) return;
-            Enemy.Enemy.DeadEnemy(__instance.m_owner);
-        }*/
     }
 }

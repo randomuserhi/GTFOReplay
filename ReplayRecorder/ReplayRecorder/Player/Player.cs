@@ -154,6 +154,7 @@ namespace ReplayRecorder.Player
 
         public static void OnPlayerWield(PlayerAgent player, ItemEquippable item)
         {
+            // TODO(randomuserhi): Change to use item.pItemData.itemID_gearCRC instead
             APILogger.Debug($"{player.Owner.NickName} is wielding {item.PublicName}");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerWield, new rPlayerWield(player, GTFOSpecification.GetItem(item.PublicName)));
         }

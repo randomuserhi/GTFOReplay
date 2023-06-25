@@ -32,6 +32,7 @@ namespace ReplayRecorder
             }
         }
 
+        // TODO(randomuserhi): Change to use pItemData.itemID_gearCRC instead
         public static byte GetItem(string item)
         {
             if (spec.items.ContainsKey(item))

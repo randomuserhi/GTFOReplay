@@ -23,6 +23,7 @@ interface GTFOSnapshot
     dynamics: Map<number, GTFODynamic>;
     sentries: Map<number, GTFOSentry>;
     pellets: Set<number>;
+    tongues: Map<number, GTFOTongue>;
     
     tracers: GTFOTracer[];
     cross: GTFOCross[];
@@ -42,7 +43,7 @@ interface GTFOSnapshotConstructor
 
 (function() {
 
-    let timelineMap: Record<"event" | "dynamic", (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number) => void> = {
+    let timelineMap: Record<"event" | "dynamic" | "dynamicProp", (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number) => void> = {
         "event": function (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number)
         {
             let time = t.time;
@@ -54,8 +55,13 @@ interface GTFOSnapshotConstructor
             if (time >= t.time)
             {
                 let ev = t.detail as GTFOEvent;
-                eventMap[ev.type](snapshot, ev, t.time);
+                eventMap[ev.type as GTFOEventType](snapshot, ev, t.time);
             }
+        },
+        "dynamicProp": function (snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number)
+        {
+            let ev = t.detail as GTFOEvent;
+            dynamicPropMap[ev.type as GTFODynamicPropType](snapshot, t, ev, lerp);
         },
         "dynamic": function(snapshot: GTFOSnapshot, t: GTFOTimeline, lerp?: number)
         {
@@ -66,7 +72,7 @@ interface GTFOSnapshotConstructor
             };
             if (!snapshot.dynamics.has(dynamic.instance))
             {
-                if (!RHU.exists(lerp) || lerp == 1) throw ReferenceError(`Referenced dynamic does not exist: t: ${t.time}`);
+                if (!RHU.exists(lerp) || lerp == 1) throw ReferenceError(`Referenced dynamic does not exist: t: ${t.time} ${dynamic.instance}`);
                 return;
             }
             let d = snapshot.dynamics.get(dynamic.instance)!;
@@ -83,6 +89,7 @@ interface GTFOSnapshotConstructor
                 z: d.position.z + (dynamic.position.z - d.position.z) * l
             };
 
+            // Update trails
             if ((old.x != 0 || old.y != 0 || old.z != 0) && snapshot.trails.has(dynamic.instance))
             {
                 let trail = snapshot.trails.get(dynamic.instance)!;
@@ -335,29 +342,32 @@ interface GTFOSnapshotConstructor
             if (RHU.exists(snapshot.slots[e.slot]))
             {
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
-                player.alive = false;
-
                 let dyn = snapshot.dynamics.get(player.instance);
                 if (RHU.exists(dyn))
                 {
-                    let r = xor(time + player.instance ^ 0x190104029);
-                    r(); r(); r();
-                    let d = r() * 300;
-                    const shakeAmount = 13;
-                    let shake = new Array(10);
-                    for (let i = 0; i < 10; ++i)
+                    if (player.alive)
                     {
-                        shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
+                        let r = xor(time + player.instance ^ 0x190104029);
+                        r(); r(); r();
+                        let d = r() * 300;
+                        const shakeAmount = 13;
+                        let shake = new Array(10);
+                        for (let i = 0; i < 10; ++i)
+                        {
+                            shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
+                        }
+                        snapshot.cross.push({
+                            pos: dyn.position,
+                            time: time,
+                            deviation: d,
+                            shake: shake,
+                            color: "#fff"
+                        });
                     }
-                    snapshot.cross.push({
-                        pos: dyn.position,
-                        time: time,
-                        deviation: d,
-                        shake: shake,
-                        color: "#fff"
-                    });
                 }
                 else throw new ReferenceError("Referenced player does not exist.");
+                
+                player.alive = false;
             }
             else throw new ReferenceError("Player that died does not exist");
         },
@@ -380,14 +390,10 @@ interface GTFOSnapshotConstructor
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
 
                 let pDynamic = snapshot.dynamics.get(player.instance)!;
-                let eDynamic = snapshot.dynamics.get(e.source)!;
-
-                snapshot.tracers.push({
-                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
-                    b: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
-                    damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
+                snapshot.hits.push({
+                    pos: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     time: time,
-                    color: "233, 0, 41"
+                    color: "255, 255, 255"
                 });
             }
             else throw new ReferenceError("Either enemy or player did not exist.");
@@ -414,28 +420,7 @@ interface GTFOSnapshotConstructor
         },
         "playerPelletDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
-            /*let e = ev.detail as GTFOEventPlayerPelletDamage;
-            if (RHU.exists(snapshot.slots[e.slot]) && snapshot.enemies.has(e.source))
-            {
-                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
-
-                let pDynamic = snapshot.dynamics.get(player.instance)!;
-                let eDynamic = snapshot.dynamics.get(e.source)!;
-                
-                // TODO(randomuserhi): Improve performance of this
-                let r = xor(time + e.damage ^ 0x190104029);
-                r(); r(); r();
-                let dx = -15 + r() * 30;
-                let dz = -15 + r() * 30;
-                snapshot.tracers.push({
-                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
-                    b: { x: pDynamic.position.x + dx, y: pDynamic.position.y, z: pDynamic.position.z + dz },
-                    damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
-                    time: time,
-                    color: "233, 0, 41"
-                });
-            }
-            else throw new ReferenceError("Either enemy or player did not exist.");*/
+            // TODO(randomuserhi)
         },
         "playerBulletDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
@@ -473,58 +458,11 @@ interface GTFOSnapshotConstructor
         },
         "playerPelletDodge": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
-            /*let e = ev.detail as GTFOEventPlayerPelletDodge;
-            if (RHU.exists(snapshot.slots[e.slot]))
-            {
-                // NOTE(randomuserhi): You can still be hit by a shooter pellet long after the enemy is dead, so its not an error
-                //                     if the enemy no longer exists
-                if (snapshot.enemies.has(e.source))
-                {
-                    let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
-
-                    let pDynamic = snapshot.dynamics.get(player.instance)!;
-                    let eDynamic = snapshot.dynamics.get(e.source)!;
-                    
-                    // TODO(randomuserhi): Improve performance of this
-                    let r = xor(time + e.source ^ 0x190104029);
-                    r(); r(); r();
-                    let dx = -15 + r() * 30;
-                    let dz = -15 + r() * 30;
-                    snapshot.tracers.push({
-                        a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
-                        b: { x: pDynamic.position.x + dx, y: pDynamic.position.y, z: pDynamic.position.z + dz },
-                        damage: 0,
-                        time: time,
-                        color: "255, 255, 255"
-                    });
-                }
-            }
-            else throw new ReferenceError("Player did not exist.");*/
+            // TODO(randomuserhi)
         },
         "playerTongueDodge": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
-            let e = ev.detail as GTFOEventPlayerPelletDodge;
-            if (RHU.exists(snapshot.slots[e.slot]) && snapshot.enemies.has(e.source))
-            {
-                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
-
-                let pDynamic = snapshot.dynamics.get(player.instance)!;
-                let eDynamic = snapshot.dynamics.get(e.source)!;
-                
-                // TODO(randomuserhi): Improve performance of this
-                let r = xor(time + e.source ^ 0x190104029);
-                r(); r(); r();
-                let dx = -15 + r() * 30;
-                let dz = -15 + r() * 30;
-                snapshot.tracers.push({
-                    a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
-                    b: { x: pDynamic.position.x + dx, y: pDynamic.position.y, z: pDynamic.position.z + dz },
-                    damage: 0,
-                    time: time,
-                    color: "255, 255, 255"
-                });
-            }
-            else throw new ReferenceError("Either enemy or player did not exist.");
+            // TODO(randomuserhi)
         },
         "playerWield": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
@@ -624,14 +562,57 @@ interface GTFOSnapshotConstructor
                 let dynamic = snapshot.dynamics.get(e.instance)!;
                 snapshot.hits.push({
                     pos: { x: dynamic.position.x, y: dynamic.position.y, z: dynamic.position.z },
-                    time: time
+                    time: time,
+                    color: "255, 255, 255"
                 });
                 snapshot.dynamics.delete(e.instance);
                     
             }
             else throw ReferenceError("pellet does not exist.");
-        }
+        },
+        "spawnTongue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventTongueSpawn;
+            snapshot.tongues.set(e.instance, new GTFOTongue(e.instance));
+        },
+        "despawnTongue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventTongueDespawn;
+            if (snapshot.tongues.has(e.instance))
+            {
+                snapshot.tongues.delete(e.instance);
+            }
+            else throw ReferenceError("tongue does not exist.");
+        },
+        "setTongue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            throw new Error("Unreachable");
+        },
     };
+
+    let dynamicPropMap: Record<GTFODynamicPropType, (snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number) => void> = {
+        "unknown": function(snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent)
+        {
+            throw new Error("Unkown event type");
+        },
+        "tongue": function(snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number)
+        {
+            let _tongue = ev.detail as GTFODynamicPropTongue;
+            if (!snapshot.tongues.has(_tongue.instance))
+            {
+                if (!RHU.exists(lerp) || lerp == 1) throw ReferenceError(`Referenced tongue does not exist: t: ${t.time} ${_tongue.instance}`);
+                return;
+            }
+
+            let tongue = snapshot.tongues.get(_tongue.instance)!;
+            tongue.spline = _tongue.spline;
+
+            let l = 1;
+            if (RHU.exists(lerp)) l = lerp;
+
+            tongue.lerp = tongue.lerp + (_tongue.lerp - tongue.lerp) * l;
+        },
+    }
 
     let GTFOSnapshot: GTFOSnapshotConstructor = window.GTFOSnapshot = function(this: GTFOSnapshot, owner: GTFOReplay, tick?: number, index?: number, time?: number, parser?: GTFOSnapshot)
     {
@@ -652,6 +633,7 @@ interface GTFOSnapshotConstructor
             this.mines = new Map();
             this.sentries = new Map();
             this.pellets = new Set();
+            this.tongues = new Map();
             this.tracers = [];
             this.cross = [];
             this.hits = [];
@@ -684,7 +666,7 @@ interface GTFOSnapshotConstructor
         for (let kv of old)
         {
             let trail = kv[1];
-            trail.points = trail.points.filter(p => t.time - p.time < trail.duration);
+            trail.points = trail.points.filter(p => !RHU.exists(trail.duration) || t.time - p.time < trail.duration);
             if (this.dynamics.has(kv[0]) || trail.points.length != 0)
                 this.trails.set(kv[0], trail);
         }
@@ -720,6 +702,9 @@ interface GTFOSnapshotConstructor
         // NOTE(randomuserhi): Since the data inside pellets don't change these do not need to be deep copied
         this.pellets = new Set();
         for (let v of snapshot.pellets) this.pellets.add(v);
+
+        this.tongues = new Map();
+        for (let kv of snapshot.tongues) this.tongues.set(kv[0], GTFOTongue.clone(kv[1]));
 
         // NOTE(randomuserhi): Since the data inside sentries don't change these do not need to be deep copied
         this.sentries = new Map();

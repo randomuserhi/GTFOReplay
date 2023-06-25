@@ -30,29 +30,6 @@ namespace ReplayRecorder
         }
     }
 
-    public class Dynamic : ISerializable
-    {
-        public enum Type
-        {
-            Player
-        }
-
-        public Type type;
-        public ISerializable? detail;
-
-        public Dynamic(Type type, ISerializable? detail)
-        {
-            this.type = type;
-            this.detail = detail;
-        }
-
-        public void Serialize(FileStream fs)
-        {
-            fs.WriteByte((byte)type);
-            if (detail != null) detail.Serialize(fs);
-        }
-    }
-
     public class GameplayEvent
     {
         public enum Type
@@ -97,7 +74,11 @@ namespace ReplayRecorder
             DespawnSentry,
 
             SpawnPellet,
-            DespawnPellet
+            DespawnPellet,
+
+            SpawnTongue,
+            DespawnTongue,
+            SetTongue
         }
 
         public long timestamp;
@@ -109,6 +90,34 @@ namespace ReplayRecorder
             this.timestamp = timestamp;
             this.type = type;
             this.detail = detail;
+        }
+    }
+
+    public abstract class DynamicProperty : ISerializable
+    {
+        public enum Type
+        {
+            Tongue
+        }
+        public int instance;
+        public Type type;
+        public bool remove = false;
+        public bool Serializable => !remove && IsSerializable();
+
+        protected virtual bool IsSerializable()
+        {
+            return true;
+        }
+
+        public DynamicProperty(Type type, int instance)
+        {
+            this.type = type;
+            this.instance = instance;
+        }
+
+        public virtual void Serialize(FileStream fs)
+        {
+            fs.WriteByte((byte)type);
         }
     }
 
@@ -140,19 +149,15 @@ namespace ReplayRecorder
             public bool remove = false;
 
             public readonly ITransform transform;
-            public readonly int instanceID;
+            public readonly int instance;
             public Vector3 oldPosition = Vector3.zero;
             public Quaternion oldRotation = Quaternion.identity;
 
             public const float threshold = 50;
 
-            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
-            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
-            private static byte[] buffer = new byte[SizeOf];
-
             public DynamicObject(int instanceID, ITransform transform)
             {
-                this.instanceID = instanceID;
+                this.instance = instanceID;
                 this.transform = transform;
             }
 
@@ -161,6 +166,9 @@ namespace ReplayRecorder
                 (transform.position != oldPosition ||
                 transform.rotation != oldRotation);
 
+            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
+            private static byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
                 /// Format:
@@ -168,6 +176,13 @@ namespace ReplayRecorder
                 /// int => instance ID of object (not necessarily the gameobject)
                 /// Vector3(Half) => full precision / half precision based on absolute or relative position
                 /// Quaternion(Half) => rotation
+                
+                // TODO(randomuserhi): If rotation doesn't change just write a single byte 0b1000
+                //                     since the most significant bit doesnt matter to the quaternion.
+                //                     Then in reader, just check the first byte, if the most significant is
+                //                     1 (0b1000) then the rotation hasn't changed. If it is not, then its the
+                //                     original first byte from the quaternion bytes: 0b00xx where xx is the number
+                //                     0,1,2,3 for which component was missing.
 
                 int index = 0;
 
@@ -175,7 +190,7 @@ namespace ReplayRecorder
                 if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold)
                 {
                     BitHelper.WriteBytes((byte)(1), buffer, ref index);
-                    BitHelper.WriteBytes(instanceID, buffer, ref index);
+                    BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteBytes(transform.position, buffer, ref index);
                     BitHelper.WriteHalf(transform.rotation, buffer, ref index);
 
@@ -185,7 +200,7 @@ namespace ReplayRecorder
                 else
                 {
                     BitHelper.WriteBytes((byte)(0), buffer, ref index);
-                    BitHelper.WriteBytes(instanceID, buffer, ref index);
+                    BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteHalf(transform.position - oldPosition, buffer, ref index);
                     BitHelper.WriteHalf(transform.rotation, buffer, ref index);
 
@@ -215,6 +230,11 @@ namespace ReplayRecorder
         private List<DynamicObject> _dynamic = new List<DynamicObject>(100);
         private List<DynamicObject> dynamic = new List<DynamicObject>(100);
         private Dictionary<int, DynamicObject> mapOfDynamics = new Dictionary<int, DynamicObject>();
+
+        // Dynamic properties to track
+        private List<DynamicProperty> _dynamicProp = new List<DynamicProperty>(100);
+        private List<DynamicProperty> dynamicProp = new List<DynamicProperty>(100);
+        private Dictionary<int, DynamicProperty> mapOfDynamicProps = new Dictionary<int, DynamicProperty>();
 
         private void Update()
         {
@@ -266,7 +286,7 @@ namespace ReplayRecorder
                 return;
             }
             instance.dynamic.Add(obj);
-            instance.mapOfDynamics.Add(obj.instanceID, obj);
+            instance.mapOfDynamics.Add(obj.instance, obj);
         }
 
         public static void RemoveDynamicObject(int instanceID)
@@ -283,7 +303,35 @@ namespace ReplayRecorder
 
         public static void RemoveDynamicObject(DynamicObject obj)
         {
-            RemoveDynamicObject(obj.instanceID);
+            RemoveDynamicObject(obj.instance);
+        }
+
+        public static void AddDynamicProperty(DynamicProperty obj)
+        {
+            if (instance == null)
+            {
+                APILogger.Error("Tried to add a dynamic property before snapshotmanager was ready.");
+                return;
+            }
+            instance.dynamicProp.Add(obj);
+            instance.mapOfDynamicProps.Add(obj.instance, obj);
+        }
+
+        public static void RemoveDynamicProperty(int instanceID)
+        {
+            if (instance == null)
+            {
+                APILogger.Error("Tried to remove a dynamic property before snapshotmanager was ready.");
+                return;
+            }
+            if (!instance.mapOfDynamicProps.ContainsKey(instanceID)) return;
+            instance.mapOfDynamicProps[instanceID].remove = true;
+            instance.mapOfDynamicProps.Remove(instanceID);
+        }
+
+        public static void RemoveDynamicProperty(DynamicProperty obj)
+        {
+            RemoveDynamicProperty(obj.instance);
         }
 
         public static Action? OnTick;
@@ -303,9 +351,11 @@ namespace ReplayRecorder
 
             // Check if this tick needs to be done
             // - are there any dynamics to serialize?
+            // - are there any dynamic properties to serialize?
             // - are there any events to serialize?
             int nSerializable = (ushort)dynamic.Where(d => d.Serializable).Count();
-            if (nSerializable == 0 && events.Count == 0)
+            int nSerializableProps = (ushort)dynamicProp.Where(d => d.Serializable).Count();
+            if (nSerializableProps == 0 && nSerializable == 0 && events.Count == 0)
                 return;
 
             // Tick header
@@ -349,9 +399,31 @@ namespace ReplayRecorder
                 if (!obj.remove) _dynamic.Add(obj);
             }
             if (serialized != nSerializable) APILogger.Error($"Number of serialized and nSerializable don't match: {serialized} {nSerializable}");
-            List<DynamicObject> temp = dynamic;
+            List<DynamicObject> dyn = dynamic;
             dynamic = _dynamic;
-            _dynamic = temp;
+            _dynamic = dyn;
+
+            // Serialize dynamic properties
+            index = 0;
+            serialized = 0;
+            BitHelper.WriteBytes(nSerializableProps, buffer, ref index);
+            fs.Write(buffer, 0, sizeof(ushort));
+            _dynamicProp.Clear();
+            for (int i = 0; i < dynamicProp.Count; i++)
+            {
+                DynamicProperty obj = dynamicProp[i];
+
+                if (obj.Serializable)
+                {
+                    ++serialized;
+                    obj.Serialize(fs);
+                }
+                if (!obj.remove) _dynamicProp.Add(obj);
+            }
+            if (serialized != nSerializableProps) APILogger.Error($"Number of serialized and nSerializableProps don't match: {serialized} {nSerializableProps}");
+            List<DynamicProperty> dynProp = dynamicProp;
+            dynamicProp = _dynamicProp;
+            _dynamicProp = dynProp;
 
             // Flush file stream
             fs.Flush();

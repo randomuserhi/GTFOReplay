@@ -44,6 +44,7 @@ interface Window
     replay: replay; // for debugging
 }
 
+// TODO(randomuserhi): Mad re-write of renderer pass
 RHU.import(RHU.module({ trace: new Error(),
     name: "Replay Display", hard: ["RHU.Macro", "RHU.Bezier"],
     callback: function () 
@@ -467,24 +468,6 @@ RHU.import(RHU.module({ trace: new Error(),
                 }                
             }
 
-            // Draw hits
-            for (let hit of snapshot.hits)
-            {
-                if (hit.time > snapshot.time)
-                {
-                    console.warn("This should not happen");
-                    continue;
-                }
-
-                let t = (snapshot.time - hit.time) / GTFOReplaySettings.hitLingerTime;
-
-                this.ctx.beginPath();
-                this.ctx.arc(hit.pos.x, -hit.pos.z, 12 * t, 0, 2 * Math.PI);
-                this.ctx.lineWidth = 1 + 3 * (1 - t);
-                this.ctx.strokeStyle = `rgba(255, 255, 255, 1)`;
-                this.ctx.stroke();
-            }
-
             // Draw dynamics
             for (let kv of snapshot.dynamics)
             {
@@ -690,6 +673,62 @@ RHU.import(RHU.module({ trace: new Error(),
                 }*/
 
                 this.ctx.restore();
+            }
+
+            // Draw tongues
+            for (let tongue of snapshot.tongues.values())
+            {
+                if (tongue.spline.length < 1) continue;
+
+                this.ctx.beginPath();
+                let pos: Vector = {
+                    x: tongue.spline[0].x,
+                    y: tongue.spline[0].y,
+                    z: tongue.spline[0].z
+                }
+                this.ctx.moveTo(pos.x, -pos.z);
+                let end = Math.ceil(tongue.spline.length * tongue.lerp);
+                let xc = 0;
+                let yc = 0;
+                for (let i = 1; i < end; ++i)
+                {
+                    let l = 1;
+                    if (i == end - 1) l = 1 - (tongue.lerp - i / tongue.spline.length);
+
+                    xc = pos.x;
+                    yc = -pos.z;
+
+                    pos.x += tongue.spline[i].x * l;
+                    pos.y += tongue.spline[i].y * l;
+                    pos.z += tongue.spline[i].z * l;
+
+                    if (i % 2 == 0)
+                    {
+                        this.ctx.quadraticCurveTo(xc, yc, pos.x, -pos.z);
+                    }
+                }
+                this.ctx.lineTo(pos.x, -pos.z);
+                this.ctx.lineWidth = 4;
+                this.ctx.strokeStyle = "white";
+                this.ctx.stroke();
+            }
+
+            // Draw hits
+            for (let hit of snapshot.hits)
+            {
+                if (hit.time > snapshot.time)
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                let t = (snapshot.time - hit.time) / GTFOReplaySettings.hitLingerTime;
+
+                this.ctx.beginPath();
+                this.ctx.arc(hit.pos.x, -hit.pos.z, 12 * t, 0, 2 * Math.PI);
+                this.ctx.lineWidth = 1 + 3 * (1 - t);
+                this.ctx.strokeStyle = `rgba(${hit.color}, 1)`;
+                this.ctx.stroke();
             }
 
             // Draw crosses

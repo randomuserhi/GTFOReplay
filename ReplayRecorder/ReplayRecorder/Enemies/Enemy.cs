@@ -164,18 +164,20 @@ namespace ReplayRecorder.Enemies
         }
         public static void DeadEnemy(EnemyAgent enemy)
         {
-            int instanceID = enemy.GetInstanceID();
-            if (!enemies.ContainsKey(instanceID))
+            int instance = enemy.GetInstanceID();
+            if (!enemies.ContainsKey(instance))
             {
-                APILogger.Error($"Enemy {instanceID} was never spawned");
+                APILogger.Error($"Enemy {instance} was never spawned");
                 return;
             }
-            rEnemyAgent rEnemy = enemies[instanceID];
-            enemies.Remove(instanceID);
+            rEnemyAgent rEnemy = enemies[instance];
+            enemies.Remove(instance);
 
-            APILogger.Debug($"[{rEnemy.instanceID}] died");
+            APILogger.Debug($"[{rEnemy.instanceID}] died, cleaning tongues...");
+            Patches.EnemyTonguePatches.RemoveTongue(instance);
+
             SnapshotManager.AddEvent(GameplayEvent.Type.EnemyDead, rEnemy);
-            SnapshotManager.RemoveDynamicObject(instanceID);
+            SnapshotManager.RemoveDynamicObject(instance);
         }
 
         public static void Reset()
