@@ -472,6 +472,8 @@ RHU.import(RHU.module({ trace: new Error(),
 
             // Draw dynamics
             let dynamics = [...snapshot.dynamics];
+            // sort so glue is always at the bottom
+            // TODO(randomuserhi): sort players and dead players
             dynamics.sort(d => {
                 if (snapshot.glue.has(d[0])) return -1;
                 else return 1;
@@ -526,7 +528,8 @@ RHU.import(RHU.module({ trace: new Error(),
                 else if (snapshot.glue.has(instance))
                 {
                     this.ctx.beginPath();
-                    this.ctx.arc(0, 0, dynamic.scale, 0, 2 * Math.PI);
+                    // divide by 2 since scale is width, but we wait radius which is half the width
+                    this.ctx.arc(0, 0, dynamic.scale / 2, 0, 2 * Math.PI);
                     this.ctx.fillStyle = "#f5f5d5";
                     this.ctx.fill();
                 }
