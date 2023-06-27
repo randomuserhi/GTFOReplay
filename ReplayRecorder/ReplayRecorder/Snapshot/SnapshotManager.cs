@@ -150,7 +150,7 @@ namespace ReplayRecorder
         {
             public bool remove = false;
 
-            public readonly ITransform transform;
+            public ITransform transform;
             public readonly int instance;
             public Vector3 oldPosition = Vector3.zero;
             public Quaternion oldRotation = Quaternion.identity;
@@ -220,7 +220,7 @@ namespace ReplayRecorder
         }
 
         private static GameObject? obj = null;
-        private static SnapshotManager? instance = null;
+        public static SnapshotManager? instance = null;
 
         public static FileStream? fs = null;
         public static bool active = false;
@@ -236,12 +236,12 @@ namespace ReplayRecorder
         // Object positions to track
         private List<DynamicObject> _dynamic = new List<DynamicObject>(100);
         private List<DynamicObject> dynamic = new List<DynamicObject>(100);
-        private Dictionary<int, DynamicObject> mapOfDynamics = new Dictionary<int, DynamicObject>();
+        public Dictionary<int, DynamicObject> mapOfDynamics = new Dictionary<int, DynamicObject>();
 
         // Dynamic properties to track
         private List<DynamicProperty> _dynamicProp = new List<DynamicProperty>(100);
         private List<DynamicProperty> dynamicProp = new List<DynamicProperty>(100);
-        private Dictionary<int, DynamicProperty> mapOfDynamicProps = new Dictionary<int, DynamicProperty>();
+        public Dictionary<int, DynamicProperty> mapOfDynamicProps = new Dictionary<int, DynamicProperty>();
 
         private void Update()
         {

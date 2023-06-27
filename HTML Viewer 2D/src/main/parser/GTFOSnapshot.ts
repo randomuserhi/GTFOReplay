@@ -776,7 +776,7 @@ interface GTFOSnapshotConstructor
         for (let kv of snapshot.dynamics) this.dynamics.set(kv[0], {
             position: { x: kv[1].position.x, y: kv[1].position.y, z: kv[1].position.z },
             rotation: { x: kv[1].rotation.x, y: kv[1].rotation.y, z: kv[1].rotation.z, w: kv[1].rotation.w },
-            scale: 0
+            scale: kv[1].scale
         });
     }
     GTFOSnapshot.clone = function(snapshot: GTFOSnapshot): GTFOSnapshot
