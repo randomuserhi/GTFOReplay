@@ -16,7 +16,7 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void ReceiveFallDamage(Dam_PlayerDamageBase __instance, pMiniDamageData data)
         {
-            if (!SNet.IsMaster) return;
+            //if (!SNet.IsMaster) return;
 
             PlayerDamage.OnFallDamage(__instance.Owner, data.damage.Get(__instance.HealthMax));
         }
@@ -25,7 +25,7 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void Prefix_ReceiveTentacleAttackDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data)
         {
-            if (!SNet.IsMaster) return;
+            //if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent sourceAgent))
             {
@@ -48,7 +48,7 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void ReceiveMeleeDamage(Dam_PlayerDamageBase __instance, pFullDamageData data)
         {
-            if (!SNet.IsMaster) return;
+            //if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent sourceAgent))
             {
@@ -71,6 +71,9 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void ReceivePelletDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data)
         {
+            // TODO(randomuserhi): Get closest enemy agent to be owner of pellet
+            //                     Use a sphere cast / spatial partition to do so
+            //                     Then I can remove this IsMaster check
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent sourceAgent))
@@ -97,6 +100,9 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void Prefix_Update(ProjectileTargeting __instance)
         {
+            // TODO(randomuserhi): Get closest enemy agent to be owner of pellet
+            //                     Use a sphere cast / spatial partition to do so
+            //                     Then I can remove this IsMaster check
             if (!SNet.IsMaster) return;
 
             int instanceID = __instance.gameObject.GetInstanceID();
@@ -115,6 +121,9 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPostfix]
         private static void Postfix_Update(ProjectileTargeting __instance)
         {
+            // TODO(randomuserhi): Get closest enemy agent to be owner of pellet
+            //                     Use a sphere cast / spatial partition to do so
+            //                     Then I can remove this IsMaster check
             if (!SNet.IsMaster) return;
 
             int instanceID = __instance.gameObject.GetInstanceID();
@@ -137,7 +146,7 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void OnAttackIsOut(MovingEnemyTentacleBase __instance)
         {
-            if (!SNet.IsMaster) return;
+            //if (!SNet.IsMaster) return;
 
             PlayerAgent? target = __instance.PlayerTarget;
 

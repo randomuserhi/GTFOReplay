@@ -471,7 +471,12 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw dynamics
-            for (let kv of snapshot.dynamics)
+            let dynamics = [...snapshot.dynamics];
+            dynamics.sort(d => {
+                if (snapshot.glue.has(d[0])) return -1;
+                else return 1;
+            });
+            for (let kv of dynamics)
             {
                 let instance = kv[0];
                 let dynamic = kv[1];
@@ -516,6 +521,13 @@ RHU.import(RHU.module({ trace: new Error(),
                     //this.ctx.bezierCurveTo(10, -15, -10, -15, 0, 0);
                     this.ctx.bezierCurveTo(-10, 15, 10, 15, 0, 0);
                     this.ctx.fillStyle = "#edbc66";
+                    this.ctx.fill();
+                }
+                else if (snapshot.glue.has(instance))
+                {
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, dynamic.scale, 0, 2 * Math.PI);
+                    this.ctx.fillStyle = "#f5f5d5";
                     this.ctx.fill();
                 }
                 else

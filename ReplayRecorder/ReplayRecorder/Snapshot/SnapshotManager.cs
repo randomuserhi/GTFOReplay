@@ -1,7 +1,4 @@
-﻿using Agents;
-using API;
-using Decals;
-using Player;
+﻿using API;
 using UnityEngine;
 
 namespace ReplayRecorder
@@ -78,7 +75,10 @@ namespace ReplayRecorder
 
             SpawnTongue,
             DespawnTongue,
-            SetTongue
+            SetTongue,
+
+            SpawnGlue,
+            DespawnGlue
         }
 
         public long timestamp;
@@ -130,6 +130,7 @@ namespace ReplayRecorder
             public bool active => go != null;
             public Vector3 position => go.transform.position;
             public Quaternion rotation => go.transform.rotation;
+            public float scale => 0;
 
             public rObject(GameObject go)
             {
@@ -142,6 +143,7 @@ namespace ReplayRecorder
             public bool active { get; }
             public Vector3 position { get; }
             public Quaternion rotation { get; }
+            public float scale { get; }
         }
 
         public class DynamicObject
@@ -152,22 +154,24 @@ namespace ReplayRecorder
             public readonly int instance;
             public Vector3 oldPosition = Vector3.zero;
             public Quaternion oldRotation = Quaternion.identity;
+            public float oldScale = 0;
 
             public const float threshold = 50;
 
-            public DynamicObject(int instanceID, ITransform transform)
+            public DynamicObject(int instance, ITransform transform)
             {
-                this.instance = instanceID;
+                this.instance = instance;
                 this.transform = transform;
             }
 
             public bool Serializable => 
                 remove == false && transform.active && 
                 (transform.position != oldPosition ||
-                transform.rotation != oldRotation);
+                 transform.rotation != oldRotation || 
+                 transform.scale != oldScale);
 
-            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
-            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion;
+            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf;
+            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf;
             private static byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
@@ -193,6 +197,7 @@ namespace ReplayRecorder
                     BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteBytes(transform.position, buffer, ref index);
                     BitHelper.WriteHalf(transform.rotation, buffer, ref index);
+                    BitHelper.WriteHalf(transform.scale, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOf);
                 }
@@ -203,12 +208,14 @@ namespace ReplayRecorder
                     BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteHalf(transform.position - oldPosition, buffer, ref index);
                     BitHelper.WriteHalf(transform.rotation, buffer, ref index);
+                    BitHelper.WriteHalf(transform.scale, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOfHalf);
                 }
 
                 oldPosition = transform.position;
                 oldRotation = transform.rotation;
+                oldScale = transform.scale;
             }
         }
 

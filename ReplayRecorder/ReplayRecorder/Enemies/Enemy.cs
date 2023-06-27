@@ -183,6 +183,7 @@ namespace ReplayRecorder.Enemies
         public static void Reset()
         {
             enemies.Clear();
+            pellets.Clear();
         }
     }
 }

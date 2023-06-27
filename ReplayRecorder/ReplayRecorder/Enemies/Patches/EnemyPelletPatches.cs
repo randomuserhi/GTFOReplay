@@ -10,6 +10,10 @@ namespace ReplayRecorder.Enemies.Patches
     [HarmonyPatch]
     class EnemyShooterPatches
     {
+        // TODO(randomuserhi): Implement client side fix for tracking pellets => sphere cast to find closest enemy
+        //                     or spatial partition
+        //                     https://github.com/randomuserhi/StatTracker/commit/41b57c04b7357f6bf9bc4b791689a1e338398fc9
+
         private static EnemyAgent? currentShooter = null;
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireAtAgent))]

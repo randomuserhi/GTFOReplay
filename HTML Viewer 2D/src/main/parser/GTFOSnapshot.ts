@@ -24,6 +24,7 @@ interface GTFOSnapshot
     sentries: Map<number, GTFOSentry>;
     pellets: Set<number>;
     tongues: Map<number, GTFOTongue>;
+    glue: Set<number>;
     
     tracers: GTFOTracer[];
     cross: GTFOCross[];
@@ -70,7 +71,8 @@ interface GTFOSnapshotConstructor
             let dynamic = t.detail as {
                 instance: number,
                 position: Vector,
-                rotation: Quaternion
+                rotation: Quaternion,
+                scale: number
             };
             if (!snapshot.dynamics.has(dynamic.instance))
             {
@@ -87,6 +89,9 @@ interface GTFOSnapshotConstructor
                 l = 1;
 
             let old = d.position;
+
+            // lerp scale
+            d.scale = d.scale + (dynamic.scale - d.scale) * l;
 
             // lerp vector
             d.position = {
@@ -220,7 +225,8 @@ interface GTFOSnapshotConstructor
             snapshot.slots[e.slot] = e.player;
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
-                rotation: { x: 0, y: 0, z: 0, w: 0 }
+                rotation: { x: 0, y: 0, z: 0, w: 0 },
+                scale: 0
             });
         },
         "playerLeave": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -240,7 +246,8 @@ interface GTFOSnapshotConstructor
             snapshot.enemies.set(e.instance, new GTFOEnemy(e.instance, e.type, e.state));
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
-                rotation: { x: 0, y: 0, z: 0, w: 0 }
+                rotation: { x: 0, y: 0, z: 0, w: 0 },
+                scale: 0
             });
         },
         "enemyDespawn": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -529,7 +536,8 @@ interface GTFOSnapshotConstructor
             snapshot.sentries.set(e.instance, new GTFOSentry(e.instance, owner));
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
-                rotation: { x: 0, y: 0, z: 0, w: 0 }
+                rotation: { x: 0, y: 0, z: 0, w: 0 },
+                scale: 0
             });
         },
         "despawnSentry": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -552,7 +560,8 @@ interface GTFOSnapshotConstructor
             snapshot.pellets.add(e.instance);
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
-                rotation: { x: 0, y: 0, z: 0, w: 0 }
+                rotation: { x: 0, y: 0, z: 0, w: 0 },
+                scale: 0
             });
             snapshot.trails.set(e.instance, {
                 points: [],
@@ -594,6 +603,26 @@ interface GTFOSnapshotConstructor
         {
             throw new Error("Unreachable");
         },
+        "spawnGlue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventGlueSpawn;
+            snapshot.glue.add(e.instance);
+            snapshot.dynamics.set(e.instance, {
+                position: { x: 0, y: 0, z: 0 },
+                rotation: { x: 0, y: 0, z: 0, w: 0 },
+                scale: 0
+            });
+        },
+        "despawnGlue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventGlueDespawn;
+            if (snapshot.glue.has(e.instance))
+            {
+                snapshot.glue.delete(e.instance);
+                snapshot.dynamics.delete(e.instance);
+            }
+            else throw ReferenceError("glue does not exist.");
+        }
     };
 
     let dynamicPropMap: Record<GTFODynamicPropType, (snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number) => void> = {
@@ -639,6 +668,7 @@ interface GTFOSnapshotConstructor
             this.mines = new Map();
             this.sentries = new Map();
             this.pellets = new Set();
+            this.glue = new Set();
             this.tongues = new Map();
             this.tracers = [];
             this.cross = [];
@@ -709,6 +739,10 @@ interface GTFOSnapshotConstructor
         this.pellets = new Set();
         for (let v of snapshot.pellets) this.pellets.add(v);
 
+        // NOTE(randomuserhi): Since the data inside glue don't change these do not need to be deep copied
+        this.glue = new Set();
+        for (let v of snapshot.glue) this.glue.add(v);
+
         this.tongues = new Map();
         for (let kv of snapshot.tongues) this.tongues.set(kv[0], GTFOTongue.clone(kv[1]));
 
@@ -741,7 +775,8 @@ interface GTFOSnapshotConstructor
         this.dynamics = new Map();
         for (let kv of snapshot.dynamics) this.dynamics.set(kv[0], {
             position: { x: kv[1].position.x, y: kv[1].position.y, z: kv[1].position.z },
-            rotation: { x: kv[1].rotation.x, y: kv[1].rotation.y, z: kv[1].rotation.z, w: kv[1].rotation.w }
+            rotation: { x: kv[1].rotation.x, y: kv[1].rotation.y, z: kv[1].rotation.z, w: kv[1].rotation.w },
+            scale: 0
         });
     }
     GTFOSnapshot.clone = function(snapshot: GTFOSnapshot): GTFOSnapshot

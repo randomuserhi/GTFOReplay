@@ -48,6 +48,7 @@ interface GTFODynamic
 {
     position: Vector;
     rotation: Quaternion;
+    scale: number;
 }
 
 interface GTFOEvent<T extends keyof GTFOEventMap = "unknown"> 
@@ -93,6 +94,8 @@ interface GTFOEventMap
     "spawnTongue": GTFOEventTongueSpawn;
     "despawnTongue": GTFOEventTongueDespawn;
     "setTongue": GTFODynamicPropType;
+    "spawnGlue": GTFOEventGlueSpawn;
+    "despawnGlue": GTFOEventGlueDespawn;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -128,7 +131,9 @@ let eventMap: GTFOEventType[] = [
     "despawnPellet",
     "spawnTongue",
     "despawnTongue",
-    "setTongue"
+    "setTongue",
+    "spawnGlue",
+    "despawnGlue"
 ];
 
 interface Window
@@ -295,6 +300,14 @@ interface GTFOEventTongueSpawn
     instance: number;
 }
 interface GTFOEventTongueDespawn
+{
+    instance: number;
+}
+interface GTFOEventGlueSpawn
+{
+    instance: number;
+}
+interface GTFOEventGlueDespawn
 {
     instance: number;
 }

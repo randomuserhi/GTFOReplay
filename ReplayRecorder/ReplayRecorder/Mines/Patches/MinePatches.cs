@@ -1,8 +1,6 @@
 ﻿using API;
 using HarmonyLib;
-using Player;
 using SNetwork;
-using static Il2CppSystem.Globalization.CultureInfo;
 
 namespace ReplayRecorder.Mines.Patches
 {

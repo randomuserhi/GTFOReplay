@@ -15,7 +15,7 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         public static void Prefix_BulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data)
         {
-            if (!SNet.IsMaster) return;
+            //if (!SNet.IsMaster) return;
 
             EnemyAgent owner = __instance.Owner;
 
@@ -50,7 +50,7 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         public static void Prefix_MeleeDamage(Dam_EnemyDamageBase __instance, pFullDamageData data)
         {
-            if (!SNet.IsMaster) return;
+            //if (!SNet.IsMaster) return;
 
             EnemyAgent owner = __instance.Owner;
 

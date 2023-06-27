@@ -15,6 +15,7 @@ namespace ReplayRecorder.Player
         public bool active => sentry.m_firing != null;
         public Vector3 position => pos;
         public Quaternion rotation => Quaternion.LookRotation(sentry.m_firing.MuzzleAlign.forward);
+        public float scale => 0;
 
         public rSentry(SNet_Player player, SentryGunInstance sentry, Vector3 pos)
         {

@@ -606,6 +606,38 @@ interface GTFOReplayConstructor
                 }
             };
         },
+        "spawnGlue": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventGlueSpawn = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "spawnGlue",
+                    detail: e
+                }
+            };
+        },
+        "despawnGlue": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventGlueDespawn = {
+                instance: BitHelper.readInt(bytes, reader)
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "despawnGlue",
+                    detail: e
+                }
+            };
+        },
     };
 
     let dynamicPropParseMap: Record<GTFODynamicPropType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {
@@ -709,11 +741,13 @@ interface GTFOReplayConstructor
                 if (absolute) position = BitHelper.readVector(bytes, reader);
                 else position = BitHelper.readHalfVector(bytes, reader);
                 let rotation = BitHelper.readHalfQuaternion(bytes, reader);
+                let scale = BitHelper.readHalf(bytes, reader);
 
-                // scale positions accordingly
+                // scale accordingly
                 position.x *= GTFOReplaySettings.scale;
                 position.y *= GTFOReplaySettings.scale;
                 position.z *= GTFOReplaySettings.scale;
+                scale *= GTFOReplaySettings.scale;
 
                 // Update dynamic position
                 if (!parser.dynamics.has(instance))
@@ -728,6 +762,7 @@ interface GTFOReplayConstructor
                     dynamic.position.z += position.z;
                 }
                 dynamic.rotation = rotation;
+                dynamic.scale = scale;
 
                 // Add to timeline
                 let t : GTFOTimeline = {
@@ -747,7 +782,8 @@ interface GTFOReplayConstructor
                             y: dynamic.rotation.y,
                             z: dynamic.rotation.z,
                             w: dynamic.rotation.w
-                        }
+                        },
+                        scale: dynamic.scale
                     }
                 };
                 this.timeline.push(t);

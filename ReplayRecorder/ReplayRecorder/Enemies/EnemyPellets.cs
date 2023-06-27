@@ -33,6 +33,7 @@ namespace ReplayRecorder.Enemies
             public bool active => targeting != null;
             public Vector3 position => targeting.m_myPos;
             public Quaternion rotation => Quaternion.LookRotation(targeting.m_myFwd);
+            public float scale => 0;
 
             public Pellet(ProjectileTargeting targeting)
             {
