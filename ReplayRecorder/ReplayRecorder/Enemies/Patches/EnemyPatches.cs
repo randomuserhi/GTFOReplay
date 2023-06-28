@@ -1,6 +1,7 @@
 ﻿using API;
 using HarmonyLib;
 using Enemies;
+using Agents;
 
 namespace ReplayRecorder.Enemies.Patches
 {
@@ -10,7 +11,7 @@ namespace ReplayRecorder.Enemies.Patches
         // State change of enemy => hibernating -> attacking
         [HarmonyPatch(typeof(EnemyBehaviour), nameof(EnemyBehaviour.ChangeState), new Type[] { typeof(EB_States) })]
         [HarmonyPrefix]
-        private static void ChangeState(EnemyBehaviour __instance, EB_States state)
+        private static void Behaviour_ChangeState(EnemyBehaviour __instance, EB_States state)
         {
             if (!SnapshotManager.active) return;
 
@@ -24,8 +25,29 @@ namespace ReplayRecorder.Enemies.Patches
             Enemy.rEB_States rState = Enemy.toRState(state);
             if (Enemy.toRState(__instance.m_currentStateName) != rState)
             {
-                Enemy.StateChange(__instance.m_ai.m_enemyAgent, rState);
+                Enemy.BehaviourStateChange(__instance.m_ai.m_enemyAgent, rState);
             }
+        }
+
+        // State change of enemy (cfoam glue)
+        [HarmonyPatch(typeof(ES_StuckInGlue), nameof(ES_StuckInGlue.CommonUpdate))]
+        [HarmonyPrefix]
+        private static void UpdateGlueState(ES_StuckInGlue __instance)
+        {
+            if (!SnapshotManager.active) return;
+
+            if (__instance.m_enemyAgent.Damage.AttachedGlueRel < 0.1f)
+            {
+                Enemy.LocomotionStateChange(__instance.m_enemyAgent, Enemy.rES_States.Default);
+            }
+        }
+        [HarmonyPatch(typeof(ES_StuckInGlue), nameof(ES_StuckInGlue.CommonEnter))]
+        [HarmonyPrefix]
+        private static void Locomotion_ForceState(ES_StuckInGlue __instance)
+        {
+            if (!SnapshotManager.active) return;
+
+            Enemy.LocomotionStateChange(__instance.m_enemyAgent, Enemy.rES_States.StuckInGlue);
         }
 
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]

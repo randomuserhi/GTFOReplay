@@ -580,11 +580,15 @@ RHU.import(RHU.module({ trace: new Error(),
                         let color: string;
                         let enemy = snapshot.enemies.get(instance)!;
                         let charger = enemy.type.includes("Charger");
-                        if (enemy.state == "InCombat") {
+                        if (enemy.locomotionState == "StuckInGlue") {
+                            if (charger) color = "163, 133, 64";
+                            else color = "222, 200, 104";
+                        }
+                        else if (enemy.behaviourState == "InCombat") {
                             if (charger) color = "130, 0, 0";
                             else color = "255, 0, 0";
                         }
-                        else if (enemy.state == "Patrolling") {
+                        else if (enemy.behaviourState == "Patrolling") {
                             if (charger) color = "0, 0, 190";
                             else color = "0, 0, 255";
                         }

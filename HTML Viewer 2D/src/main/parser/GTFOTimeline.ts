@@ -66,7 +66,8 @@ interface GTFOEventMap
     "enemySpawn": GTFOEventEnemySpawn;
     "enemyDespawn": GTFOEventEnemyDespawn;
     "enemyDead": GTFOEventEnemyDead;
-    "enemyChangeState": GTFOEventEnemyChangeState;
+    "enemyBehaviourChangeState": GTFOEventEnemyBehaviourChangeState;
+    "enemyLocomotionChangeState": GTFOEventEnemyLocomotionChangeState;
     "enemyBulletDamage": GTFOEventEnemyBulletDamage;
     "enemyMeleeDamage": GTFOEventEnemyMeleeDamage;
     "enemyMineDamage": GTFOEventEnemyMineDamage;
@@ -104,7 +105,8 @@ let eventMap: GTFOEventType[] = [
     "enemySpawn",
     "enemyDespawn",
     "enemyDead",
-    "enemyChangeState",
+    "enemyBehaviourChangeState",
+    "enemyLocomotionChangeState",
     "enemyBulletDamage",
     "enemyMeleeDamage",
     "enemyMineDamage",
@@ -156,7 +158,7 @@ interface GTFOEventPlayerLeave
 interface GTFOEventEnemySpawn
 {
     instance: number;
-    state: GTFOEnemyState;
+    state: GTFOEnemyBehaviourState;
     type: string;
 }
 interface GTFOEventEnemyDespawn
@@ -167,10 +169,15 @@ interface GTFOEventEnemyDead
 {
     instance: number;
 }
-interface GTFOEventEnemyChangeState
+interface GTFOEventEnemyBehaviourChangeState
 {
     instance: number;
-    state: GTFOEnemyState;
+    state: GTFOEnemyBehaviourState;
+}
+interface GTFOEventEnemyLocomotionChangeState
+{
+    instance: number;
+    state: GTFOEnemyLocomotionState;
 }
 interface GTFOEventEnemyBulletDamage
 {

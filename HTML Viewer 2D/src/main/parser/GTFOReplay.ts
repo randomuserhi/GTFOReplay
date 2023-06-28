@@ -88,7 +88,7 @@ interface GTFOReplayConstructor
         {
             let e: GTFOEventEnemySpawn = {
                 instance: BitHelper.readInt(bytes, reader), // enemy instance id
-                state: GTFOEnemyStateMap[BitHelper.readByte(bytes, reader)], // enemy state
+                state: GTFOEnemyBehaviourStateMap[BitHelper.readByte(bytes, reader)], // enemy state
                 type: GTFOSpecification.enemies[BitHelper.readByte(bytes, reader)] // enemy type
             };
             return {
@@ -134,11 +134,11 @@ interface GTFOReplayConstructor
                 }
             };
         },
-        "enemyChangeState": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        "enemyBehaviourChangeState": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
         {
-            let e: GTFOEventEnemyChangeState = {
+            let e: GTFOEventEnemyBehaviourChangeState = {
                 instance: BitHelper.readInt(bytes, reader), // enemy instance id
-                state: GTFOEnemyStateMap[BitHelper.readByte(bytes, reader)] // state
+                state: GTFOEnemyBehaviourStateMap[BitHelper.readByte(bytes, reader)] // state
             };
             return {
                 tick: tick,
@@ -146,7 +146,24 @@ interface GTFOReplayConstructor
                 time: timestamp,
                 order: order,
                 detail: {
-                    type: "enemyChangeState",
+                    type: "enemyBehaviourChangeState",
+                    detail: e
+                }
+            };
+        },
+        "enemyLocomotionChangeState": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventEnemyLocomotionChangeState = {
+                instance: BitHelper.readInt(bytes, reader), // enemy instance id
+                state: GTFOEnemyLocomotionStateMap[BitHelper.readByte(bytes, reader)] // state
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "enemyLocomotionChangeState",
                     detail: e
                 }
             };

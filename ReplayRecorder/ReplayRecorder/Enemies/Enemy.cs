@@ -27,7 +27,6 @@ namespace ReplayRecorder.Enemies
 
     public static partial class Enemy
     {
-        // TODO(randomuserhi): Move statemap to GTFOSpecification
         public static rEB_States toRState(EB_States state)
         {
             switch (state)
@@ -81,15 +80,32 @@ namespace ReplayRecorder.Enemies
         {
             Hibernating,
             Patrolling,
-            InCombat
+            InCombat,
+            StuckInGlue
+        }
+
+        public static rES_States toRState(ES_StateEnum state)
+        {
+            switch (state)
+            {
+                case ES_StateEnum.StuckInGlue:
+                    return rES_States.StuckInGlue;
+                default:
+                    return rES_States.Default;
+            }
+        }
+        public enum rES_States
+        {
+            Default,
+            StuckInGlue
         }
 
         public struct EnemyState : ISerializable
         {
             private rEnemyAgent enemy;
-            private rEB_States state;
+            private byte state;
 
-            public EnemyState(rEnemyAgent enemy, rEB_States state)
+            public EnemyState(rEnemyAgent enemy, byte state)
             {
                 this.enemy = enemy;
                 this.state = state;
@@ -101,17 +117,29 @@ namespace ReplayRecorder.Enemies
             {
                 int index = 0;
                 BitHelper.WriteBytes(enemy.instanceID, buffer, ref index);
-                BitHelper.WriteBytes((byte)state, buffer, ref index);
+                BitHelper.WriteBytes(state, buffer, ref index);
                 fs.Write(buffer);
             }
         }
 
-        public static void StateChange(EnemyAgent enemy, rEB_States state)
+        public static void BehaviourStateChange(EnemyAgent enemy, rEB_States state)
         {
             int instance = enemy.GetInstanceID();
             if (enemies.ContainsKey(instance))
             {
-                SnapshotManager.AddEvent(GameplayEvent.Type.EnemyChangeState, new EnemyState(enemies[instance], state));
+                APILogger.Error($"Enemy [{instance}] behaviour state changed to {state}");
+                SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBehaviourChangeState, new EnemyState(enemies[instance], (byte)state));
+            }
+            else APILogger.Error("Can't change state of enemy that was not tracked.");
+        }
+
+        public static void LocomotionStateChange(EnemyAgent enemy, rES_States state)
+        {
+            int instance = enemy.GetInstanceID();
+            if (enemies.ContainsKey(instance))
+            {
+                APILogger.Error($"Enemy [{instance}] locomotion state changed to {state}");
+                SnapshotManager.AddEvent(GameplayEvent.Type.EnemyLocomotionChangeState, new EnemyState(enemies[instance], (byte)state));
             }
             else APILogger.Error("Can't change state of enemy that was not tracked.");
         }

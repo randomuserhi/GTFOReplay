@@ -38,7 +38,8 @@ namespace ReplayRecorder
             DespawnEnemy,
 
             EnemyDead,
-            EnemyChangeState,
+            EnemyBehaviourChangeState,
+            EnemyLocomotionChangeState,
 
             EnemyBulletDamage,
             EnemyMeleeDamage,

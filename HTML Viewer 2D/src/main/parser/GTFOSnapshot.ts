@@ -284,15 +284,25 @@ interface GTFOSnapshotConstructor
             }
             else throw new ReferenceError("Referenced enemy does not exist.");
         },
-        "enemyChangeState": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "enemyBehaviourChangeState": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
-            let e = ev.detail as GTFOEventEnemyChangeState;
+            let e = ev.detail as GTFOEventEnemyBehaviourChangeState;
             let enemy = snapshot.enemies.get(e.instance);
             if (RHU.exists(enemy))
             {
-                enemy.state = e.state;
+                enemy.behaviourState = e.state;
             }
-            else throw new ReferenceError("Enemy does not exist to change state of.");
+            else throw new ReferenceError("Enemy does not exist to change behaviour state of.");
+        },
+        "enemyLocomotionChangeState": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        {
+            let e = ev.detail as GTFOEventEnemyLocomotionChangeState;
+            let enemy = snapshot.enemies.get(e.instance);
+            if (RHU.exists(enemy))
+            {
+                enemy.locomotionState = e.state;
+            }
+            else throw new ReferenceError("Enemy does not exist to change locomotion state of.");
         },
         "enemyBulletDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
