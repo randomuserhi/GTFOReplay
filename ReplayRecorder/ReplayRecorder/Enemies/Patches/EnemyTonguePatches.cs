@@ -14,7 +14,9 @@ namespace ReplayRecorder.Enemies.Patches
         {
             int key = __instance.m_owner.GetInstanceID();
             int instance = __instance.GetInstanceID();
-            Enemy.tongueOwners.Add(key, __instance);
+            if (!Enemy.tongueOwners.ContainsKey(key))
+                Enemy.tongueOwners.Add(key, new HashSet<MovingEnemyTentacleBase>());
+            Enemy.tongueOwners[key].Add(__instance);
             Enemy.OnTongueSpawn(instance, key, __instance);
         }
 
@@ -23,7 +25,8 @@ namespace ReplayRecorder.Enemies.Patches
         {
             if (Enemy.tongueOwners.ContainsKey(instance))
             {
-                Enemy.OnTongueDespawn(Enemy.tongueOwners[instance].GetInstanceID());
+                foreach (MovingEnemyTentacleBase tongue in Enemy.tongueOwners[instance])
+                    Enemy.OnTongueDespawn(tongue.GetInstanceID());
                 Enemy.tongueOwners.Remove(instance);
             }
         }
@@ -37,8 +40,8 @@ namespace ReplayRecorder.Enemies.Patches
         private static void Deallocate(MovingEnemyTentacleBase __instance)
         {
             int instance = __instance.GetInstanceID();
-            if (Enemy.tongues.ContainsKey(instance))
-                Enemy.tongueOwners.Remove(Enemy.tongues[instance]);
+            if (Enemy.tongues.ContainsKey(instance) && Enemy.tongueOwners.ContainsKey(Enemy.tongues[instance]))
+                Enemy.tongueOwners[Enemy.tongues[instance]].Remove(__instance);
             Enemy.OnTongueDespawn(instance);
 
         }

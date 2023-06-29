@@ -133,7 +133,8 @@ namespace ReplayRecorder
 
                 { "Tank", 14 },
                 { "Birther_Boss", 15 },
-                { "Pouncer", 16 }
+                { "Pouncer", 16 },
+                { "Tank_Boss", 17 }
             }
         };
         private static GTFOSpecification spec = defaultSpec;

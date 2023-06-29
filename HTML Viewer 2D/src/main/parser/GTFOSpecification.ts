@@ -42,7 +42,9 @@ let GTFOSpecification: GTFOSpecification = {
 
         "Tank",
         "Mother",
-        "Snatcher"
+        "Snatcher",
+
+        "Immortal Tank"
     ],
     items: [
         "Unknown",

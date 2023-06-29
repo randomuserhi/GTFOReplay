@@ -90,7 +90,7 @@ namespace ReplayRecorder.Player
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerMeleeDamage, new rPlayerDamage(player, damage, instance));
         }
 
-        public static void OnTongueDamage(PlayerAgent player, float damage, EnemyAgent source)
+        public static void OnTongueDamage(PlayerAgent player, float damage, EnemyAgent source, MovingEnemyTentacleBase tongue)
         {
             //if (damage <= 0) return;
             int instance = source.GetInstanceID();
@@ -101,7 +101,7 @@ namespace ReplayRecorder.Player
             }
             APILogger.Debug($"{player.Owner.NickName} took {damage} tongue damage from [{instance}].");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerTongueDamage, new rPlayerDamage(player, damage, instance));
-            SnapshotManager.AddEvent(GameplayEvent.Type.SetTongue, new Enemy.TongueEvent(instance));
+            SnapshotManager.AddEvent(GameplayEvent.Type.SetTongue, new Enemy.TongueEvent(tongue));
         }
 
         public static void OnPelletDamage(PlayerAgent player, float damage, EnemyAgent source)
@@ -159,11 +159,11 @@ namespace ReplayRecorder.Player
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerPelletDodge, new rPlayerDodge(player, source));
         }
 
-        public static void OnTongueDodge(PlayerAgent player, int source)
+        public static void OnTongueDodge(PlayerAgent player, int source, MovingEnemyTentacleBase tongue)
         {
             APILogger.Debug($"{player.Owner.NickName} dodged tongue from [{source}]");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerTongueDodge, new rPlayerDodge(player, source));
-            SnapshotManager.AddEvent(GameplayEvent.Type.SetTongue, new Enemy.TongueEvent(source));
+            SnapshotManager.AddEvent(GameplayEvent.Type.SetTongue, new Enemy.TongueEvent(tongue));
         }
     }
 }

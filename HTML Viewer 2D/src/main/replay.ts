@@ -631,6 +631,10 @@ RHU.import(RHU.module({ trace: new Error(),
                             case "Big Striker":
                                 polygon(this.ctx, 25, 4);
                                 break;
+                            case "Immortal Tank":
+                                polygon(this.ctx, 30, 6);
+                                this.ctx.fillStyle = "#ffe92e";
+                                break;
                             case "Tank":
                                 polygon(this.ctx, 30, 6);
                                 break;

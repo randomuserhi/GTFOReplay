@@ -12,19 +12,14 @@ namespace ReplayRecorder.Enemies
             public int instance;
             public Vector3[] spline;
 
-            public TongueEvent(int instance)
+            public TongueEvent(MovingEnemyTentacleBase tongue)
             {
-                if (tongueOwners.ContainsKey(instance))
+                instance = tongue.GetInstanceID();
+                spline = new Vector3[tongue.m_GPUSplineSegments.Length];
+                for (int i = 0; i < spline.Length; ++i)
                 {
-                    MovingEnemyTentacleBase tongue = tongueOwners[instance];
-                    this.instance = tongue.GetInstanceID();
-                    spline = new Vector3[tongue.m_GPUSplineSegments.Length];
-                    for (int i = 0; i < spline.Length; ++i)
-                    {
-                        spline[i] = tongue.m_GPUSplineSegments[i].pos;
-                    }
+                    spline[i] = tongue.m_GPUSplineSegments[i].pos;
                 }
-                else throw new Exception("Enemy does not have a tongue, this should not happen.");
             }
 
             private const int SizeOfHeader = sizeof(int) + 1;
@@ -88,8 +83,8 @@ namespace ReplayRecorder.Enemies
             }
         }
 
-        // Enemy agent => tongue
-        public static Dictionary<int, MovingEnemyTentacleBase> tongueOwners = new Dictionary<int, MovingEnemyTentacleBase>();
+        // Enemy agent => tongues
+        public static Dictionary<int, HashSet<MovingEnemyTentacleBase>> tongueOwners = new Dictionary<int, HashSet<MovingEnemyTentacleBase>>();
 
         // tongue => enemy agent
         public static Dictionary<int, int> tongues = new Dictionary<int, int>();

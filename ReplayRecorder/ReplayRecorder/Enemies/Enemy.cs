@@ -127,7 +127,7 @@ namespace ReplayRecorder.Enemies
             int instance = enemy.GetInstanceID();
             if (enemies.ContainsKey(instance))
             {
-                APILogger.Error($"Enemy [{instance}] behaviour state changed to {state}");
+                APILogger.Debug($"Enemy [{instance}] behaviour state changed to {state}");
                 SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBehaviourChangeState, new EnemyState(enemies[instance], (byte)state));
             }
             else APILogger.Error("Can't change state of enemy that was not tracked.");
@@ -138,7 +138,7 @@ namespace ReplayRecorder.Enemies
             int instance = enemy.GetInstanceID();
             if (enemies.ContainsKey(instance))
             {
-                APILogger.Error($"Enemy [{instance}] locomotion state changed to {state}");
+                APILogger.Debug($"Enemy [{instance}] locomotion state changed to {state}");
                 SnapshotManager.AddEvent(GameplayEvent.Type.EnemyLocomotionChangeState, new EnemyState(enemies[instance], (byte)state));
             }
             else APILogger.Error("Can't change state of enemy that was not tracked.");
@@ -212,6 +212,8 @@ namespace ReplayRecorder.Enemies
         {
             enemies.Clear();
             pellets.Clear();
+            tongueOwners.Clear();
+            tongues.Clear();
         }
     }
 }

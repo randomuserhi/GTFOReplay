@@ -26,6 +26,7 @@ namespace ReplayRecorder.Glue.Patches
                 //                     this ray might hit the ground of a different dimension negating it...
                 // TODO(randomuserhi): Improve since if it falls through the floor that sits above a different room
                 //                     this raycast won't catch that...
+                //                     Another issue is shooting foam over gaps
                 if (!Physics.Raycast(__instance.transform.position, Vector3.down))
                 {
                     APILogger.Debug("Despawned glue as there was no ground beneath it. Suspected to be falling below surface.");

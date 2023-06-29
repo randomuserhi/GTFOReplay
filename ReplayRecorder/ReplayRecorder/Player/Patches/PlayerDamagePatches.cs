@@ -40,8 +40,12 @@ namespace ReplayRecorder.Player.Patches
                 float damage = data.damage.Get(__instance.HealthMax);
                 damage = AgentModifierManager.ApplyModifier(sourceAgent, AgentModifier.MeleeDamage, damage);
 
-                PlayerDamage.OnTongueDamage(__instance.Owner, damage, e);
+                if (tongue != null)
+                    PlayerDamage.OnTongueDamage(__instance.Owner, damage, e, tongue);
+                else if (SNet.IsMaster) APILogger.Error("Could not find tongue player was hit by as master, this should not happen.");
             }
+
+            tongue = null;
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveMeleeDamage))]
@@ -142,11 +146,13 @@ namespace ReplayRecorder.Player.Patches
         }
 
         // Tracking dodged tongues
+        private static MovingEnemyTentacleBase? tongue; // Tongue currently in use => used to work out which tongue hits the player
         [HarmonyPatch(typeof(MovingEnemyTentacleBase), nameof(MovingEnemyTentacleBase.OnAttackIsOut))]
         [HarmonyPrefix]
         private static void OnAttackIsOut(MovingEnemyTentacleBase __instance)
         {
             //if (!SNet.IsMaster) return;
+            tongue = __instance;
 
             PlayerAgent? target = __instance.PlayerTarget;
 
@@ -166,7 +172,7 @@ namespace ReplayRecorder.Player.Patches
                 if (!flag2)
                 {
                     int instance = __instance.m_owner.GetInstanceID();
-                    PlayerDamage.OnTongueDodge(target, instance);
+                    PlayerDamage.OnTongueDodge(target, instance, tongue);
                 }
             }
         }
