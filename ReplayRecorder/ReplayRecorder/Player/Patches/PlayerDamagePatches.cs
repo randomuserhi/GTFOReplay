@@ -151,13 +151,14 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPrefix]
         private static void OnAttackIsOut(MovingEnemyTentacleBase __instance)
         {
-            //if (!SNet.IsMaster) return;
+            if (!SNet.IsMaster) return;
+
             tongue = __instance;
 
             PlayerAgent? target = __instance.PlayerTarget;
 
             bool flag = __instance.CheckTargetInAttackTunnel();
-            if (SNet.IsMaster && target != null && target.Damage.IsSetup)
+            if (target != null && target.Damage.IsSetup)
             {
                 bool flag2;
                 if (__instance.m_owner.EnemyBalancingData.UseTentacleTunnelCheck)
