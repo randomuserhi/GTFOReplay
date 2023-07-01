@@ -71,8 +71,10 @@ interface GTFOSnapshotConstructor
             let dynamic = t.detail as {
                 instance: number,
                 position: Vector,
+                velocity: Vector,
                 rotation: Quaternion,
-                scale: number
+                scale: number,
+                lastUpdated: number
             };
             if (!snapshot.dynamics.has(dynamic.instance))
             {
@@ -80,13 +82,26 @@ interface GTFOSnapshotConstructor
                 return;
             }
             let d = snapshot.dynamics.get(dynamic.instance)!;
+            d.lastUpdated = dynamic.lastUpdated;
 
             let l = 1;
             if (RHU.exists(lerp)) l = lerp;
 
+            // smoothed delayed velocity (not true velocity)
+            d.velocity = {
+                x: d.velocity.x + (dynamic.velocity.x - d.velocity.x) * l,
+                y: d.velocity.y + (dynamic.velocity.y - d.velocity.y) * l,
+                z: d.velocity.z + (dynamic.velocity.z - d.velocity.z) * l
+            };
+
             // If position is 0, just set lerp to 1 to prevent weird lerping from origin
             if (d.position.x == 0 && d.position.y == 0 && d.position.z == 0)
+            {
+                d.velocity.x = 0;
+                d.velocity.y = 0;
+                d.velocity.z = 0;
                 l = 1;
+            }
 
             let old = d.position;
 
@@ -144,7 +159,7 @@ interface GTFOSnapshotConstructor
 
             //d.rotation = dynamic.rotation;
 
-            // slerp quaternion TODO(randomuserhi): Fix it jumps about when crossing the 0 degree to 359 degree angle
+            // slerp quaternion
             // https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
             let qa = d.rotation;
             let qb = dynamic.rotation;
@@ -209,7 +224,7 @@ interface GTFOSnapshotConstructor
         {
             throw new Error("Unkown event type");
         },
-        "playerJoin": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "playerJoin": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventPlayerJoin;
             if (snapshot.snet.has(e.player))
@@ -226,7 +241,9 @@ interface GTFOSnapshotConstructor
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
-                scale: 0
+                velocity: { x: 0, y: 0, z: 0 },
+                scale: 0,
+                lastUpdated: time
             });
         },
         "playerLeave": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -240,14 +257,16 @@ interface GTFOSnapshotConstructor
             if (RHU.exists(p)) snapshot.slots[p.slot] = undefined;
             snapshot.dynamics.delete(e.instance);
         },
-        "enemySpawn": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "enemySpawn": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventEnemySpawn;
             snapshot.enemies.set(e.instance, new GTFOEnemy(e.instance, e.type, e.state));
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
-                scale: 0
+                velocity: { x: 0, y: 0, z: 0 },
+                scale: 0,
+                lastUpdated: time
             });
         },
         "enemyDespawn": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -535,7 +554,7 @@ interface GTFOSnapshotConstructor
             }
             else throw ReferenceError("Mine does not exist.");
         },
-        "spawnSentry": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "spawnSentry": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventSentrySpawn;
             let owner = snapshot.slots[e.slot];
@@ -547,7 +566,9 @@ interface GTFOSnapshotConstructor
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
-                scale: 0
+                velocity: { x: 0, y: 0, z: 0 },
+                scale: 0,
+                lastUpdated: time
             });
         },
         "despawnSentry": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -564,14 +585,16 @@ interface GTFOSnapshotConstructor
             }
             else throw ReferenceError("Sentry does not exist.");
         },
-        "spawnPellet": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "spawnPellet": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventPelletSpawn;
             snapshot.pellets.add(e.instance);
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
-                scale: 0
+                velocity: { x: 0, y: 0, z: 0 },
+                scale: 0,
+                lastUpdated: time
             });
             snapshot.trails.set(e.instance, {
                 points: [],
@@ -613,14 +636,16 @@ interface GTFOSnapshotConstructor
         {
             throw new Error("Unreachable");
         },
-        "spawnGlue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "spawnGlue": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventGlueSpawn;
             snapshot.glue.add(e.instance);
             snapshot.dynamics.set(e.instance, {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
-                scale: 0
+                velocity: { x: 0, y: 0, z: 0 },
+                scale: 0,
+                lastUpdated: time
             });
         },
         "despawnGlue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -786,7 +811,9 @@ interface GTFOSnapshotConstructor
         for (let kv of snapshot.dynamics) this.dynamics.set(kv[0], {
             position: { x: kv[1].position.x, y: kv[1].position.y, z: kv[1].position.z },
             rotation: { x: kv[1].rotation.x, y: kv[1].rotation.y, z: kv[1].rotation.z, w: kv[1].rotation.w },
-            scale: kv[1].scale
+            velocity: { x: kv[1].velocity.x, y: kv[1].velocity.y, z: kv[1].velocity.z },
+            scale: kv[1].scale,
+            lastUpdated: kv[1].lastUpdated
         });
     }
     GTFOSnapshot.clone = function(snapshot: GTFOSnapshot): GTFOSnapshot

@@ -76,7 +76,7 @@ namespace ReplayRecorder.Enemies.Patches
         {
             int instance = __instance.gameObject.GetInstanceID();
             Enemy.OnPelletDespawn(instance);
-            if (!SNet.IsMaster) Enemy.UnregisterPellet(instance);
+            if (SNet.IsMaster) Enemy.UnregisterPellet(instance);
         }
 
         private static EnemyAgent? hitByShooter = null;

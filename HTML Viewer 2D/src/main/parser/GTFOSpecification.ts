@@ -42,9 +42,13 @@ let GTFOSpecification: GTFOSpecification = {
 
         "Tank",
         "Mother",
+        "Big Mother",
         "Snatcher",
 
-        "Immortal Tank"
+        "Immortal Tank",
+
+        "Flyer",
+        "Big Flyer"
     ],
     items: [
         "Unknown",
@@ -92,6 +96,7 @@ let GTFOSpecification: GTFOSpecification = {
         "Hacking Tool",
         "Long Range Flashlight",
         "Lock Melter",
-        "Glow Stick"
+        "Glow Stick",
+        "Explosive Mine"
     ]
 }

@@ -615,6 +615,154 @@ RHU.import(RHU.module({ trace: new Error(),
                         if (charger) this.ctx.scale(1.05, 1.05);
                         switch (enemy.type)
                         {
+                            case "Flyer":
+                            case "Big Flyer":
+                                {
+                                    if (enemy.type == "Flyer")
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.scale(0.8, 0.8);
+                                    }
+
+                                    let oldfill = this.ctx.fillStyle;
+                                    
+                                    let len = 50;
+                                    let thickness = 5;
+                                    
+                                    let dir: Vector = {
+                                        x: Math.sin(euler.y),
+                                        y: 0,
+                                        z: -Math.cos(euler.y),
+                                    };
+                                    let dot = dir.x * dynamic.velocity.x + 0 + dir.z * dynamic.velocity.z;
+                                    let proj: Vector = {
+                                        x: dot * dir.x,
+                                        y: 0,
+                                        z: dot * dir.z
+                                    };
+
+                                    let magnitude = Math.sqrt(proj.x * proj.x + proj.z * proj.z);
+                                    let l = magnitude / 500;
+                                    if (l < 0) l = 0;
+                                    else if (l > 1) l = 1;
+                                    if (dot >= 0) l *= -1;
+
+                                    let grd = this.ctx.createLinearGradient(-len, 0, len, 0);
+                                    let color = "150,0,0";
+                                    grd.addColorStop(0,`rgba(${color}, 0)`);
+                                    grd.addColorStop(0.3,`rgba(${color}, 1)`);
+                                    grd.addColorStop(0.7,`rgba(${color}, 1)`);
+                                    grd.addColorStop(1,`rgba(${color}, 0)`);
+
+                                    let sweep = l * Math.PI / 4;
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.rotate(- sweep);
+
+                                        this.ctx.beginPath();
+                                        this.ctx.moveTo(-len, 0);
+                                        this.ctx.lineTo(0, thickness);
+                                        this.ctx.lineTo(0, -thickness);
+                                        this.ctx.closePath();
+                                        this.ctx.fillStyle = grd;
+                                        this.ctx.fill();
+
+                                        this.ctx.restore();
+                                    }
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.rotate(sweep);
+
+                                        this.ctx.beginPath();
+                                        this.ctx.moveTo(len, 0);
+                                        this.ctx.lineTo(0, thickness);
+                                        this.ctx.lineTo(0, -thickness);
+                                        this.ctx.closePath();
+                                        this.ctx.fillStyle = grd;
+                                        this.ctx.fill();
+
+                                        this.ctx.restore();
+                                    }
+
+                                    grd = this.ctx.createLinearGradient(-len, 0, len, 0);
+                                    color = "190,0,0";
+                                    grd.addColorStop(0,`rgba(${color}, 0)`);
+                                    grd.addColorStop(0.3,`rgba(${color}, 1)`);
+                                    grd.addColorStop(0.7,`rgba(${color}, 1)`);
+                                    grd.addColorStop(1,`rgba(${color}, 0)`);
+
+                                    len = 40;
+                                    sweep = l * Math.PI / 3;
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.rotate(-Math.PI / 6 - sweep);
+
+                                        this.ctx.beginPath();
+                                        this.ctx.moveTo(-len, 0);
+                                        this.ctx.lineTo(0, thickness);
+                                        this.ctx.lineTo(0, -thickness);
+                                        this.ctx.closePath();
+                                        this.ctx.fillStyle = grd;
+                                        this.ctx.fill();
+
+                                        this.ctx.restore();
+                                    }
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.rotate(Math.PI / 6 + sweep);
+
+                                        this.ctx.beginPath();
+                                        this.ctx.moveTo(len, 0);
+                                        this.ctx.lineTo(0, thickness);
+                                        this.ctx.lineTo(0, -thickness);
+                                        this.ctx.closePath();
+                                        this.ctx.fillStyle = grd;
+                                        this.ctx.fill();
+
+                                        this.ctx.restore();
+                                    }
+                                    sweep = l * Math.PI / 3;
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.rotate(Math.PI / 6 - sweep);
+
+                                        this.ctx.beginPath();
+                                        this.ctx.moveTo(-len, 0);
+                                        this.ctx.lineTo(0, thickness);
+                                        this.ctx.lineTo(0, -thickness);
+                                        this.ctx.closePath();
+                                        this.ctx.fillStyle = grd;
+                                        this.ctx.fill();
+
+                                        this.ctx.restore();
+                                    }
+                                    {
+                                        this.ctx.save();
+                                        this.ctx.rotate(- Math.PI / 6 + sweep);
+
+                                        this.ctx.beginPath();
+                                        this.ctx.moveTo(len, 0);
+                                        this.ctx.lineTo(0, thickness);
+                                        this.ctx.lineTo(0, -thickness);
+                                        this.ctx.closePath();
+                                        this.ctx.fillStyle = grd;
+                                        this.ctx.fill();
+
+                                        this.ctx.restore();
+                                    }
+
+                                    this.ctx.fillStyle = oldfill;
+
+                                    if (enemy.type == "Flyer")
+                                    {
+                                        this.ctx.beginPath();
+                                        this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                                    }
+                                    else polygon(this.ctx, 20, 5);
+
+                                    if (enemy.type == "Flyer") this.ctx.restore();
+                                }
+                                break;
                             case "Baby":
                                 this.ctx.scale(0.6, 0.6);
                             case "Charger":
@@ -638,6 +786,7 @@ RHU.import(RHU.module({ trace: new Error(),
                             case "Tank":
                                 polygon(this.ctx, 30, 6);
                                 break;
+                            case "Big Mother":
                             case "Mother":
                                 this.ctx.scale(1, 1.3);
                                 polygon(this.ctx, 25, 6);
@@ -698,6 +847,15 @@ RHU.import(RHU.module({ trace: new Error(),
                 }*/
 
                 this.ctx.restore();
+
+                // debug velocity
+                /*let velScale = 0.1;
+                this.ctx.beginPath();
+                this.ctx.moveTo(dynamic.position.x, -dynamic.position.z);
+                this.ctx.lineTo(dynamic.position.x + (dynamic.velocity.x * velScale), -dynamic.position.z-(dynamic.velocity.z * velScale));
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = "#00ff00";
+                this.ctx.stroke();*/
             }
 
             // Draw tongues

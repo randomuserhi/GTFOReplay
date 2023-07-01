@@ -105,6 +105,7 @@ namespace ReplayRecorder
                 { "Long Range Flashlight", 43 },
                 { "Lock Melter", 44 },
                 { "Glow Stick", 45 },
+                { "Explosive Trip Mine", 46 }
             },
             enemies = new Dictionary<string, byte>() {
                 { "unknown", 0 }, // Not necessary for this application to know, but its here to remind that 0 is unavailable
@@ -119,6 +120,7 @@ namespace ReplayRecorder
                 { "Striker_Child", 6 },
                 { "Striker_Wave", 7 },
                 { "Striker_Hibernate", 7 },
+                { "Striker_Wave_Fast", 7 },
                 { "Striker_Big_Wave", 8 },
                 { "Striker_Big_Hibernate", 8 },
 
@@ -133,8 +135,12 @@ namespace ReplayRecorder
 
                 { "Tank", 14 },
                 { "Birther_Boss", 15 },
-                { "Pouncer", 16 },
-                { "Tank_Boss", 17 }
+                { "Birther", 16 },
+                { "Pouncer", 17 },
+                { "Tank_Boss", 18 },
+
+                { "Flyer", 19 },
+                { "Flyer_Big", 20 }
             }
         };
         private static GTFOSpecification spec = defaultSpec;

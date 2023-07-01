@@ -1,6 +1,7 @@
 ﻿using API;
 using Enemies;
 using UnityEngine;
+using SNetwork;
 
 namespace ReplayRecorder.Enemies
 {
@@ -52,7 +53,7 @@ namespace ReplayRecorder.Enemies
 
         public static void OnPelletDespawn(int instance)
         {
-            if (pellets.ContainsKey(instance) && !pellets[instance].markForRemoval)
+            if (!SNet.IsMaster || (pellets.ContainsKey(instance) && !pellets[instance].markForRemoval))
             {
                 APILogger.Debug($"Visual pellet despawned.");
 

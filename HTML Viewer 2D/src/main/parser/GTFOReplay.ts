@@ -760,6 +760,15 @@ interface GTFOReplayConstructor
                 let rotation = BitHelper.readHalfQuaternion(bytes, reader);
                 let scale = BitHelper.readHalf(bytes, reader);
 
+                if (Number.isNaN(rotation.x) || Number.isNaN(rotation.y) || Number.isNaN(rotation.z) || Number.isNaN(rotation.w))
+                {
+                    console.warn("Dynamic had an NaN rotation, falling back to identity");
+                    rotation.x = 0;
+                    rotation.y = 0;
+                    rotation.z = 0;
+                    rotation.w = 1;   
+                }
+
                 // scale accordingly
                 position.x *= GTFOReplaySettings.scale;
                 position.y *= GTFOReplaySettings.scale;
@@ -771,9 +780,25 @@ interface GTFOReplayConstructor
                     throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
 
                 let dynamic = parser.dynamics.get(instance)!;
-                if (absolute) dynamic.position = position;
+
+                // NOTE(randomuserhi): * 1000 to convert ms to seconds
+                let dt = (now - dynamic.lastUpdated) / 1000;
+                dynamic.lastUpdated = now;
+
+                if (absolute) 
+                {
+                    dynamic.velocity.x = (position.x - dynamic.position.x) / dt;
+                    dynamic.velocity.y = (position.y - dynamic.position.y) / dt;
+                    dynamic.velocity.z = (position.z - dynamic.position.z) / dt;
+
+                    dynamic.position = position;
+                }
                 else
                 {
+                    dynamic.velocity.x = position.x / dt;
+                    dynamic.velocity.y = position.y / dt;
+                    dynamic.velocity.z = position.z / dt;
+
                     dynamic.position.x += position.x;
                     dynamic.position.y += position.y;
                     dynamic.position.z += position.z;
@@ -794,12 +819,18 @@ interface GTFOReplayConstructor
                             y: dynamic.position.y,
                             z: dynamic.position.z
                         },
+                        velocity: {
+                            x: dynamic.velocity.x,
+                            y: dynamic.velocity.y,
+                            z: dynamic.velocity.z,
+                        },
                         rotation: {
                             x: dynamic.rotation.x,
                             y: dynamic.rotation.y,
                             z: dynamic.rotation.z,
                             w: dynamic.rotation.w
                         },
+                        lastUpdated: dynamic.lastUpdated,
                         scale: dynamic.scale
                     }
                 };

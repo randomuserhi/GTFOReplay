@@ -197,7 +197,13 @@ namespace ReplayRecorder
                     BitHelper.WriteBytes((byte)(1), buffer, ref index);
                     BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteBytes(transform.position, buffer, ref index);
-                    BitHelper.WriteHalf(transform.rotation, buffer, ref index);
+                    if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) || 
+                        float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w))
+                    {
+                        BitHelper.WriteHalf(Quaternion.identity, buffer, ref index);
+                        APILogger.Debug("Dynamic rotation had NaN component.");
+                    }
+                    else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
                     BitHelper.WriteHalf(transform.scale, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOf);
@@ -208,7 +214,13 @@ namespace ReplayRecorder
                     BitHelper.WriteBytes((byte)(0), buffer, ref index);
                     BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteHalf(transform.position - oldPosition, buffer, ref index);
-                    BitHelper.WriteHalf(transform.rotation, buffer, ref index);
+                    if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
+                        float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w))
+                    {
+                        BitHelper.WriteHalf(Quaternion.identity, buffer, ref index);
+                        APILogger.Debug("Dynamic rotation had NaN component.");
+                    }
+                    else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
                     BitHelper.WriteHalf(transform.scale, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOfHalf);

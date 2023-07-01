@@ -48,7 +48,9 @@ interface GTFODynamic
 {
     position: Vector;
     rotation: Quaternion;
+    velocity: Vector;
     scale: number;
+    lastUpdated: number;
 }
 
 interface GTFOEvent<T extends keyof GTFOEventMap = "unknown"> 
