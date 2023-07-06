@@ -31,7 +31,10 @@ namespace ReplayRecorder.Enemies
         {
             ProjectileTargeting targeting;
 
+            public byte _dimensionIndex;
+
             public bool active => targeting != null;
+            public byte dimensionIndex => _dimensionIndex;
             public Vector3 position => targeting.m_myPos;
             public Quaternion rotation => Quaternion.LookRotation(targeting.m_myFwd);
             public float scale => 0;
@@ -39,6 +42,8 @@ namespace ReplayRecorder.Enemies
             public Pellet(ProjectileTargeting targeting)
             {
                 this.targeting = targeting;
+                // TODO(randomuserhi): If host => use projectile owner for dimensionIndex
+                _dimensionIndex = (byte)Dimensions.Dimensions.CurrentDimension();
             }
         }
 

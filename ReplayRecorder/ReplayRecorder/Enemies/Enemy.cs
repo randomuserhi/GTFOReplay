@@ -177,7 +177,7 @@ namespace ReplayRecorder.Enemies
 
             APILogger.Debug($"[{rEnemy.instanceID}] was spawned ({enemy.EnemyData.name})");
             SnapshotManager.AddEvent(GameplayEvent.Type.SpawnEnemy, new SpawnEnemy(rEnemy, mode));
-            SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rEnemy.instanceID, new SnapshotManager.rObject(enemy.gameObject)));
+            SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rEnemy.instanceID, new SnapshotManager.rAgent(enemy)));
         }
         public static void OnDespawnEnemy(EnemyAgent enemy)
         {

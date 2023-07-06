@@ -13,6 +13,7 @@ namespace ReplayRecorder.Player
         public SNet_Player player;
 
         public bool active => sentry.m_firing != null;
+        public byte dimensionIndex => (byte)sentry.Owner.m_dimensionIndex;
         public Vector3 position => pos;
         public Quaternion rotation => Quaternion.LookRotation(sentry.m_firing.MuzzleAlign.forward);
         public float scale => 0;
@@ -38,7 +39,7 @@ namespace ReplayRecorder.Player
         }
     }
 
-    public class PlayerSentry
+    public static class PlayerSentry
     {
         // Flag to determine if next shot is performed by a sentry
         public static string? sentryName = null;

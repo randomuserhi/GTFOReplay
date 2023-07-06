@@ -429,6 +429,7 @@ interface GTFOReplayConstructor
             let e: GTFOEventMineSpawn = {
                 slot: BitHelper.readByte(bytes, reader),
                 type: GTFOSpecification.mines[BitHelper.readByte(bytes, reader)],
+                dimensionIndex: BitHelper.readByte(bytes, reader),
                 instance: BitHelper.readInt(bytes, reader),
                 position: BitHelper.readVector(bytes, reader),
                 rotation: BitHelper.readHalfQuaternion(bytes, reader)
@@ -466,7 +467,8 @@ interface GTFOReplayConstructor
         "explodeMine": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
         {
             let e: GTFOEventMineExplode = {
-                instance: BitHelper.readInt(bytes, reader)
+                instance: BitHelper.readInt(bytes, reader),
+                slot: BitHelper.readByte(bytes, reader)
             };
             return {
                 tick: tick,
@@ -564,7 +566,8 @@ interface GTFOReplayConstructor
         "spawnTongue": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
         {
             let e: GTFOEventTongueSpawn = {
-                instance: BitHelper.readInt(bytes, reader)
+                instance: BitHelper.readInt(bytes, reader),
+                dimensionIndex: BitHelper.readByte(bytes, reader)
             };
             return {
                 tick: tick,
@@ -759,6 +762,7 @@ interface GTFOReplayConstructor
                 else position = BitHelper.readHalfVector(bytes, reader);
                 let rotation = BitHelper.readHalfQuaternion(bytes, reader);
                 let scale = BitHelper.readHalf(bytes, reader);
+                let dimensionIndex = BitHelper.readByte(bytes, reader);
 
                 if (Number.isNaN(rotation.x) || Number.isNaN(rotation.y) || Number.isNaN(rotation.z) || Number.isNaN(rotation.w))
                 {
@@ -831,7 +835,8 @@ interface GTFOReplayConstructor
                             w: dynamic.rotation.w
                         },
                         lastUpdated: dynamic.lastUpdated,
-                        scale: dynamic.scale
+                        scale: dynamic.scale,
+                        dimensionIndex: dimensionIndex
                     }
                 };
                 this.timeline.push(t);

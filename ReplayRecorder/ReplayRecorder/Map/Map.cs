@@ -1,12 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
-using Il2CppSystem.Text;
-
 using API;
 using LevelGeneration;
 using ReplayRecorder.Map.Patches;
-using System.Drawing;
 
 namespace ReplayRecorder.Map
 {

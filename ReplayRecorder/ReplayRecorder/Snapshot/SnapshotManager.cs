@@ -1,5 +1,6 @@
 ﻿using API;
 using UnityEngine;
+using Agents;
 
 namespace ReplayRecorder
 {
@@ -125,23 +126,25 @@ namespace ReplayRecorder
     // Manages saving a snapshot and delta snapshot every tick
     public class SnapshotManager : MonoBehaviour
     {
-        public struct rObject : ITransform
+        public struct rAgent : ITransform
         {
-            private GameObject go;
-            public bool active => go != null;
-            public Vector3 position => go.transform.position;
-            public Quaternion rotation => go.transform.rotation;
+            private Agent agent;
+            public bool active => agent != null;
+            public byte dimensionIndex => (byte)agent.m_dimensionIndex;
+            public Vector3 position => agent.transform.position;
+            public Quaternion rotation => agent.transform.rotation;
             public float scale => 0;
 
-            public rObject(GameObject go)
+            public rAgent(Agent agent)
             {
-                this.go = go;
+                this.agent = agent;
             }
         }
 
         public interface ITransform
         {
             public bool active { get; }
+            public byte dimensionIndex { get; }
             public Vector3 position { get; }
             public Quaternion rotation { get; }
             public float scale { get; }
@@ -171,16 +174,18 @@ namespace ReplayRecorder
                  transform.rotation != oldRotation || 
                  transform.scale != oldScale);
 
-            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf;
-            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf;
+            public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf + 1;
+            public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf + 1;
             private static byte[] buffer = new byte[SizeOf];
             public void Serialize(FileStream fs)
             {
                 /// Format:
                 /// byte => absolute or relative position
                 /// int => instance ID of object (not necessarily the gameobject)
-                /// Vector3(Half) => full precision / half precision based on absolute or relative position
+                /// Vector3(Full/Half) => full precision / half precision based on absolute or relative position
                 /// Quaternion(Half) => rotation
+                /// half => scale of transform
+                /// byte => Dimension of transform
                 
                 // TODO(randomuserhi): If rotation doesn't change just write a single byte 0b1000
                 //                     since the most significant bit doesnt matter to the quaternion.
@@ -205,6 +210,7 @@ namespace ReplayRecorder
                     }
                     else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
                     BitHelper.WriteHalf(transform.scale, buffer, ref index);
+                    BitHelper.WriteBytes(transform.dimensionIndex, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOf);
                 }
@@ -222,6 +228,7 @@ namespace ReplayRecorder
                     }
                     else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
                     BitHelper.WriteHalf(transform.scale, buffer, ref index);
+                    BitHelper.WriteBytes(transform.dimensionIndex, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOfHalf);
                 }

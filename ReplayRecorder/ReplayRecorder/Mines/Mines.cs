@@ -1,9 +1,8 @@
 ﻿using API;
+using Agents;
+using Player;
 using SNetwork;
 using UnityEngine;
-using static Il2CppSystem.Globalization.CultureInfo;
-using static ReplayRecorder.Map.Map;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace ReplayRecorder.Mines
 {
@@ -17,25 +16,28 @@ namespace ReplayRecorder.Mines
 
         public byte owner;
         public byte type;
+        public byte dimensionIndex;
         public int instance;
         public Vector3 position;
         public Quaternion rotation;
         public rMine(SNet_Player owner, int instance, Type type, Vector3 position, Quaternion rotation)
         {
             this.owner = (byte)owner.PlayerSlotIndex();
-            this.instance = instance;
             this.type = (byte)type;
+            dimensionIndex = (byte)PlayerManager.PlayerAgentsInLevel[this.owner].m_dimensionIndex;
+            this.instance = instance;
             this.position = position;
             this.rotation = rotation;
         }
 
-        public const int SizeOf = 2 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
+        public const int SizeOf = 3 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
         private static byte[] buffer = new byte[SizeOf];
         public void Serialize(FileStream fs)
         {
             int index = 0;
             BitHelper.WriteBytes(owner, buffer, ref index);
             BitHelper.WriteBytes(type, buffer, ref index);
+            BitHelper.WriteBytes(dimensionIndex, buffer, ref index);
             BitHelper.WriteBytes(instance, buffer, ref index);
             BitHelper.WriteBytes(position, buffer, ref index);
             BitHelper.WriteHalf(rotation, buffer, ref index);
@@ -44,7 +46,7 @@ namespace ReplayRecorder.Mines
         }
     }
 
-    public class Mine
+    public static class Mine
     {
         public struct rTripLine : ISerializable
         {
@@ -92,10 +94,33 @@ namespace ReplayRecorder.Mines
             mines.Remove(instance);
         }
 
-        public static void ExplodeMine(int instance)
+        private struct rExplodeMine : ISerializable
+        {
+            private int instance;
+            private byte player;
+
+            public rExplodeMine(int instance, byte player)
+            {
+                this.instance = instance;
+                this.player = player;
+            }
+
+            public const int SizeOf = sizeof(int) + 1;
+            private static byte[] buffer = new byte[SizeOf];
+            public void Serialize(FileStream fs)
+            {
+                int index = 0;
+                BitHelper.WriteBytes(instance, buffer, ref index);
+                BitHelper.WriteBytes(player, buffer, ref index);
+                fs.Write(buffer);
+            }
+        }
+
+        // NOTE(randomuserhi): a player value of 255 means the mine exploded without a player
+        public static void ExplodeMine(int instance, byte player)
         {
             APILogger.Debug($"Mine instance [{instance}] detonated");
-            SnapshotManager.AddEvent(GameplayEvent.Type.ExplodeMine, new rInstance(instance));
+            SnapshotManager.AddEvent(GameplayEvent.Type.ExplodeMine, new rExplodeMine(instance, player));
             mines.Remove(instance);
         }
 

@@ -2,8 +2,6 @@
 using HarmonyLib;
 
 using LevelGeneration;
-using UnityEngine.Rendering;
-using UnityEngine;
 
 namespace ReplayRecorder.Map.Patches
 {

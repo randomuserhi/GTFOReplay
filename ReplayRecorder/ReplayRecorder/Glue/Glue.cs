@@ -10,7 +10,10 @@ namespace ReplayRecorder.Glue
         {
             public GlueGunProjectile projectile;
 
+            private byte _dimension;
+
             public bool active => projectile != null;
+            public byte dimensionIndex => _dimension;
             public Vector3 position => projectile.transform.position;
             public Quaternion rotation => Quaternion.identity;
             public float scale => projectile.transform.localScale.x;
@@ -18,6 +21,7 @@ namespace ReplayRecorder.Glue
             public Projectile(GlueGunProjectile projectile)
             {
                 this.projectile = projectile;
+                _dimension = (byte)Dimensions.Dimensions.CurrentDimension();
             }
         }
 

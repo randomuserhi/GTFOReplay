@@ -1,5 +1,7 @@
 ﻿using API;
 using HarmonyLib;
+using Player;
+using Agents;
 using SNetwork;
 
 namespace ReplayRecorder.Mines.Patches
@@ -36,13 +38,12 @@ namespace ReplayRecorder.Mines.Patches
         [HarmonyPostfix]
         private static void Spawn(MineDeployerInstance __instance, pItemSpawnData spawnData)
         {
-            if (!SNet.IsMaster) return;
-
             int instanceID = __instance.gameObject.GetInstanceID();
 
             SNet_Player player;
             if (spawnData.owner.TryGetPlayer(out player))
             {
+                // NOTE(randomuserhi): Try with persistent_ID instead of itemID_gearCRC
                 APILogger.Debug($"Mine Spawn ID - {spawnData.itemData.itemID_gearCRC}");
                 switch (spawnData.itemData.itemID_gearCRC)
                 {
@@ -69,25 +70,46 @@ namespace ReplayRecorder.Mines.Patches
             Mine.DespawnMine(instanceID);
         }
 
-        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
+        private static PlayerAgent? player = null;
+        [HarmonyPatch(typeof(GenericDamageComponent), nameof(GenericDamageComponent.BulletDamage))]
         [HarmonyPrefix]
-        private static void Prefix_DoExplode(MineDeployerInstance_Detonate_Explosive __instance)
+        private static void Prefix_BulletDamage(float dam, Agent sourceAgent)
         {
-            if (!SNet.IsMaster) return;
+            player = sourceAgent.TryCast<PlayerAgent>();
+        }
+        [HarmonyPatch(typeof(GenericDamageComponent), nameof(GenericDamageComponent.BulletDamage))]
+        [HarmonyPostfix]
+        private static void Postfix_BulletDamage()
+        {
+            player = null;
+        }
 
+        [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedTrigger))]
+        [HarmonyPrefix]
+        private static void Prefix_SyncedTrigger(MineDeployerInstance __instance)
+        {
             int instanceID = __instance.gameObject.GetInstanceID();
 
             if (Mine.mines.ContainsKey(instanceID))
             {
                 currentMine = Mine.mines[instanceID];
-                Mine.ExplodeMine(instanceID);
+                if (player != null)
+                {
+                    APILogger.Debug($"Player triggered mine: {player.PlayerName}");
+                    Mine.ExplodeMine(instanceID, (byte)player.PlayerSlotIndex);
+                }
+                else
+                {
+                    APILogger.Debug($"Mine triggered without player.");
+                    Mine.ExplodeMine(instanceID, 255);
+                }
             }
             else APILogger.Error($"Mine did not exist in catalogue, this should not happen.");
         }
 
-        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
+        [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedTrigger))]
         [HarmonyPostfix]
-        private static void Postfix_DoExplode()
+        private static void Postfix_SyncedTrigger()
         {
             currentMine = null;
         }

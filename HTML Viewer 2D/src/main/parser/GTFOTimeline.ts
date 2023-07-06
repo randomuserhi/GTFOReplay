@@ -15,12 +15,14 @@ interface GTFOTrail
 
 interface GTFOTimedPoint
 {
+    dimensionIndex: number;
     position: Vector;
     time: number; 
 }
 
 interface GTFOCross
 {
+    dimensionIndex: number;
     pos: Vector;
     time: number;
     deviation: number;
@@ -30,6 +32,7 @@ interface GTFOCross
 
 interface GTFOTracer
 {
+    dimensionIndex: number;
     a: Vector;
     b: Vector;
     damage: number;
@@ -39,6 +42,7 @@ interface GTFOTracer
 
 interface GTFOHit
 {
+    dimensionIndex: number;
     pos: Vector;
     time: number;
     color: string;
@@ -49,6 +53,7 @@ interface GTFODynamic
     position: Vector;
     rotation: Quaternion;
     velocity: Vector;
+    dimensionIndex: number;
     scale: number;
     lastUpdated: number;
 }
@@ -270,6 +275,7 @@ interface GTFOEventMineSpawn
 {
     slot: number;
     type: string;
+    dimensionIndex: number;
     instance: number;
     position: Vector;
     rotation: Quaternion;
@@ -281,6 +287,7 @@ interface GTFOEventMineDespawn
 interface GTFOEventMineExplode
 {
     instance: number;
+    slot: number;
 }
 interface GTFOEventMineTripLine
 {
@@ -307,6 +314,7 @@ interface GTFOEventPelletDespawn
 interface GTFOEventTongueSpawn
 {
     instance: number;
+    dimensionIndex: number;
 }
 interface GTFOEventTongueDespawn
 {

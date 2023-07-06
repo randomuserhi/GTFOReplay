@@ -319,7 +319,8 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw mines
-            for (let mine of snapshot.mines.values())
+            let mines = [...snapshot.mines.values()].filter(m => m.dimensionIndex === dimension.index);
+            for (let mine of mines)
             {
                 this.ctx.save();
 
@@ -401,7 +402,8 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw tracers
-            for (let tracer of snapshot.tracers)
+            let tracers = snapshot.tracers.filter(t => t.dimensionIndex === dimension.index);
+            for (let tracer of tracers)
             {
                 if (tracer.time > snapshot.time)
                 {
@@ -434,19 +436,20 @@ RHU.import(RHU.module({ trace: new Error(),
             for (let kv of snapshot.trails)
             {
                 let trail = kv[1];
-                if (trail.points.length < 1) continue;
+                let points = trail.points.filter(p => p.dimensionIndex === dimension.index);
+                if (points.length < 1) continue;
 
-                let fadeAmount = 1 / trail.points.length;
+                let fadeAmount = 1 / points.length;
                 let fade = 0;
                 let color = "255, 255, 255"
-                for (let i = 1; i < trail.points.length; ++i)
+                for (let i = 1; i < points.length; ++i)
                 {
                     this.ctx.beginPath();
-                    this.ctx.moveTo(trail.points[i - 1].position.x, -trail.points[i - 1].position.z);
-                    this.ctx.lineTo(trail.points[i].position.x, -trail.points[i].position.z);
+                    this.ctx.moveTo(points[i - 1].position.x, -points[i - 1].position.z);
+                    this.ctx.lineTo(points[i].position.x, -points[i].position.z);
 
                     this.ctx.lineWidth = 2;
-                    let grd = this.ctx.createLinearGradient(trail.points[i - 1].position.x, -trail.points[i - 1].position.z,trail.points[i].position.x, -trail.points[i].position.z);
+                    let grd = this.ctx.createLinearGradient(points[i - 1].position.x, -points[i - 1].position.z,points[i].position.x, -points[i].position.z);
                     grd.addColorStop(0,`rgba(${color}, ${fade})`);
                     grd.addColorStop(1,`rgba(${color}, ${fade += fadeAmount})`);
                     this.ctx.strokeStyle = grd;
@@ -456,13 +459,13 @@ RHU.import(RHU.module({ trace: new Error(),
                 let dynamic = snapshot.dynamics.get(kv[0]);
                 if (RHU.exists(dynamic)) 
                 {
-                    let last = trail.points.length - 1;
+                    let last = points.length - 1;
                     this.ctx.beginPath();
-                    this.ctx.moveTo(trail.points[last].position.x, -trail.points[last].position.z);
+                    this.ctx.moveTo(points[last].position.x, -points[last].position.z);
                     this.ctx.lineTo(dynamic.position.x, -dynamic.position.z);
 
                     this.ctx.lineWidth = 2;
-                    let grd = this.ctx.createLinearGradient(trail.points[last].position.x, -trail.points[last].position.z,dynamic.position.x,-dynamic.position.z);
+                    let grd = this.ctx.createLinearGradient(points[last].position.x, -points[last].position.z,dynamic.position.x,-dynamic.position.z);
                     grd.addColorStop(0,`rgba(${color}, 1)`);
                     grd.addColorStop(1,`rgba(${color}, 1)`);
                     this.ctx.strokeStyle = grd;
@@ -471,7 +474,7 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw dynamics
-            let dynamics = [...snapshot.dynamics];
+            let dynamics = [...snapshot.dynamics].filter(d => d[1].dimensionIndex === dimension.index);
             // sort so glue is always at the bottom
             // TODO(randomuserhi): sort players and dead players
             dynamics.sort(d => {
@@ -630,9 +633,9 @@ RHU.import(RHU.module({ trace: new Error(),
                                     let thickness = 5;
                                     
                                     let dir: Vector = {
-                                        x: Math.sin(euler.y),
+                                        x: -Math.sin(euler.y - Math.PI),
                                         y: 0,
-                                        z: -Math.cos(euler.y),
+                                        z: -Math.cos(euler.y - Math.PI),
                                     };
                                     let dot = dir.x * dynamic.velocity.x + 0 + dir.z * dynamic.velocity.z;
                                     let proj: Vector = {
@@ -645,7 +648,7 @@ RHU.import(RHU.module({ trace: new Error(),
                                     let l = magnitude / 500;
                                     if (l < 0) l = 0;
                                     else if (l > 1) l = 1;
-                                    if (dot >= 0) l *= -1;
+                                    if (dot < 0) l *= -1;
 
                                     let grd = this.ctx.createLinearGradient(-len, 0, len, 0);
                                     let color = "150,0,0";
@@ -654,7 +657,7 @@ RHU.import(RHU.module({ trace: new Error(),
                                     grd.addColorStop(0.7,`rgba(${color}, 1)`);
                                     grd.addColorStop(1,`rgba(${color}, 0)`);
 
-                                    let sweep = l * Math.PI / 4;
+                                    let sweep = l * Math.PI / 3;
                                     {
                                         this.ctx.save();
                                         this.ctx.rotate(- sweep);
@@ -692,7 +695,7 @@ RHU.import(RHU.module({ trace: new Error(),
                                     grd.addColorStop(1,`rgba(${color}, 0)`);
 
                                     len = 40;
-                                    sweep = l * Math.PI / 3;
+                                    sweep = l * Math.PI / 2;
                                     {
                                         this.ctx.save();
                                         this.ctx.rotate(-Math.PI / 6 - sweep);
@@ -721,7 +724,7 @@ RHU.import(RHU.module({ trace: new Error(),
 
                                         this.ctx.restore();
                                     }
-                                    sweep = l * Math.PI / 3;
+                                    sweep = l * Math.PI / 2;
                                     {
                                         this.ctx.save();
                                         this.ctx.rotate(Math.PI / 6 - sweep);
@@ -859,7 +862,8 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw tongues
-            for (let tongue of snapshot.tongues.values())
+            let tongues = [...snapshot.tongues.values()].filter(t => t.dimensionIndex === dimension.index);
+            for (let tongue of tongues)
             {
                 if (tongue.spline.length < 1) continue;
 
@@ -897,7 +901,8 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw hits
-            for (let hit of snapshot.hits)
+            let hits = snapshot.hits.filter(h => h.dimensionIndex === dimension.index);
+            for (let hit of hits)
             {
                 if (hit.time > snapshot.time)
                 {
@@ -916,7 +921,8 @@ RHU.import(RHU.module({ trace: new Error(),
 
             // Draw crosses
             let bezier = RHU.Bezier(.81,-0.11,.58,1.1);
-            for (let cross of snapshot.cross)
+            let crosses = snapshot.cross.filter(c => c.dimensionIndex === dimension.index);
+            for (let cross of crosses)
             {
                 if (cross.time > snapshot.time)
                 {

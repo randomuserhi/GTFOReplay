@@ -83,6 +83,28 @@ namespace ReplayRecorder.Enemies
             }
         }
 
+        private struct rSpawnTongue : ISerializable
+        {
+            private int instance;
+            private byte dimensionIndex;
+
+            public rSpawnTongue(int instance, MovingEnemyTentacleBase tongue)
+            {
+                this.instance = instance;
+                dimensionIndex = (byte)tongue.m_owner.m_dimensionIndex;
+            }
+
+            public const int SizeOf = sizeof(int) + 1;
+            private static byte[] buffer = new byte[SizeOf];
+            public void Serialize(FileStream fs)
+            {
+                int index = 0;
+                BitHelper.WriteBytes(instance, buffer, ref index);
+                BitHelper.WriteBytes(dimensionIndex, buffer, ref index);
+                fs.Write(buffer);
+            }
+        }
+
         // Enemy agent => tongues
         public static Dictionary<int, HashSet<MovingEnemyTentacleBase>> tongueOwners = new Dictionary<int, HashSet<MovingEnemyTentacleBase>>();
 
@@ -94,7 +116,7 @@ namespace ReplayRecorder.Enemies
             APILogger.Debug($"Visual tongue spawned.");
 
             tongues.Add(instance, enemy);
-            SnapshotManager.AddEvent(GameplayEvent.Type.SpawnTongue, new rInstance(instance));
+            SnapshotManager.AddEvent(GameplayEvent.Type.SpawnTongue, new rSpawnTongue(instance, tongue));
             SnapshotManager.AddDynamicProperty(new Tongue(instance, tongue));
         }
 

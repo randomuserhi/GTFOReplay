@@ -74,6 +74,7 @@ interface GTFOSnapshotConstructor
                 velocity: Vector,
                 rotation: Quaternion,
                 scale: number,
+                dimensionIndex: number,
                 lastUpdated: number
             };
             if (!snapshot.dynamics.has(dynamic.instance))
@@ -82,6 +83,7 @@ interface GTFOSnapshotConstructor
                 return;
             }
             let d = snapshot.dynamics.get(dynamic.instance)!;
+            d.dimensionIndex = dynamic.dimensionIndex;
             d.lastUpdated = dynamic.lastUpdated;
 
             let l = 1;
@@ -130,6 +132,7 @@ interface GTFOSnapshotConstructor
                 if (!RHU.exists(trail.points.find(tr => tr.time == snapshot.time)))
                 {
                     trail.points.push({
+                        dimensionIndex: d.dimensionIndex,
                         position: {
                             x: old.x,
                             y: old.y,
@@ -146,6 +149,7 @@ interface GTFOSnapshotConstructor
                     if (!RHU.exists(trail.points.find(tr => tr.time == time)))
                     {
                         trail.points.push({
+                            dimensionIndex: d.dimensionIndex,
                             position: {
                                 x: old.x + (dynamic.position.x - old.x) * i,
                                 y: old.y + (dynamic.position.y - old.y) * i,
@@ -243,6 +247,7 @@ interface GTFOSnapshotConstructor
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
                 velocity: { x: 0, y: 0, z: 0 },
                 scale: 0,
+                dimensionIndex: 0,
                 lastUpdated: time
             });
         },
@@ -266,6 +271,7 @@ interface GTFOSnapshotConstructor
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
                 velocity: { x: 0, y: 0, z: 0 },
                 scale: 0,
+                dimensionIndex: 0,
                 lastUpdated: time
             });
         },
@@ -294,6 +300,7 @@ interface GTFOSnapshotConstructor
                     shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
                 }
                 snapshot.cross.push({
+                    dimensionIndex: dyn.dimensionIndex,
                     pos: dyn.position,
                     time: time,
                     deviation: d,
@@ -345,6 +352,7 @@ interface GTFOSnapshotConstructor
                 let dx = -15 + r() * 30;
                 let dz = -15 + r() * 30;
                 snapshot.tracers.push({
+                    dimensionIndex: pDynamic.dimensionIndex,
                     a: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     b: { x: eDynamic.position.x + dx, y: eDynamic.position.y, z: eDynamic.position.z + dz },
                     damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
@@ -365,6 +373,7 @@ interface GTFOSnapshotConstructor
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
                 let pDynamic = snapshot.dynamics.get(player.instance)!;
                 snapshot.tracers.push({
+                    dimensionIndex: eDynamic.dimensionIndex,
                     a: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     b: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
                     damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
@@ -399,6 +408,7 @@ interface GTFOSnapshotConstructor
                             shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
                         }
                         snapshot.cross.push({
+                            dimensionIndex: dyn.dimensionIndex,
                             pos: dyn.position,
                             time: time,
                             deviation: d,
@@ -433,6 +443,7 @@ interface GTFOSnapshotConstructor
 
                 let pDynamic = snapshot.dynamics.get(player.instance)!;
                 snapshot.hits.push({
+                    dimensionIndex: pDynamic.dimensionIndex,
                     pos: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     time: time,
                     color: "255, 255, 255"
@@ -451,6 +462,7 @@ interface GTFOSnapshotConstructor
                 let eDynamic = snapshot.dynamics.get(e.source)!;
                 
                 snapshot.tracers.push({
+                    dimensionIndex: pDynamic.dimensionIndex,
                     a: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
                     b: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
@@ -481,6 +493,7 @@ interface GTFOSnapshotConstructor
                 let dx = -15 + r() * 30;
                 let dz = -15 + r() * 30;
                 snapshot.tracers.push({
+                    dimensionIndex: sDynamic.dimensionIndex,
                     a: { x: sDynamic.position.x, y: sDynamic.position.y, z: sDynamic.position.z },
                     b: { x: tDynamic.position.x + dx, y: tDynamic.position.y, z: tDynamic.position.z + dz },
                     time: time,
@@ -532,7 +545,7 @@ interface GTFOSnapshotConstructor
             let e = ev.detail as GTFOEventMineSpawn;
             let owner = snapshot.slots[e.slot];
             if (!RHU.exists(owner)) throw ReferenceError("Player that owns this mine does not exist.");
-            let mine = new GTFOMine(e.instance, owner, e.type, e.position, e.rotation);
+            let mine = new GTFOMine(e.instance, owner, e.type, e.dimensionIndex, e.position, e.rotation);
             snapshot.mines.set(mine.instance, mine);
         },
         "despawnMine": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -540,9 +553,29 @@ interface GTFOSnapshotConstructor
             let e = ev.detail as GTFOEventMineDespawn;
             snapshot.mines.delete(e.instance);
         },
-        "explodeMine": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
+        "explodeMine": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventMineExplode;
+            if (e.slot !== 255)
+            {
+                if (RHU.exists(snapshot.slots[e.slot]) && snapshot.mines.has(e.instance))
+                {
+                    let source = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                    
+                    let tDynamic = snapshot.mines.get(e.instance)!;
+                    let sDynamic = snapshot.dynamics.get(source.instance)!;
+                    
+                    snapshot.tracers.push({
+                        dimensionIndex: sDynamic.dimensionIndex,
+                        a: { x: sDynamic.position.x, y: sDynamic.position.y, z: sDynamic.position.z },
+                        b: { x: tDynamic.position.x, y: tDynamic.position.y, z: tDynamic.position.z },
+                        time: time,
+                        damage: 1,
+                        color: "233, 181, 41"
+                    });
+                }
+                else throw new ReferenceError("Either mine or player did not exist.");
+            }
             snapshot.mines.delete(e.instance);
         },
         "tripline": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
@@ -568,6 +601,7 @@ interface GTFOSnapshotConstructor
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
                 velocity: { x: 0, y: 0, z: 0 },
                 scale: 0,
+                dimensionIndex: 0,
                 lastUpdated: time
             });
         },
@@ -594,6 +628,7 @@ interface GTFOSnapshotConstructor
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
                 velocity: { x: 0, y: 0, z: 0 },
                 scale: 0,
+                dimensionIndex: 0,
                 lastUpdated: time
             });
             snapshot.trails.set(e.instance, {
@@ -609,6 +644,7 @@ interface GTFOSnapshotConstructor
                 snapshot.pellets.delete(e.instance);
                 let dynamic = snapshot.dynamics.get(e.instance)!;
                 snapshot.hits.push({
+                    dimensionIndex: dynamic.dimensionIndex,
                     pos: { x: dynamic.position.x, y: dynamic.position.y, z: dynamic.position.z },
                     time: time,
                     color: "255, 255, 255"
@@ -621,7 +657,7 @@ interface GTFOSnapshotConstructor
         "spawnTongue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
             let e = ev.detail as GTFOEventTongueSpawn;
-            snapshot.tongues.set(e.instance, new GTFOTongue(e.instance));
+            snapshot.tongues.set(e.instance, new GTFOTongue(e.instance, e.dimensionIndex));
         },
         "despawnTongue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {
@@ -645,6 +681,7 @@ interface GTFOSnapshotConstructor
                 rotation: { x: 0, y: 0, z: 0, w: 0 },
                 velocity: { x: 0, y: 0, z: 0 },
                 scale: 0,
+                dimensionIndex: 0,
                 lastUpdated: time
             });
         },
@@ -813,6 +850,7 @@ interface GTFOSnapshotConstructor
             rotation: { x: kv[1].rotation.x, y: kv[1].rotation.y, z: kv[1].rotation.z, w: kv[1].rotation.w },
             velocity: { x: kv[1].velocity.x, y: kv[1].velocity.y, z: kv[1].velocity.z },
             scale: kv[1].scale,
+            dimensionIndex: kv[1].dimensionIndex,
             lastUpdated: kv[1].lastUpdated
         });
     }

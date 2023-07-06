@@ -173,7 +173,7 @@ namespace ReplayRecorder.Player
                 APILogger.Debug($"{player.Owner.NickName} has joined.");
 
                 SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
-                SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rObject(player.gameObject)));
+                SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rAgent(player)));
             }
         }
 
@@ -198,7 +198,7 @@ namespace ReplayRecorder.Player
 
             rPlayerAgent player = new rPlayerAgent(agent);
             SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(player));
-            SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(player.instanceID, new SnapshotManager.rObject(agent.gameObject)));
+            SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(player.instanceID, new SnapshotManager.rAgent(agent)));
             
             playerList.Add(player);
             players.Add(player.instanceID, player);
@@ -253,7 +253,7 @@ namespace ReplayRecorder.Player
 
                     rPlayer = new rPlayerAgent(player);
                     SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
-                    SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rObject(player.gameObject)));
+                    SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rAgent(player)));
                     players.Add(rPlayer.instanceID, rPlayer);
                 }
                 _players.Add(rPlayer);
