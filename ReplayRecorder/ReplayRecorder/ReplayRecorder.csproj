@@ -9,7 +9,7 @@
 		<AssemblyName>$(SolutionName)</AssemblyName>
 		<RootNamespace>$(SolutionName)</RootNamespace>
 		<!-- Bepinex file location -->
-		<BepInEx>E:\GTFO mods\BepInEx\BepInExPack_GTFO\BepInEx</BepInEx>
+		<BepInEx>D:\Steam\steamapps\common\GTFO\BepInEx</BepInEx>
 		<AdditionalIncludes>E:\GTFO mods\BepInEx\Plugins</AdditionalIncludes>
 		<BuildDirectory>E:\GTFO mods\BepInEx\Plugins\$(SolutionName)\</BuildDirectory>
 		<OutputPath>$(BuildDirectory)</OutputPath>
