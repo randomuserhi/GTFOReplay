@@ -9,6 +9,16 @@ interface replay extends HTMLDivElement
     time: number;
     timescale: number;
     replay: GTFOReplay;
+    mediaRecorder: MediaRecorder;
+    videoStream: MediaStream;
+
+    fixedCamera: boolean;
+    fixedCameraPath: {
+        pos: [number, number];
+        scale: number;
+        t: number;
+        ease?: (t: number) => number;
+    }[];
 
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
@@ -63,9 +73,236 @@ RHU.import(RHU.module({ trace: new Error(),
             icons[item] = img;
         }
 
+        let assetList: Record<string, string> = {
+            "lslayer": "https://cdn.discordapp.com/avatars/277786192043311114/9796ad54f8c5a3f5dbc2ffc2a45a54fc.webp",
+            "randomuserhi": "https://cdn.discordapp.com/avatars/329989775367077888/def2c17d231762c5e7916fc6b40f5528.webp",
+            "fckingshinji": "https://cdn.discordapp.com/avatars/205378201634078720/1b52cad52198cab90067badcd3cfebe3.webp"
+        }
+        let assets: Record<string, HTMLImageElement> = {};
+        for (let item in assetList)
+        {
+            let img = document.createElement("img");
+            img.crossOrigin = 'anonymous';
+            img.src = assetList[item];
+            img.onerror = () => {
+                img.toggleAttribute("data-failed", true);
+            }
+            assets[item] = img;
+        }
+
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
 
+            this.fixedCamera = true;
+            // 426945
+            this.fixedCameraPath = [
+                {
+                    pos: [0, 0],
+                    scale: 1,
+                    t: 0
+                },
+                {
+                    pos: [452.91096191896224, -2450.093327778843],
+                    scale: 1,
+                    t: 186939
+                },
+                {
+                    pos: [-58.34529981832907, -6917.984572942471],
+                    scale: 2.4400000915527347,
+                    t: 194695.50699999998,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-102.80011998244777, -4554.967622595489],
+                    scale: 1.4800000305175782,
+                    t: 203537.50499999995,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-102.80011998244777, -4554.967622595489],
+                    scale: 1.4800000305175782,
+                    t: 209492.85199999996
+                },
+                {
+                    pos: [-104.19932716023186, -6575.207838547762],
+                    scale: 1.4800000305175782,
+                    t: 217231.12899999996,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-70.21797326190335, -10518.830118439308],
+                    scale: 2.2000000762939456,
+                    t: 230779.485,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-70.21797326190335, -10518.830118439308],
+                    scale: 2.2000000762939456,
+                    t: 237710.93500000073
+                },
+                {
+                    pos: [-75.21936475555003, -7492.946979024746],
+                    scale: 1.4800000305175782,
+                    t: 241079.61300000106,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-76.21936475555003, -7504.946979024746],
+                    scale: 1.4800000305175782,
+                    t: 245809.94000000088
+                },
+                {
+                    pos: [-20.391470541431318, -5363.8356925456],
+                    scale: 1,
+                    t: 252596.22300000052,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-20.391470541431318, -5363.8356925456],
+                    scale: 1,
+                    t: 259643.9820000004
+                },
+                {
+                    pos: [-48.939357553401805, -6742.546979635097],
+                    scale: 1.4800000305175782,
+                    t: 264362.8419999999,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [-48.939357553401805, -6742.546979635097],
+                    scale: 1.4800000305175782,
+                    t: 268238.7169999996
+                },
+                {
+                    pos: [8.060642446598195, -4286.546979635097],
+                    scale: 1.4800000305175782,
+                    t: 279876.60299999896,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [229.86875627005293, -2479.816422858732],
+                    scale: 1,
+                    t: 283169.78299999866
+                },
+                {
+                    pos: [229.86875627005293, -2479.816422858732],
+                    scale: 1,
+                    t: 289375.2479999999
+                },
+                {
+                    pos: [1373.3905247543748, -3776.123405571945],
+                    scale: 1.7200000457763673,
+                    t: 294469.54500000103,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [893.6383500539557, -3638.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 298314.61800000106,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [893.6383500539557, -3638.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 304830.01000000106
+                },
+                {
+                    pos: [711.6383500539557, -3789.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 308571.97400000104,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [711.6383500539557, -3789.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 308571.97400000104
+                },
+                {
+                    pos: [223.63835005395572, -3727.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 320964.33300000103,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [223.63835005395572, -3727.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 331660.2849999957
+                },
+                {
+                    pos: [577.6383500539557, -3743.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 335252.35399999574,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [706.6383500539557, -3668.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 341978.159999997
+                },
+                {
+                    pos: [875.6383500539557, -3174.4113984652977],
+                    scale: 1.4800000305175782,
+                    t: 348139.75499999704
+                },
+                {
+                    pos: [1117.9942807169575, -2558.293989415451],
+                    scale: 1.2400000152587891,
+                    t: 352343.88499999704
+                },
+                {
+                    pos: [1117.9942807169575, -2558.293989415451],
+                    scale: 1.2400000152587891,
+                    t: 360731.256999997
+                },
+                {
+                    pos: [1465.2238762825598, -1893.657091525592],
+                    scale: 1,
+                    t: 362905.15899999696,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [1438.737297714347, -1855.0798103201919],
+                    scale: 1,
+                    t: 367210.87699999695
+                },
+                {
+                    pos: [1428.9542704783103, -2282.453991078659],
+                    scale: 1.2400000152587891,
+                    t: 374778.405999997
+                },
+                {
+                    pos: [2210.9542704783103, -2111.453991078659],
+                    scale: 1.2400000152587891,
+                    t: 382034.20799999696
+                },
+                {
+                    pos: [2210.9542704783103, -2111.453991078659],
+                    scale: 1.2400000152587891,
+                    t: 402586.96899999696
+                },
+                {
+                    pos: [2033.9542704783103, -2586.453991078659],
+                    scale: 1.2400000152587891,
+                    t: 407733.037999997,
+                    ease: RHU.Bezier(.42,0,.58,1)
+                },
+                {
+                    pos: [2206.776869312492, -2994.799044065449],
+                    scale: 1.4096192560243823,
+                    t: 411466.5429999978
+                },
+                {
+                    pos: [2610.2432613638366, -4331.605474784933],
+                    scale: 2.2000000762939456,
+                    t: 415168.260999997
+                },
+                {
+                    pos: [2638.7607171762816, -4719.487449018591],
+                    scale: 2.4400000915527347,
+                    t: 416829.95199999696
+                },
+
+            ]
             this.play = true;
             this.time = 0;
             this.timescale = 1;
@@ -134,7 +371,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.mouse.x = e.clientX - rect.left;
                 this.mouse.y = e.clientY - rect.top;
                 
-                if (this.mouse.left) 
+                if (this.mouse.left && !this.fixedCamera) 
                 {
                     this.camera.x += old.x - this.mouse.x;
                     this.camera.y += old.y - this.mouse.y;
@@ -151,7 +388,7 @@ RHU.import(RHU.module({ trace: new Error(),
                     this.mouse.right = false;
             });
             this.canvas.addEventListener("wheel", (e) => {
-                if (true) 
+                if (!this.fixedCamera) 
                 {
                     e.preventDefault();
 
@@ -210,18 +447,49 @@ RHU.import(RHU.module({ trace: new Error(),
         replay.prototype.resize = function()
         {
             let computed = getComputedStyle(this.canvas);
-            this.canvas.width = parseInt(computed.width);
-            this.canvas.height = parseInt(computed.height);
+            //this.canvas.width = parseInt(computed.width);
+            //this.canvas.height = parseInt(computed.height);
+            this.canvas.width = 1920;
+            this.canvas.height = 1080;
         };
         replay.prototype.onload = function()
         {
             this.resize();
-            this.time = 0;
+            this.time = 186939;
             this.prev = 0;
+
             this.update(0);
+
+            this.videoStream = this.canvas.captureStream(60);
+            this.mediaRecorder = new window.MediaRecorder(this.videoStream, {
+                mimeType: "video/webm; codecs=vp9"
+            });
+
+            let chunks: Blob[] = [];
+            this.mediaRecorder.ondataavailable = function(e) 
+            {
+                console.log("bruh");
+                chunks.push(e.data);
+            };
+
+            this.mediaRecorder.onstop = function(e) 
+            {
+                console.log(chunks);
+                let blob = new Blob(chunks, { 'type' : 'video/webm' }); // other types are available such as 'video/webm' for instance, see the doc for more info
+                let videoURL = URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = videoURL;
+                a.download = `video.webm`;
+                a.click();
+                window.URL.revokeObjectURL(videoURL);
+            };
+
+            this.mediaRecorder.start(0);
         };
         replay.prototype.update = function(t: number)
         {
+            this.ctx.globalAlpha = 1;
+
             let delta = (t - this.prev) * this.timescale;
             this.prev = t;
             if (this.play && this.time <= this.replay.timeline[this.replay.timeline.length - 1].time) this.time += delta;
@@ -538,8 +806,17 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
                 else
                 { 
+                    let backgroundImg: string = "lslayer";
+
                     if (snapshot.players.has(instance))
                     {
+                        let icon: string[] = [
+                            "randomuserhi",
+                            "fckingshinji",
+                            "lslayer",
+                            "lslayer"
+                        ]
+
                         let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
                         let colors: string[] = [
                             "194, 31, 78",
@@ -549,6 +826,9 @@ RHU.import(RHU.module({ trace: new Error(),
                         ];
                         this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.5"})`;
 
+                        
+                        backgroundImg = icon[p.slot];
+
                         // Draw equipped item above player
                         /*let img = icons[p.equipped];
                         let ratio = img.height / img.width;
@@ -557,9 +837,10 @@ RHU.import(RHU.module({ trace: new Error(),
 
                         // Draw player
                         this.ctx.beginPath();
-                        this.ctx.moveTo(0, -25);
+                        /*this.ctx.moveTo(0, -25);
                         this.ctx.lineTo(-20, 12);
-                        this.ctx.lineTo(20, 12);
+                        this.ctx.lineTo(20, 12);*/
+                        this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
                         this.ctx.closePath();
                     }
                     else if (snapshot.sentries.has(instance))
@@ -577,6 +858,13 @@ RHU.import(RHU.module({ trace: new Error(),
                         const width = 15;
                         const height = 30;
                         this.ctx.fillRect(-width / 2, -height / 2, width, height);
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, 0);
+                        this.ctx.lineTo(0, -25);
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeStyle = "#ffffff";
+                        this.ctx.stroke();
                     }
                     else if (snapshot.enemies.has(instance))
                     {
@@ -818,14 +1106,19 @@ RHU.import(RHU.module({ trace: new Error(),
                                 break;
                         }
                     }
-                    this.ctx.fill();
+                    //this.ctx.fill();
+                    this.ctx.clip();
 
-                    this.ctx.beginPath();
+                    let width = 30;
+                    let height = 30;
+                    this.ctx.drawImage(assets[backgroundImg], -width / 2, -height / 2, width, height);
+
+                    /*this.ctx.beginPath();
                     this.ctx.moveTo(0, 0);
                     this.ctx.lineTo(0, -25);
                     this.ctx.lineWidth = 2;
                     this.ctx.strokeStyle = "#ffffff";
-                    this.ctx.stroke();
+                    this.ctx.stroke();*/
                 }
 
                 // TODO(randomuserhi): Clean this up with the above code
@@ -986,11 +1279,71 @@ RHU.import(RHU.module({ trace: new Error(),
            
             this.ctx.restore();
 
+            // Camera
+            if (this.fixedCamera)
+            {
+                let t = this.time;
+
+                let binarySearch = (t: number) =>
+                {
+                    let min = 0;
+                    let max = this.fixedCameraPath.length;
+                    let prev = -1;
+                    while (max != min)
+                    {
+                        let midpoint = Math.floor((max + min) / 2);
+                        if (midpoint == prev) break;
+                        prev = midpoint;
+                        if (this.fixedCameraPath[midpoint].t > t)
+                            max = midpoint;
+                        else
+                            min = midpoint;
+                    }
+                    return min;
+                }
+
+                let _start = binarySearch(t);
+                let _end = _start + 1;
+                if (_end < this.fixedCameraPath.length)
+                {
+                    let start = this.fixedCameraPath[_start];
+                    let end = this.fixedCameraPath[_end];
+
+                    let percentage = (t - start.t) / (end.t - start.t);
+                    let easingFunction = end.ease;
+                    if (!RHU.exists(easingFunction)) easingFunction = RHU.Bezier(0, 0, 1, 1);
+                    percentage = easingFunction(percentage);
+
+                    let pos = [
+                        start.pos[0] + (end.pos[0] - start.pos[0]) * percentage,
+                        start.pos[1] + (end.pos[1] - start.pos[1]) * percentage
+                    ]
+
+                    let scale = start.scale + (end.scale - start.scale) * percentage;
+
+                    this.camera.x = pos[0] - this.canvas.width / 2;
+                    this.camera.y = pos[1] - this.canvas.height / 2;
+                    this.camera.scale = scale;
+                }
+                else 
+                {
+                    this.camera.x = this.fixedCameraPath[this.fixedCameraPath.length - 1].pos[0] - this.canvas.width / 2;
+                    this.camera.y = this.fixedCameraPath[this.fixedCameraPath.length - 1].pos[1] - this.canvas.height / 2;
+                    this.camera.scale = this.fixedCameraPath[this.fixedCameraPath.length - 1].scale;
+                }
+            }
+
             /*this.ctx.font = "20px Oxanium";
-            let text = `${(this.mouse.x + this.camera.x).toFixed(2)}, ${(-this.mouse.y - this.camera.y).toFixed(2)}`;
+            //let text = `${(this.mouse.x + this.camera.x).toFixed(2)}, ${(-this.mouse.y - this.camera.y).toFixed(2)}`;
+            let text = `${(this.camera.x + this.canvas.width / 2).toFixed(2)}, ${(this.camera.y + this.canvas.height / 2).toFixed(2)}`
             let metrics = this.ctx.measureText(text);
             this.ctx.fillStyle = "#ff0000";
             this.ctx.fillText(text, this.mouse.x - metrics.width / 2, this.mouse.y - 20);*/
+
+            //this.mediaRecorder.requestData();
+
+            this.ctx.globalAlpha = 0;
+            this.ctx.fillRect(0, 0, 1, 1);
 
             requestAnimationFrame((t) => { this.update(t); });
         };

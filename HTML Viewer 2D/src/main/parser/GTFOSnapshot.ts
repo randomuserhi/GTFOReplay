@@ -652,7 +652,7 @@ interface GTFOSnapshotConstructor
                 snapshot.dynamics.delete(e.instance);
                     
             }
-            else throw ReferenceError("pellet does not exist.");
+            /*else throw ReferenceError("pellet does not exist.");*/
         },
         "spawnTongue": function(snapshot: GTFOSnapshot, ev: GTFOEvent)
         {

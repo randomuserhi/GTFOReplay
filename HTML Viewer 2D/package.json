@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "transpile": "./node_modules/.bin/tsc",
+    "transpile": "tsc",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.js build/",
     "copy-assets": "copyfiles -u 1 assets/**/*.* build/",
     "copy-js3party": "copyfiles -u 1 js3party/**/*.* build/js3party/",
