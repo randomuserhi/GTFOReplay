@@ -14,10 +14,6 @@ namespace ReplayRecorder.Enemies.Patches
         public static void Reset()
         {
             enemiesWokenFromScream.Clear();
-
-            /*NoiseManager.noiseDataToProcess.Clear();
-            noiseSources.Clear();
-            currentNoiseSource = null;*/
         }
 
         // Don't count screams or double alerts from scouts
@@ -105,79 +101,5 @@ namespace ReplayRecorder.Enemies.Patches
                     APILogger.Error("Enemy was woken by an agent that wasnt a player.");
             }
         }
-        /*[HarmonyPatch(typeof(EnemyDetection), nameof(EnemyDetection.UpdateHibernationDetection))]
-        [HarmonyPostfix]
-        private static void WakeUp(EnemyDetection __instance, AgentTarget target, bool __result)
-        {
-            if (!SnapshotManager.active) return;
-            if (!SNet.IsMaster) return;
-
-            if (__result)
-            {
-                EnemyAgent self = __instance.m_ai.m_enemyAgent;
-                int instance = self.GetInstanceID();
-                if (enemiesWokenFromScream.Contains(instance))
-                {
-                    enemiesWokenFromScream.Remove(instance);
-                    Enemy.EnemyAlerted(self);
-                    APILogger.Debug("Enemy was woken by a scream.");
-                }
-                else
-                {
-                    PlayerAgent? player = target.m_agent.TryCast<PlayerAgent>();
-                    if (player != null)
-                        Enemy.EnemyAlerted(self, player);
-                    else
-                        APILogger.Error("Enemy was woken by an agent that wasnt a player.");
-                }
-            }
-        }*/
-
-        // Enemy wake up from noise
-        /*private static Queue<PlayerAgent?> noiseSources = new Queue<PlayerAgent?>();
-        private static PlayerAgent? currentNoiseSource = null;
-        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.MakeNoise))]
-        [HarmonyPostfix]
-        private static void MakeNoise()
-        {
-            if (!SNet.IsMaster) return;
-
-            noiseSources.Enqueue(currentNoiseSource);
-        }
-        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.ProcessNoise))]
-        [HarmonyPrefix]
-        private static void ProcessNoise()
-        {
-            if (!SNet.IsMaster) return;
-
-            if (NoiseManager.noiseDataToProcess.Count != noiseSources.Count)
-            {
-                APILogger.Error("Noises are desynced for an unknown reason...");
-            }
-
-            noiseSources.Dequeue();
-        }*/
-
-        /*[HarmonyPatch(typeof(EB_Hibernating), nameof(EB_Hibernating.OnNoiseDetected))]
-        [HarmonyPostfix]
-        private static void OnNoiseDetected(EB_Hibernating __instance, ref NM_NoiseData noiseData, float distance01)
-        {
-            EnemyAgent self = __instance.m_ai.m_enemyAgent;
-            PlayerAgent? p = null;// noiseData.noiseMaker.TryCast<PlayerAgent>();
-
-            APILogger.Debug($"Sussy {noiseData.type}");
-
-            // Condition taken from source
-            switch (noiseData.type)
-            {
-                case NM_NoiseType.InstaDetect:
-                    Enemy.EnemyAlerted(self, p);
-                    break;
-                case NM_NoiseType.Detectable:
-                    if (distance01 > 0f) break;
-                    Enemy.EnemyAlerted(self, p);
-                    break;
-            }
-        }*/
     }
 }
