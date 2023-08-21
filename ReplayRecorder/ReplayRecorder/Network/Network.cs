@@ -71,6 +71,7 @@ namespace ReplayRecorder
                 byte receivedMsgtype = bytes[sizeof(ushort) + sizeof(uint)];
                 if (receivedMsgtype != msgtype)
                 {
+                    if (msgtype == 173) return true; // Temporary ignore for kill indicator fix until I make my own networking api
                     APILogger.Debug($"[Networking] msg type is incorrect. {receivedMsgtype} {msgtype}");
                     return true;
                 }

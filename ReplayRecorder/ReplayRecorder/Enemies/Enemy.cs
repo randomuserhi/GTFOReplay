@@ -1,6 +1,7 @@
 ﻿using API;
 using Agents;
 using Enemies;
+using ReplayRecorder.Enemies.Patches;
 
 namespace ReplayRecorder.Enemies
 {
@@ -210,6 +211,8 @@ namespace ReplayRecorder.Enemies
 
         public static void Reset()
         {
+            EnemyDetectionPatches.Reset();
+
             enemies.Clear();
             pellets.Clear();
             tongueOwners.Clear();

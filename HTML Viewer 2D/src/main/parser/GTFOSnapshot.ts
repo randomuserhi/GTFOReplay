@@ -26,6 +26,8 @@ interface GTFOSnapshot
     tongues: Map<number, GTFOTongue>;
     glue: Set<number>;
     
+    screams: GTFOScream[];
+    alerts: GTFOAlert[];
     tracers: GTFOTracer[];
     cross: GTFOCross[];
     trails: Map<number, GTFOTrail>;
@@ -694,6 +696,47 @@ interface GTFOSnapshotConstructor
                 snapshot.dynamics.delete(e.instance);
             }
             else throw ReferenceError("glue does not exist.");
+        },
+        "enemyAlerted": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventEnemyAlerted;
+            if (snapshot.enemies.has(e.instance))
+            {
+                let colors: string[] = [
+                    "194, 31, 78",
+                    "24, 147, 94",
+                    "32, 85, 140",
+                    "122, 26, 142"
+                ];
+                let color = "255, 255, 255";
+                if (e.slot < colors.length)
+                {
+                    color = colors[e.slot];
+                }
+
+                snapshot.alerts.push({
+                    instance: e.instance,
+                    offset: { x: 0, y: 0, z: -30 },
+                    color: `rgb(${color})`,
+                    time: time
+                });
+            }
+            else throw ReferenceError("enemy does not exist.");
+        },
+        "enemyScreamed": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventEnemyScreamed;
+            if (snapshot.enemies.has(e.instance))
+            {
+                let enemy = snapshot.enemies.get(e.instance)!;
+
+                snapshot.screams.push({
+                    instance: e.instance,
+                    time: time,
+                    color: e.scout ? `255, 0, 0` : `255, 255, 255`
+                });
+            }
+            else throw ReferenceError("enemy does not exist.");
         }
     };
 
@@ -745,6 +788,8 @@ interface GTFOSnapshotConstructor
             this.tracers = [];
             this.cross = [];
             this.hits = [];
+            this.alerts = [];
+            this.screams = [];
             this.trails = new Map();
         }
 
@@ -767,7 +812,9 @@ interface GTFOSnapshotConstructor
         });
         this.cross = this.cross.filter(c => {
             return (t.time - c.time) < GTFOReplaySettings.crossLingerTime + c.deviation;
-        })
+        });
+        this.alerts = this.alerts.filter(a => t.time - a.time < GTFOReplaySettings.alertLingerTime);
+        this.screams = this.screams.filter(s => t.time - s.time < GTFOReplaySettings.screamLingerTime);
         this.hits = this.hits.filter(h => t.time - h.time < GTFOReplaySettings.hitLingerTime)
         let old = this.trails;
         this.trails = new Map();
@@ -802,6 +849,8 @@ interface GTFOSnapshotConstructor
         this.tracers = [...snapshot.tracers];
         this.cross = [...snapshot.cross];
         this.hits = [...snapshot.hits];
+        this.alerts = [...snapshot.alerts];
+        this.screams = [...snapshot.screams];
         
         // NOTE(randomuserhi): Since the data inside mines don't change these do not need to be deep copied
         this.mines = new Map();

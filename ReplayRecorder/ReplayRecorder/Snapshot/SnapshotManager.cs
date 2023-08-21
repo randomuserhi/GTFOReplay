@@ -80,7 +80,10 @@ namespace ReplayRecorder
             SetTongue,
 
             SpawnGlue,
-            DespawnGlue
+            DespawnGlue,
+
+            EnemyAlerted,
+            EnemyScreamed
         }
 
         public long timestamp;

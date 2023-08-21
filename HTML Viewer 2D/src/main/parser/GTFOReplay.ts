@@ -658,6 +658,40 @@ interface GTFOReplayConstructor
                 }
             };
         },
+        "enemyAlerted": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventEnemyAlerted = {
+                instance: BitHelper.readInt(bytes, reader),
+                slot: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "enemyAlerted",
+                    detail: e
+                }
+            };
+        },
+        "enemyScreamed": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventEnemyScreamed = {
+                instance: BitHelper.readInt(bytes, reader),
+                scout: BitHelper.readByte(bytes, reader) != 0
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "enemyScreamed",
+                    detail: e
+                }
+            };
+        },
     };
 
     let dynamicPropParseMap: Record<GTFODynamicPropType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {

@@ -19,6 +19,7 @@ namespace ReplayRecorder
             return spec;
         }
 
+        // TODO(randomuserhi): Change to use EnemyDataID instead
         public static byte GetEnemyType(string type)
         {
             if (spec.enemies.ContainsKey(type))

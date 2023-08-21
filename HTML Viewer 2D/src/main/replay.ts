@@ -969,6 +969,94 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.restore();
             }
 
+            // draw alerts
+            let alerts = snapshot.alerts.filter(a => { 
+                let e = snapshot.dynamics.get(a.instance);
+                if (e == null) return false;
+                return e.dimensionIndex === dimension.index;
+            });
+            for (let alert of alerts)
+            {
+                if (alert.time > snapshot.time)
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                let dyn = snapshot.dynamics.get(alert.instance);
+                if (dyn == null) 
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                this.ctx.save();
+                this.ctx.translate(dyn.position.x + alert.offset.x, -dyn.position.z + alert.offset.z);
+
+                this.ctx.beginPath();
+                this.ctx.arc(0, 0, 7, 0, 2 * Math.PI);
+                this.ctx.fillStyle = alert.color;
+                this.ctx.fill();
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(-3, -15);
+                this.ctx.lineTo(3, -15);
+                this.ctx.lineTo(7, -50);
+                this.ctx.lineTo(-7, -50);
+                this.ctx.closePath();
+                this.ctx.fillStyle = alert.color;
+                this.ctx.fill();
+
+                /*this.ctx.font = "30px Oxanium bold";
+                let text = `!`;
+                let metrics = this.ctx.measureText(text);
+                this.ctx.fillStyle = alert.color;
+                this.ctx.fillText(text, -metrics.width / 2, 0);*/
+
+                this.ctx.restore();
+            }
+
+            // draw screams
+            let screams = snapshot.screams.filter(s => { 
+                let e = snapshot.dynamics.get(s.instance);
+                if (e == null) return false;
+                return e.dimensionIndex === dimension.index;
+            });
+            for (let scream of screams)
+            {
+                if (scream.time > snapshot.time)
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                let dyn = snapshot.dynamics.get(scream.instance);
+                if (dyn == null) 
+                {
+                    console.warn("This should not happen");
+                    continue;
+                }
+
+                this.ctx.save();
+                this.ctx.translate(dyn.position.x, -dyn.position.z);
+
+                let t = (snapshot.time - scream.time) / GTFOReplaySettings.screamLingerTime;
+
+                for (let i = 0; i < 3; ++i)
+                {
+                    let _t = t - 0.1 * i;
+                    if (_t < 0) continue;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, 500 * _t, 0, 2 * Math.PI);
+                    this.ctx.lineWidth = 5 + 10 * (1 - _t);
+                    this.ctx.strokeStyle = `rgba(${scream.color}, ${(3 - i) / 3 * (1 - t)})`;
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+
             /*{
                 this.ctx.save();
 

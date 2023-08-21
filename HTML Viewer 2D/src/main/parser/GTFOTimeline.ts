@@ -30,6 +30,21 @@ interface GTFOCross
     color: string;
 }
 
+interface GTFOScream
+{
+    instance: number;
+    color: string;
+    time: number;
+}
+
+interface GTFOAlert
+{
+    instance: number;
+    offset: Vector;
+    color: string;
+    time: number;
+}
+
 interface GTFOTracer
 {
     dimensionIndex: number;
@@ -104,6 +119,8 @@ interface GTFOEventMap
     "setTongue": GTFODynamicPropType;
     "spawnGlue": GTFOEventGlueSpawn;
     "despawnGlue": GTFOEventGlueDespawn;
+    "enemyAlerted": GTFOEventEnemyAlerted;
+    "enemyScreamed": GTFOEventEnemyScreamed;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -142,7 +159,9 @@ let eventMap: GTFOEventType[] = [
     "despawnTongue",
     "setTongue",
     "spawnGlue",
-    "despawnGlue"
+    "despawnGlue",
+    "enemyAlerted",
+    "enemyScreamed"
 ];
 
 interface Window
@@ -327,6 +346,16 @@ interface GTFOEventGlueSpawn
 interface GTFOEventGlueDespawn
 {
     instance: number;
+}
+interface GTFOEventEnemyAlerted
+{
+    instance: number;
+    slot: number;
+}
+interface GTFOEventEnemyScreamed
+{
+    instance: number;
+    scout: boolean;
 }
 
 interface GTFODynamicPropMap
