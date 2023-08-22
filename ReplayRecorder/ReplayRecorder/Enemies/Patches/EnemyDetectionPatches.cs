@@ -6,6 +6,7 @@ using SNetwork;
 using Player;
 using UnityEngine;
 using static UnityEngine.UIElements.UIRAtlasAllocator;
+using LevelGeneration;
 
 namespace ReplayRecorder.Enemies.Patches
 {
@@ -206,6 +207,18 @@ namespace ReplayRecorder.Enemies.Patches
                     makeNoiseSource = null;
                     makeNoiseSourceSet = true;
                 }
+            }
+        }
+        // Door breaking
+        [HarmonyPatch(typeof(LG_WeakDoor_Destruction), nameof(LG_WeakDoor_Destruction.TriggerExplosionEffect))]
+        [HarmonyPrefix]
+        private static void DoorBreakNoise(LG_WeakDoor_Destruction __instance)
+        {
+            if (!SNet.IsMaster) return;
+            if (!(__instance.m_destructionController == null))
+            {
+                makeNoiseSource = null;
+                makeNoiseSourceSet = true;
             }
         }
 
