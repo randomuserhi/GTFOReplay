@@ -55,6 +55,8 @@ namespace ReplayRecorder.Enemies
 
         public static void EnemyAlerted(EnemyAgent enemy, PlayerAgent? player = null)
         {
+            if (!SnapshotManager.active) return;
+
             int instance = enemy.GetInstanceID();
             if (enemies.ContainsKey(instance))
             {
@@ -66,6 +68,8 @@ namespace ReplayRecorder.Enemies
 
         public static void EnemyScreamed(EnemyAgent enemy, bool scout = false)
         {
+            if (!SnapshotManager.active) return;
+
             int instance = enemy.GetInstanceID();
             if (enemies.ContainsKey(instance))
             {
