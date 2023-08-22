@@ -5,6 +5,7 @@ using Agents;
 using SNetwork;
 using Player;
 using UnityEngine;
+using static UnityEngine.UIElements.UIRAtlasAllocator;
 
 namespace ReplayRecorder.Enemies.Patches
 {
@@ -27,13 +28,15 @@ namespace ReplayRecorder.Enemies.Patches
         }
 
         // Don't count screams or double alerts from scouts
-        private static HashSet<int> enemiesWokenFromScream = new HashSet<int>();
+        private static Dictionary<int, long> enemiesWokenFromScream = new Dictionary<int, long>();
         private static bool wokenFromScream = false;
         // Handling regular screams
         [HarmonyPatch(typeof(ES_Scream), nameof(ES_Scream.Update))]
         [HarmonyPrefix]
         private static void Prefix_Scream(ES_Scream __instance)
         {
+            if (!SNet.IsMaster) return;
+
             // Condition taken from source
             if (!__instance.m_hasTriggeredPropagation && __instance.m_triggerPropgationAt < Clock.Time)
             {
@@ -52,6 +55,8 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         private static void Prefix_ScoutScream(ES_ScoutScream __instance)
         {
+            if (!SNet.IsMaster) return;
+
             wokenFromScream = true;
 
             // Condition taken from source
@@ -80,7 +85,7 @@ namespace ReplayRecorder.Enemies.Patches
         {
             if (!SNet.IsMaster) return;
 
-            if (wokenFromScream) enemiesWokenFromScream.Add(__instance.m_enemyAgent.GetInstanceID());
+            if (wokenFromScream) enemiesWokenFromScream.Add(__instance.m_enemyAgent.GetInstanceID(), Raudy.Now);
         }
 
         // Correct noise sources
@@ -147,11 +152,11 @@ namespace ReplayRecorder.Enemies.Patches
         {
             if (!SNet.IsMaster) return;
 
-            if (NoiseManager.noiseDataToProcess.Count != noiseSources.Count)
+            if (NoiseManager.noiseDataToProcess.Count + 1 != noiseSources.Count)
             {
                 APILogger.Error("Noises are desynced for an unknown reason...");
                 noiseSources.Clear();
-                while (NoiseManager.noiseDataToProcess.Count != noiseSources.Count)
+                while (NoiseManager.noiseDataToProcess.Count + 1 != noiseSources.Count)
                 {
                     noiseSources.Enqueue(new NoiseSource() 
                     { 
@@ -215,9 +220,18 @@ namespace ReplayRecorder.Enemies.Patches
 
             if (triggered) return;
 
+            // Prevent niche cases where enemies don't wake up from a scream despite the fact they are in range
+            // by removing tagged enemies in scream group that are older than 100ms
+            long now = Raudy.Now;
+            int[] keys = enemiesWokenFromScream.Keys.ToArray();
+            foreach (int id in keys)
+            {
+                if (now - enemiesWokenFromScream[id] > 100) enemiesWokenFromScream.Remove(id);
+            }
+
             EnemyAgent self = __instance.m_ai.m_enemyAgent;
             int instance = self.GetInstanceID();
-            if (enemiesWokenFromScream.Contains(instance))
+            if (enemiesWokenFromScream.ContainsKey(instance))
             {
                 enemiesWokenFromScream.Remove(instance);
                 Enemy.EnemyAlerted(self);
@@ -226,7 +240,6 @@ namespace ReplayRecorder.Enemies.Patches
             else
             {
                 PlayerAgent? player = null;
-
 
                 if (fromNoiseManager && currentNoiseSource.set)
                 {
@@ -239,10 +252,7 @@ namespace ReplayRecorder.Enemies.Patches
                     if (target != null) player = target.m_agent.TryCast<PlayerAgent>();
                     else APILogger.Error("AgentTarget was null, this should not happen.");
                 }
-                if (player != null)
-                    Enemy.EnemyAlerted(self, player);
-                else
-                    APILogger.Error("Enemy was woken by an agent that wasnt a player.");
+                Enemy.EnemyAlerted(self, player);
             }
         }
         [HarmonyPatch(typeof(EnemyDetection), nameof(EnemyDetection.UpdateHibernationDetection))]
@@ -254,9 +264,18 @@ namespace ReplayRecorder.Enemies.Patches
 
             if (__result)
             {
+                // Prevent niche cases where enemies don't wake up from a scream despite the fact they are in range
+                // by removing tagged enemies in scream group that are older than 100ms
+                long now = Raudy.Now;
+                int[] keys = enemiesWokenFromScream.Keys.ToArray();
+                foreach (int id in keys)
+                {
+                    if (now - enemiesWokenFromScream[id] > 100) enemiesWokenFromScream.Remove(id);
+                }
+
                 EnemyAgent self = __instance.m_ai.m_enemyAgent;
                 int instance = self.GetInstanceID();
-                if (enemiesWokenFromScream.Contains(instance))
+                if (enemiesWokenFromScream.ContainsKey(instance))
                 {
                     enemiesWokenFromScream.Remove(instance);
                     Enemy.EnemyAlerted(self);
@@ -264,11 +283,15 @@ namespace ReplayRecorder.Enemies.Patches
                 }
                 else
                 {
-                    PlayerAgent? player = target.m_agent.TryCast<PlayerAgent>();
-                    if (player != null)
-                        Enemy.EnemyAlerted(self, player);
-                    else
-                        APILogger.Error("Enemy was woken by an agent that wasnt a player.");
+                    PlayerAgent? player = null;
+
+                    if (fromNoiseManager && currentNoiseSource.set)
+                    {
+                        player = currentNoiseSource.source;
+                        APILogger.Debug("Detection from noise manager.");
+                    }
+                    else player = target.m_agent.TryCast<PlayerAgent>();
+                    Enemy.EnemyAlerted(self, player);
                 }
                 triggered = true;
             }
