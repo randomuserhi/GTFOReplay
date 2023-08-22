@@ -8,6 +8,7 @@ namespace ReplayRecorder.Enemies.Patches
     [HarmonyPatch]
     class EnemyPatches
     {
+        // TODO(randomuserhi): This isnt called on clients for some reason
         // State change of enemy => hibernating -> attacking
         [HarmonyPatch(typeof(EnemyBehaviour), nameof(EnemyBehaviour.ChangeState), new Type[] { typeof(EB_States) })]
         [HarmonyPrefix]
