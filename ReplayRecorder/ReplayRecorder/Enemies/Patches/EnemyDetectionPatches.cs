@@ -14,6 +14,16 @@ namespace ReplayRecorder.Enemies.Patches
         public static void Reset()
         {
             enemiesWokenFromScream.Clear();
+
+            NoiseManager.noiseDataToProcess.Clear();
+            noiseSources.Clear();
+            makeNoiseSource = null;
+            makeNoiseSourceSet = false;
+            currentNoiseSource = new NoiseSource()
+            {
+                set = false,
+                source = null
+            };
         }
 
         // Don't count screams or double alerts from scouts
@@ -73,16 +83,139 @@ namespace ReplayRecorder.Enemies.Patches
             if (wokenFromScream) enemiesWokenFromScream.Add(__instance.m_enemyAgent.GetInstanceID());
         }
 
+        // Correct noise sources
+        private struct NoiseSource
+        {
+            public bool set;
+            public PlayerAgent? source;
+        }
+        private static Queue<NoiseSource> noiseSources = new Queue<NoiseSource>();
+        private static PlayerAgent? makeNoiseSource = null;
+        private static bool makeNoiseSourceSet = false;
+        private static NoiseSource currentNoiseSource = new NoiseSource()
+        {
+            set = false,
+            source = null
+        };
+        private static bool fromNoiseManager = false;
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.Update))]
+        [HarmonyPrefix]
+        private static void Prefix_UpdateNoise()
+        {
+            if (!SNet.IsMaster) return;
+            fromNoiseManager = true;
+        }
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.Update))]
+        [HarmonyPostfix]
+        private static void Postfix_UpdateNoisee()
+        {
+            if (!SNet.IsMaster) return;
+            fromNoiseManager = false;
+        }
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.ReceiveNoise))]
+        [HarmonyPostfix]
+        private static void ReceiveNoise(pNM_NoiseData data)
+        {
+            if (!SNet.IsMaster) return;
+
+            // TODO(randomuserhi): Need to test noises sent from other players properly have their source sent
+            //                     If not, then just assume source here is always from whoever sent the packet
+            //                     -> On that note figure out how to get sender lmao
+            noiseSources.Enqueue(new NoiseSource()
+            {
+                set = false,
+                source = null
+            });
+        }
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.MakeNoise))]
+        [HarmonyPostfix]
+        private static void MakeNoise()
+        {
+            if (!SNet.IsMaster) return;
+
+            noiseSources.Enqueue(new NoiseSource()
+            {
+                set = makeNoiseSourceSet,
+                source = makeNoiseSource
+            });
+            makeNoiseSourceSet = false;
+            makeNoiseSource = null;
+        }
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.ProcessNoise))]
+        [HarmonyPrefix]
+        private static void Prefix_ProcessNoise()
+        {
+            if (!SNet.IsMaster) return;
+
+            if (NoiseManager.noiseDataToProcess.Count != noiseSources.Count)
+            {
+                APILogger.Error("Noises are desynced for an unknown reason...");
+                noiseSources.Clear();
+                while (NoiseManager.noiseDataToProcess.Count != noiseSources.Count)
+                {
+                    noiseSources.Enqueue(new NoiseSource() 
+                    { 
+                        set = false,
+                        source = null
+                    });
+                }
+            }
+
+            currentNoiseSource = noiseSources.Dequeue();
+        }
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.ProcessNoise))]
+        [HarmonyPostfix]
+        private static void Postfix_ProcessNoise()
+        {
+            if (!SNet.IsMaster) return;
+            currentNoiseSource = new NoiseSource() { set = false, source = null };
+        }
+        // Sentry gun noises
+        [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
+        [HarmonyPrefix]
+        private static void SentryShootNoise(SentryGunInstance_Firing_Bullets __instance)
+        {
+            if (!SNet.IsMaster) return;
+            makeNoiseSource = __instance.m_core.Owner;
+            makeNoiseSourceSet = true;
+        }
+        // Mine Deployer explosion noise
+        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
+        [HarmonyPrefix]
+        private static void ExplodeNoise()
+        {
+            if (!SNet.IsMaster) return;
+            makeNoiseSource = null;
+            makeNoiseSourceSet = true;
+        }
+        // Spitter noise
+        [HarmonyPatch(typeof(InfectionSpitter), nameof(InfectionSpitter.Update))]
+        [HarmonyPrefix]
+        private static void SpitterExplodeNoise(InfectionSpitter __instance)
+        {
+            if (!SNet.IsMaster) return;
+            if (__instance.m_isExploding)
+            {
+                if (__instance.m_explodeProgression > 1.6f)
+                {
+                    makeNoiseSource = null;
+                    makeNoiseSourceSet = true;
+                }
+            }
+        }
+
         // Regular enemy wakeup sequence
+        private static bool triggered = false;
         [HarmonyPatch(typeof(ES_HibernateWakeUp), nameof(ES_HibernateWakeUp.ActivateState))]
         [HarmonyPostfix]
-        private static void WakeUp(ES_HibernateWakeUp __instance)
+        private static void WakeUp_State(ES_HibernateWakeUp __instance)
         {
             if (!SnapshotManager.active) return;
             if (!SNet.IsMaster) return;
 
+            if (triggered) return;
+
             EnemyAgent self = __instance.m_ai.m_enemyAgent;
-            AgentTarget? target = __instance.m_ai.Target;
             int instance = self.GetInstanceID();
             if (enemiesWokenFromScream.Contains(instance))
             {
@@ -93,13 +226,58 @@ namespace ReplayRecorder.Enemies.Patches
             else
             {
                 PlayerAgent? player = null;
-                if (target != null) player = target.m_agent.TryCast<PlayerAgent>();
-                else APILogger.Error("AgentTarget was null, this should not happen.");
+
+
+                if (fromNoiseManager && currentNoiseSource.set)
+                {
+                    player = currentNoiseSource.source;
+                    APILogger.Debug("Detection from noise manager.");
+                }
+                else
+                {
+                    AgentTarget? target = __instance.m_ai.Target;
+                    if (target != null) player = target.m_agent.TryCast<PlayerAgent>();
+                    else APILogger.Error("AgentTarget was null, this should not happen.");
+                }
                 if (player != null)
                     Enemy.EnemyAlerted(self, player);
                 else
                     APILogger.Error("Enemy was woken by an agent that wasnt a player.");
             }
+        }
+        [HarmonyPatch(typeof(EnemyDetection), nameof(EnemyDetection.UpdateHibernationDetection))]
+        [HarmonyPostfix]
+        private static void WakeUp_Detection(EnemyDetection __instance, AgentTarget target, bool __result)
+        {
+            if (!SnapshotManager.active) return;
+            if (!SNet.IsMaster) return;
+
+            if (__result)
+            {
+                EnemyAgent self = __instance.m_ai.m_enemyAgent;
+                int instance = self.GetInstanceID();
+                if (enemiesWokenFromScream.Contains(instance))
+                {
+                    enemiesWokenFromScream.Remove(instance);
+                    Enemy.EnemyAlerted(self);
+                    APILogger.Debug("Enemy was woken by a scream.");
+                }
+                else
+                {
+                    PlayerAgent? player = target.m_agent.TryCast<PlayerAgent>();
+                    if (player != null)
+                        Enemy.EnemyAlerted(self, player);
+                    else
+                        APILogger.Error("Enemy was woken by an agent that wasnt a player.");
+                }
+                triggered = true;
+            }
+        }
+        [HarmonyPatch(typeof(EB_Hibernating), nameof(EB_Hibernating.UpdateDetection))]
+        [HarmonyPostfix]
+        private static void WakeUpTriggerReset()
+        {
+            triggered = false;
         }
     }
 }
