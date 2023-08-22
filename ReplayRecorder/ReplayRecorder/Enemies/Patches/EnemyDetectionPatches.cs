@@ -36,13 +36,11 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         private static void Prefix_Scream(ES_Scream __instance)
         {
-            if (!SNet.IsMaster) return;
-
             // Condition taken from source
             if (!__instance.m_hasTriggeredPropagation && __instance.m_triggerPropgationAt < Clock.Time)
             {
                 Enemy.EnemyScreamed(__instance.m_enemyAgent);
-                wokenFromScream = true;
+                if (SNet.IsMaster) wokenFromScream = true;
             }
         }
         [HarmonyPatch(typeof(ES_Scream), nameof(ES_Scream.Update))]
@@ -56,9 +54,7 @@ namespace ReplayRecorder.Enemies.Patches
         [HarmonyPrefix]
         private static void Prefix_ScoutScream(ES_ScoutScream __instance)
         {
-            if (!SNet.IsMaster) return;
-
-            wokenFromScream = true;
+            if (SNet.IsMaster) wokenFromScream = true;
 
             // Condition taken from source
             switch (__instance.m_state)
@@ -69,7 +65,14 @@ namespace ReplayRecorder.Enemies.Patches
                         break;
                     }
 
-                    Enemy.EnemyScreamed(__instance.m_enemyAgent, true);
+                    EnemyAgent self = __instance.m_enemyAgent;
+                    Enemy.EnemyScreamed(self, true);
+                    if (!SNet.IsMaster)
+                    {
+                        // Client side wake up:
+                        Enemy.EnemyAlerted(self);
+                        APILogger.Debug("Client-side scout wake up.");
+                    }
                     break;
             }
         }
@@ -229,9 +232,16 @@ namespace ReplayRecorder.Enemies.Patches
         private static void WakeUp_State(ES_HibernateWakeUp __instance)
         {
             if (!SnapshotManager.active) return;
-            if (!SNet.IsMaster) return;
-
             if (triggered) return;
+
+            EnemyAgent self = __instance.m_ai.m_enemyAgent;
+            if (!SNet.IsMaster)
+            {
+                // Client side wake up:
+                Enemy.EnemyAlerted(self);
+                APILogger.Debug("Client-side enemy wake up.");
+                return;
+            }
 
             // Prevent niche cases where enemies don't wake up from a scream despite the fact they are in range
             // by removing tagged enemies in scream group that are older than 100ms
@@ -242,7 +252,6 @@ namespace ReplayRecorder.Enemies.Patches
                 if (now - enemiesWokenFromScream[id] > 100) enemiesWokenFromScream.Remove(id);
             }
 
-            EnemyAgent self = __instance.m_ai.m_enemyAgent;
             int instance = self.GetInstanceID();
             if (enemiesWokenFromScream.ContainsKey(instance))
             {
