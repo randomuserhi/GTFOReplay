@@ -51,7 +51,7 @@ let GTFOSpecification: GTFOSpecification = {
         "Big Flyer"
     ],
     items: [
-        "Unknown",
+        //"Unknown",
         "Shelling S49",
         "Bataldo 3RB",
         "Raptus Treffen 2",
@@ -65,7 +65,7 @@ let GTFOSpecification: GTFOSpecification = {
         "Malatack CH 4",
         "Drekker Pres MOD 556",
         "Bataldo J 300",
-        "Accrat ND6",
+        //"Accrat ND6",
         "Malatack HXC",
         "Buckland s870",
         "Buckland AF6",
@@ -93,10 +93,10 @@ let GTFOSpecification: GTFOSpecification = {
         "Ammo Pack",
         "Tool Refill Pack",
         "MediPack",
-        "Hacking Tool",
-        "Long Range Flashlight",
-        "Lock Melter",
-        "Glow Stick",
-        "Explosive Mine"
+        //"Hacking Tool",
+        //"Long Range Flashlight",
+        //"Lock Melter",
+        //"Glow Stick",
+        //"Explosive Mine"
     ]
 }

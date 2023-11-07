@@ -4,6 +4,7 @@ interface replay extends HTMLDivElement
     onload(): void;
     update(t: number): void;
 
+    currentDimension: number;
     prev: number;
     play: boolean;
     time: number;
@@ -66,6 +67,7 @@ RHU.import(RHU.module({ trace: new Error(),
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
 
+            this.currentDimension = 0;
             this.play = true;
             this.time = 0;
             this.timescale = 1;
@@ -236,7 +238,7 @@ RHU.import(RHU.module({ trace: new Error(),
             this.ctx.scale(this.camera.scale, this.camera.scale);
 
             // Draw Map => perhaps move to a seperate function => TODO(randomuserhi): Manage different dimensions
-            let dimension = this.replay.dimensions.get(0)!;
+            let dimension = this.replay.dimensions.get(this.currentDimension)!;
             let map = dimension.map;
             for (let i = 0; i < map.surfaces.length; ++i)
                 this.ctx.drawImage(map.surfaces[i].canvas, map.surfaces[i].position.x, map.surfaces[i].position.y);

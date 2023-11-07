@@ -49,12 +49,15 @@ namespace ReplayRecorder.Player.Patches
         }
 
         // Special case for shotgun sentry
-
+        private static bool shotgunSentryShot = false;
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPrefix]
         private static void Prefix_ShotgunSentryFiring(SentryGunInstance_Firing_Bullets __instance, bool isMaster, bool targetIsTagged)
         {
             if (!isMaster) return;
+
+            if (!(Clock.Time > __instance.m_fireBulletTimer)) return;
+            else shotgunSentryShot = true;
 
             PlayerSentry.sentryName = __instance.ArchetypeData.PublicName;
             var instance = __instance.GetComponent<SentryGunInstance>();
@@ -69,6 +72,8 @@ namespace ReplayRecorder.Player.Patches
         [HarmonyPostfix]
         private static void Postfix_ShotgunSentryFiring()
         {
+            if (!shotgunSentryShot) return;
+
             PlayerSentry.sentryName = null;
             PlayerSentry.sentryShot = false;
         }
