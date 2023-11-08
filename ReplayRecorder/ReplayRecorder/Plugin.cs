@@ -25,7 +25,7 @@ public class Plugin : BasePlugin {
         }
         if (IL2CPPChainloader.Instance.Plugins.TryGetValue(HelSentryFix.Module.GUID, out _)) {
             APILogger.Log("HelAutoSentry is installed, using compatability patches.");
-            PlayerSentryPatches.HelAutoSentryCompatability();
+            PlayerSentryPatches.CompatabilityLayer_HelAutoSentryFix();
         }
 
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
