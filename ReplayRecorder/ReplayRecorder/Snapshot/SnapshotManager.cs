@@ -1,37 +1,30 @@
-﻿using API;
+﻿using Agents;
+using API;
 using UnityEngine;
-using Agents;
 
-namespace ReplayRecorder
-{
-    public interface ISerializable
-    {
+namespace ReplayRecorder {
+    internal interface ISerializable {
         void Serialize(FileStream fs);
     }
 
-    public struct rInstance : ISerializable
-    {
+    internal struct rInstance : ISerializable {
         private int instance;
 
-        public rInstance(int instance)
-        { 
+        public rInstance(int instance) {
             this.instance = instance;
         }
 
         public const int SizeOf = sizeof(int);
         private static byte[] buffer = new byte[SizeOf];
-        public void Serialize(FileStream fs)
-        {
+        public void Serialize(FileStream fs) {
             int index = 0;
             BitHelper.WriteBytes(instance, buffer, ref index);
             fs.Write(buffer);
         }
     }
 
-    public class GameplayEvent
-    {
-        public enum Type
-        {
+    internal class GameplayEvent {
+        public enum Type {
             AddPlayer,
             RemovePlayer,
 
@@ -90,18 +83,15 @@ namespace ReplayRecorder
         public Type type;
         public ISerializable? detail;
 
-        public GameplayEvent(long timestamp, Type type, ISerializable? detail)
-        {
+        public GameplayEvent(long timestamp, Type type, ISerializable? detail) {
             this.timestamp = timestamp;
             this.type = type;
             this.detail = detail;
         }
     }
 
-    public abstract class DynamicProperty : ISerializable
-    {
-        public enum Type
-        {
+    internal abstract class DynamicProperty : ISerializable {
+        public enum Type {
             Tongue
         }
         public int instance;
@@ -109,28 +99,23 @@ namespace ReplayRecorder
         public bool remove = false;
         public bool Serializable => !remove && IsSerializable();
 
-        protected virtual bool IsSerializable()
-        {
+        protected virtual bool IsSerializable() {
             return true;
         }
 
-        public DynamicProperty(Type type, int instance)
-        {
+        public DynamicProperty(Type type, int instance) {
             this.type = type;
             this.instance = instance;
         }
 
-        public virtual void Serialize(FileStream fs)
-        {
+        public virtual void Serialize(FileStream fs) {
             fs.WriteByte((byte)type);
         }
     }
 
     // Manages saving a snapshot and delta snapshot every tick
-    public class SnapshotManager : MonoBehaviour
-    {
-        public struct rAgent : ITransform
-        {
+    internal class SnapshotManager : MonoBehaviour {
+        public struct rAgent : ITransform {
             private Agent agent;
             public bool active => agent != null;
             public byte dimensionIndex => (byte)agent.m_dimensionIndex;
@@ -138,14 +123,12 @@ namespace ReplayRecorder
             public Quaternion rotation => agent.transform.rotation;
             public float scale => 0;
 
-            public rAgent(Agent agent)
-            {
+            public rAgent(Agent agent) {
                 this.agent = agent;
             }
         }
 
-        public interface ITransform
-        {
+        public interface ITransform {
             public bool active { get; }
             public byte dimensionIndex { get; }
             public Vector3 position { get; }
@@ -153,8 +136,7 @@ namespace ReplayRecorder
             public float scale { get; }
         }
 
-        public class DynamicObject
-        {
+        public class DynamicObject {
             public bool remove = false;
 
             public ITransform transform;
@@ -165,23 +147,21 @@ namespace ReplayRecorder
 
             public const float threshold = 50;
 
-            public DynamicObject(int instance, ITransform transform)
-            {
+            public DynamicObject(int instance, ITransform transform) {
                 this.instance = instance;
                 this.transform = transform;
             }
 
-            public bool Serializable => 
-                remove == false && transform.active && 
+            public bool Serializable =>
+                remove == false && transform.active &&
                 (transform.position != oldPosition ||
-                 transform.rotation != oldRotation || 
+                 transform.rotation != oldRotation ||
                  transform.scale != oldScale);
 
             public const int SizeOf = 1 + sizeof(int) + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf + 1;
             public const int SizeOfHalf = 1 + sizeof(int) + BitHelper.SizeOfHalfVector3 + BitHelper.SizeOfHalfQuaternion + BitHelper.SizeOfHalf + 1;
             private static byte[] buffer = new byte[SizeOf];
-            public void Serialize(FileStream fs)
-            {
+            public void Serialize(FileStream fs) {
                 /// Format:
                 /// byte => absolute or relative position
                 /// int => instance ID of object (not necessarily the gameobject)
@@ -189,7 +169,7 @@ namespace ReplayRecorder
                 /// Quaternion(Half) => rotation
                 /// half => scale of transform
                 /// byte => Dimension of transform
-                
+
                 // TODO(randomuserhi): If rotation doesn't change just write a single byte 0b1000
                 //                     since the most significant bit doesnt matter to the quaternion.
                 //                     Then in reader, just check the first byte, if the most significant is
@@ -200,36 +180,30 @@ namespace ReplayRecorder
                 int index = 0;
 
                 // If object has moved too far, write absolute position
-                if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold)
-                {
+                if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
                     BitHelper.WriteBytes((byte)(1), buffer, ref index);
                     BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteBytes(transform.position, buffer, ref index);
-                    if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) || 
-                        float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w))
-                    {
+                    if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
+                        float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
                         BitHelper.WriteHalf(Quaternion.identity, buffer, ref index);
                         APILogger.Debug("Dynamic rotation had NaN component.");
-                    }
-                    else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
+                    } else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
                     BitHelper.WriteHalf(transform.scale, buffer, ref index);
                     BitHelper.WriteBytes(transform.dimensionIndex, buffer, ref index);
 
                     fs.Write(buffer, 0, SizeOf);
                 }
                 // If object has not moved too far, write relative to last absolute position
-                else
-                {
+                else {
                     BitHelper.WriteBytes((byte)(0), buffer, ref index);
                     BitHelper.WriteBytes(instance, buffer, ref index);
                     BitHelper.WriteHalf(transform.position - oldPosition, buffer, ref index);
                     if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
-                        float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w))
-                    {
+                        float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
                         BitHelper.WriteHalf(Quaternion.identity, buffer, ref index);
                         APILogger.Debug("Dynamic rotation had NaN component.");
-                    }
-                    else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
+                    } else BitHelper.WriteHalf(transform.rotation, buffer, ref index);
                     BitHelper.WriteHalf(transform.scale, buffer, ref index);
                     BitHelper.WriteBytes(transform.dimensionIndex, buffer, ref index);
 
@@ -266,14 +240,12 @@ namespace ReplayRecorder
         private List<DynamicProperty> dynamicProp = new List<DynamicProperty>(100);
         public Dictionary<int, DynamicProperty> mapOfDynamicProps = new Dictionary<int, DynamicProperty>();
 
-        private void Update()
-        {
+        private void Update() {
             if (!active) return;
 
             float rate;
             // Change tick rate based on state:
-            switch (DramaManager.CurrentStateEnum)
-            {
+            switch (DramaManager.CurrentStateEnum) {
                 case DRAMA_State.Encounter:
                 case DRAMA_State.Survival:
                 case DRAMA_State.IntentionalCombat:
@@ -284,34 +256,28 @@ namespace ReplayRecorder
                     rate = 1f / 5f;
                     break;
             }
-            if (tickRate != rate)
-            {
+            if (tickRate != rate) {
                 timer = 0;
                 tickRate = rate;
             }
 
             timer += Time.deltaTime;
-            if (timer > tickRate)
-            {
+            if (timer > tickRate) {
                 timer = 0;
                 Tick();
             }
         }
 
-        public static void AddEvent(GameplayEvent.Type type, ISerializable? e)
-        {
-            if (instance == null)
-            {
+        public static void AddEvent(GameplayEvent.Type type, ISerializable? e) {
+            if (instance == null) {
                 APILogger.Error("Tried to add an event before snapshotmanager was ready.");
                 return;
             }
             instance.events.Add(new GameplayEvent(instance.Now, type, e));
         }
 
-        public static void AddDynamicObject(DynamicObject obj)
-        {
-            if (instance == null)
-            {
+        public static void AddDynamicObject(DynamicObject obj) {
+            if (instance == null) {
                 APILogger.Error("Tried to add a dynamic object before snapshotmanager was ready.");
                 return;
             }
@@ -319,10 +285,8 @@ namespace ReplayRecorder
             instance.mapOfDynamics.Add(obj.instance, obj);
         }
 
-        public static void RemoveDynamicObject(int instanceID)
-        {
-            if (instance == null)
-            {
+        public static void RemoveDynamicObject(int instanceID) {
+            if (instance == null) {
                 APILogger.Error("Tried to remove a dynamic object before snapshotmanager was ready.");
                 return;
             }
@@ -331,15 +295,12 @@ namespace ReplayRecorder
             instance.mapOfDynamics.Remove(instanceID);
         }
 
-        public static void RemoveDynamicObject(DynamicObject obj)
-        {
+        public static void RemoveDynamicObject(DynamicObject obj) {
             RemoveDynamicObject(obj.instance);
         }
 
-        public static void AddDynamicProperty(DynamicProperty obj)
-        {
-            if (instance == null)
-            {
+        public static void AddDynamicProperty(DynamicProperty obj) {
+            if (instance == null) {
                 APILogger.Error("Tried to add a dynamic property before snapshotmanager was ready.");
                 return;
             }
@@ -347,10 +308,8 @@ namespace ReplayRecorder
             instance.mapOfDynamicProps.Add(obj.instance, obj);
         }
 
-        public static void RemoveDynamicProperty(int instanceID)
-        {
-            if (instance == null)
-            {
+        public static void RemoveDynamicProperty(int instanceID) {
+            if (instance == null) {
                 APILogger.Error("Tried to remove a dynamic property before snapshotmanager was ready.");
                 return;
             }
@@ -359,21 +318,19 @@ namespace ReplayRecorder
             instance.mapOfDynamicProps.Remove(instanceID);
         }
 
-        public static void RemoveDynamicProperty(DynamicProperty obj)
-        {
+        public static void RemoveDynamicProperty(DynamicProperty obj) {
             RemoveDynamicProperty(obj.instance);
         }
 
         public static Action? OnTick;
 
         private static byte[] buffer = new byte[sizeof(uint)];
-        private void Tick() 
-        {
+        private void Tick() {
             if (!active || fs == null) return;
 
             // Trigger pre-tick processes
             OnTick?.Invoke();
-            
+
             /*foreach (var d in dynamic)
             {
                 APILogger.Debug($"{d.instanceID} : {d.transform.position != d.oldPosition} {d.transform.rotation != d.oldRotation}");
@@ -398,8 +355,7 @@ namespace ReplayRecorder
             index = 0;
             BitHelper.WriteBytes((ushort)events.Count, buffer, ref index);
             fs.Write(buffer, 0, sizeof(ushort));
-            for (int i = 0; i < events.Count; ++i)
-            {
+            for (int i = 0; i < events.Count; ++i) {
                 GameplayEvent e = events[i];
 
                 // Event header
@@ -417,14 +373,12 @@ namespace ReplayRecorder
             BitHelper.WriteBytes(nSerializable, buffer, ref index);
             fs.Write(buffer, 0, sizeof(ushort));
             _dynamic.Clear();
-            for (int i = 0; i < dynamic.Count; i++) 
-            {
+            for (int i = 0; i < dynamic.Count; i++) {
                 DynamicObject obj = dynamic[i];
 
-                if (obj.Serializable) 
-                {
+                if (obj.Serializable) {
                     ++serialized;
-                    obj.Serialize(fs); 
+                    obj.Serialize(fs);
                 }
                 if (!obj.remove) _dynamic.Add(obj);
             }
@@ -439,12 +393,10 @@ namespace ReplayRecorder
             BitHelper.WriteBytes(nSerializableProps, buffer, ref index);
             fs.Write(buffer, 0, sizeof(ushort));
             _dynamicProp.Clear();
-            for (int i = 0; i < dynamicProp.Count; i++)
-            {
+            for (int i = 0; i < dynamicProp.Count; i++) {
                 DynamicProperty obj = dynamicProp[i];
 
-                if (obj.Serializable)
-                {
+                if (obj.Serializable) {
                     ++serialized;
                     obj.Serialize(fs);
                 }
@@ -463,16 +415,13 @@ namespace ReplayRecorder
         }
 
         // Called once on plugin load
-        public static void Setup()
-        {
+        public static void Setup() {
             OnTick += Player.Player.OnTick;
         }
 
         // Called after map has loaded
-        public static void Init()
-        {
-            if (instance != null)
-            {
+        public static void Init() {
+            if (instance != null) {
                 APILogger.Error("Instance has already started, this should not happen");
                 return;
             }
@@ -490,13 +439,11 @@ namespace ReplayRecorder
             Player.Player.Init();
         }
 
-        public static void Dispose()
-        {
+        public static void Dispose() {
             active = false;
 
             if (fs == null) APILogger.Warn("Filestream was never started, this should not happen.");
-            else
-            {
+            else {
                 fs.Dispose();
                 fs = null;
             }
@@ -504,14 +451,13 @@ namespace ReplayRecorder
             // Send report => TODO(randomuserhi): rewrite
             Network.SendReplay(File.ReadAllBytes("replay.gtfo"));
 
-            if (obj == null) 
-            {
+            if (obj == null) {
                 APILogger.Debug($"Snapshot manager has already been destroyed!");
                 return;
             }
 
             APILogger.Debug($"Disposing snapshot manager...");
-            
+
             instance = null;
             GameObject.Destroy(obj);
             obj = null;

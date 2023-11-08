@@ -1,20 +1,17 @@
 ﻿using API;
 using Enemies;
-using UnityEngine;
 using SNetwork;
+using UnityEngine;
 
-namespace ReplayRecorder.Enemies
-{
-    public class EnemyPellet
-    {
+namespace ReplayRecorder.Enemies {
+    internal class EnemyPellet {
         public EnemyAgent owner;
         public int instance;
         public GameObject projectile;
         public bool markForRemoval;
         public long timestamp;
 
-        public EnemyPellet(EnemyAgent agent, GameObject proj)
-        {
+        public EnemyPellet(EnemyAgent agent, GameObject proj) {
             owner = agent;
             instance = agent.GetInstanceID();
             projectile = proj;
@@ -23,12 +20,10 @@ namespace ReplayRecorder.Enemies
         }
     }
 
-    public static partial class Enemy
-    {
+    internal static partial class Enemy {
         public static Dictionary<int, EnemyPellet> pellets = new Dictionary<int, EnemyPellet>();
 
-        private struct Pellet : SnapshotManager.ITransform
-        {
+        private struct Pellet : SnapshotManager.ITransform {
             ProjectileTargeting targeting;
 
             public byte _dimensionIndex;
@@ -39,16 +34,14 @@ namespace ReplayRecorder.Enemies
             public Quaternion rotation => Quaternion.LookRotation(targeting.m_myFwd);
             public float scale => 0;
 
-            public Pellet(ProjectileTargeting targeting)
-            {
+            public Pellet(ProjectileTargeting targeting) {
                 this.targeting = targeting;
                 // TODO(randomuserhi): If host => use projectile owner for dimensionIndex
                 _dimensionIndex = (byte)Dimensions.Dimensions.CurrentDimension();
             }
         }
 
-        public static void OnPelletSpawn(GameObject projectile, ProjectileTargeting targeting)
-        {
+        public static void OnPelletSpawn(GameObject projectile, ProjectileTargeting targeting) {
             APILogger.Debug($"Visual pellet spawned.");
 
             int instance = projectile.GetInstanceID();
@@ -56,10 +49,8 @@ namespace ReplayRecorder.Enemies
             SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(instance, new Pellet(targeting)));
         }
 
-        public static void OnPelletDespawn(int instance)
-        {
-            if (!SNet.IsMaster || (pellets.ContainsKey(instance) && !pellets[instance].markForRemoval))
-            {
+        public static void OnPelletDespawn(int instance) {
+            if (!SNet.IsMaster || (pellets.ContainsKey(instance) && !pellets[instance].markForRemoval)) {
                 APILogger.Debug($"Visual pellet despawned.");
 
                 SnapshotManager.AddEvent(GameplayEvent.Type.DespawnPellet, new rInstance(instance));
@@ -67,27 +58,22 @@ namespace ReplayRecorder.Enemies
             }
         }
 
-        public static void RegisterPellet(EnemyAgent agent, GameObject projectile)
-        {
+        public static void RegisterPellet(EnemyAgent agent, GameObject projectile) {
             APILogger.Debug($"Projectile shot by {agent.GetInstanceID()}");
             pellets.Add(projectile.GetInstanceID(), new EnemyPellet(agent, projectile));
         }
 
-        public static void UnregisterPellet(int instance)
-        {
+        public static void UnregisterPellet(int instance) {
             long now = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
 
-            if (pellets.ContainsKey(instance))
-            {
+            if (pellets.ContainsKey(instance)) {
                 pellets[instance].markForRemoval = true;
                 pellets[instance].timestamp = now;
             }
 
             int[] keys = pellets.Keys.ToArray();
-            foreach (int id in keys)
-            {
-                if (pellets[id].markForRemoval && now - pellets[id].timestamp > ConfigManager.PelletLingerTime)
-                {
+            foreach (int id in keys) {
+                if (pellets[id].markForRemoval && now - pellets[id].timestamp > ConfigManager.PelletLingerTime) {
                     pellets.Remove(id);
                     APILogger.Debug($"Projectile successfully removed.");
                 }

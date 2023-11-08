@@ -2,14 +2,12 @@
 using API;
 using Enemies;
 using HarmonyLib;
-using UnityEngine;
 using SNetwork;
+using UnityEngine;
 
-namespace ReplayRecorder.Enemies.Patches
-{
+namespace ReplayRecorder.Enemies.Patches {
     [HarmonyPatch]
-    class EnemyShooterPatches
-    {
+    class EnemyShooterPatches {
         // TODO(randomuserhi): Implement client side fix for tracking pellets => sphere cast to find closest enemy
         //                     or spatial partition
         //                     https://github.com/randomuserhi/StatTracker/commit/41b57c04b7357f6bf9bc4b791689a1e338398fc9
@@ -18,36 +16,31 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireAtAgent))]
         [HarmonyPrefix]
-        private static void Prefix_FireAtAgent(EAB_ProjectileShooter __instance)
-        {
+        private static void Prefix_FireAtAgent(EAB_ProjectileShooter __instance) {
             currentShooter = __instance.m_owner;
         }
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireAtAgent))]
         [HarmonyPostfix]
-        private static void Postfix_FireAtAgent(EAB_ProjectileShooter __instance)
-        {
+        private static void Postfix_FireAtAgent(EAB_ProjectileShooter __instance) {
             currentShooter = null;
         }
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireChaos))]
         [HarmonyPrefix]
-        private static void Prefix_FireChaos(EAB_ProjectileShooter __instance)
-        {
+        private static void Prefix_FireChaos(EAB_ProjectileShooter __instance) {
             currentShooter = __instance.m_owner;
         }
 
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireChaos))]
         [HarmonyPostfix]
-        private static void Postfix_FireChaos(EAB_ProjectileShooter __instance)
-        {
+        private static void Postfix_FireChaos(EAB_ProjectileShooter __instance) {
             currentShooter = null;
         }
 
         [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]
         [HarmonyPrefix]
-        private static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data)
-        {
+        private static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data) {
             Agent comp;
             data.target.TryGet(out comp);
             Vector3 pos = data.position;
@@ -59,8 +52,7 @@ namespace ReplayRecorder.Enemies.Patches
                 __instance.m_projectiles.Add(targeting);
             component.OnFire(comp);
 
-            if (SNet.IsMaster)
-            {
+            if (SNet.IsMaster) {
                 if (currentShooter != null) Enemy.RegisterPellet(currentShooter, projectile);
                 else APILogger.Debug($"currentShooter was null, this should not happen.");
             }
@@ -72,8 +64,7 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(ProjectileTargeting), nameof(ProjectileTargeting.OnDestroy))]
         [HarmonyPrefix]
-        private static void OnDestroy(ProjectileTargeting __instance)
-        {
+        private static void OnDestroy(ProjectileTargeting __instance) {
             int instance = __instance.gameObject.GetInstanceID();
             Enemy.OnPelletDespawn(instance);
             if (SNet.IsMaster) Enemy.UnregisterPellet(instance);
@@ -83,13 +74,11 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]
         [HarmonyPrefix]
-        private static void Prefix_Collision(ProjectileBase __instance)
-        {
+        private static void Prefix_Collision(ProjectileBase __instance) {
             int instance = __instance.gameObject.GetInstanceID();
             Enemy.OnPelletDespawn(instance);
 
-            if (SNet.IsMaster)
-            {
+            if (SNet.IsMaster) {
                 if (Enemy.pellets.ContainsKey(instance))
                     hitByShooter = Enemy.pellets[instance].owner;
                 else APILogger.Debug($"Projectile was not tracked, this should not happen.");
@@ -100,15 +89,13 @@ namespace ReplayRecorder.Enemies.Patches
 
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]
         [HarmonyPostfix]
-        private static void Postfix_Collision()
-        {
+        private static void Postfix_Collision() {
             hitByShooter = null;
         }
 
         [HarmonyPatch(typeof(Dam_SyncedDamageBase), nameof(Dam_SyncedDamageBase.ShooterProjectileDamage))]
         [HarmonyPrefix]
-        private static bool ShooterProjectileDamage(Dam_SyncedDamageBase __instance, float dam, Vector3 position)
-        {
+        private static bool ShooterProjectileDamage(Dam_SyncedDamageBase __instance, float dam, Vector3 position) {
             if (!SNet.IsMaster) return true;
 
             pMediumDamageData data = new pMediumDamageData();
@@ -116,19 +103,14 @@ namespace ReplayRecorder.Enemies.Patches
             data.localPosition.Set(position - __instance.GetBaseAgent().Position, 10f);
             if (hitByShooter != null) data.source.Set(hitByShooter);
             else APILogger.Debug($"hitByShooter was null, this should not happen.");
-            if (__instance.SendPacket())
-            {
-                if (SNet.IsMaster)
-                {
+            if (__instance.SendPacket()) {
+                if (SNet.IsMaster) {
                     __instance.m_shooterProjectileDamagePacket.Send(data, SNet_ChannelType.GameNonCritical);
-                }
-                else
-                {
+                } else {
                     __instance.m_shooterProjectileDamagePacket.Send(data, SNet_ChannelType.GameNonCritical, SNet.Master);
                 }
             }
-            if (__instance.SendLocally())
-            {
+            if (__instance.SendLocally()) {
                 __instance.ReceiveShooterProjectileDamage(data);
             }
 

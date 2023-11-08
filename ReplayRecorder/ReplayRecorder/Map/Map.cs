@@ -1,48 +1,39 @@
-﻿using UnityEngine;
-using UnityEngine.AI;
-
-using API;
+﻿using API;
 using LevelGeneration;
 using ReplayRecorder.Map.Patches;
+using UnityEngine;
+using UnityEngine.AI;
 
-namespace ReplayRecorder.Map
-{
+namespace ReplayRecorder.Map {
     /// <summary>
     /// Contains all information about the map and static locations on the map
     /// - Doors
     /// - Zones
     /// - Crates
     /// </summary>
-    public static partial class Map
-    {
-        public class rMap : ISerializable
-        {
-            public struct Location
-            {
+    internal static partial class Map {
+        public class rMap : ISerializable {
+            public struct Location {
                 public bool valid = false;
                 public char area;
                 public int zone;
 
-                public Location(int zone, char area)
-                {
+                public Location(int zone, char area) {
                     this.area = area;
                     this.zone = zone;
                     valid = true;
                 }
-                public Location()
-                {
+                public Location() {
                     valid = false;
                     area = 'Z';
                     zone = 0;
                 }
             }
 
-            public class Surface
-            {
+            public class Surface {
                 public Mesh mesh;
 
-                public Surface(Mesh mesh)
-                {
+                public Surface(Mesh mesh) {
                     this.mesh = mesh;
                 }
             }
@@ -50,15 +41,13 @@ namespace ReplayRecorder.Map
             public eDimensionIndex dimension;
             public Surface[] surfaces;
 
-            public rMap(eDimensionIndex dimension, Surface[] surfaces) 
-            {
+            public rMap(eDimensionIndex dimension, Surface[] surfaces) {
                 this.dimension = dimension;
                 this.surfaces = surfaces;
             }
 
             private static byte[] buffer = new byte[1 + sizeof(ushort)];
-            public void Serialize(FileStream fs)
-            {
+            public void Serialize(FileStream fs) {
                 /// Format:
                 /// byte => dimension index
                 /// ushort => number of surfaces
@@ -73,29 +62,25 @@ namespace ReplayRecorder.Map
                 int size = 1 + sizeof(ushort);
                 if (buffer.Length < size) buffer = new byte[size];
 
-                if (surfaces.Length > ushort.MaxValue)
-                {
+                if (surfaces.Length > ushort.MaxValue) {
                     APILogger.Error($"There were more than {ushort.MaxValue} surfaces");
                     return;
                 }
 
                 BitHelper.WriteBytes((byte)dimension, buffer, ref index);
                 BitHelper.WriteBytes((ushort)surfaces.Length, buffer, ref index);
-                for (int i = 0; i < surfaces.Length; ++i)
-                {
+                for (int i = 0; i < surfaces.Length; ++i) {
                     Surface surface = surfaces[i];
                     Vector3[] vertices = surface.mesh.vertices;
                     int[] indices = surface.mesh.triangles;
 
-                    if (vertices.Length > ushort.MaxValue)
-                    {
+                    if (vertices.Length > ushort.MaxValue) {
                         APILogger.Error($"There were more than {ushort.MaxValue} vertices");
                         return;
                     }
 
                     size += sizeof(ushort) + sizeof(uint) + BitHelper.SizeOfVector3 * vertices.Length + sizeof(ushort) * indices.Length;
-                    if (buffer.Length < size)
-                    {
+                    if (buffer.Length < size) {
                         byte[] temp = new byte[size];
                         Array.Copy(buffer, temp, buffer.Length);
                         buffer = temp;
@@ -111,13 +96,12 @@ namespace ReplayRecorder.Map
             }
         }
         // Maps dimension to the surface map of that dimension
-        public static Dictionary<eDimensionIndex, rMap> map = new Dictionary<eDimensionIndex, rMap>(); 
-        
+        public static Dictionary<eDimensionIndex, rMap> map = new Dictionary<eDimensionIndex, rMap>();
+
         // private collection that maintains which dimensions have been processed
         private static HashSet<eDimensionIndex> processed = new HashSet<eDimensionIndex>();
 
-        private static void GenerateMeshSurfaces(Dimension dimension)
-        {
+        private static void GenerateMeshSurfaces(Dimension dimension) {
             NavMeshTriangulation triangulation = NavMesh.CalculateTriangulation();
 
             /// The navmesh of each dimension is very crude with a ton of unnecessary geomtry as well as the geometry being
@@ -137,16 +121,14 @@ namespace ReplayRecorder.Map
 
             APILogger.Debug($"Generated {surfaceBuffer.Length} surfaces. Converting to meshes...");
 
-            if (processed.Contains(dimension.DimensionIndex))
-            {
+            if (processed.Contains(dimension.DimensionIndex)) {
                 APILogger.Error("Dimension already has been constructed, this should not happen");
                 return;
             }
 
             // Convert surfaces to meshes
             Mesh[] meshes = new Mesh[surfaceBuffer.Length];
-            for (int i = 0; i < surfaceBuffer.Length; ++i)
-            {
+            for (int i = 0; i < surfaceBuffer.Length; ++i) {
                 meshes[i] = surfaceBuffer[i].ToMesh();
             }
 
@@ -172,47 +154,38 @@ namespace ReplayRecorder.Map
                 Mesh[] closest = new Mesh[2];
                 float[] distances = new float[2];
 
-                for (int d = 0; d < dimension.Layers.Count; ++d)
-                {
+                for (int d = 0; d < dimension.Layers.Count; ++d) {
                     LG_Layer layer = dimension.Layers[d];
-                    for (int z = 0; z < layer.m_zones.Count; ++z)
-                    {
+                    for (int z = 0; z < layer.m_zones.Count; ++z) {
                         LG_Zone zone = layer.m_zones[z];
-                        for (int a = 0; a < zone.m_areas.Count; ++a)
-                        {
+                        for (int a = 0; a < zone.m_areas.Count; ++a) {
                             LG_Area area = zone.m_areas[a];
 
                             // For each gate (door) get the 2 closest surfaces and add them to relevant list
-                            for (int g = 0; g < area.m_gates.Count; ++g)
-                            {
+                            for (int g = 0; g < area.m_gates.Count; ++g) {
                                 LG_Gate gate = area.m_gates[g];
                                 Vector3 gateLocation = gate.transform.position;
                                 closest[0] = meshes[0];
                                 distances[0] = (gateLocation - meshes[0].bounds.ClosestPoint(gateLocation)).sqrMagnitude;
                                 closest[1] = meshes[1];
                                 distances[1] = (gateLocation - meshes[1].bounds.ClosestPoint(gateLocation)).sqrMagnitude;
-                                for (int i = 2; i < meshes.Length; ++i)
-                                {
+                                for (int i = 2; i < meshes.Length; ++i) {
                                     Mesh mesh = meshes[i];
                                     float sqrdist = (gateLocation - mesh.bounds.ClosestPoint(gateLocation)).sqrMagnitude;
-                                    if (sqrdist < distances[0])
-                                    {
+                                    if (sqrdist < distances[0]) {
                                         distances[1] = distances[0];
                                         closest[1] = closest[0];
 
                                         distances[0] = sqrdist;
                                         closest[0] = mesh;
-                                    }
-                                    else if (sqrdist < distances[1])
-                                    {
+                                    } else if (sqrdist < distances[1]) {
                                         distances[1] = sqrdist;
                                         closest[1] = mesh;
                                     }
                                 }
 
                                 Vector3 forward = gate.transform.rotation * Vector3.forwardVector;
-                                for (int i = 0; i < closest.Length; ++i)
-                                {
+                                for (int i = 0; i < closest.Length; ++i) {
                                     if (!relevantSurfaces.ContainsKey(closest[i]))
                                         relevantSurfaces.Add(closest[i], new rMap.Surface(closest[i]));
                                 }
@@ -224,12 +197,10 @@ namespace ReplayRecorder.Map
                             {
                                 Mesh _closest = meshes[0];
                                 float _distance = (area.Position - meshes[0].bounds.ClosestPoint(area.Position)).sqrMagnitude;
-                                for (int i = 1; i < meshes.Length; ++i)
-                                {
+                                for (int i = 1; i < meshes.Length; ++i) {
                                     Mesh mesh = meshes[i];
                                     float sqrdist = (area.Position - mesh.bounds.ClosestPoint(area.Position)).sqrMagnitude;
-                                    if (sqrdist < _distance)
-                                    {
+                                    if (sqrdist < _distance) {
                                         _closest = mesh;
                                         _distance = sqrdist;
                                     }
@@ -244,12 +215,9 @@ namespace ReplayRecorder.Map
                 long end = Raudy.Now;
                 APILogger.Debug($"Found {relevantSurfaces.Count} relevant surfaces in {(end - start) / 1000f} seconds.");
                 surfaces = relevantSurfaces.Values.ToArray();
-            }
-            else
-            {
+            } else {
                 surfaces = new rMap.Surface[meshes.Length];
-                for (int i = 0; i < meshes.Length; ++i)
-                {
+                for (int i = 0; i < meshes.Length; ++i) {
                     surfaces[i] = new rMap.Surface(meshes[i]);
                 }
             }
@@ -257,8 +225,7 @@ namespace ReplayRecorder.Map
             // TODO(randomuserhi): Check what dimensions actually exist on this level and only include those
             //                     Not the biggest deal, since I keep track of which dimensions are visited
             //                     but would be nice to reduce file size.
-            if (surfaces.Length == 0)
-            {
+            if (surfaces.Length == 0) {
                 APILogger.Warn($"No relevent surfaces found");
                 return;
             }
@@ -267,12 +234,10 @@ namespace ReplayRecorder.Map
             map.Add(dimension.DimensionIndex, new rMap(dimension.DimensionIndex, surfaces));
         }
 
-        public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions)
-        {
+        public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions) {
             APILogger.Debug($"Saving individual dimensions...");
 
-            for (int i = 0; i < dimensions.Count; ++i)
-            {
+            for (int i = 0; i < dimensions.Count; ++i) {
                 // Clear navmesh
                 NavMesh.RemoveAllNavMeshData();
                 NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
@@ -282,18 +247,15 @@ namespace ReplayRecorder.Map
             APILogger.Debug($"Re-constructing navmesh...");
 
             NavMesh.RemoveAllNavMeshData();
-            for (int i = 0; i < dimensions.Count; ++i)
-            {
+            for (int i = 0; i < dimensions.Count; ++i) {
                 // Clear navmesh
                 dimensions[i].NavmeshInstance = NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
             }
 
             APILogger.Debug($"Fetching door linkage data...");
-            for (int i = 0; i < dimensions.Count; ++i)
-            {
+            for (int i = 0; i < dimensions.Count; ++i) {
                 if (!doors.ContainsKey(dimensions[i].DimensionIndex)) continue;
-                for (int j = 0; j < doors[dimensions[i].DimensionIndex].Count; ++j)
-                {
+                for (int j = 0; j < doors[dimensions[i].DimensionIndex].Count; ++j) {
                     rDoor door = doors[dimensions[i].DimensionIndex][j];
                     LG_Gate gate = door.gate;
                     if (gate.m_linksTo.m_zone != null && gate.m_linksTo.m_navInfo != null)
@@ -318,10 +280,8 @@ namespace ReplayRecorder.Map
         }
 
         // Open filestream and Save the map to replay file
-        public static void InitAndSaveMap()
-        {
-            if (SnapshotManager.fs != null)
-            {
+        public static void InitAndSaveMap() {
+            if (SnapshotManager.fs != null) {
                 SnapshotManager.Dispose();
                 APILogger.Error("Filestream was still open, this should not happen.");
             }
@@ -329,32 +289,28 @@ namespace ReplayRecorder.Map
             // Start snapshot manager
             SnapshotManager.Init();
 
-            if (SnapshotManager.fs == null)
-            {
+            if (SnapshotManager.fs == null) {
                 APILogger.Error("Filestream was not started yet, this should not happen.");
                 return;
             }
-            
+
             // Write map info...
             byte[] buffer = new byte[100];
             SnapshotManager.fs.WriteByte((byte)map.Count); // Write number of dimensions
-            foreach (rMap m in map.Values)
-            {
+            foreach (rMap m in map.Values) {
                 // Serialize map
                 m.Serialize(SnapshotManager.fs);
 
                 // Serialize doors for the given map
                 int index = 0;
-                if (!doors.ContainsKey(m.dimension))
-                {
+                if (!doors.ContainsKey(m.dimension)) {
                     BitHelper.WriteBytes((ushort)0, buffer, ref index);
                     SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 doors present
                     continue;
                 }
                 BitHelper.WriteBytes((ushort)doors[m.dimension].Count, buffer, ref index);
                 SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of doors
-                foreach (rDoor d in doors[m.dimension])
-                {
+                foreach (rDoor d in doors[m.dimension]) {
                     d.Serialize(SnapshotManager.fs);
                 }
 
@@ -367,12 +323,11 @@ namespace ReplayRecorder.Map
             SnapshotManager.fs.Flush();
         }
 
-        public static void Reset()
-        {
+        public static void Reset() {
             APILogger.Debug("Resetting internal map data...");
-            
+
             processed.Clear();
-            
+
             map.Clear();
             MapPatches.dimensions = null;
 

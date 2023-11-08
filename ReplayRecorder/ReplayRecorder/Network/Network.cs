@@ -1,28 +1,22 @@
 ﻿using API;
-using GameData;
 using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using SNetwork;
 using Player;
+using SNetwork;
 
-namespace ReplayRecorder
-{
+namespace ReplayRecorder {
     [HarmonyPatch]
-    public class Network
-    {
+    internal class Network {
         // TODO(randomuserhi): Rewrite this whole thing
-        public static void SendReplay(byte[] replay)
-        {
+        public static void SendReplay(byte[] replay) {
             // client cannot send replay
             if (!SNet.IsMaster) return;
 
             SNet_ChannelType channelType = SNet_ChannelType.SessionOrderCritical;
             SNet.GetSendSettings(ref channelType, out _, out SNet_SendQuality quality, out int channel);
             Il2CppSystem.Collections.Generic.List<SNet_Player> il2cppList = new(PlayerManager.PlayerAgentsInLevel.Count);
-            for (int i = 0; i < PlayerManager.PlayerAgentsInLevel.Count; i++)
-            {
-                if (!PlayerManager.PlayerAgentsInLevel[i].IsLocallyOwned && !PlayerManager.PlayerAgentsInLevel[i].Owner.IsBot)
-                {
+            for (int i = 0; i < PlayerManager.PlayerAgentsInLevel.Count; i++) {
+                if (!PlayerManager.PlayerAgentsInLevel[i].IsLocallyOwned && !PlayerManager.PlayerAgentsInLevel[i].Owner.IsBot) {
                     il2cppList.Add(PlayerManager.PlayerAgentsInLevel[i].Owner);
                     APILogger.Debug($"[Networking] Sending report to {PlayerManager.PlayerAgentsInLevel[i].PlayerName}");
                 }
@@ -51,26 +45,22 @@ namespace ReplayRecorder
         [HarmonyPatch(typeof(SNet_Replication), nameof(SNet_Replication.RecieveBytes))]
         [HarmonyWrapSafe]
         [HarmonyPrefix]
-        private static bool RecieveBytes_Prefix(Il2CppStructArray<byte> bytes, uint size, ulong messagerID)
-        {
+        private static bool RecieveBytes_Prefix(Il2CppStructArray<byte> bytes, uint size, ulong messagerID) {
             if (size < 12) return true;
 
             // The implicit constructor duplicates the memory, so copying it once and using that is best
             byte[] _bytesCpy = bytes;
 
             ushort replicatorKey = BitConverter.ToUInt16(_bytesCpy, 0);
-            if (repKey == replicatorKey)
-            {
+            if (repKey == replicatorKey) {
                 uint receivedMagicKey = BitConverter.ToUInt32(bytes, sizeof(ushort));
-                if (receivedMagicKey != magickey)
-                {
+                if (receivedMagicKey != magickey) {
                     APILogger.Debug($"[Networking] Magic key is incorrect.");
                     return true;
                 }
 
                 byte receivedMsgtype = bytes[sizeof(ushort) + sizeof(uint)];
-                if (receivedMsgtype != msgtype)
-                {
+                if (receivedMsgtype != msgtype) {
                     if (msgtype == 173) return true; // Temporary ignore for kill indicator fix until I make my own networking api
                     APILogger.Debug($"[Networking] msg type is incorrect. {receivedMsgtype} {msgtype}");
                     return true;
@@ -81,8 +71,7 @@ namespace ReplayRecorder
                 byte[] replay = new byte[msgsize];
                 Array.Copy(bytes, sizeof(ushort) + sizeof(uint) + 1 + sizeof(int), replay, 0, msgsize);
 
-                if (SnapshotManager.active == true)
-                {
+                if (SnapshotManager.active == true) {
                     APILogger.Debug("Snapshot manager was still running, assuming end of run and closing...");
                     SnapshotManager.Dispose();
                 }

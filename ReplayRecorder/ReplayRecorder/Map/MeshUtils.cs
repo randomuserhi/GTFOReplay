@@ -1,27 +1,15 @@
-﻿using FluffyUnderware.DevTools.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityStandardAssets.ImageEffects;
-using static Il2CppSystem.Net.Http.Headers.Parser;
+﻿using UnityEngine;
 
-namespace ReplayRecorder.Map
-{
-    public static class MeshUtils
-    {
+namespace ReplayRecorder.Map {
+    internal static class MeshUtils {
         // light class to describe a mesh
-        public class Surface
-        {
+        public class Surface {
             public List<Vector3> vertices = new List<Vector3>();
             public List<int> indices = new List<int>();
 
             public Surface() { }
 
-            public Mesh ToMesh()
-            {
+            public Mesh ToMesh() {
                 Mesh m = new Mesh();
                 m.vertices = vertices.ToArray();
                 m.triangles = indices.ToArray();
@@ -31,42 +19,33 @@ namespace ReplayRecorder.Map
 
         // Union-Find data structure for seperating mesh surfaces
         // https://stackoverflow.com/questions/46383172/disjoint-set-implementation-in-c-sharp
-        private class DisJointSet
-        {
+        private class DisJointSet {
             int[] parents;
             int[] ranks;
-            public DisJointSet(int size)
-            {
+            public DisJointSet(int size) {
                 ranks = new int[size];
                 parents = new int[size];
-                for (int i = 0; i < size; ++i)
-                {
+                for (int i = 0; i < size; ++i) {
                     parents[i] = i;
                 }
             }
 
-            public int Root(int i)
-            {
+            public int Root(int i) {
                 while (i != parents[i]) // If i is not root of tree we set i to its parent until we reach root (parent of all parents)
                     i = parents[i];
                 return i;
             }
 
-            public void Union(int a, int b)
-            {
+            public void Union(int a, int b) {
                 int A = Root(a);
                 int B = Root(b);
                 if (A == B) return;
 
-                if (ranks[A] > ranks[B])
-                {
+                if (ranks[A] > ranks[B]) {
                     parents[B] = A;
-                }
-                else
-                {
+                } else {
                     parents[A] = B;
-                    if (ranks[A] == ranks[B])
-                    {
+                    if (ranks[A] == ranks[B]) {
                         ranks[B]++;
                     }
                 }
@@ -75,11 +54,9 @@ namespace ReplayRecorder.Map
 
         // https://stackoverflow.com/questions/24571624/separating-mesh
         // Seperates a navmesh into different surfaces
-        public static Surface[] SplitNavmesh(Vector3[] vertices, int[] indices)
-        {
+        public static Surface[] SplitNavmesh(Vector3[] vertices, int[] indices) {
             DisJointSet set = new DisJointSet(vertices.Length);
-            for (int i = 0; i < indices.Length;)
-            {
+            for (int i = 0; i < indices.Length;) {
                 // Get triangle
                 int i1 = indices[i++];
                 int i2 = indices[i++];
@@ -92,8 +69,7 @@ namespace ReplayRecorder.Map
             Dictionary<int, int> indexMap = new Dictionary<int, int>();
             Dictionary<int, Surface> surfaces = new Dictionary<int, Surface>();
 
-            for (int i = 0; i < vertices.Length; ++i)
-            {
+            for (int i = 0; i < vertices.Length; ++i) {
                 int root = set.Root(i);
                 if (!surfaces.ContainsKey(root))
                     surfaces.Add(root, new Surface());
@@ -102,8 +78,7 @@ namespace ReplayRecorder.Map
                 surface.vertices.Add(vertices[i]);
             }
 
-            for (int i = 0; i < indices.Length; ++i)
-            {
+            for (int i = 0; i < indices.Length; ++i) {
                 int root = set.Root(indices[i]);
                 Surface surface = surfaces[root];
                 surface.indices.Add(indexMap[indices[i]]);
@@ -112,8 +87,7 @@ namespace ReplayRecorder.Map
             return surfaces.Values.ToArray();
         }
 
-        private static Vector3 ClosestPoint(Vector3 point, Vector3 line1, Vector3 line2)
-        {
+        private static Vector3 ClosestPoint(Vector3 point, Vector3 line1, Vector3 line2) {
             Vector3 dir = (line2 - line1);
             Vector3 v = point - line1;
             float t = Vector3.Dot(v, dir) / Vector3.Dot(dir, dir);
@@ -121,8 +95,7 @@ namespace ReplayRecorder.Map
             else if (t > 1) return line2;
             return line1 + dir * t;
         }
-        private static Vector3 EstimateClosestPoint(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3)
-        {
+        private static Vector3 EstimateClosestPoint(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3) {
             Vector3 planeNormal = Vector3.Cross(tri2 - tri1, tri3 - tri1);
             point = point - Vector3.Dot(planeNormal, point - tri1) * planeNormal;
 
@@ -137,22 +110,17 @@ namespace ReplayRecorder.Map
             float min = Mathf.Min(mag1, mag2);
             min = Mathf.Min(min, mag3);
 
-            if (min == mag1)
-            {
+            if (min == mag1) {
                 return c1;
-            }
-            else if (min == mag2)
-            {
+            } else if (min == mag2) {
                 return c2;
             }
             return c3;
         }
 
-        public static Mesh[] GetNearbyMeshes(Vector3 point, float radius, Mesh[] meshes)
-        {
+        public static Mesh[] GetNearbyMeshes(Vector3 point, float radius, Mesh[] meshes) {
             List<Mesh> nearbyMeshes = new List<Mesh>();
-            for (int i = 0; i < meshes.Length; ++i)
-            {
+            for (int i = 0; i < meshes.Length; ++i) {
                 Mesh mesh = meshes[i];
                 Vector3 C1 = mesh.bounds.min;
                 Vector3 C2 = mesh.bounds.max;
@@ -169,20 +137,17 @@ namespace ReplayRecorder.Map
         }
 
         // TODO(randomuserhi): Optimize using spatial partition / oct tree
-        public static Vector3 EstimateClosestPoint(Vector3 point, Mesh mesh)
-        {
+        public static Vector3 EstimateClosestPoint(Vector3 point, Mesh mesh) {
             Vector3 closest = Vector3.zero;
             float distance = float.MaxValue;
-            for (int i = 0; i < mesh.triangles.Length;)
-            {
+            for (int i = 0; i < mesh.triangles.Length;) {
                 Vector3 tri1 = mesh.vertices[mesh.triangles[i++]];
                 Vector3 tri2 = mesh.vertices[mesh.triangles[i++]];
                 Vector3 tri3 = mesh.vertices[mesh.triangles[i++]];
 
                 Vector3 p = EstimateClosestPoint(point, tri1, tri2, tri3);
                 float dist = (p - point).sqrMagnitude;
-                if (dist < distance)
-                {
+                if (dist < distance) {
                     distance = dist;
                     closest = p;
                 }
@@ -192,8 +157,7 @@ namespace ReplayRecorder.Map
 
         // Merge vertices that are within a threshhold of each other
         // Utilizes Spatial partitioning for performance (size of partition is based on bucketStep)
-        public static (Vector3[], int[]) Weld(Vector3[] vertices, int[] indices, float threshold, float bucketStep = 1.3f)
-        {
+        public static (Vector3[], int[]) Weld(Vector3[] vertices, int[] indices, float threshold, float bucketStep = 1.3f) {
             threshold *= threshold;
 
             List<Vector3> newVertices = new List<Vector3>();
@@ -204,8 +168,7 @@ namespace ReplayRecorder.Map
             // Find AABB
             Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-            for (int i = 0; i < vertices.Length; i++)
-            {
+            for (int i = 0; i < vertices.Length; i++) {
                 if (vertices[i].x < min.x) min.x = vertices[i].x;
                 if (vertices[i].y < min.y) min.y = vertices[i].y;
                 if (vertices[i].z < min.z) min.z = vertices[i].z;
@@ -221,8 +184,7 @@ namespace ReplayRecorder.Map
             List<int>[,,] buckets = new List<int>[bucketSizeX, bucketSizeY, bucketSizeZ];
 
             // Make new vertices
-            for (int i = 0; i < vertices.Length; ++i)
-            {
+            for (int i = 0; i < vertices.Length; ++i) {
                 // Determine which bucket it belongs to
                 int x = Mathf.FloorToInt((vertices[i].x - min.x) / bucketStep);
                 int y = Mathf.FloorToInt((vertices[i].y - min.y) / bucketStep);
@@ -232,11 +194,9 @@ namespace ReplayRecorder.Map
                 if (buckets[x, y, z] == null)
                     buckets[x, y, z] = new List<int>(); // Make buckets lazily
 
-                for (int j = 0; j < buckets[x, y, z].Count; ++j)
-                {
+                for (int j = 0; j < buckets[x, y, z].Count; ++j) {
                     Vector3 to = newVertices[buckets[x, y, z][j]] - vertices[i];
-                    if (to.sqrMagnitude < threshold)
-                    {
+                    if (to.sqrMagnitude < threshold) {
                         indexMap[i] = buckets[x, y, z][j];
                         goto skip; // continue since we have seen this vertex before
                     }
@@ -249,8 +209,7 @@ namespace ReplayRecorder.Map
             skip:;
             }
 
-            for (int i = 0; i < indices.Length; ++i)
-            {
+            for (int i = 0; i < indices.Length; ++i) {
                 newIndices[i] = indexMap[indices[i]];
             }
 

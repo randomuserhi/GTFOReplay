@@ -2,18 +2,14 @@
 using HarmonyLib;
 
 using LevelGeneration;
-using System.Numerics;
 
-namespace ReplayRecorder.Map.Patches
-{
+namespace ReplayRecorder.Map.Patches {
     [HarmonyPatch]
-    class MapDoorPatches
-    {
+    class MapDoorPatches {
         // Maps Unity InstanceID to rDoor
         public static Dictionary<int, Map.rDoor> doors = new Dictionary<int, Map.rDoor>();
 
-        private static void AddDoorToMap(Map.rDoor door, LG_Gate gate)
-        {
+        private static void AddDoorToMap(Map.rDoor door, LG_Gate gate) {
             APILogger.Debug("Added door.");
 
             if (!Map.doors.ContainsKey(gate.DimensionIndex))
@@ -23,11 +19,9 @@ namespace ReplayRecorder.Map.Patches
 
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorStateChange))]
         [HarmonyPostfix]
-        private static void Weak_DoorStateChange(LG_WeakDoor __instance, pDoorState state)
-        {
+        private static void Weak_DoorStateChange(LG_WeakDoor __instance, pDoorState state) {
             int instanceID = __instance.gameObject.GetInstanceID();
-            if (!doors.ContainsKey(instanceID))
-            {
+            if (!doors.ContainsKey(instanceID)) {
                 APILogger.Error("Door does not exist in map data, this should not happen.");
                 return;
             }
@@ -36,11 +30,9 @@ namespace ReplayRecorder.Map.Patches
 
         [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnSyncDoorStatusChange))]
         [HarmonyPostfix]
-        private static void Security_DoorStateChange(LG_SecurityDoor __instance, pDoorState state)
-        {
+        private static void Security_DoorStateChange(LG_SecurityDoor __instance, pDoorState state) {
             int instanceID = __instance.gameObject.GetInstanceID();
-            if (!doors.ContainsKey(instanceID))
-            {
+            if (!doors.ContainsKey(instanceID)) {
                 APILogger.Error("Door does not exist in map data, this should not happen.");
                 return;
             }
@@ -49,11 +41,9 @@ namespace ReplayRecorder.Map.Patches
 
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorGotDamage))]
         [HarmonyPostfix]
-        private static void DoorGotDamage(LG_WeakDoor __instance)
-        {
+        private static void DoorGotDamage(LG_WeakDoor __instance) {
             int instanceID = __instance.gameObject.GetInstanceID();
-            if (!doors.ContainsKey(instanceID))
-            {
+            if (!doors.ContainsKey(instanceID)) {
                 APILogger.Error("Door does not exist in map data, this should not happen.");
                 return;
             }
@@ -62,8 +52,7 @@ namespace ReplayRecorder.Map.Patches
 
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.Setup))]
         [HarmonyPostfix]
-        private static void WeakDoor_Setup(LG_WeakDoor __instance, LG_Gate gate)
-        {
+        private static void WeakDoor_Setup(LG_WeakDoor __instance, LG_Gate gate) {
             int instanceID = __instance.gameObject.GetInstanceID();
 
             Map.rDoor door = new Map.rDoor(__instance.m_healthMax, Map.rDoor.Type.WeakDoor, gate);
@@ -74,8 +63,7 @@ namespace ReplayRecorder.Map.Patches
 
         [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.Setup))]
         [HarmonyPostfix]
-        private static void SecurityDoor_Setup(LG_SecurityDoor __instance, LG_Gate gate)
-        {
+        private static void SecurityDoor_Setup(LG_SecurityDoor __instance, LG_Gate gate) {
             int instanceID = __instance.gameObject.GetInstanceID();
 
             Map.rDoor.Type type = Map.rDoor.Type.SecurityDoor;

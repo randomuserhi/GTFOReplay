@@ -1,37 +1,30 @@
-﻿using API;
-using Agents;
+﻿using Agents;
+using API;
 using Enemies;
 using ReplayRecorder.Enemies.Patches;
 
-namespace ReplayRecorder.Enemies
-{
-    public class rEnemyAgent : ISerializable
-    {
+namespace ReplayRecorder.Enemies {
+    internal class rEnemyAgent : ISerializable {
         public EnemyAgent agent;
         public int instanceID;
 
-        public rEnemyAgent(EnemyAgent agent)
-        {
+        public rEnemyAgent(EnemyAgent agent) {
             this.agent = agent;
             instanceID = agent.GetInstanceID();
         }
 
         public const int SizeOf = sizeof(int);
         private byte[] buffer = new byte[SizeOf];
-        public void Serialize(FileStream fs)
-        {
+        public void Serialize(FileStream fs) {
             int index = 0;
             BitHelper.WriteBytes(instanceID, buffer, ref index);
             fs.Write(buffer);
         }
     }
 
-    public static partial class Enemy
-    {
-        public static rEB_States toRState(EB_States state)
-        {
-            switch (state)
-            {
+    internal static partial class Enemy {
+        public static rEB_States toRState(EB_States state) {
+            switch (state) {
                 case EB_States.Patrolling:
                 case EB_States.Patrolling_Investigate:
                 case EB_States.FollowingGroup:
@@ -64,10 +57,8 @@ namespace ReplayRecorder.Enemies
                     return rEB_States.Hibernating;
             }
         }
-        public static rEB_States toRState(AgentMode state)
-        {
-            switch (state)
-            {
+        public static rEB_States toRState(AgentMode state) {
+            switch (state) {
                 case AgentMode.Scout:
                 case AgentMode.Patrolling:
                     return rEB_States.Patrolling;
@@ -77,45 +68,38 @@ namespace ReplayRecorder.Enemies
                     return rEB_States.Hibernating;
             }
         }
-        public enum rEB_States
-        {
+        public enum rEB_States {
             Hibernating,
             Patrolling,
             InCombat,
             StuckInGlue
         }
 
-        public static rES_States toRState(ES_StateEnum state)
-        {
-            switch (state)
-            {
+        public static rES_States toRState(ES_StateEnum state) {
+            switch (state) {
                 case ES_StateEnum.StuckInGlue:
                     return rES_States.StuckInGlue;
                 default:
                     return rES_States.Default;
             }
         }
-        public enum rES_States
-        {
+        public enum rES_States {
             Default,
             StuckInGlue
         }
 
-        public struct EnemyState : ISerializable
-        {
+        public struct EnemyState : ISerializable {
             private rEnemyAgent enemy;
             private byte state;
 
-            public EnemyState(rEnemyAgent enemy, byte state)
-            {
+            public EnemyState(rEnemyAgent enemy, byte state) {
                 this.enemy = enemy;
                 this.state = state;
             }
 
             public const int SizeOf = sizeof(int) + 1;
             private byte[] buffer = new byte[SizeOf];
-            public void Serialize(FileStream fs)
-            {
+            public void Serialize(FileStream fs) {
                 int index = 0;
                 BitHelper.WriteBytes(enemy.instanceID, buffer, ref index);
                 BitHelper.WriteBytes(state, buffer, ref index);
@@ -123,36 +107,28 @@ namespace ReplayRecorder.Enemies
             }
         }
 
-        public static void BehaviourStateChange(EnemyAgent enemy, rEB_States state)
-        {
+        public static void BehaviourStateChange(EnemyAgent enemy, rEB_States state) {
             int instance = enemy.GetInstanceID();
-            if (enemies.ContainsKey(instance))
-            {
+            if (enemies.ContainsKey(instance)) {
                 APILogger.Debug($"Enemy [{instance}] behaviour state changed to {state}");
                 SnapshotManager.AddEvent(GameplayEvent.Type.EnemyBehaviourChangeState, new EnemyState(enemies[instance], (byte)state));
-            }
-            else APILogger.Error("Can't change state of enemy that was not tracked.");
+            } else APILogger.Error("Can't change state of enemy that was not tracked.");
         }
 
-        public static void LocomotionStateChange(EnemyAgent enemy, rES_States state)
-        {
+        public static void LocomotionStateChange(EnemyAgent enemy, rES_States state) {
             int instance = enemy.GetInstanceID();
-            if (enemies.ContainsKey(instance))
-            {
+            if (enemies.ContainsKey(instance)) {
                 APILogger.Debug($"Enemy [{instance}] locomotion state changed to {state}");
                 SnapshotManager.AddEvent(GameplayEvent.Type.EnemyLocomotionChangeState, new EnemyState(enemies[instance], (byte)state));
-            }
-            else APILogger.Error("Can't change state of enemy that was not tracked.");
+            } else APILogger.Error("Can't change state of enemy that was not tracked.");
         }
 
-        public struct SpawnEnemy : ISerializable
-        {
+        public struct SpawnEnemy : ISerializable {
             private rEnemyAgent enemy;
             private byte type;
             private rEB_States state;
 
-            public SpawnEnemy(rEnemyAgent enemy, AgentMode mode)
-            {
+            public SpawnEnemy(rEnemyAgent enemy, AgentMode mode) {
                 this.enemy = enemy;
                 state = toRState(mode);
                 type = GTFOSpecification.GetEnemyType(enemy.agent.EnemyData.name);
@@ -160,8 +136,7 @@ namespace ReplayRecorder.Enemies
 
             public const int SizeOf = sizeof(int) + 2;
             private byte[] buffer = new byte[SizeOf];
-            public void Serialize(FileStream fs)
-            {
+            public void Serialize(FileStream fs) {
                 int index = 0;
                 BitHelper.WriteBytes(enemy.instanceID, buffer, ref index);
                 BitHelper.WriteBytes((byte)state, buffer, ref index);
@@ -171,8 +146,7 @@ namespace ReplayRecorder.Enemies
         }
 
         public static Dictionary<int, rEnemyAgent> enemies = new Dictionary<int, rEnemyAgent>();
-        public static void OnSpawnEnemy(EnemyAgent enemy, AgentMode mode)
-        {
+        public static void OnSpawnEnemy(EnemyAgent enemy, AgentMode mode) {
             rEnemyAgent rEnemy = new rEnemyAgent(enemy);
             enemies.Add(rEnemy.instanceID, rEnemy);
 
@@ -180,8 +154,7 @@ namespace ReplayRecorder.Enemies
             SnapshotManager.AddEvent(GameplayEvent.Type.SpawnEnemy, new SpawnEnemy(rEnemy, mode));
             SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rEnemy.instanceID, new SnapshotManager.rAgent(enemy)));
         }
-        public static void OnDespawnEnemy(EnemyAgent enemy)
-        {
+        public static void OnDespawnEnemy(EnemyAgent enemy) {
             int instanceID = enemy.GetInstanceID();
             if (!enemies.ContainsKey(instanceID)) return; // enemy may have been removed since it died
             rEnemyAgent rEnemy = enemies[instanceID];
@@ -191,11 +164,9 @@ namespace ReplayRecorder.Enemies
             SnapshotManager.AddEvent(GameplayEvent.Type.DespawnEnemy, rEnemy);
             SnapshotManager.RemoveDynamicObject(instanceID);
         }
-        public static void DeadEnemy(EnemyAgent enemy)
-        {
+        public static void DeadEnemy(EnemyAgent enemy) {
             int instance = enemy.GetInstanceID();
-            if (!enemies.ContainsKey(instance))
-            {
+            if (!enemies.ContainsKey(instance)) {
                 APILogger.Error($"Enemy {instance} was never spawned");
                 return;
             }
@@ -209,8 +180,7 @@ namespace ReplayRecorder.Enemies
             SnapshotManager.RemoveDynamicObject(instance);
         }
 
-        public static void Reset()
-        {
+        public static void Reset() {
             EnemyDetectionPatches.Reset();
 
             enemies.Clear();

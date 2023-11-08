@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using API;
 using HarmonyLib;
-using API;
-using UnityEngine;
 
-namespace ReplayRecorder
-{
+namespace ReplayRecorder {
     [HarmonyPatch]
-    public class GameEventManager
-    {
+    internal class GameEventManager {
         [HarmonyPatch(typeof(RundownManager), nameof(RundownManager.EndGameSession))]
         [HarmonyPrefix]
-        private static void EndGameSession()
-        {
+        private static void EndGameSession() {
             APILogger.Debug($"Level ended!");
 
             SnapshotManager.Dispose();

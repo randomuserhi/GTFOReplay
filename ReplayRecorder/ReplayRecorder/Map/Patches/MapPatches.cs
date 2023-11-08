@@ -3,18 +3,15 @@ using HarmonyLib;
 
 using LevelGeneration;
 
-namespace ReplayRecorder.Map.Patches
-{
+namespace ReplayRecorder.Map.Patches {
     [HarmonyPatch]
-    class MapPatches
-    {
+    class MapPatches {
         // Get number of dimensions that need loading
         public static Il2CppSystem.Collections.Generic.List<Dimension>? dimensions;
-        
+
         [HarmonyPatch(typeof(LG_SetupFloor), nameof(LG_SetupFloor.Build))]
         [HarmonyPostfix]
-        private static void OnSetupFloor(LG_SetupFloor __instance)
-        {
+        private static void OnSetupFloor(LG_SetupFloor __instance) {
             dimensions = __instance.m_floor.m_dimensions;
             dimensionsLoaded = 0;
         }
@@ -23,20 +20,16 @@ namespace ReplayRecorder.Map.Patches
         private static int dimensionsLoaded = 0;
         [HarmonyPatch(typeof(LG_BuildUnityGraphJob), nameof(LG_BuildUnityGraphJob.Build))]
         [HarmonyPostfix]
-        private static void OnNavmeshDone(LG_BuildUnityGraphJob __instance)
-        {
+        private static void OnNavmeshDone(LG_BuildUnityGraphJob __instance) {
             // Check if the navmesh has finished
-            if (__instance.m_dimension.NavmeshOperation.isDone)
-            {
-                if (dimensions == null)
-                {
+            if (__instance.m_dimension.NavmeshOperation.isDone) {
+                if (dimensions == null) {
                     APILogger.Error("No dimensions found, this should not happen.");
                     return;
                 }
 
                 ++dimensionsLoaded; // Update number of dimensions that have finished loading
-                if (dimensionsLoaded == dimensions.Count) 
-                {
+                if (dimensionsLoaded == dimensions.Count) {
                     // When all have finished loading, finalize
                     Map.GenerateMapInfo(dimensions);
                 }

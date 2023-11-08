@@ -2,80 +2,80 @@
 using HarmonyLib;
 using SNetwork;
 
-namespace ReplayRecorder.Player.Patches
-{
+namespace ReplayRecorder.Player.Patches {
     [HarmonyPatch]
-    class PlayerSentryPatches
-    {
+    internal class PlayerSentryPatches {
         [HarmonyPatch(typeof(SentryGunInstance), nameof(SentryGunInstance.OnSpawn))]
         [HarmonyPostfix]
-        private static void OnSpawn(SentryGunInstance __instance, pGearSpawnData spawnData)
-        {
-            if (spawnData.owner.TryGetPlayer(out SNet_Player player))
-            {
+        private static void OnSpawn(SentryGunInstance __instance, pGearSpawnData spawnData) {
+            if (spawnData.owner.TryGetPlayer(out SNet_Player player)) {
                 PlayerSentry.SpawnSentry(player, __instance, spawnData.position);
-            }
-            else APILogger.Error($"Sentry had no player as owner.");
+            } else APILogger.Error($"Sentry had no player as owner.");
         }
 
         [HarmonyPatch(typeof(SentryGunInstance), nameof(SentryGunInstance.OnDespawn))]
         [HarmonyPostfix]
-        private static void OnDespawn(SentryGunInstance __instance)
-        {
+        private static void OnDespawn(SentryGunInstance __instance) {
             PlayerSentry.DespawnSentry(__instance);
         }
 
-        [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
-        [HarmonyPrefix]
-        private static void Prefix_SentryGunFiringBullet(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged)
-        {
+        public static void HelAutoSentryCompatability() {
+            HelSentryFix.SentryFirePatches.anySentryFire_Prefix += _Prefix_SentryGunFire;
+            HelSentryFix.SentryFirePatches.anySentryFire_Postfix += (SentryGunInstance_Firing_Bullets _, bool _, bool _) => {
+                _Postfix_SentryGunFire();
+            };
+        }
+
+        private static void _Prefix_SentryGunFire(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
             if (!doDamage) return;
 
             PlayerSentry.sentryName = __instance.ArchetypeData.PublicName;
             var instance = __instance.GetComponent<SentryGunInstance>();
-            if (instance != null)
-            {
+            if (instance != null) {
                 PlayerSentry.sentryName = instance.PublicName;
-            }
-            else APILogger.Debug($"Could not find sentry gun instance, this should not happen.");
+            } else APILogger.Debug($"Could not find sentry gun instance, this should not happen.");
             PlayerSentry.sentryShot = true;
+        }
+        private static void _Postfix_SentryGunFire() {
+            PlayerSentry.sentryName = null;
+            PlayerSentry.sentryShot = false;
+        }
+
+        [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
+        [HarmonyPrefix]
+        private static void Prefix_SentryGunFiringBullet(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
+            if (Plugin.helSentryFix) return;
+            _Prefix_SentryGunFire(__instance, doDamage, targetIsTagged);
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
         [HarmonyPostfix]
-        private static void Postfix_SentryGunFiringBullet()
-        {
-            PlayerSentry.sentryName = null;
-            PlayerSentry.sentryShot = false;
+        private static void Postfix_SentryGunFiringBullet() {
+            if (Plugin.helSentryFix) return;
+            _Postfix_SentryGunFire();
         }
 
         // Special case for shotgun sentry
         private static bool shotgunSentryShot = false;
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPrefix]
-        private static void Prefix_ShotgunSentryFiring(SentryGunInstance_Firing_Bullets __instance, bool isMaster, bool targetIsTagged)
-        {
+        private static void Prefix_ShotgunSentryFiring(SentryGunInstance_Firing_Bullets __instance, bool isMaster, bool targetIsTagged) {
+            if (Plugin.helSentryFix) return;
+
             if (!isMaster) return;
-
             if (!(Clock.Time > __instance.m_fireBulletTimer)) return;
-            else shotgunSentryShot = true;
 
-            PlayerSentry.sentryName = __instance.ArchetypeData.PublicName;
-            var instance = __instance.GetComponent<SentryGunInstance>();
-            if (instance != null)
-            {
-                PlayerSentry.sentryName = instance.PublicName;
-            }
-            else APILogger.Debug($"Could not find sentry gun instance, this should not happen.");
-            PlayerSentry.sentryShot = true;
+            shotgunSentryShot = true;
+            _Postfix_SentryGunFire();
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPostfix]
-        private static void Postfix_ShotgunSentryFiring()
-        {
+        private static void Postfix_ShotgunSentryFiring() {
+            if (Plugin.helSentryFix) return;
+
             if (!shotgunSentryShot) return;
 
-            PlayerSentry.sentryName = null;
-            PlayerSentry.sentryShot = false;
+            shotgunSentryShot = false;
+            _Postfix_SentryGunFire();
         }
     }
 }

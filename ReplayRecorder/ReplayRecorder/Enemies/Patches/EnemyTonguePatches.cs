@@ -1,17 +1,12 @@
-﻿using API;
-using HarmonyLib;
-using InControl;
+﻿using HarmonyLib;
 
-namespace ReplayRecorder.Enemies.Patches
-{
+namespace ReplayRecorder.Enemies.Patches {
     [HarmonyPatch]
-    public class EnemyTonguePatches
-    {
+    internal class EnemyTonguePatches {
 
         [HarmonyPatch(typeof(MovingEnemyTentacleBase), nameof(MovingEnemyTentacleBase.DoAttack))]
         [HarmonyPostfix]
-        private static void DoAttack(MovingEnemyTentacleBase __instance) 
-        {
+        private static void DoAttack(MovingEnemyTentacleBase __instance) {
             int key = __instance.m_owner.GetInstanceID();
             int instance = __instance.GetInstanceID();
             if (!Enemy.tongueOwners.ContainsKey(key))
@@ -21,10 +16,8 @@ namespace ReplayRecorder.Enemies.Patches
         }
 
         // Allow Enemy.Dead to remove tongue
-        public static void RemoveTongue(int instance)
-        {
-            if (Enemy.tongueOwners.ContainsKey(instance))
-            {
+        public static void RemoveTongue(int instance) {
+            if (Enemy.tongueOwners.ContainsKey(instance)) {
                 foreach (MovingEnemyTentacleBase tongue in Enemy.tongueOwners[instance])
                     Enemy.OnTongueDespawn(tongue.GetInstanceID());
                 Enemy.tongueOwners.Remove(instance);
@@ -37,8 +30,7 @@ namespace ReplayRecorder.Enemies.Patches
         // dodgy.
         [HarmonyPatch(typeof(MovingEnemyTentacleBase), nameof(MovingEnemyTentacleBase.DeAllocateGPUCurvy))]
         [HarmonyPostfix]
-        private static void Deallocate(MovingEnemyTentacleBase __instance)
-        {
+        private static void Deallocate(MovingEnemyTentacleBase __instance) {
             int instance = __instance.GetInstanceID();
             if (Enemy.tongues.ContainsKey(instance) && Enemy.tongueOwners.ContainsKey(Enemy.tongues[instance]))
                 Enemy.tongueOwners[Enemy.tongues[instance]].Remove(__instance);

@@ -1,18 +1,13 @@
-﻿using UnityEngine;
-
+﻿using API;
 using LevelGeneration;
-using API;
+using UnityEngine;
 
-namespace ReplayRecorder.Map
-{
-    public static partial class Map
-    {
-        public class rDoor : ISerializable
-        {
+namespace ReplayRecorder.Map {
+    internal static partial class Map {
+        public class rDoor : ISerializable {
             public static byte _id = 0;
 
-            public enum Type
-            {
+            public enum Type {
                 WeakDoor,
                 SecurityDoor,
                 BulkheadDoor,
@@ -37,12 +32,10 @@ namespace ReplayRecorder.Map
 
             public LG_Gate gate;
 
-            public rDoor(float healthMax, Type type, LG_Gate gate)
-            {
-                if (gate.Type != LG_GateType.Small && 
+            public rDoor(float healthMax, Type type, LG_Gate gate) {
+                if (gate.Type != LG_GateType.Small &&
                     gate.Type != LG_GateType.Medium &&
-                    gate.Type != LG_GateType.Large)
-                {
+                    gate.Type != LG_GateType.Large) {
                     APILogger.Warn($"Weird gate type was created as a door: {gate.Type}");
                 }
 
@@ -63,15 +56,14 @@ namespace ReplayRecorder.Map
 
             public const int SizeOf = 4 + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
             private static byte[] buffer = new byte[SizeOf];
-            public void Serialize(FileStream fs)
-            {
+            public void Serialize(FileStream fs) {
                 /// Format:
                 /// byte => type
                 /// byte => size
                 /// byte => healthMax
                 /// position
                 /// rotation
-                
+
                 int index = 0;
                 BitHelper.WriteBytes(id, buffer, ref index);
                 BitHelper.WriteBytes((byte)type, buffer, ref index);
@@ -85,33 +77,27 @@ namespace ReplayRecorder.Map
             }
         }
 
-        public struct rDoorID : ISerializable
-        {
+        public struct rDoorID : ISerializable {
             public byte id;
 
-            public rDoorID(rDoor door)
-            {
+            public rDoorID(rDoor door) {
                 id = door.id;
             }
 
-            public void Serialize(FileStream fs)
-            {
+            public void Serialize(FileStream fs) {
                 fs.WriteByte(id);
             }
         }
 
         public static Dictionary<eDimensionIndex, List<rDoor>> doors = new Dictionary<eDimensionIndex, List<rDoor>>();
 
-        public struct rDoorState : ISerializable
-        {
+        public struct rDoorState : ISerializable {
             public byte id;
             public byte state;
 
-            public rDoorState(rDoor door, eDoorStatus state)
-            {
+            public rDoorState(rDoor door, eDoorStatus state) {
                 id = door.id;
-                switch (state)
-                {
+                switch (state) {
                     case eDoorStatus.Open:
                         this.state = 1;
                         break;
@@ -127,20 +113,17 @@ namespace ReplayRecorder.Map
                 }
             }
 
-            public void Serialize(FileStream fs)
-            {
-                fs.WriteByte(id); 
+            public void Serialize(FileStream fs) {
+                fs.WriteByte(id);
                 fs.WriteByte(state);
             }
         }
 
-        public static void OnDoorStateChange(rDoor door, eDoorStatus state)
-        {
+        public static void OnDoorStateChange(rDoor door, eDoorStatus state) {
             SnapshotManager.AddEvent(GameplayEvent.Type.DoorChangeState, new rDoorState(door, state));
         }
 
-        public static void OnDoorDamage(rDoor door)
-        {
+        public static void OnDoorDamage(rDoor door) {
             SnapshotManager.AddEvent(GameplayEvent.Type.DoorDamage, new rDoorID(door));
         }
     }
