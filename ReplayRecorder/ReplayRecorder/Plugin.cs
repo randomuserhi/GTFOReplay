@@ -13,8 +13,6 @@ namespace ReplayRecorder;
 [BepInDependency(BetterChat.Module.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency(HelSentryFix.Module.GUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BasePlugin {
-    public static bool helSentryFix = false;
-
     public override void Load() {
         APILogger.Log("Plugin is loaded!");
         harmony = new Harmony(Module.GUID);
@@ -27,8 +25,6 @@ public class Plugin : BasePlugin {
         }
         if (IL2CPPChainloader.Instance.Plugins.TryGetValue(HelSentryFix.Module.GUID, out _)) {
             APILogger.Log("HelAutoSentry is installed, using compatability patches.");
-
-            helSentryFix = true;
             PlayerSentryPatches.HelAutoSentryCompatability();
         }
 

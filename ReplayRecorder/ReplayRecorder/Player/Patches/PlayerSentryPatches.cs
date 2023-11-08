@@ -19,13 +19,14 @@ namespace ReplayRecorder.Player.Patches {
             PlayerSentry.DespawnSentry(__instance);
         }
 
+        private static bool helSentryFixInstalled = false;
         public static void HelAutoSentryCompatability() {
+            helSentryFixInstalled = true;
             HelSentryFix.SentryFirePatches.anySentryFire_Prefix += _Prefix_SentryGunFire;
             HelSentryFix.SentryFirePatches.anySentryFire_Postfix += (SentryGunInstance_Firing_Bullets _, bool _, bool _) => {
                 _Postfix_SentryGunFire();
             };
         }
-
         private static void _Prefix_SentryGunFire(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
             if (!doDamage) return;
 
@@ -44,13 +45,13 @@ namespace ReplayRecorder.Player.Patches {
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
         [HarmonyPrefix]
         private static void Prefix_SentryGunFiringBullet(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
-            if (Plugin.helSentryFix) return;
+            if (helSentryFixInstalled) return;
             _Prefix_SentryGunFire(__instance, doDamage, targetIsTagged);
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
         [HarmonyPostfix]
         private static void Postfix_SentryGunFiringBullet() {
-            if (Plugin.helSentryFix) return;
+            if (helSentryFixInstalled) return;
             _Postfix_SentryGunFire();
         }
 
@@ -59,7 +60,7 @@ namespace ReplayRecorder.Player.Patches {
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPrefix]
         private static void Prefix_ShotgunSentryFiring(SentryGunInstance_Firing_Bullets __instance, bool isMaster, bool targetIsTagged) {
-            if (Plugin.helSentryFix) return;
+            if (helSentryFixInstalled) return;
 
             if (!isMaster) return;
             if (!(Clock.Time > __instance.m_fireBulletTimer)) return;
@@ -70,7 +71,7 @@ namespace ReplayRecorder.Player.Patches {
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPostfix]
         private static void Postfix_ShotgunSentryFiring() {
-            if (Plugin.helSentryFix) return;
+            if (helSentryFixInstalled) return;
 
             if (!shotgunSentryShot) return;
 
