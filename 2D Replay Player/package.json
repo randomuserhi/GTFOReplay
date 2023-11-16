@@ -17,7 +17,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/mathjax": "^0.0.39",
-    "@types/three": "^0.158.2",
     "copyfiles": "^2.4.1",
     "del-cli": "^5.1.0",
     "typescript": "^5.0.4"

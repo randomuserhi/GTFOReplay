@@ -18,11 +18,6 @@ declare namespace Molecules {
         prevT: number;
         timescale: number;
 
-        // Three.js properties
-        renderer: THREE.WebGLRenderer;
-        scene: THREE.Scene;
-        camera: THREE.OrthographicCamera;
-
         render: (t: number) => void;
     }
 }
@@ -44,25 +39,9 @@ RHU.module(new Error(), "components/molecules/replayPlayer", {
                 const height = parseInt(computed.height);
                 this.canvas.width = width;
                 this.canvas.height = height;
-
-                this.camera.left = width / -2; 
-                this.camera.right = width / 2;
-                this.camera.top = height / 2;
-                this.camera.bottom = height / -2;
-                this.camera.updateProjectionMatrix()
-                this.renderer.setSize(width, height, false);
             };
             window.addEventListener("resize", resize);
             this.addEventListener("mount", resize);
-
-            this.scene = new THREE.Scene();
-            this.scene.background = new THREE.Color(0xffffff);
-            
-            const width = this.canvas.width;
-            const height = this.canvas.height;
-            this.camera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 1000);
-            
-            this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
 
             this.render(0);
         } as RHU.Macro.Constructor<Molecules.ReplayPlayer>;
@@ -71,7 +50,6 @@ RHU.module(new Error(), "components/molecules/replayPlayer", {
             let delta = (t - this.prevT) * this.timescale;
             this.prevT = t;
             
-            this.renderer.render(this.scene, this.camera);
             requestAnimationFrame((t) => this.render(t));
         }
 
