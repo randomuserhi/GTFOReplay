@@ -14,9 +14,16 @@ declare namespace Molecules {
     interface ReplayPlayer extends HTMLDivElement {
         canvas: HTMLCanvasElement;
 
+        // Time related properties
+        prevT: number;
+        timescale: number;
+
+        // Three.js properties
         renderer: THREE.WebGLRenderer;
         scene: THREE.Scene;
         camera: THREE.OrthographicCamera;
+
+        render: (t: number) => void;
     }
 }
 
@@ -31,15 +38,6 @@ RHU.module(new Error(), "components/molecules/replayPlayer", {
 }) {
     const replayPlayer = Macro((() => {
         const replayPlayer = function(this: Molecules.ReplayPlayer) {
-            this.scene = new THREE.Scene();
-            this.scene.background = new THREE.Color(0xffffff);
-            
-            const width = this.canvas.width;
-            const height = this.canvas.height;
-            this.camera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 1000);
-            
-            this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
-
             const resize = () => {
                 const computed = getComputedStyle(this.canvas);
                 const width = parseInt(computed.width);
@@ -57,12 +55,25 @@ RHU.module(new Error(), "components/molecules/replayPlayer", {
             window.addEventListener("resize", resize);
             this.addEventListener("mount", resize);
 
-            let update = () => {
-                this.renderer.render(this.scene, this.camera);
-                requestAnimationFrame(update);
-            };
-            update();
+            this.scene = new THREE.Scene();
+            this.scene.background = new THREE.Color(0xffffff);
+            
+            const width = this.canvas.width;
+            const height = this.canvas.height;
+            this.camera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 1000);
+            
+            this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+
+            this.render(0);
         } as RHU.Macro.Constructor<Molecules.ReplayPlayer>;
+
+        replayPlayer.prototype.render = function(t) {
+            let delta = (t - this.prevT) * this.timescale;
+            this.prevT = t;
+            
+            this.renderer.render(this.scene, this.camera);
+            requestAnimationFrame((t) => this.render(t));
+        }
 
         return replayPlayer;
     })(), "molecules/replayPlayer", //html
