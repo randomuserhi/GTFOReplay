@@ -1,0 +1,25 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "transpile": "tsc",
+    "copy-files": "copyfiles -u 1 -e src/**/*.ts src/**/* build/",
+    "copy-assets": "copyfiles -u 1 assets/**/*.* build/",
+    "copy-js3party": "del-cli build/js3party/**/* && copyfiles -u 1 js3party/**/*.* build/js3party/",
+    "build": "del-cli build/**/* !build/js3party && npm run transpile && npm run copy-files && npm run copy-assets"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomuserhi/Enter-the-Deep.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/mathjax": "^0.0.39",
+    "@types/three": "^0.152.1",
+    "copyfiles": "^2.4.1",
+    "del-cli": "^5.1.0",
+    "typescript": "^5.0.4"
+  }
+}

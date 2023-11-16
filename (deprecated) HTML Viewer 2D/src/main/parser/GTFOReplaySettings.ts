@@ -16,5 +16,5 @@ let GTFOReplaySettings: GTFOReplaySettings = {
     crossLingerTime: 1000,
     hitLingerTime: 200,
     alertLingerTime: 1500,
-    screamLingerTime: 2000
+    screamLingerTime: 1500
 }
