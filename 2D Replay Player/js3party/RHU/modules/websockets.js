@@ -43,7 +43,7 @@
                 throw new TypeError("WebSocket must be inherited from or of type 'WebSocket'.");
             let construct = function (...args) {
                 this.args = args;
-                eventTarget.call(this);
+                eventTarget(this);
                 let params = {
                     url: "",
                     protocols: []
