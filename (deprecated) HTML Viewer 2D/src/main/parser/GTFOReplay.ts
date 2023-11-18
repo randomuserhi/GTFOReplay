@@ -692,6 +692,23 @@ interface GTFOReplayConstructor
                 }
             };
         },
+        "enemyTargetSet": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventEnemyTargetSet = {
+                instance: BitHelper.readInt(bytes, reader),
+                slot: BitHelper.readByte(bytes, reader)
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "enemyTargetSet",
+                    detail: e
+                }
+            };
+        }
     };
 
     let dynamicPropParseMap: Record<GTFODynamicPropType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {
@@ -763,14 +780,20 @@ interface GTFOReplayConstructor
             for (let i = 0; i < nEvents; ++i)
             {
                 // type of event
-                let type = eventMap[BitHelper.readByte(bytes, reader)];
+                let typeId = BitHelper.readByte(bytes, reader);
+                let type = eventMap[typeId];
                 let rel = BitHelper.readUShort(bytes, reader); // relative time to last tick
                 let timestamp = now - rel;
 
-                let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
-                parser.do(t);
-                cache.do(t);
-                this.timeline.push(t);
+                try {
+                    let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
+                    parser.do(t);
+                    cache.do(t);
+                    this.timeline.push(t);
+                } catch (e) {
+                    console.error(`${typeId} [${type}]`);
+                    throw e;
+                }
             }
 
             // Add EVENTSECTION marker

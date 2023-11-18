@@ -35,5 +35,12 @@ namespace ReplayRecorder.Map.Patches {
                 }
             }
         }
+
+        // Write map data once all loaded (elevator ride stops when level is finished loading)
+        [HarmonyPatch(typeof(GS_ReadyToStopElevatorRide), nameof(GS_ReadyToStopElevatorRide.Enter))]
+        [HarmonyPostfix]
+        private static void StopElevatorRide() {
+            Map.InitAndSaveMap();
+        }
     }
 }

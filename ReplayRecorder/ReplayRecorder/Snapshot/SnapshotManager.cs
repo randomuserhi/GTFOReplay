@@ -76,7 +76,9 @@ namespace ReplayRecorder {
             DespawnGlue,
 
             EnemyAlerted,
-            EnemyScreamed
+            EnemyScreamed,
+
+            EnemyTargetSet,
         }
 
         public long timestamp;

@@ -121,6 +121,7 @@ interface GTFOEventMap
     "despawnGlue": GTFOEventGlueDespawn;
     "enemyAlerted": GTFOEventEnemyAlerted;
     "enemyScreamed": GTFOEventEnemyScreamed;
+    "enemyTargetSet": GTFOEventEnemyTargetSet;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -161,7 +162,8 @@ let eventMap: GTFOEventType[] = [
     "spawnGlue",
     "despawnGlue",
     "enemyAlerted",
-    "enemyScreamed"
+    "enemyScreamed",
+    "enemyTargetSet"
 ];
 
 interface Window
@@ -356,6 +358,11 @@ interface GTFOEventEnemyScreamed
 {
     instance: number;
     scout: boolean;
+}
+interface GTFOEventEnemyTargetSet
+{
+    instance: number;
+    slot: number;
 }
 
 interface GTFODynamicPropMap

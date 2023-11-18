@@ -320,6 +320,52 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.restore();
             }
 
+            // Draw ladders
+            for (let ladder of map.ladders)
+            {
+                this.ctx.save();
+
+                let q1: Quaternion = ladder.rotation;
+                let euler: Vector = {x: 0, y: 0, z: 0};
+                let sqw = q1.w*q1.w;
+                let sqx = q1.x*q1.x;
+                let sqy = q1.y*q1.y;
+                let sqz = q1.z*q1.z;
+                let unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+                let test = q1.x*q1.y + q1.z*q1.w;
+                if (test > 0.499*unit) 
+                { // singularity at north pole
+                    euler.y = 2 * Math.atan2(q1.x,q1.w);
+                    euler.x = Math.PI/2;
+                    euler.z = 0;
+                }
+                else if (test < -0.499*unit) 
+                { // singularity at south pole
+                    euler.y = -2 * Math.atan2(q1.x,q1.w);
+                    euler.x = -Math.PI/2;
+                    euler.z = 0;
+                }
+                else
+                {
+                    euler.y = Math.atan2(2*q1.y*q1.w-2*q1.x*q1.z , sqx - sqy - sqz + sqw);
+                    euler.x = Math.asin(2*test/unit);
+                    euler.z = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw);
+                }
+
+                this.ctx.translate(ladder.top.x, -ladder.top.z);
+                this.ctx.rotate(euler.y);
+
+                const width = 40;
+                const height = 15;
+            
+                this.ctx.fillStyle = "rgba(151, 170, 148, 1)";
+                this.ctx.fillRect(-width / 2, -height / 4, width, height / 2);
+                this.ctx.fillStyle = "rgba(151, 170, 148, 1)";
+                this.ctx.fillRect(-width / 2, -height / 2, 10, height);
+                this.ctx.fillRect(width / 2 - 10, -height / 2, 10, height);
+                this.ctx.restore();
+            }
+
             // Draw mines
             let mines = [...snapshot.mines.values()].filter(m => m.dimensionIndex === dimension.index);
             for (let mine of mines)
@@ -828,6 +874,28 @@ RHU.import(RHU.module({ trace: new Error(),
                     this.ctx.lineWidth = 2;
                     this.ctx.strokeStyle = "#ffffff";
                     this.ctx.stroke();
+
+                    // draw targetting
+                    if (snapshot.enemies.has(instance))
+                    {
+                        let enemy = snapshot.enemies.get(instance)!;
+                        if (enemy.behaviourState === "InCombat") {
+                            if (RHU.exists(enemy.target)) {
+                                this.ctx.beginPath();
+                                this.ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                                let colors: string[] = [
+                                    "194, 31, 78",
+                                    "24, 147, 94",
+                                    "32, 85, 140",
+                                    "122, 26, 142"
+                                ];
+                                this.ctx.fillStyle = `rgba(${colors[enemy.target]},1)`;
+                                this.ctx.strokeStyle = "white";
+                                this.ctx.stroke();
+                                this.ctx.fill();
+                            }
+                        }
+                    }
                 }
 
                 // TODO(randomuserhi): Clean this up with the above code

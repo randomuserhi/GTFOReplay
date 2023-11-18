@@ -33,6 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="HeavyItem\Patches\" />
 	  <Folder Include="Snapshot\Events\" />
 	</ItemGroup>
 

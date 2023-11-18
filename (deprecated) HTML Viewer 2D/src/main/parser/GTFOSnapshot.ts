@@ -737,6 +737,20 @@ interface GTFOSnapshotConstructor
                 });
             }
             else throw ReferenceError("enemy does not exist.");
+        },
+        "enemyTargetSet": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventEnemyTargetSet;
+            if (snapshot.enemies.has(e.instance))
+            {
+                let enemy = snapshot.enemies.get(e.instance)!;
+                if (e.slot != 255) {
+                    enemy.target = e.slot;
+                } else {
+                    enemy.target = undefined;
+                }
+            }
+            else throw ReferenceError("enemy does not exist.");
         }
     };
 

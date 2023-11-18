@@ -17,8 +17,21 @@ namespace ReplayRecorder.Enemies.Patches {
                 return;
             }
 
-            Enemy.rEB_States rState = Enemy.toRState(state);
-            if (Enemy.toRState(__instance.m_currentStateName) != rState) {
+            if (SNetwork.SNet.IsMaster) {
+                Enemy.rEB_States rState = Enemy.toRState(state);
+                if (Enemy.toRState(__instance.m_currentStateName) != rState) {
+                    Enemy.BehaviourStateChange(__instance.m_ai.m_enemyAgent, rState);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.IncomingState))]
+        [HarmonyPrefix]
+        private static void Behaviour_ChangeStateSync(EnemySync __instance, EnemySync.pEnemyStateData data) {
+            if (SNetwork.SNet.IsMaster) return;
+
+            Enemy.rEB_States rState = Enemy.toRState(data.behaviourState);
+            if (Enemy.toRState(__instance.m_ai.m_behaviour.m_currentStateName) != rState) {
                 Enemy.BehaviourStateChange(__instance.m_ai.m_enemyAgent, rState);
             }
         }

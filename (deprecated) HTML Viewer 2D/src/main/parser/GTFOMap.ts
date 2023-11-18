@@ -14,12 +14,13 @@ interface GTFOMap
 {
     surfaces: GTFOSurface[];
     doors: GTFODoor[];
+    ladders: GTFOLadder[];
     
     meshes: Mesh[];
 }
 interface GTFOMapConstructor
 {
-    new(meshes: Mesh[], doors: GTFODoor[]): GTFOMap;
+    new(meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[]): GTFOMap;
     prototype: GTFOMap;
 
     parse(bytes: DataView, reader: Reader): GTFOMap;
@@ -72,10 +73,11 @@ interface GTFOMapConstructor
         return { canvas: canvas, position: { x: min.x * scale, y: min.y * scale, z: 0 } };
     };
 
-    let GTFOMap: GTFOMapConstructor = window.GTFOMap = function(this: GTFOMap, meshes: Mesh[], doors: GTFODoor[])
+    let GTFOMap: GTFOMapConstructor = window.GTFOMap = function(this: GTFOMap, meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[])
     {
         this.meshes = meshes;
         this.doors = doors;
+        this.ladders = ladders;
 
         this.surfaces = [];
         for (let i = 0; i < this.meshes.length; ++i)
@@ -88,7 +90,9 @@ interface GTFOMapConstructor
 
     GTFOMap.parse = function(bytes: DataView, reader: Reader): GTFOMap
     {
+        console.log("loading map...");
         let nSurfaces = BitHelper.readUShort(bytes, reader); // number of surfaces
+        console.log(`Found ${nSurfaces} surfaces.`);
         let meshes: Mesh[] = new Array(nSurfaces);
 
         // For debugging only read 1 dimension
@@ -104,13 +108,25 @@ interface GTFOMapConstructor
 
         // doors
         let nDoors = BitHelper.readUShort(bytes, reader);
+        console.log(`Found ${nDoors} doors.`);
         let doors: GTFODoor[] = new Array(nDoors);
         for (let i = 0; i < nDoors; ++i) 
         {
             let d = GTFODoor.parse(bytes, reader);
             doors[d.id] = d;
         }
-        return new GTFOMap(meshes, doors);
+
+        // ladders
+        let nLadders = BitHelper.readUShort(bytes, reader);
+        console.log(`Found ${nLadders} ladders.`);
+        let ladders: GTFOLadder[] = new Array(nLadders);
+        for (let i = 0; i < nLadders; ++i) 
+        {
+            let l = GTFOLadder.parse(bytes, reader);
+            ladders[l.id] = l;
+        }
+
+        return new GTFOMap(meshes, doors, ladders);
     }
 
 })();

@@ -235,7 +235,7 @@ namespace ReplayRecorder.Map {
         }
 
         public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions) {
-            APILogger.Debug($"Saving individual dimensions...");
+            APILogger.Debug($"Generating map navmesh...");
 
             for (int i = 0; i < dimensions.Count; ++i) {
                 // Clear navmesh
@@ -275,8 +275,6 @@ namespace ReplayRecorder.Map {
                     APILogger.Debug($"from: zone {door.from.zone} area {door.from.area}");*/
                 }
             }
-
-            InitAndSaveMap();
         }
 
         // Open filestream and Save the map to replay file
@@ -295,6 +293,7 @@ namespace ReplayRecorder.Map {
             }
 
             // Write map info...
+            APILogger.Debug("Writing map data...");
             byte[] buffer = new byte[100];
             SnapshotManager.fs.WriteByte((byte)map.Count); // Write number of dimensions
             foreach (rMap m in map.Values) {
@@ -304,14 +303,31 @@ namespace ReplayRecorder.Map {
                 // Serialize doors for the given map
                 int index = 0;
                 if (!doors.ContainsKey(m.dimension)) {
+                    APILogger.Debug($"Serializing 0 doors.");
                     BitHelper.WriteBytes((ushort)0, buffer, ref index);
                     SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 doors present
-                    continue;
+                } else {
+                    APILogger.Debug($"Serializing {doors[m.dimension].Count} doors.");
+                    BitHelper.WriteBytes((ushort)doors[m.dimension].Count, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of doors
+                    foreach (rDoor d in doors[m.dimension]) {
+                        d.Serialize(SnapshotManager.fs);
+                    }
                 }
-                BitHelper.WriteBytes((ushort)doors[m.dimension].Count, buffer, ref index);
-                SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of doors
-                foreach (rDoor d in doors[m.dimension]) {
-                    d.Serialize(SnapshotManager.fs);
+
+                // Serialize ladders for the given map
+                index = 0;
+                if (!ladders.ContainsKey(m.dimension)) {
+                    APILogger.Debug($"Serializing 0 ladders.");
+                    BitHelper.WriteBytes((ushort)0, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 ladders present
+                } else {
+                    APILogger.Debug($"Serializing {ladders[m.dimension].Count} ladders.");
+                    BitHelper.WriteBytes((ushort)ladders[m.dimension].Count, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of ladders
+                    foreach (rLadder l in ladders[m.dimension]) {
+                        l.Serialize(SnapshotManager.fs);
+                    }
                 }
 
                 // Serialize -- for the given map
@@ -332,6 +348,8 @@ namespace ReplayRecorder.Map {
             MapPatches.dimensions = null;
 
             doors.Clear();
+            ladders.Clear();
+            rLadder._id = 0;
             rDoor._id = 0; // reset ids
             MapDoorPatches.doors.Clear();
         }
