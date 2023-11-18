@@ -158,7 +158,7 @@ RHU.import(RHU.module({ trace: new Error(),
                     e.preventDefault();
 
                     let scale = this.camera.scale;
-                    this.camera.scale -= e.deltaY * 0.002;
+                    this.camera.scale -= e.deltaY * 0.002 * this.camera.scale;
                     if (this.camera.scale < 0.01)
                     this.camera.scale = 0.01;
 
