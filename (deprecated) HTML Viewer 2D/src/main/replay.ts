@@ -249,7 +249,7 @@ RHU.import(RHU.module({ trace: new Error(),
             // Draw snapshot => perhaps move to a seperate function
 
             // Draw doors
-            for (let door of map.doors)
+            for (let door of map.doors.values())
             {
                 this.ctx.save();
 
@@ -321,7 +321,7 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw ladders
-            for (let ladder of map.ladders)
+            for (let ladder of map.ladders.values())
             {
                 this.ctx.save();
 
@@ -363,6 +363,54 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.fillStyle = "rgba(151, 170, 148, 1)";
                 this.ctx.fillRect(-width / 2, -height / 2, 10, height);
                 this.ctx.fillRect(width / 2 - 10, -height / 2, 10, height);
+                this.ctx.restore();
+            }
+
+            // Draw Terminals
+            for (let terminal of map.terminals.values())
+            {
+                this.ctx.save();
+
+                let q1: Quaternion = terminal.rotation;
+                let euler: Vector = {x: 0, y: 0, z: 0};
+                let sqw = q1.w*q1.w;
+                let sqx = q1.x*q1.x;
+                let sqy = q1.y*q1.y;
+                let sqz = q1.z*q1.z;
+                let unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+                let test = q1.x*q1.y + q1.z*q1.w;
+                if (test > 0.499*unit) 
+                { // singularity at north pole
+                    euler.y = 2 * Math.atan2(q1.x,q1.w);
+                    euler.x = Math.PI/2;
+                    euler.z = 0;
+                }
+                else if (test < -0.499*unit) 
+                { // singularity at south pole
+                    euler.y = -2 * Math.atan2(q1.x,q1.w);
+                    euler.x = -Math.PI/2;
+                    euler.z = 0;
+                }
+                else
+                {
+                    euler.y = Math.atan2(2*q1.y*q1.w-2*q1.x*q1.z , sqx - sqy - sqz + sqw);
+                    euler.x = Math.asin(2*test/unit);
+                    euler.z = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw);
+                }
+
+                this.ctx.translate(terminal.position.x, -terminal.position.z);
+                this.ctx.rotate(euler.y);
+
+                const width = 40;
+                const height = 40;
+            
+                this.ctx.fillStyle = "rgba(151, 170, 148, 0.5)";
+                this.ctx.strokeStyle = "rgba(151, 170, 148, 1)";
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                this.ctx.rect(-width / 2, -height / 2, width, height);
+                this.ctx.stroke();
+                this.ctx.fill();
                 this.ctx.restore();
             }
 

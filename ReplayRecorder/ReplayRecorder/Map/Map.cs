@@ -330,6 +330,21 @@ namespace ReplayRecorder.Map {
                     }
                 }
 
+                // Serialize terminals for the given map
+                index = 0;
+                if (!terminals.ContainsKey(m.dimension)) {
+                    APILogger.Debug($"Serializing 0 terminals.");
+                    BitHelper.WriteBytes((ushort)0, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 terminals present
+                } else {
+                    APILogger.Debug($"Serializing {terminals[m.dimension].Count} terminals.");
+                    BitHelper.WriteBytes((ushort)terminals[m.dimension].Count, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of terminals
+                    foreach (rTerminal t in terminals[m.dimension]) {
+                        t.Serialize(SnapshotManager.fs);
+                    }
+                }
+
                 // Serialize -- for the given map
                 index = 0;
                 //...
@@ -348,10 +363,14 @@ namespace ReplayRecorder.Map {
             MapPatches.dimensions = null;
 
             doors.Clear();
+            rDoor._id = 0;
+            MapDoorPatches.doors.Clear();
+
             ladders.Clear();
             rLadder._id = 0;
-            rDoor._id = 0; // reset ids
-            MapDoorPatches.doors.Clear();
+
+            terminals.Clear();
+            rTerminal._id = 0;
         }
     }
 }

@@ -13,14 +13,15 @@ interface GTFOSurface
 interface GTFOMap
 {
     surfaces: GTFOSurface[];
-    doors: GTFODoor[];
-    ladders: GTFOLadder[];
+    doors: Map<number, GTFODoor>;
+    ladders: Map<number, GTFOLadder>;
+    terminals: Map<number, GTFOTerminal>;
     
     meshes: Mesh[];
 }
 interface GTFOMapConstructor
 {
-    new(meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[]): GTFOMap;
+    new(meshes: Mesh[], doors: Map<number, GTFODoor>, ladders: Map<number, GTFOLadder>, terminals: Map<number, GTFOTerminal>): GTFOMap;
     prototype: GTFOMap;
 
     parse(bytes: DataView, reader: Reader): GTFOMap;
@@ -73,11 +74,12 @@ interface GTFOMapConstructor
         return { canvas: canvas, position: { x: min.x * scale, y: min.y * scale, z: 0 } };
     };
 
-    let GTFOMap: GTFOMapConstructor = window.GTFOMap = function(this: GTFOMap, meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[])
+    let GTFOMap: GTFOMapConstructor = window.GTFOMap = function(this: GTFOMap, meshes: Mesh[], doors: Map<number, GTFODoor>, ladders: Map<number, GTFOLadder>, terminals: Map<number, GTFOTerminal>)
     {
         this.meshes = meshes;
         this.doors = doors;
         this.ladders = ladders;
+        this.terminals = terminals;
 
         this.surfaces = [];
         for (let i = 0; i < this.meshes.length; ++i)
@@ -109,24 +111,34 @@ interface GTFOMapConstructor
         // doors
         let nDoors = BitHelper.readUShort(bytes, reader);
         console.log(`Found ${nDoors} doors.`);
-        let doors: GTFODoor[] = new Array(nDoors);
+        let doors: Map<number, GTFODoor> = new Map();
         for (let i = 0; i < nDoors; ++i) 
         {
             let d = GTFODoor.parse(bytes, reader);
-            doors[d.id] = d;
+            doors.set(d.id, d);
         }
 
         // ladders
         let nLadders = BitHelper.readUShort(bytes, reader);
         console.log(`Found ${nLadders} ladders.`);
-        let ladders: GTFOLadder[] = new Array(nLadders);
+        let ladders: Map<number, GTFOLadder> = new Map();
         for (let i = 0; i < nLadders; ++i) 
         {
             let l = GTFOLadder.parse(bytes, reader);
-            ladders[l.id] = l;
+            ladders.set(l.id, l);
         }
 
-        return new GTFOMap(meshes, doors, ladders);
+        // terminals
+        let nTerminals = BitHelper.readUShort(bytes, reader);
+        console.log(`Found ${nTerminals} terminals.`);
+        let terminals: Map<number, GTFOTerminal> = new Map();
+        for (let i = 0; i < nTerminals; ++i) 
+        {
+            let t = GTFOTerminal.parse(bytes, reader);
+            terminals.set(t.id, t);
+        }
+
+        return new GTFOMap(meshes, doors, ladders, terminals);
     }
 
 })();
