@@ -249,7 +249,7 @@ RHU.import(RHU.module({ trace: new Error(),
             // Draw snapshot => perhaps move to a seperate function
 
             // Draw doors
-            for (let door of map.doors.values())
+            for (let door of map.doors)
             {
                 this.ctx.save();
 
@@ -321,7 +321,7 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw ladders
-            for (let ladder of map.ladders.values())
+            for (let ladder of map.ladders)
             {
                 this.ctx.save();
 
@@ -367,7 +367,7 @@ RHU.import(RHU.module({ trace: new Error(),
             }
 
             // Draw Terminals
-            for (let terminal of map.terminals.values())
+            for (let terminal of map.terminals)
             {
                 this.ctx.save();
 
