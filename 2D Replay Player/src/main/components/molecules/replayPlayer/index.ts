@@ -14,6 +14,9 @@ declare namespace Molecules {
     interface ReplayPlayer extends HTMLDivElement {
         canvas: HTMLCanvasElement;
 
+        // webgl
+        gl: gl;
+
         // Time related properties
         prevT: number;
         timescale: number;
@@ -22,14 +25,12 @@ declare namespace Molecules {
     }
 }
 
-interface GlobalEventHandlersEventMap {
-    "view": CustomEvent<{ target: unknown }>;
-}
-
 RHU.module(new Error(), "components/molecules/replayPlayer", { 
     Macro: "rhu/macro", style: "components/molecules/replayPlayer/style",
+    gl: "webgl2"
 }, function({ 
     Macro, style,
+    gl
 }) {
     const replayPlayer = Macro((() => {
         const replayPlayer = function(this: Molecules.ReplayPlayer) {
@@ -42,6 +43,14 @@ RHU.module(new Error(), "components/molecules/replayPlayer", {
             };
             window.addEventListener("resize", resize);
             this.addEventListener("mount", resize);
+
+            const _gl = this.canvas.getContext("webgl2");
+            if (_gl) {
+                this.gl = new gl(_gl);
+            } else {
+                // TODO(randomuserhi): no web gl support
+                throw new Error("No webgl support.");
+            }
 
             this.render(0);
         } as RHU.Macro.Constructor<Molecules.ReplayPlayer>;
