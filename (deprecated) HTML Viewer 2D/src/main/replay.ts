@@ -414,6 +414,62 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.restore();
             }
 
+            // Draw Resource Containers
+            for (let container of map.containers)
+            {
+                this.ctx.save();
+
+                let q1: Quaternion = container.rotation;
+                let euler: Vector = {x: 0, y: 0, z: 0};
+                let sqw = q1.w*q1.w;
+                let sqx = q1.x*q1.x;
+                let sqy = q1.y*q1.y;
+                let sqz = q1.z*q1.z;
+                let unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+                let test = q1.x*q1.y + q1.z*q1.w;
+                if (test > 0.499*unit) 
+                { // singularity at north pole
+                    euler.y = 2 * Math.atan2(q1.x,q1.w);
+                    euler.x = Math.PI/2;
+                    euler.z = 0;
+                }
+                else if (test < -0.499*unit) 
+                { // singularity at south pole
+                    euler.y = -2 * Math.atan2(q1.x,q1.w);
+                    euler.x = -Math.PI/2;
+                    euler.z = 0;
+                }
+                else
+                {
+                    euler.y = Math.atan2(2*q1.y*q1.w-2*q1.x*q1.z , sqx - sqy - sqz + sqw);
+                    euler.x = Math.asin(2*test/unit);
+                    euler.z = Math.atan2(2*q1.x*q1.w-2*q1.y*q1.z , -sqx + sqy - sqz + sqw);
+                }
+
+                this.ctx.translate(container.position.x, -container.position.z);
+                this.ctx.rotate(euler.y);
+
+                const width = 30;
+                const height = 20;
+            
+                const state: string = "closed";
+                switch (state)
+                {
+                    case "open":
+                        this.ctx.fillStyle = "rgba(197, 112, 0, 0.5)";
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                        this.ctx.fillStyle = "rgb(197, 112, 0)";
+                        this.ctx.fillRect(-width / 2, -height / 2, 10, height);
+                        this.ctx.fillRect(width / 2 - 10, -height / 2, 10, height);
+                        break;
+                    default:
+                        this.ctx.fillStyle = "rgb(197, 112, 0)";
+                        this.ctx.fillRect(-width / 2, -height / 2, width, height);
+                        break;
+                }
+                this.ctx.restore();
+            }
+
             // Draw mines
             let mines = [...snapshot.mines.values()].filter(m => m.dimensionIndex === dimension.index);
             for (let mine of mines)

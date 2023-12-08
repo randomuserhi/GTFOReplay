@@ -16,12 +16,13 @@ interface GTFOMap
     doors: GTFODoor[];
     ladders: GTFOLadder[];
     terminals: GTFOTerminal[];
+    containers: GTFOContainer[];
     
     meshes: Mesh[];
 }
 interface GTFOMapConstructor
 {
-    new(meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[], terminals: GTFOTerminal[]): GTFOMap;
+    new(meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[], terminals: GTFOTerminal[], containers: GTFOContainer[]): GTFOMap;
     prototype: GTFOMap;
 
     parse(bytes: DataView, reader: Reader): GTFOMap;
@@ -74,12 +75,13 @@ interface GTFOMapConstructor
         return { canvas: canvas, position: { x: min.x * scale, y: min.y * scale, z: 0 } };
     };
 
-    let GTFOMap: GTFOMapConstructor = window.GTFOMap = function(this: GTFOMap, meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[], terminals: GTFOTerminal[])
+    let GTFOMap: GTFOMapConstructor = window.GTFOMap = function(this: GTFOMap, meshes: Mesh[], doors: GTFODoor[], ladders: GTFOLadder[], terminals: GTFOTerminal[], containers: GTFOContainer[])
     {
         this.meshes = meshes;
         this.doors = doors;
         this.ladders = ladders;
         this.terminals = terminals;
+        this.containers = containers;
 
         this.surfaces = [];
         for (let i = 0; i < this.meshes.length; ++i)
@@ -138,7 +140,17 @@ interface GTFOMapConstructor
             terminals[i] = t;
         }
 
-        return new GTFOMap(meshes, doors, ladders, terminals);
+        // resource containers
+        let nContainers = BitHelper.readUShort(bytes, reader);
+        console.log(`Found ${nContainers} resource containers.`);
+        let containers: GTFOContainer[] = new Array(nContainers);
+        for (let i = 0; i < nContainers; ++i) 
+        {
+            let t = GTFOContainer.parse(bytes, reader);
+            containers[i] = t;
+        }
+
+        return new GTFOMap(meshes, doors, ladders, terminals, containers);
     }
 
 })();

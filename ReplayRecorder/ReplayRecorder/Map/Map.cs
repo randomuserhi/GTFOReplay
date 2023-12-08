@@ -356,6 +356,21 @@ namespace ReplayRecorder.Map {
                     }
                 }
 
+                // Serialize resource containers for the given map
+                index = 0;
+                if (!containers.ContainsKey(m.dimension)) {
+                    APILogger.Debug($"Serializing 0 containers.");
+                    BitHelper.WriteBytes((ushort)0, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 containers present
+                } else {
+                    APILogger.Debug($"Serializing {containers[m.dimension].Count} containers.");
+                    BitHelper.WriteBytes((ushort)containers[m.dimension].Count, buffer, ref index);
+                    SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of containers
+                    foreach (rContainer c in containers[m.dimension]) {
+                        c.Serialize(SnapshotManager.fs);
+                    }
+                }
+
                 // Serialize -- for the given map
                 index = 0;
                 //...
@@ -382,6 +397,9 @@ namespace ReplayRecorder.Map {
 
             terminals.Clear();
             rTerminal._id = 0;
+
+            containers.Clear();
+            rContainer._id = 0;
         }
     }
 }
