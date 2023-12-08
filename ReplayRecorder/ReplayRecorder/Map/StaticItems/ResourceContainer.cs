@@ -10,14 +10,18 @@ namespace ReplayRecorder.Map {
 
             private LG_ResourceContainer_Storage container;
 
-            public Vector3 position;
-            public Quaternion rotation;
+            public int instance;
+            public Vector3 position {
+                get => container.transform.position;
+            }
+            public Quaternion rotation {
+                get => container.transform.rotation;
+            }
 
             public rContainer(LG_ResourceContainer_Storage container) {
                 id = _id++;
+                instance = container.GetInstanceID();
                 this.container = container;
-                position = container.transform.position;
-                rotation = container.transform.rotation;
             }
 
             public const int SizeOf = 1 + BitHelper.SizeOfVector3 + BitHelper.SizeOfHalfQuaternion;
@@ -33,6 +37,7 @@ namespace ReplayRecorder.Map {
             }
         }
 
-        public static Dictionary<eDimensionIndex, List<rContainer>> containers = new Dictionary<eDimensionIndex, List<rContainer>>();
+        // Dimension -> (container instance id -> rContainer)
+        public static Dictionary<eDimensionIndex, Dictionary<int, rContainer>> containers = new Dictionary<eDimensionIndex, Dictionary<int, rContainer>>();
     }
 }

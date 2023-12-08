@@ -366,7 +366,7 @@ namespace ReplayRecorder.Map {
                     APILogger.Debug($"Serializing {containers[m.dimension].Count} containers.");
                     BitHelper.WriteBytes((ushort)containers[m.dimension].Count, buffer, ref index);
                     SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of containers
-                    foreach (rContainer c in containers[m.dimension]) {
+                    foreach (rContainer c in containers[m.dimension].Values) {
                         c.Serialize(SnapshotManager.fs);
                     }
                 }
