@@ -89,7 +89,7 @@ namespace ReplayRecorder.Map {
             }
         }
 
-        public static Dictionary<eDimensionIndex, List<rDoor>> doors = new Dictionary<eDimensionIndex, List<rDoor>>();
+        public static List<rDoor> doors = new List<rDoor>();
 
         public struct rDoorState : ISerializable {
             public byte id;

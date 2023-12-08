@@ -9,12 +9,13 @@ namespace ReplayRecorder.Map.Patches {
         // Maps Unity InstanceID to rDoor
         public static Dictionary<int, Map.rDoor> doors = new Dictionary<int, Map.rDoor>();
 
+        public static void Reset() {
+            doors.Clear();
+        }
+
         private static void AddDoorToMap(Map.rDoor door, LG_Gate gate) {
             APILogger.Debug("Added door.");
-
-            if (!Map.doors.ContainsKey(gate.DimensionIndex))
-                Map.doors.Add(gate.DimensionIndex, new List<Map.rDoor>());
-            Map.doors[gate.DimensionIndex].Add(door);
+            Map.doors.Add(door);
         }
 
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorStateChange))]

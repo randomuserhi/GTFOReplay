@@ -253,27 +253,23 @@ namespace ReplayRecorder.Map {
             }
 
             APILogger.Debug($"Fetching door linkage data...");
-            for (int i = 0; i < dimensions.Count; ++i) {
-                if (!doors.ContainsKey(dimensions[i].DimensionIndex)) continue;
-                for (int j = 0; j < doors[dimensions[i].DimensionIndex].Count; ++j) {
-                    rDoor door = doors[dimensions[i].DimensionIndex][j];
-                    LG_Gate gate = door.gate;
-                    if (gate.m_linksTo.m_zone != null && gate.m_linksTo.m_navInfo != null)
-                        door.to = new rMap.Location(gate.m_linksTo.m_zone.Alias, gate.m_linksTo.m_navInfo.Suffix[0]);
-                    else
-                        door.to = new rMap.Location();
+            foreach (rDoor door in doors) {
+                LG_Gate gate = door.gate;
+                if (gate.m_linksTo.m_zone != null && gate.m_linksTo.m_navInfo != null)
+                    door.to = new rMap.Location(gate.m_linksTo.m_zone.Alias, gate.m_linksTo.m_navInfo.Suffix[0]);
+                else
+                    door.to = new rMap.Location();
 
-                    if (gate.m_linksFrom.m_zone != null && gate.m_linksFrom.m_navInfo != null)
-                        door.from = new rMap.Location(gate.m_linksFrom.m_zone.Alias, gate.m_linksFrom.m_navInfo.Suffix[0]);
-                    else
-                        door.from = new rMap.Location();
+                if (gate.m_linksFrom.m_zone != null && gate.m_linksFrom.m_navInfo != null)
+                    door.from = new rMap.Location(gate.m_linksFrom.m_zone.Alias, gate.m_linksFrom.m_navInfo.Suffix[0]);
+                else
+                    door.from = new rMap.Location();
 
-                    /*APILogger.Debug($"door: {door.size} {door.type}");
-                    APILogger.Debug($"{door.position.x} {door.position.y} {door.position.z}");
-                    APILogger.Debug($"{door.rotation.eulerAngles.x} {door.rotation.eulerAngles.y} {door.rotation.eulerAngles.z}");
-                    APILogger.Debug($"to: zone {door.to.zone} area {door.to.area}");
-                    APILogger.Debug($"from: zone {door.from.zone} area {door.from.area}");*/
-                }
+                /*APILogger.Debug($"door: {door.size} {door.type}");
+                APILogger.Debug($"{door.position.x} {door.position.y} {door.position.z}");
+                APILogger.Debug($"{door.rotation.eulerAngles.x} {door.rotation.eulerAngles.y} {door.rotation.eulerAngles.z}");
+                APILogger.Debug($"to: zone {door.to.zone} area {door.to.area}");
+                APILogger.Debug($"from: zone {door.from.zone} area {door.from.area}");*/
             }
         }
 
@@ -292,6 +288,21 @@ namespace ReplayRecorder.Map {
                 return;
             }
 
+            /*foreach (AIG_CourseNode node in AIG_CourseNode.s_allNodes) {
+                eDimensionIndex dimension = node.m_dimension.DimensionIndex;
+                foreach (LG_Gate gate in node.m_area.m_gates) {
+                }
+            }*/
+
+            // Finalize doors
+            Dictionary<eDimensionIndex, List<rDoor>> dimensionDoor = new Dictionary<eDimensionIndex, List<rDoor>>();
+            foreach (rDoor door in doors) {
+                eDimensionIndex dimension = door.gate.m_progressionSourceArea.m_courseNode.m_dimension.DimensionIndex;
+                if (!dimensionDoor.ContainsKey(dimension))
+                    dimensionDoor.Add(dimension, new List<rDoor>());
+                dimensionDoor[dimension].Add(door);
+            }
+
             // Write map info...
             APILogger.Debug("Writing map data...");
             byte[] buffer = new byte[100];
@@ -302,15 +313,15 @@ namespace ReplayRecorder.Map {
 
                 // Serialize doors for the given map
                 int index = 0;
-                if (!doors.ContainsKey(m.dimension)) {
+                if (!dimensionDoor.ContainsKey(m.dimension)) {
                     APILogger.Debug($"Serializing 0 doors.");
                     BitHelper.WriteBytes((ushort)0, buffer, ref index);
                     SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write 0 doors present
                 } else {
-                    APILogger.Debug($"Serializing {doors[m.dimension].Count} doors.");
-                    BitHelper.WriteBytes((ushort)doors[m.dimension].Count, buffer, ref index);
+                    APILogger.Debug($"Serializing {dimensionDoor[m.dimension].Count} doors.");
+                    BitHelper.WriteBytes((ushort)dimensionDoor[m.dimension].Count, buffer, ref index);
                     SnapshotManager.fs.Write(buffer, 0, sizeof(ushort)); // Write number of doors
-                    foreach (rDoor d in doors[m.dimension]) {
+                    foreach (rDoor d in dimensionDoor[m.dimension]) {
                         d.Serialize(SnapshotManager.fs);
                     }
                 }
@@ -364,7 +375,7 @@ namespace ReplayRecorder.Map {
 
             doors.Clear();
             rDoor._id = 0;
-            MapDoorPatches.doors.Clear();
+            MapDoorPatches.Reset();
 
             ladders.Clear();
             rLadder._id = 0;
