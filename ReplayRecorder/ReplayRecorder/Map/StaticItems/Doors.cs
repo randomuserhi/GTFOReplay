@@ -22,17 +22,15 @@ namespace ReplayRecorder.Map {
             public LG_GateType size;
             public float healthMax;
 
-            public Vector3 position;
-            public Quaternion rotation;
-
             public bool isCheckpoint;
 
             public rMap.Location to;
             public rMap.Location from;
 
             public LG_Gate gate;
+            public GameObject doorObj;
 
-            public rDoor(float healthMax, Type type, LG_Gate gate) {
+            public rDoor(float healthMax, Type type, LG_Gate gate, GameObject doorObj) {
                 if (gate.Type != LG_GateType.Small &&
                     gate.Type != LG_GateType.Medium &&
                     gate.Type != LG_GateType.Large) {
@@ -44,8 +42,7 @@ namespace ReplayRecorder.Map {
                 this.gate = gate;
 
                 this.healthMax = healthMax;
-                position = gate.transform.position;
-                rotation = gate.transform.rotation;
+                this.doorObj = doorObj;
 
                 size = gate.Type;
                 this.type = type;
@@ -70,8 +67,8 @@ namespace ReplayRecorder.Map {
                 BitHelper.WriteBytes((byte)size, buffer, ref index);
                 BitHelper.WriteBytes((byte)healthMax, buffer, ref index);
 
-                BitHelper.WriteBytes(position, buffer, ref index);
-                BitHelper.WriteHalf(rotation, buffer, ref index);
+                BitHelper.WriteBytes(doorObj.transform.position, buffer, ref index);
+                BitHelper.WriteHalf(doorObj.transform.rotation, buffer, ref index);
 
                 fs.Write(buffer);
             }

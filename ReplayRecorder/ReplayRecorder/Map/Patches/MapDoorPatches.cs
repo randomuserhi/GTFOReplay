@@ -56,7 +56,7 @@ namespace ReplayRecorder.Map.Patches {
         private static void WeakDoor_Setup(LG_WeakDoor __instance, LG_Gate gate) {
             int instanceID = __instance.gameObject.GetInstanceID();
 
-            Map.rDoor door = new Map.rDoor(__instance.m_healthMax, Map.rDoor.Type.WeakDoor, gate);
+            Map.rDoor door = new Map.rDoor(__instance.m_healthMax, Map.rDoor.Type.WeakDoor, gate, __instance.gameObject);
 
             doors.Add(instanceID, door);
             AddDoorToMap(door, gate);
@@ -74,7 +74,7 @@ namespace ReplayRecorder.Map.Patches {
                 type = Map.rDoor.Type.BulkheadDoor;
             else if (gate.ForceBulkheadGateMainPath)
                 type = Map.rDoor.Type.BulkheadDoorMain;
-            Map.rDoor door = new Map.rDoor(0, type, gate);
+            Map.rDoor door = new Map.rDoor(0, type, gate, __instance.gameObject);
 
             doors.Add(instanceID, door);
             AddDoorToMap(door, gate);
