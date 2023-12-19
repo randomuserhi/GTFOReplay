@@ -10,7 +10,7 @@
                     return template;
                 if (!core.exists(template))
                     return template;
-                let result = template;
+                const result = template;
                 Object.assign(result, opt);
                 return result;
             },
@@ -35,15 +35,15 @@
     })();
     (function () {
         let loaded;
-        let scripts = document.getElementsByTagName("script");
-        for (let s of scripts) {
-            var type = String(s.type).replace(/ /g, "");
+        const scripts = document.getElementsByTagName("script");
+        for (const s of scripts) {
+            const type = String(s.type).replace(/ /g, "");
             if (type.match(/^text\/x-rhu-config(;.*)?$/) && !type.match(/;executed=true/)) {
                 s.type += ";executed=true";
                 loaded = Function(`"use strict"; const RHU = { config: {} }; ${s.innerHTML}; return RHU;`)();
             }
         }
-        let Options = {
+        const Options = {
             config: {}
         };
         core.parseOptions(Options, loaded);
@@ -56,22 +56,22 @@
         core.parseOptions(core.config, Options.config);
     })();
     (function () {
-        let config = core.config;
-        let root = {
+        const config = core.config;
+        const root = {
             location: config.root,
             script: "",
             params: {}
         };
         if (core.exists(document.currentScript)) {
             if (!core.exists(root.location)) {
-                let s = document.currentScript;
-                let r = s.src.match(/(.*)[/\\]/);
+                const s = document.currentScript;
+                const r = s.src.match(/(.*)[/\\]/);
                 root.location = "";
                 if (core.exists(r))
                     root.location = r[1] || "";
                 root.script = s.innerHTML;
-                let params = (new URL(s.src)).searchParams;
-                for (let key of params.keys()) {
+                const params = (new URL(s.src)).searchParams;
+                for (const key of params.keys()) {
                     root.params[key] = params.get(key);
                 }
             }
@@ -87,7 +87,7 @@
                 }
             }, root),
             JS: function (path, module, callback) {
-                let mod = {
+                const mod = {
                     name: "",
                     type: "module"
                 };
@@ -100,7 +100,7 @@
                     console.error("Cannot load module without a type.");
                     return false;
                 }
-                let script = document.createElement("script");
+                const script = document.createElement("script");
                 script.type = "text/javascript";
                 script.src = path;
                 let handled = false;
@@ -109,7 +109,7 @@
                     if (core.exists(callback))
                         callback(true);
                 };
-                let onerror = function () {
+                const onerror = function () {
                     if (handled)
                         return;
                     if (core.exists(mod.type))
@@ -150,14 +150,14 @@
                     return template;
                 if (!RHU.exists(template))
                     return template;
-                let result = template;
+                const result = template;
                 Object.assign(result, options);
                 return result;
             },
             properties: function (object, options = {}, operation) {
                 if (!RHU.exists(object))
                     throw TypeError("Cannot get properties of 'null' or 'undefined'.");
-                let opt = {
+                const opt = {
                     enumerable: undefined,
                     configurable: undefined,
                     symbols: undefined,
@@ -167,10 +167,10 @@
                     set: undefined
                 };
                 RHU.parseOptions(opt, options);
-                let properties = new Set();
-                let iterate = function (props, descriptors) {
-                    for (let p of props) {
-                        let descriptor = descriptors[p];
+                const properties = new Set();
+                const iterate = function (props, descriptors) {
+                    for (const p of props) {
+                        const descriptor = descriptors[p];
                         let valid = true;
                         if (opt.enumerable && descriptor.enumerable !== opt.enumerable)
                             valid = false;
@@ -197,20 +197,20 @@
                 };
                 let curr = object;
                 do {
-                    let descriptors = Object.getOwnPropertyDescriptors(curr);
+                    const descriptors = Object.getOwnPropertyDescriptors(curr);
                     if (!RHU.exists(opt.symbols) || opt.symbols === false) {
-                        let props = Object.getOwnPropertyNames(curr);
+                        const props = Object.getOwnPropertyNames(curr);
                         iterate(props, descriptors);
                     }
                     if (!RHU.exists(opt.symbols) || opt.symbols === true) {
-                        let props = Object.getOwnPropertySymbols(curr);
+                        const props = Object.getOwnPropertySymbols(curr);
                         iterate(props, descriptors);
                     }
                 } while ((curr = Object.getPrototypeOf(curr)) && !opt.hasOwn);
                 return properties;
             },
             defineProperty: function (object, property, options, flags) {
-                let opt = {
+                const opt = {
                     replace: true,
                     warn: false,
                     err: false
@@ -228,47 +228,47 @@
                 return false;
             },
             definePublicProperty: function (object, property, options, flags) {
-                let opt = {
+                const opt = {
                     writable: true,
                     enumerable: true
                 };
                 return RHU.defineProperty(object, property, Object.assign(opt, options), flags);
             },
             definePublicAccessor: function (object, property, options, flags) {
-                let opt = {
+                const opt = {
                     configurable: true,
                     enumerable: true
                 };
                 return RHU.defineProperty(object, property, Object.assign(opt, options), flags);
             },
             defineProperties: function (object, properties, flags) {
-                for (let key of RHU.properties(properties, { hasOwn: true }).keys()) {
+                for (const key of RHU.properties(properties, { hasOwn: true }).keys()) {
                     if (Object.hasOwnProperty.call(properties, key)) {
                         RHU.defineProperty(object, key, properties[key], flags);
                     }
                 }
             },
             definePublicProperties: function (object, properties, flags) {
-                let opt = function () {
+                const opt = function () {
                     this.configurable = true;
                     this.writable = true;
                     this.enumerable = true;
                 };
-                for (let key of RHU.properties(properties, { hasOwn: true }).keys()) {
+                for (const key of RHU.properties(properties, { hasOwn: true }).keys()) {
                     if (Object.hasOwnProperty.call(properties, key)) {
-                        let o = Object.assign(new opt(), properties[key]);
+                        const o = Object.assign(new opt(), properties[key]);
                         RHU.defineProperty(object, key, o, flags);
                     }
                 }
             },
             definePublicAccessors: function (object, properties, flags) {
-                let opt = function () {
+                const opt = function () {
                     this.configurable = true;
                     this.enumerable = true;
                 };
-                for (let key of RHU.properties(properties, { hasOwn: true }).keys()) {
+                for (const key of RHU.properties(properties, { hasOwn: true }).keys()) {
                     if (Object.hasOwnProperty.call(properties, key)) {
-                        let o = Object.assign(new opt(), properties[key]);
+                        const o = Object.assign(new opt(), properties[key]);
                         RHU.defineProperty(object, key, o, flags);
                     }
                 }
@@ -307,13 +307,15 @@
                 Object.setPrototypeOf(child, base);
             },
             reflectConstruct: function (base, name, constructor, argnames) {
+                if (!RHU.isConstructor(base))
+                    throw new TypeError("'constructor' and 'base' must be object constructors.");
                 let args = argnames;
                 if (!RHU.exists(args)) {
                     args = ["...args"];
-                    let STRIP_COMMENTS = /((\/\/.*$)|(\/\*.*\*\/))/mg;
-                    let funcString = constructor.toString().replace(STRIP_COMMENTS, "");
+                    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*.*\*\/))/mg;
+                    const funcString = constructor.toString().replace(STRIP_COMMENTS, "");
                     if (funcString.indexOf("function") === 0) {
-                        let s = funcString.substring("function".length).trimStart();
+                        const s = funcString.substring("function".length).trimStart();
                         args = s.substring(s.indexOf("(") + 1, s.indexOf(")"))
                             .split(",")
                             .map((a) => {
@@ -325,16 +327,16 @@
                     }
                 }
                 let definition;
-                let argstr = args.join(",");
+                const argstr = args.join(",");
                 if (!RHU.exists(name))
                     name = constructor.name;
                 name.replace(/[ \t\r\n]/g, "");
                 if (name === "")
                     name = "__ReflectConstruct__";
-                let parts = name.split(".").filter(c => c !== "");
+                const parts = name.split(".").filter(c => c !== "");
                 let evalStr = "{ let ";
                 for (let i = 0; i < parts.length - 1; ++i) {
-                    let part = parts[i];
+                    const part = parts[i];
                     evalStr += `${part} = {}; ${part}.`;
                 }
                 evalStr += `${parts[parts.length - 1]} = function(${argstr}) { return definition.__reflect__.call(this, new.target, [${argstr}]); }; definition = ${parts.join(".")} }`;
@@ -351,7 +353,7 @@
                 };
                 definition.__reflect__ = function (newTarget, args = []) {
                     if (RHU.exists(newTarget)) {
-                        let obj = Reflect.construct(base, definition.__args__(...args), definition);
+                        const obj = Reflect.construct(base, definition.__args__(...args), definition);
                         definition.__constructor__.call(obj, ...args);
                         return obj;
                     }
@@ -365,7 +367,7 @@
                     element.removeAttribute(element.attributes[0].name);
             },
             getElementById: function (id, clearID = true) {
-                let el = document.getElementById(id);
+                const el = document.getElementById(id);
                 if (RHU.exists(el) && clearID)
                     el.removeAttribute("id");
                 return el;
@@ -385,8 +387,8 @@
         const require = (object, result, missing) => {
             for (const [key, value] of Object.entries(object)) {
                 if (typeof value === "string" || value instanceof String) {
-                    const module = core.moduleLoader.get(value);
-                    if (RHU.exists(module)) {
+                    const [loaded, module] = core.moduleLoader.get(value);
+                    if (loaded) {
                         result[key] = module;
                     }
                     else {
@@ -400,6 +402,7 @@
         };
         core.moduleLoader = {
             loading: new Set(),
+            failed: [],
             watching: [],
             imported: [],
             skipped: [],
@@ -411,10 +414,10 @@
             },
             get: function (module) {
                 if (this.cache.has(module)) {
-                    return this.cache.get(module);
+                    return [true, this.cache.get(module)];
                 }
                 else {
-                    return undefined;
+                    return [false, undefined];
                 }
             },
             onLoad: function (module) {
@@ -434,11 +437,20 @@
                 const req = {};
                 require(module.require, req, missing);
                 if (missing.length === 0) {
-                    const result = module.callback(req);
-                    if (RHU.exists(module.name)) {
-                        this.set(module.name, result);
+                    try {
+                        const result = module.callback(req);
+                        if (RHU.exists(module.name)) {
+                            this.set(module.name, result);
+                        }
+                        this.imported.push(module);
                     }
-                    this.imported.push(module);
+                    catch (e) {
+                        console.error(`Failed to import ${module.name} ${core.exists(module.trace.stack)
+                            ? "\n" + module.trace.stack.split("\n")[1]
+                            : ""}`);
+                        console.error(e.toString());
+                        this.failed.push(module);
+                    }
                 }
                 else {
                     this.watching.push(module);
@@ -449,9 +461,9 @@
                 let oldLen = this.watching.length;
                 do {
                     oldLen = this.watching.length;
-                    let old = this.watching;
+                    const old = this.watching;
                     this.watching = [];
-                    for (let module of old) {
+                    for (const module of old) {
                         this.execute(module);
                     }
                 } while (oldLen !== this.watching.length);
@@ -475,13 +487,18 @@
             });
             return undefined;
         };
+        RHU.status = function () {
+            console.log(RHU.imports.toString());
+            console.log(RHU.waiting.toString());
+            console.error(RHU.failed.toString());
+        };
         RHU.definePublicAccessor(RHU, "imports", {
             get: function () {
-                let obj = [...core.moduleLoader.imported];
+                const obj = [...core.moduleLoader.imported];
                 obj.toString = function () {
-                    let msg = "Imports in order of execution:";
-                    for (let module of obj) {
-                        let name = RHU.exists(module.name) ? module.name : "[rhu/require]";
+                    let msg = `Imports in order of execution [${obj.length}]:`;
+                    for (const module of obj) {
+                        const name = RHU.exists(module.name) ? module.name : "[rhu/require]";
                         msg += `\n${name}${core.exists(module.trace.stack)
                             ? "\n" + module.trace.stack.split("\n")[1]
                             : ""}`;
@@ -493,11 +510,11 @@
         });
         RHU.definePublicAccessor(RHU, "waiting", {
             get: function () {
-                let obj = [...core.moduleLoader.watching];
+                const obj = [...core.moduleLoader.watching];
                 obj.toString = function () {
-                    let msg = "Modules being watched:";
-                    for (let module of obj) {
-                        let name = RHU.exists(module.name) ? module.name : "[rhu/require]";
+                    let msg = `Modules being watched [${obj.length}]:`;
+                    for (const module of obj) {
+                        const name = RHU.exists(module.name) ? module.name : "[rhu/require]";
                         msg += `\n${name}${core.exists(module.trace.stack)
                             ? "\n" + module.trace.stack.split("\n")[1]
                             : ""}${(() => {
@@ -505,7 +522,7 @@
                             require(module.require, {}, missing);
                             let list = "";
                             for (const module of missing) {
-                                list += `\n\t- \'${module}\' is missing`;
+                                list += `\n\t- '${module}' is missing`;
                             }
                             return list;
                         })()}`;
@@ -515,25 +532,41 @@
                 return obj;
             }
         });
-        for (let module of core.config.modules) {
+        RHU.definePublicAccessor(RHU, "failed", {
+            get: function () {
+                const obj = [...core.moduleLoader.failed];
+                obj.toString = function () {
+                    let msg = `Modules that failed to import [${obj.length}]:`;
+                    for (const module of obj) {
+                        const name = RHU.exists(module.name) ? module.name : "[rhu/require]";
+                        msg += `\n${name}${core.exists(module.trace.stack)
+                            ? "\n" + module.trace.stack.split("\n")[1]
+                            : ""}`;
+                    }
+                    return msg;
+                };
+                return obj;
+            }
+        });
+        for (const module of core.config.modules) {
             core.moduleLoader.loading.add({
                 path: core.loader.root.path(core.path.join("modules", `${module}.js`)),
                 name: module,
                 type: RHU.MODULE
             });
         }
-        for (let module of core.config.extensions) {
+        for (const module of core.config.extensions) {
             core.moduleLoader.loading.add({
                 path: core.loader.root.path(core.path.join("extensions", `${module}.js`)),
                 name: module,
                 type: RHU.EXTENSION
             });
         }
-        for (let includePath in core.config.includes) {
+        for (const includePath in core.config.includes) {
             if (typeof includePath !== "string" || includePath === "")
                 continue;
-            let isAbsolute = core.path.isAbsolute(includePath);
-            for (let module of core.config.includes[includePath]) {
+            const isAbsolute = core.path.isAbsolute(includePath);
+            for (const module of core.config.includes[includePath]) {
                 if (typeof module !== "string" || module === "")
                     continue;
                 let path;
@@ -548,7 +581,7 @@
                 });
             }
         }
-        for (let module of core.moduleLoader.loading) {
+        for (const module of core.moduleLoader.loading) {
             core.loader.JS(module.path, {
                 name: module.name,
                 type: module.type

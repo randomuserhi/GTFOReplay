@@ -3,7 +3,7 @@
     if (RHU === null || RHU === undefined)
         throw new Error("No RHU found. Did you import RHU before running?");
     RHU.module(new Error(), "rhu/file", {}, function () {
-        let File = {
+        const File = {
             Type: {
                 unknown: "unknown",
                 png: "png",
@@ -37,12 +37,12 @@
                 }
             },
         };
-        let Type = File.Type;
+        const Type = File.Type;
         File.getType = function (blob) {
             return new Promise((resolve, reject) => {
-                let fr = new FileReader();
+                const fr = new FileReader();
                 fr.onloadend = function (e) {
-                    let arr = (new Uint8Array(e.target.result)).subarray(0, 4);
+                    const arr = (new Uint8Array(e.target.result)).subarray(0, 4);
                     let header = "";
                     for (let i = 0; i < arr.length; i++)
                         header += arr[i].toString(16);

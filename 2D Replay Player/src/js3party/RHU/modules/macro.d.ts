@@ -15,6 +15,8 @@ declare namespace RHU
         <T extends RHU.Macro.Templates>(constructor: Function, type: T, source: string, options: RHU.Macro.Options): Macro.Template<T>;
         
         parseDomString(str: string): DocumentFragment;
+
+        anon<T extends {} = {}>(source: string): [T, DocumentFragment];
         
         parse(element: Element, type?: string & {} | RHU.Macro.Templates | undefined | null, force?: boolean): void;
 

@@ -3,9 +3,9 @@
     if (RHU === null || RHU === undefined)
         throw new Error("No RHU found. Did you import RHU before running?");
     RHU.module(new Error(), "rhu/rest", {}, function () {
-        let Rest = {
+        const Rest = {
             fetch: function (options) {
-                let partialOpt = {
+                const partialOpt = {
                     url: "",
                     fetch: undefined,
                     callback: undefined,
@@ -16,18 +16,18 @@
                     throw new SyntaxError("No fetch options were provided.");
                 if (!RHU.exists(partialOpt.callback))
                     throw new SyntaxError("No callback was provided.");
-                let opt = partialOpt;
+                const opt = partialOpt;
                 if (RHU.exists(opt.parser)) {
                     return (async function (...params) {
-                        let payload = {
+                        const payload = {
                             urlParams: {},
                             body: null
                         };
                         RHU.parseOptions(payload, opt.parser(...params));
-                        let init = RHU.clone(opt.fetch);
+                        const init = RHU.clone(opt.fetch);
                         init.body = payload.body;
-                        let url = new URL(opt.url);
-                        for (let key in payload.urlParams)
+                        const url = new URL(opt.url);
+                        for (const key in payload.urlParams)
                             url.searchParams.append(key, payload.urlParams[key]);
                         const response = await fetch(url, init);
                         return await opt.callback(response);
@@ -35,15 +35,15 @@
                 }
                 else {
                     return (async function (payload) {
-                        let parsedPayload = {
+                        const parsedPayload = {
                             urlParams: {},
                             body: null
                         };
                         RHU.parseOptions(parsedPayload, payload);
-                        let init = RHU.clone(opt.fetch);
+                        const init = RHU.clone(opt.fetch);
                         init.body = payload.body;
-                        let url = new URL(opt.url);
-                        for (let key in parsedPayload.urlParams)
+                        const url = new URL(opt.url);
+                        for (const key in parsedPayload.urlParams)
                             url.searchParams.append(key, parsedPayload.urlParams[key]);
                         const response = await fetch(url, init);
                         return await opt.callback(response);
@@ -51,7 +51,7 @@
                 }
             },
             fetchJSON: function (options) {
-                let partialOpt = {
+                const partialOpt = {
                     url: undefined,
                     fetch: undefined,
                     callback: undefined,
@@ -64,14 +64,14 @@
                     throw new SyntaxError("No fetch options were provided.");
                 if (!RHU.exists(partialOpt.callback))
                     throw new SyntaxError("No callback was provided.");
-                let headers = new Headers(partialOpt.fetch.headers);
+                const headers = new Headers(partialOpt.fetch.headers);
                 headers.set("Content-Type", "application/json");
                 partialOpt.fetch.headers = headers;
-                let opt = partialOpt;
+                const opt = partialOpt;
                 if (RHU.exists(opt.parser)) {
-                    let parser = opt.parser;
+                    const parser = opt.parser;
                     opt.parser = function (...params) {
-                        let payload = parser(...params);
+                        const payload = parser(...params);
                         if (RHU.exists(payload.body))
                             payload.body = JSON.stringify(payload.body);
                         return payload;

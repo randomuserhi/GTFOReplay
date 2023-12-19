@@ -23,10 +23,10 @@
         };
     });
     RHU.module(new Error(), "rhu/theme", { types: "rhu/theme/types", Style: "rhu/style/types" }, function ({ types: { ThemeVariable }, Style }) {
-        let Theme = function (factory) {
+        const Theme = function (factory) {
             const cn = new Style.cn();
             let generatedCode = `.${cn} {`;
-            let generator = function (first, ...interpolations) {
+            const generator = function (first, ...interpolations) {
                 const themeVar = new ThemeVariable();
                 generatedCode += `${themeVar[symbols.name]}:${first[0]}`;
                 for (let i = 0; i < interpolations.length; ++i) {
@@ -40,7 +40,7 @@
             const exports = factory({ theme: generator });
             generatedCode += "}";
             generatedCode = generatedCode.replace(/(\r\n|\n|\r)/gm, "").replace(/ +/g, ' ').trim();
-            let el = document.createElement("style");
+            const el = document.createElement("style");
             el.innerHTML = generatedCode;
             document.head.append(el);
             Object.assign(cn, exports);
@@ -66,16 +66,16 @@
         };
     });
     RHU.module(new Error(), "rhu/style", { style: "rhu/style/types", Theme: "rhu/theme/types" }, function ({ style: { cn }, Theme }) {
-        let interpret = function (value) {
+        const interpret = function (value) {
             if (typeof value === "number") {
                 return `${value}px`;
             }
             return value;
         };
-        let css = function (style) {
+        const css = function (style) {
             let result = "";
             for (const [key, value] of Object.entries(style)) {
-                let prop = key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
+                const prop = key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
                 if (typeof value === "string" || value instanceof String) {
                     result += `${prop}:${value};`;
                 }
@@ -84,20 +84,21 @@
                 }
                 else {
                     switch (prop) {
-                        case "border":
+                        case "border": {
                             const parse = value;
                             const borderRadius = interpret(parse["border-radius"] || parse.borderRadius);
                             if (RHU.exists(borderRadius))
                                 result += `border-radius: ${borderRadius}; `;
                             break;
+                        }
                     }
                 }
             }
             return result;
         };
-        let Style = function (factory) {
+        const Style = function (factory) {
             let generatedCode = "";
-            let generator = function (first, ...interpolations) {
+            const generator = function (first, ...interpolations) {
                 generatedCode += first[0];
                 for (let i = 0; i < interpolations.length; ++i) {
                     const interpolation = interpolations[i];
@@ -146,7 +147,7 @@
             };
             const exports = factory({ style: generator, css, cn: (name) => new cn(name) });
             generatedCode = generatedCode.replace(/(\r\n|\n|\r)/gm, "").replace(/ +/g, ' ').trim();
-            let el = document.createElement("style");
+            const el = document.createElement("style");
             el.innerHTML = generatedCode;
             document.head.append(el);
             return exports;

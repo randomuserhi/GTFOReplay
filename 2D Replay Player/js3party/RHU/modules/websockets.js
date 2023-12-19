@@ -3,7 +3,7 @@
     if (RHU === null || RHU === undefined)
         throw new Error("No RHU found. Did you import RHU before running?");
     RHU.module(new Error(), "rhu/websockets", { eventTarget: "rhu/event" }, function ({ eventTarget }) {
-        let WebSockets = {};
+        const WebSockets = {};
         RHU.definePublicAccessors(WebSockets, {
             CONNECTING: {
                 get: function () { return WebSocket.CONNECTING; }
@@ -18,7 +18,7 @@
                 get: function () { return WebSocket.CLOSED; }
             }
         });
-        let ws = RHU.reflectConstruct(WebSocket, "RHU.ws", function (url, protocols = []) {
+        const ws = RHU.reflectConstruct(WebSocket, "RHU.ws", function (url, protocols = []) {
             this.queue = [];
             this.addEventListener("open", () => {
                 while (this.queue.length)
@@ -41,10 +41,10 @@
                 throw new TypeError("Constructor Component requires 'new'.");
             if (WebSocket !== webSocket && !Object.isPrototypeOf.call(WebSocket, webSocket))
                 throw new TypeError("WebSocket must be inherited from or of type 'WebSocket'.");
-            let construct = function (...args) {
+            const construct = function (...args) {
                 this.args = args;
                 eventTarget(this);
-                let params = {
+                const params = {
                     url: "",
                     protocols: []
                 };
