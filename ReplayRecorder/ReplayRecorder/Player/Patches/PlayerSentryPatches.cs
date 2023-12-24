@@ -22,10 +22,10 @@ namespace ReplayRecorder.Player.Patches {
         private static bool CompatabilityLayer_HelAutoSentryFix_Installed = false;
         public static void CompatabilityLayer_HelAutoSentryFix() {
             CompatabilityLayer_HelAutoSentryFix_Installed = true;
-            HelSentryFix.SentryFirePatches.anySentryFire_Prefix += _Prefix_SentryGunFire;
+            /*HelSentryFix.SentryFirePatches.anySentryFire_Prefix += _Prefix_SentryGunFire;
             HelSentryFix.SentryFirePatches.anySentryFire_Postfix += (SentryGunInstance_Firing_Bullets _, bool _, bool _) => {
                 _Postfix_SentryGunFire();
-            };
+            };*/
         }
         private static void _Prefix_SentryGunFire(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
             if (!doDamage) return;
