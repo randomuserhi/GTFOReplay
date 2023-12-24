@@ -37,12 +37,12 @@ RHU.module(new Error(), "main", {
             this.classList.toggle(`${style.wrapper}`, true);
         } as RHU.Macro.Constructor<App>;
 
-        return appmount
+        return appmount;
     })(), "App", //html
-        `
+    `
         ${replayPlayer}
         `, {
-            element: //html
+        element: //html
             `<div class="${theme} ${style.wrapper}"></div>`
-        });
+    });
 });

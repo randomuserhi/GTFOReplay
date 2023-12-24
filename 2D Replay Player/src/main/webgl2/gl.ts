@@ -13,8 +13,7 @@ interface gl {
 }
 
 RHU.module(new Error(), "webgl2", { 
-}, function({
-}) {
+}, function() {
     const gl = function(this: gl) {
 
     } as unknown as glConstruct;

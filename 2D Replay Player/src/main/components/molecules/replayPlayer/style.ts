@@ -8,8 +8,7 @@ declare namespace RHU {
 
 RHU.module(new Error(), "components/molecules/replayPlayer/style",
     { Style: "rhu/style", theme: "main/theme" },
-    function({ Style, theme })
-    {
+    function({ Style, theme }) {
         const style = Style(({ style }) => {
             const wrapper = style.class`
             width: 100%;

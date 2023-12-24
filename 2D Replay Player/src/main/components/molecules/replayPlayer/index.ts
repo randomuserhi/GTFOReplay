@@ -56,20 +56,20 @@ RHU.module(new Error(), "components/molecules/replayPlayer", {
         } as RHU.Macro.Constructor<Molecules.ReplayPlayer>;
 
         replayPlayer.prototype.render = function(t) {
-            let delta = (t - this.prevT) * this.timescale;
+            const delta = (t - this.prevT) * this.timescale;
             this.prevT = t;
             
             requestAnimationFrame((t) => this.render(t));
-        }
+        };
 
         return replayPlayer;
     })(), "molecules/replayPlayer", //html
-        `
+    `
         <canvas rhu-id="canvas"></canvas>
         `, {
-            element: //html
+        element: //html
             `<div class="${style.wrapper}"></div>`
-        });
+    });
 
     return replayPlayer;
 });
