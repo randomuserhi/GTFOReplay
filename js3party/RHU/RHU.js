@@ -10,46 +10,9 @@
                     return template;
                 if (!core.exists(template))
                     return template;
-                let result = template;
+                const result = template;
                 Object.assign(result, opt);
                 return result;
-            },
-            dependencies: function (options) {
-                let opt = {
-                    hard: [],
-                    soft: [],
-                    trace: undefined
-                };
-                core.parseOptions(opt, options);
-                let check = (items) => {
-                    let has = [];
-                    let missing = [];
-                    let set = {};
-                    for (let path of items) {
-                        if (core.exists(set[path]))
-                            continue;
-                        set[path] = true;
-                        let traversal = path.split(".");
-                        let obj = window;
-                        for (; traversal.length !== 0 && core.exists(obj); obj = obj[(traversal.shift())]) {
-                        }
-                        if (core.exists(obj))
-                            has.push(path);
-                        else
-                            missing.push(path);
-                    }
-                    return {
-                        has: has,
-                        missing: missing
-                    };
-                };
-                let hard = check(opt.hard);
-                let soft = check(opt.soft);
-                return {
-                    hard: hard,
-                    soft: soft,
-                    trace: opt.trace
-                };
             },
             path: {
                 join: function (...paths) {
@@ -70,38 +33,17 @@
             readyState: "loading"
         };
     })();
-    let result = core.dependencies({
-        hard: [
-            "document.createElement",
-            "document.head",
-            "document.createTextNode",
-            "window.Function",
-            "Map",
-            "Set",
-            "Reflect"
-        ]
-    });
-    if (result.hard.missing.length !== 0) {
-        let msg = `RHU was unable to import due to missing dependencies.`;
-        if (core.exists(result.trace) && core.exists(result.trace.stack))
-            msg += `\n${result.trace.stack.split("\n").splice(1).join("\n")}\n`;
-        for (let dependency of result.hard.missing) {
-            msg += (`\n\tMissing '${dependency}'`);
-        }
-        console.error(msg);
-        return;
-    }
     (function () {
         let loaded;
-        let scripts = document.getElementsByTagName("script");
-        for (let s of scripts) {
-            var type = String(s.type).replace(/ /g, "");
+        const scripts = document.getElementsByTagName("script");
+        for (const s of scripts) {
+            const type = String(s.type).replace(/ /g, "");
             if (type.match(/^text\/x-rhu-config(;.*)?$/) && !type.match(/;executed=true/)) {
                 s.type += ";executed=true";
-                loaded = Function(`"use strict"; let RHU = { config: {} }; ${s.innerHTML}; return RHU;`)();
+                loaded = Function(`"use strict"; const RHU = { config: {} }; ${s.innerHTML}; return RHU;`)();
             }
         }
-        let Options = {
+        const Options = {
             config: {}
         };
         core.parseOptions(Options, loaded);
@@ -114,22 +56,22 @@
         core.parseOptions(core.config, Options.config);
     })();
     (function () {
-        let config = core.config;
-        let root = {
+        const config = core.config;
+        const root = {
             location: config.root,
             script: "",
             params: {}
         };
         if (core.exists(document.currentScript)) {
             if (!core.exists(root.location)) {
-                let s = document.currentScript;
-                let r = s.src.match(/(.*)[/\\]/);
+                const s = document.currentScript;
+                const r = s.src.match(/(.*)[/\\]/);
                 root.location = "";
                 if (core.exists(r))
                     root.location = r[1] || "";
                 root.script = s.innerHTML;
-                let params = (new URL(s.src)).searchParams;
-                for (let key of params.keys()) {
+                const params = (new URL(s.src)).searchParams;
+                for (const key of params.keys()) {
                     root.params[key] = params.get(key);
                 }
             }
@@ -145,7 +87,7 @@
                 }
             }, root),
             JS: function (path, module, callback) {
-                let mod = {
+                const mod = {
                     name: "",
                     type: "module"
                 };
@@ -158,7 +100,7 @@
                     console.error("Cannot load module without a type.");
                     return false;
                 }
-                let script = document.createElement("script");
+                const script = document.createElement("script");
                 script.type = "text/javascript";
                 script.src = path;
                 let handled = false;
@@ -167,7 +109,7 @@
                     if (core.exists(callback))
                         callback(true);
                 };
-                let onerror = function () {
+                const onerror = function () {
                     if (handled)
                         return;
                     if (core.exists(mod.type))
@@ -188,7 +130,7 @@
     (function () {
         if (core.exists(window.RHU))
             console.warn("Overwriting global RHU...");
-        let RHU = window.RHU = {
+        const RHU = window.RHU = {
             version: "1.0.0",
             MODULE: "module",
             EXTENSION: "x-module",
@@ -208,14 +150,14 @@
                     return template;
                 if (!RHU.exists(template))
                     return template;
-                let result = template;
+                const result = template;
                 Object.assign(result, options);
                 return result;
             },
             properties: function (object, options = {}, operation) {
                 if (!RHU.exists(object))
                     throw TypeError("Cannot get properties of 'null' or 'undefined'.");
-                let opt = {
+                const opt = {
                     enumerable: undefined,
                     configurable: undefined,
                     symbols: undefined,
@@ -225,10 +167,10 @@
                     set: undefined
                 };
                 RHU.parseOptions(opt, options);
-                let properties = new Set();
-                let iterate = function (props, descriptors) {
-                    for (let p of props) {
-                        let descriptor = descriptors[p];
+                const properties = new Set();
+                const iterate = function (props, descriptors) {
+                    for (const p of props) {
+                        const descriptor = descriptors[p];
                         let valid = true;
                         if (opt.enumerable && descriptor.enumerable !== opt.enumerable)
                             valid = false;
@@ -255,20 +197,20 @@
                 };
                 let curr = object;
                 do {
-                    let descriptors = Object.getOwnPropertyDescriptors(curr);
+                    const descriptors = Object.getOwnPropertyDescriptors(curr);
                     if (!RHU.exists(opt.symbols) || opt.symbols === false) {
-                        let props = Object.getOwnPropertyNames(curr);
+                        const props = Object.getOwnPropertyNames(curr);
                         iterate(props, descriptors);
                     }
                     if (!RHU.exists(opt.symbols) || opt.symbols === true) {
-                        let props = Object.getOwnPropertySymbols(curr);
+                        const props = Object.getOwnPropertySymbols(curr);
                         iterate(props, descriptors);
                     }
                 } while ((curr = Object.getPrototypeOf(curr)) && !opt.hasOwn);
                 return properties;
             },
             defineProperty: function (object, property, options, flags) {
-                let opt = {
+                const opt = {
                     replace: true,
                     warn: false,
                     err: false
@@ -286,47 +228,47 @@
                 return false;
             },
             definePublicProperty: function (object, property, options, flags) {
-                let opt = {
+                const opt = {
                     writable: true,
                     enumerable: true
                 };
                 return RHU.defineProperty(object, property, Object.assign(opt, options), flags);
             },
             definePublicAccessor: function (object, property, options, flags) {
-                let opt = {
+                const opt = {
                     configurable: true,
                     enumerable: true
                 };
                 return RHU.defineProperty(object, property, Object.assign(opt, options), flags);
             },
             defineProperties: function (object, properties, flags) {
-                for (let key of RHU.properties(properties, { hasOwn: true }).keys()) {
+                for (const key of RHU.properties(properties, { hasOwn: true }).keys()) {
                     if (Object.hasOwnProperty.call(properties, key)) {
                         RHU.defineProperty(object, key, properties[key], flags);
                     }
                 }
             },
             definePublicProperties: function (object, properties, flags) {
-                let opt = function () {
+                const opt = function () {
                     this.configurable = true;
                     this.writable = true;
                     this.enumerable = true;
                 };
-                for (let key of RHU.properties(properties, { hasOwn: true }).keys()) {
+                for (const key of RHU.properties(properties, { hasOwn: true }).keys()) {
                     if (Object.hasOwnProperty.call(properties, key)) {
-                        let o = Object.assign(new opt(), properties[key]);
+                        const o = Object.assign(new opt(), properties[key]);
                         RHU.defineProperty(object, key, o, flags);
                     }
                 }
             },
             definePublicAccessors: function (object, properties, flags) {
-                let opt = function () {
+                const opt = function () {
                     this.configurable = true;
                     this.enumerable = true;
                 };
-                for (let key of RHU.properties(properties, { hasOwn: true }).keys()) {
+                for (const key of RHU.properties(properties, { hasOwn: true }).keys()) {
                     if (Object.hasOwnProperty.call(properties, key)) {
-                        let o = Object.assign(new opt(), properties[key]);
+                        const o = Object.assign(new opt(), properties[key]);
                         RHU.defineProperty(object, key, o, flags);
                     }
                 }
@@ -365,13 +307,15 @@
                 Object.setPrototypeOf(child, base);
             },
             reflectConstruct: function (base, name, constructor, argnames) {
+                if (!RHU.isConstructor(base))
+                    throw new TypeError("'constructor' and 'base' must be object constructors.");
                 let args = argnames;
                 if (!RHU.exists(args)) {
                     args = ["...args"];
-                    let STRIP_COMMENTS = /((\/\/.*$)|(\/\*.*\*\/))/mg;
-                    let funcString = constructor.toString().replace(STRIP_COMMENTS, "");
+                    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*.*\*\/))/mg;
+                    const funcString = constructor.toString().replace(STRIP_COMMENTS, "");
                     if (funcString.indexOf("function") === 0) {
-                        let s = funcString.substring("function".length).trimStart();
+                        const s = funcString.substring("function".length).trimStart();
                         args = s.substring(s.indexOf("(") + 1, s.indexOf(")"))
                             .split(",")
                             .map((a) => {
@@ -383,16 +327,16 @@
                     }
                 }
                 let definition;
-                let argstr = args.join(",");
+                const argstr = args.join(",");
                 if (!RHU.exists(name))
                     name = constructor.name;
                 name.replace(/[ \t\r\n]/g, "");
                 if (name === "")
                     name = "__ReflectConstruct__";
-                let parts = name.split(".").filter(c => c !== "");
+                const parts = name.split(".").filter(c => c !== "");
                 let evalStr = "{ let ";
                 for (let i = 0; i < parts.length - 1; ++i) {
-                    let part = parts[i];
+                    const part = parts[i];
                     evalStr += `${part} = {}; ${part}.`;
                 }
                 evalStr += `${parts[parts.length - 1]} = function(${argstr}) { return definition.__reflect__.call(this, new.target, [${argstr}]); }; definition = ${parts.join(".")} }`;
@@ -409,7 +353,7 @@
                 };
                 definition.__reflect__ = function (newTarget, args = []) {
                     if (RHU.exists(newTarget)) {
-                        let obj = Reflect.construct(base, definition.__args__(...args), definition);
+                        const obj = Reflect.construct(base, definition.__args__(...args), definition);
                         definition.__constructor__.call(obj, ...args);
                         return obj;
                     }
@@ -423,7 +367,7 @@
                     element.removeAttribute(element.attributes[0].name);
             },
             getElementById: function (id, clearID = true) {
-                let el = document.getElementById(id);
+                const el = document.getElementById(id);
                 if (RHU.exists(el) && clearID)
                     el.removeAttribute("id");
                 return el;
@@ -438,117 +382,124 @@
         RHU.definePublicAccessor(RHU, "config", {
             get: function () { return core.config; }
         });
-        let isEventListener = function (listener) {
-            return listener instanceof Function;
-        };
-        let node = document.createTextNode("");
-        let addEventListener = node.addEventListener.bind(node);
-        RHU.addEventListener = function (type, listener, options) {
-            let context = RHU;
-            if (isEventListener(listener))
-                addEventListener(type, ((e) => { listener.call(context, e.detail); }), options);
-            else
-                addEventListener(type, ((e) => { listener.handleEvent.call(context, e.detail); }), options);
-        };
-        RHU.removeEventListener = node.removeEventListener.bind(node);
-        RHU.dispatchEvent = node.dispatchEvent.bind(node);
     })();
     (function () {
-        core.moduleLoader = {
-            importList: new Set(),
-            watching: [],
-            imported: [],
-            run: function (module) {
-                if (core.exists(module.callback))
-                    module.callback(result);
-                this.imported.push(module);
-            },
-            execute: function (module) {
-                let result = core.dependencies(module);
-                if (result.hard.missing.length === 0) {
-                    this.run(module);
-                    return true;
+        const require = (object, result, missing) => {
+            for (const [key, value] of Object.entries(object)) {
+                if (typeof value === "string" || value instanceof String) {
+                    const [loaded, module] = core.moduleLoader.get(value);
+                    if (loaded) {
+                        result[key] = module;
+                    }
+                    else {
+                        missing.push(value);
+                    }
                 }
                 else {
-                    let msg = `could not loaded as not all hard dependencies were found.`;
-                    if (core.exists(result.trace) && core.exists(result.trace.stack))
-                        msg += `\n${result.trace.stack.split("\n").splice(1).join("\n")}\n`;
-                    for (let dependency of result.hard.missing) {
-                        msg += (`\n\tMissing '${dependency}'`);
-                    }
-                    if (core.exists(module.name))
-                        console.warn(`Module, '${module.name}', ${msg}`);
-                    else
-                        console.warn(`Unknown module ${msg}`);
+                    require(value, result, missing);
+                }
+            }
+        };
+        core.moduleLoader = {
+            loading: new Set(),
+            failed: [],
+            watching: [],
+            imported: [],
+            skipped: [],
+            cache: new Map(),
+            set: function (module, obj) {
+                if (this.cache.has(module))
                     return false;
+                this.cache.set(module, obj);
+            },
+            get: function (module) {
+                if (this.cache.has(module)) {
+                    return [true, this.cache.get(module)];
+                }
+                else {
+                    return [false, undefined];
                 }
             },
-            reconcile: function (allowPartial = false) {
+            onLoad: function (module) {
+                this.loading.delete(module);
+            },
+            execute: function (module) {
+                if (RHU.exists(module.name)) {
+                    if (this.cache.has(module.name)) {
+                        console.warn(`${module.name} was skipped as a module of the same name was already imported.${core.exists(module.trace.stack)
+                            ? "\n" + module.trace.stack.split("\n")[1]
+                            : ""}`);
+                        this.skipped.push(module);
+                        return;
+                    }
+                }
+                const missing = [];
+                const req = {};
+                require(module.require, req, missing);
+                if (missing.length === 0) {
+                    try {
+                        const result = module.callback(req);
+                        if (RHU.exists(module.name)) {
+                            this.set(module.name, result);
+                        }
+                        this.imported.push(module);
+                    }
+                    catch (e) {
+                        console.error(`Failed to import ${module.name} ${core.exists(module.trace.stack)
+                            ? "\n" + module.trace.stack.split("\n")[1]
+                            : ""}`);
+                        console.error(e.toString());
+                        this.failed.push(module);
+                    }
+                }
+                else {
+                    this.watching.push(module);
+                }
+            },
+            reconcile: function (module) {
+                this.watching.push(module);
                 let oldLen = this.watching.length;
                 do {
                     oldLen = this.watching.length;
-                    let old = this.watching;
+                    const old = this.watching;
                     this.watching = [];
-                    for (let module of old) {
-                        let result = core.dependencies(module);
-                        if ((!allowPartial && (result.hard.missing.length === 0 && result.soft.missing.length === 0))
-                            || (allowPartial && result.hard.missing.length === 0)) {
-                            if (core.exists(module.callback))
-                                module.callback(result);
-                            this.imported.push(module);
-                        }
-                        else
-                            this.watching.push(module);
+                    for (const module of old) {
+                        this.execute(module);
                     }
                 } while (oldLen !== this.watching.length);
             },
-            load: function (module) {
-                if (core.readyState !== RHU.COMPLETE) {
-                    this.watching.push(module);
-                }
-                else
-                    this.execute(module);
-            },
-            onLoad: function (isSuccessful, module) {
-                if (isSuccessful)
-                    this.reconcile();
-                this.importList.delete(module);
-                if (this.importList.size === 0)
-                    this.onComplete();
-            },
-            onComplete: function () {
-                core.readyState = RHU.COMPLETE;
-                this.reconcile();
-                this.reconcile(true);
-                for (let module of this.watching)
-                    this.execute(module);
-                if (core.exists(core.loader.root.params.load))
-                    if (core.exists(window[core.loader.root.params.load]))
-                        window[core.loader.root.params.load]();
-                    else
-                        console.error(`Callback for 'load' event called '${core.loader.root.params.load}' does not exist.`);
-                RHU.dispatchEvent(RHU.CustomEvent("load", {}));
-            }
         };
-        let RHU = window.RHU;
-        RHU.require = function (root, module) {
-            if (core.dependencies(module).hard.missing.length === 0)
-                return root;
-            throw new ReferenceError("Not all hard dependencies were available.");
+        const RHU = window.RHU;
+        RHU.module = function (trace, name, require, callback) {
+            core.moduleLoader.reconcile({
+                trace: trace,
+                name: name,
+                require: require,
+                callback: callback,
+            });
+            return undefined;
         };
-        RHU.module = function (module) {
-            return module;
+        RHU.require = function (trace, require, callback) {
+            core.moduleLoader.reconcile({
+                trace: trace,
+                require: require,
+                callback: callback,
+            });
+            return undefined;
         };
-        RHU.import = function (module) {
-            core.moduleLoader.load(module);
+        RHU.status = function () {
+            console.log(RHU.imports.toString());
+            console.log(RHU.waiting.toString());
+            console.error(RHU.failed.toString());
         };
         RHU.definePublicAccessor(RHU, "imports", {
             get: function () {
-                let obj = [...core.moduleLoader.imported];
+                const obj = [...core.moduleLoader.imported];
                 obj.toString = function () {
-                    let msg = "Imports in order of execution:";
-                    for (let module of obj) {
-                        msg += `\n${core.exists(module.name) ? module.name : "Unknown"}${core.exists(module.trace) && core.exists(module.trace.stack)
+                    let msg = `Imports in order of execution [${obj.length}]:`;
+                    for (const module of obj) {
+                        const name = RHU.exists(module.name) ? module.name : "[rhu/require]";
+                        msg += `\n${name}${core.exists(module.trace.stack)
                             ? "\n" + module.trace.stack.split("\n")[1]
                             : ""}`;
                     }
@@ -557,25 +508,65 @@
                 return obj;
             }
         });
-        for (let module of core.config.modules) {
-            core.moduleLoader.importList.add({
+        RHU.definePublicAccessor(RHU, "waiting", {
+            get: function () {
+                const obj = [...core.moduleLoader.watching];
+                obj.toString = function () {
+                    let msg = `Modules being watched [${obj.length}]:`;
+                    for (const module of obj) {
+                        const name = RHU.exists(module.name) ? module.name : "[rhu/require]";
+                        msg += `\n${name}${core.exists(module.trace.stack)
+                            ? "\n" + module.trace.stack.split("\n")[1]
+                            : ""}${(() => {
+                            const missing = [];
+                            require(module.require, {}, missing);
+                            let list = "";
+                            for (const module of missing) {
+                                list += `\n\t- '${module}' is missing`;
+                            }
+                            return list;
+                        })()}`;
+                    }
+                    return msg;
+                };
+                return obj;
+            }
+        });
+        RHU.definePublicAccessor(RHU, "failed", {
+            get: function () {
+                const obj = [...core.moduleLoader.failed];
+                obj.toString = function () {
+                    let msg = `Modules that failed to import [${obj.length}]:`;
+                    for (const module of obj) {
+                        const name = RHU.exists(module.name) ? module.name : "[rhu/require]";
+                        msg += `\n${name}${core.exists(module.trace.stack)
+                            ? "\n" + module.trace.stack.split("\n")[1]
+                            : ""}`;
+                    }
+                    return msg;
+                };
+                return obj;
+            }
+        });
+        for (const module of core.config.modules) {
+            core.moduleLoader.loading.add({
                 path: core.loader.root.path(core.path.join("modules", `${module}.js`)),
                 name: module,
                 type: RHU.MODULE
             });
         }
-        for (let module of core.config.extensions) {
-            core.moduleLoader.importList.add({
+        for (const module of core.config.extensions) {
+            core.moduleLoader.loading.add({
                 path: core.loader.root.path(core.path.join("extensions", `${module}.js`)),
                 name: module,
                 type: RHU.EXTENSION
             });
         }
-        for (let includePath in core.config.includes) {
+        for (const includePath in core.config.includes) {
             if (typeof includePath !== "string" || includePath === "")
                 continue;
-            let isAbsolute = core.path.isAbsolute(includePath);
-            for (let module of core.config.includes[includePath]) {
+            const isAbsolute = core.path.isAbsolute(includePath);
+            for (const module of core.config.includes[includePath]) {
                 if (typeof module !== "string" || module === "")
                     continue;
                 let path;
@@ -583,22 +574,18 @@
                     path = core.path.join(includePath, `${module}.js`);
                 else
                     path = core.loader.root.path(core.path.join(includePath, `${module}.js`));
-                core.moduleLoader.importList.add({
+                core.moduleLoader.loading.add({
                     path: path,
                     name: module,
                     type: RHU.MODULE
                 });
             }
         }
-        if (core.moduleLoader.importList.size === 0)
-            core.moduleLoader.onComplete();
-        else {
-            for (let module of core.moduleLoader.importList) {
-                core.loader.JS(module.path, {
-                    name: module.name,
-                    type: module.type
-                }, (isSuccessful) => core.moduleLoader.onLoad(isSuccessful, module));
-            }
+        for (const module of core.moduleLoader.loading) {
+            core.loader.JS(module.path, {
+                name: module.name,
+                type: module.type
+            }, () => core.moduleLoader.onLoad(module));
         }
     })();
 })();

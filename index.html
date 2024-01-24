@@ -1,0 +1,74 @@
+<!-- renderer -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Docuscript</title>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,400italic">
+	<link rel="stylesheet" href="./default.css">
+
+	<link rel="stylesheet" href="./js3party/Highlight/styles/default.min.css">
+	<script src="./js3party/Highlight/highlight.min.js"></script>
+	<script src="./js3party/fuse.js"></script>
+	<!--<script src="./js3party/three.min.js"></script>-->
+
+	<script type="text/javascript" src="./docuscript/docuscript.js"></script>
+	
+	<script type="text/x-rhu-config">
+		RHU.config = {
+			modules: ["macro", "event", "weak", "style"]
+		};
+	</script>
+	<script type="text/javascript" src="./js3party/RHU/RHU.js"></script>
+
+	<!-- RHU Components -->
+	<script type="text/javascript" src="./components/atoms/dropdown/index.js" defer></script>
+	<script type="text/javascript" src="./components/atoms/dropdown/style.js" defer></script>
+	<script type="text/javascript" src="./components/molecules/filterlist/index.js" defer></script>
+	<script type="text/javascript" src="./components/molecules/filterlist/style.js" defer></script>
+	<script type="text/javascript" src="./components/organisms/navbar/index.js" defer></script>
+	<script type="text/javascript" src="./components/organisms/navbar/style.js" defer></script>
+	<script type="text/javascript" src="./components/organisms/docpages/index.js" defer></script>
+	<script type="text/javascript" src="./components/organisms/docpages/style.js" defer></script>
+	<script type="text/javascript" src="./components/atoms/icons/index.js" defer></script>
+	<script type="text/javascript" src="./components/atoms/icons/ArrowDownIcon.js" defer></script>
+	
+	<!-- Main Code -->
+	<script type="text/javascript" src="./theme.js" defer></script>
+	<script type="text/javascript" src="./index.js" defer></script>
+
+	<script type="text/javascript" src="./docs/indices.js" defer></script>
+	<script type="text/javascript" src="./docs/pages.js" defer></script>
+	<script type="text/javascript" src="./docs.js" defer></script>
+
+	<!-- Docuscript Language Specification -->
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/rhu@syntax.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/rhu@helper.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/rhu@styles.js" defer></script>
+
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/code/@components/molecules/codeblock/index.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/code/@components/molecules/codeblock/style.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/code/@styles.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/code/@syntax.js" defer></script>
+
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/images/@styles.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/images/@syntax.js" defer></script>
+
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/lists/@styles.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/lists/@syntax.js" defer></script>
+
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/tables/@styles.js" defer></script>
+	<script type="text/javascript" src="./docuscript/@rhu-syntax/tables/@syntax.js" defer></script>
+</head>
+
+<body>
+	<div style="width: 100%; height: 100%;" rhu-macro="App">
+	</div>
+</body>
+
+</html>
