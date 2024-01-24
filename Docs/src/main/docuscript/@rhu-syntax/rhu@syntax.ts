@@ -9,15 +9,13 @@ declare namespace RHUDocuscript {
         Tables.NodeMap & 
         Code.NodeMap &
         Images.NodeMap &
-        Lists.NodeMap &
-        MathJax.NodeMap;
+        Lists.NodeMap;
 
     type NodeFuncMapIncludes = 
         Tables.FuncMap &
         Code.FuncMap &
         Images.FuncMap &
-        Lists.FuncMap &
-        MathJax.FuncMap;
+        Lists.FuncMap;
 
     interface BaseNodeMap
     {
@@ -96,14 +94,12 @@ RHU.module(new Error(), "docuscript", {
     code: "docuscript/code",
     images: "docuscript/images",
     lists: "docuscript/lists",
-    mathjax: "docuscript/mathjax",
 }, function({
     Macro, helper, style,
     code, 
     tables,
     images,
     lists,
-    mathjax,
 }) {
     type context = RHUDocuscript.Context;
     type node<T extends RHUDocuscript.Language | undefined = undefined> = RHUDocuscript.Node<T>;
@@ -113,7 +109,6 @@ RHU.module(new Error(), "docuscript", {
         ...code,
         ...images,
         ...lists,
-        ...mathjax,
     };
 
     return {
