@@ -1,0 +1,96 @@
+/**
+* This file contains all css defaults
+*/
+
+@font-face {
+    font-family: docons;
+    src: url(docons.woff2);
+}
+
+*, *::before, *::after
+{
+    box-sizing: border-box;
+}
+
+*
+{
+    margin: 0;
+    padding: 0;
+    font: inherit;
+
+    overflow-wrap: break-word; 
+}
+
+img, picture, svg, video 
+{
+    display: block;
+    max-width: 100%;
+}
+
+div
+{
+    /* 
+    required to prevent child items from growing beyond container size:
+        https://stackoverflow.com/questions/47820826/word-wrap-in-flexbox-is-not-respecting-100-width-limit 
+        https://stackoverflow.com/a/66689926/9642458 
+        https://stackoverflow.com/a/41675912/9642458
+    moved to all elements as opposed to keeping them in the specific classes for ease of use 
+    (prevents having to debug flex items to find which container needs min-width set)
+    for more information, look into the difference between min-width: 0 and min-width: auto as well as min-height: 0 and min-height: auto
+    */
+    min-width: 0;
+    min-height: 0;
+}
+
+button
+{
+    user-select: none;
+    cursor: pointer;
+    background-color: transparent;
+    border-radius: 0;
+    border-style: none;
+    border-width: 0;
+    border-color: transparent;
+}
+
+html, body
+{
+    width: 100%;
+    height: 100%;
+}
+
+ol, ul
+{
+    list-style: none;
+}
+
+/* Prevent highlighting images: https://stackoverflow.com/questions/6816080/how-to-disable-highlight-on-a-image */
+img {
+    -khtml-user-select: none;
+    -o-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* remove contenteditable and input default border */
+input, [contenteditable] 
+{
+    outline: none;
+}
+input
+{
+    color: inherit;
+    border-style: none;
+}
+
+textarea
+{
+    padding: 0; 
+    margin: 0; 
+    background-color: transparent; 
+    color: inherit; 
+    border: none; 
+    outline: none; 
+    box-shadow: none;
+}

@@ -18,5 +18,8 @@ let GTFOReplaySettings: GTFOReplaySettings = {
     hitLingerTime: 200,
     alertLingerTime: 1500,
     screamLingerTime: 1500,
-    maxProjectileLifetime: -1, // NOTE(randomuserhi): Only here to fix issue with old replays where pellets didnt remove themselves for an unknown reason
+    // NOTE(randomuserhi): Only here to fix issue with old replays where pellets didnt trigger despawn event, 
+    //                     so the replay viewer has to forcibly add them in for pellets that live longer than 
+    //                     this value
+    maxProjectileLifetime: -1,
 }

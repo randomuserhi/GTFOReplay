@@ -817,7 +817,8 @@ interface GTFOReplayConstructor
                 try {
                     let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
 
-                    // Manage pellet lifetime safety => solve bug with old replays and kraken
+                    // NOTE(randomuserhi): Manage pellet lifetime safety => solve bug with old replays and kraken where
+                    //                     pellets failed to despawn
                     const pelletEvent: GTFOEvent<"spawnPellet"> = t.detail as unknown as GTFOEvent<"spawnPellet">;
                     if ((t as GTFOTimeline<GTFOEvent>).detail.type == "spawnPellet" && GTFOReplaySettings.maxProjectileLifetime > 0) {
                         pelletLifetime.set(pelletEvent.detail.instance, t.time);
@@ -898,6 +899,7 @@ interface GTFOReplayConstructor
                 position.z *= GTFOReplaySettings.scale;
                 scale *= GTFOReplaySettings.scale;
 
+                // Dont track pellets that should have despawned (only applies to broken replays and when GTFOReplaySetting.maxPelletLifeTime is > 0)
                 if (!blackListedPellet.has(instance)) {
                     // Update dynamic position
                     if (!parser.dynamics.has(instance))
