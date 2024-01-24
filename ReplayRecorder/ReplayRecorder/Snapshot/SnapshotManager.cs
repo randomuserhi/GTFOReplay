@@ -79,6 +79,8 @@ namespace ReplayRecorder {
             EnemyScreamed,
 
             EnemyTargetSet,
+
+            BulletShot,
         }
 
         public long timestamp;
@@ -248,15 +250,15 @@ namespace ReplayRecorder {
             float rate;
             // Change tick rate based on state:
             switch (DramaManager.CurrentStateEnum) {
-                case DRAMA_State.Encounter:
-                case DRAMA_State.Survival:
-                case DRAMA_State.IntentionalCombat:
-                case DRAMA_State.Combat:
-                    rate = 1f / 20f;
-                    break;
-                default:
-                    rate = 1f / 5f;
-                    break;
+            case DRAMA_State.Encounter:
+            case DRAMA_State.Survival:
+            case DRAMA_State.IntentionalCombat:
+            case DRAMA_State.Combat:
+                rate = 1f / 20f;
+                break;
+            default:
+                rate = 1f / 5f;
+                break;
             }
             if (tickRate != rate) {
                 timer = 0;

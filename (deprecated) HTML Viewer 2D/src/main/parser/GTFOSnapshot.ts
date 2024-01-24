@@ -348,7 +348,7 @@ interface GTFOSnapshotConstructor
                     else throw ReferenceError("Player damaged an enemy with a sentry, yet a sentry was not placed by them.");
                 }
                 else pDynamic = snapshot.dynamics.get(player.instance)!;
-                // TODO(randomuserhi): Improve performance of this...
+                /* // TODO(randomuserhi): Improve performance of this...
                 let r = xor(time + e.damage ^ 0x190104029);
                 r(); r(); r();
                 let dx = -15 + r() * 30;
@@ -360,7 +360,7 @@ interface GTFOSnapshotConstructor
                     damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
                     time: time,
                     color: "233, 181, 41"
-                });
+                });*/
             }
             else throw new ReferenceError("Enemy does not exist to do bullet damage.");
         },
@@ -489,7 +489,7 @@ interface GTFOSnapshotConstructor
                 let tDynamic = snapshot.dynamics.get(target.instance)!;
                 let sDynamic = snapshot.dynamics.get(source.instance)!;
                 
-                // TODO(randomuserhi): Improve performance of this
+                /* // TODO(randomuserhi): Improve performance of this
                 let r = xor(time + e.damage ^ 0x190104029);
                 r(); r(); r();
                 let dx = -15 + r() * 30;
@@ -501,7 +501,7 @@ interface GTFOSnapshotConstructor
                     time: time,
                     damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings 
                     color: "233, 181, 41"
-                });
+                });*/
             }
             else throw new ReferenceError("Either enemy or player did not exist.");
         },
@@ -751,6 +751,18 @@ interface GTFOSnapshotConstructor
                 }
             }
             else throw ReferenceError("enemy does not exist.");
+        },
+        "bulletShot": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventBulletShot;
+            snapshot.tracers.push({
+                dimensionIndex: e.dimensionIndex,
+                a: { x: e.start.x, y: e.start.y, z: e.start.z },
+                b: { x: e.end.x, y: e.end.y, z: e.end.z },
+                time: time,
+                damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings 
+                color: e.hit ? "233, 181, 41" : "255, 255, 255"
+            });
         }
     };
 

@@ -25,47 +25,47 @@ namespace ReplayRecorder.Enemies {
     internal static partial class Enemy {
         public static rEB_States toRState(EB_States state) {
             switch (state) {
-                case EB_States.Patrolling:
-                case EB_States.Patrolling_Investigate:
-                case EB_States.FollowingGroup:
-                case EB_States.FollowingGroup_MoveToNode:
-                    return rEB_States.Patrolling;
-                case EB_States.InCombat:
-                case EB_States.InCombat_MoveToPoint:
-                case EB_States.InCombat_MoveToTarget:
-                case EB_States.InCombat_MoveToNextNode:
-                case EB_States.InCombat_MoveToNextNode_PathBlocked:
-                case EB_States.InCombat_MoveToNextNode_PathOpen:
-                case EB_States.InCombat_MoveToNextNode_DestroyDoor:
-                case EB_States.InCombat_ChargedAttack:
-                case EB_States.Incombat_GraphTraversal_Flyer:
-                case EB_States.Incombat_FlyOutOfBoss_Flyer:
-                case EB_States.InCombat_Dash:
-                case EB_States.InCombat_HeldPlayer:
-                case EB_States.InCombat_AfterHeldPlayer:
-                case EB_States.InCombat_Consume:
-                case EB_States.InCombat_SpitOut:
-                case EB_States.InCombat_Stagger:
-                case EB_States.SquidBoss_Hibernating:
-                case EB_States.SquidBoss_Intro:
-                case EB_States.SquidBoss_Combat:
-                case EB_States.SquidBoss_Raging:
-                case EB_States.SquidBoss_Spawning:
-                case EB_States.SquidBoss_Cooldown:
-                    return rEB_States.InCombat;
-                default:
-                    return rEB_States.Hibernating;
+            case EB_States.Patrolling:
+            case EB_States.Patrolling_Investigate:
+            case EB_States.FollowingGroup:
+            case EB_States.FollowingGroup_MoveToNode:
+                return rEB_States.Patrolling;
+            case EB_States.InCombat:
+            case EB_States.InCombat_MoveToPoint:
+            case EB_States.InCombat_MoveToTarget:
+            case EB_States.InCombat_MoveToNextNode:
+            case EB_States.InCombat_MoveToNextNode_PathBlocked:
+            case EB_States.InCombat_MoveToNextNode_PathOpen:
+            case EB_States.InCombat_MoveToNextNode_DestroyDoor:
+            case EB_States.InCombat_ChargedAttack:
+            case EB_States.Incombat_GraphTraversal_Flyer:
+            case EB_States.Incombat_FlyOutOfBoss_Flyer:
+            case EB_States.InCombat_Dash:
+            case EB_States.InCombat_HeldPlayer:
+            case EB_States.InCombat_AfterHeldPlayer:
+            case EB_States.InCombat_Consume:
+            case EB_States.InCombat_SpitOut:
+            case EB_States.InCombat_Stagger:
+            case EB_States.SquidBoss_Hibernating:
+            case EB_States.SquidBoss_Intro:
+            case EB_States.SquidBoss_Combat:
+            case EB_States.SquidBoss_Raging:
+            case EB_States.SquidBoss_Spawning:
+            case EB_States.SquidBoss_Cooldown:
+                return rEB_States.InCombat;
+            default:
+                return rEB_States.Hibernating;
             }
         }
         public static rEB_States toRState(AgentMode state) {
             switch (state) {
-                case AgentMode.Scout:
-                case AgentMode.Patrolling:
-                    return rEB_States.Patrolling;
-                case AgentMode.Agressive:
-                    return rEB_States.InCombat;
-                default:
-                    return rEB_States.Hibernating;
+            case AgentMode.Scout:
+            case AgentMode.Patrolling:
+                return rEB_States.Patrolling;
+            case AgentMode.Agressive:
+                return rEB_States.InCombat;
+            default:
+                return rEB_States.Hibernating;
             }
         }
         public enum rEB_States {
@@ -77,10 +77,10 @@ namespace ReplayRecorder.Enemies {
 
         public static rES_States toRState(ES_StateEnum state) {
             switch (state) {
-                case ES_StateEnum.StuckInGlue:
-                    return rES_States.StuckInGlue;
-                default:
-                    return rES_States.Default;
+            case ES_StateEnum.StuckInGlue:
+                return rES_States.StuckInGlue;
+            default:
+                return rES_States.Default;
             }
         }
         public enum rES_States {
@@ -131,7 +131,7 @@ namespace ReplayRecorder.Enemies {
             public SpawnEnemy(rEnemyAgent enemy, AgentMode mode) {
                 this.enemy = enemy;
                 state = toRState(mode);
-                type = GTFOSpecification.GetEnemyType(enemy.agent.EnemyData.name);
+                type = GTFOSpecification.GetEnemyType(enemy.agent.EnemyData.persistentID);
             }
 
             public const int SizeOf = sizeof(int) + 2;
@@ -150,7 +150,7 @@ namespace ReplayRecorder.Enemies {
             rEnemyAgent rEnemy = new rEnemyAgent(enemy);
             enemies.Add(rEnemy.instanceID, rEnemy);
 
-            APILogger.Debug($"[{rEnemy.instanceID}] was spawned ({enemy.EnemyData.name})");
+            APILogger.Debug($"[{rEnemy.instanceID}] was spawned ({enemy.EnemyData.name} [{enemy.EnemyData.persistentID}])");
             SnapshotManager.AddEvent(GameplayEvent.Type.SpawnEnemy, new SpawnEnemy(rEnemy, mode));
             SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rEnemy.instanceID, new SnapshotManager.rAgent(enemy)));
         }

@@ -708,6 +708,32 @@ interface GTFOReplayConstructor
                     detail: e
                 }
             };
+        },
+        "bulletShot": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            let e: GTFOEventBulletShot = {
+                damage: BitHelper.readHalf(bytes, reader),
+                hit: BitHelper.readByte(bytes, reader) != 0,
+                dimensionIndex: BitHelper.readByte(bytes, reader),
+                start: BitHelper.readVector(bytes, reader),
+                end: BitHelper.readVector(bytes, reader)
+            };
+            e.start.x *= GTFOReplaySettings.scale;
+            e.start.y *= GTFOReplaySettings.scale;
+            e.start.z *= GTFOReplaySettings.scale;
+            e.end.x *= GTFOReplaySettings.scale;
+            e.end.y *= GTFOReplaySettings.scale;
+            e.end.z *= GTFOReplaySettings.scale;
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "bulletShot",
+                    detail: e
+                }
+            };
         }
     };
 
@@ -944,6 +970,7 @@ interface GTFOReplayConstructor
                     if (a.type == "event") return -1;
                     else if (a.type == "EVENTSECTION" && b.type != "event") return -1;
                     else if (a.type == "DYNAMICSECTION") return 1;
+                    else if (a.type == "dynamic" && b.type == "DYNAMICSECTION") return -1;
                     else return 1;
                 }
             }
