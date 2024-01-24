@@ -348,7 +348,7 @@ interface GTFOSnapshotConstructor
                     else throw ReferenceError("Player damaged an enemy with a sentry, yet a sentry was not placed by them.");
                 }
                 else pDynamic = snapshot.dynamics.get(player.instance)!;
-                /* // TODO(randomuserhi): Improve performance of this...
+                // TODO(randomuserhi): Improve performance of this...
                 let r = xor(time + e.damage ^ 0x190104029);
                 r(); r(); r();
                 let dx = -15 + r() * 30;
@@ -359,8 +359,9 @@ interface GTFOSnapshotConstructor
                     b: { x: eDynamic.position.x + dx, y: eDynamic.position.y, z: eDynamic.position.z + dz },
                     damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
                     time: time,
-                    color: "233, 181, 41"
-                });*/
+                    color: "255, 255, 255",
+                    type: "damage"
+                });
             }
             else throw new ReferenceError("Enemy does not exist to do bullet damage.");
         },
@@ -380,7 +381,8 @@ interface GTFOSnapshotConstructor
                     b: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
                     damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
                     time: time,
-                    color: "233, 181, 41"
+                    color: "233, 181, 41",
+                    type: "melee"
                 });
             }
             else throw new ReferenceError("Enemy does not exist to do melee damage.");
@@ -469,7 +471,8 @@ interface GTFOSnapshotConstructor
                     b: { x: pDynamic.position.x, y: pDynamic.position.y, z: pDynamic.position.z },
                     damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings
                     time: time,
-                    color: "233, 0, 41"
+                    color: "233, 0, 41",
+                    type: "melee"
                 });
             }
             else throw new ReferenceError("Either enemy or player did not exist.");
@@ -489,7 +492,7 @@ interface GTFOSnapshotConstructor
                 let tDynamic = snapshot.dynamics.get(target.instance)!;
                 let sDynamic = snapshot.dynamics.get(source.instance)!;
                 
-                /* // TODO(randomuserhi): Improve performance of this
+                // TODO(randomuserhi): Improve performance of this
                 let r = xor(time + e.damage ^ 0x190104029);
                 r(); r(); r();
                 let dx = -15 + r() * 30;
@@ -500,8 +503,9 @@ interface GTFOSnapshotConstructor
                     b: { x: tDynamic.position.x + dx, y: tDynamic.position.y, z: tDynamic.position.z + dz },
                     time: time,
                     damage: e.damage / 5, // TODO(randomuserhi): change ratio to be in settings 
-                    color: "233, 181, 41"
-                });*/
+                    color: "255, 255, 255",
+                    type: "damage"
+                });
             }
             else throw new ReferenceError("Either enemy or player did not exist.");
         },
@@ -567,13 +571,15 @@ interface GTFOSnapshotConstructor
                     let tDynamic = snapshot.mines.get(e.instance)!;
                     let sDynamic = snapshot.dynamics.get(source.instance)!;
                     
+                    // NOTE(randomuserhi): idk what this is for
                     snapshot.tracers.push({
                         dimensionIndex: sDynamic.dimensionIndex,
                         a: { x: sDynamic.position.x, y: sDynamic.position.y, z: sDynamic.position.z },
                         b: { x: tDynamic.position.x, y: tDynamic.position.y, z: tDynamic.position.z },
                         time: time,
                         damage: 1,
-                        color: "233, 181, 41"
+                        color: "233, 181, 41",
+                        type: "damage"
                     });
                 }
                 else throw new ReferenceError("Either mine or player did not exist.");
@@ -652,7 +658,6 @@ interface GTFOSnapshotConstructor
                     color: "255, 255, 255"
                 });
                 snapshot.dynamics.delete(e.instance);
-                    
             }
             //else throw ReferenceError("pellet does not exist.");
         },
@@ -761,7 +766,8 @@ interface GTFOSnapshotConstructor
                 b: { x: e.end.x, y: e.end.y, z: e.end.z },
                 time: time,
                 damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings 
-                color: e.hit ? "233, 181, 41" : "255, 255, 255"
+                color: "233, 181, 41",
+                type: "visual"
             });
         }
     };

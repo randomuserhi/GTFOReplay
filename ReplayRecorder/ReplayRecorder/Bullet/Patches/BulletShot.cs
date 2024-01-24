@@ -22,13 +22,14 @@ namespace ReplayRecorder.Bullets.Patches {
 
         // Handle damage amount of bulletshot
         private static float damage = 0;
+        private static bool autoTrack = true;
 
         #region damage patches
 
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
         [HarmonyPrefix]
         private static void Prefix_SentryGunFire(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
-            damage = __instance.m_archetypeData.GetSentryDamage(SentryGunInstance_Firing_Bullets.s_weaponRayData.owner, SentryGunInstance_Firing_Bullets.s_weaponRayData.rayHit.distance, targetIsTagged);
+            damage = __instance.m_archetypeData.GetSentryDamage(__instance.m_core.Owner, 0.01f, targetIsTagged);
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
         [HarmonyPostfix]
@@ -39,7 +40,7 @@ namespace ReplayRecorder.Bullets.Patches {
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPrefix]
         private static void Prefix_SentryShotgunFire(SentryGunInstance_Firing_Bullets __instance, bool isMaster, bool targetIsTagged) {
-            damage = __instance.m_archetypeData.GetSentryDamage(SentryGunInstance_Firing_Bullets.s_weaponRayData.owner, SentryGunInstance_Firing_Bullets.s_weaponRayData.rayHit.distance, targetIsTagged);
+            damage = __instance.m_archetypeData.GetSentryDamage(__instance.m_core.Owner, 0.01f, targetIsTagged);
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPostfix]
@@ -50,27 +51,157 @@ namespace ReplayRecorder.Bullets.Patches {
         [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
         [HarmonyPrefix]
         private static void Prefix_BulletWeaponSyncFire(BulletWeaponSynced __instance) {
-            ownerSlot = __instance.Owner.PlayerSlotIndex;
+            autoTrack = false;
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
+
+            byte dimensionIndex = (byte)__instance.Owner.m_dimensionIndex;
+
+            Transform alignTransform = __instance.MuzzleAlign;
+            Vector3 fireDir = __instance.Owner.TargetLookDir;
+            Vector3 vector = alignTransform.position;
+            float maxRayDist = __instance.MaxRayDist;
+
+            if (__instance.ArchetypeData.PiercingBullets) {
+                int num2 = 5;
+                int num3 = 0;
+                bool flag = false;
+                float num4 = 0f;
+                int num5 = 0;
+                while (!flag && num3 < num2 && maxRayDist > 0f && num5 < __instance.ArchetypeData.PiercingDamageCountLimit) {
+                    if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
+                        GameObject target = hit.collider.gameObject;
+                        IDamageable? dam = null;
+                        ColliderMaterial tempColliderInfo = target.GetComponent<ColliderMaterial>();
+                        if (tempColliderInfo != null) {
+                            dam = tempColliderInfo.Damageable;
+                        }
+                        if (dam == null) {
+                            dam = target.GetComponent<IDamageable>();
+                        }
+                        bool hitEnemy = dam != null;
+                        if (hitEnemy) {
+                            num5++;
+                        }
+                        Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                        flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
+                        vector = hit.point + fireDir * 0.1f;
+                        num4 += hit.distance;
+                        maxRayDist -= hit.distance;
+                    } else {
+                        flag = true;
+                    }
+                    num3++;
+                }
+            } else if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
+                GameObject target = hit.collider.gameObject;
+                IDamageable? dam = null;
+                ColliderMaterial tempColliderInfo = target.GetComponent<ColliderMaterial>();
+                if (tempColliderInfo != null) {
+                    dam = tempColliderInfo.Damageable;
+                }
+                if (dam == null) {
+                    dam = target.GetComponent<IDamageable>();
+                }
+                bool hitEnemy = dam != null;
+                Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+            }
         }
         [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
         [HarmonyPostfix]
         private static void Postfix_BulletWeaponSyncFire() {
-            ownerSlot = -1;
             damage = 0;
+            autoTrack = true;
         }
 
         [HarmonyPatch(typeof(ShotgunSynced), nameof(ShotgunSynced.Fire))]
         [HarmonyPrefix]
         private static void Prefix_ShotgunSyncFire(ShotgunSynced __instance) {
-            ownerSlot = __instance.Owner.PlayerSlotIndex;
+            autoTrack = false;
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
+
+            byte dimensionIndex = (byte)__instance.Owner.m_dimensionIndex;
+
+            for (int i = 0; i < __instance.ArchetypeData.ShotgunBulletCount; i++) {
+                float f = __instance.m_segmentSize * (float)i;
+                float angOffsetX = 0f;
+                float angOffsetY = 0f;
+                if (i > 0) {
+                    angOffsetX += (float)__instance.ArchetypeData.ShotgunConeSize * Mathf.Cos(f);
+                    angOffsetY += (float)__instance.ArchetypeData.ShotgunConeSize * Mathf.Sin(f);
+                }
+                float randomSpread = __instance.ArchetypeData.ShotgunBulletSpread;
+                Vector3 fireDir = __instance.Owner.TargetLookDir;
+                float maxRayDist = __instance.MaxRayDist;
+
+                Transform alignTransform = __instance.MuzzleAlign;
+                Vector3 vector = alignTransform.position;
+
+                Vector3 up = alignTransform.up;
+                Vector3 right = alignTransform.right;
+                if (Mathf.Abs(angOffsetX) > 0f) {
+                    fireDir = Quaternion.AngleAxis(angOffsetX, up) * fireDir;
+                }
+                if (Mathf.Abs(angOffsetY) > 0f) {
+                    fireDir = Quaternion.AngleAxis(angOffsetY, right) * fireDir;
+                }
+                if (randomSpread > 0f) {
+                    Vector2 insideUnitCircle = UnityEngine.Random.insideUnitCircle;
+                    insideUnitCircle *= randomSpread;
+                    fireDir = Quaternion.AngleAxis(insideUnitCircle.x, up) * fireDir;
+                    fireDir = Quaternion.AngleAxis(insideUnitCircle.y, right) * fireDir;
+                }
+
+                if (__instance.ArchetypeData.PiercingBullets) {
+                    int num2 = 5;
+                    int num3 = 0;
+                    bool flag = false;
+                    float num4 = 0f;
+                    int num5 = 0;
+                    while (!flag && num3 < num2 && maxRayDist > 0f && num5 < __instance.ArchetypeData.PiercingDamageCountLimit) {
+                        if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
+                            GameObject target = hit.collider.gameObject;
+                            IDamageable? dam = null;
+                            ColliderMaterial tempColliderInfo = target.GetComponent<ColliderMaterial>();
+                            if (tempColliderInfo != null) {
+                                dam = tempColliderInfo.Damageable;
+                            }
+                            if (dam == null) {
+                                dam = target.GetComponent<IDamageable>();
+                            }
+                            bool hitEnemy = dam != null;
+                            if (hitEnemy) {
+                                num5++;
+                            }
+                            Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                            flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
+                            vector = hit.point + fireDir * 0.1f;
+                            num4 += hit.distance;
+                            maxRayDist -= hit.distance;
+                        } else {
+                            flag = true;
+                        }
+                        num3++;
+                    }
+                } else if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
+                    GameObject target = hit.collider.gameObject;
+                    IDamageable? dam = null;
+                    ColliderMaterial tempColliderInfo = target.GetComponent<ColliderMaterial>();
+                    if (tempColliderInfo != null) {
+                        dam = tempColliderInfo.Damageable;
+                    }
+                    if (dam == null) {
+                        dam = target.GetComponent<IDamageable>();
+                    }
+                    bool hitEnemy = dam != null;
+                    Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                }
+            }
         }
         [HarmonyPatch(typeof(ShotgunSynced), nameof(ShotgunSynced.Fire))]
         [HarmonyPostfix]
         private static void Postfix_ShotgunSyncFire() {
-            ownerSlot = -1;
             damage = 0;
+            autoTrack = true;
         }
 
         [HarmonyPatch(typeof(BulletWeapon), nameof(BulletWeapon.Fire))]
@@ -97,16 +228,6 @@ namespace ReplayRecorder.Bullets.Patches {
 
         #endregion
 
-        public static uint id = 0;
-
-        private static int ownerSlot = -1;
-        public static int[] skip = new int[4] { 0, 0, 0, 0 };
-        public static void Reset() {
-            for (int i = 0; i < skip.Length; ++i) {
-                skip[i] = 0;
-            }
-        }
-
         [HarmonyPatch(typeof(Weapon), nameof(Weapon.CastWeaponRay),
             new Type[] {
                 typeof(Transform),
@@ -121,6 +242,8 @@ namespace ReplayRecorder.Bullets.Patches {
             })]
         [HarmonyPostfix]
         private static void Postfix_CastWeaponRay(bool __result, Transform alignTransform, Weapon.WeaponHitData weaponRayData, Vector3 originPos) {
+            if (!autoTrack) return;
+
             // NOTE(randomuserhi): glushot is used to ignore cfoam since it also uses weapon ray cast
             if (__result && !glueShot) {
                 PlayerAgent localPlayer = PlayerManager.GetLocalPlayerAgent();
@@ -129,16 +252,16 @@ namespace ReplayRecorder.Bullets.Patches {
                 //                     that way, but I'm lazy.
                 byte dimensionIndex = (byte)localPlayer.m_dimensionIndex;
 
-                if (ownerSlot == -1) {
-                    ownerSlot = localPlayer.PlayerSlotIndex;
+                GameObject target = weaponRayData.rayHit.collider.gameObject;
+                IDamageable? dam = null;
+                ColliderMaterial tempColliderInfo = target.GetComponent<ColliderMaterial>();
+                if (tempColliderInfo != null) {
+                    dam = tempColliderInfo.Damageable;
                 }
-
-                if (skip[ownerSlot] >= 0) {
-                    Bullet.OnBulletShot(id, damage, weaponRayData.rayHit.collider.gameObject.GetComponent<IDamageable>() != null, dimensionIndex, originPos, weaponRayData.rayHit.point);
-                    skip[ownerSlot] = 0;
-                } else {
-                    --skip[ownerSlot];
+                if (dam == null) {
+                    dam = target.GetComponent<IDamageable>();
                 }
+                Bullet.OnBulletShot(damage, dimensionIndex, originPos, weaponRayData.rayHit.point, dam != null);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace ReplayRecorder.Enemies {
             }
         }
 
-        // TODO(randomuserhi) => Only log if the target changes => testing needed to see if this is called every frame or not
+        // TODO(randomuserhi) => Only log if the target changes
         public static void EnemyTargetSet(EnemyAgent enemy, PlayerAgent? player = null) {
             if (!SnapshotManager.active) return;
 

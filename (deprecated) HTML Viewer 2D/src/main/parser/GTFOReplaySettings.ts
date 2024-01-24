@@ -8,6 +8,7 @@ interface GTFOReplaySettings
     hitLingerTime: number;
     alertLingerTime: number;
     screamLingerTime: number;
+    maxProjectileLifetime: number;
 }
 
 let GTFOReplaySettings: GTFOReplaySettings = {
@@ -16,5 +17,6 @@ let GTFOReplaySettings: GTFOReplaySettings = {
     crossLingerTime: 1000,
     hitLingerTime: 200,
     alertLingerTime: 1500,
-    screamLingerTime: 1500
+    screamLingerTime: 1500,
+    maxProjectileLifetime: -1, // NOTE(randomuserhi): Only here to fix issue with old replays where pellets didnt remove themselves for an unknown reason
 }

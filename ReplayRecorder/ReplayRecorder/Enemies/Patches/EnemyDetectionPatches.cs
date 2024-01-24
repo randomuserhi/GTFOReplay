@@ -61,19 +61,19 @@ namespace ReplayRecorder.Enemies.Patches {
 
             // Condition taken from source
             switch (__instance.m_state) {
-                case ES_ScoutScream.ScoutScreamState.Chargeup:
-                    if (!(__instance.m_stateDoneTimer < Clock.Time)) {
-                        break;
-                    }
-
-                    EnemyAgent self = __instance.m_enemyAgent;
-                    Enemy.EnemyScreamed(self, true);
-                    if (!SNet.IsMaster) {
-                        // Client side wake up:
-                        Enemy.EnemyAlerted(self);
-                        APILogger.Debug("Client-side scout wake up.");
-                    }
+            case ES_ScoutScream.ScoutScreamState.Chargeup:
+                if (!(__instance.m_stateDoneTimer < Clock.Time)) {
                     break;
+                }
+
+                EnemyAgent self = __instance.m_enemyAgent;
+                Enemy.EnemyScreamed(self, true);
+                if (!SNet.IsMaster) {
+                    // Client side wake up:
+                    Enemy.EnemyAlerted(self);
+                    APILogger.Debug("Client-side scout wake up.");
+                }
+                break;
             }
         }
         [HarmonyPatch(typeof(ES_ScoutScream), nameof(ES_ScoutScream.CommonUpdate))]
@@ -87,7 +87,8 @@ namespace ReplayRecorder.Enemies.Patches {
         private static void InjectPropagatedTarget(EnemyAI __instance, Agent agent, AgentTargetPropagationType propagation) {
             if (!SNet.IsMaster) return;
 
-            if (wokenFromScream) enemiesWokenFromScream.Add(__instance.m_enemyAgent.GetInstanceID(), Raudy.Now);
+            int instance = __instance.m_enemyAgent.GetInstanceID();
+            if (wokenFromScream && !enemiesWokenFromScream.ContainsKey(instance)) enemiesWokenFromScream.Add(instance, Raudy.Now);
         }
 
         // Correct noise sources

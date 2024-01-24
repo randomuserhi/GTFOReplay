@@ -1,8 +1,6 @@
 ﻿using API;
 using Enemies;
 using Player;
-using ReplayRecorder.Bullets;
-using ReplayRecorder.Bullets.Patches;
 
 namespace ReplayRecorder.Enemies {
     internal class EnemyDamage {
@@ -31,11 +29,6 @@ namespace ReplayRecorder.Enemies {
         }
 
         public static void OnBulletDamage(EnemyAgent receiver, PlayerAgent source, float damage, bool sentry = false) {
-            if (!sentry && source.PlayerSlotIndex != PlayerManager.GetLocalPlayerAgent().PlayerSlotIndex) {
-                ++BulletPatches.skip[source.PlayerSlotIndex];
-                Bullet.OnBulletShot(BulletPatches.id, damage, true, (byte)source.DimensionIndex, source.transform.position, receiver.transform.position);
-            }
-
             //if (damage <= 0) return;
             int instance = receiver.GetInstanceID();
             if (!Enemy.enemies.ContainsKey(instance)) {

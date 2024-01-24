@@ -67,9 +67,6 @@ namespace ReplayRecorder.Player.Patches {
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveShooterProjectileDamage))]
         [HarmonyPrefix]
         private static void ReceivePelletDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
-            // TODO(randomuserhi): Get closest enemy agent to be owner of pellet
-            //                     Use a sphere cast / spatial partition to do so
-            //                     Then I can remove this IsMaster check
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent sourceAgent)) {

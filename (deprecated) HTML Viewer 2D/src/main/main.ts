@@ -25,7 +25,7 @@ RHU.import(RHU.module({ trace: new Error(),
         } as appmountConstructor;
         RHU.Macro(appmount, "appmount", //html
             `
-                <rhu-macro rhu-type="replay"></rhu-macro>
+                <rhu-macro style="position: relative; width: 100%; height: 100%" rhu-type="replay"></rhu-macro>
             `, {
                 element: //html
                 `<div style="position: relative; width: 100%; height: 100%"></div>`

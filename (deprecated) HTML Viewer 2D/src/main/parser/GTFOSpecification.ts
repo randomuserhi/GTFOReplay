@@ -48,7 +48,10 @@ let GTFOSpecification: GTFOSpecification = {
         "Immortal Tank",
 
         "Flyer",
-        "Big Flyer"
+        "Big Flyer",
+
+        "Squid",
+        "Squid Boss"
     ],
     items: [
         //"Unknown",

@@ -715,8 +715,8 @@ interface GTFOReplayConstructor
                 damage: BitHelper.readHalf(bytes, reader),
                 hit: BitHelper.readByte(bytes, reader) != 0,
                 dimensionIndex: BitHelper.readByte(bytes, reader),
-                start: BitHelper.readVector(bytes, reader),
-                end: BitHelper.readVector(bytes, reader)
+                start: BitHelper.readHalfVector(bytes, reader),
+                end: BitHelper.readHalfVector(bytes, reader)
             };
             e.start.x *= GTFOReplaySettings.scale;
             e.start.y *= GTFOReplaySettings.scale;
@@ -789,6 +789,9 @@ interface GTFOReplayConstructor
         let tick = 0;
         let parser: GTFOSnapshot = new GTFOSnapshot(this);
         let cache: GTFOSnapshot = new GTFOSnapshot(this);
+        let pelletLifetime = new Map<number, number>(); // fail safe for shooter projectiles if they exist for too long, add a destroy event
+        let blackListedPellet = new Set<number>()
+        let maxWarnings = 200;
         this.snapshots = [GTFOSnapshot.clone(cache)];
         while(reader.index < bytes.byteLength)
         {
@@ -813,6 +816,39 @@ interface GTFOReplayConstructor
 
                 try {
                     let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
+
+                    // Manage pellet lifetime safety => solve bug with old replays and kraken
+                    const pelletEvent: GTFOEvent<"spawnPellet"> = t.detail as unknown as GTFOEvent<"spawnPellet">;
+                    if ((t as GTFOTimeline<GTFOEvent>).detail.type == "spawnPellet" && GTFOReplaySettings.maxProjectileLifetime > 0) {
+                        pelletLifetime.set(pelletEvent.detail.instance, t.time);
+                    }
+                    for (const [instance, time] of [...pelletLifetime.entries()]) {
+                        if (t.time - time > GTFOReplaySettings.maxProjectileLifetime) {
+                            const despawnPellet: GTFOEvent<"despawnPellet"> = {
+                                type: "despawnPellet",
+                                detail: {
+                                    instance
+                                }
+                            }
+                            const _t: GTFOTimeline = {
+                                type: "event",
+                                tick: t.tick,
+                                time: t.time,
+                                detail: despawnPellet,
+                                order: t.order
+                            };
+                            parser.do(_t);
+                            cache.do(_t);
+                            this.timeline.push(_t);
+                            pelletLifetime.delete(instance);
+                            blackListedPellet.add(instance);
+                            if (maxWarnings > 0) {
+                                --maxWarnings;
+                                console.warn("projectile despawn event forceably added. This should not happen!");
+                            }
+                        }
+                    }
+                    
                     parser.do(t);
                     cache.do(t);
                     this.timeline.push(t);
@@ -862,68 +898,70 @@ interface GTFOReplayConstructor
                 position.z *= GTFOReplaySettings.scale;
                 scale *= GTFOReplaySettings.scale;
 
-                // Update dynamic position
-                if (!parser.dynamics.has(instance))
-                    throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
+                if (!blackListedPellet.has(instance)) {
+                    // Update dynamic position
+                    if (!parser.dynamics.has(instance))
+                        throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
 
-                let dynamic = parser.dynamics.get(instance)!;
+                    let dynamic = parser.dynamics.get(instance)!;
 
-                // NOTE(randomuserhi): * 1000 to convert ms to seconds
-                let dt = (now - dynamic.lastUpdated) / 1000;
-                dynamic.lastUpdated = now;
+                    // NOTE(randomuserhi): * 1000 to convert ms to seconds
+                    let dt = (now - dynamic.lastUpdated) / 1000;
+                    dynamic.lastUpdated = now;
 
-                if (absolute) 
-                {
-                    dynamic.velocity.x = (position.x - dynamic.position.x) / dt;
-                    dynamic.velocity.y = (position.y - dynamic.position.y) / dt;
-                    dynamic.velocity.z = (position.z - dynamic.position.z) / dt;
+                    if (absolute) 
+                    {
+                        dynamic.velocity.x = (position.x - dynamic.position.x) / dt;
+                        dynamic.velocity.y = (position.y - dynamic.position.y) / dt;
+                        dynamic.velocity.z = (position.z - dynamic.position.z) / dt;
 
-                    dynamic.position = position;
-                }
-                else
-                {
-                    dynamic.velocity.x = position.x / dt;
-                    dynamic.velocity.y = position.y / dt;
-                    dynamic.velocity.z = position.z / dt;
-
-                    dynamic.position.x += position.x;
-                    dynamic.position.y += position.y;
-                    dynamic.position.z += position.z;
-                }
-                dynamic.rotation = rotation;
-                dynamic.scale = scale;
-
-                // Add to timeline
-                let t : GTFOTimeline = {
-                    tick: tick,
-                    type: "dynamic",
-                    time: now,
-                    order: i,
-                    detail: {
-                        instance: instance,
-                        position: {
-                            x: dynamic.position.x,
-                            y: dynamic.position.y,
-                            z: dynamic.position.z
-                        },
-                        velocity: {
-                            x: dynamic.velocity.x,
-                            y: dynamic.velocity.y,
-                            z: dynamic.velocity.z,
-                        },
-                        rotation: {
-                            x: dynamic.rotation.x,
-                            y: dynamic.rotation.y,
-                            z: dynamic.rotation.z,
-                            w: dynamic.rotation.w
-                        },
-                        lastUpdated: dynamic.lastUpdated,
-                        scale: dynamic.scale,
-                        dimensionIndex: dimensionIndex
+                        dynamic.position = position;
                     }
-                };
-                this.timeline.push(t);
-                cache.do(t);
+                    else
+                    {
+                        dynamic.velocity.x = position.x / dt;
+                        dynamic.velocity.y = position.y / dt;
+                        dynamic.velocity.z = position.z / dt;
+
+                        dynamic.position.x += position.x;
+                        dynamic.position.y += position.y;
+                        dynamic.position.z += position.z;
+                    }
+                    dynamic.rotation = rotation;
+                    dynamic.scale = scale;
+
+                    // Add to timeline
+                    let t : GTFOTimeline = {
+                        tick: tick,
+                        type: "dynamic",
+                        time: now,
+                        order: i,
+                        detail: {
+                            instance: instance,
+                            position: {
+                                x: dynamic.position.x,
+                                y: dynamic.position.y,
+                                z: dynamic.position.z
+                            },
+                            velocity: {
+                                x: dynamic.velocity.x,
+                                y: dynamic.velocity.y,
+                                z: dynamic.velocity.z,
+                            },
+                            rotation: {
+                                x: dynamic.rotation.x,
+                                y: dynamic.rotation.y,
+                                z: dynamic.rotation.z,
+                                w: dynamic.rotation.w
+                            },
+                            lastUpdated: dynamic.lastUpdated,
+                            scale: dynamic.scale,
+                            dimensionIndex: dimensionIndex
+                        }
+                    };
+                    this.timeline.push(t);
+                    cache.do(t);
+                }
             }
 
             // Number of dynamic properties that need updating

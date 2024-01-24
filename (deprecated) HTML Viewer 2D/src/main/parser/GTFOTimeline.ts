@@ -53,6 +53,7 @@ interface GTFOTracer
     damage: number;
     time: number;
     color: string;
+    type: "visual" | "damage" | "melee";
 }
 
 interface GTFOHit
@@ -75,7 +76,7 @@ interface GTFODynamic
 
 interface GTFOEvent<T extends keyof GTFOEventMap = "unknown"> 
 {
-    type: string;
+    type: T | ({} & string);
     detail: GTFOEventMap[T];
 }
 

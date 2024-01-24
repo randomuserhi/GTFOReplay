@@ -14,6 +14,8 @@ namespace ReplayRecorder.Enemies.Patches {
 
         private static EnemyAgent? currentShooter = null;
 
+        #region patches to manage currentShooter
+
         [HarmonyPatch(typeof(EAB_ProjectileShooter), nameof(EAB_ProjectileShooter.FireAtAgent))]
         [HarmonyPrefix]
         private static void Prefix_FireAtAgent(EAB_ProjectileShooter __instance) {
@@ -37,6 +39,32 @@ namespace ReplayRecorder.Enemies.Patches {
         private static void Postfix_FireChaos(EAB_ProjectileShooter __instance) {
             currentShooter = null;
         }
+
+        [HarmonyPatch(typeof(EAB_ProjectileShooterSquidBoss), nameof(EAB_ProjectileShooterSquidBoss.FireAtAgent))]
+        [HarmonyPrefix]
+        private static void Prefix_Squid_FireAtAgent(EAB_ProjectileShooterSquidBoss __instance) {
+            currentShooter = __instance.m_owner;
+        }
+
+        [HarmonyPatch(typeof(EAB_ProjectileShooterSquidBoss), nameof(EAB_ProjectileShooterSquidBoss.FireAtAgent))]
+        [HarmonyPostfix]
+        private static void Postfix_Squid_FireAtAgent(EAB_ProjectileShooterSquidBoss __instance) {
+            currentShooter = null;
+        }
+
+        [HarmonyPatch(typeof(EAB_ProjectileShooterSquidBoss), nameof(EAB_ProjectileShooterSquidBoss.FireChaos))]
+        [HarmonyPrefix]
+        private static void Prefix_Squid_FireChaos(EAB_ProjectileShooterSquidBoss __instance) {
+            currentShooter = __instance.m_owner;
+        }
+
+        [HarmonyPatch(typeof(EAB_ProjectileShooterSquidBoss), nameof(EAB_ProjectileShooterSquidBoss.FireChaos))]
+        [HarmonyPostfix]
+        private static void Postfix_Squid_FireChaos(EAB_ProjectileShooterSquidBoss __instance) {
+            currentShooter = null;
+        }
+
+        #endregion
 
         [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]
         [HarmonyPrefix]
@@ -62,9 +90,9 @@ namespace ReplayRecorder.Enemies.Patches {
             return false;
         }
 
-        [HarmonyPatch(typeof(ProjectileTargeting), nameof(ProjectileTargeting.OnDestroy))]
+        [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.OnDestroy))]
         [HarmonyPrefix]
-        private static void OnDestroy(ProjectileTargeting __instance) {
+        private static void OnDestroy(ProjectileBase __instance) {
             int instance = __instance.gameObject.GetInstanceID();
             Enemy.OnPelletDespawn(instance);
             if (SNet.IsMaster) Enemy.UnregisterPellet(instance);

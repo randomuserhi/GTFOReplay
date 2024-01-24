@@ -80,7 +80,7 @@ namespace ReplayRecorder {
 
             EnemyTargetSet,
 
-            BulletShot,
+            BulletShot
         }
 
         public long timestamp;

@@ -4,6 +4,7 @@ interface replay extends HTMLDivElement
     onload(): void;
     update(t: number): void;
 
+    visualTracers: boolean;
     currentDimension: number;
     prev: number;
     play: boolean;
@@ -67,6 +68,7 @@ RHU.import(RHU.module({ trace: new Error(),
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
 
+            this.visualTracers = true;
             this.currentDimension = 0;
             this.play = true;
             this.time = 0;
@@ -193,6 +195,7 @@ RHU.import(RHU.module({ trace: new Error(),
 
                                 if (++currentLoaded === loaded) 
                                 {
+                                    this.file.style.display = "none";
                                     this.onload();
                                 }
                             }
@@ -211,7 +214,7 @@ RHU.import(RHU.module({ trace: new Error(),
         } as Function as replayConstructor;
         replay.prototype.resize = function()
         {
-            let computed = getComputedStyle(this.canvas);
+            let computed = getComputedStyle(this);
             this.canvas.width = parseInt(computed.width);
             this.canvas.height = parseInt(computed.height);
         };
@@ -557,6 +560,12 @@ RHU.import(RHU.module({ trace: new Error(),
             let tracers = snapshot.tracers.filter(t => t.dimensionIndex === dimension.index);
             for (let tracer of tracers)
             {
+                if (this.visualTracers) {
+                    if (tracer.type == "damage") continue;
+                } else {
+                    if (tracer.type == "visual") continue;
+                }
+
                 if (tracer.time > snapshot.time)
                 {
                     console.warn("This should not happen");
@@ -1258,12 +1267,14 @@ RHU.import(RHU.module({ trace: new Error(),
         };
         RHU.Macro(replay, "replay", //html
             `
-            <input rhu-id="file" type="file"/> <!-- TODO(randomuserhi): Specific accept clause -->
+            <input rhu-id="file" type="file" style="position: absolute; top: 0px;"/> <!-- TODO(randomuserhi): Specific accept clause -->
             <canvas style="
+                display: block;
+                box-sizing: border-box;
                 width: 100%;
                 height: 100%;
             " rhu-id="canvas" width="1920" height="1080"></canvas>
-            <canvas style=""></canvas>
+            <canvas style="display: none;"></canvas>
             `, {
             element: //html
                 `<div></div>`
