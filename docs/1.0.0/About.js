@@ -29,18 +29,6 @@ for (let event of events) {
         totalDamage += event.detail.detail.damage;
 }
 console.log(totalDamage);`);
-        cb(["javascript"], `// calculate bullet damage done by a player in a given slot
-let slot = 0; // change slot to get different player (slot [0, 1, 2, 3]) correspond to slots in lobby
-// there are other events u can watch like "enemyMeleeDamage"
-let events = current.timeline.filter(e => e.type === "event" && e.detail.type === "enemyBulletDamage");
-let totalDamage = 0;
-for (let event of events) {
-    // u can change the check to see sentry damage etc...
-    if (event.detail.detail.slot === slot && !event.detail.detail.sentry)
-        totalDamage += event.detail.detail.damage;
-}
-console.log(totalDamage);`);
-        br();
         h1("Issues + Work Arounds");
         h(2, "Enemy projectiles don't dissappear!");
         p("This is a bug that may occure if the replay fails to add the ", ic([], "despawnPellet"), " event. To get around this, prior loading your replay, type the following into DevConsole:");
