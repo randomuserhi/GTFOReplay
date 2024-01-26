@@ -42,6 +42,8 @@ declare namespace RHU {
             };
 
             set("About", "About.js");
+            set("Known Issues", "KnownIssues.js");
+            set("Roadmap", "Roadmap.js");
             dir(set("Viewer", "Viewer.js"), (set) => {
                 set("Client vs Host Replays", "Viewer/ClientHostReplays.js");
                 set("Backwards Compatability", "Viewer/BackwardsCompatability.js");

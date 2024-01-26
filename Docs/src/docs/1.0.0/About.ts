@@ -30,7 +30,7 @@ RHU.require(new Error(), {
         );
         br();
         p(
-            "For this reason, debugging messages are enabled by default. If this is an issue you may turn this off in the bepinix config (", ic([], "ReplayRecorder.cfg"), "):"
+            "For this reason, debugging messages are enabled by default. If this is an issue you may turn this off in the bepinex config (", ic([], "ReplayRecorder.cfg"), "):"
         );
         cb([], `[Debug]
 
@@ -52,7 +52,7 @@ enable = true`);
 
         h1("Reporting Bugs / Issues");
         p(
-            "Either open an issue on my ", link("https://github.com/randomuserhi/GTFOReplay/issues", "github repo"), " or send me a message on Discord through the ", 
+            "Either open an issue on my ", link("https://github.com/randomuserhi/GTFOReplay/issues", "github repo"), " or send me a message on Discord through the GTFOReplay feedback thread on the ", 
             link("https://discord.gg/gtfo-modding-server-782438773690597389", "modding server"), "."
         );
         ul(
