@@ -17,7 +17,7 @@ RHU.require(new Error(), {
         cb(["javascript"], `replay.visualTracers = false; // disable visual tracers to see what players actually hit`);
         ul("Visual shots are purely aesthetic and are non-representative of whether a player hit an enemy or not. They are the stored rendered shots the game shows you from your teammates.", frag("By setting this to ", ic([], "false"), " you can see exactly what players hit and exact damage events recorded, but you cannot see missed shots etc..."), i("NOTE: If you are not hosting the lobby, you cannot utilise non-visual tracers as these can only be recorded by host."));
         h1("[Dev] Calculating statistics");
-        h2("Calculate total bullet damage");
+        h2("Calculate total bullet damage. Requires the replay to have been recorded from host-player such that damage events are present.");
         cb(["javascript"], `let slot = 0; // change slot to get different player (slot [0, 1, 2, 3]) correspond to slots in lobby
 // there are other events u can watch like "enemyMeleeDamage"
 let events = current.timeline.filter(e => e.type === "event" && e.detail.type === "enemyBulletDamage");
