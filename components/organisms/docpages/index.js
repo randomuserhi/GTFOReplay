@@ -208,7 +208,7 @@ RHU.module(new Error(), "components/organisms/docpages", {
                     else if (node.__type__ === "img") {
                         const img = node;
                         if (directory) {
-                            img.src = path.join(DOCUSCRIPT_ROOT, this.currentVersion, "_snippets", directory.fullPath(), img.src);
+                            img.src = path.join(DOCUSCRIPT_ROOT, this.currentVersion, "snippets", directory.fullPath(), img.src);
                         }
                         else {
                             img.src = "";
