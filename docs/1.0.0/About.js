@@ -11,7 +11,7 @@ RHU.require(new Error(), {
         h1("Disclaimer");
         p("This mod is still in its early stages and thus has not been fleshed out as much as it needs to. There are many missing / broken features and the viewer is barely", " usable through the browser DevConsole.");
         br();
-        p("For this reason, debugging messages are enabled by default. If this is an issue you may turn this off in the bepinix config (", ic([], "ReplayRecorder.cfg"), "):");
+        p("For this reason, debugging messages are enabled by default. If this is an issue you may turn this off in the bepinex config (", ic([], "ReplayRecorder.cfg"), "):");
         cb([], `[Debug]
 
 ## Enables debug messages when true.
@@ -22,7 +22,7 @@ enable = true`);
         ul(frag(p("While you are playing a match, the game will write a replay file called ", ic([], "replay.gtfo"), " in your game folder. Typically at ", ic([], "steamapps/common/GTFO"), "."), img("replay_location.png")), frag("You can load the replay in the viewer by opening the viewer in your browser and choosing the replay file. The ", ic([], ".html"), " is located in ", ic([], "viewer/main/main.html"), "."), frag("For information about the viewer, visit notes on viewer usage ", pl(["Viewer"], "here"), "."));
         i("NOTE: The replay file gets overwritten every time you drop, if you want to save the current replay you will need to rename it or copy it somewhere else.");
         h1("Reporting Bugs / Issues");
-        p("Either open an issue on my ", link("https://github.com/randomuserhi/GTFOReplay/issues", "github repo"), " or send me a message on Discord through the ", link("https://discord.gg/gtfo-modding-server-782438773690597389", "modding server"), ".");
+        p("Either open an issue on my ", link("https://github.com/randomuserhi/GTFOReplay/issues", "github repo"), " or send me a message on Discord through the GTFOReplay feedback thread on the ", link("https://discord.gg/gtfo-modding-server-782438773690597389", "modding server"), ".");
         ul(frag("Please provide your Bepinex logs alongside the reported issue. The log output is in your Bepinex folder called ", ic([], "LogOutput.log")), frag("If it is a viewer issue, please provide a screenshot of the issue and the DevConsole output."));
         h1("Compatability with Modded Content");
         p("As long as the modded rundown doesn't stray too far from vanilla mechanics and it doesnt overly patch key methods shared with this mod it should be fine (even with custom weapons / enemies).");
