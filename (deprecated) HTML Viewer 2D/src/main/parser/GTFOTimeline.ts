@@ -124,6 +124,10 @@ interface GTFOEventMap
     "enemyScreamed": GTFOEventEnemyScreamed;
     "enemyTargetSet": GTFOEventEnemyTargetSet;
     "bulletShot": GTFOEventBulletShot;
+    "spawnScanCircle": GTFOEventSpawnScanCircle;
+    "despawnScanCircle": GTFOEventDespawnScanCircle;
+    "spawnHolopath": GTFOEventSpawnHolopath;
+    "despawnHolopath": GTFOEventDespawnHolopath;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -166,7 +170,11 @@ let eventMap: GTFOEventType[] = [
     "enemyAlerted",
     "enemyScreamed",
     "enemyTargetSet",
-    "bulletShot"
+    "bulletShot",
+    "spawnScanCircle",
+    "despawnScanCircle",
+    "spawnHolopath",
+    "despawnHolopath",
 ];
 
 interface Window
@@ -375,16 +383,40 @@ interface GTFOEventBulletShot
     start: Vector;
     end: Vector;
 }
+interface GTFOEventSpawnScanCircle
+{
+    instance: number;
+    radius: number;
+    flags: number;
+}
+interface GTFOEventDespawnScanCircle
+{
+    instance: number;
+}
+interface GTFOEventSpawnHolopath
+{
+    instance: number;
+    dimensionIndex: number;
+    spline: Vector[];
+}
+interface GTFOEventDespawnHolopath
+{
+    instance: number;
+}
 
 interface GTFODynamicPropMap
 {
     "unknown": unknown;
 
     "tongue": GTFODynamicPropTongue;
+    "scan": GTFODynamicPropScan;
+    "holopath": GTFODynamicPropHolopath;
 }
 type GTFODynamicPropType = keyof GTFODynamicPropMap;
 let dynamicPropMap: GTFODynamicPropType[] = [
-    "tongue"
+    "tongue",
+    "scan",
+    "holopath",
 ];
 
 interface GTFODynamicPropTongue
@@ -392,4 +424,14 @@ interface GTFODynamicPropTongue
     instance: number;
     lerp: number;
     spline: Vector[];
+}
+interface GTFODynamicPropScan
+{
+    instance: number;
+    progress: number;
+}
+interface GTFODynamicPropHolopath
+{
+    instance: number;
+    lerp: number;
 }

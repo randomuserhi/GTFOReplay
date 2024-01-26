@@ -16,6 +16,7 @@ namespace ReplayRecorder {
             Mines.Mine.Reset();
             Enemies.Enemy.Reset();
             Player.PlayerSentry.Reset();
+            ChainedPuzzle.ChainedPuzzle.Reset();
         }
     }
 }

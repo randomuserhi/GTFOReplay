@@ -734,7 +734,88 @@ interface GTFOReplayConstructor
                     detail: e
                 }
             };
-        }
+        },
+        "spawnScanCircle": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            let e: GTFOEventSpawnScanCircle = {
+                instance: BitHelper.readInt(bytes, reader),
+                radius: BitHelper.readHalf(bytes, reader),
+                flags: BitHelper.readByte(bytes, reader)
+            };
+            e.radius *= GTFOReplaySettings.scale;
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "spawnScanCircle",
+                    detail: e
+                }
+            };
+        },
+        "despawnScanCircle": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            let e: GTFOEventDespawnScanCircle = {
+                instance: BitHelper.readInt(bytes, reader),
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "despawnScanCircle",
+                    detail: e
+                }
+            };
+        },
+        "spawnHolopath": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
+        {
+            let e: GTFOEventSpawnHolopath = {
+                instance: BitHelper.readInt(bytes, reader),
+                dimensionIndex: BitHelper.readByte(bytes, reader),
+                spline: new Array(BitHelper.readByte(bytes, reader)),
+            };
+            e.spline[0] = BitHelper.readVector(bytes, reader);
+            e.spline[0].x *= GTFOReplaySettings.scale;
+            e.spline[0].y *= GTFOReplaySettings.scale;
+            e.spline[0].z *= GTFOReplaySettings.scale;
+            for (let i = 1; i < e.spline.length; ++i)
+            {
+                let delta = BitHelper.readHalfVector(bytes, reader);
+                delta.x *= GTFOReplaySettings.scale;
+                delta.y *= GTFOReplaySettings.scale;
+                delta.z *= GTFOReplaySettings.scale;
+                e.spline[i] = delta;
+            }
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "spawnHolopath",
+                    detail: e
+                }
+            };
+        },
+        "despawnHolopath": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            let e: GTFOEventDespawnHolopath = {
+                instance: BitHelper.readInt(bytes, reader),
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "despawnHolopath",
+                    detail: e
+                }
+            };
+        },
     };
 
     let dynamicPropParseMap: Record<GTFODynamicPropType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {
@@ -746,7 +827,7 @@ interface GTFOReplayConstructor
         {
             let e: GTFODynamicPropTongue = {
                 instance: BitHelper.readInt(bytes, reader),
-                lerp: BitHelper.readHalf(bytes, reader),
+                lerp: BitHelper.readByte(bytes, reader) / 255,
                 spline: new Array(BitHelper.readByte(bytes, reader))
             };
             e.spline[0] = BitHelper.readVector(bytes, reader);
@@ -763,6 +844,28 @@ interface GTFOReplayConstructor
             }
             return {
                 type: "tongue",
+                detail: e
+            };
+        },
+        "scan": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFODynamicPropScan = {
+                instance: BitHelper.readInt(bytes, reader),
+                progress: BitHelper.readByte(bytes, reader) / 255,
+            };
+            return {
+                type: "scan",
+                detail: e
+            };
+        },
+        "holopath": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFODynamicPropHolopath = {
+                instance: BitHelper.readInt(bytes, reader),
+                lerp: BitHelper.readByte(bytes, reader) / 255,
+            };
+            return {
+                type: "holopath",
                 detail: e
             };
         },

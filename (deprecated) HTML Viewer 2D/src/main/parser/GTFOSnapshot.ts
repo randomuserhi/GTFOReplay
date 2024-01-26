@@ -25,6 +25,8 @@ interface GTFOSnapshot
     pellets: Set<number>;
     tongues: Map<number, GTFOTongue>;
     glue: Set<number>;
+    holopaths: Map<number, GTFOHolopath>;
+    bioscans: Map<number, GTFOBioscan>
     
     screams: GTFOScream[];
     alerts: GTFOAlert[];
@@ -769,7 +771,52 @@ interface GTFOSnapshotConstructor
                 color: "233, 181, 41",
                 type: "visual"
             });
-        }
+        },
+        "spawnScanCircle": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventSpawnScanCircle;
+            if (!snapshot.dynamics.has(e.instance) && !snapshot.bioscans.has(e.instance)) {
+                snapshot.dynamics.set(e.instance, {
+                    position: { x: 0, y: 0, z: 0 },
+                    rotation: { x: 0, y: 0, z: 0, w: 0 },
+                    velocity: { x: 0, y: 0, z: 0 },
+                    scale: 0,
+                    dimensionIndex: 0,
+                    lastUpdated: time
+                });
+                snapshot.bioscans.set(e.instance, new GTFOBioscan(e.instance, e.radius, e.flags));
+            } else {
+                throw new Error("Bioscan was already spawned.");
+            }
+        },
+        "despawnScanCircle": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventDespawnHolopath;
+            if (snapshot.dynamics.has(e.instance) && snapshot.bioscans.has(e.instance)) {
+                snapshot.dynamics.delete(e.instance);
+                snapshot.bioscans.delete(e.instance);
+            } else {
+                throw new Error("Bioscan does not exist.");
+            }
+        },
+        "spawnHolopath": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventSpawnHolopath;
+            if (!snapshot.holopaths.has(e.instance)) {
+                snapshot.holopaths.set(e.instance, new GTFOHolopath(e.instance, e.dimensionIndex, e.spline));
+            } else {
+                throw new Error("Holopath was already spawned.");
+            }
+        },
+        "despawnHolopath": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventDespawnHolopath;
+            if (snapshot.holopaths.has(e.instance)) {
+                snapshot.holopaths.delete(e.instance);
+            } else {
+                throw new Error("Holopath does not exist.");
+            }
+        },
     };
 
     let dynamicPropMap: Record<GTFODynamicPropType, (snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number) => void> = {
@@ -793,6 +840,38 @@ interface GTFOSnapshotConstructor
             if (RHU.exists(lerp)) l = lerp;
 
             tongue.lerp = tongue.lerp + (_tongue.lerp - tongue.lerp) * l;
+        },
+        "scan": function(snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number)
+        {
+            let _scan = ev.detail as GTFODynamicPropScan;
+            if (!snapshot.bioscans.has(_scan.instance))
+            {
+                if (!RHU.exists(lerp) || lerp == 1) throw ReferenceError(`Referenced bioscan does not exist: t: ${t.time} ${_scan.instance}`);
+                return;
+            }
+
+            let scan = snapshot.bioscans.get(_scan.instance)!;
+
+            let l = 1;
+            if (RHU.exists(lerp)) l = lerp;
+
+            scan.progress = scan.progress + (_scan.progress - scan.progress) * l;
+        },
+        "holopath": function(snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number)
+        {
+            let _holopath = ev.detail as GTFODynamicPropHolopath;
+            if (!snapshot.holopaths.has(_holopath.instance))
+            {
+                if (!RHU.exists(lerp) || lerp == 1) throw ReferenceError(`Referenced holopath does not exist: t: ${t.time} ${_holopath.instance}`);
+                return;
+            }
+
+            let holopath = snapshot.holopaths.get(_holopath.instance)!;
+
+            let l = 1;
+            if (RHU.exists(lerp)) l = lerp;
+
+            holopath.lerp = holopath.lerp + (_holopath.lerp - holopath.lerp) * l;
         },
     }
 
@@ -823,6 +902,8 @@ interface GTFOSnapshotConstructor
             this.alerts = [];
             this.screams = [];
             this.trails = new Map();
+            this.bioscans = new Map();
+            this.holopaths = new Map();
         }
 
         if (RHU.exists(tick)) this.tick = tick;
@@ -934,6 +1015,12 @@ interface GTFOSnapshotConstructor
             dimensionIndex: kv[1].dimensionIndex,
             lastUpdated: kv[1].lastUpdated
         });
+
+        this.bioscans = new Map();
+        for (let kv of snapshot.bioscans) this.bioscans.set(kv[0], GTFOBioscan.clone(kv[1]));
+
+        this.holopaths = new Map();
+        for (let kv of snapshot.holopaths) this.holopaths.set(kv[0], GTFOHolopath.clone(kv[1]));
     }
     GTFOSnapshot.clone = function(snapshot: GTFOSnapshot): GTFOSnapshot
     {

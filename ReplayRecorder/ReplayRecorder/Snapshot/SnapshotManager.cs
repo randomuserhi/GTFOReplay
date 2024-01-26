@@ -80,7 +80,13 @@ namespace ReplayRecorder {
 
             EnemyTargetSet,
 
-            BulletShot
+            BulletShot,
+
+            SpawnScanCircle,
+            DespawnScanCircle,
+
+            SpawnHolopath,
+            DespawnHolopath,
         }
 
         public long timestamp;
@@ -96,7 +102,9 @@ namespace ReplayRecorder {
 
     internal abstract class DynamicProperty : ISerializable {
         public enum Type {
-            Tongue
+            Tongue,
+            Scan,
+            Holopath,
         }
         public int instance;
         public Type type;
@@ -112,8 +120,12 @@ namespace ReplayRecorder {
             this.instance = instance;
         }
 
+        private static byte[] buffer = new byte[sizeof(int)];
         public virtual void Serialize(FileStream fs) {
             fs.WriteByte((byte)type);
+            int index = 0;
+            BitHelper.WriteBytes(instance, buffer, ref index);
+            fs.Write(buffer);
         }
     }
 
@@ -437,7 +449,7 @@ namespace ReplayRecorder {
 
             instance.start = Raudy.Now;
 
-            fs = new FileStream("./replay.gtfo", FileMode.Create, FileAccess.Write);
+            fs = new FileStream("./replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
 
             // Initialize other components
             Player.Player.Init();

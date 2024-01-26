@@ -33,7 +33,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="ChainedPuzzle\Patches\" />
 	  <Folder Include="HeavyItem\Patches\" />
 	  <Folder Include="Snapshot\Events\" />
 	</ItemGroup>

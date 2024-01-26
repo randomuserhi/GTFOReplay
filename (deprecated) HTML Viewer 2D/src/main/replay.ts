@@ -54,6 +54,22 @@ RHU.import(RHU.module({ trace: new Error(),
     {
         let { RHU } = window.RHU.require(window, this);
 
+        let polygon = function(ctx: CanvasRenderingContext2D, radius: number, sides: number) 
+        {
+            if (sides < 3) return;
+            ctx.save();
+            ctx.rotate(-Math.PI / 2);
+            ctx.beginPath();
+            var a = ((Math.PI * 2)/sides);
+            ctx.moveTo(radius,0);
+            for (var i = 1; i < sides; i++) 
+            {
+                ctx.lineTo(radius*Math.cos(a*i),radius*Math.sin(a*i));
+            }
+            ctx.closePath();
+            ctx.restore();
+        }
+
         let icons: Record<string, HTMLImageElement> = {}
         for (let item of GTFOSpecification.items)
         {
@@ -369,6 +385,45 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.restore();
             }
 
+            // Draw holopaths
+            let holopaths = [...snapshot.holopaths.values()].filter(t => t.dimensionIndex === dimension.index);
+            for (let holopath of holopaths)
+            {
+                if (holopath.spline.length < 1) continue;
+
+                this.ctx.beginPath();
+                let pos: Vector = {
+                    x: holopath.spline[0].x,
+                    y: holopath.spline[0].y,
+                    z: holopath.spline[0].z
+                }
+                this.ctx.moveTo(pos.x, -pos.z);
+                let end = Math.ceil(holopath.spline.length * holopath.lerp);
+                let xc = 0;
+                let yc = 0;
+                for (let i = 1; i < end; ++i)
+                {
+                    let l = holopath.spline.length * holopath.lerp - i;
+                    if (l > 1) l = 1;
+
+                    xc = pos.x;
+                    yc = -pos.z;
+
+                    pos.x += holopath.spline[i].x * l;
+                    pos.y += holopath.spline[i].y * l;
+                    pos.z += holopath.spline[i].z * l;
+
+                    if (i % 2 == 0)
+                    {
+                        this.ctx.quadraticCurveTo(xc, yc, pos.x, -pos.z);
+                    }
+                }
+                this.ctx.lineTo(pos.x, -pos.z);
+                this.ctx.lineWidth = 4;
+                this.ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                this.ctx.stroke();
+            }
+
             // Draw Terminals
             for (let terminal of map.terminals)
             {
@@ -636,10 +691,20 @@ RHU.import(RHU.module({ trace: new Error(),
 
             // Draw dynamics
             let dynamics = [...snapshot.dynamics].filter(d => d[1].dimensionIndex === dimension.index);
-            // sort so glue is always at the bottom
+            // sort so glue and bioscan is always at the bottom
             // TODO(randomuserhi): sort players and dead players
-            dynamics.sort(d => {
-                if (snapshot.glue.has(d[0])) return -1;
+            dynamics.sort((a, b) => {
+                const glueA = snapshot.glue.has(a[0]);
+                const glueB = snapshot.glue.has(b[0]);
+                const bioscanA = snapshot.bioscans.has(a[0]);
+                const bioscanB = snapshot.bioscans.has(b[0]);
+                
+                if (glueA && glueB) return -1;
+                else if (glueB && bioscanA) return 1;
+                else if (glueA) return -1;
+                else if (glueB) return 1;
+                else if (bioscanA) return -1;
+                else if (bioscanB) return 1;
                 else return 1;
             });
             for (let kv of dynamics)
@@ -680,7 +745,40 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.translate(dynamic.position.x, -dynamic.position.z);
                 this.ctx.rotate(euler.y);
                 
-                if (snapshot.pellets.has(instance))
+                if (snapshot.bioscans.has(instance)) 
+                {
+                    const bioscan = snapshot.bioscans.get(instance)!;
+
+                    let color = "255, 0, 0";
+                    if ((bioscan.flags & GTFOBioscan.Checkpoint) != 0) {
+                        color = "75, 207, 72";
+                    } else if ((bioscan.flags & GTFOBioscan.ReduceWhenNoPlayer) != 0) {
+                        color = "108, 57, 184";
+                    } else if ((bioscan.flags & GTFOBioscan.FullTeam) != 0) {
+                        color = "209, 135, 71";
+                    } 
+
+                    // divide by 2 since scale is width, but we wait radius which is half the width
+                    const radius = bioscan.radius;
+                    const border = radius / GTFOReplaySettings.scale > 15; // NOTE(randomuserhi): Arbitrary large size to try and detect full room scans
+
+                    this.ctx.beginPath();
+                    if (border) { 
+                        this.ctx.rect(-radius, -radius, radius * 2, radius * 2);
+                    } else if ((bioscan.flags & GTFOBioscan.ReduceWhenNoPlayer) != 0) {
+                        polygon(this.ctx, radius, 8);
+                    } else {
+                        this.ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+                    }
+                    this.ctx.fillStyle = `rgba(${color}, ${border ? 0.05 : 0.15})`;
+                    this.ctx.fill();
+                    if (border) {
+                        this.ctx.lineWidth = 10;
+                        this.ctx.strokeStyle = `rgba(${color}, 0.3)`;
+                        this.ctx.stroke();
+                    }
+                }
+                else if (snapshot.pellets.has(instance))
                 {
                     this.ctx.beginPath();
                     this.ctx.moveTo(0, 0);
@@ -759,22 +857,6 @@ RHU.import(RHU.module({ trace: new Error(),
                         else if (charger) color = "80, 80, 80";
                         else color = "136, 136, 136";
                         this.ctx.fillStyle = `rgba(${color}, ${enemy.type.includes("Shadow") ? 0.3 : 1})`;
-
-                        let polygon = function(ctx: CanvasRenderingContext2D, radius: number, sides: number) 
-                        {
-                            if (sides < 3) return;
-                            ctx.save();
-                            ctx.rotate(-Math.PI / 2);
-                            ctx.beginPath();
-                            var a = ((Math.PI * 2)/sides);
-                            ctx.moveTo(radius,0);
-                            for (var i = 1; i < sides; i++) 
-                            {
-                                ctx.lineTo(radius*Math.cos(a*i),radius*Math.sin(a*i));
-                            }
-                            ctx.closePath();
-                            ctx.restore();
-                        }
 
                         if (charger) this.ctx.scale(1.05, 1.05);
                         switch (enemy.type)

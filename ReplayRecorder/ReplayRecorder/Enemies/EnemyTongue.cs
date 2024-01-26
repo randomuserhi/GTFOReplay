@@ -48,7 +48,7 @@ namespace ReplayRecorder.Enemies {
                 return tongue != null && tongue.m_GPUSplineSegments.Length > 0;
             }
 
-            private const int SizeOfHeader = sizeof(int) + BitHelper.SizeOfHalf + 1;
+            private const int SizeOfHeader = 2;
             private static byte[] buffer = new byte[SizeOfHeader];
             public override void Serialize(FileStream fs) {
                 base.Serialize(fs);
@@ -58,8 +58,7 @@ namespace ReplayRecorder.Enemies {
                     buffer = new byte[SizeOf];
 
                 int index = 0;
-                BitHelper.WriteBytes(instance, buffer, ref index);
-                BitHelper.WriteHalf(tongue.TentacleRelLen, buffer, ref index);
+                BitHelper.WriteBytes((byte)(tongue.TentacleRelLen * byte.MaxValue), buffer, ref index);
                 BitHelper.WriteBytes((byte)tongue.m_GPUSplineSegments.Length, buffer, ref index);
                 BitHelper.WriteBytes(tongue.m_GPUSplineSegments[0].pos, buffer, ref index);
                 for (int i = 1; i < tongue.m_GPUSplineSegments.Length; ++i) {
