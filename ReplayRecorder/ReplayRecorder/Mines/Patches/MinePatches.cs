@@ -3,6 +3,7 @@ using API;
 using HarmonyLib;
 using Player;
 using SNetwork;
+using static MineDeployerInstance;
 
 namespace ReplayRecorder.Mines.Patches {
     [HarmonyPatch]
@@ -27,6 +28,18 @@ namespace ReplayRecorder.Mines.Patches {
             }
         }
 
+        [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.OnSyncTripLineUpdate))]
+        [HarmonyPrefix]
+        private static void Prefix_TripLineSyncUpdate(MineDeployerInstance __instance, pTripLineUpdate data) {
+            if (data.lineLength != __instance.m_detection.DetectionRange) {
+                int instanceID = __instance.gameObject.GetInstanceID();
+
+                if (Mine.mines.ContainsKey(instanceID)) {
+                    Mine.TripLine(instanceID, data.lineLength);
+                } else APILogger.Error($"Mine did not exist in catalogue, this should not happen.");
+            }
+        }
+
         [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.OnSpawn))]
         [HarmonyPostfix]
         private static void Spawn(MineDeployerInstance __instance, pItemSpawnData spawnData) {
@@ -37,15 +50,15 @@ namespace ReplayRecorder.Mines.Patches {
                 // NOTE(randomuserhi): Try with persistent_ID instead of itemID_gearCRC
                 APILogger.Debug($"Mine Spawn ID - {spawnData.itemData.itemID_gearCRC}");
                 switch (spawnData.itemData.itemID_gearCRC) {
-                    case 125: // Mine deployer mine
-                        Mine.SpawnMine(player, instanceID, rMine.Type.Mine, spawnData.position, spawnData.rotation);
-                        break;
-                    case 139: // Consumable mine
-                        Mine.SpawnMine(player, instanceID, rMine.Type.Mine, spawnData.position, spawnData.rotation);
-                        break;
-                    case 144: // Cfoam mine
-                        Mine.SpawnMine(player, instanceID, rMine.Type.Cfoam, spawnData.position, spawnData.rotation);
-                        break;
+                case 125: // Mine deployer mine
+                    Mine.SpawnMine(player, instanceID, rMine.Type.Mine, spawnData.position, spawnData.rotation);
+                    break;
+                case 139: // Consumable mine
+                    Mine.SpawnMine(player, instanceID, rMine.Type.Mine, spawnData.position, spawnData.rotation);
+                    break;
+                case 144: // Cfoam mine
+                    Mine.SpawnMine(player, instanceID, rMine.Type.Cfoam, spawnData.position, spawnData.rotation);
+                    break;
                 }
             }
         }
