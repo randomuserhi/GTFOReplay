@@ -772,9 +772,9 @@ RHU.import(RHU.module({ trace: new Error(),
                     }
                     this.ctx.fillStyle = `rgba(${color}, ${border ? 0.05 : 0.15})`;
                     this.ctx.fill();
-                    if (border) {
-                        this.ctx.lineWidth = 10;
-                        this.ctx.strokeStyle = `rgba(${color}, 0.3)`;
+                    if (radius / GTFOReplaySettings.scale > 1) { // NOTE(randomuserhi): Arbitrary size check for no-border mini scans
+                        this.ctx.lineWidth = border ? 10 : 5;
+                        this.ctx.strokeStyle = `rgba(${color}, ${border ? 0.3 : 0.15})`;
                         this.ctx.stroke();
                     }
                 }
