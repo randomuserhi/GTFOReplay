@@ -10,7 +10,7 @@ namespace ReplayRecorder {
             debug = configFile.Bind(
                 "Debug",
                 "enable",
-                false,
+                true,
                 "Enables debug messages when true.");
 
             pelletLingerTime = configFile.Bind(

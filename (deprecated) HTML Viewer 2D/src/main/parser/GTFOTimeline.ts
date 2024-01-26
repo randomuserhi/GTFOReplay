@@ -379,6 +379,7 @@ interface GTFOEventEnemyTargetSet
 }
 interface GTFOEventBulletShot
 {
+    slot: number;
     damage: number;
     hit: boolean;
     dimensionIndex: number;

@@ -856,7 +856,7 @@ RHU.import(RHU.module({ trace: new Error(),
                             "32, 85, 140",
                             "122, 26, 142"
                         ];
-                        this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.5"})`;
+                        this.ctx.fillStyle = `rgba(${colors[p.slot]},${p.alive ? "1" : "0.15"})`;
 
                         // Draw equipped item above player
                         /*let img = icons[p.equipped];
@@ -1070,6 +1070,13 @@ RHU.import(RHU.module({ trace: new Error(),
                                 this.ctx.lineTo(20, 12);
                                 this.ctx.closePath();
                                 break;
+                            case "Nightmare Striker":
+                                this.ctx.beginPath();
+                                this.ctx.moveTo(0, -20);
+                                this.ctx.lineTo(-27, 5);
+                                this.ctx.lineTo(27, 5);
+                                this.ctx.closePath();
+                                break;
                             case "Big Charger":
                             case "Big Shadow":
                             case "Big Striker":
@@ -1095,8 +1102,14 @@ RHU.import(RHU.module({ trace: new Error(),
                                 this.ctx.beginPath();
                                 this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
                                 break;
+                            case "Nightmare Shooter":
+                                this.ctx.scale(1.4, 1);
+                                this.ctx.beginPath();
+                                this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                                break;
                             case "Snatcher":
                                 this.ctx.scale(1, 1.3);
+                            case "Nightmare Scout":
                             case "Charger Scout":
                             case "Shadow Scout":
                             case "Scout":

@@ -22,6 +22,7 @@ namespace ReplayRecorder.Bullets.Patches {
 
         // Handle damage amount of bulletshot
         private static float damage = 0;
+        private static byte slot = byte.MaxValue;
         private static bool autoTrack = true;
 
         #region damage patches
@@ -30,22 +31,26 @@ namespace ReplayRecorder.Bullets.Patches {
         [HarmonyPrefix]
         private static void Prefix_SentryGunFire(SentryGunInstance_Firing_Bullets __instance, bool doDamage, bool targetIsTagged) {
             damage = __instance.m_archetypeData.GetSentryDamage(__instance.m_core.Owner, 0.01f, targetIsTagged);
+            slot = (byte)__instance.m_core.Owner.PlayerSlotIndex;
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.FireBullet))]
         [HarmonyPostfix]
         private static void Postfix_SentryGunFire() {
             damage = 0;
+            slot = byte.MaxValue;
         }
 
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPrefix]
         private static void Prefix_SentryShotgunFire(SentryGunInstance_Firing_Bullets __instance, bool isMaster, bool targetIsTagged) {
             damage = __instance.m_archetypeData.GetSentryDamage(__instance.m_core.Owner, 0.01f, targetIsTagged);
+            slot = (byte)__instance.m_core.Owner.PlayerSlotIndex;
         }
         [HarmonyPatch(typeof(SentryGunInstance_Firing_Bullets), nameof(SentryGunInstance_Firing_Bullets.UpdateFireShotgunSemi))]
         [HarmonyPostfix]
         private static void Postfix_SentryShotgunFire() {
             damage = 0;
+            slot = byte.MaxValue;
         }
 
         [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
@@ -53,6 +58,7 @@ namespace ReplayRecorder.Bullets.Patches {
         private static void Prefix_BulletWeaponSyncFire(BulletWeaponSynced __instance) {
             autoTrack = false;
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
+            slot = (byte)__instance.Owner.PlayerSlotIndex;
 
             byte dimensionIndex = (byte)__instance.Owner.m_dimensionIndex;
 
@@ -82,7 +88,7 @@ namespace ReplayRecorder.Bullets.Patches {
                         if (hitEnemy) {
                             num5++;
                         }
-                        Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                        Bullet.OnBulletShot(slot, damage, dimensionIndex, vector, hit.point, hitEnemy);
                         flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
                         vector = hit.point + fireDir * 0.1f;
                         num4 += hit.distance;
@@ -103,7 +109,7 @@ namespace ReplayRecorder.Bullets.Patches {
                     dam = target.GetComponent<IDamageable>();
                 }
                 bool hitEnemy = dam != null;
-                Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                Bullet.OnBulletShot(slot, damage, dimensionIndex, vector, hit.point, hitEnemy);
             }
         }
         [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
@@ -111,6 +117,7 @@ namespace ReplayRecorder.Bullets.Patches {
         private static void Postfix_BulletWeaponSyncFire() {
             damage = 0;
             autoTrack = true;
+            slot = byte.MaxValue;
         }
 
         [HarmonyPatch(typeof(ShotgunSynced), nameof(ShotgunSynced.Fire))]
@@ -118,6 +125,7 @@ namespace ReplayRecorder.Bullets.Patches {
         private static void Prefix_ShotgunSyncFire(ShotgunSynced __instance) {
             autoTrack = false;
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
+            slot = (byte)__instance.Owner.PlayerSlotIndex;
 
             byte dimensionIndex = (byte)__instance.Owner.m_dimensionIndex;
 
@@ -172,7 +180,7 @@ namespace ReplayRecorder.Bullets.Patches {
                             if (hitEnemy) {
                                 num5++;
                             }
-                            Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                            Bullet.OnBulletShot(slot, damage, dimensionIndex, vector, hit.point, hitEnemy);
                             flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
                             vector = hit.point + fireDir * 0.1f;
                             num4 += hit.distance;
@@ -193,7 +201,7 @@ namespace ReplayRecorder.Bullets.Patches {
                         dam = target.GetComponent<IDamageable>();
                     }
                     bool hitEnemy = dam != null;
-                    Bullet.OnBulletShot(damage, dimensionIndex, vector, hit.point, hitEnemy);
+                    Bullet.OnBulletShot(slot, damage, dimensionIndex, vector, hit.point, hitEnemy);
                 }
             }
         }
@@ -202,28 +210,33 @@ namespace ReplayRecorder.Bullets.Patches {
         private static void Postfix_ShotgunSyncFire() {
             damage = 0;
             autoTrack = true;
+            slot = byte.MaxValue;
         }
 
         [HarmonyPatch(typeof(BulletWeapon), nameof(BulletWeapon.Fire))]
         [HarmonyPrefix]
         private static void Prefix_BulletWeaponFire(BulletWeapon __instance) {
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
+            slot = (byte)__instance.Owner.PlayerSlotIndex;
         }
         [HarmonyPatch(typeof(BulletWeapon), nameof(BulletWeapon.Fire))]
         [HarmonyPostfix]
         private static void Postfix_BulletWeaponFire() {
             damage = 0;
+            slot = byte.MaxValue;
         }
 
         [HarmonyPatch(typeof(Shotgun), nameof(Shotgun.Fire))]
         [HarmonyPrefix]
         private static void Prefix_ShotgunFire(Shotgun __instance) {
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
+            slot = (byte)__instance.Owner.PlayerSlotIndex;
         }
         [HarmonyPatch(typeof(Shotgun), nameof(Shotgun.Fire))]
         [HarmonyPostfix]
         private static void Postfix_ShotgunFire() {
             damage = 0;
+            slot = byte.MaxValue;
         }
 
         #endregion
@@ -261,7 +274,7 @@ namespace ReplayRecorder.Bullets.Patches {
                 if (dam == null) {
                     dam = target.GetComponent<IDamageable>();
                 }
-                Bullet.OnBulletShot(damage, dimensionIndex, originPos, weaponRayData.rayHit.point, dam != null);
+                Bullet.OnBulletShot(slot, damage, dimensionIndex, originPos, weaponRayData.rayHit.point, dam != null);
             }
         }
     }

@@ -712,6 +712,7 @@ interface GTFOReplayConstructor
         "bulletShot": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
         {
             let e: GTFOEventBulletShot = {
+                slot: BitHelper.readByte(bytes, reader),
                 damage: BitHelper.readHalf(bytes, reader),
                 hit: BitHelper.readByte(bytes, reader) != 0,
                 dimensionIndex: BitHelper.readByte(bytes, reader),

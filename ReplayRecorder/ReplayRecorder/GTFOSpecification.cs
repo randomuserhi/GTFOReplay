@@ -116,6 +116,15 @@ namespace ReplayRecorder {
 
                 // Squid Boss R6 ??
                 { 44, 22 }, // squidboss_big
+
+                // Nightmare Striker
+                { 53, 23 }, // striker_beserk
+                
+                // Nightmare Shooter
+                { 52, 24 }, // shooter_spread
+
+                // Nightmare Scout
+                { 54, 25 }, // scout_zoomer
             }
         };
         private static GTFOSpecification spec = defaultSpec;

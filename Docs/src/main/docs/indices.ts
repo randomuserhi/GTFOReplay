@@ -42,9 +42,13 @@ declare namespace RHU {
             };
 
             set("About", "About.js");
-            /*dir(set("Setup", "Setup.js"), (set) => {
-                set("Creating a Docuscript Project", "Setup/CreatingDocuscript.js");
-            });*/
+            dir(set("Viewer", "Viewer.js"), (set) => {
+                set("Client vs Host Replays", "Viewer/ClientHostReplays.js");
+                set("Backwards Compatability", "Viewer/BackwardsCompatability.js");
+            });
+            dir(set("Dev"), (set) => {
+                set("Replay Binary Format", "Dev/BinaryFormat.js");
+            });
         })(docs.create("1.0.0", "About"));
 
         return {

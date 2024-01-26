@@ -383,7 +383,7 @@ interface GTFOSnapshotConstructor
                     b: { x: eDynamic.position.x, y: eDynamic.position.y, z: eDynamic.position.z },
                     damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings
                     time: time,
-                    color: "233, 181, 41",
+                    color: "255, 255, 255", //"233, 181, 41",
                     type: "melee"
                 });
             }
@@ -762,13 +762,19 @@ interface GTFOSnapshotConstructor
         "bulletShot": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventBulletShot;
+            let colors: string[] = [
+                "194, 31, 78",
+                "24, 147, 94",
+                "32, 85, 140",
+                "122, 26, 142"
+            ];
             snapshot.tracers.push({
                 dimensionIndex: e.dimensionIndex,
                 a: { x: e.start.x, y: e.start.y, z: e.start.z },
                 b: { x: e.end.x, y: e.end.y, z: e.end.z },
                 time: time,
                 damage: e.damage / 30, // TODO(randomuserhi): change ratio to be in settings 
-                color: "233, 181, 41",
+                color: e.slot == 255 ? "233, 181, 41" : colors[e.slot],
                 type: "visual"
             });
         },
