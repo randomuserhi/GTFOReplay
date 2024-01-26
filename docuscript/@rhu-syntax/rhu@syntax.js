@@ -144,27 +144,27 @@ RHU.module(new Error(), "docuscript", {
         },
         h2: {
             create: function (label, ...children) {
-                return this.nodes.h(1, label, ...children);
+                return this.nodes.h(2, label, ...children);
             },
         },
         h3: {
             create: function (label, ...children) {
-                return this.nodes.h(1, label, ...children);
+                return this.nodes.h(3, label, ...children);
             },
         },
         h4: {
             create: function (label, ...children) {
-                return this.nodes.h(1, label, ...children);
+                return this.nodes.h(4, label, ...children);
             },
         },
         h5: {
             create: function (label, ...children) {
-                return this.nodes.h(1, label, ...children);
+                return this.nodes.h(5, label, ...children);
             },
         },
         h6: {
             create: function (label, ...children) {
-                return this.nodes.h(1, label, ...children);
+                return this.nodes.h(6, label, ...children);
             },
         },
         h: {

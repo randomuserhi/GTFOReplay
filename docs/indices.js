@@ -31,6 +31,12 @@
                 return path;
             };
             set("About", "About.js");
+            dir(set("Viewer", "Viewer.js"), (set) => {
+                set("Client vs Host Replays", "Viewer/ClientHostReplays.js");
+            });
+            dir(set("Dev"), (set) => {
+                set("Replay Binary Format", "Dev/BinaryFormat.js");
+            });
         })(docs.create("1.0.0", "About"));
         return {
             DOCUSCRIPT_ROOT
