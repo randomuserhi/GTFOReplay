@@ -128,6 +128,7 @@ interface GTFOEventMap
     "despawnScanCircle": GTFOEventDespawnScanCircle;
     "spawnHolopath": GTFOEventSpawnHolopath;
     "despawnHolopath": GTFOEventDespawnHolopath;
+    "checkpoint": null;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -175,6 +176,7 @@ let eventMap: GTFOEventType[] = [
     "despawnScanCircle",
     "spawnHolopath",
     "despawnHolopath",
+    "checkpoint"
 ];
 
 interface Window

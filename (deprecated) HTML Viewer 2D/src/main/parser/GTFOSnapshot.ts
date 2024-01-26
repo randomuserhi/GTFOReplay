@@ -817,6 +817,12 @@ interface GTFOSnapshotConstructor
                 throw new Error("Holopath does not exist.");
             }
         },
+        "checkpoint": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            for (const player of snapshot.snet.values()) {
+                player.alive = true;
+            }
+        },
     };
 
     let dynamicPropMap: Record<GTFODynamicPropType, (snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number) => void> = {

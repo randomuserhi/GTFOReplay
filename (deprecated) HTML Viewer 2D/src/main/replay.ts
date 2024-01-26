@@ -766,7 +766,13 @@ RHU.import(RHU.module({ trace: new Error(),
                     if (border) { 
                         this.ctx.rect(-radius, -radius, radius * 2, radius * 2);
                     } else if ((bioscan.flags & GTFOBioscan.ReduceWhenNoPlayer) != 0) {
+                        this.ctx.save()
+                        this.ctx.rotate(0.3926991)
                         polygon(this.ctx, radius, 8);
+                        this.ctx.restore()
+                    } else if ((bioscan.flags & GTFOBioscan.Moving) != 0) {
+                        const r = radius * 0.6;
+                        this.ctx.arc(0, 0, r, 0, 2 * Math.PI);
                     } else {
                         this.ctx.arc(0, 0, radius, 0, 2 * Math.PI);
                     }
@@ -776,6 +782,50 @@ RHU.import(RHU.module({ trace: new Error(),
                         this.ctx.lineWidth = border ? 10 : 5;
                         this.ctx.strokeStyle = `rgba(${color}, ${border ? 0.3 : 0.15})`;
                         this.ctx.stroke();
+                    }
+
+                    if ((bioscan.flags & GTFOBioscan.Moving) != 0) {
+                        const r = radius * 0.6;
+
+                        this.ctx.save()
+                        this.ctx.rotate(Math.PI / 4);
+                        
+                        const l = radius * 0.1;
+                        const _l = l / 2;
+                        const L = radius * 0.2;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(_l, r + l);
+                        this.ctx.lineTo(-_l, r + l);
+                        this.ctx.lineTo(0, r + L);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.stroke();
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(r + l, _l);
+                        this.ctx.lineTo(r + l, -_l);
+                        this.ctx.lineTo(r + L, 0);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.stroke();
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(_l, -r - l);
+                        this.ctx.lineTo(-_l, -r - l);
+                        this.ctx.lineTo(0, -r - L);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.stroke();
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(-r - l, _l);
+                        this.ctx.lineTo(-r - l, -_l);
+                        this.ctx.lineTo(-r - L, 0);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        this.ctx.stroke();
+                        
+                        this.ctx.restore()
                     }
                 }
                 else if (snapshot.pellets.has(instance))

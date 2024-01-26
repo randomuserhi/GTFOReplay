@@ -87,6 +87,8 @@ namespace ReplayRecorder {
 
             SpawnHolopath,
             DespawnHolopath,
+
+            Checkpoint,
         }
 
         public long timestamp;

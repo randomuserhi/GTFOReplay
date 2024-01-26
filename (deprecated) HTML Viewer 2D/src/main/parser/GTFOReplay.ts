@@ -816,6 +816,19 @@ interface GTFOReplayConstructor
                 }
             };
         },
+        "checkpoint": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "checkpoint",
+                    detail: null
+                }
+            };
+        },
     };
 
     let dynamicPropParseMap: Record<GTFODynamicPropType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {
