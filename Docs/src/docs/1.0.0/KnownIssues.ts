@@ -12,7 +12,7 @@ RHU.require(new Error(), {
 
         h1("Non-local Player Shots are Inaccurate");
         p(
-            "The recorded visual shots for sentries or non-local players will always be inaccurate as the game does not know of the original shot made by other players.",
+            "The recorded visual shots for sentries (on clients) or non-local players will always be inaccurate as the game does not know of the original shot made by other players.",
             " It simply just knows that they made a shot and so executes the shot in the direction they are supposedly facing in your local game. This is why you can either",
             " visualise these visual tracers or the actual damage events (if available)."
         );
