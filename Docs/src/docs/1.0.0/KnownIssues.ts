@@ -10,6 +10,11 @@ RHU.require(new Error(), {
 
         p("Due to limitations from how the original game functions, there are compromises that had to be made. These are some known issues as a result of said compromises:");
 
+        h1("Mine laser doesnt show up with client-generated replays.");
+        p(
+            "This bug has since been fixed and will be available next patch."
+        );
+
         h1("Non-local Player Shots are Inaccurate");
         p(
             "The recorded visual shots for sentries (on clients) or non-local players will always be inaccurate as the game does not know of the original shot made by other players.",

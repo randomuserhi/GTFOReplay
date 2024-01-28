@@ -129,6 +129,8 @@ interface GTFOEventMap
     "spawnHolopath": GTFOEventSpawnHolopath;
     "despawnHolopath": GTFOEventDespawnHolopath;
     "checkpoint": null;
+    "spawnTendril": GTFOEventSpawnTendril;
+    "despawnTendril": GTFOEventDespawnTendril;
 }
 type GTFOEventType = keyof GTFOEventMap;
 let eventMap: GTFOEventType[] = [
@@ -176,7 +178,9 @@ let eventMap: GTFOEventType[] = [
     "despawnScanCircle",
     "spawnHolopath",
     "despawnHolopath",
-    "checkpoint"
+    "checkpoint",
+    "spawnTendril",
+    "despawnTendril",
 ];
 
 interface Window
@@ -405,6 +409,15 @@ interface GTFOEventSpawnHolopath
 interface GTFOEventDespawnHolopath
 {
     instance: number;
+}
+interface GTFOEventSpawnTendril
+{
+    owner: number;
+    tendril: number;
+}
+interface GTFOEventDespawnTendril
+{
+    tendril: number;
 }
 
 interface GTFODynamicPropMap

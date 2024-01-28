@@ -830,6 +830,39 @@ interface GTFOReplayConstructor
                 }
             };
         },
+        "spawnTendril": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            let e: GTFOEventSpawnTendril = {
+                owner: BitHelper.readInt(bytes, reader),
+                tendril: BitHelper.readInt(bytes, reader),
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "spawnTendril",
+                    detail: e
+                }
+            };
+        },
+        "despawnTendril": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline 
+        {
+            let e: GTFOEventDespawnTendril = {
+                tendril: BitHelper.readInt(bytes, reader),
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "despawnTendril",
+                    detail: e
+                }
+            };
+        },
     };
 
     let dynamicPropParseMap: Record<GTFODynamicPropType, (bytes: DataView, reader: Reader, parser: GTFOSnapshot) => GTFOEvent> = {

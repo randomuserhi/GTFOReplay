@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ReplayRecorder.Bullets.Patches {
     [HarmonyPatch]
-    class BulletPatches {
+    internal class BulletPatches {
         private static bool glueShot = false;
 
         [HarmonyPatch(typeof(GlueGun), nameof(GlueGun.FireSingle))]

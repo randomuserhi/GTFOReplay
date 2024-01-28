@@ -35,7 +35,7 @@ namespace ReplayRecorder.Bullets {
         }
     }
 
-    internal class Bullet {
+    internal static class Bullet {
         public static void OnBulletShot(byte owner, float damage, byte dimensionIndex, Vector3 start, Vector3 end, bool hit) {
             APILogger.Debug($"Bullet shot {damage} ({dimensionIndex}) [{start.x}, {start.y}, {end.z}] -> [{end.x}, {end.y}, {end.z}]");
             SnapshotManager.AddEvent(GameplayEvent.Type.BulletShot, new rBullet(owner, damage, dimensionIndex, start, end, hit));

@@ -239,6 +239,8 @@ RHU.import(RHU.module({ trace: new Error(),
             this.resize();
             this.time = 0;
             this.prev = 0;
+            this.camera.x = -this.canvas.width / 2;
+            this.camera.y = -this.canvas.height / 2;
             this.update(0);
         };
         replay.prototype.update = function(t: number)
@@ -691,7 +693,7 @@ RHU.import(RHU.module({ trace: new Error(),
 
             // Draw dynamics
             let dynamics = [...snapshot.dynamics].filter(d => d[1].dimensionIndex === dimension.index);
-            // sort so glue and bioscan is always at the bottom
+            // sort so glue, bioscan and tendrils are always at the bottom
             // TODO(randomuserhi): sort players and dead players
             dynamics.sort((a, b) => {
                 const glueA = snapshot.glue.has(a[0]);
@@ -705,6 +707,8 @@ RHU.import(RHU.module({ trace: new Error(),
                 else if (glueB) return 1;
                 else if (bioscanA) return -1;
                 else if (bioscanB) return 1;
+                else if (snapshot.tendrils.has(a[0])) return -1;
+                else if (snapshot.tendrils.has(b[0])) return 1;
                 else return 1;
             });
             for (let kv of dynamics)
@@ -745,7 +749,28 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.translate(dynamic.position.x, -dynamic.position.z);
                 this.ctx.rotate(euler.y);
                 
-                if (snapshot.bioscans.has(instance)) 
+                if (snapshot.tendrils.has(instance)) 
+                {
+                    const ownerId = snapshot.tendrils.get(instance)!;
+                    if (snapshot.dynamics.has(ownerId)) {
+                        const scout = snapshot.dynamics.get(ownerId)!;
+
+                        this.ctx.lineWidth = 3;
+                        this.ctx.lineCap = "round";
+                        if (dynamic.scale != 0) {
+                            this.ctx.strokeStyle = "rgba(255, 0, 0, 0.3)";
+                        } else {
+                            this.ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                        }
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, 0);
+                        this.ctx.lineTo(scout.position.x - dynamic.position.x, dynamic.position.z - scout.position.z);
+                        this.ctx.stroke();
+
+                        this.ctx.lineCap = "square";
+                    }
+                }
+                else if (snapshot.bioscans.has(instance)) 
                 {
                     const bioscan = snapshot.bioscans.get(instance)!;
 

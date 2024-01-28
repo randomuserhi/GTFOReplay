@@ -9,20 +9,13 @@ namespace ReplayRecorder.ChainedPuzzle {
             public byte dimensionIndex;
             public Vector3[] spline;
 
-            public HolopathEvent(CP_Holopath_Spline holopath) {
+            public HolopathEvent(CP_Holopath_Spline holopath, byte dimensionIndex) {
                 instance = holopath.GetInstanceID();
                 spline = new Vector3[holopath.CurvySpline.controlPoints.Count];
                 for (int i = 0; i < holopath.CurvySpline.controlPoints.Count; ++i) {
                     spline[i] = holopath.CurvySpline.controlPoints[i].transform.position;
                 }
-
-                CP_Bioscan_Core core = holopath.GetComponent<CP_Bioscan_Core>();
-                if (core != null) {
-                    dimensionIndex = (byte)core.m_courseNode.m_dimension.DimensionIndex;
-                } else {
-                    dimensionIndex = 0;
-                    APILogger.Error("Unable to get bioscan core for holopath.");
-                }
+                this.dimensionIndex = dimensionIndex;
             }
 
             private const int SizeOfHeader = sizeof(int) + 2;
@@ -76,12 +69,12 @@ namespace ReplayRecorder.ChainedPuzzle {
 
         private static HashSet<int> holopaths = new HashSet<int>();
 
-        public static void SpawnHolopath(CP_Holopath_Spline holopath) {
+        public static void SpawnHolopath(CP_Holopath_Spline holopath, byte dimensionIndex) {
             int instance = holopath.GetInstanceID();
             if (!holopaths.Contains(instance)) {
                 APILogger.Debug($"Spawned holopath. [{instance}]");
                 holopaths.Add(instance);
-                SnapshotManager.AddEvent(GameplayEvent.Type.SpawnHolopath, new HolopathEvent(holopath));
+                SnapshotManager.AddEvent(GameplayEvent.Type.SpawnHolopath, new HolopathEvent(holopath, dimensionIndex));
                 SnapshotManager.AddDynamicProperty(new Holopath(instance, holopath));
             }
         }

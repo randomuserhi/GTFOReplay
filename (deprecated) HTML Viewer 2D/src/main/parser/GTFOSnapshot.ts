@@ -27,6 +27,7 @@ interface GTFOSnapshot
     glue: Set<number>;
     holopaths: Map<number, GTFOHolopath>;
     bioscans: Map<number, GTFOBioscan>
+    tendrils: Map<number, number>; // tendril instance id to owner instance id
     
     screams: GTFOScream[];
     alerts: GTFOAlert[];
@@ -829,6 +830,33 @@ interface GTFOSnapshotConstructor
                 player.alive = true;
             }
         },
+        "spawnTendril": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventSpawnTendril;
+            if (!snapshot.dynamics.has(e.tendril) && !snapshot.tendrils.has(e.tendril)) {
+                snapshot.tendrils.set(e.tendril, e.owner);
+                snapshot.dynamics.set(e.tendril, {
+                    position: { x: 0, y: 0, z: 0 },
+                    rotation: { x: 0, y: 0, z: 0, w: 0 },
+                    velocity: { x: 0, y: 0, z: 0 },
+                    scale: 0,
+                    dimensionIndex: 0,
+                    lastUpdated: time
+                });
+            } else {
+                //throw new Error("Tendril already exists.");
+            }
+        },
+        "despawnTendril": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
+        {
+            let e = ev.detail as GTFOEventSpawnTendril;
+            if (snapshot.dynamics.has(e.tendril) && snapshot.tendrils.has(e.tendril)) {
+                snapshot.tendrils.delete(e.tendril);
+                snapshot.dynamics.delete(e.tendril);
+            } else {
+                throw new Error("Tendril does not exist.");
+            }
+        }
     };
 
     let dynamicPropMap: Record<GTFODynamicPropType, (snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number) => void> = {
@@ -916,6 +944,7 @@ interface GTFOSnapshotConstructor
             this.trails = new Map();
             this.bioscans = new Map();
             this.holopaths = new Map();
+            this.tendrils = new Map();
         }
 
         if (RHU.exists(tick)) this.tick = tick;
@@ -1033,6 +1062,10 @@ interface GTFOSnapshotConstructor
 
         this.holopaths = new Map();
         for (let kv of snapshot.holopaths) this.holopaths.set(kv[0], GTFOHolopath.clone(kv[1]));
+
+        // NOTE(randomuserhi): Since the data inside tendrils don't change these do not need to be deep copied
+        this.tendrils = new Map();
+        for (let kv of snapshot.tendrils) this.tendrils.set(kv[0], kv[1]);
     }
     GTFOSnapshot.clone = function(snapshot: GTFOSnapshot): GTFOSnapshot
     {
