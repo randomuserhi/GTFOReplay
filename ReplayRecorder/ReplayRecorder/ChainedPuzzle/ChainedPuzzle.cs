@@ -99,6 +99,19 @@ namespace ReplayRecorder.ChainedPuzzle {
         }
 
         public static HashSet<int> scanCircles = new HashSet<int>();
+        public static Dictionary<int, byte> splineDimensions = new Dictionary<int, byte>();
+
+        public static void RegisterSplineDimension(int instance, byte dimension) {
+            if (!splineDimensions.ContainsKey(instance)) {
+                splineDimensions.Add(instance, dimension);
+            }
+        }
+
+        public static void UnRegisterCoreDimension(int instance) {
+            if (splineDimensions.ContainsKey(instance)) {
+                splineDimensions.Remove(instance);
+            }
+        }
 
         public static void SpawnScanCircle(CP_Bioscan_Core bioscan) {
             int instance = bioscan.GetInstanceID();
@@ -129,6 +142,7 @@ namespace ReplayRecorder.ChainedPuzzle {
         public static void Reset() {
             scanCircles.Clear();
             holopaths.Clear();
+            splineDimensions.Clear();
         }
     }
 }

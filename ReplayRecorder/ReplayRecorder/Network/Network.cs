@@ -77,7 +77,7 @@ namespace ReplayRecorder {
                 }
 
                 APILogger.Debug($"[Networking] Report received: {msgsize} bytes");
-                File.WriteAllBytes("replay.gtfo", replay); // TODO(randomuserhi): report location
+                File.WriteAllBytes(SnapshotManager.fullpath, replay); // TODO(randomuserhi): report location
 
                 return false;
             }

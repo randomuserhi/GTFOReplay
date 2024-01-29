@@ -1,5 +1,7 @@
 ﻿using Agents;
 using API;
+using GameData;
+using Globals;
 using UnityEngine;
 
 namespace ReplayRecorder {
@@ -441,6 +443,7 @@ namespace ReplayRecorder {
         }
 
         // Called after map has loaded
+        public static string fullpath = "./replay.gtfo";
         public static void Init() {
             if (instance != null) {
                 APILogger.Error("Instance has already started, this should not happen");
@@ -454,7 +457,21 @@ namespace ReplayRecorder {
 
             instance.start = Raudy.Now;
 
-            fs = new FileStream("./replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
+            pActiveExpedition expedition = RundownManager.GetActiveExpeditionData();
+            RundownDataBlock data = GameDataBlockBase<RundownDataBlock>.GetBlock(Global.RundownIdToLoad);
+            string shortName = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex).GetShortName(expedition.expeditionIndex);
+            DateTime now = DateTime.Now;
+
+            string filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
+            string path = ConfigManager.ReplayFolder;
+            if (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) {
+                filename = "replay";
+            }
+            if (!Directory.Exists(path)) {
+                path = "./";
+            }
+            fullpath = Path.Combine(path, filename);
+            fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
 
             // Initialize other components
             Player.Player.Init();
@@ -470,7 +487,7 @@ namespace ReplayRecorder {
             }
 
             // Send report => TODO(randomuserhi): rewrite
-            Network.SendReplay(File.ReadAllBytes("replay.gtfo"));
+            Network.SendReplay(File.ReadAllBytes(fullpath));
 
             if (obj == null) {
                 APILogger.Debug($"Snapshot manager has already been destroyed!");

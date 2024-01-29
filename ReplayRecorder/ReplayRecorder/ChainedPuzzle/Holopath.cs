@@ -1,5 +1,6 @@
 ﻿using API;
 using ChainedPuzzles;
+using Player;
 using UnityEngine;
 
 namespace ReplayRecorder.ChainedPuzzle {
@@ -69,11 +70,22 @@ namespace ReplayRecorder.ChainedPuzzle {
 
         private static HashSet<int> holopaths = new HashSet<int>();
 
-        public static void SpawnHolopath(CP_Holopath_Spline holopath, byte dimensionIndex) {
+        public static void SpawnHolopath(CP_Holopath_Spline holopath) {
+            if (holopath.CurvySpline == null || holopath.CurvySpline.Length == 0) return;
+
             int instance = holopath.GetInstanceID();
             if (!holopaths.Contains(instance)) {
                 APILogger.Debug($"Spawned holopath. [{instance}]");
                 holopaths.Add(instance);
+
+                byte dimensionIndex;
+                if (splineDimensions.ContainsKey(instance)) {
+                    dimensionIndex = splineDimensions[instance];
+                } else {
+                    APILogger.Warn("Could not get holopath dimension, falling back to player dimension.");
+                    dimensionIndex = (byte)PlayerManager.GetLocalPlayerAgent().DimensionIndex;
+                }
+
                 SnapshotManager.AddEvent(GameplayEvent.Type.SpawnHolopath, new HolopathEvent(holopath, dimensionIndex));
                 SnapshotManager.AddDynamicProperty(new Holopath(instance, holopath));
             }
@@ -83,6 +95,9 @@ namespace ReplayRecorder.ChainedPuzzle {
             if (holopaths.Contains(instance)) {
                 APILogger.Debug($"Removed holopath. [{instance}]");
                 holopaths.Remove(instance);
+                if (splineDimensions.ContainsKey(instance)) {
+                    splineDimensions.Remove(instance);
+                }
                 SnapshotManager.AddEvent(GameplayEvent.Type.DespawnHolopath, new rInstance(instance));
                 SnapshotManager.RemoveDynamicProperty(instance);
             }
