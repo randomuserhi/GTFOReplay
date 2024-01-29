@@ -107,12 +107,6 @@ namespace ReplayRecorder.ChainedPuzzle {
             }
         }
 
-        public static void UnRegisterCoreDimension(int instance) {
-            if (splineDimensions.ContainsKey(instance)) {
-                splineDimensions.Remove(instance);
-            }
-        }
-
         public static void SpawnScanCircle(CP_Bioscan_Core bioscan) {
             int instance = bioscan.GetInstanceID();
             if (!scanCircles.Contains(instance)) {

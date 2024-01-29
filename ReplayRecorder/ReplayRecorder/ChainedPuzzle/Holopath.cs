@@ -95,9 +95,6 @@ namespace ReplayRecorder.ChainedPuzzle {
             if (holopaths.Contains(instance)) {
                 APILogger.Debug($"Removed holopath. [{instance}]");
                 holopaths.Remove(instance);
-                if (splineDimensions.ContainsKey(instance)) {
-                    splineDimensions.Remove(instance);
-                }
                 SnapshotManager.AddEvent(GameplayEvent.Type.DespawnHolopath, new rInstance(instance));
                 SnapshotManager.RemoveDynamicProperty(instance);
             }
