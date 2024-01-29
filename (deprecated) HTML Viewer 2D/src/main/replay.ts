@@ -400,13 +400,41 @@ RHU.import(RHU.module({ trace: new Error(),
                     z: holopath.spline[0].z
                 }
                 this.ctx.moveTo(pos.x, -pos.z);
-                let end = Math.ceil(holopath.spline.length * holopath.lerp);
+                let totalDistance = 0;
+                for (let i = 1, p = { x: holopath.spline[0].x, y: holopath.spline[0].y, z: holopath.spline[0].z }; i < holopath.spline.length; ++i) {
+                    let fx = p.x + holopath.spline[i].x;
+                    let fy = p.y + holopath.spline[i].y;
+                    let fz = p.z + holopath.spline[i].z;
+                    
+                    let diffX = fx - p.x;
+                    let diffY = fy - p.y;
+                    let diffZ = fz - p.z;
+                    
+                    totalDistance += Math.sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ);
+                    
+                    p.x = fx;
+                    p.y = fy;
+                    p.z = fz;
+                }
+                let distance = holopath.lerp * totalDistance;
                 let xc = 0;
                 let yc = 0;
-                for (let i = 1; i < end; ++i)
+                for (let i = 1, d = 0; d <= distance && i < holopath.spline.length; ++i)
                 {
-                    let l = holopath.spline.length * holopath.lerp - i;
-                    if (l > 1) l = 1;
+                    let fx = pos.x + holopath.spline[i].x;
+                    let fy = pos.y + holopath.spline[i].y;
+                    let fz = pos.z + holopath.spline[i].z;
+
+                    let diffX = fx - pos.x;
+                    let diffY = fy - pos.y;
+                    let diffZ = fz - pos.z;
+                    let dist = Math.sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ);
+
+                    let l = 1;
+                    let diffDist = distance - d;
+                    if (diffDist < dist) {
+                        l = diffDist / dist;
+                    }
 
                     xc = pos.x;
                     yc = -pos.z;
@@ -419,6 +447,8 @@ RHU.import(RHU.module({ trace: new Error(),
                     {
                         this.ctx.quadraticCurveTo(xc, yc, pos.x, -pos.z);
                     }
+
+                    d += dist;                    
                 }
                 this.ctx.lineTo(pos.x, -pos.z);
                 this.ctx.lineWidth = 4;
