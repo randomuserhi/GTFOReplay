@@ -24,6 +24,8 @@ namespace ReplayRecorder.Enemies {
         }
 
         // NOTE(randomuserhi): Should really be a dynamic property instead of lazily using ITransform
+        //                     sizeof(ITransform) is much larger thanks to 7 extra bytes from rotation which isn't needed
+        //                     dynamic property would fix this.
         private struct Tendril : SnapshotManager.ITransform {
             private ScoutAntenna tendril;
 
