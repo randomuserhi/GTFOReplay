@@ -925,6 +925,10 @@ RHU.import(RHU.module({ trace: new Error(),
                         this.ctx.lineTo(-20, 12);
                         this.ctx.lineTo(20, 12);
                         this.ctx.closePath();
+
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeStyle = "#fff";
+                        this.ctx.stroke();
                     }
                     else if (snapshot.sentries.has(instance))
                     {

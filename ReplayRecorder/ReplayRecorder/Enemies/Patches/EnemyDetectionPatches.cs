@@ -1,10 +1,13 @@
 ﻿using Agents;
+using AIGraph;
 using API;
 using Enemies;
+using GameData;
 using HarmonyLib;
 using LevelGeneration;
 using Player;
 using SNetwork;
+using UnityEngine;
 
 namespace ReplayRecorder.Enemies.Patches {
     [HarmonyPatch]
@@ -13,6 +16,8 @@ namespace ReplayRecorder.Enemies.Patches {
             enemiesWokenFromScream.Clear();
 
             NoiseManager.noiseDataToProcess.Clear();
+            delayedNoiseEvents.Clear();
+            _delayedNoiseEvents.Clear();
             noiseSources.Clear();
             makeNoiseSource = null;
             makeNoiseSourceSet = false;
@@ -96,6 +101,18 @@ namespace ReplayRecorder.Enemies.Patches {
             public bool set;
             public PlayerAgent? source;
         }
+        private struct NoiseEvent {
+            public Vector3 position;
+            public float radiusMin;
+            public float radiusMax;
+            public float yScale;
+            public int courseNodeInstance;
+            public NM_NoiseType type;
+            public bool includeToNeightbourAreas;
+            public bool raycastFirstNode;
+        }
+        private static List<NoiseEvent> delayedNoiseEvents = new List<NoiseEvent>();
+        private static List<NoiseEvent> _delayedNoiseEvents = new List<NoiseEvent>();
         private static Queue<NoiseSource> noiseSources = new Queue<NoiseSource>();
         private static PlayerAgent? makeNoiseSource = null;
         private static bool makeNoiseSourceSet = false;
@@ -112,7 +129,7 @@ namespace ReplayRecorder.Enemies.Patches {
         }
         [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.Update))]
         [HarmonyPostfix]
-        private static void Postfix_UpdateNoisee() {
+        private static void Postfix_UpdateNoise() {
             if (!SNet.IsMaster) return;
             fromNoiseManager = false;
         }
@@ -131,13 +148,47 @@ namespace ReplayRecorder.Enemies.Patches {
         }
         [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.MakeNoise))]
         [HarmonyPostfix]
-        private static void MakeNoise() {
+        private static void MakeNoise(NM_NoiseData noiseData) {
             if (!SNet.IsMaster) return;
 
-            noiseSources.Enqueue(new NoiseSource() {
-                set = makeNoiseSourceSet,
-                source = makeNoiseSource
-            });
+            // Check if its a delayed noise event => Hacky solution using these 2 buffered lists to avoid patching IEnumerator used
+            // by the game to trigger delayed events.
+            bool delayedNoiseEvent = false;
+            _delayedNoiseEvents.Clear();
+            foreach (NoiseEvent delayed in delayedNoiseEvents) {
+                if (
+                    !delayedNoiseEvent &&
+                    delayed.position == noiseData.position &&
+                    delayed.radiusMin == noiseData.radiusMin &&
+                    delayed.radiusMax == noiseData.radiusMax &&
+                    delayed.yScale == noiseData.yScale &&
+                    delayed.courseNodeInstance == noiseData.node.gameObject.GetInstanceID() &&
+                    delayed.type == noiseData.type &&
+                    delayed.includeToNeightbourAreas == noiseData.includeToNeightbourAreas &&
+                    delayed.raycastFirstNode == noiseData.raycastFirstNode
+                ) {
+                    delayedNoiseEvent = true;
+                } else {
+                    _delayedNoiseEvents.Add(delayed);
+                }
+            }
+            List<NoiseEvent> temp = _delayedNoiseEvents;
+            _delayedNoiseEvents = delayedNoiseEvents;
+            delayedNoiseEvents = temp;
+
+            if (delayedNoiseEvent) {
+                APILogger.Debug($"Matched sound to a delayed sec door event. {_delayedNoiseEvents.Count} -> {delayedNoiseEvents.Count}");
+                noiseSources.Enqueue(new NoiseSource() {
+                    set = true,
+                    source = null
+                });
+            } else {
+                noiseSources.Enqueue(new NoiseSource() {
+                    set = makeNoiseSourceSet,
+                    source = makeNoiseSource
+                });
+            }
+
             makeNoiseSourceSet = false;
             makeNoiseSource = null;
         }
@@ -203,6 +254,34 @@ namespace ReplayRecorder.Enemies.Patches {
                 makeNoiseSourceSet = true;
             }
         }
+        // SecDoorEvent => Pretty hacky method used here to try and match noise made with door
+        [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnDoorIsOpened))]
+        [HarmonyPrefix]
+        private static void Prefix_SecurityDoor_OnDoorIsOpened(LG_SecurityDoor __instance) {
+            if (!SNet.IsMaster) return;
+
+            if (__instance.LinkedToZoneData == null) {
+                return;
+            }
+            if (__instance.LinkedToZoneData.EventsOnEnter != null) {
+                for (int i = 0; i < __instance.LinkedToZoneData.EventsOnEnter!.Count; ++i) {
+                    LevelEventData e = __instance.LinkedToZoneData.EventsOnEnter[i];
+                    if (e.Noise.Enabled) {
+                        AIG_CourseNode courseNode = __instance.Gate.GetOppositeArea(__instance.Gate.ProgressionSourceArea).m_courseNode;
+                        delayedNoiseEvents.Add(new NoiseEvent() {
+                            position = __instance.transform.position,
+                            radiusMin = e.Noise.RadiusMin,
+                            radiusMax = e.Noise.RadiusMax,
+                            yScale = 1f,
+                            courseNodeInstance = courseNode.gameObject.GetInstanceID(),
+                            type = NM_NoiseType.InstaDetect,
+                            includeToNeightbourAreas = true,
+                            raycastFirstNode = false
+                        });
+                    }
+                }
+            }
+        }
 
         // Regular enemy wakeup sequence
         private static bool triggered = false;
@@ -221,11 +300,11 @@ namespace ReplayRecorder.Enemies.Patches {
             }
 
             // Prevent niche cases where enemies don't wake up from a scream despite the fact they are in range
-            // by removing tagged enemies in scream group that are older than 100ms
+            // by removing tagged enemies in scream group that are older than 200ms
             long now = Raudy.Now;
             int[] keys = enemiesWokenFromScream.Keys.ToArray();
             foreach (int id in keys) {
-                if (now - enemiesWokenFromScream[id] > 100) enemiesWokenFromScream.Remove(id);
+                if (now - enemiesWokenFromScream[id] > 200) enemiesWokenFromScream.Remove(id);
             }
 
             int instance = self.GetInstanceID();
