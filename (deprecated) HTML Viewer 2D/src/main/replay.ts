@@ -944,6 +944,7 @@ RHU.import(RHU.module({ trace: new Error(),
 
                         const width = 15;
                         const height = 30;
+                        this.ctx.beginPath();
                         this.ctx.fillRect(-width / 2, -height / 2, width, height);
                     }
                     else if (snapshot.enemies.has(instance))
