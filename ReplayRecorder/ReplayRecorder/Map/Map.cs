@@ -163,8 +163,8 @@ namespace ReplayRecorder.Map {
 
                                 int count = 0;
                                 foreach (Mesh mesh in meshes.OrderBy(m => (gateLocation - m.bounds.ClosestPoint(gateLocation)).sqrMagnitude)) {
+                                    if (++count > 3) break;
                                     if (!relevantSurfaces.ContainsKey(mesh)) {
-                                        if (++count > 2) break;
                                         relevantSurfaces.Add(mesh, new rMap.Surface(mesh));
                                     }
                                 }
@@ -176,8 +176,8 @@ namespace ReplayRecorder.Map {
                             {
                                 int count = 0;
                                 foreach (Mesh mesh in meshes.OrderBy(m => (area.Position - m.bounds.ClosestPoint(area.Position)).sqrMagnitude)) {
+                                    if (++count > 1) break;
                                     if (!relevantSurfaces.ContainsKey(mesh)) {
-                                        if (++count > 1) break;
                                         relevantSurfaces.Add(mesh, new rMap.Surface(mesh));
                                     }
                                 }
