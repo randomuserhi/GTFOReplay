@@ -340,7 +340,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 }
                 this.ctx.restore();
 
-                this.ctx.save();
+                /*this.ctx.save();
                 this.ctx.translate(door.position.x, -door.position.z);
                 this.ctx.font = "10px Oxanium";
                 let text = `${q1.x} ${q1.y} ${q1.z} ${q1.w}`;
@@ -349,7 +349,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.fillRect(-metrics.width / 2, -10, metrics.width, 15);
                 this.ctx.fillStyle = `#fff`;
                 this.ctx.fillText(text, - metrics.width / 2, 0);
-                this.ctx.restore();
+                this.ctx.restore();*/
             }
 
             // Draw ladders
