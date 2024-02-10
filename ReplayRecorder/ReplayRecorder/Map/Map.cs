@@ -143,8 +143,7 @@ namespace ReplayRecorder.Map {
             ///     - the nearest surface is most likely relevant to the level if enemies and players can spawn there
 
             rMap.Surface[] surfaces;
-            if (meshes.Length > 1) // Check we actually need to filter surfaces
-            {
+            if (meshes.Length > 1) { // Check we actually need to filter surfaces
                 APILogger.Debug("Getting relevant surfaces.");
                 long start = Raudy.Now;
 

@@ -172,32 +172,44 @@ let BitHelper: BitHelper = {
     readHalfQuaternion: function(buffer: DataView, reader: Reader): Quaternion
     {
         let i = this.readByte(buffer, reader);
-        let x = 0, y = 0, z = 0, w = 0;
+        let x = 0, y = 0, z = 0, w = 0, _temp;
         switch (i)
         {
             case 0:
                 y = this.readHalf(buffer, reader);
                 z = this.readHalf(buffer, reader);
                 w = this.readHalf(buffer, reader);
-                x = Math.sqrt(1 - y * y - z * z - w * w);
+                _temp = 1 - y * y - z * z - w * w;
+                // NOTE(randomuserhi): clamp to prevent issue due to inaccuracy in 16-bit floats causing vector to not be normalized
+                _temp = _temp < 0 ? 0 : _temp > 1 ? 1 : _temp;
+                x = Math.sqrt(_temp);
                 break;
             case 1:
                 x = this.readHalf(buffer, reader);
                 z = this.readHalf(buffer, reader);
                 w = this.readHalf(buffer, reader);
-                y = Math.sqrt(1 - x * x - z * z - w * w);
+                _temp = 1 - y * y - z * z - w * w;
+                // NOTE(randomuserhi): clamp to prevent issue due to inaccuracy in 16-bit floats causing vector to not be normalized
+                _temp = _temp < 0 ? 0 : _temp > 1 ? 1 : _temp;
+                y = Math.sqrt(_temp);
                 break;
             case 2:
                 x = this.readHalf(buffer, reader);
                 y = this.readHalf(buffer, reader);
                 w = this.readHalf(buffer, reader);
-                z = Math.sqrt(1 - x * x - y * y - w * w);
+                _temp = 1 - y * y - z * z - w * w;
+                // NOTE(randomuserhi): clamp to prevent issue due to inaccuracy in 16-bit floats causing vector to not be normalized
+                _temp = _temp < 0 ? 0 : _temp > 1 ? 1 : _temp;
+                z = Math.sqrt(_temp);
                 break;
             case 3:
                 x = this.readHalf(buffer, reader);
                 y = this.readHalf(buffer, reader);
                 z = this.readHalf(buffer, reader);
-                w = Math.sqrt(1 - x * x - y * y - z * z);
+                _temp = 1 - y * y - z * z - w * w;
+                // NOTE(randomuserhi): clamp to prevent issue due to inaccuracy in 16-bit floats causing vector to not be normalized
+                _temp = _temp < 0 ? 0 : _temp > 1 ? 1 : _temp;
+                w = Math.sqrt(_temp);
                 break;
         }
         return { x: x, y: y, z: z, w: w };

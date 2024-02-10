@@ -3,7 +3,6 @@ using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using ReplayRecorder.Player.Patches;
 
 namespace ReplayRecorder;
 
@@ -36,6 +35,7 @@ public class Plugin : BasePlugin {
         // Setup
         SnapshotManager.Setup();
         //RundownManager.add_OnExpeditionGameplayStarted((Action)GameEventManager.OnGameplayStart);
+        //RundownManager.add_OnExpeditionGameplayStarted((Action)Map.Map.InitAndSaveMap);
     }
 
     private static Harmony? harmony;
