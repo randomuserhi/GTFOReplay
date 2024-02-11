@@ -71,7 +71,7 @@ RHU.import(RHU.module({ trace: new Error(),
             ctx.restore();
         }
 
-        let icons: Record<string, HTMLImageElement> = {}
+        /*let icons: Record<string, HTMLImageElement> = {}
         for (let item of GTFOSpecification.items)
         {
             let img = document.createElement("img");
@@ -80,7 +80,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 img.toggleAttribute("data-failed", true);
             }
             icons[item] = img;
-        }
+        }*/
 
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
