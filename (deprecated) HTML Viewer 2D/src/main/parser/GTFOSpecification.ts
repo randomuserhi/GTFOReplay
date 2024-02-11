@@ -211,6 +211,7 @@ let GTFOSpecification: GTFOSpecification = {
         "ISOCO Stinger",
         "Kovac Sledgehammer",
         "Santonian Mallet",
+        "MACO Gavel",
 
         // Hacking Tool
         "Hacking Tool",

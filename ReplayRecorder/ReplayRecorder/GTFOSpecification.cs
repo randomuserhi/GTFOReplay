@@ -107,51 +107,52 @@ namespace ReplayRecorder {
                 { 70, 48 }, // ISOCO Stinger
                 { 9, 49 }, // Kovac Sledgehammer
                 { 27, 50 }, // Santonian Mallet
+                { 28, 51 }, // MACO Gavel
 
                 // Hacking Tool
-                { 2, 51 },
+                { 2, 52 },
             },
             items = new Dictionary<uint, byte>()
             {
                 { uint.MaxValue, 0 }, // Not necessary for this application to know, but its here to remind that 0 is unavailable
 
                 // Packs
-                { 102, 52 }, // Medipack
-                { 101, 53 }, // Ammo pack
-                { 127, 54 }, // Tool refill pack
-                { 132, 55 }, // Disinfect pack
+                { 102, 53 }, // Medipack
+                { 101, 54 }, // Ammo pack
+                { 127, 55 }, // Tool refill pack
+                { 132, 56 }, // Disinfect pack
 
                 // Consumables
-                { 114, 56 }, // Glowsticks
-                { 30, 57 }, // Long range flashlight
-                { 140, 58 }, // I2-LP Syringe
-                { 142, 59 }, // IIX Syringe
-                { 115, 60 }, // Cfoam Grenade
-                { 116, 61 }, // Lock melter
-                { 117, 62 }, // Fog repeller
-                { 139, 63 }, // Explosive tripmine
-                { 144, 64 }, // Cfoam tripmine
+                { 114, 57 }, // Glowsticks
+                { 30, 58 }, // Long range flashlight
+                { 140, 59 }, // I2-LP Syringe
+                { 142, 60 }, // IIX Syringe
+                { 115, 61 }, // Cfoam Grenade
+                { 116, 62 }, // Lock melter
+                { 117, 63 }, // Fog repeller
+                { 139, 64 }, // Explosive tripmine
+                { 144, 65 }, // Cfoam tripmine
 
                 // Big pickup
-                { 131, 65 }, // Powercell
-                { 133, 66 }, // Fog repeller
-                { 137, 67 }, // Neonate
-                { 141, 67 },
-                { 143, 67 },
-                { 170, 67 },
-                { 145, 67 },
-                { 175, 67 },
-                { 177, 67 },
-                { 164, 68 }, // Matter Wave Projector
-                { 166, 68 },
-                { 151, 69 }, // Data Sphere
-                { 181, 69 },
-                { 138, 70 }, // Cargo crate
-                { 176, 70 },
-                { 154, 70 },
-                { 155, 70 },
-                { 148, 71 }, // Cryo
-                { 173, 72 }, // collection case
+                { 131, 66 }, // Powercell
+                { 133, 67 }, // Fog repeller
+                { 137, 68 }, // Neonate
+                { 141, 68 },
+                { 143, 68 },
+                { 170, 68 },
+                { 145, 68 },
+                { 175, 68 },
+                { 177, 68 },
+                { 164, 69 }, // Matter Wave Projector
+                { 166, 69 },
+                { 151, 70 }, // Data Sphere
+                { 181, 70 },
+                { 138, 71 }, // Cargo crate
+                { 176, 71 },
+                { 154, 71 },
+                { 155, 71 },
+                { 148, 72 }, // Cryo
+                { 173, 73 }, // collection case
             },
             enemies = new Dictionary<uint, byte>() {
                 { uint.MaxValue, 0 }, // Not necessary for this application to know, but its here to remind that 0 is unavailable
