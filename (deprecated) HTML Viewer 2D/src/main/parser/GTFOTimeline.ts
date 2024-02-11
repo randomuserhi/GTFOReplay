@@ -28,6 +28,7 @@ interface GTFOCross
     deviation: number;
     shake: (number[])[];
     color: string;
+    killer?: bigint;
 }
 
 interface GTFOScream

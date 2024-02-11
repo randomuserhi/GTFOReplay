@@ -289,6 +289,7 @@ interface GTFOSnapshotConstructor
         "enemyDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
             let e = ev.detail as GTFOEventEnemySpawn;
+            let enemy = snapshot.enemies.get(e.instance);
             let dyn = snapshot.dynamics.get(e.instance);
             snapshot.enemies.delete(e.instance);
             snapshot.dynamics.delete(e.instance);
@@ -310,7 +311,8 @@ interface GTFOSnapshotConstructor
                     time: time,
                     deviation: d,
                     shake: shake,
-                    color: "#f00"
+                    color: "#f00",
+                    killer: RHU.exists(enemy) ? enemy.killer : undefined,
                 });
             }
             else throw new ReferenceError("Referenced enemy does not exist.");
@@ -350,6 +352,7 @@ interface GTFOSnapshotConstructor
                     enemy.health -= e.damage;
                     if (enemy.health <= 0) {
                         player.kills += 1;
+                        enemy.killer = snapshot.slots[e.slot]!;
                     }
                 }
                 
@@ -390,6 +393,7 @@ interface GTFOSnapshotConstructor
                     enemy.health -= e.damage;
                     if (enemy.health <= 0) {
                         player.kills += 1;
+                        enemy.killer = snapshot.slots[e.slot]!;
                     }
                 }
 
@@ -419,6 +423,7 @@ interface GTFOSnapshotConstructor
                     enemy.health -= e.damage;
                     if (enemy.health <= 0) {
                         player.kills += 1;
+                        enemy.killer = snapshot.slots[e.slot]!;
                     }
                 }
             }

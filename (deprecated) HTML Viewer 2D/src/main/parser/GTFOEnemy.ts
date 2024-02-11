@@ -30,6 +30,7 @@ interface GTFOEnemy
     behaviourState: GTFOEnemyBehaviourState;
     locomotionState: GTFOEnemyLocomotionState;
     target?: number;
+    killer?: bigint;
 }
 interface GTFOEnemyConstructor
 {
@@ -48,6 +49,7 @@ interface GTFOEnemyConstructor
         this.behaviourState = state;
         this.locomotionState = "Default";
         this.target = target;
+        this.killer = undefined;
     } as Function as GTFOEnemyConstructor;
     GTFOEnemy.clone = function(enemy: GTFOEnemy): GTFOEnemy
     {
