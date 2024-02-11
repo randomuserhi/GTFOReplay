@@ -112,11 +112,11 @@ RHU.import(RHU.module({ trace: new Error(),
             let origin = { x: 0, y: 0 };
             let old = { x: 0, y: 0 };
             window.addEventListener("keydown", (e) => {
-                e.preventDefault();
                 switch (e.keyCode)
                 {
                     case 9:
                         this.debug = !this.debug;
+                        e.preventDefault();
                         break;
                     case 37:
                         this.time -= 1000;

@@ -847,7 +847,7 @@ interface GTFOSnapshotConstructor
             if (!snapshot.holopaths.has(e.instance)) {
                 snapshot.holopaths.set(e.instance, new GTFOHolopath(e.instance, e.dimensionIndex, e.spline));
             } else {
-                throw new Error("Holopath was already spawned.");
+                //throw new Error("Holopath was already spawned.");
             }
         },
         "despawnHolopath": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
@@ -856,7 +856,7 @@ interface GTFOSnapshotConstructor
             if (snapshot.holopaths.has(e.instance)) {
                 snapshot.holopaths.delete(e.instance);
             } else {
-                throw new Error("Holopath does not exist.");
+                //throw new Error("Holopath does not exist.");
             }
         },
         "checkpoint": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
