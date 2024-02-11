@@ -15,5 +15,12 @@ namespace ReplayRecorder.Enemies.Patches {
                 EnemyTendrils.SpawnTendril(instance, __instance, __instance.m_detection.m_owner);
             }
         }
+
+        [HarmonyPatch(typeof(ScoutAntenna), nameof(ScoutAntenna.Remove))]
+        [HarmonyPostfix]
+        private static void Postfix_ScoutAntennaRemove(ScoutAntenna __instance) {
+            int instance = __instance.GetInstanceID();
+            EnemyTendrils.DespawnTendril(instance);
+        }
     }
 }

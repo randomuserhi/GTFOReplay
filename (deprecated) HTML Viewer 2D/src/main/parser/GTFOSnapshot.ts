@@ -345,6 +345,14 @@ interface GTFOSnapshotConstructor
             {
                 let pDynamic;
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+                
+                if (enemy.health) {
+                    enemy.health -= e.damage;
+                    if (enemy.health <= 0) {
+                        player.kills += 1;
+                    }
+                }
+                
                 if (e.sentry) 
                 {
                     if (RHU.exists(player.sentry)) pDynamic = snapshot.dynamics.get(player.sentry)!;
@@ -377,6 +385,14 @@ interface GTFOSnapshotConstructor
             if (RHU.exists(enemy) && RHU.exists(eDynamic))
             {
                 let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                if (enemy.health) {
+                    enemy.health -= e.damage;
+                    if (enemy.health <= 0) {
+                        player.kills += 1;
+                    }
+                }
+
                 let pDynamic = snapshot.dynamics.get(player.instance)!;
                 snapshot.tracers.push({
                     dimensionIndex: eDynamic.dimensionIndex,
@@ -392,7 +408,21 @@ interface GTFOSnapshotConstructor
         },
         "enemyMineDamage": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
-            // TODO(randomuserhi)
+            let replay = snapshot.owner;
+            let e = ev.detail as GTFOEventEnemyBulletDamage;
+            let enemy = snapshot.enemies.get(e.instance);
+            if (RHU.exists(enemy))
+            {
+                let player = snapshot.snet.get(snapshot.slots[e.slot]!)!;
+
+                if (enemy.health) {
+                    enemy.health -= e.damage;
+                    if (enemy.health <= 0) {
+                        player.kills += 1;
+                    }
+                }
+            }
+            else throw new ReferenceError("Enemy does not exist to do mine damage.");
         },
         "playerDead": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
         {
@@ -912,6 +942,26 @@ interface GTFOSnapshotConstructor
             if (RHU.exists(lerp)) l = lerp;
 
             holopath.lerp = holopath.lerp + (_holopath.lerp - holopath.lerp) * l;
+        },
+        "playerStatus": function(snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number)
+        {
+            let playerStatus = ev.detail as GTFODynamicPropPlayerStatus;
+            let player_id = snapshot.players.get(playerStatus.instance)!;
+            let player = snapshot.snet.get(player_id)!;
+            if (!RHU.exists(player)) return;
+
+            let l = 1;
+            if (RHU.exists(lerp)) l = lerp;
+
+            player.health = player.health + (playerStatus.health - player.health) * l;
+            player.alive = player.health > 0; // Safety against revive and dead events not properly being called
+            player.infection = player.infection + (playerStatus.infection - player.infection) * l;
+
+            player.primary = playerStatus.primary;
+            player.special = playerStatus.special;
+            player.tool = playerStatus.tool;
+            player.consumable = playerStatus.consumable;
+            player.resource = playerStatus.resource;
         },
     }
 

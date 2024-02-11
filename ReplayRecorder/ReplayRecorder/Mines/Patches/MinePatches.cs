@@ -8,7 +8,7 @@ using static MineDeployerInstance;
 namespace ReplayRecorder.Mines.Patches {
     [HarmonyPatch]
     class MinePatches {
-        private static rMine? currentMine = null;
+        public static rMine? currentMine = null;
 
         private static float prevLength;
         [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.FixedUpdate))]
@@ -72,7 +72,7 @@ namespace ReplayRecorder.Mines.Patches {
             Mine.DespawnMine(instanceID);
         }
 
-        private static PlayerAgent? player = null;
+        public static PlayerAgent? player = null;
         [HarmonyPatch(typeof(GenericDamageComponent), nameof(GenericDamageComponent.BulletDamage))]
         [HarmonyPrefix]
         private static void Prefix_BulletDamage(float dam, Agent sourceAgent) {
@@ -93,6 +93,7 @@ namespace ReplayRecorder.Mines.Patches {
                 currentMine = Mine.mines[instanceID];
                 if (player != null) {
                     APILogger.Debug($"Player triggered mine: {player.PlayerName}");
+                    currentMine.player = player;
                     Mine.ExplodeMine(instanceID, (byte)player.PlayerSlotIndex);
                 } else {
                     APILogger.Debug($"Mine triggered without player.");
@@ -105,6 +106,25 @@ namespace ReplayRecorder.Mines.Patches {
         [HarmonyPostfix]
         private static void Postfix_SyncedTrigger() {
             currentMine = null;
+        }
+
+        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
+        [HarmonyPrefix]
+        private static void Prefix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
+            if (!SNet.IsMaster) return;
+            int instanceID = __instance.gameObject.GetInstanceID();
+
+            if (Mine.mines.ContainsKey(instanceID)) {
+                currentMine = Mine.mines[instanceID];
+            } else APILogger.Error($"Mine did not exist in catalogue, this should not happen.");
+        }
+
+        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
+        [HarmonyPostfix]
+        private static void Postfix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
+            if (!SNet.IsMaster) return;
+            currentMine = null;
+            Mine.DespawnMine(__instance.gameObject.GetInstanceID());
         }
     }
 }

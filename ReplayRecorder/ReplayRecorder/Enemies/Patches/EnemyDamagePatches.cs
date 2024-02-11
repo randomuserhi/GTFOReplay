@@ -3,6 +3,7 @@ using API;
 using Enemies;
 using HarmonyLib;
 using Player;
+using ReplayRecorder.Mines.Patches;
 using ReplayRecorder.Player;
 
 namespace ReplayRecorder.Enemies.Patches {
@@ -67,6 +68,26 @@ namespace ReplayRecorder.Enemies.Patches {
                     EnemyDamage.OnMeleeDamage(__instance.Owner, p, damage);
                 } else APILogger.Debug($"Currently equipped is not a melee weapon, this should not happen.\nIsWeapon: {currentEquipped.IsWeapon}\nCanReload: {currentEquipped.CanReload}");
             } else APILogger.Debug($"Unable to find source agent.");
+        }
+
+        [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveExplosionDamage))]
+        [HarmonyPrefix]
+        public static void Prefix_ExplosionDamage(Dam_EnemyDamageBase __instance, pExplosionDamageData data) {
+            if (!SNetwork.SNet.IsMaster) return;
+
+            if (MinePatches.currentMine != null) {
+                float damage = data.damage.Get(__instance.HealthMax);
+                // NOTE(randomuserhi): When player disconnects and their mine blows up enemies, this creates a race condition
+                //                     since the player no longer exists for the owner (slot index) to be valid
+                //                     This isn't an issue for other damage types since they require the owner to be connected
+                //                     but for mines this is not the case.
+                //                     To fix this, store the owner as an instanceID instead.
+                PlayerAgent p = PlayerManager.PlayerAgentsInLevel[MinePatches.currentMine.owner];
+                if (MinePatches.currentMine.player != null) {
+                    p = MinePatches.currentMine.player;
+                }
+                EnemyDamage.OnMineDamage(__instance.Owner, p, damage);
+            } else APILogger.Debug($"Unable to find source mine for explosion damage.");
         }
     }
 }

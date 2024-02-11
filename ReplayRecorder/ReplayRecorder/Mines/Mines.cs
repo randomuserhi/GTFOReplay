@@ -10,6 +10,7 @@ namespace ReplayRecorder.Mines {
             Cfoam
         }
 
+        public PlayerAgent? player = null;
         public byte owner;
         public byte type;
         public byte dimensionIndex;
@@ -104,7 +105,8 @@ namespace ReplayRecorder.Mines {
         public static void ExplodeMine(int instance, byte player) {
             APILogger.Debug($"Mine instance [{instance}] detonated");
             SnapshotManager.AddEvent(GameplayEvent.Type.ExplodeMine, new rExplodeMine(instance, player));
-            mines.Remove(instance);
+
+            if (!SNet.IsMaster) mines.Remove(instance);
         }
 
         public static void Reset() {

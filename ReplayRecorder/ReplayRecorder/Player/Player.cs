@@ -129,8 +129,18 @@ namespace ReplayRecorder.Player {
 
         public static void OnPlayerWield(PlayerAgent player, ItemEquippable item) {
             // TODO(randomuserhi): Change to use item.pItemData.itemID_gearCRC instead
-            APILogger.Debug($"{player.Owner.NickName} is wielding {item.PublicName} [{item.ArchetypeID}]");
-            SnapshotManager.AddEvent(GameplayEvent.Type.PlayerWield, new rPlayerWield(player, GTFOSpecification.GetItem(item.ArchetypeID)));
+            byte id;
+            if (item.GearIDRange != null) {
+                id = GTFOSpecification.GetGear(item.GearIDRange.PlayfabItemInstanceId);
+            } else if (item.ItemDataBlock != null) {
+                id = GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
+            } else {
+                APILogger.Error($"Unable to find id for OnPlayerWield.");
+                SnapshotManager.AddEvent(GameplayEvent.Type.PlayerWield, new rPlayerWield(player, 0));
+                return;
+            }
+            APILogger.Debug($"{player.Owner.NickName} is wielding {item.PublicName} [{id}]");
+            SnapshotManager.AddEvent(GameplayEvent.Type.PlayerWield, new rPlayerWield(player, id));
         }
 
         public static void Init() {
@@ -146,6 +156,7 @@ namespace ReplayRecorder.Player {
 
                 SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
                 SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rAgent(player)));
+                SnapshotManager.AddDynamicProperty(new PlayerStatus(rPlayer.instanceID, player));
             }
         }
 
@@ -168,6 +179,7 @@ namespace ReplayRecorder.Player {
             rPlayerAgent player = new rPlayerAgent(agent);
             SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(player));
             SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(player.instanceID, new SnapshotManager.rAgent(agent)));
+            SnapshotManager.AddDynamicProperty(new PlayerStatus(player.instanceID, agent));
 
             playerList.Add(player);
             players.Add(player.instanceID, player);
@@ -179,6 +191,7 @@ namespace ReplayRecorder.Player {
 
                 SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(player));
                 SnapshotManager.RemoveDynamicObject(player.instanceID);
+                SnapshotManager.RemoveDynamicProperty(player.instanceID);
                 players.Remove(player.instanceID);
 
                 playerList.Remove(player);
@@ -202,6 +215,7 @@ namespace ReplayRecorder.Player {
 
                     SnapshotManager.AddEvent(GameplayEvent.Type.RemovePlayer, new PlayerLeave(player));
                     SnapshotManager.RemoveDynamicObject(player.instanceID);
+                    SnapshotManager.RemoveDynamicProperty(player.instanceID);
                     players.Remove(player.instanceID);
                 }
             }
@@ -215,6 +229,7 @@ namespace ReplayRecorder.Player {
                     rPlayer = new rPlayerAgent(player);
                     SnapshotManager.AddEvent(GameplayEvent.Type.AddPlayer, new PlayerJoin(rPlayer));
                     SnapshotManager.AddDynamicObject(new SnapshotManager.DynamicObject(rPlayer.instanceID, new SnapshotManager.rAgent(player)));
+                    SnapshotManager.AddDynamicProperty(new PlayerStatus(rPlayer.instanceID, player));
                     players.Add(rPlayer.instanceID, rPlayer);
                 }
                 _players.Add(rPlayer);

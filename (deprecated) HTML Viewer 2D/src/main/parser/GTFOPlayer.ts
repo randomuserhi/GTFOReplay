@@ -10,8 +10,18 @@ interface GTFOPlayer
     name: string;
     slot: number;
 
+    kills: number;
+
     alive: boolean;
     health: number;
+    infection: number;
+
+    primary: number;
+    special: number;
+    tool: number;
+    consumable: number;
+    resource: number;
+
     equipped: string;
     sentry: number | null | undefined; //active sentry instance
 }
@@ -30,8 +40,17 @@ interface GTFOPlayerConstructor
         this.name = name;
         this.slot = slot;
         
+        this.kills = 0;
+
+        this.primary = 0;
+        this.special = 0;
+        this.tool = 0;
+        this.consumable = 0;
+        this.resource = 0;
+
         this.alive = true;
-        this.health = GTFOSpecification.player.maxHealth;
+        this.health = 1;
+        this.infection = 1;
         this.equipped = "Unknown";
         this.sentry = null;
     } as Function as GTFOPlayerConstructor;

@@ -26,6 +26,7 @@ interface GTFOEnemy
 {
     instance: number;
     type: string;
+    health?: number;
     behaviourState: GTFOEnemyBehaviourState;
     locomotionState: GTFOEnemyLocomotionState;
     target?: number;
@@ -43,6 +44,7 @@ interface GTFOEnemyConstructor
     {
         this.instance = instance;
         this.type = type;
+        this.health = GTFOSpecification.enemyData[type].maxHealth;
         this.behaviourState = state;
         this.locomotionState = "Default";
         this.target = target;
