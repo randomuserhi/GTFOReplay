@@ -4,6 +4,7 @@ interface replay extends HTMLDivElement
     onload(): void;
     update(t: number): void;
 
+    debug: boolean;
     visualTracers: boolean;
     currentDimension: number;
     prev: number;
@@ -84,6 +85,7 @@ RHU.import(RHU.module({ trace: new Error(),
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
 
+            this.debug = false;
             this.visualTracers = true;
             this.currentDimension = 0;
             this.play = true;
@@ -112,6 +114,10 @@ RHU.import(RHU.module({ trace: new Error(),
             window.addEventListener("keydown", (e) => {
                 switch (e.keyCode)
                 {
+                    case 9:
+                        this.debug = !this.debug;
+                        e.preventDefault();
+                        break;
                     case 37:
                         this.time -= 1000;
                         e.preventDefault();
@@ -1251,68 +1257,70 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.restore();
 
                 // Debug status info
-                this.ctx.save();
-                this.ctx.translate(dynamic.position.x, -dynamic.position.z - 10);
+                if (this.debug) {
+                    this.ctx.save();
+                    this.ctx.translate(dynamic.position.x, -dynamic.position.z - 10);
 
-                if (snapshot.sentries.has(instance)) {
-                    let s = snapshot.sentries.get(instance)!;
-                    let p = snapshot.snet.get(s.owner)!;
+                    if (snapshot.sentries.has(instance)) {
+                        let s = snapshot.sentries.get(instance)!;
+                        let p = snapshot.snet.get(s.owner)!;
 
-                    this.ctx.font = "14px Oxanium";
-                    let text = `${Math.round(p.tool*100)}%`;
-                    let metrics = this.ctx.measureText(text);
-                    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                    this.ctx.fillRect(-metrics.width / 2, -14, metrics.width, 15);
-                    this.ctx.fillStyle = "#fff";
-                    this.ctx.fillText(text, - metrics.width / 2, 0);
-                } else if (snapshot.players.has(instance)) {
-                    let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
-
-                    // Draw player name
-                    this.ctx.font = "14px Oxanium";
-                    let text = `${Math.round(p.health*100)}%`;
-                    let metrics = this.ctx.measureText(text);
-                    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                    this.ctx.fillRect(-metrics.width / 2, -14, metrics.width, 15);
-                    this.ctx.fillStyle = "#fff";
-                    this.ctx.fillText(text, - metrics.width / 2, 0);
-
-                    text = `${p.equipped}`;
-                    metrics = this.ctx.measureText(text);
-                    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                    this.ctx.fillRect(-metrics.width / 2, -30, metrics.width, 15);
-                    this.ctx.fillStyle = "#fff";
-                    this.ctx.fillText(text, - metrics.width / 2, -17);
-
-                    text = `${Math.round(p.primary*100).toString().padStart(3)}% / ${Math.round(p.special*100).toString().padStart(3)}% / ${Math.round(p.tool*100).toString().padStart(3)}%`;
-                    metrics = this.ctx.measureText(text);
-                    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                    this.ctx.fillRect(-metrics.width / 2, 22, metrics.width, 15);
-                    this.ctx.fillStyle = "#fff";
-                    this.ctx.fillText(text, - metrics.width / 2, 34);
-
-                    text = `${Math.round(p.resource*100).toString().padStart(3)}% / ${Math.round(p.consumable*100).toString().padStart(3)}%`;
-                    metrics = this.ctx.measureText(text);
-                    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                    this.ctx.fillRect(-metrics.width / 2, 38, metrics.width, 15);
-                    this.ctx.fillStyle = "#fff";
-                    this.ctx.fillText(text, - metrics.width / 2, 51);
-                } else if (snapshot.enemies.has(instance)) {
-                    let e = snapshot.enemies.get(instance)!;
-
-                    if (e.health) {
-                        // Draw player name
                         this.ctx.font = "14px Oxanium";
-                        let text = `${Math.round(e.health / GTFOSpecification.enemyData[e.type].maxHealth! * 100)}%`;
+                        let text = `${Math.round(p.tool*100)}%`;
                         let metrics = this.ctx.measureText(text);
-                        this.ctx.fillStyle = "#000";
+                        this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
                         this.ctx.fillRect(-metrics.width / 2, -14, metrics.width, 15);
                         this.ctx.fillStyle = "#fff";
                         this.ctx.fillText(text, - metrics.width / 2, 0);
-                    }
-                }
+                    } else if (snapshot.players.has(instance)) {
+                        let p = snapshot.snet.get(snapshot.players.get(instance)!)!;
 
-                this.ctx.restore();
+                        // Draw player name
+                        this.ctx.font = "14px Oxanium";
+                        let text = `${Math.round(p.health*100)}%`;
+                        let metrics = this.ctx.measureText(text);
+                        this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                        this.ctx.fillRect(-metrics.width / 2, -14, metrics.width, 15);
+                        this.ctx.fillStyle = "#fff";
+                        this.ctx.fillText(text, - metrics.width / 2, 0);
+
+                        text = `${p.equipped}`;
+                        metrics = this.ctx.measureText(text);
+                        this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                        this.ctx.fillRect(-metrics.width / 2, -30, metrics.width, 15);
+                        this.ctx.fillStyle = "#fff";
+                        this.ctx.fillText(text, - metrics.width / 2, -17);
+
+                        text = `${Math.round(p.primary*100).toString().padStart(3)}% / ${Math.round(p.special*100).toString().padStart(3)}% / ${Math.round(p.tool*100).toString().padStart(3)}%`;
+                        metrics = this.ctx.measureText(text);
+                        this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                        this.ctx.fillRect(-metrics.width / 2, 22, metrics.width, 15);
+                        this.ctx.fillStyle = "#fff";
+                        this.ctx.fillText(text, - metrics.width / 2, 34);
+
+                        text = `${Math.round(p.resource*100).toString().padStart(3)}% / ${Math.round(p.consumable*100).toString().padStart(3)}%`;
+                        metrics = this.ctx.measureText(text);
+                        this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                        this.ctx.fillRect(-metrics.width / 2, 38, metrics.width, 15);
+                        this.ctx.fillStyle = "#fff";
+                        this.ctx.fillText(text, - metrics.width / 2, 51);
+                    } else if (snapshot.enemies.has(instance)) {
+                        let e = snapshot.enemies.get(instance)!;
+
+                        if (e.health) {
+                            // Draw player name
+                            this.ctx.font = "14px Oxanium";
+                            let text = `${Math.round(e.health / GTFOSpecification.enemyData[e.type].maxHealth! * 100)}%`;
+                            let metrics = this.ctx.measureText(text);
+                            this.ctx.fillStyle = "#000";
+                            this.ctx.fillRect(-metrics.width / 2, -14, metrics.width, 15);
+                            this.ctx.fillStyle = "#fff";
+                            this.ctx.fillText(text, - metrics.width / 2, 0);
+                        }
+                    }
+
+                    this.ctx.restore();
+                }
 
                 // debug velocity
                 /*let velScale = 0.1;
@@ -1426,7 +1434,18 @@ RHU.import(RHU.module({ trace: new Error(),
                 this.ctx.moveTo(size, -size);
                 this.ctx.lineTo(-size, size);
                 this.ctx.lineWidth = 4;
-                this.ctx.strokeStyle = `${cross.color}`
+                if (this.debug && RHU.exists(cross.killer)) {
+                    let player = snapshot.snet.get(cross.killer)!;
+                    let colors: string[] = [
+                        "194, 31, 78",
+                        "24, 147, 94",
+                        "32, 85, 140",
+                        "122, 26, 142"
+                    ];
+                    this.ctx.strokeStyle = `rgb(${colors[player.slot]})`;
+                } else {
+                    this.ctx.strokeStyle = `${cross.color}`;
+                }
                 this.ctx.stroke();
 
                 this.ctx.restore();

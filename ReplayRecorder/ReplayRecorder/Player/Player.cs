@@ -131,7 +131,7 @@ namespace ReplayRecorder.Player {
             // TODO(randomuserhi): Change to use item.pItemData.itemID_gearCRC instead
             byte id;
             if (item.GearIDRange != null) {
-                id = GTFOSpecification.GetGear(item.GearIDRange.PlayfabItemInstanceId);
+                id = GTFOSpecification.GetGear(item.GearIDRange.PublicGearName);
             } else if (item.ItemDataBlock != null) {
                 id = GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
             } else {
