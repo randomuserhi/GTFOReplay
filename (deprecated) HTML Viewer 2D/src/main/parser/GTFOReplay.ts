@@ -208,10 +208,23 @@ interface GTFOReplayConstructor
                 }
             };
         },
-        "enemyMineDamage": function(): GTFOTimeline
+        "enemyMineDamage": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
         {
-            // TODO(randomuserhi)
-            throw new Error("Not Implemented");
+            let e: GTFOEventEnemyMineDamage = {
+                instance: BitHelper.readInt(bytes, reader), // enemy instance id
+                damage: BitHelper.readHalf(bytes, reader), // damage
+                slot: BitHelper.readByte(bytes, reader) // player slot
+            };
+            return {
+                tick: tick,
+                type: "event",
+                time: timestamp,
+                order: order,
+                detail: {
+                    type: "enemyMineDamage",
+                    detail: e
+                }
+            };
         },
         "playerDead": function(bytes: DataView, reader: Reader, tick: number, timestamp: number, order: number): GTFOTimeline
         {
@@ -913,6 +926,23 @@ interface GTFOReplayConstructor
             };
             return {
                 type: "holopath",
+                detail: e
+            };
+        },
+        "playerStatus": function(bytes: DataView, reader: Reader)
+        {
+            let e: GTFODynamicPropPlayerStatus = {
+                instance: BitHelper.readInt(bytes, reader),
+                health: BitHelper.readByte(bytes, reader) / 255,
+                infection: BitHelper.readByte(bytes, reader) / 255,
+                primary: BitHelper.readByte(bytes, reader) / 255,
+                special: BitHelper.readByte(bytes, reader) / 255,
+                tool: BitHelper.readByte(bytes, reader) / 255,
+                consumable: BitHelper.readByte(bytes, reader) / 255,
+                resource: BitHelper.readByte(bytes, reader) / 255,
+            };
+            return {
+                type: "playerStatus",
                 detail: e
             };
         },

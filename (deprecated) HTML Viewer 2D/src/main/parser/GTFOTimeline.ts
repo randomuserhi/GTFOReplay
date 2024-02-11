@@ -239,7 +239,9 @@ interface GTFOEventEnemyMeleeDamage
 }
 interface GTFOEventEnemyMineDamage
 {
-    // TODO...
+    instance: number;
+    damage: number;
+    slot: number;
 }
 interface GTFOEventPlayerDead
 {
@@ -427,12 +429,14 @@ interface GTFODynamicPropMap
     "tongue": GTFODynamicPropTongue;
     "scan": GTFODynamicPropScan;
     "holopath": GTFODynamicPropHolopath;
+    "playerStatus": GTFODynamicPropPlayerStatus;
 }
 type GTFODynamicPropType = keyof GTFODynamicPropMap;
 let dynamicPropMap: GTFODynamicPropType[] = [
     "tongue",
     "scan",
     "holopath",
+    "playerStatus",
 ];
 
 interface GTFODynamicPropTongue
@@ -450,4 +454,15 @@ interface GTFODynamicPropHolopath
 {
     instance: number;
     lerp: number;
+}
+interface GTFODynamicPropPlayerStatus
+{
+    instance: number;
+    health: number;
+    infection: number;
+    primary: number;
+    special: number;
+    tool: number;
+    consumable: number;
+    resource: number
 }

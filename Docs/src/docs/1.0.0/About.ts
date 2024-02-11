@@ -48,7 +48,6 @@ enable = true`);
             frag("You can load the replay in the viewer by opening the viewer in your browser and choosing the replay file. The ", ic([], ".html"), " is located in ", ic([], "viewer/main/main.html"), "."),
             frag("For information about the viewer, visit notes on viewer usage ", pl(["Viewer"], "here"), ".")
         );
-        i("NOTE: The replay file gets overwritten every time you drop, if you want to save the current replay you will need to rename it or copy it somewhere else.");
 
         h1("Reporting Bugs / Issues");
         p(

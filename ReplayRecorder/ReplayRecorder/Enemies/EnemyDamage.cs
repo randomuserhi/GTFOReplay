@@ -51,5 +51,17 @@ namespace ReplayRecorder.Enemies {
             APILogger.Debug($"{source.Owner.NickName} did {damage} melee damage to [{instance}].");
             SnapshotManager.AddEvent(GameplayEvent.Type.EnemyMeleeDamage, new rEnemyDamage(rEnemy, damage, source, false));
         }
+
+        public static void OnMineDamage(EnemyAgent receiver, PlayerAgent source, float damage) {
+            //if (damage <= 0) return;
+            int instance = receiver.GetInstanceID();
+            if (!Enemy.enemies.ContainsKey(instance)) {
+                APILogger.Error("(EnemyMineDamage) Enemy instance was not found.");
+                return;
+            }
+            rEnemyAgent rEnemy = Enemy.enemies[instance];
+            APILogger.Debug($"{source.Owner.NickName} did {damage} mine damage to [{instance}].");
+            SnapshotManager.AddEvent(GameplayEvent.Type.EnemyMineDamage, new rEnemyDamage(rEnemy, damage, source, false));
+        }
     }
 }

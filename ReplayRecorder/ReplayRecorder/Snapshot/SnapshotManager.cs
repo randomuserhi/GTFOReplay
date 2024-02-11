@@ -112,6 +112,7 @@ namespace ReplayRecorder {
             Tongue,
             Scan,
             Holopath,
+            PlayerStatus,
         }
         public int instance;
         public Type type;
