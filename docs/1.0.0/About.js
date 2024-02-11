@@ -7,20 +7,9 @@ RHU.require(new Error(), {
         p("GTFOReplay is a mod that records full game replays of your matches so that you can watch them over in post.");
         img("demo.gif");
         h1("Installation");
-        ul(frag("Follow the installation process for Bepinex on ", link("https://gtfo.thunderstore.io/package/BepInEx/BepInExPack_GTFO/", "thunderstore"), "."), frag("Download the Bepinex plugin dll and viewer from ", link("https://github.com/randomuserhi/GTFOReplay/releases", "here"), "."), frag("Drag the plugin dll into your bepinex plugin folder"));
-        h1("Disclaimer");
-        p("This mod is still in its early stages and thus has not been fleshed out as much as it needs to. There are many missing / broken features and the viewer is barely", " usable through the browser DevConsole.");
-        br();
-        p("For this reason, debugging messages are enabled by default. If this is an issue you may turn this off in the bepinex config (", ic([], "ReplayRecorder.cfg"), "):");
-        cb([], `[Debug]
-
-## Enables debug messages when true.
-# Setting type: Boolean
-# Default value: true
-enable = true`);
+        ul(frag("Follow the installation process for Bepinex on ", link("https://gtfo.thunderstore.io/package/BepInEx/BepInExPack_GTFO/", "thunderstore"), "."), frag("Download the Bepinex plugin dll and viewer from ", link("https://github.com/randomuserhi/GTFOReplay/releases", "here"), " under ", ic([], "Assets"), "."), frag("Drag the plugin dll into your bepinex plugin folder."));
         h1("Usage");
-        ul(frag(p("While you are playing a match, the game will write a replay file called ", ic([], "replay.gtfo"), " in your game folder. Typically at ", ic([], "steamapps/common/GTFO"), "."), img("replay_location.png")), frag("You can load the replay in the viewer by opening the viewer in your browser and choosing the replay file. The ", ic([], ".html"), " is located in ", ic([], "viewer/main/main.html"), "."), frag("For information about the viewer, visit notes on viewer usage ", pl(["Viewer"], "here"), "."));
-        i("NOTE: The replay file gets overwritten every time you drop, if you want to save the current replay you will need to rename it or copy it somewhere else.");
+        ul(frag(p("While you are playing a match, the game will write a replay file (e.g ", ic([], "R1A1 2024-11-10 22-10.gtfo"), ") to your game folder. Typically at ", ic([], "steamapps/common/GTFO"), "."), img("replay_location.png")), frag(p("You can load the replay in the viewer by opening the viewer in your browser and choosing the replay file. The ", ic([], ".html"), " is located in ", ic([], "viewer/main/main.html"), ".")), frag(p("Since this is still a work in progress, it is recommended to use the viewer with the browser developer console. On most browsers you can access this with ", ic([], "F12"), " or ", ic([], "Cntrl+Shift+I"), "."), img("viewer_dev.png", "85%")), frag(p("Load your replay file using the button on the top left. Any errors that occur will show up in the dev console. Feel free to message ", ic([], "@randomuserhi"), " on discord regarding these errors."), img("viewer_load.png", "85%")), frag("For information about the viewer, visit notes on viewer usage ", pl(["Viewer"], "here"), "."));
         h1("Reporting Bugs / Issues");
         p("Either open an issue on my ", link("https://github.com/randomuserhi/GTFOReplay/issues", "github repo"), " or send me a message on Discord through the GTFOReplay feedback thread on the ", link("https://discord.gg/gtfo-modding-server-782438773690597389", "modding server"), ".");
         ul(frag("Please provide your Bepinex logs alongside the reported issue. The log output is in your Bepinex folder called ", ic([], "LogOutput.log")), frag("If it is a viewer issue, please provide a screenshot of the issue and the DevConsole output."));
