@@ -4,6 +4,7 @@ using Enemies;
 using HarmonyLib;
 using Player;
 using ReplayRecorder.Enemies;
+using ReplayRecorder.Mines.Patches;
 using SNetwork;
 using UnityEngine;
 
@@ -64,6 +65,7 @@ namespace ReplayRecorder.Player.Patches {
             }
         }
 
+        // TODO: Doesnt work for remote players
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveShooterProjectileDamage))]
         [HarmonyPrefix]
         private static void ReceivePelletDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
@@ -83,6 +85,52 @@ namespace ReplayRecorder.Player.Patches {
 
                 PlayerDamage.OnPelletDamage(__instance.Owner, damage, e);
             }
+        }
+
+        // TODO: Doesnt work for remote players
+        [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveBulletDamage))]
+        [HarmonyPrefix]
+        private static void ReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
+            if (!SNet.IsMaster) return;
+
+            if (data.source.TryGet(out Agent sourceAgent)) {
+                // Get player agent
+                PlayerAgent? p = sourceAgent.TryCast<PlayerAgent>();
+                if (p == null) // Check damage was done by a player
+                {
+                    APILogger.Debug($"Could not find PlayerAgent, damage was done by agent of type: {sourceAgent.m_type.ToString()}.");
+                    return;
+                }
+
+                float damage = data.damage.Get(__instance.HealthMax);
+                PlayerDamage.OnBulletDamage(__instance.Owner, damage, p);
+            } else {
+                APILogger.Debug("No source agent found for bullet damage.");
+            }
+        }
+
+        // TODO: Doesnt work
+        [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveExplosionDamage))]
+        [HarmonyPrefix]
+        public static void Prefix_ExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
+            if (!SNet.IsMaster) return;
+
+            APILogger.Debug($"Bruh");
+
+            if (MinePatches.currentMine != null) {
+                float damage = data.damage.Get(__instance.HealthMax);
+
+                // NOTE(randomuserhi): When player disconnects and their mine blows up enemies, this creates a race condition
+                //                     since the player no longer exists for the owner (slot index) to be valid
+                //                     This isn't an issue for other damage types since they require the owner to be connected
+                //                     but for mines this is not the case.
+                //                     To fix this, store the owner as an instanceID instead.
+                PlayerAgent p = PlayerManager.PlayerAgentsInLevel[MinePatches.currentMine.owner];
+                if (MinePatches.currentMine.player != null) {
+                    p = MinePatches.currentMine.player;
+                }
+                PlayerDamage.OnMineDamage(__instance.Owner, p, damage);
+            } else APILogger.Debug($"Unable to find source mine for explosion damage.");
         }
 
         // Tracking dodged shooter pellets

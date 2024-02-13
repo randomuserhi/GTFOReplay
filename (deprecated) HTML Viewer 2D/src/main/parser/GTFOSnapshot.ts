@@ -455,7 +455,8 @@ interface GTFOSnapshotConstructor
                             time: time,
                             deviation: d,
                             shake: shake,
-                            color: "#fff"
+                            color: "#fff",
+                            killer: player.killer
                         });
                     }
                 }
@@ -472,6 +473,7 @@ interface GTFOSnapshotConstructor
             {
                 let target = snapshot.snet.get(snapshot.slots[e.slot]!)!;
                 target.alive = true;
+                target.killer = undefined;
                 // TODO(randomuserhi): set hp??
             }
             else throw new ReferenceError("Either target or source of revive did not exist.");
@@ -526,6 +528,10 @@ interface GTFOSnapshotConstructor
             {
                 let target = snapshot.snet.get(snapshot.slots[e.slot]!)!;
                 let source = snapshot.snet.get(snapshot.slots[e.source]!)!;
+
+                if (target.health - e.damage <= 0) {
+                    target.killer = snapshot.slots[e.source]!;
+                }
 
                 let tDynamic = snapshot.dynamics.get(target.instance)!;
                 let sDynamic = snapshot.dynamics.get(source.instance)!;
@@ -828,7 +834,7 @@ interface GTFOSnapshotConstructor
                 });
                 snapshot.bioscans.set(e.instance, new GTFOBioscan(e.instance, e.radius, e.flags));
             } else {
-                throw new Error("Bioscan was already spawned.");
+                throw new Error(`Bioscan was already spawned.`);
             }
         },
         "despawnScanCircle": function(snapshot: GTFOSnapshot, ev: GTFOEvent, time: number)
@@ -960,6 +966,9 @@ interface GTFOSnapshotConstructor
 
             player.health = player.health + (playerStatus.health - player.health) * l;
             player.alive = player.health > 0; // Safety against revive and dead events not properly being called
+            if (player.alive) {
+                player.killer = undefined;
+            }
             player.infection = player.infection + (playerStatus.infection - player.infection) * l;
 
             player.primary = playerStatus.primary;

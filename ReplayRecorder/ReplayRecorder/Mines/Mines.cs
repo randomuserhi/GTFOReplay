@@ -103,6 +103,11 @@ namespace ReplayRecorder.Mines {
 
         // NOTE(randomuserhi): a player value of 255 means the mine exploded without a player
         public static void ExplodeMine(int instance, byte player) {
+            // Update who triggered the mine for other methods
+            if (player != 255 && mines.ContainsKey(instance)) {
+                mines[instance].player = PlayerManager.PlayerAgentsInLevel[player];
+            }
+
             APILogger.Debug($"Mine instance [{instance}] detonated");
             SnapshotManager.AddEvent(GameplayEvent.Type.ExplodeMine, new rExplodeMine(instance, player));
 

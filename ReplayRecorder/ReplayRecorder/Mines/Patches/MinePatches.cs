@@ -93,12 +93,25 @@ namespace ReplayRecorder.Mines.Patches {
                 currentMine = Mine.mines[instanceID];
                 if (player != null) {
                     APILogger.Debug($"Player triggered mine: {player.PlayerName}");
-                    currentMine.player = player;
                     Mine.ExplodeMine(instanceID, (byte)player.PlayerSlotIndex);
-                } else {
-                    APILogger.Debug($"Mine triggered without player.");
-                    Mine.ExplodeMine(instanceID, 255);
+                    return;
                 }
+
+                // Attempt to get player from packet
+                if (SNet.Replication.TryGetLastSender(out SNet_Player sender)) {
+                    byte slot = (byte)sender.PlayerSlotIndex();
+                    if (currentMine.owner != slot) {
+                        APILogger.Debug($"Player triggered mine: {sender.NickName}");
+                        Mine.ExplodeMine(instanceID, slot);
+                        return;
+                    }
+                } else {
+                    APILogger.Warn($"Failed to get the last packet sender for synced mine trigger.");
+                }
+
+                APILogger.Debug($"Mine triggered without player.");
+                Mine.ExplodeMine(instanceID, 255);
+                return;
             } else APILogger.Error($"Mine did not exist in catalogue, this should not happen.");
         }
 

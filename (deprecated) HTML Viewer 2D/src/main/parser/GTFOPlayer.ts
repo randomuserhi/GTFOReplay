@@ -22,6 +22,8 @@ interface GTFOPlayer
     consumable: number;
     resource: number;
 
+    killer?: bigint;
+
     equipped: string;
     sentry: number | null | undefined; //active sentry instance
 }

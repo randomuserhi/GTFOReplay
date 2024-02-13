@@ -973,208 +973,217 @@ interface GTFOReplayConstructor
         let blackListedPellet = new Set<number>()
         let maxWarnings = 200;
         this.snapshots = [GTFOSnapshot.clone(cache)];
+        let prevNow = 0;
         while(reader.index < bytes.byteLength)
         {
-            // Tick timestamp
-            let now = BitHelper.readUInt(bytes, reader);
+            try {
+                // Tick timestamp
+                let now = BitHelper.readUInt(bytes, reader);
+                if (now < prevNow) throw new Error(`[${now} < ${prevNow}] uint overflow or other time-related bug. Contact the mod maker to increase bitsize for time or something...`);
+                prevNow = now;
 
-            // Create snapshot checkpoint
-            if (tick++ % snapshotRate == 0)
-            {
-                this.snapshots.push(new GTFOSnapshot(this, tick, this.timeline.length, now, cache));
-            }
+                // Create snapshot checkpoint
+                if (tick++ % snapshotRate == 0)
+                {
+                    this.snapshots.push(new GTFOSnapshot(this, tick, this.timeline.length, now, cache));
+                }
 
-            // Number of events
-            let nEvents = BitHelper.readUShort(bytes, reader);
-            for (let i = 0; i < nEvents; ++i)
-            {
-                // type of event
-                let typeId = BitHelper.readByte(bytes, reader);
-                let type = eventMap[typeId];
-                let rel = BitHelper.readUShort(bytes, reader); // relative time to last tick
-                let timestamp = now - rel;
+                // Number of events
+                let nEvents = BitHelper.readUShort(bytes, reader);
+                for (let i = 0; i < nEvents; ++i)
+                {
+                    // type of event
+                    let typeId = BitHelper.readByte(bytes, reader);
+                    let type = eventMap[typeId];
+                    let rel = BitHelper.readUShort(bytes, reader); // relative time to last tick
+                    let timestamp = now - rel;
 
-                try {
-                    let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
+                    try {
+                        let t = eventParseMap[type](bytes, reader, tick, timestamp, i, parser);
 
-                    // NOTE(randomuserhi): Manage pellet lifetime safety => solve bug with old replays and kraken where
-                    //                     pellets failed to despawn
-                    const pelletEvent: GTFOEvent<"spawnPellet"> = t.detail as unknown as GTFOEvent<"spawnPellet">;
-                    if ((t as GTFOTimeline<GTFOEvent>).detail.type == "spawnPellet" && GTFOReplaySettings.maxProjectileLifetime > 0) {
-                        pelletLifetime.set(pelletEvent.detail.instance, t.time);
-                    }
-                    for (const [instance, time] of [...pelletLifetime.entries()]) {
-                        if (t.time - time > GTFOReplaySettings.maxProjectileLifetime) {
-                            const despawnPellet: GTFOEvent<"despawnPellet"> = {
-                                type: "despawnPellet",
-                                detail: {
-                                    instance
+                        // NOTE(randomuserhi): Manage pellet lifetime safety => solve bug with old replays and kraken where
+                        //                     pellets failed to despawn
+                        const pelletEvent: GTFOEvent<"spawnPellet"> = t.detail as unknown as GTFOEvent<"spawnPellet">;
+                        if ((t as GTFOTimeline<GTFOEvent>).detail.type == "spawnPellet" && GTFOReplaySettings.maxProjectileLifetime > 0) {
+                            pelletLifetime.set(pelletEvent.detail.instance, t.time);
+                        }
+                        for (const [instance, time] of [...pelletLifetime.entries()]) {
+                            if (t.time - time > GTFOReplaySettings.maxProjectileLifetime) {
+                                const despawnPellet: GTFOEvent<"despawnPellet"> = {
+                                    type: "despawnPellet",
+                                    detail: {
+                                        instance
+                                    }
+                                }
+                                const _t: GTFOTimeline = {
+                                    type: "event",
+                                    tick: t.tick,
+                                    time: t.time,
+                                    detail: despawnPellet,
+                                    order: t.order
+                                };
+                                parser.do(_t);
+                                cache.do(_t);
+                                this.timeline.push(_t);
+                                pelletLifetime.delete(instance);
+                                blackListedPellet.add(instance);
+                                if (maxWarnings > 0) {
+                                    --maxWarnings;
+                                    console.warn("projectile despawn event forceably added. This should not happen!");
                                 }
                             }
-                            const _t: GTFOTimeline = {
-                                type: "event",
-                                tick: t.tick,
-                                time: t.time,
-                                detail: despawnPellet,
-                                order: t.order
-                            };
-                            parser.do(_t);
-                            cache.do(_t);
-                            this.timeline.push(_t);
-                            pelletLifetime.delete(instance);
-                            blackListedPellet.add(instance);
-                            if (maxWarnings > 0) {
-                                --maxWarnings;
-                                console.warn("projectile despawn event forceably added. This should not happen!");
-                            }
                         }
+                        
+                        parser.do(t);
+                        cache.do(t);
+                        this.timeline.push(t);
+                    } catch (e) {
+                        console.error(`${typeId} [${type}]`);
+                        throw e;
                     }
-                    
-                    parser.do(t);
-                    cache.do(t);
-                    this.timeline.push(t);
-                } catch (e) {
-                    console.error(`${typeId} [${type}]`);
-                    throw e;
                 }
-            }
 
-            // Add EVENTSECTION marker
-            {
-                let t : GTFOTimeline = {
-                    tick: tick,
-                    type: "EVENTSECTION",
-                    time: now,
-                    order: -1,
-                    detail: null
-                };
-                this.timeline.push(t);
-            }
-
-            // Number of dynamics that need updating
-            let nDynamics = BitHelper.readUShort(bytes, reader);
-            for (let i = 0; i < nDynamics; ++i)
-            {
-                let absolute = BitHelper.readByte(bytes, reader) == 1;
-                let instance = BitHelper.readInt(bytes, reader);
-                let position;
-                if (absolute) position = BitHelper.readVector(bytes, reader);
-                else position = BitHelper.readHalfVector(bytes, reader);
-                let rotation = BitHelper.readHalfQuaternion(bytes, reader);
-                let scale = BitHelper.readHalf(bytes, reader);
-                let dimensionIndex = BitHelper.readByte(bytes, reader);
-
-                if (Number.isNaN(rotation.x) || Number.isNaN(rotation.y) || Number.isNaN(rotation.z) || Number.isNaN(rotation.w))
+                // Add EVENTSECTION marker
                 {
-                    console.warn("Dynamic had an NaN rotation, falling back to identity");
-                    rotation.x = 0;
-                    rotation.y = 0;
-                    rotation.z = 0;
-                    rotation.w = 1;   
+                    let t : GTFOTimeline = {
+                        tick: tick,
+                        type: "EVENTSECTION",
+                        time: now,
+                        order: -1,
+                        detail: null
+                    };
+                    this.timeline.push(t);
                 }
 
-                // scale accordingly
-                position.x *= GTFOReplaySettings.scale;
-                position.y *= GTFOReplaySettings.scale;
-                position.z *= GTFOReplaySettings.scale;
-                scale *= GTFOReplaySettings.scale;
+                // Number of dynamics that need updating
+                let nDynamics = BitHelper.readUShort(bytes, reader);
+                for (let i = 0; i < nDynamics; ++i)
+                {
+                    let absolute = BitHelper.readByte(bytes, reader) == 1;
+                    let instance = BitHelper.readInt(bytes, reader);
+                    let position;
+                    if (absolute) position = BitHelper.readVector(bytes, reader);
+                    else position = BitHelper.readHalfVector(bytes, reader);
+                    let rotation = BitHelper.readHalfQuaternion(bytes, reader);
+                    let scale = BitHelper.readHalf(bytes, reader);
+                    let dimensionIndex = BitHelper.readByte(bytes, reader);
 
-                // Dont track pellets that should have despawned (only applies to broken replays and when GTFOReplaySetting.maxPelletLifeTime is > 0)
-                if (!blackListedPellet.has(instance)) {
-                    // Update dynamic position
-                    if (!parser.dynamics.has(instance))
-                        throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
-
-                    let dynamic = parser.dynamics.get(instance)!;
-
-                    // NOTE(randomuserhi): * 1000 to convert ms to seconds
-                    let dt = (now - dynamic.lastUpdated) / 1000;
-                    dynamic.lastUpdated = now;
-
-                    if (absolute) 
+                    if (Number.isNaN(rotation.x) || Number.isNaN(rotation.y) || Number.isNaN(rotation.z) || Number.isNaN(rotation.w))
                     {
-                        dynamic.velocity.x = (position.x - dynamic.position.x) / dt;
-                        dynamic.velocity.y = (position.y - dynamic.position.y) / dt;
-                        dynamic.velocity.z = (position.z - dynamic.position.z) / dt;
-
-                        dynamic.position = position;
+                        console.warn("Dynamic had an NaN rotation, falling back to identity");
+                        rotation.x = 0;
+                        rotation.y = 0;
+                        rotation.z = 0;
+                        rotation.w = 1;   
                     }
-                    else
-                    {
-                        dynamic.velocity.x = position.x / dt;
-                        dynamic.velocity.y = position.y / dt;
-                        dynamic.velocity.z = position.z / dt;
 
-                        dynamic.position.x += position.x;
-                        dynamic.position.y += position.y;
-                        dynamic.position.z += position.z;
+                    // scale accordingly
+                    position.x *= GTFOReplaySettings.scale;
+                    position.y *= GTFOReplaySettings.scale;
+                    position.z *= GTFOReplaySettings.scale;
+                    scale *= GTFOReplaySettings.scale;
+
+                    // Dont track pellets that should have despawned (only applies to broken replays and when GTFOReplaySetting.maxPelletLifeTime is > 0)
+                    if (!blackListedPellet.has(instance)) {
+                        // Update dynamic position
+                        if (!parser.dynamics.has(instance))
+                            throw new ReferenceError(`Unknown dynamic: ${instance} was encountered.`);
+
+                        let dynamic = parser.dynamics.get(instance)!;
+
+                        // NOTE(randomuserhi): * 1000 to convert ms to seconds
+                        let dt = (now - dynamic.lastUpdated) / 1000;
+                        dynamic.lastUpdated = now;
+
+                        if (absolute) 
+                        {
+                            dynamic.velocity.x = (position.x - dynamic.position.x) / dt;
+                            dynamic.velocity.y = (position.y - dynamic.position.y) / dt;
+                            dynamic.velocity.z = (position.z - dynamic.position.z) / dt;
+
+                            dynamic.position = position;
+                        }
+                        else
+                        {
+                            dynamic.velocity.x = position.x / dt;
+                            dynamic.velocity.y = position.y / dt;
+                            dynamic.velocity.z = position.z / dt;
+
+                            dynamic.position.x += position.x;
+                            dynamic.position.y += position.y;
+                            dynamic.position.z += position.z;
+                        }
+                        dynamic.rotation = rotation;
+                        dynamic.scale = scale;
+
+                        // Add to timeline
+                        let t : GTFOTimeline = {
+                            tick: tick,
+                            type: "dynamic",
+                            time: now,
+                            order: i,
+                            detail: {
+                                instance: instance,
+                                position: {
+                                    x: dynamic.position.x,
+                                    y: dynamic.position.y,
+                                    z: dynamic.position.z
+                                },
+                                velocity: {
+                                    x: dynamic.velocity.x,
+                                    y: dynamic.velocity.y,
+                                    z: dynamic.velocity.z,
+                                },
+                                rotation: {
+                                    x: dynamic.rotation.x,
+                                    y: dynamic.rotation.y,
+                                    z: dynamic.rotation.z,
+                                    w: dynamic.rotation.w
+                                },
+                                lastUpdated: dynamic.lastUpdated,
+                                scale: dynamic.scale,
+                                dimensionIndex: dimensionIndex
+                            }
+                        };
+                        this.timeline.push(t);
+                        cache.do(t);
                     }
-                    dynamic.rotation = rotation;
-                    dynamic.scale = scale;
+                }
+
+                // Number of dynamic properties that need updating
+                let nDynamicProps = BitHelper.readUShort(bytes, reader);
+                for (let i = 0; i < nDynamicProps; ++i)
+                {
+                    let type = dynamicPropMap[BitHelper.readByte(bytes, reader)];
+                    let e = dynamicPropParseMap[type](bytes, reader, parser);
 
                     // Add to timeline
                     let t : GTFOTimeline = {
                         tick: tick,
-                        type: "dynamic",
+                        type: "dynamicProp",
                         time: now,
                         order: i,
-                        detail: {
-                            instance: instance,
-                            position: {
-                                x: dynamic.position.x,
-                                y: dynamic.position.y,
-                                z: dynamic.position.z
-                            },
-                            velocity: {
-                                x: dynamic.velocity.x,
-                                y: dynamic.velocity.y,
-                                z: dynamic.velocity.z,
-                            },
-                            rotation: {
-                                x: dynamic.rotation.x,
-                                y: dynamic.rotation.y,
-                                z: dynamic.rotation.z,
-                                w: dynamic.rotation.w
-                            },
-                            lastUpdated: dynamic.lastUpdated,
-                            scale: dynamic.scale,
-                            dimensionIndex: dimensionIndex
-                        }
+                        detail: e
                     };
                     this.timeline.push(t);
                     cache.do(t);
                 }
-            }
 
-            // Number of dynamic properties that need updating
-            let nDynamicProps = BitHelper.readUShort(bytes, reader);
-            for (let i = 0; i < nDynamicProps; ++i)
-            {
-                let type = dynamicPropMap[BitHelper.readByte(bytes, reader)];
-                let e = dynamicPropParseMap[type](bytes, reader, parser);
-
-                // Add to timeline
-                let t : GTFOTimeline = {
-                    tick: tick,
-                    type: "dynamicProp",
-                    time: now,
-                    order: i,
-                    detail: e
-                };
-                this.timeline.push(t);
-                cache.do(t);
-            }
-
-            // Add DYNAMICSECTION marker
-            {
-                let t : GTFOTimeline = {
-                    tick: tick,
-                    type: "DYNAMICSECTION",
-                    time: now,
-                    order: -1,
-                    detail: null
-                };
-                this.timeline.push(t);
+                // Add DYNAMICSECTION marker
+                {
+                    let t : GTFOTimeline = {
+                        tick: tick,
+                        type: "DYNAMICSECTION",
+                        time: now,
+                        order: -1,
+                        detail: null
+                    };
+                    this.timeline.push(t);
+                }
+            } catch (e) {
+                console.log("Could not load full replay:")
+                console.error(e);
+                break;
             }
         }
         this.timeline.sort((a, b) => {
