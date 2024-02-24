@@ -5,7 +5,7 @@ using ReplayRecorder.Snapshot;
 
 namespace ReplayRecorder.Core {
     [ReplayData("ReplayRecorder.EndOfHeader")]
-    internal class EndOfHeader : ReplayHeader {
+    internal class EndOfHeader : ReplayEvent {
         public override void Write(FileStream fs) {
             BitHelper.WriteBytes(SnapshotManager.types[typeof(EndOfHeader)], fs);
         }

@@ -1,14 +1,21 @@
-﻿using ReplayRecorder.Snapshot.Types;
+﻿using ReplayRecorder.Snapshot.Exceptions;
+using ReplayRecorder.Snapshot.Types;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
     internal static partial class SnapshotManager {
         internal static SnapshotTypeManager types = new SnapshotTypeManager();
         private static SnapshotInstance? instance;
-        internal static SnapshotInstance GetInstance() {
+        internal static void OnElevatorStart() {
             if (instance == null) {
                 instance = new GameObject().AddComponent<SnapshotInstance>();
                 instance.Init();
+            } else throw new ReplaySnapshotAlreadyInitialized();
+        }
+
+        internal static SnapshotInstance GetInstance() {
+            if (instance == null) {
+                throw new ReplaySnapshotNotInitialized();
             }
             return instance;
         }

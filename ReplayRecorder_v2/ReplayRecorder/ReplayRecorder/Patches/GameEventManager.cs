@@ -9,6 +9,7 @@ namespace ReplayRecorder {
         [HarmonyPostfix]
         private static void StartElevatorRide() {
             APILogger.Debug($"Entered elevator!");
+            SnapshotManager.OnElevatorStart();
             Replay.OnExpeditionStart?.Invoke();
         }
 
