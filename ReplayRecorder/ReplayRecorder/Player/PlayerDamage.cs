@@ -79,7 +79,7 @@ namespace ReplayRecorder.Player {
             //if (damage <= 0) return;
             int instance = source.GetInstanceID();
             if (!Enemy.enemies.ContainsKey(instance)) {
-                APILogger.Error("(PlayerMeleeDamage) Enemy instance was not found.");
+                APILogger.Error("(PlayerTongueDamage) Enemy instance was not found.");
                 return;
             }
             APILogger.Debug($"{player.Owner.NickName} took {damage} tongue damage from [{instance}].");
@@ -91,7 +91,7 @@ namespace ReplayRecorder.Player {
             //if (damage <= 0) return;
             int instance = source.GetInstanceID();
             if (!Enemy.enemies.ContainsKey(instance)) {
-                APILogger.Error("(PlayerMeleeDamage) Enemy instance was not found.");
+                APILogger.Error("(PlayerPelletDamage) Enemy instance was not found.");
                 return;
             }
             APILogger.Debug($"{player.Owner.NickName} took {damage} pellet damage from [{instance}].");
@@ -104,7 +104,7 @@ namespace ReplayRecorder.Player {
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerBulletDamage, new rFriendlyFire(player, damage, source));
         }
 
-        public static void OnMineDamage(PlayerAgent player, float damage, PlayerAgent source) {
+        public static void OnMineDamage(PlayerAgent player, PlayerAgent source, float damage) {
             //if (damage <= 0) return;
             APILogger.Debug($"{player.Owner.NickName} took {damage} mine damage from [{source.Owner.NickName}].");
             SnapshotManager.AddEvent(GameplayEvent.Type.PlayerMineDamage, new rFriendlyFire(player, damage, source));

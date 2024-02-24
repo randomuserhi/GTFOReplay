@@ -13,12 +13,12 @@ namespace ReplayRecorder.Enemies.Patches {
         [HarmonyPrefix]
         private static void Prefix_BulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data) {
             //if (!SNet.IsMaster) return;
-
             EnemyAgent owner = __instance.Owner;
 
             // Record damage data
             Agent sourceAgent;
             if (data.source.TryGet(out sourceAgent)) {
+                // may now be incorrect thanks to new changes (enemy damage is no longer capped by maxhealth?)
                 float damage = AgentModifierManager.ApplyModifier(owner, AgentModifier.ProjectileResistance, data.damage.Get(__instance.HealthMax));
                 //bool willDie = __instance.Health <= 0 && damage > 0;
 

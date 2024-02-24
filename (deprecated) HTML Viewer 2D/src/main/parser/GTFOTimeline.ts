@@ -450,6 +450,9 @@ interface GTFODynamicPropScan
 {
     instance: number;
     progress: number;
+    r: number;
+    g: number;
+    b: number;
 }
 interface GTFODynamicPropHolopath
 {

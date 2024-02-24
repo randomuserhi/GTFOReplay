@@ -71,7 +71,7 @@ RHU.import(RHU.module({ trace: new Error(),
             ctx.restore();
         }
 
-        let icons: Record<string, HTMLImageElement> = {}
+        /*let icons: Record<string, HTMLImageElement> = {}
         for (let item of GTFOSpecification.items)
         {
             let img = document.createElement("img");
@@ -80,7 +80,7 @@ RHU.import(RHU.module({ trace: new Error(),
                 img.toggleAttribute("data-failed", true);
             }
             icons[item] = img;
-        }
+        }*/
 
         let replay: replayConstructor = function (this: replay) {
             window.replay = this;
@@ -273,6 +273,11 @@ RHU.import(RHU.module({ trace: new Error(),
             // Get snapshot
             let snapshot = this.replay.getSnapshot(this.time);
             
+            /*if (snapshot.snet.size > 0) {
+                this.camera.x = (snapshot.dynamics.get([...snapshot.snet.values()][0].instance)!.position.x) * this.camera.scale - this.canvas.width / 2;
+                this.camera.y = (-snapshot.dynamics.get([...snapshot.snet.values()][0].instance)!.position.z) * this.camera.scale - this.canvas.height / 2;
+            }*/
+
             // Draw snapshot => perhaps move to a seperate function
 
             // Draw doors
@@ -821,14 +826,15 @@ RHU.import(RHU.module({ trace: new Error(),
                 {
                     const bioscan = snapshot.bioscans.get(instance)!;
 
-                    let color = "255, 0, 0";
+                    /*let color = "255, 0, 0";
                     if ((bioscan.flags & GTFOBioscan.Checkpoint) != 0) {
                         color = "75, 207, 72";
                     } else if ((bioscan.flags & GTFOBioscan.ReduceWhenNoPlayer) != 0) {
                         color = "108, 57, 184";
                     } else if ((bioscan.flags & GTFOBioscan.FullTeam) != 0) {
                         color = "209, 135, 71";
-                    } 
+                    }*/
+                    let color = `${bioscan.r}, ${bioscan.g}, ${bioscan.b}`; 
 
                     // divide by 2 since scale is width, but we wait radius which is half the width
                     const radius = bioscan.radius;

@@ -1,7 +1,7 @@
 ﻿using BepInEx.Logging;
-using ReplayRecorder;
+using ReplayRecorder.BepInEx;
 
-namespace ReplayRecorder {
+namespace ReplayRecorder.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
         public const string GUID = "randomuserhi.ReplayRecorder";
