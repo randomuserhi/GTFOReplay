@@ -195,6 +195,8 @@ namespace ReplayRecorder.Snapshot {
         }
 
         internal void Dispose() {
+            APILogger.Debug("Ending Replay...");
+
             if (fs != null) {
                 fs.Flush();
                 fs.Dispose();
