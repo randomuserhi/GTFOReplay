@@ -1,7 +1,7 @@
 ﻿using API;
 using Player;
 using ReplayRecorder;
-using ReplayRecorder.API;
+using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 
 namespace Vanilla.PlayerTest {

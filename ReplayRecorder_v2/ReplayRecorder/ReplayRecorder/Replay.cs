@@ -1,5 +1,6 @@
 ﻿using API;
 using ReplayRecorder.API;
+using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Exceptions;
 using ReplayRecorder.Snapshot;
 using System.Reflection;

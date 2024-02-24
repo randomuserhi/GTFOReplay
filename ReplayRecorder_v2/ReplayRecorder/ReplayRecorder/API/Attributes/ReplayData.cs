@@ -1,4 +1,4 @@
-﻿namespace ReplayRecorder.API {
+﻿namespace ReplayRecorder.API.Attributes {
     [AttributeUsage(AttributeTargets.Class)]
     public class ReplayData : Attribute {
         public string Typename { get; private set; }

@@ -2,6 +2,7 @@
 using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
+using ReplayRecorder.API.Attributes;
 using UnityEngine;
 using UnityEngine.AI;
 using Vanilla.Map.Patches;

@@ -1,4 +1,5 @@
 ﻿using ReplayRecorder.API;
+using ReplayRecorder.API.Attributes;
 using ReplayRecorder.BepInEx;
 
 namespace ReplayRecorder.Core {

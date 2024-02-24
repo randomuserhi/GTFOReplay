@@ -1,6 +1,7 @@
 ﻿using Agents;
 using API;
 using ReplayRecorder.API;
+using ReplayRecorder.API.Attributes;
 using UnityEngine;
 
 namespace ReplayRecorder.Core {
