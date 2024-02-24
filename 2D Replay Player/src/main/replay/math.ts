@@ -11,6 +11,7 @@ interface Quaternion {
     w: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Math {
     clamp(value: number, min: number, max: number): number;
     clamp01(value: number): number;

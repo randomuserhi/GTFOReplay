@@ -1,3 +1,3 @@
-namespace Replay {
-    
+class Replay {
+
 }
