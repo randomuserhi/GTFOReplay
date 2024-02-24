@@ -30,12 +30,12 @@ namespace ReplayRecorder.Core {
         }
     }
 
-    [ReplayData("ReplayRecorder.SpawnDynamic")]
+    [ReplayData("ReplayRecorder.SpawnDynamic", "0.0.1")]
     internal class SpawnDynamic : Id {
         public SpawnDynamic(int id) : base(id) { }
     }
 
-    [ReplayData("ReplayRecorder.SpawnDynamicAt")]
+    [ReplayData("ReplayRecorder.SpawnDynamicAt", "0.0.1")]
     internal class SpawnDynamicAt : Id {
         public byte dimensionIndex;
         public Vector3 position;
@@ -63,12 +63,12 @@ namespace ReplayRecorder.Core {
         }
     }
 
-    [ReplayData("ReplayRecorder.DespawnDynamic")]
+    [ReplayData("ReplayRecorder.DespawnDynamic", "0.0.1")]
     internal class DespawnDynamic : Id {
         public DespawnDynamic(int id) : base(id) { }
     }
 
-    [ReplayData("ReplayRecorder.DynamicPosition")]
+    [ReplayData("ReplayRecorder.DynamicPosition", "0.0.1")]
     public class DynamicPosition : ReplayDynamic {
         private int id;
         private IReplayTransform transform;
@@ -112,7 +112,7 @@ namespace ReplayRecorder.Core {
         }
     }
 
-    [ReplayData("ReplayRecorder.DynamicRotation")]
+    [ReplayData("ReplayRecorder.DynamicRotation", "0.0.1")]
     public class DynamicRotation : ReplayDynamic {
         private int id;
         private IReplayTransform transform;
@@ -143,7 +143,7 @@ namespace ReplayRecorder.Core {
         }
     }
 
-    [ReplayData("ReplayRecorder.DynamicTransform")]
+    [ReplayData("ReplayRecorder.DynamicTransform", "0.0.1")]
     public class DynamicTransform : ReplayDynamic {
         private int id;
         private IReplayTransform transform;

@@ -193,7 +193,7 @@ namespace Vanilla.Map {
         }
     }
 
-    [ReplayData("Vanilla.Map.Geometry")]
+    [ReplayData("Vanilla.Map.Geometry", "0.0.1")]
     internal class MapGeometry : ReplayHeader {
         private Dictionary<eDimensionIndex, Map> map;
 

@@ -4,14 +4,14 @@ using ReplayRecorder.BepInEx;
 using ReplayRecorder.Snapshot;
 
 namespace ReplayRecorder.Core {
-    [ReplayData("ReplayRecorder.EndOfHeader")]
+    [ReplayData("ReplayRecorder.EndOfHeader", "0.0.1")]
     internal class EndOfHeader : ReplayEvent {
         public override void Write(FileStream fs) {
             BitHelper.WriteBytes(SnapshotManager.types[typeof(EndOfHeader)], fs);
         }
     }
 
-    [ReplayData("ReplayRecorder.Header")]
+    [ReplayData("ReplayRecorder.Header", "0.0.1")]
     internal class HeaderData : ReplayHeader {
         [ReplayInit]
         private static void Init() {

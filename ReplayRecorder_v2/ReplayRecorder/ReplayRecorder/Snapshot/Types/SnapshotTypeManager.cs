@@ -1,5 +1,6 @@
 ﻿using API;
 using ReplayRecorder.API;
+using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Snapshot.Exceptions;
 using System.Text;
 
@@ -11,6 +12,7 @@ namespace ReplayRecorder.Snapshot.Types {
 
         private Dictionary<string, Type> typenameMap = new Dictionary<string, Type>();
         private Dictionary<Type, ushort> typeMap = new Dictionary<Type, ushort>();
+        private Dictionary<Type, string> versionMap = new Dictionary<Type, string>();
 
         private ushort staticType = 0;
 
@@ -41,8 +43,8 @@ namespace ReplayRecorder.Snapshot.Types {
             return typename.Replace(" ", "").Trim();
         }
 
-        public void RegisterType(string typename, Type type) {
-            typename = Clean(typename);
+        public void RegisterType(ReplayData data, Type type) {
+            string typename = Clean(data.Typename);
 
             if (typenameMap.ContainsKey(typename)) {
                 throw new ReplayDuplicateTypeName($"Typename '{typename}' already exists.");
@@ -70,6 +72,7 @@ namespace ReplayRecorder.Snapshot.Types {
             ushort id = staticType++;
             typenameMap.Add(typename, type);
             typeMap.Add(type, id);
+            versionMap.Add(type, data.Version);
 
             APILogger.Debug($"Registered {t}: '{typename}' => {type.FullName}[{id}]");
         }
@@ -80,8 +83,9 @@ namespace ReplayRecorder.Snapshot.Types {
             BitHelper.WriteBytes((ushort)typenameMap.Count, fs);
             debug.AppendLine($"\n\tTypeMap[{typenameMap.Count}]:");
             foreach (KeyValuePair<string, Type> pair in typenameMap) {
-                debug.AppendLine($"\t{typeMap[pair.Value]} => {pair.Key}[{pair.Value.FullName}]");
+                debug.AppendLine($"\t{typeMap[pair.Value]}[{versionMap[pair.Value]}] => {pair.Key}[{pair.Value.FullName}]");
                 BitHelper.WriteBytes(pair.Key, fs);
+                BitHelper.WriteBytes(versionMap[pair.Value], fs);
                 BitHelper.WriteBytes(typeMap[pair.Value], fs);
             }
 

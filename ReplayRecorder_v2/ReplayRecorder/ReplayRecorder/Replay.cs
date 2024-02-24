@@ -62,7 +62,7 @@ namespace ReplayRecorder {
                 throw new ReplayTypeNotCompatible($"Type '{type}' is not a valid ReplayData type.");
             }
 
-            SnapshotManager.types.RegisterType(dataInfo.Typename, type);
+            SnapshotManager.types.RegisterType(dataInfo, type);
         }
 
         [HideFromIl2Cpp]
