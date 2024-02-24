@@ -1,7 +1,7 @@
 {
   "name": "gtfo-replay-viewer",
   "version": "1.0.0",
-  "description": "",
+  "description": "Viewer app for GTFOReplay.",
   "main": "build/app.cjs",
   "type": "module",
   "scripts": {
@@ -9,16 +9,16 @@
     "lint-fix": "eslint src --fix",
     "transpile": "tsc",
     "build-assets": "npm run --prefix ../assets build && npm run --prefix ../assets offload",
-    "build": "del-cli build/**/* !build/assets && npm run transpile",
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "build": "del-cli build/**/* !build/assets && npm run transpile && copyfiles -u 1 forge/package.json build",
+    "start": "electron-forge start ./build",
+    "package": "electron-forge package ./build",
+    "make": "electron-forge make ./build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/randomuserhi/GTFOReplay.git"
   },
-  "author": "",
+  "author": "randomuserhi",
   "license": "ISC",
   "dependencies": {
     "@types/ws": "^8.5.4",
