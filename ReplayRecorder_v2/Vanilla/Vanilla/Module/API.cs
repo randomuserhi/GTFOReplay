@@ -1,11 +1,11 @@
 ﻿using BepInEx.Logging;
-using ReplayRecorder;
+using Vanilla.BepInEx;
 
-namespace Vanilla {
+namespace Vanilla.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
-        public const string GUID = "randomuserhi.ReplayRecorder";
-        public const string Name = "ReplayRecorder";
+        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla";
+        public const string Name = "ReplayRecorder.Vanilla";
         public const string Version = "0.0.1";
     }
 }
@@ -31,7 +31,7 @@ namespace API {
             logger.LogDebug(Format(Module.Name, data));
         }
         public static void Debug(object data) {
-            if (Vanilla.ConfigManager.Debug) Log(data);
+            if (ConfigManager.Debug) Log(data);
         }
         public static void Warn(object data) => logger.LogWarning(Format(Module.Name, data));
         public static void Error(object data) => logger.LogError(Format(Module.Name, data));

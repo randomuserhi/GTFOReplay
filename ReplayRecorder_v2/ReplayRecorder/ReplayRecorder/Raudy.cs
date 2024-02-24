@@ -23,13 +23,13 @@ namespace ReplayRecorder {
             => (value >> offset) | (value << (32 - offset));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long ReverseEndianness(long value) => (long)ReverseEndianness((ulong)value);
+        private static long ReverseEndianness(long value) => (long)ReverseEndianness((ulong)value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ReverseEndianness(int value) => (int)ReverseEndianness((uint)value);
+        private static int ReverseEndianness(int value) => (int)ReverseEndianness((uint)value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short ReverseEndianness(short value) => (short)ReverseEndianness((ushort)value);
+        private static short ReverseEndianness(short value) => (short)ReverseEndianness((ushort)value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ushort ReverseEndianness(ushort value) {
@@ -82,48 +82,40 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(byte value, byte[] destination, ref int index) {
             destination[index++] = value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(ulong value, byte[] destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ulong), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(uint value, byte[] destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(uint), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(ushort value, byte[] destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ushort), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(long value, byte[] destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(long), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(int value, byte[] destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(int), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(short value, byte[] destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(short), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(float value, byte[] destination, ref int index) {
             int to32 = *((int*)&value);
             if (!BitConverter.IsLittleEndian) to32 = ReverseEndianness(to32);
@@ -150,7 +142,6 @@ namespace ReplayRecorder {
 
         public const int SizeOfHalf = sizeof(ushort);
         // Special function to halve precision of float
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteHalf(float value, byte[] destination, ref int index) {
             WriteBytes(FloatToHalf(value), destination, ref index);
         }
@@ -162,48 +153,40 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(byte value, FileStream fs) {
             fs.WriteByte(value);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(ulong value, FileStream fs) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ulong), fs);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(uint value, FileStream fs) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(uint), fs);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(ushort value, FileStream fs) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ushort), fs);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(long value, FileStream fs) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(long), fs);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(int value, FileStream fs) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(int), fs);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(short value, FileStream fs) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(short), fs);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(float value, FileStream fs) {
             int to32 = *((int*)&value);
             if (!BitConverter.IsLittleEndian) to32 = ReverseEndianness(to32);
@@ -224,7 +207,6 @@ namespace ReplayRecorder {
         }
 
         // Special function to halve precision of float
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteHalf(float value, FileStream fs) {
             WriteBytes(FloatToHalf(value), fs);
         }
@@ -243,7 +225,7 @@ namespace ReplayRecorder {
         // NOTE:: These Half <-> Float conversions do not account for Infinity or NaN!
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float HalfToFloat(ushort x) {
+        private static float HalfToFloat(ushort x) {
             // IEEE-754 16-bit floating-point format (without infinity): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
             int e = (x & 0x7C00) >> 10; // exponent
             int m = (x & 0x03FF) << 13; // mantissa
@@ -251,7 +233,7 @@ namespace ReplayRecorder {
             return AsFloat((uint)((x & 0x8000) << 16 | Convert.ToInt32(e != 0) * ((e + 112) << 23 | m) | (Convert.ToInt32(e == 0) & Convert.ToInt32(m != 0)) * ((v - 37) << 23 | ((m << (150 - v)) & 0x007FE000)))); // sign : normalized : denormalized
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort FloatToHalf(float x) {
+        private static ushort FloatToHalf(float x) {
             // IEEE-754 16-bit floating-point format (without infinity): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
             uint b = AsUInt(x) + 0x00001000; // round-to-nearest-even: add last bit after truncated mantissa
             uint e = (b & 0x7F800000) >> 23; // exponent
@@ -259,12 +241,10 @@ namespace ReplayRecorder {
             return (ushort)((b & 0x80000000) >> 16 | Convert.ToInt32(e > 112) * ((((e - 112) << 10) & 0x7C00) | m >> 13) | (Convert.ToInt32(e < 113) & Convert.ToInt32(e > 101)) * ((((0x007FF000 + m) >> (int)(125 - e)) + 1) >> 1) | Convert.ToUInt32(e > 143) * 0x7FFF); // sign : normalized : denormalized : saturate
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte ReadByte(byte[] source, ref int index) {
             return source[index++];
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe ulong ReadULong(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -278,7 +258,6 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe long ReadLong(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -292,7 +271,6 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe uint ReadUInt(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -306,7 +284,6 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe int ReadInt(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -320,7 +297,6 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe ushort ReadUShort(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -334,7 +310,6 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe short ReadShort(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -348,12 +323,10 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ReadHalf(byte[] source, ref int index) {
             return HalfToFloat(ReadUShort(source, ref index));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe float ReadFloat(byte[] source, ref int index) {
             fixed (byte* converted = source) {
                 byte* ptr = converted + index;
@@ -367,7 +340,6 @@ namespace ReplayRecorder {
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString(byte[] source, ref int index) {
             int length = ReadUShort(source, ref index);
             string temp = Encoding.UTF8.GetString(source, index, length);
@@ -378,7 +350,6 @@ namespace ReplayRecorder {
         // UNITY BitHelper functions:
 
         public const int SizeOfVector3 = sizeof(float) * 3;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteBytes(Vector3 value, byte[] destination, ref int index) {
             WriteBytes(value.x, destination, ref index);
             WriteBytes(value.y, destination, ref index);
@@ -453,6 +424,79 @@ namespace ReplayRecorder {
             }
         }
 
+        public static void WriteBytes(Vector3 value, FileStream fs) {
+            WriteBytes(value.x, fs);
+            WriteBytes(value.y, fs);
+            WriteBytes(value.z, fs);
+        }
+
+        public static void WriteBytes(Quaternion value, FileStream fs) {
+            value = value.normalized;
+
+            float largest = value.x;
+            byte i = 0;
+            if (value.y > largest) {
+                largest = value.y;
+                i = 1;
+            }
+            if (value.z > largest) {
+                largest = value.z;
+                i = 2;
+            }
+            if (value.w > largest) {
+                largest = value.w;
+                i = 3;
+            }
+
+            WriteBytes(i, fs);
+            switch (i) {
+            case 0:
+                if (value.x >= 0) {
+                    WriteBytes(value.y, fs);
+                    WriteBytes(value.z, fs);
+                    WriteBytes(value.w, fs);
+                } else {
+                    WriteBytes(-value.y, fs);
+                    WriteBytes(-value.z, fs);
+                    WriteBytes(-value.w, fs);
+                }
+                break;
+            case 1:
+                if (value.y >= 0) {
+                    WriteBytes(value.x, fs);
+                    WriteBytes(value.z, fs);
+                    WriteBytes(value.w, fs);
+                } else {
+                    WriteBytes(-value.x, fs);
+                    WriteBytes(-value.z, fs);
+                    WriteBytes(-value.w, fs);
+                }
+                break;
+            case 2:
+                if (value.z >= 0) {
+                    WriteBytes(value.x, fs);
+                    WriteBytes(value.y, fs);
+                    WriteBytes(value.w, fs);
+                } else {
+                    WriteBytes(-value.x, fs);
+                    WriteBytes(-value.y, fs);
+                    WriteBytes(-value.w, fs);
+                }
+                break;
+            case 3:
+                if (value.w >= 0) {
+                    WriteBytes(value.x, fs);
+                    WriteBytes(value.y, fs);
+                    WriteBytes(value.z, fs);
+                } else {
+                    WriteBytes(-value.x, fs);
+                    WriteBytes(-value.y, fs);
+                    WriteBytes(-value.z, fs);
+                }
+                break;
+            }
+        }
+
         public static Vector3 ReadVector3(byte[] source, ref int index) {
             return new Vector3(ReadFloat(source, ref index), ReadFloat(source, ref index), ReadFloat(source, ref index));
         }
@@ -490,6 +534,7 @@ namespace ReplayRecorder {
         }
 
         public const int SizeOfHalfVector3 = SizeOfHalf * 3;
+
         public static void WriteHalf(Vector3 value, byte[] destination, ref int index) {
             WriteHalf(value.x, destination, ref index);
             WriteHalf(value.y, destination, ref index);
@@ -560,6 +605,80 @@ namespace ReplayRecorder {
                     WriteHalf(-value.x, destination, ref index);
                     WriteHalf(-value.y, destination, ref index);
                     WriteHalf(-value.z, destination, ref index);
+                }
+                break;
+            }
+        }
+
+        public static void WriteHalf(Vector3 value, FileStream fs) {
+            WriteHalf(value.x, fs);
+            WriteHalf(value.y, fs);
+            WriteHalf(value.z, fs);
+        }
+
+        // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
+        public static void WriteHalf(Quaternion value, FileStream fs) {
+            value = value.normalized;
+
+            float largest = value.x;
+            byte i = 0;
+            if (value.y > largest) {
+                largest = value.y;
+                i = 1;
+            }
+            if (value.z > largest) {
+                largest = value.z;
+                i = 2;
+            }
+            if (value.w > largest) {
+                largest = value.w;
+                i = 3;
+            }
+
+            WriteBytes(i, fs);
+            switch (i) {
+            case 0:
+                if (value.x >= 0) {
+                    WriteHalf(value.y, fs);
+                    WriteHalf(value.z, fs);
+                    WriteHalf(value.w, fs);
+                } else {
+                    WriteHalf(-value.y, fs);
+                    WriteHalf(-value.z, fs);
+                    WriteHalf(-value.w, fs);
+                }
+                break;
+            case 1:
+                if (value.y >= 0) {
+                    WriteHalf(value.x, fs);
+                    WriteHalf(value.z, fs);
+                    WriteHalf(value.w, fs);
+                } else {
+                    WriteHalf(-value.x, fs);
+                    WriteHalf(-value.z, fs);
+                    WriteHalf(-value.w, fs);
+                }
+                break;
+            case 2:
+                if (value.z >= 0) {
+                    WriteHalf(value.x, fs);
+                    WriteHalf(value.y, fs);
+                    WriteHalf(value.w, fs);
+                } else {
+                    WriteHalf(-value.x, fs);
+                    WriteHalf(-value.y, fs);
+                    WriteHalf(-value.w, fs);
+                }
+                break;
+            case 3:
+                if (value.w >= 0) {
+                    WriteHalf(value.x, fs);
+                    WriteHalf(value.y, fs);
+                    WriteHalf(value.z, fs);
+                } else {
+                    WriteHalf(-value.x, fs);
+                    WriteHalf(-value.y, fs);
+                    WriteHalf(-value.z, fs);
                 }
                 break;
             }

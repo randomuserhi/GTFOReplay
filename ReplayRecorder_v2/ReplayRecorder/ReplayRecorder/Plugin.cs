@@ -2,6 +2,8 @@
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using Il2CppInterop.Runtime.Injection;
+using ReplayRecorder.Snapshot;
 
 namespace ReplayRecorder.BepInEx;
 
@@ -13,6 +15,10 @@ public class Plugin : BasePlugin {
         harmony.PatchAll();
 
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
+
+        ClassInjector.RegisterTypeInIl2Cpp<SnapshotInstance>();
+        Replay.RegisterAll();
+        RundownManager.OnExpeditionGameplayStarted += Replay.OnGameplayStart;
     }
 
     private static Harmony? harmony;

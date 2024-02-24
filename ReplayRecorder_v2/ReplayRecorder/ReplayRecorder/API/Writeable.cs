@@ -1,5 +1,5 @@
 ﻿namespace ReplayRecorder.API {
-    interface IWriteable {
+    internal interface IWriteable {
         public void Write(FileStream fs);
     }
 }
