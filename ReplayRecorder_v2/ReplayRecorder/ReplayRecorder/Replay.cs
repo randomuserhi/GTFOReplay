@@ -4,6 +4,7 @@ using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Exceptions;
 using ReplayRecorder.Snapshot;
 using System.Reflection;
+using UnityEngine;
 
 namespace ReplayRecorder {
     public static class Replay {
@@ -65,6 +66,10 @@ namespace ReplayRecorder {
 
         public static void Trigger(ReplayEvent e) => SnapshotManager.GetInstance().Trigger(e);
         public static void Trigger(ReplayHeader header) => SnapshotManager.GetInstance().Trigger(header);
+        public static void Spawn(ReplayDynamic dynamic, eDimensionIndex dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, (byte)dimensionIndex, position);
+        public static void Spawn(ReplayDynamic dynamic, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, (byte)dimensionIndex, position, rotation);
+        public static void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, dimensionIndex, position);
+        public static void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, dimensionIndex, position, rotation);
         public static void Spawn(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Spawn(dynamic);
         public static void Despawn(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Despawn(dynamic);
 

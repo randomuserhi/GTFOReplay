@@ -13,6 +13,8 @@ namespace ReplayRecorder.Snapshot {
             private ReplayEvent e;
             internal long now;
 
+            public string? Debug => e.Debug;
+
             public EventWrapper(long now, ReplayEvent e) {
                 this.now = now;
                 this.e = e;
@@ -62,7 +64,7 @@ namespace ReplayRecorder.Snapshot {
                 throw new ReplayHeaderAlreadyWritten($"Header '{headerType}' was already written.");
             }
             ushort id = SnapshotManager.types[headerType];
-            APILogger.Debug($"[Header: {headerType.FullName}]: {id}");
+            APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
             BitHelper.WriteBytes(id, fs);
             header.Write(fs);
 
@@ -85,15 +87,31 @@ namespace ReplayRecorder.Snapshot {
 
         internal void Trigger(ReplayEvent e) {
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
-            if (BepInEx.ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}]: {SnapshotManager.types[e.GetType()]}");
+            if (BepInEx.ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             events.Add(new EventWrapper(Now, e));
         }
 
         internal void Spawn(ReplayDynamic dynamic) {
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists.");
+            Type dynamicType = dynamic.GetType();
+            if (!SnapshotManager.types.Contains(dynamicType)) throw new ReplayTypeDoesNotExist($"Type '{dynamicType.FullName}' does not exist.");
 
             Trigger(new SpawnDynamic(dynamic.Id));
+            dynamics.Add(dynamic);
+            mapOfDynamics.Add(dynamic.Id, dynamic);
+        }
+
+        internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) {
+            Spawn(dynamic, dimensionIndex, position, Quaternion.identity);
+        }
+        internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) {
+            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
+            if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists.");
+            Type dynamicType = dynamic.GetType();
+            if (!SnapshotManager.types.Contains(dynamicType)) throw new ReplayTypeDoesNotExist($"Type '{dynamicType.FullName}' does not exist.");
+
+            Trigger(new SpawnDynamicAt(dynamic.Id, (byte)dimensionIndex, position, rotation));
             dynamics.Add(dynamic);
             mapOfDynamics.Add(dynamic.Id, dynamic);
         }
@@ -152,6 +170,7 @@ namespace ReplayRecorder.Snapshot {
 
                 if (!dynamic.remove) {
                     if (dynamic.IsDirty) {
+                        if (BepInEx.ConfigManager.Debug && BepInEx.ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
                         dynamic.Write(fs);
                     }
                     _dynamics.Add(dynamic);

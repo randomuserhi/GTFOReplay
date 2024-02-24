@@ -13,6 +13,12 @@ namespace ReplayRecorder.BepInEx {
                 false,
                 "Enables debug messages when true.");
 
+            debugDynamics = configFile.Bind(
+                "Debug",
+                "dynamics",
+                false,
+                "Enables debug messages for dynamics when true.");
+
             replayFolder = configFile.Bind(
                 "Settings",
                 "replayFolder",
@@ -30,6 +36,13 @@ namespace ReplayRecorder.BepInEx {
             set { debug.Value = value; }
         }
         private static ConfigEntry<bool> debug;
+
+        // TODO(randomuserhi): Convert to string and have space seperated debug filters "ALL" etc...
+        public static bool DebugDynamics {
+            get { return debugDynamics.Value; }
+            set { debugDynamics.Value = value; }
+        }
+        private static ConfigEntry<bool> debugDynamics;
 
         public static string ReplayFolder {
             get { return replayFolder.Value; }

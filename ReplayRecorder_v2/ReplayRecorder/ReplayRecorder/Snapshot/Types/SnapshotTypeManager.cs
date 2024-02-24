@@ -3,7 +3,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.Snapshot.Exceptions;
 
 namespace ReplayRecorder.Snapshot.Types {
-    internal class SnapshotTypeManager : IWriteable {
+    internal class SnapshotTypeManager {
         public readonly HashSet<Type> dynamics = new HashSet<Type>();
         public readonly HashSet<Type> events = new HashSet<Type>();
         public readonly HashSet<Type> headers = new HashSet<Type>();
@@ -16,12 +16,16 @@ namespace ReplayRecorder.Snapshot.Types {
         }
         private ushort staticType = 256;
 
+        public bool Contains(Type type) {
+            return typeMap.ContainsKey(type);
+        }
+
         public ushort this[Type type] {
             get {
                 if (typeMap.ContainsKey(type)) {
                     return typeMap[type];
                 } else {
-                    throw new ReplayTypeDoesNotExist($"Type '{type}' does not exist.");
+                    throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
                 }
             }
         }
@@ -35,12 +39,18 @@ namespace ReplayRecorder.Snapshot.Types {
             }
         }
 
+        private string Clean(string typename) {
+            return typename.Replace(" ", "").Trim();
+        }
+
         public void RegisterType(string typename, Type type) {
+            typename = Clean(typename);
+
             if (typenameMap.ContainsKey(typename)) {
                 throw new ReplayDuplicateTypeName($"Typename '{typename}' already exists.");
             }
             if (typeMap.ContainsKey(type)) {
-                throw new ReplayDuplicateType($"Type '{type}' already exists.");
+                throw new ReplayDuplicateType($"Type '{type.FullName}' already exists.");
             }
             if (staticType == ushort.MaxValue) {
                 throw new ReplayTypeOverflow($"Could not assign type '{typename}' as there are no more indicies that can be assigned.");
@@ -52,14 +62,14 @@ namespace ReplayRecorder.Snapshot.Types {
             } else if (typeof(ReplayHeader).IsAssignableFrom(type)) {
                 headers.Add(type);
             } else {
-                throw new ReplayIncompatibleType($"Type '{type}' is not a Dynamic, Event or Header.");
+                throw new ReplayIncompatibleType($"Type '{type.FullName}' is not a Dynamic, Event or Header.");
             }
 
             ushort id = staticType++;
             typenameMap.Add(typename, type);
             typeMap.Add(type, id);
 
-            APILogger.Debug($"Registered: '{typename}' => {type}[{id}]");
+            APILogger.Debug($"Registered: '{typename}' => {type.FullName}[{id}]");
         }
 
         public void Write(FileStream fs) {

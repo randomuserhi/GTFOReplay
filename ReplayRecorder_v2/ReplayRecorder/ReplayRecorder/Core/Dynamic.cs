@@ -8,6 +8,8 @@ namespace ReplayRecorder.Core {
     public class Id : ReplayEvent {
         public int id;
 
+        public override string? Debug => $"{id}";
+
         public Id(int id) {
             this.id = id;
         }
@@ -33,6 +35,34 @@ namespace ReplayRecorder.Core {
         public SpawnDynamic(int id) : base(id) { }
     }
 
+    [ReplayData("ReplayRecorder.SpawnDynamicAt")]
+    internal class SpawnDynamicAt : Id {
+        public byte dimensionIndex;
+        public Vector3 position;
+        public Quaternion rotation;
+
+        public override string? Debug => $"{id} - [{dimensionIndex}] ({position.x}, {position.y}, {position.z}) ({rotation.x}, {rotation.y}, {rotation.z}, {rotation.w})";
+
+        public SpawnDynamicAt(int id, byte dimensionIndex, Vector3 position, Quaternion rotation) : base(id) {
+            this.dimensionIndex = dimensionIndex;
+            this.position = position;
+            this.rotation = rotation;
+        }
+
+        public override void Write(FileStream fs) {
+            base.Write(fs);
+
+            BitHelper.WriteBytes((byte)(1), fs);
+            BitHelper.WriteBytes(position, fs);
+            if (float.IsNaN(rotation.x) || float.IsNaN(rotation.y) ||
+                float.IsNaN(rotation.z) || float.IsNaN(rotation.w)) {
+                BitHelper.WriteHalf(Quaternion.identity, fs);
+                APILogger.Warn("Dynamic rotation had NaN component.");
+            } else BitHelper.WriteHalf(rotation, fs);
+            BitHelper.WriteBytes(dimensionIndex, fs);
+        }
+    }
+
     [ReplayData("ReplayRecorder.DespawnDynamic")]
     internal class DespawnDynamic : Id {
         public DespawnDynamic(int id) : base(id) { }
@@ -46,6 +76,8 @@ namespace ReplayRecorder.Core {
 
         private const float threshold = 50;
 
+        public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z})";
+
         public override int Id => id;
         public override bool IsDirty => transform.position != oldPosition;
 
@@ -56,22 +88,22 @@ namespace ReplayRecorder.Core {
 
         public override void Write(FileStream fs) {
             /// Format:
-            /// byte => absolute or relative position
             /// int => instance ID of object (not necessarily the gameobject)
+            /// byte => absolute or relative position
             /// Vector3(Full/Half) => full precision / half precision based on absolute or relative position
             /// byte => Dimension of transform
+
+            BitHelper.WriteBytes(id, fs);
 
             // If object has moved too far, write absolute position
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
                 BitHelper.WriteBytes((byte)(1), fs);
-                BitHelper.WriteBytes(id, fs);
                 BitHelper.WriteBytes(transform.position, fs);
                 BitHelper.WriteBytes(transform.dimensionIndex, fs);
             }
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), fs);
-                BitHelper.WriteBytes(id, fs);
                 BitHelper.WriteHalf(transform.position - oldPosition, fs);
                 BitHelper.WriteBytes(transform.dimensionIndex, fs);
             }
@@ -85,6 +117,8 @@ namespace ReplayRecorder.Core {
         private int id;
         private IReplayTransform transform;
         private Quaternion oldRotation;
+
+        public override string? Debug => $"{id} - ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
         public override int Id => id;
         public override bool IsDirty => transform.rotation != oldRotation;
@@ -118,6 +152,8 @@ namespace ReplayRecorder.Core {
 
         private const float threshold = 50;
 
+        public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z}) ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
+
         public override int Id => id;
         public override bool IsDirty => transform.position != oldPosition ||
                                         transform.rotation != oldRotation;
@@ -129,8 +165,8 @@ namespace ReplayRecorder.Core {
 
         public override void Write(FileStream fs) {
             /// Format:
-            /// byte => absolute or relative position
             /// int => instance ID of object (not necessarily the gameobject)
+            /// byte => absolute or relative position
             /// Vector3(Full/Half) => full precision / half precision based on absolute or relative position
             /// Quaternion(Half) => rotation
             /// byte => Dimension of transform
@@ -142,10 +178,11 @@ namespace ReplayRecorder.Core {
             //                     original first byte from the quaternion bytes: 0b00xx where xx is the number
             //                     0,1,2,3 for which component was missing.
 
+            BitHelper.WriteBytes(id, fs);
+
             // If object has moved too far, write absolute position
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
                 BitHelper.WriteBytes((byte)(1), fs);
-                BitHelper.WriteBytes(id, fs);
                 BitHelper.WriteBytes(transform.position, fs);
                 if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
                     float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
@@ -157,7 +194,6 @@ namespace ReplayRecorder.Core {
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), fs);
-                BitHelper.WriteBytes(id, fs);
                 BitHelper.WriteHalf(transform.position - oldPosition, fs);
                 if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
                     float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
