@@ -937,6 +937,9 @@ interface GTFOSnapshotConstructor
             if (RHU.exists(lerp)) l = lerp;
 
             scan.progress = scan.progress + (_scan.progress - scan.progress) * l;
+            scan.r = _scan.r;
+            scan.g = _scan.g;
+            scan.b = _scan.b;
         },
         "holopath": function(snapshot: GTFOSnapshot, t: GTFOTimeline, ev: GTFOEvent, lerp?: number)
         {

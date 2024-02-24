@@ -912,6 +912,9 @@ interface GTFOReplayConstructor
             let e: GTFODynamicPropScan = {
                 instance: BitHelper.readInt(bytes, reader),
                 progress: BitHelper.readByte(bytes, reader) / 255,
+                r: BitHelper.readByte(bytes, reader),
+                g: BitHelper.readByte(bytes, reader),
+                b: BitHelper.readByte(bytes, reader),
             };
             return {
                 type: "scan",

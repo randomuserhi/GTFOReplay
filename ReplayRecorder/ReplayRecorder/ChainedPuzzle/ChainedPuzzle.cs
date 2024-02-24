@@ -20,26 +20,41 @@ namespace ReplayRecorder.ChainedPuzzle {
 
         private class ScanProgress : DynamicProperty {
             private CP_Bioscan_Core bioscan;
+            private CP_Bioscan_Graphics graphics;
             private byte progress => (byte)(bioscan.m_sync.GetCurrentState().progress * byte.MaxValue);
             private byte oldProgress = 0;
+            private byte r => (byte)(graphics.m_currentCol.r * byte.MaxValue);
+            private byte g => (byte)(graphics.m_currentCol.g * byte.MaxValue);
+            private byte b => (byte)(graphics.m_currentCol.b * byte.MaxValue);
+
+            private byte oldR = 0;
+            private byte oldG = 0;
+            private byte oldB = 0;
 
             public ScanProgress(int instance, CP_Bioscan_Core bioscan) : base(Type.Scan, instance) {
                 this.bioscan = bioscan;
+                graphics = bioscan.m_graphics.TryCast<CP_Bioscan_Graphics>()!;
             }
 
             protected override bool IsSerializable() {
-                return bioscan != null && progress != oldProgress;
+                return bioscan != null && (progress != oldProgress || r != oldR || g != oldG || b != oldB);
             }
 
-            private const int SizeOfHeader = 1;
+            private const int SizeOfHeader = 4;
             private static byte[] buffer = new byte[SizeOfHeader];
             public override void Serialize(FileStream fs) {
                 base.Serialize(fs);
 
                 int index = 0;
                 BitHelper.WriteBytes(progress, buffer, ref index);
+                BitHelper.WriteBytes(r, buffer, ref index);
+                BitHelper.WriteBytes(g, buffer, ref index);
+                BitHelper.WriteBytes(b, buffer, ref index);
 
                 oldProgress = progress;
+                oldR = r;
+                oldG = g;
+                oldB = b;
 
                 fs.Write(buffer);
             }

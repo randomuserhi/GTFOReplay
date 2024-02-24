@@ -3,7 +3,7 @@ using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 
-namespace ReplayRecorder;
+namespace ReplayRecorder.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 public class Plugin : BasePlugin {
