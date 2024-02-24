@@ -6,6 +6,7 @@ class Reader {
     }
 }
 
+/* exported BitHelper */
 namespace BitHelper {
     export const littleEndian: boolean = (() => {
         const buffer = new ArrayBuffer(2);
