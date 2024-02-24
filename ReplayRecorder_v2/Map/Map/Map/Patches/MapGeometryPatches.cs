@@ -5,7 +5,7 @@ using ReplayRecorder;
 
 namespace Vanilla.Map.Patches {
     [HarmonyPatch]
-    class MapPatches {
+    class MapGeometryPatches {
         // Get number of dimensions that need loading
         public static Il2CppSystem.Collections.Generic.List<Dimension>? dimensions;
 

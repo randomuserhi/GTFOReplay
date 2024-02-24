@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vanilla", "Vanilla\Vanilla.csproj", "{EEA06895-727C-45A0-B5D6-0FADBB58634E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Map", "Map\Map.csproj", "{EEA06895-727C-45A0-B5D6-0FADBB58634E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

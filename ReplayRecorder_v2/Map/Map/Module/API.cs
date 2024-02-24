@@ -1,11 +1,11 @@
 ﻿using BepInEx.Logging;
-using Vanilla.BepInEx;
+using Vanilla.Map.BepInEx;
 
-namespace Vanilla.BepInEx {
+namespace Vanilla.Map.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
-        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla";
-        public const string Name = "ReplayRecorder.Vanilla";
+        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla.Map";
+        public const string Name = "ReplayRecorder.Vanilla.Map";
         public const string Version = "0.0.1";
     }
 }

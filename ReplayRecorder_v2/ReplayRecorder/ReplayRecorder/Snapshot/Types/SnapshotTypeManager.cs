@@ -1,6 +1,7 @@
 ﻿using API;
 using ReplayRecorder.API;
 using ReplayRecorder.Snapshot.Exceptions;
+using System.Text;
 
 namespace ReplayRecorder.Snapshot.Types {
     internal class SnapshotTypeManager {
@@ -11,10 +12,7 @@ namespace ReplayRecorder.Snapshot.Types {
         private Dictionary<string, Type> typenameMap = new Dictionary<string, Type>();
         private Dictionary<Type, ushort> typeMap = new Dictionary<Type, ushort>();
 
-        public enum Const {
-            HeaderEnd
-        }
-        private ushort staticType = 256;
+        private ushort staticType = 0;
 
         public bool Contains(Type type) {
             return typeMap.ContainsKey(type);
@@ -55,11 +53,15 @@ namespace ReplayRecorder.Snapshot.Types {
             if (staticType == ushort.MaxValue) {
                 throw new ReplayTypeOverflow($"Could not assign type '{typename}' as there are no more indicies that can be assigned.");
             }
+            string t;
             if (typeof(ReplayDynamic).IsAssignableFrom(type)) {
+                t = "Dynamic";
                 dynamics.Add(type);
             } else if (typeof(ReplayEvent).IsAssignableFrom(type)) {
+                t = "Event";
                 events.Add(type);
             } else if (typeof(ReplayHeader).IsAssignableFrom(type)) {
+                t = "Header";
                 headers.Add(type);
             } else {
                 throw new ReplayIncompatibleType($"Type '{type.FullName}' is not a Dynamic, Event or Header.");
@@ -69,15 +71,21 @@ namespace ReplayRecorder.Snapshot.Types {
             typenameMap.Add(typename, type);
             typeMap.Add(type, id);
 
-            APILogger.Debug($"Registered: '{typename}' => {type.FullName}[{id}]");
+            APILogger.Debug($"Registered {t}: '{typename}' => {type.FullName}[{id}]");
         }
 
         public void Write(FileStream fs) {
+            StringBuilder debug = new StringBuilder();
+
             BitHelper.WriteBytes((ushort)typenameMap.Count, fs);
+            debug.AppendLine($"\n\tTypeMap[{typenameMap.Count}]:");
             foreach (KeyValuePair<string, Type> pair in typenameMap) {
+                debug.AppendLine($"\t{typeMap[pair.Value]} => {pair.Key}[{pair.Value.FullName}]");
                 BitHelper.WriteBytes(pair.Key, fs);
                 BitHelper.WriteBytes(typeMap[pair.Value], fs);
             }
+
+            APILogger.Debug(debug.ToString());
         }
     }
 }

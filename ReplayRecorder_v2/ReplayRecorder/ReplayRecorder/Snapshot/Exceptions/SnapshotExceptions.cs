@@ -12,7 +12,7 @@
     }
 
     public class ReplayAllHeadersAlreadyWritten : Exception {
-        public ReplayAllHeadersAlreadyWritten() : base("All replay headers are already written.") { }
+        public ReplayAllHeadersAlreadyWritten(string message) : base(message) { }
     }
 
     public class ReplayHeaderAlreadyWritten : Exception {

@@ -1,8 +1,8 @@
 ﻿using API;
+using Il2CppInterop.Runtime.Attributes;
 using ReplayRecorder.API;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
-using ReplayRecorder.Snapshot.Types;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -51,17 +51,19 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
+        [HideFromIl2Cpp]
         internal void Trigger(ReplayHeader header) {
             if (fs == null) throw new ReplaySnapshotNotInitialized();
 
+            Type headerType = header.GetType();
+
             if (completedHeader || unwrittenHeaders.Count == 0) {
                 completedHeader = true;
-                throw new ReplayAllHeadersAlreadyWritten();
+                throw new ReplayAllHeadersAlreadyWritten($"Cannot write header '{headerType.FullName}' as all headers have been written already.");
             }
 
-            Type headerType = header.GetType();
             if (!unwrittenHeaders.Remove(headerType)) {
-                throw new ReplayHeaderAlreadyWritten($"Header '{headerType}' was already written.");
+                throw new ReplayHeaderAlreadyWritten($"Header '{headerType.FullName}' was already written.");
             }
             ushort id = SnapshotManager.types[headerType];
             APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
@@ -69,7 +71,6 @@ namespace ReplayRecorder.Snapshot {
             header.Write(fs);
 
             if (unwrittenHeaders.Count == 0) {
-                BitHelper.WriteBytes((ushort)SnapshotTypeManager.Const.HeaderEnd, fs);
                 completedHeader = true;
                 OnHeaderComplete();
             }
@@ -77,7 +78,10 @@ namespace ReplayRecorder.Snapshot {
 
         private void OnHeaderComplete() {
             if (fs == null) throw new ReplaySnapshotNotInitialized();
-            APILogger.Debug("All headers written.");
+
+            EndOfHeader eoh = new EndOfHeader();
+            APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
+            eoh.Write(fs);
 
             fs.Flush();
             start = Raudy.Now;
@@ -85,14 +89,15 @@ namespace ReplayRecorder.Snapshot {
             Replay.OnHeaderCompletion?.Invoke();
         }
 
+        [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
-            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             if (BepInEx.ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
+            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             events.Add(new EventWrapper(Now, e));
         }
 
+        [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic) {
-            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists.");
             Type dynamicType = dynamic.GetType();
             if (!SnapshotManager.types.Contains(dynamicType)) throw new ReplayTypeDoesNotExist($"Type '{dynamicType.FullName}' does not exist.");
@@ -102,11 +107,12 @@ namespace ReplayRecorder.Snapshot {
             mapOfDynamics.Add(dynamic.Id, dynamic);
         }
 
+        [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) {
             Spawn(dynamic, dimensionIndex, position, Quaternion.identity);
         }
+        [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) {
-            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists.");
             Type dynamicType = dynamic.GetType();
             if (!SnapshotManager.types.Contains(dynamicType)) throw new ReplayTypeDoesNotExist($"Type '{dynamicType.FullName}' does not exist.");
@@ -125,6 +131,7 @@ namespace ReplayRecorder.Snapshot {
             mapOfDynamics.Remove(id);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic) {
             Despawn(dynamic.Id);
         }

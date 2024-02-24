@@ -56,7 +56,7 @@ namespace Vanilla.Map {
         private static void Reset() {
             map = new Dictionary<eDimensionIndex, Map>();
             processed.Clear();
-            MapPatches.dimensions = null;
+            MapGeometryPatches.dimensions = null;
         }
 
         // Maps dimension to the surface map of that dimension
@@ -196,6 +196,9 @@ namespace Vanilla.Map {
     [ReplayData("ReplayRecorder.Map.Geometry")]
     internal class MapGeometry : ReplayHeader {
         private Dictionary<eDimensionIndex, Map> map;
+
+        public override string? Debug => $"{map.Count} dimensions.";
+
         public MapGeometry(Dictionary<eDimensionIndex, Map> map) {
             this.map = map;
         }

@@ -11,7 +11,7 @@
 		<!-- Bepinex file location -->
 		<BepInEx>E:\GTFO mods\BepInExPack_GTFO\BepInEx</BepInEx>
 		<AdditionalIncludes>E:\GTFO mods\BepInEx\Plugins</AdditionalIncludes>
-		<BuildDirectory>E:\GTFO mods\BepInEx\Plugins\$(SolutionName)\</BuildDirectory>
+		<BuildDirectory>E:\GTFO mods\BepInEx\Plugins\ReplayRecorder\Vanilla</BuildDirectory>
 		<OutputPath>$(BuildDirectory)</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	</PropertyGroup>

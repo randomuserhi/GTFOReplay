@@ -1,4 +1,5 @@
 ﻿using API;
+using Il2CppInterop.Runtime.Attributes;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Exceptions;
@@ -29,7 +30,7 @@ namespace ReplayRecorder {
                     } else {
                         OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
                     }
-                    APILogger.Debug($"Registered: '{t.FullName}.{method.Name}' => {type}");
+                    APILogger.Debug($"Registered {type}: '{t.FullName}.{method.Name}'");
                 } else {
                     APILogger.Error($"[ReplayReset] / [ReplayInit] can only be applied to static methods. '{method}' is not static.");
                 }
@@ -64,13 +65,21 @@ namespace ReplayRecorder {
             SnapshotManager.types.RegisterType(dataInfo.Typename, type);
         }
 
+        [HideFromIl2Cpp]
         public static void Trigger(ReplayEvent e) => SnapshotManager.GetInstance().Trigger(e);
+        [HideFromIl2Cpp]
         public static void Trigger(ReplayHeader header) => SnapshotManager.GetInstance().Trigger(header);
+        [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic, eDimensionIndex dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, (byte)dimensionIndex, position);
+        [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, (byte)dimensionIndex, position, rotation);
+        [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, dimensionIndex, position);
+        [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, dimensionIndex, position, rotation);
+        [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Spawn(dynamic);
+        [HideFromIl2Cpp]
         public static void Despawn(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Despawn(dynamic);
 
         public static Action? OnExpeditionEnd;
