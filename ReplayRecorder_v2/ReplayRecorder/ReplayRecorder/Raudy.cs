@@ -3,11 +3,15 @@ using System.Text;
 using UnityEngine;
 
 namespace ReplayRecorder {
-    internal static class Raudy {
+    public static class Raudy {
         public static long Now => ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
     }
 
-    internal static partial class BitHelper {
+    public class BitHelperBufferTooLarge : Exception {
+        public BitHelperBufferTooLarge(string message) : base(message) { }
+    }
+
+    public static partial class BitHelper {
         // https://github.com/dotnet/runtime/blob/20c8ae6457caa652a34fc42ff5f92b6728231039/src/libraries/System.Private.CoreLib/src/System/Buffers/Binary/Reader.cs
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -126,16 +130,19 @@ namespace ReplayRecorder {
             _WriteBytes((byte*)&to32, sizeof(int), destination, ref index);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(string value, byte[] destination, ref int index) {
             byte[] temp = Encoding.UTF8.GetBytes(value);
+            if (temp.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, length must be smaller than {ushort.MaxValue}.");
             WriteBytes((ushort)temp.Length, destination, ref index);
             Array.Copy(temp, 0, destination, index, temp.Length);
             index += temp.Length;
         }
+        public static int SizeOfString(string value) {
+            return sizeof(ushort) + Encoding.UTF8.GetBytes(value).Length;
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void WriteBytes(byte[] buffer, byte[] destination, ref int index) {
+            if (buffer.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"Buffer is too large, length must be smaller than {ushort.MaxValue}.");
             WriteBytes((ushort)buffer.Length, destination, ref index);
             Array.Copy(buffer, 0, destination, index, buffer.Length);
             index += buffer.Length;
@@ -146,6 +153,80 @@ namespace ReplayRecorder {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteHalf(float value, byte[] destination, ref int index) {
             WriteBytes(FloatToHalf(value), destination, ref index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void _WriteBytes(byte* bytes, int size, FileStream fs) {
+            for (int i = 0; i < size; ++i) {
+                fs.WriteByte(bytes[i]);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(byte value, FileStream fs) {
+            fs.WriteByte(value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(ulong value, FileStream fs) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ulong), fs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(uint value, FileStream fs) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(uint), fs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(ushort value, FileStream fs) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ushort), fs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(long value, FileStream fs) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(long), fs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(int value, FileStream fs) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(int), fs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(short value, FileStream fs) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(short), fs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WriteBytes(float value, FileStream fs) {
+            int to32 = *((int*)&value);
+            if (!BitConverter.IsLittleEndian) to32 = ReverseEndianness(to32);
+            _WriteBytes((byte*)&to32, sizeof(int), fs);
+        }
+
+        public static unsafe void WriteBytes(string value, FileStream fs) {
+            byte[] temp = Encoding.UTF8.GetBytes(value);
+            if (value.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, length must be smaller than {ushort.MaxValue}.");
+            WriteBytes((ushort)temp.Length, fs);
+            fs.Write(temp);
+        }
+
+        public static unsafe void WriteBytes(byte[] buffer, FileStream fs) {
+            if (buffer.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"Buffer is too large, length must be smaller than {ushort.MaxValue}.");
+            WriteBytes((ushort)buffer.Length, fs);
+            fs.Write(buffer);
+        }
+
+        // Special function to halve precision of float
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteHalf(float value, FileStream fs) {
+            WriteBytes(FloatToHalf(value), fs);
         }
 
         // https://stackoverflow.com/questions/1659440/32-bit-to-16-bit-floating-point-conversion

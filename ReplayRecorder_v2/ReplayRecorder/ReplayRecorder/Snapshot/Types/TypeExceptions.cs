@@ -1,8 +1,14 @@
 ﻿namespace ReplayRecorder.Snapshot.Exceptions {
-    public class ReplayRecorderDuplicateTypeName : Exception {
-        public ReplayRecorderDuplicateTypeName(string message) : base(message) { }
+    public class ReplayTypeDoesNotExist : Exception {
+        public ReplayTypeDoesNotExist(string message) : base(message) { }
     }
-    public class ReplayRecorderTypeOverflow : Exception {
-        public ReplayRecorderTypeOverflow(string message) : base(message) { }
+    public class ReplayDuplicateTypeName : Exception {
+        public ReplayDuplicateTypeName(string message) : base(message) { }
+    }
+    public class ReplayDuplicateType : Exception {
+        public ReplayDuplicateType(string message) : base(message) { }
+    }
+    public class ReplayTypeOverflow : Exception {
+        public ReplayTypeOverflow(string message) : base(message) { }
     }
 }
