@@ -83,7 +83,7 @@ namespace ReplayRecorder.Snapshot.Types {
             BitHelper.WriteBytes((ushort)typenameMap.Count, fs);
             debug.AppendLine($"\n\tTypeMap[{typenameMap.Count}]:");
             foreach (KeyValuePair<string, Type> pair in typenameMap) {
-                debug.AppendLine($"\t{typeMap[pair.Value]}[{versionMap[pair.Value]}] => {pair.Key}[{pair.Value.FullName}]");
+                debug.AppendLine($"\t{typeMap[pair.Value]} => {pair.Key}({versionMap[pair.Value]}) [{pair.Value.FullName}]");
                 BitHelper.WriteBytes(pair.Key, fs);
                 BitHelper.WriteBytes(versionMap[pair.Value], fs);
                 BitHelper.WriteBytes(typeMap[pair.Value], fs);

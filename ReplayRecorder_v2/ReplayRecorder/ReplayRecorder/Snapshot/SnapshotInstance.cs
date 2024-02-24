@@ -1,6 +1,9 @@
 ﻿using API;
+using GameData;
+using Globals;
 using Il2CppInterop.Runtime.Attributes;
 using ReplayRecorder.API;
+using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
 using System.Runtime.CompilerServices;
@@ -41,10 +44,32 @@ namespace ReplayRecorder.Snapshot {
         private List<ReplayDynamic> dynamics = new List<ReplayDynamic>();
         private Dictionary<int, ReplayDynamic> mapOfDynamics = new Dictionary<int, ReplayDynamic>();
 
+        private string fullpath = "replay.gtfo";
         internal void Init() {
             if (fs != null) throw new ReplaySnapshotAlreadyInitialized();
 
-            fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
+            pActiveExpedition expedition = RundownManager.GetActiveExpeditionData();
+            RundownDataBlock data = GameDataBlockBase<RundownDataBlock>.GetBlock(Global.RundownIdToLoad);
+            string shortName = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex).GetShortName(expedition.expeditionIndex);
+            DateTime now = DateTime.Now;
+
+            string filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
+            string path = ConfigManager.ReplayFolder;
+            if (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) {
+                filename = "replay";
+            }
+            if (!Directory.Exists(path)) {
+                path = "./";
+            }
+            fullpath = Path.Combine(path, filename);
+
+            try {
+                fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
+            } catch (Exception ex) {
+                APILogger.Error($"Failed to create filestream, falling back to 'replay.gtfo': {ex.Message}");
+                fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
+            }
+
             SnapshotManager.types.Write(fs);
             foreach (Type t in SnapshotManager.types.headers) {
                 unwrittenHeaders.Add(t);
