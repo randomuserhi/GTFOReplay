@@ -1,7 +1,9 @@
+*TODO(randomuserhi) -> Finish off writing properly*
+
 # Building
-- `npm install`
-    - download dependencies
-- `npm run build`
-    - builds the project
-- `npm run copy-js3party`
-    - copy over 3rd party libraries (required to be done once, or everytime js3party gets updated)
+- In the electron folder execute build script
+
+- `offload-js3party` -> offloads 3rd party libraries to electron
+- `copy-js3party` -> offloads 3rd party libraries to assets (front-end)
+
+Offload operations only need to be done once, unless changes are made to 3rd party includes.

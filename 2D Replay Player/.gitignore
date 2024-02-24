@@ -1,2 +1,5 @@
+# Node build directory
 build/
-node_modules/
+
+# Electron Forge Output directory
+electron/out/
