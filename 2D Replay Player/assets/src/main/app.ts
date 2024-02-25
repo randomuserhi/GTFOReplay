@@ -47,13 +47,13 @@ interface app extends HTMLElement {
             };
         });
 
-        function __main__() {
+        async function __main__() {
             window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
             window.api.on("loadModules", (paths: string[]) => paths.forEach(p => ModuleLoader.loadModule(p)));
             window.api.on("unlinkModules", (paths: string[]) => paths.forEach(p => ModuleLoader.unlinkModule(p)));
             
-            window.api.send("loadModules");
+            (await window.api.invoke("loadModules")).forEach((p: string) => ModuleLoader.loadModule(p));
         }
 
         Macro((() => {

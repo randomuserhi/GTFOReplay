@@ -36,11 +36,15 @@ class Timeline {
 }
 
 class Replay {
+    typemap: Map<number, Module>;
     header: Partial<Replay.Header>;
     timeline: Timeline;
     snapshots: Partial<Replay.Snapshot>[];
     
     constructor() {
+        this.typemap = new Map();
         this.header = {};
+        this.timeline = new Timeline();
+        this.snapshots = [];
     }
 }

@@ -1,8 +1,16 @@
+interface Module { 
+    typename: string; 
+    version: string;
+}
+
 /* exported ModuleLoader */
 namespace ModuleLoader {
-    const links = new Map<string, { typename: string, version: string }[]>();
-    
+    const links = new Map<string, Module[]>();
     export const library: Map<string, Map<string, ParseFunc>> = new Map();
+
+    export function get(module: Module): ParseFunc | undefined {
+        return library.get(module.typename)?.get(module.version);
+    }
 
     // TODO(randomuserhi): console message / warning when replacing or updating an existing type
     export function register(typename: string, version: string, func: ParseFunc) {

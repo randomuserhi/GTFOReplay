@@ -53,9 +53,29 @@ namespace BitHelper {
         return new Int16Array(buffer)[0] === 256;
     })();
 
+    export type Type = "byte" | "ushort" | "uint" | "ulong" | "short" | "int" | "long" | "float" | "single" | "half" | "vector" | "halfVector" | "quaternion" | "halfQuaternion";
+    export function sizeof(type: Type): number {
+        switch(type) {
+        case "byte": return 1;
+        case "short":
+        case "ushort": 
+        case "half": return 2;
+        case "int":
+        case "uint": 
+        case "float":
+        case "single": return 4;
+        case "long":
+        case "ulong": return 8;
+        case "vector": return 12;
+        case "halfVector": return 6;
+        case "quaternion": return 16;
+        case "halfQuaternion": return 8;
+        default: throw new Error("Invalid type.");
+        }
+    }
+
     export async function readByte(stream: ByteStream | FileStream): Promise<number> {
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(1);
         } else {
             stream = stream as ByteStream;
@@ -63,9 +83,9 @@ namespace BitHelper {
         return stream.view.getUint8(stream.index++);
     }
 
-    export async function readString(stream: ByteStream | FileStream, length: number): Promise<string> {
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+    export async function readString(stream: ByteStream | FileStream, length?: number): Promise<string> {
+        if (length === undefined) length = await BitHelper.readUShort(stream);
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(length);
         } else {
             stream = stream as ByteStream;
@@ -77,8 +97,7 @@ namespace BitHelper {
 
     export async function readULong(stream: ByteStream | FileStream): Promise<bigint> {
         const sizeof = 8;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -89,8 +108,7 @@ namespace BitHelper {
     }
     export async function readUInt(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 4;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -101,8 +119,7 @@ namespace BitHelper {
     }
     export async function readUShort(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 2;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -114,8 +131,7 @@ namespace BitHelper {
 
     export async function readLong(stream: ByteStream | FileStream): Promise<bigint> {
         const sizeof = 8;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -126,8 +142,7 @@ namespace BitHelper {
     }
     export async function readInt(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 4;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -138,8 +153,7 @@ namespace BitHelper {
     }
     export async function readShort(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 2;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -192,8 +206,7 @@ namespace BitHelper {
     }
     export async function readFloat(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 4;
-        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
-            stream = stream as FileStream;
+        if (stream instanceof FileStream) {
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
