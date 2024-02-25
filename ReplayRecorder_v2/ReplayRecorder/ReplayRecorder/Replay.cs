@@ -80,6 +80,8 @@ namespace ReplayRecorder {
         [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Spawn(dynamic);
         [HideFromIl2Cpp]
+        public static void Despawn(Type dynType, int id) => SnapshotManager.GetInstance().Despawn(dynType, id);
+        [HideFromIl2Cpp]
         public static void Despawn(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Despawn(dynamic);
 
         public static Action? OnExpeditionEnd;
