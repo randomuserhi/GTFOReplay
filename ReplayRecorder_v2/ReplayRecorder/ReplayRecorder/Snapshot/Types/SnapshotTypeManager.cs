@@ -80,6 +80,7 @@ namespace ReplayRecorder.Snapshot.Types {
         public void Write(FileStream fs) {
             StringBuilder debug = new StringBuilder();
 
+            BitHelper.WriteBytes("0.0.1", fs);
             BitHelper.WriteBytes((ushort)typenameMap.Count, fs);
             debug.AppendLine($"\n\tTypeMap[{typenameMap.Count}]:");
             foreach (KeyValuePair<string, Type> pair in typenameMap) {

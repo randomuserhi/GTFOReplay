@@ -1,15 +1,15 @@
 /* exported BitHelper */
 namespace BitHelper {
-    export function readUShortArray(stream: ByteStream, length: number): number[] {
+    export async function readUShortArray(stream: ByteStream | Replay, length: number): Promise<number[]> {
         const array = new Array(length);
         for (let i = 0; i < length; ++i)
-            array[i] = BitHelper.readUShort(stream);
+            array[i] = await BitHelper.readUShort(stream);
         return array;
     }
-    export function readVectorArray(stream: ByteStream, length: number): Vector[] {
+    export async function readVectorArray(stream: ByteStream | Replay, length: number): Promise<Vector[]> {
         const array = new Array<Vector>(length);
         for (let i = 0; i < length; ++i) {
-            array[i] = BitHelper.readVector(stream);
+            array[i] = await BitHelper.readVector(stream);
         }
         return array;
     }

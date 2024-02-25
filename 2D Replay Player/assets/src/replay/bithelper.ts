@@ -17,48 +17,104 @@ namespace BitHelper {
         return new Int16Array(buffer)[0] === 256;
     })();
 
-    export function readByte(stream: ByteStream): number {
+    export async function readByte(stream: ByteStream | Replay): Promise<number> {
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(1);
+        } else {
+            stream = stream as ByteStream;
+        }
         return stream.view.getUint8(stream.index++);
     }
 
-    export function readString(stream: ByteStream, length: number): string {
-        return new TextDecoder().decode(stream.view.buffer.slice(stream.index, stream.index += length));
+    export async function readString(stream: ByteStream | Replay, length: number): Promise<string> {
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(length);
+        } else {
+            stream = stream as ByteStream;
+        }
+        const start = stream.view.byteOffset + stream.index;
+        const end = stream.view.byteOffset + (stream.index += length);
+        return new TextDecoder().decode(stream.view.buffer.slice(start, end));
     }
 
-    export function readULong(stream: ByteStream): bigint {
+    export async function readULong(stream: ByteStream | Replay): Promise<bigint> {
+        const sizeof = 8;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 8;
+        stream.index += sizeof;
         return stream.view.getBigUint64(index, BitHelper.littleEndian);
     }
-    export function readUInt(stream: ByteStream): number {
+    export async function readUInt(stream: ByteStream | Replay): Promise<number> {
+        const sizeof = 4;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 4;
+        stream.index += sizeof;
         return stream.view.getUint32(index, BitHelper.littleEndian);
     }
-    export function readUShort(stream: ByteStream): number {
+    export async function readUShort(stream: ByteStream | Replay): Promise<number> {
+        const sizeof = 2;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 2;
+        stream.index += sizeof;
         return stream.view.getUint16(index, BitHelper.littleEndian);
     }
 
-    export function readLong(stream: ByteStream): bigint {
+    export async function readLong(stream: ByteStream | Replay): Promise<bigint> {
+        const sizeof = 8;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 8;
+        stream.index += sizeof;
         return stream.view.getBigInt64(index, BitHelper.littleEndian);
     }
-    export function readInt(stream: ByteStream): number {
+    export async function readInt(stream: ByteStream | Replay): Promise<number> {
+        const sizeof = 4;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 4;
+        stream.index += sizeof;
         return stream.view.getInt32(index, BitHelper.littleEndian);
     }
-    export function readShort(stream: ByteStream): number {
+    export async function readShort(stream: ByteStream | Replay): Promise<number> {
+        const sizeof = 2;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 2;
+        stream.index += sizeof;
         return stream.view.getInt16(index, BitHelper.littleEndian);
     }
 
-    export function readHalf(stream: ByteStream): number {
-        const ushort = BitHelper.readUShort(stream);
+    export async function readHalf(stream: ByteStream | Replay): Promise<number> {
+        const ushort = await BitHelper.readUShort(stream);
 
         // Create a 32 bit DataView to store the input
         const arr = new ArrayBuffer(4);
@@ -98,85 +154,92 @@ namespace BitHelper {
         // Get it back out as a float32 (which js will convert to a Number)
         return dv.getFloat32(0, false);
     }
-    export function readFloat(stream: ByteStream): number {
+    export async function readFloat(stream: ByteStream | Replay): Promise<number> {
+        const sizeof = 4;
+        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
+            stream = stream as Replay;
+            stream = await stream.getBytes(sizeof);
+        } else {
+            stream = stream as ByteStream;
+        }
         const index = stream.index;
-        stream.index += 4;
+        stream.index += sizeof;
         return stream.view.getFloat32(index, BitHelper.littleEndian);
     }
 
-    export function readQuaternion(stream: ByteStream): Quaternion {
-        const i = BitHelper.readByte(stream);
+    export async function readQuaternion(stream: ByteStream | Replay): Promise<Quaternion> {
+        const i = await BitHelper.readByte(stream);
         let x = 0, y = 0, z = 0, w = 0;
         switch (i) {
         case 0:
-            y = BitHelper.readFloat(stream);
-            z = BitHelper.readFloat(stream);
-            w = BitHelper.readFloat(stream);
-            x = Math.sqrt(Math.clamp01(1 - y * y - z * z - w * w));
+            y = await BitHelper.readFloat(stream);
+            z = await BitHelper.readFloat(stream);
+            w = await BitHelper.readFloat(stream);
+            x = await Math.sqrt(Math.clamp01(1 - y * y - z * z - w * w));
             break;
         case 1:
-            x = BitHelper.readFloat(stream);
-            z = BitHelper.readFloat(stream);
-            w = BitHelper.readFloat(stream);
+            x = await BitHelper.readFloat(stream);
+            z = await BitHelper.readFloat(stream);
+            w = await BitHelper.readFloat(stream);
             y = Math.sqrt(Math.clamp01(1 - x * x - z * z - w * w));
             break;
         case 2:
-            x = BitHelper.readFloat(stream);
-            y = BitHelper.readFloat(stream);
-            w = BitHelper.readFloat(stream);
+            x = await BitHelper.readFloat(stream);
+            y = await BitHelper.readFloat(stream);
+            w = await BitHelper.readFloat(stream);
             z = Math.sqrt(Math.clamp01(1 - x * x - y * y - w * w));
             break;
         case 3:
-            x = BitHelper.readFloat(stream);
-            y = BitHelper.readFloat(stream);
-            z = BitHelper.readFloat(stream);
+            x = await BitHelper.readFloat(stream);
+            y = await BitHelper.readFloat(stream);
+            z = await BitHelper.readFloat(stream);
             w = Math.sqrt(Math.clamp01(1 - x * x - y * y - z * z));
             break;
         }
         return { x: x, y: y, z: z, w: w };
     }
-    export function readHalfQuaternion(stream: ByteStream): Quaternion {
-        const i = BitHelper.readByte(stream);
+    export async function readHalfQuaternion(stream: ByteStream | Replay): Promise<Quaternion> {
+        const i = await BitHelper.readByte(stream);
         let x = 0, y = 0, z = 0, w = 0;
         switch (i) {
         case 0:
-            y = BitHelper.readHalf(stream);
-            z = BitHelper.readHalf(stream);
-            w = BitHelper.readHalf(stream);
+            y = await BitHelper.readHalf(stream);
+            z = await BitHelper.readHalf(stream);
+            w = await BitHelper.readHalf(stream);
             x = Math.sqrt(Math.clamp01(1 - y * y - z * z - w * w));
             break;
         case 1:
-            x = BitHelper.readHalf(stream);
-            z = BitHelper.readHalf(stream);
-            w = BitHelper.readHalf(stream);
+            x = await BitHelper.readHalf(stream);
+            z = await BitHelper.readHalf(stream);
+            w = await BitHelper.readHalf(stream);
             y = Math.sqrt(Math.clamp01(1 - x * x - z * z - w * w));
             break;
         case 2:
-            x = BitHelper.readHalf(stream);
-            y = BitHelper.readHalf(stream);
-            w = BitHelper.readHalf(stream);
+            x = await BitHelper.readHalf(stream);
+            y = await BitHelper.readHalf(stream);
+            w = await BitHelper.readHalf(stream);
             z = Math.sqrt(Math.clamp01(1 - x * x - y * y - w * w));
             break;
         case 3:
-            x = BitHelper.readHalf(stream);
-            y = BitHelper.readHalf(stream);
-            z = BitHelper.readHalf(stream);
+            x = await BitHelper.readHalf(stream);
+            y = await BitHelper.readHalf(stream);
+            z = await BitHelper.readHalf(stream);
             w = Math.sqrt(Math.clamp01(1 - x * x - y * y - z * z));
             break;
         }
         return { x: x, y: y, z: z, w: w };
     }
-    export function readVector(stream: ByteStream): Vector {
-        return { x: BitHelper.readFloat(stream), y: BitHelper.readFloat(stream), z: BitHelper.readFloat(stream) };
+    export async function readVector(stream: ByteStream | Replay): Promise<Vector> {
+        return { x: await BitHelper.readFloat(stream), y: await BitHelper.readFloat(stream), z: await BitHelper.readFloat(stream) };
     }
-    export function readHalfVector(stream: ByteStream): Vector {
-        return { x: BitHelper.readHalf(stream), y: BitHelper.readHalf(stream), z: BitHelper.readHalf(stream) };
+    export async function readHalfVector(stream: ByteStream | Replay): Promise<Vector> {
+        return { x: await BitHelper.readHalf(stream), y: await BitHelper.readHalf(stream), z: await BitHelper.readHalf(stream) };
     }
 
-    /*export function readFloatArray(stream: ByteStream, length: number): number[] {
+    /*export async function readFloatArray(stream: ByteStream, length: number): Promise<number[]> {
         const array = new Array(length);
         for (let i = 0; i < length; ++i)
-            array[i] = BitHelper.readFloat(stream);
+            array[i] = await BitHelper.readFloat(stream);
         return array;
     }*/
 }

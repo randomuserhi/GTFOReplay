@@ -35,15 +35,14 @@ class Replay {
     private _getBytes(start: number, end: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
             const stream = fs.createReadStream(this.path, {
-                encoding: "binary",
                 flags: "r",
                 start,
                 end
             });
             stream.on("error", reject);
             const chunks: Buffer[] = [];
-            stream.on("data", (chunk) => {
-                chunks.push(Buffer.from(chunk));
+            stream.on("data", (chunk: Buffer) => {
+                chunks.push(chunk);
             });
             stream.on("end", () => {
                 resolve(Buffer.concat(chunks));
