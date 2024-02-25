@@ -1,8 +1,10 @@
-class Reader {
+class ByteStream {
     index: number;
+    view: DataView;
 
-    constructor(index: number) {
+    constructor(index: number, bytes: ArrayBufferLike) {
         this.index = index;
+        this.view = new DataView(bytes);
     }
 }
 
@@ -15,49 +17,49 @@ namespace BitHelper {
         return new Int16Array(buffer)[0] === 256;
     })();
 
-    export function readByte(buffer: DataView, reader: Reader): number {
-        return buffer.getUint8(reader.index++);
+    export function readByte(stream: ByteStream): number {
+        return stream.view.getUint8(stream.index++);
     }
 
-    export function readString(buffer: DataView, reader: Reader): string {
-        const length = BitHelper.readUShort(buffer, reader);
-        return new TextDecoder().decode(buffer.buffer.slice(reader.index, reader.index += length));
+    export function readString(stream: ByteStream): string {
+        const length = BitHelper.readUShort(stream);
+        return new TextDecoder().decode(stream.view.buffer.slice(stream.index, stream.index += length));
     }
 
-    export function readULong(buffer: DataView, reader: Reader): bigint {
-        const index = reader.index;
-        reader.index += 8;
-        return buffer.getBigUint64(index, BitHelper.littleEndian);
+    export function readULong(stream: ByteStream): bigint {
+        const index = stream.index;
+        stream.index += 8;
+        return stream.view.getBigUint64(index, BitHelper.littleEndian);
     }
-    export function readUInt(buffer: DataView, reader: Reader): number {
-        const index = reader.index;
-        reader.index += 4;
-        return buffer.getUint32(index, BitHelper.littleEndian);
+    export function readUInt(stream: ByteStream): number {
+        const index = stream.index;
+        stream.index += 4;
+        return stream.view.getUint32(index, BitHelper.littleEndian);
     }
-    export function readUShort(buffer: DataView, reader: Reader): number {
-        const index = reader.index;
-        reader.index += 2;
-        return buffer.getUint16(index, BitHelper.littleEndian);
-    }
-
-    export function readLong(buffer: DataView, reader: Reader): bigint {
-        const index = reader.index;
-        reader.index += 8;
-        return buffer.getBigInt64(index, BitHelper.littleEndian);
-    }
-    export function readInt(buffer: DataView, reader: Reader): number {
-        const index = reader.index;
-        reader.index += 4;
-        return buffer.getInt32(index, BitHelper.littleEndian);
-    }
-    export function readShort(buffer: DataView, reader: Reader): number {
-        const index = reader.index;
-        reader.index += 2;
-        return buffer.getInt16(index, BitHelper.littleEndian);
+    export function readUShort(stream: ByteStream): number {
+        const index = stream.index;
+        stream.index += 2;
+        return stream.view.getUint16(index, BitHelper.littleEndian);
     }
 
-    export function readHalf(buffer: DataView, reader: Reader): number {
-        const ushort = BitHelper.readUShort(buffer, reader);
+    export function readLong(stream: ByteStream): bigint {
+        const index = stream.index;
+        stream.index += 8;
+        return stream.view.getBigInt64(index, BitHelper.littleEndian);
+    }
+    export function readInt(stream: ByteStream): number {
+        const index = stream.index;
+        stream.index += 4;
+        return stream.view.getInt32(index, BitHelper.littleEndian);
+    }
+    export function readShort(stream: ByteStream): number {
+        const index = stream.index;
+        stream.index += 2;
+        return stream.view.getInt16(index, BitHelper.littleEndian);
+    }
+
+    export function readHalf(stream: ByteStream): number {
+        const ushort = BitHelper.readUShort(stream);
 
         // Create a 32 bit DataView to store the input
         const arr = new ArrayBuffer(4);
@@ -97,97 +99,97 @@ namespace BitHelper {
         // Get it back out as a float32 (which js will convert to a Number)
         return dv.getFloat32(0, false);
     }
-    export function readFloat(buffer: DataView, reader: Reader): number {
-        const index = reader.index;
-        reader.index += 4;
-        return buffer.getFloat32(index, BitHelper.littleEndian);
+    export function readFloat(stream: ByteStream): number {
+        const index = stream.index;
+        stream.index += 4;
+        return stream.view.getFloat32(index, BitHelper.littleEndian);
     }
 
-    export function readQuaternion(buffer: DataView, reader: Reader): Quaternion {
-        const i = BitHelper.readByte(buffer, reader);
+    export function readQuaternion(stream: ByteStream): Quaternion {
+        const i = BitHelper.readByte(stream);
         let x = 0, y = 0, z = 0, w = 0;
         switch (i) {
         case 0:
-            y = BitHelper.readFloat(buffer, reader);
-            z = BitHelper.readFloat(buffer, reader);
-            w = BitHelper.readFloat(buffer, reader);
+            y = BitHelper.readFloat(stream);
+            z = BitHelper.readFloat(stream);
+            w = BitHelper.readFloat(stream);
             x = Math.sqrt(Math.clamp01(1 - y * y - z * z - w * w));
             break;
         case 1:
-            x = BitHelper.readFloat(buffer, reader);
-            z = BitHelper.readFloat(buffer, reader);
-            w = BitHelper.readFloat(buffer, reader);
+            x = BitHelper.readFloat(stream);
+            z = BitHelper.readFloat(stream);
+            w = BitHelper.readFloat(stream);
             y = Math.sqrt(Math.clamp01(1 - x * x - z * z - w * w));
             break;
         case 2:
-            x = BitHelper.readFloat(buffer, reader);
-            y = BitHelper.readFloat(buffer, reader);
-            w = BitHelper.readFloat(buffer, reader);
+            x = BitHelper.readFloat(stream);
+            y = BitHelper.readFloat(stream);
+            w = BitHelper.readFloat(stream);
             z = Math.sqrt(Math.clamp01(1 - x * x - y * y - w * w));
             break;
         case 3:
-            x = BitHelper.readFloat(buffer, reader);
-            y = BitHelper.readFloat(buffer, reader);
-            z = BitHelper.readFloat(buffer, reader);
+            x = BitHelper.readFloat(stream);
+            y = BitHelper.readFloat(stream);
+            z = BitHelper.readFloat(stream);
             w = Math.sqrt(Math.clamp01(1 - x * x - y * y - z * z));
             break;
         }
         return { x: x, y: y, z: z, w: w };
     }
-    export function readHalfQuaternion(buffer: DataView, reader: Reader): Quaternion {
-        const i = BitHelper.readByte(buffer, reader);
+    export function readHalfQuaternion(stream: ByteStream): Quaternion {
+        const i = BitHelper.readByte(stream);
         let x = 0, y = 0, z = 0, w = 0;
         switch (i) {
         case 0:
-            y = BitHelper.readHalf(buffer, reader);
-            z = BitHelper.readHalf(buffer, reader);
-            w = BitHelper.readHalf(buffer, reader);
+            y = BitHelper.readHalf(stream);
+            z = BitHelper.readHalf(stream);
+            w = BitHelper.readHalf(stream);
             x = Math.sqrt(Math.clamp01(1 - y * y - z * z - w * w));
             break;
         case 1:
-            x = BitHelper.readHalf(buffer, reader);
-            z = BitHelper.readHalf(buffer, reader);
-            w = BitHelper.readHalf(buffer, reader);
+            x = BitHelper.readHalf(stream);
+            z = BitHelper.readHalf(stream);
+            w = BitHelper.readHalf(stream);
             y = Math.sqrt(Math.clamp01(1 - x * x - z * z - w * w));
             break;
         case 2:
-            x = BitHelper.readHalf(buffer, reader);
-            y = BitHelper.readHalf(buffer, reader);
-            w = BitHelper.readHalf(buffer, reader);
+            x = BitHelper.readHalf(stream);
+            y = BitHelper.readHalf(stream);
+            w = BitHelper.readHalf(stream);
             z = Math.sqrt(Math.clamp01(1 - x * x - y * y - w * w));
             break;
         case 3:
-            x = BitHelper.readHalf(buffer, reader);
-            y = BitHelper.readHalf(buffer, reader);
-            z = BitHelper.readHalf(buffer, reader);
+            x = BitHelper.readHalf(stream);
+            y = BitHelper.readHalf(stream);
+            z = BitHelper.readHalf(stream);
             w = Math.sqrt(Math.clamp01(1 - x * x - y * y - z * z));
             break;
         }
         return { x: x, y: y, z: z, w: w };
     }
-    export function readVector(buffer: DataView, reader: Reader): Vector {
-        return { x: BitHelper.readFloat(buffer, reader), y: BitHelper.readFloat(buffer, reader), z: BitHelper.readFloat(buffer, reader) };
+    export function readVector(stream: ByteStream): Vector {
+        return { x: BitHelper.readFloat(stream), y: BitHelper.readFloat(stream), z: BitHelper.readFloat(stream) };
     }
-    export function readHalfVector(buffer: DataView, reader: Reader): Vector {
-        return { x: BitHelper.readHalf(buffer, reader), y: BitHelper.readHalf(buffer, reader), z: BitHelper.readHalf(buffer, reader) };
+    export function readHalfVector(stream: ByteStream): Vector {
+        return { x: BitHelper.readHalf(stream), y: BitHelper.readHalf(stream), z: BitHelper.readHalf(stream) };
     }
 
-    export function readUShortArray(buffer: DataView, reader: Reader, length: number): number[] {
+    export function readUShortArray(stream: ByteStream, length: number): number[] {
         const array = new Array(length);
         for (let i = 0; i < length; ++i)
-            array[i] = BitHelper.readUShort(buffer, reader);
+            array[i] = BitHelper.readUShort(stream);
         return array;
     }
-    export function readFloatArray(buffer: DataView, reader: Reader, length: number): number[] {
+    export function readFloatArray(stream: ByteStream, length: number): number[] {
         const array = new Array(length);
         for (let i = 0; i < length; ++i)
-            array[i] = BitHelper.readFloat(buffer, reader);
+            array[i] = BitHelper.readFloat(stream);
         return array;
     }
-    export function readVectorArray(buffer: DataView, reader: Reader, length: number): Vector[] {
+    export function readVectorArray(stream: ByteStream, length: number): Vector[] {
         const array = new Array<Vector>(length);
         for (let i = 0; i < length; ++i) {
-            array[i] = BitHelper.readVector(buffer, reader);
+            array[i] = BitHelper.readVector(stream);
         }
         return array;
     }
