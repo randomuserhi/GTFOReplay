@@ -1,15 +1,15 @@
 import { BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
+import * as chokidar from "chokidar";
+import * as fs from 'node:fs/promises';
 
-import { TcpClient, Message } from "./Net/tcpClient.cjs";
-
-declare module "./Net/tcpClient.cjs"
+/*declare module "./Net/tcpClient.cjs"
 {
     interface MessageEventMap
     {
         "HeartBeat": MessageEvent<Message<"HeartBeat", string>>;
     }
-}
+}*/
 
 // TODO(randomuserhi): Look into https://www.electronjs.org/docs/latest/tutorial/security#csp-http-headers, instead of relying on
 //                     <meta> tags in loaded HTML
@@ -40,9 +40,21 @@ export default class Program {
                 preload: path.join(__dirname, "preload.cjs") // use a preload script
             }
         });
-        Program.win.on('closed', Program.onClose);
+        Program.win.on("closed", Program.onClose);
         Program.win.loadFile(path.join(__dirname, "assets/main/main.html")); // load the main page
-        
+
+        // Start Module Manager => TODO(randomuserhi): Move to its own class in a different file -> Program.ModuleManager = new ModuleManager(); ModuleManager.watch("./modules");
+        // Also needs to manage error states such as folder not found - should reject filename change as well etc...
+        const watcher = chokidar.watch(path.join(__dirname, "assets/modules"), {
+            ignored: /^\./, 
+            persistent: true
+        });
+        watcher.on("all", (e, _path) => {
+            if (path.parse(_path).ext.toLowerCase() === ".js") {
+                Program.send("module", [_path]);
+            }            
+        });
+
         //Program.win.maximize();
         Program.win.show();
     }
@@ -65,6 +77,24 @@ export default class Program {
             if (Program.win === null) return;
 
             Program.win.minimize();
+        });
+        
+        // Move to module manager => ModuleManager.setupIPC(ipcMain)
+        async function getFiles(dir: string): Promise<string[]> {
+            const subdirs = await fs.readdir(dir);
+            const files = await Promise.all(subdirs.map(async (subdir: string) => {
+                const res = path.resolve(dir, subdir);
+                return (await fs.stat(res)).isDirectory() ? getFiles(res) : path.parse(res).ext.toLowerCase() === ".js" ? [res] : [];
+            }));
+            return files.reduce((a, f) => a.concat(f), []);
+        }
+        ipcMain.on("loadAllModules", async () => {
+            try {
+                const files = await getFiles(path.join(__dirname, "assets/modules"));
+                Program.send("module", files);
+            } catch (err) {
+                console.error(err);
+            } 
         });
     }
 

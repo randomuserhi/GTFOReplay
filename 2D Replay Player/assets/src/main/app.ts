@@ -47,8 +47,15 @@ interface app extends HTMLElement {
             };
         });
 
+        function __main__() {
+            console.log("__main__");
+            window.api.on("console.log", (obj) => console.log(obj));
+            window.api.on("module", (paths: string[]) => paths.forEach(p => ModuleLoader.loadModule(p)));
+        }
+
         Macro((() => {
             const app = function(this: app) {
+                __main__();
                 this.load(document.createMacro("routes/player"));
             } as any as RHU.Macro.Constructor<app>;
 
