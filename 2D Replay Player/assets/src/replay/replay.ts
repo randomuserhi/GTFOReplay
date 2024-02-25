@@ -4,27 +4,43 @@ declare namespace Replay {
         version: string;
         isMaster: boolean;
     }
-    interface Snapshot {
+    interface Snapshot { }
+}
+
+interface Event {
+
+}
+
+interface Dynamic {
+
+}
+
+class Snapshot {
+    tick: number;
+    time: number;
+
+    events: Event[];
+    dynamics: Dynamic[];
+
+    constructor() {
 
     }
 }
 
 class Timeline {
-    sequence: string;
+    snapshots: Snapshot[];
 
     constructor() {
-        
+
     }
 }
 
 class Replay {
-    readonly path: string;
     header: Partial<Replay.Header>;
     timeline: Timeline;
     snapshots: Partial<Replay.Snapshot>[];
     
-    constructor(path: string) {
-        this.path = path;
+    constructor() {
         this.header = {};
     }
 }

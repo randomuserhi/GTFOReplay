@@ -1,7 +1,7 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs";
 
-class Replay {
+class File {
     readonly path: string;
     private watcher: chokidar.FSWatcher | null;
     private requests: {
@@ -63,25 +63,25 @@ class Replay {
     }
 }
 
-export class ReplayManager {
-    private replays: Map<string, Replay>;
+export class FileManager {
+    private files: Map<string, File>;
 
     constructor() {
-        this.replays = new Map();
+        this.files = new Map();
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
         ipc.handle("open", (_, path: string) => {
-            if (this.replays.has(path)) return;
-            const replay = new Replay(path);
-            this.replays.set(path, replay);
+            if (this.files.has(path)) return;
+            const replay = new File(path);
+            this.files.set(path, replay);
         });
         ipc.on("close", (_, path: string) => {
-            this.replays.delete(path);
+            this.files.delete(path);
         });
         
         ipc.handle("getBytes", async (_, path: string, index: number, numBytes: number, wait?: boolean) => {
-            return await this.replays.get(path)?.getBytes(index, numBytes, wait);
+            return await this.files.get(path)?.getBytes(index, numBytes, wait);
         });
     }
 }

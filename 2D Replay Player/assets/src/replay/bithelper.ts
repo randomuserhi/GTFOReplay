@@ -1,11 +1,14 @@
 /* exported FileStream */
 class FileStream {
     readonly path: string;
+    finite: boolean;
     private index: number;
 
-    constructor(path: string) {
+    // NOTE(randomuserhi): If the filestream is finite then when EndOfFile is reached, it will terminate.
+    constructor(path: string, finite: boolean = true) {
         this.path = path;
         this.index = 0;
+        this.finite = finite;
     }
 
     public open(): Promise<void> {
@@ -23,7 +26,7 @@ class FileStream {
     }
 
     public async peekBytes(numBytes: number): Promise<ByteStream> {
-        return new ByteStream(await window.api.invoke("getBytes", this.path, this.index, numBytes));
+        return new ByteStream(await window.api.invoke("getBytes", this.path, this.index, numBytes, !this.finite));
     }
 }
 
@@ -31,9 +34,13 @@ class ByteStream {
     index: number;
     view: DataView;
 
-    constructor(bytes: Uint8Array) {
+    constructor(bytes?: Uint8Array) {
         this.index = 0;
-        this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        if (bytes === undefined) {
+            this.view = new DataView(new ArrayBuffer(0));
+        } else {
+            this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        }
     }
 }
 
