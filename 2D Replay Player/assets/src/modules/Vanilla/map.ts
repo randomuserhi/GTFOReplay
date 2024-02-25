@@ -28,8 +28,8 @@ interface MapGeometry {
 }
 
 (function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (fs, replay) => {
-        replay.header.dimensions = new Map();
+    ModuleLoader.register(typename, "0.0.1", async (fs, header: Replay.Header) => {
+        header.dimensions = new Map();
 
         const nDimensions = await BitHelper.readByte(fs);
         for (let i = 0; i < nDimensions; ++i) {
@@ -45,7 +45,7 @@ interface MapGeometry {
                     indices: await BitHelper.readUShortArray(bytes, nIndicies)
                 });
             }
-            replay.header.dimensions.set(dimension, surfaces);
+            header.dimensions.set(dimension, surfaces);
         }
     });
 })("Vanilla.Map.Geometry");

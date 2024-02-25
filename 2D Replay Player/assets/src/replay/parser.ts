@@ -1,5 +1,5 @@
 /* exported ParseFunc */
-type ParseFunc = (fs: FileStream, replay: Replay) => Promise<void>;
+type ParseFunc = (fs: FileStream, ...args: any[]) => Promise<void>;
 
 /* exported Parser */
 class Parser {
@@ -45,13 +45,18 @@ class Parser {
             if (m === undefined) throw new UnknownModuleType();
             const func = ModuleLoader.get(m);
             if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-            await func(fs, replay);
+            await func(fs, replay.header);
             m = await module();
         }
         // Parse Snapshots
         try {
             for (;;) {
-                const now = await BitHelper.readUInt(fs);
+                // TODO(randomuserhi): Previous state, Next state
+                // TODO(randomuserhi): Timeline
+                const now: Snapshot = new Snapshot();
+                const prev: Snapshot = new Snapshot();
+
+                const timestamp = await BitHelper.readUInt(fs);
 
                 const nEvents = await BitHelper.readInt(fs);
                 for (let i = 0; i < nEvents; ++i) {
@@ -60,7 +65,7 @@ class Parser {
                     if (m === undefined) throw new UnknownModuleType();
                     const func = ModuleLoader.get(m);
                     if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-                    await func(fs, replay);
+                    await func(fs, prev, now);
                 }
 
                 const nDynamicCollections = await BitHelper.readUShort(fs);
@@ -69,7 +74,7 @@ class Parser {
                     if (m === undefined) throw new UnknownModuleType();
                     const func = ModuleLoader.get(m);
                     if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-                    await func(fs, replay);
+                    await func(fs, prev, now);
                 }
             } 
         } catch { /* empty */ }

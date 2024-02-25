@@ -23,7 +23,6 @@ class Snapshot {
     dynamics: Dynamic[];
 
     constructor() {
-
     }
 }
 
