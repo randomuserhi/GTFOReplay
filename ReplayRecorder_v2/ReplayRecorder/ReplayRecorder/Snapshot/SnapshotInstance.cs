@@ -39,7 +39,7 @@ namespace ReplayRecorder.Snapshot {
             public int NDirtyDynamics {
                 get {
                     if (isDirty) {
-                        _nDirtyDynamics = dynamics.Where(d => d.IsDirty).Count();
+                        _nDirtyDynamics = dynamics.Count(d => d.IsDirty);
                         isDirty = false;
                     }
                     return _nDirtyDynamics;
