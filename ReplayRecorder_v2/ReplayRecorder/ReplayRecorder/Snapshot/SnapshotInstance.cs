@@ -220,6 +220,7 @@ namespace ReplayRecorder.Snapshot {
             dynamics[dynType].Add(dynamic);
         }
 
+        [HideFromIl2Cpp]
         internal void Despawn(Type dynType, int id) {
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
