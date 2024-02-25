@@ -2,6 +2,6 @@
     public abstract class ReplayHeader : IWriteable {
         public virtual string? Debug => null;
 
-        public abstract void Write(FileStream fs);
+        public abstract void Write(ByteBuffer buffer);
     }
 }

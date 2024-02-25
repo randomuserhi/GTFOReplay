@@ -77,17 +77,17 @@ namespace ReplayRecorder.Snapshot.Types {
             APILogger.Debug($"Registered {t}: '{typename}' => {type.FullName}[{id}]");
         }
 
-        public void Write(FileStream fs) {
+        public void Write(ByteBuffer buffer) {
             StringBuilder debug = new StringBuilder();
 
-            BitHelper.WriteBytes("0.0.1", fs);
-            BitHelper.WriteBytes((ushort)typenameMap.Count, fs);
+            BitHelper.WriteBytes("0.0.1", buffer);
+            BitHelper.WriteBytes((ushort)typenameMap.Count, buffer);
             debug.AppendLine($"\n\tTypeMap[{typenameMap.Count}]:");
             foreach (KeyValuePair<string, Type> pair in typenameMap) {
                 debug.AppendLine($"\t{typeMap[pair.Value]} => {pair.Key}({versionMap[pair.Value]}) [{pair.Value.FullName}]");
-                BitHelper.WriteBytes(typeMap[pair.Value], fs);
-                BitHelper.WriteBytes(pair.Key, fs);
-                BitHelper.WriteBytes(versionMap[pair.Value], fs);
+                BitHelper.WriteBytes(typeMap[pair.Value], buffer);
+                BitHelper.WriteBytes(pair.Key, buffer);
+                BitHelper.WriteBytes(versionMap[pair.Value], buffer);
             }
 
             APILogger.Debug(debug.ToString());

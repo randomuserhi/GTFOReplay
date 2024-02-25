@@ -11,6 +11,38 @@ namespace ReplayRecorder {
         public BitHelperBufferTooLarge(string message) : base(message) { }
     }
 
+    public class ByteBuffer {
+        internal byte[] array = new byte[1024];
+        internal ReadOnlySpan<byte> Array => new ReadOnlySpan<byte>(array, 0, count);
+
+        internal byte this[int index] {
+            get { return array[index]; }
+            set { array[index] = value; }
+        }
+
+        internal int count = 0;
+        public int Count => count;
+
+        internal void Clear() {
+            count = 0;
+        }
+
+        internal void Reserve(int size) {
+            if (array.Length - count < size) {
+                byte[] newArray = new byte[Mathf.Max(array.Length * 2, count + size)];
+                System.Array.Copy(array, newArray, array.Length);
+                array = newArray;
+            }
+        }
+
+        internal void Flush(FileStream fs) {
+            BitHelper.WriteBytes(count, fs);
+            fs.Write(Array);
+            fs.Flush();
+            count = 0;
+        }
+    }
+
     public static partial class BitHelper {
         // https://github.com/dotnet/runtime/blob/20c8ae6457caa652a34fc42ff5f92b6728231039/src/libraries/System.Private.CoreLib/src/System/Buffers/Binary/Reader.cs
 
@@ -144,6 +176,76 @@ namespace ReplayRecorder {
         // Special function to halve precision of float
         public static void WriteHalf(float value, byte[] destination, ref int index) {
             WriteBytes(FloatToHalf(value), destination, ref index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void _WriteBytes(byte* bytes, int size, ByteBuffer buffer) {
+            buffer.Reserve(size);
+            for (int i = 0; i < size; ++i) {
+                buffer[buffer.count++] = bytes[i];
+            }
+        }
+
+        public static unsafe void WriteBytes(byte value, ByteBuffer buffer) {
+            buffer.Reserve(1);
+            buffer[buffer.count++] = value;
+        }
+
+        public static unsafe void WriteBytes(ulong value, ByteBuffer buffer) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ulong), buffer);
+        }
+
+        public static unsafe void WriteBytes(uint value, ByteBuffer buffer) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(uint), buffer);
+        }
+
+        public static unsafe void WriteBytes(ushort value, ByteBuffer buffer) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ushort), buffer);
+        }
+
+        public static unsafe void WriteBytes(long value, ByteBuffer buffer) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(long), buffer);
+        }
+
+        public static unsafe void WriteBytes(int value, ByteBuffer buffer) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(int), buffer);
+        }
+
+        public static unsafe void WriteBytes(short value, ByteBuffer buffer) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(short), buffer);
+        }
+
+        public static unsafe void WriteBytes(float value, ByteBuffer buffer) {
+            int to32 = *((int*)&value);
+            if (!BitConverter.IsLittleEndian) to32 = ReverseEndianness(to32);
+            _WriteBytes((byte*)&to32, sizeof(int), buffer);
+        }
+
+        public static unsafe void WriteBytes(string value, ByteBuffer buffer) {
+            byte[] temp = Encoding.UTF8.GetBytes(value);
+            if (value.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, length must be smaller than {ushort.MaxValue}.");
+            WriteBytes((ushort)temp.Length, buffer);
+            buffer.Reserve(temp.Length);
+            Array.Copy(temp, 0, buffer.array, buffer.count, temp.Length);
+            buffer.count += temp.Length;
+        }
+
+        public static unsafe void WriteBytes(byte[] bytes, ByteBuffer buffer) {
+            if (buffer.Count > ushort.MaxValue) throw new BitHelperBufferTooLarge($"Buffer is too large, length must be smaller than {ushort.MaxValue}.");
+            WriteBytes((ushort)bytes.Length, buffer);
+            Array.Copy(bytes, 0, buffer.array, buffer.count, bytes.Length);
+            buffer.count += bytes.Length;
+        }
+
+        // Special function to halve precision of float
+        public static void WriteHalf(float value, ByteBuffer buffer) {
+            WriteBytes(FloatToHalf(value), buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -424,6 +526,79 @@ namespace ReplayRecorder {
             }
         }
 
+        public static void WriteBytes(Vector3 value, ByteBuffer buffer) {
+            WriteBytes(value.x, buffer);
+            WriteBytes(value.y, buffer);
+            WriteBytes(value.z, buffer);
+        }
+
+        public static void WriteBytes(Quaternion value, ByteBuffer buffer) {
+            value = value.normalized;
+
+            float largest = value.x;
+            byte i = 0;
+            if (value.y > largest) {
+                largest = value.y;
+                i = 1;
+            }
+            if (value.z > largest) {
+                largest = value.z;
+                i = 2;
+            }
+            if (value.w > largest) {
+                largest = value.w;
+                i = 3;
+            }
+
+            WriteBytes(i, buffer);
+            switch (i) {
+            case 0:
+                if (value.x >= 0) {
+                    WriteBytes(value.y, buffer);
+                    WriteBytes(value.z, buffer);
+                    WriteBytes(value.w, buffer);
+                } else {
+                    WriteBytes(-value.y, buffer);
+                    WriteBytes(-value.z, buffer);
+                    WriteBytes(-value.w, buffer);
+                }
+                break;
+            case 1:
+                if (value.y >= 0) {
+                    WriteBytes(value.x, buffer);
+                    WriteBytes(value.z, buffer);
+                    WriteBytes(value.w, buffer);
+                } else {
+                    WriteBytes(-value.x, buffer);
+                    WriteBytes(-value.z, buffer);
+                    WriteBytes(-value.w, buffer);
+                }
+                break;
+            case 2:
+                if (value.z >= 0) {
+                    WriteBytes(value.x, buffer);
+                    WriteBytes(value.y, buffer);
+                    WriteBytes(value.w, buffer);
+                } else {
+                    WriteBytes(-value.x, buffer);
+                    WriteBytes(-value.y, buffer);
+                    WriteBytes(-value.w, buffer);
+                }
+                break;
+            case 3:
+                if (value.w >= 0) {
+                    WriteBytes(value.x, buffer);
+                    WriteBytes(value.y, buffer);
+                    WriteBytes(value.z, buffer);
+                } else {
+                    WriteBytes(-value.x, buffer);
+                    WriteBytes(-value.y, buffer);
+                    WriteBytes(-value.z, buffer);
+                }
+                break;
+            }
+        }
+
         public static void WriteBytes(Vector3 value, FileStream fs) {
             WriteBytes(value.x, fs);
             WriteBytes(value.y, fs);
@@ -605,6 +780,80 @@ namespace ReplayRecorder {
                     WriteHalf(-value.x, destination, ref index);
                     WriteHalf(-value.y, destination, ref index);
                     WriteHalf(-value.z, destination, ref index);
+                }
+                break;
+            }
+        }
+
+        public static void WriteHalf(Vector3 value, ByteBuffer buffer) {
+            WriteHalf(value.x, buffer);
+            WriteHalf(value.y, buffer);
+            WriteHalf(value.z, buffer);
+        }
+
+        // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
+        public static void WriteHalf(Quaternion value, ByteBuffer buffer) {
+            value = value.normalized;
+
+            float largest = value.x;
+            byte i = 0;
+            if (value.y > largest) {
+                largest = value.y;
+                i = 1;
+            }
+            if (value.z > largest) {
+                largest = value.z;
+                i = 2;
+            }
+            if (value.w > largest) {
+                largest = value.w;
+                i = 3;
+            }
+
+            WriteBytes(i, buffer);
+            switch (i) {
+            case 0:
+                if (value.x >= 0) {
+                    WriteHalf(value.y, buffer);
+                    WriteHalf(value.z, buffer);
+                    WriteHalf(value.w, buffer);
+                } else {
+                    WriteHalf(-value.y, buffer);
+                    WriteHalf(-value.z, buffer);
+                    WriteHalf(-value.w, buffer);
+                }
+                break;
+            case 1:
+                if (value.y >= 0) {
+                    WriteHalf(value.x, buffer);
+                    WriteHalf(value.z, buffer);
+                    WriteHalf(value.w, buffer);
+                } else {
+                    WriteHalf(-value.x, buffer);
+                    WriteHalf(-value.z, buffer);
+                    WriteHalf(-value.w, buffer);
+                }
+                break;
+            case 2:
+                if (value.z >= 0) {
+                    WriteHalf(value.x, buffer);
+                    WriteHalf(value.y, buffer);
+                    WriteHalf(value.w, buffer);
+                } else {
+                    WriteHalf(-value.x, buffer);
+                    WriteHalf(-value.y, buffer);
+                    WriteHalf(-value.w, buffer);
+                }
+                break;
+            case 3:
+                if (value.w >= 0) {
+                    WriteHalf(value.x, buffer);
+                    WriteHalf(value.y, buffer);
+                    WriteHalf(value.z, buffer);
+                } else {
+                    WriteHalf(-value.x, buffer);
+                    WriteHalf(-value.y, buffer);
+                    WriteHalf(-value.z, buffer);
                 }
                 break;
             }

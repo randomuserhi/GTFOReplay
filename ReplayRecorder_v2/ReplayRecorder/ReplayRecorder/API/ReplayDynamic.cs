@@ -7,6 +7,6 @@
         public abstract int Id { get; }
         public abstract bool IsDirty { get; }
 
-        public abstract void Write(FileStream fs);
+        public abstract void Write(ByteBuffer buffer);
     }
 }

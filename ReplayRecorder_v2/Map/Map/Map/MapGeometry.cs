@@ -25,14 +25,14 @@ namespace Vanilla.Map {
             this.surfaces = surfaces;
         }
 
-        public void Write(FileStream fs) {
+        public void Write(ByteBuffer buffer) {
             if (surfaces.Length > ushort.MaxValue) {
                 APILogger.Error($"There were more than {ushort.MaxValue} surfaces.");
                 return;
             }
 
-            BitHelper.WriteBytes((byte)dimension, fs);
-            BitHelper.WriteBytes((ushort)surfaces.Length, fs);
+            BitHelper.WriteBytes((byte)dimension, buffer);
+            BitHelper.WriteBytes((ushort)surfaces.Length, buffer);
             for (int i = 0; i < surfaces.Length; ++i) {
                 Surface surface = surfaces[i];
                 Vector3[] vertices = surface.mesh.vertices;
@@ -43,10 +43,10 @@ namespace Vanilla.Map {
                     return;
                 }
 
-                BitHelper.WriteBytes((ushort)vertices.Length, fs);
-                BitHelper.WriteBytes((uint)indices.Length, fs);
-                for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteBytes(vertices[j], fs);
-                for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], fs);
+                BitHelper.WriteBytes((ushort)vertices.Length, buffer);
+                BitHelper.WriteBytes((uint)indices.Length, buffer);
+                for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteBytes(vertices[j], buffer);
+                for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], buffer);
             }
         }
     }
@@ -203,12 +203,12 @@ namespace Vanilla.Map {
             this.map = map;
         }
 
-        public override void Write(FileStream fs) {
+        public override void Write(ByteBuffer buffer) {
             // Write map info...
             APILogger.Debug("Writing map data...");
-            BitHelper.WriteBytes((byte)map.Count, fs); // Write number of dimensions
+            BitHelper.WriteBytes((byte)map.Count, buffer); // Write number of dimensions
             foreach (Map m in map.Values) {
-                m.Write(fs);
+                m.Write(buffer);
             }
         }
     }

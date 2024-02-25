@@ -1,15 +1,15 @@
 /* exported ParseFunc */
-type ParseFunc = (fs: FileStream, ...args: any[]) => Promise<void>;
+type ParseFunc = (data: ByteStream, ...args: any[]) => Promise<void>;
 
 /* exported Parser */
 class Parser {
     static typemapParsers: { [v in string]: ParseFunc } = {
-        "0.0.1": async (fs: FileStream, replay: Replay) => {
-            const size = await BitHelper.readUShort(fs);
+        "0.0.1": async (data: ByteStream, replay: Replay) => {
+            const size = await BitHelper.readUShort(data);
             for (let i = 0; i < size; ++i) {
-                replay.typemap.set(await BitHelper.readUShort(fs), {
-                    typename: await BitHelper.readString(fs),
-                    version: await BitHelper.readString(fs)
+                replay.typemap.set(await BitHelper.readUShort(data), {
+                    typename: await BitHelper.readString(data),
+                    version: await BitHelper.readString(data)
                 });
             }
         }
@@ -28,25 +28,28 @@ class Parser {
         const fs = new FileStream(this.path, true);
         await fs.open();
 
-        const module = async (): Promise<Module | undefined> => {
-            const id = await BitHelper.readUShort(fs);
+        const module = async (bytes: ByteStream | FileStream): Promise<Module | undefined> => {
+            const id = await BitHelper.readUShort(bytes);
             return replay.typemap.get(id);
         };
         
-        // Parse TypeMap
-        const typeMapVersion = await BitHelper.readString(fs);
+        // Parse Header
+        const headerSize = await BitHelper.readInt(fs);
+        console.log(`header: ${headerSize} bytes`);
+        const bytes = await fs.getBytes(headerSize);
+        const typeMapVersion = await BitHelper.readString(bytes);
         if (Parser.typemapParsers[typeMapVersion] === undefined) {
             throw new ModuleNotFound(`No valid parser was found for 'ReplayRecorder.TypeMap(${typeMapVersion})'.`);
         }
-        await Parser.typemapParsers[typeMapVersion](fs, replay);
+        await Parser.typemapParsers[typeMapVersion](bytes, replay);
         // Parse Headers
-        let m = await module();
+        let m = await module(bytes);
         while (m?.typename !== "ReplayRecorder.EndOfHeader") {
             if (m === undefined) throw new UnknownModuleType();
             const func = ModuleLoader.get(m);
             if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-            await func(fs, replay.header);
-            m = await module();
+            await func(bytes, replay.header);
+            m = await module(bytes);
         }
         // Parse Snapshots
         try {
@@ -56,25 +59,29 @@ class Parser {
                 const now: Snapshot = new Snapshot();
                 const prev: Snapshot = new Snapshot();
 
-                const timestamp = await BitHelper.readUInt(fs);
+                    
+                const snapshotSize = await BitHelper.readInt(fs);
+                console.log(`snapshot: ${snapshotSize} bytes`);
+                const bytes = await fs.getBytes(snapshotSize);
+                const timestamp = await BitHelper.readUInt(bytes);
 
-                const nEvents = await BitHelper.readInt(fs);
+                const nEvents = await BitHelper.readInt(bytes);
                 for (let i = 0; i < nEvents; ++i) {
-                    const delta = await BitHelper.readUShort(fs);
-                    m = await module();
+                    const delta = await BitHelper.readUShort(bytes);
+                    m = await module(bytes);
                     if (m === undefined) throw new UnknownModuleType();
                     const func = ModuleLoader.get(m);
                     if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-                    await func(fs, prev, now);
+                    await func(bytes, prev, now);
                 }
 
-                const nDynamicCollections = await BitHelper.readUShort(fs);
+                const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {
-                    m = await module();
+                    m = await module(bytes);
                     if (m === undefined) throw new UnknownModuleType();
                     const func = ModuleLoader.get(m);
                     if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-                    await func(fs, prev, now);
+                    await func(bytes, prev, now);
                 }
             } 
         } catch { /* empty */ }

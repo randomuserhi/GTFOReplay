@@ -28,21 +28,20 @@ interface MapGeometry {
 }
 
 (function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (fs, header: Replay.Header) => {
+    ModuleLoader.register(typename, "0.0.1", async (data, header: Replay.Header) => {
         header.dimensions = new Map();
 
-        const nDimensions = await BitHelper.readByte(fs);
+        const nDimensions = await BitHelper.readByte(data);
         for (let i = 0; i < nDimensions; ++i) {
-            const dimension = await BitHelper.readByte(fs);
-            const nSurfaces = await BitHelper.readUShort(fs);
+            const dimension = await BitHelper.readByte(data);
+            const nSurfaces = await BitHelper.readUShort(data);
             const surfaces: MapGeometry[] = [];
             for (let j = 0; j < nSurfaces; ++j) {
-                const nVertices = await BitHelper.readUShort(fs);
-                const nIndicies = await BitHelper.readUInt(fs);
-                const bytes = await fs.getBytes(nVertices * BitHelper.sizeof("vector") + nIndicies * BitHelper.sizeof("ushort"));
+                const nVertices = await BitHelper.readUShort(data);
+                const nIndicies = await BitHelper.readUInt(data);
                 surfaces.push({
-                    vertices: await BitHelper.readVectorArray(bytes, nVertices),
-                    indices: await BitHelper.readUShortArray(bytes, nIndicies)
+                    vertices: await BitHelper.readVectorArray(data, nVertices),
+                    indices: await BitHelper.readUShortArray(data, nIndicies)
                 });
             }
             header.dimensions.set(dimension, surfaces);

@@ -6,8 +6,8 @@ using ReplayRecorder.Snapshot;
 namespace ReplayRecorder.Core {
     [ReplayData("ReplayRecorder.EndOfHeader", "0.0.1")]
     internal class EndOfHeader : ReplayEvent {
-        public override void Write(FileStream fs) {
-            BitHelper.WriteBytes(SnapshotManager.types[typeof(EndOfHeader)], fs);
+        public override void Write(ByteBuffer buffer) {
+            BitHelper.WriteBytes(SnapshotManager.types[typeof(EndOfHeader)], buffer);
         }
     }
 
@@ -18,9 +18,9 @@ namespace ReplayRecorder.Core {
             Replay.Trigger(new HeaderData());
         }
 
-        public override void Write(FileStream fs) {
-            BitHelper.WriteBytes(Module.Version, fs);
-            BitHelper.WriteBytes(SNetwork.SNet.IsMaster ? (byte)1 : (byte)0, fs);
+        public override void Write(ByteBuffer buffer) {
+            BitHelper.WriteBytes(Module.Version, buffer);
+            BitHelper.WriteBytes(SNetwork.SNet.IsMaster ? (byte)1 : (byte)0, buffer);
         }
     }
 }

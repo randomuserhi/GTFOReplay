@@ -24,9 +24,9 @@ namespace ReplayRecorder.Snapshot {
                 id = SnapshotManager.types[e.GetType()];
             }
 
-            public void Write(FileStream fs) {
-                BitHelper.WriteBytes(id, fs);
-                e.Write(fs);
+            public void Write(ByteBuffer buffer) {
+                BitHelper.WriteBytes(id, buffer);
+                e.Write(buffer);
             }
         }
 
@@ -81,11 +81,11 @@ namespace ReplayRecorder.Snapshot {
                 Remove(dynamic.Id);
             }
 
-            public bool Write(FileStream fs) {
+            public bool Write(ByteBuffer buffer) {
                 if (NDirtyDynamics == 0) return false;
 
-                BitHelper.WriteBytes(Id, fs);
-                BitHelper.WriteBytes(NDirtyDynamics, fs);
+                BitHelper.WriteBytes(Id, buffer);
+                BitHelper.WriteBytes(NDirtyDynamics, buffer);
                 _dynamics.Clear();
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
@@ -93,7 +93,7 @@ namespace ReplayRecorder.Snapshot {
                     if (!dynamic.remove) {
                         if (dynamic.IsDirty) {
                             if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
-                            dynamic.Write(fs);
+                            dynamic.Write(buffer);
                         }
                         _dynamics.Add(dynamic);
                     }
@@ -106,6 +106,7 @@ namespace ReplayRecorder.Snapshot {
         }
 
         private FileStream? fs;
+        private ByteBuffer bs = new ByteBuffer();
 
         private long start = 0;
         private long Now => Raudy.Now - start;
@@ -143,7 +144,8 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
-            SnapshotManager.types.Write(fs);
+            bs.Clear();
+            SnapshotManager.types.Write(bs);
             foreach (Type t in SnapshotManager.types.headers) {
                 unwrittenHeaders.Add(t);
             }
@@ -168,8 +170,8 @@ namespace ReplayRecorder.Snapshot {
             }
             ushort id = SnapshotManager.types[headerType];
             APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
-            BitHelper.WriteBytes(id, fs);
-            header.Write(fs);
+            BitHelper.WriteBytes(id, bs);
+            header.Write(bs);
 
             if (unwrittenHeaders.Count == 0) {
                 completedHeader = true;
@@ -182,9 +184,9 @@ namespace ReplayRecorder.Snapshot {
 
             EndOfHeader eoh = new EndOfHeader();
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
-            eoh.Write(fs);
+            eoh.Write(bs);
 
-            fs.Flush();
+            bs.Flush(fs);
             start = Raudy.Now;
 
             Replay.OnHeaderCompletion?.Invoke();
@@ -250,10 +252,10 @@ namespace ReplayRecorder.Snapshot {
                 Dispose();
                 throw new ReplayInvalidTimestamp($"ReplayRecorder does not support replays longer than {uint.MaxValue}ms.");
             }
-            BitHelper.WriteBytes((uint)_Now, fs);
+            BitHelper.WriteBytes((uint)_Now, bs);
 
             // Write Events
-            BitHelper.WriteBytes(events.Count, fs);
+            BitHelper.WriteBytes(events.Count, bs);
             for (int i = 0; i < events.Count; ++i) {
                 EventWrapper e = events[i];
 
@@ -263,21 +265,21 @@ namespace ReplayRecorder.Snapshot {
                 }
 
                 // Event header
-                BitHelper.WriteBytes((ushort)delta, fs);
-                e.Write(fs);
+                BitHelper.WriteBytes((ushort)delta, bs);
+                e.Write(bs);
             }
 
             // Serialize dynamic properties
             IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => collection.NDirtyDynamics > 0);
             BitHelper.WriteBytes((ushort)dirtyCollections.Count(), fs);
             foreach (DynamicCollection collection in dirtyCollections) {
-                if (collection.Write(fs) && ConfigManager.Debug) {
+                if (collection.Write(bs) && ConfigManager.Debug) {
                     APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
                 }
             }
 
-            // Flush file stream
-            fs.Flush();
+            // Flush to file stream
+            bs.Flush(fs);
 
             // Flush event buffer
             events.Clear();
