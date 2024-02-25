@@ -174,23 +174,10 @@ namespace BitHelper {
         return { x: BitHelper.readHalf(stream), y: BitHelper.readHalf(stream), z: BitHelper.readHalf(stream) };
     }
 
-    export function readUShortArray(stream: ByteStream, length: number): number[] {
-        const array = new Array(length);
-        for (let i = 0; i < length; ++i)
-            array[i] = BitHelper.readUShort(stream);
-        return array;
-    }
-    export function readFloatArray(stream: ByteStream, length: number): number[] {
+    /*export function readFloatArray(stream: ByteStream, length: number): number[] {
         const array = new Array(length);
         for (let i = 0; i < length; ++i)
             array[i] = BitHelper.readFloat(stream);
         return array;
-    }
-    export function readVectorArray(stream: ByteStream, length: number): Vector[] {
-        const array = new Array<Vector>(length);
-        for (let i = 0; i < length; ++i) {
-            array[i] = BitHelper.readVector(stream);
-        }
-        return array;
-    }
+    }*/
 }

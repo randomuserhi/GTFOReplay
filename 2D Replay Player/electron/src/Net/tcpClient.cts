@@ -1,4 +1,4 @@
-import { core } from "../RNU/rnu.cjs";
+import { core } from "../rnu/rnu.cjs";
 import * as net from "net";
 import * as os from "os";
 

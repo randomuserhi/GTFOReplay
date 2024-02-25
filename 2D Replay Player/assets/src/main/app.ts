@@ -48,9 +48,10 @@ interface app extends HTMLElement {
         });
 
         function __main__() {
-            console.log("__main__");
-            window.api.on("console.log", (obj) => console.log(obj));
-            window.api.on("module", (paths: string[]) => paths.forEach(p => ModuleLoader.loadModule(p)));
+            window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
+
+            window.api.on("loadModules", (paths: string[]) => paths.forEach(p => ModuleLoader.loadModule(p)));
+            window.api.on("unlinkModules", (paths: string[]) => paths.forEach(p => ModuleLoader.unlinkModule(p)));
         }
 
         Macro((() => {
