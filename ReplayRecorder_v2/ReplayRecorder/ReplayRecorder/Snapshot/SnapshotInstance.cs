@@ -253,6 +253,7 @@ namespace ReplayRecorder.Snapshot {
             BitHelper.WriteBytes((uint)_Now, fs);
 
             // Write Events
+            BitHelper.WriteBytes(events.Count, fs);
             for (int i = 0; i < events.Count; ++i) {
                 EventWrapper e = events[i];
 
