@@ -52,6 +52,8 @@ interface app extends HTMLElement {
 
             window.api.on("loadModules", (paths: string[]) => paths.forEach(p => ModuleLoader.loadModule(p)));
             window.api.on("unlinkModules", (paths: string[]) => paths.forEach(p => ModuleLoader.unlinkModule(p)));
+            
+            window.api.send("loadModules");
         }
 
         Macro((() => {

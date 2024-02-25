@@ -6,6 +6,7 @@ declare namespace Raudy {
 
         // TODO(randomuserhi): typescript templates -> also consider Promise API
         on(event: string, callback: (...args: any[]) => void): void;
+        send(event: string, ...args: any[]): void;
     }
 }
 

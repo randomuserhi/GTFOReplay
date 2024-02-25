@@ -31,6 +31,11 @@ export default class Program {
     }
 
     private static onReady(): void {
+        Program.setupIPC();
+
+        this.moduleLoader = new ModuleLoader(Program.send, path.join(__dirname, "assets/modules"));
+        this.moduleLoader.setupIPC(ipcMain);
+
         Program.win = new BrowserWindow({
             frame: false, // remove the window frame
             show: false, // hide the window,
@@ -89,10 +94,5 @@ export default class Program {
         Program.app = app;
         Program.app.on('window-all-closed', Program.onWindowAllClosed);
         Program.app.on('ready', Program.onReady);
-
-        Program.setupIPC();
-
-        this.moduleLoader = new ModuleLoader(Program.send, path.join(__dirname, "assets/modules"));
-        this.moduleLoader.setupIPC(ipcMain);
     }
 }
