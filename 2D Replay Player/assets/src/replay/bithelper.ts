@@ -1,3 +1,32 @@
+/* exported FileStream */
+class FileStream {
+    readonly path: string;
+    private index: number;
+
+    constructor(path: string) {
+        this.path = path;
+        this.index = 0;
+    }
+
+    public open(): Promise<void> {
+        return window.api.invoke("open", this.path);
+    }
+
+    public close(): void {
+        window.api.send("close", this.path);
+    }
+
+    public async getBytes(numBytes: number): Promise<ByteStream> {
+        const result = await this.peekBytes(numBytes);
+        this.index += numBytes;
+        return result;
+    }
+
+    public async peekBytes(numBytes: number): Promise<ByteStream> {
+        return new ByteStream(await window.api.invoke("getBytes", this.path, this.index, numBytes));
+    }
+}
+
 class ByteStream {
     index: number;
     view: DataView;
@@ -17,9 +46,9 @@ namespace BitHelper {
         return new Int16Array(buffer)[0] === 256;
     })();
 
-    export async function readByte(stream: ByteStream | Replay): Promise<number> {
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+    export async function readByte(stream: ByteStream | FileStream): Promise<number> {
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(1);
         } else {
             stream = stream as ByteStream;
@@ -27,9 +56,9 @@ namespace BitHelper {
         return stream.view.getUint8(stream.index++);
     }
 
-    export async function readString(stream: ByteStream | Replay, length: number): Promise<string> {
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+    export async function readString(stream: ByteStream | FileStream, length: number): Promise<string> {
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(length);
         } else {
             stream = stream as ByteStream;
@@ -39,10 +68,10 @@ namespace BitHelper {
         return new TextDecoder().decode(stream.view.buffer.slice(start, end));
     }
 
-    export async function readULong(stream: ByteStream | Replay): Promise<bigint> {
+    export async function readULong(stream: ByteStream | FileStream): Promise<bigint> {
         const sizeof = 8;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -51,10 +80,10 @@ namespace BitHelper {
         stream.index += sizeof;
         return stream.view.getBigUint64(index, BitHelper.littleEndian);
     }
-    export async function readUInt(stream: ByteStream | Replay): Promise<number> {
+    export async function readUInt(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 4;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -63,10 +92,10 @@ namespace BitHelper {
         stream.index += sizeof;
         return stream.view.getUint32(index, BitHelper.littleEndian);
     }
-    export async function readUShort(stream: ByteStream | Replay): Promise<number> {
+    export async function readUShort(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 2;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -76,10 +105,10 @@ namespace BitHelper {
         return stream.view.getUint16(index, BitHelper.littleEndian);
     }
 
-    export async function readLong(stream: ByteStream | Replay): Promise<bigint> {
+    export async function readLong(stream: ByteStream | FileStream): Promise<bigint> {
         const sizeof = 8;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -88,10 +117,10 @@ namespace BitHelper {
         stream.index += sizeof;
         return stream.view.getBigInt64(index, BitHelper.littleEndian);
     }
-    export async function readInt(stream: ByteStream | Replay): Promise<number> {
+    export async function readInt(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 4;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -100,10 +129,10 @@ namespace BitHelper {
         stream.index += sizeof;
         return stream.view.getInt32(index, BitHelper.littleEndian);
     }
-    export async function readShort(stream: ByteStream | Replay): Promise<number> {
+    export async function readShort(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 2;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -113,7 +142,7 @@ namespace BitHelper {
         return stream.view.getInt16(index, BitHelper.littleEndian);
     }
 
-    export async function readHalf(stream: ByteStream | Replay): Promise<number> {
+    export async function readHalf(stream: ByteStream | FileStream): Promise<number> {
         const ushort = await BitHelper.readUShort(stream);
 
         // Create a 32 bit DataView to store the input
@@ -154,10 +183,10 @@ namespace BitHelper {
         // Get it back out as a float32 (which js will convert to a Number)
         return dv.getFloat32(0, false);
     }
-    export async function readFloat(stream: ByteStream | Replay): Promise<number> {
+    export async function readFloat(stream: ByteStream | FileStream): Promise<number> {
         const sizeof = 4;
-        if (Object.prototype.isPrototypeOf.call(Replay.prototype, stream)) {
-            stream = stream as Replay;
+        if (Object.prototype.isPrototypeOf.call(FileStream.prototype, stream)) {
+            stream = stream as FileStream;
             stream = await stream.getBytes(sizeof);
         } else {
             stream = stream as ByteStream;
@@ -167,7 +196,7 @@ namespace BitHelper {
         return stream.view.getFloat32(index, BitHelper.littleEndian);
     }
 
-    export async function readQuaternion(stream: ByteStream | Replay): Promise<Quaternion> {
+    export async function readQuaternion(stream: ByteStream | FileStream): Promise<Quaternion> {
         const i = await BitHelper.readByte(stream);
         let x = 0, y = 0, z = 0, w = 0;
         switch (i) {
@@ -198,7 +227,7 @@ namespace BitHelper {
         }
         return { x: x, y: y, z: z, w: w };
     }
-    export async function readHalfQuaternion(stream: ByteStream | Replay): Promise<Quaternion> {
+    export async function readHalfQuaternion(stream: ByteStream | FileStream): Promise<Quaternion> {
         const i = await BitHelper.readByte(stream);
         let x = 0, y = 0, z = 0, w = 0;
         switch (i) {
@@ -229,10 +258,10 @@ namespace BitHelper {
         }
         return { x: x, y: y, z: z, w: w };
     }
-    export async function readVector(stream: ByteStream | Replay): Promise<Vector> {
+    export async function readVector(stream: ByteStream | FileStream): Promise<Vector> {
         return { x: await BitHelper.readFloat(stream), y: await BitHelper.readFloat(stream), z: await BitHelper.readFloat(stream) };
     }
-    export async function readHalfVector(stream: ByteStream | Replay): Promise<Vector> {
+    export async function readHalfVector(stream: ByteStream | FileStream): Promise<Vector> {
         return { x: await BitHelper.readHalf(stream), y: await BitHelper.readHalf(stream), z: await BitHelper.readHalf(stream) };
     }
 

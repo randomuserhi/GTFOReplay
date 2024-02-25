@@ -267,7 +267,9 @@ namespace ReplayRecorder.Snapshot {
             }
 
             // Serialize dynamic properties
-            foreach (DynamicCollection collection in dynamics.Values) {
+            IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => collection.NDirtyDynamics > 0);
+            BitHelper.WriteBytes((ushort)dirtyCollections.Count(), fs);
+            foreach (DynamicCollection collection in dirtyCollections) {
                 if (collection.Write(fs) && ConfigManager.Debug) {
                     APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
                 }

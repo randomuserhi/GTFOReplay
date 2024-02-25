@@ -1,12 +1,12 @@
 /* exported BitHelper */
 namespace BitHelper {
-    export async function readUShortArray(stream: ByteStream | Replay, length: number): Promise<number[]> {
+    export async function readUShortArray(stream: ByteStream | FileStream, length: number): Promise<number[]> {
         const array = new Array(length);
         for (let i = 0; i < length; ++i)
             array[i] = await BitHelper.readUShort(stream);
         return array;
     }
-    export async function readVectorArray(stream: ByteStream | Replay, length: number): Promise<Vector[]> {
+    export async function readVectorArray(stream: ByteStream | FileStream, length: number): Promise<Vector[]> {
         const array = new Array<Vector>(length);
         for (let i = 0; i < length; ++i) {
             array[i] = await BitHelper.readVector(stream);
