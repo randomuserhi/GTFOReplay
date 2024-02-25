@@ -4,6 +4,7 @@ namespace ModuleLoader {
     
     export const library: Map<string, Map<string, ParseFunc>> = new Map();
 
+    // TODO(randomuserhi): console message / warning when replacing or updating an existing type
     export function register(typename: string, version: string, func: ParseFunc) {
         const link = document.currentScript?.getAttribute("src");
         if (link == null) {
