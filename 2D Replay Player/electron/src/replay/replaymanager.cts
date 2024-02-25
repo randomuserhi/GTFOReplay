@@ -21,7 +21,7 @@ class Replay {
             callback();
             return;
         }
-        this._getBytes(start, end).then(callback).catch(() => {
+        this.getBytesImpl(start, end).then(callback).catch(() => {
             if (wait) {
                 this.requests.push({
                     start,
@@ -32,7 +32,7 @@ class Replay {
         });
     }
 
-    private _getBytes(start: number, end: number): Promise<ArrayBufferLike> {
+    private getBytesImpl(start: number, end: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
             const stream = fs.createReadStream(this.path, {
                 flags: "r",
