@@ -20,10 +20,13 @@ contextBridge.exposeInMainWorld(
         // To send from Main:
         // window.webContents.send("event-name", ...args);
         on(event: string, callback: (...args: any[]) => void) {
-            ipcRenderer.on(event, (event, ...args: any[]) => callback(...args));
+            ipcRenderer.on(event, (_, ...args: any[]) => callback(...args));
         },
         send(event: string, ...args: any[]) {
             ipcRenderer.send(event, ...args);
+        },
+        invoke(event: string, ...args: any[]): Promise<any> {
+            return ipcRenderer.invoke(event, ...args);
         }
     }
 );

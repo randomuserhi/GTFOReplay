@@ -2,9 +2,9 @@ class ByteStream {
     index: number;
     view: DataView;
 
-    constructor(index: number, bytes: ArrayBufferLike) {
-        this.index = index;
-        this.view = new DataView(bytes);
+    constructor(bytes: Uint8Array) {
+        this.index = 0;
+        this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     }
 }
 
@@ -21,8 +21,7 @@ namespace BitHelper {
         return stream.view.getUint8(stream.index++);
     }
 
-    export function readString(stream: ByteStream): string {
-        const length = BitHelper.readUShort(stream);
+    export function readString(stream: ByteStream, length: number): string {
         return new TextDecoder().decode(stream.view.buffer.slice(stream.index, stream.index += length));
     }
 

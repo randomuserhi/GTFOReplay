@@ -3,22 +3,22 @@ import * as path from "path";
 import * as fs from 'node:fs/promises';
 
 export class ModuleLoader {
+    private post: (event: string, ...args: any[]) => void;
     readonly path: string;
     private watcher: chokidar.FSWatcher;
-    private send: (event: string, ...args: any[]) => void; // TODO(randomuserhi): Typescript template
 
-    constructor(send: (event: string, ...args: any[]) => void, path: string) {
-        this.send = send;
+    constructor(post: (event: string, ...args: any[]) => void, path: string) {
+        this.post = post;
         this.path = path;
         this.watcher = chokidar.watch(path);
         this.watcher.on("all", (event, path) => {
             switch(event) {
             case "change":
             case "add":
-                this.send("loadModules", [path]);
+                this.post("loadModules", [path]);
                 break;
             case "unlink":
-                this.send("unlinkModules", [path]);
+                this.post("unlinkModules", [path]);
                 break;
             }
         });
@@ -34,9 +34,8 @@ export class ModuleLoader {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
-        ipc.on("loadModules", async () => {
-            const files = await ModuleLoader.getFiles(this.path);
-            this.send("loadModules", files);
+        ipc.handle("loadModules", async () => {
+            return await ModuleLoader.getFiles(this.path);
         });
     }
 }

@@ -1,6 +1,7 @@
 import { BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { ModuleLoader } from "./replay/moduleloader.cjs";
+import { ReplayManager } from "./replay/replaymanager.cjs";
 
 /*declare module "./net/tcpClient.cjs"
 {
@@ -18,6 +19,7 @@ export default class Program {
     static app: Electron.App;
 
     static moduleLoader: ModuleLoader;
+    static replayManager: ReplayManager;
 
     private static onWindowAllClosed(): void {
         if (process.platform !== "darwin") {
@@ -33,8 +35,11 @@ export default class Program {
     private static onReady(): void {
         Program.setupIPC();
 
-        this.moduleLoader = new ModuleLoader(Program.send, path.join(__dirname, "assets/modules"));
+        this.moduleLoader = new ModuleLoader(Program.post, path.join(__dirname, "assets/modules"));
         this.moduleLoader.setupIPC(ipcMain);
+
+        this.replayManager = new ReplayManager();
+        this.replayManager.setupIPC(ipcMain);
 
         Program.win = new BrowserWindow({
             frame: false, // remove the window frame
@@ -73,7 +78,7 @@ export default class Program {
     }
 
     // TODO(randomuserhi): Typescript template events - Front End as well
-    static send(event: string, ...args: any[]): void {
+    static post(event: string, ...args: any[]): void {
         if (Program.win === null) return;
         Program.win.webContents.send(event, ...args);
     }
