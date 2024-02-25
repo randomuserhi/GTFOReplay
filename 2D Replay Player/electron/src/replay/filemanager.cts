@@ -61,6 +61,23 @@ class File {
             }, wait);
         });
     }
+
+    public getAllBytes(): Promise<ArrayBufferLike> {
+        return new Promise((resolve, reject) => {
+            const stream = fs.createReadStream(this.path, {
+                flags: "r"
+            });
+            stream.on("error", reject);
+            const chunks: Buffer[] = [];
+            stream.on("data", (chunk: Buffer) => {
+                chunks.push(chunk);
+            });
+            stream.on("end", () => {
+                resolve(Buffer.concat(chunks));
+                stream.close();
+            });
+        });
+    }
 }
 
 export class FileManager {
@@ -82,6 +99,9 @@ export class FileManager {
         
         ipc.handle("getBytes", async (_, path: string, index: number, numBytes: number, wait?: boolean) => {
             return await this.files.get(path)?.getBytes(index, numBytes, wait);
+        });
+        ipc.handle("getAllBytes", async (_, path: string) => {
+            return await this.files.get(path)?.getAllBytes();
         });
     }
 }
