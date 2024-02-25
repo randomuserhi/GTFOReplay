@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
     internal class SnapshotInstance : MonoBehaviour {
-        private class EventWrapper : IWriteable {
+        private class EventWrapper {
             private ushort id;
             private ReplayEvent e;
             internal long now;
@@ -30,6 +30,81 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
+        private class DynamicCollection {
+            public Type Type { get; private set; }
+            public ushort Id { get; private set; }
+
+            private bool isDirty = false;
+            private int _nDirtyDynamics = 0;
+            public int NDirtyDynamics {
+                get {
+                    if (isDirty) {
+                        _nDirtyDynamics = dynamics.Where(d => d.IsDirty).Count();
+                        isDirty = false;
+                    }
+                    return _nDirtyDynamics;
+                }
+            }
+
+            private List<ReplayDynamic> _dynamics = new List<ReplayDynamic>();
+            private List<ReplayDynamic> dynamics = new List<ReplayDynamic>();
+            private Dictionary<int, ReplayDynamic> mapOfDynamics = new Dictionary<int, ReplayDynamic>();
+
+            public DynamicCollection(Type type) {
+                if (!SnapshotManager.types.Contains(type)) throw new ReplayTypeDoesNotExist($"Could not create DynamicCollection of type '{type.FullName}'.");
+                Type = type;
+                Id = SnapshotManager.types[type];
+            }
+
+            [HideFromIl2Cpp]
+            public void Add(ReplayDynamic dynamic) {
+                Type dynType = dynamic.GetType();
+                if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot add '{dynType.FullName}' to DynamicCollection of type '{Type.FullName}'.");
+                if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists in DynamicCollection of type '{Type.FullName}'.");
+                isDirty = true;
+                dynamics.Add(dynamic);
+                mapOfDynamics.Add(dynamic.Id, dynamic);
+            }
+
+            [HideFromIl2Cpp]
+            public void Remove(int id) {
+                if (!mapOfDynamics.ContainsKey(id)) throw new ReplayDynamicDoesNotExist($"Dynamic [{id}] does not exist in DynamicCollection of type '{Type.FullName}'.");
+                isDirty = true;
+                mapOfDynamics[id].remove = true;
+                mapOfDynamics.Remove(id);
+            }
+
+            [HideFromIl2Cpp]
+            public void Remove(ReplayDynamic dynamic) {
+                Type dynType = dynamic.GetType();
+                if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot remove dynamic of type '{dynType.FullName}' from DynamicCollection of type '{Type.FullName}'.");
+                Remove(dynamic.Id);
+            }
+
+            public bool Write(FileStream fs) {
+                if (NDirtyDynamics == 0) return false;
+
+                BitHelper.WriteBytes(Id, fs);
+                BitHelper.WriteBytes(NDirtyDynamics, fs);
+                _dynamics.Clear();
+                for (int i = 0; i < dynamics.Count; i++) {
+                    ReplayDynamic dynamic = dynamics[i];
+
+                    if (!dynamic.remove) {
+                        if (dynamic.IsDirty) {
+                            if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
+                            dynamic.Write(fs);
+                        }
+                        _dynamics.Add(dynamic);
+                    }
+                }
+                List<ReplayDynamic> temp = dynamics;
+                dynamics = _dynamics;
+                _dynamics = temp;
+                return true;
+            }
+        }
+
         private FileStream? fs;
 
         private long start = 0;
@@ -40,9 +115,7 @@ namespace ReplayRecorder.Snapshot {
 
         private List<EventWrapper> events = new List<EventWrapper>();
 
-        private List<ReplayDynamic> _dynamics = new List<ReplayDynamic>();
-        private List<ReplayDynamic> dynamics = new List<ReplayDynamic>();
-        private Dictionary<int, ReplayDynamic> mapOfDynamics = new Dictionary<int, ReplayDynamic>();
+        private Dictionary<Type, DynamicCollection> dynamics = new Dictionary<Type, DynamicCollection>();
 
         private string fullpath = "replay.gtfo";
         internal void Init() {
@@ -73,6 +146,9 @@ namespace ReplayRecorder.Snapshot {
             SnapshotManager.types.Write(fs);
             foreach (Type t in SnapshotManager.types.headers) {
                 unwrittenHeaders.Add(t);
+            }
+            foreach (Type t in SnapshotManager.types.dynamics) {
+                dynamics.Add(t, new DynamicCollection(t));
             }
         }
 
@@ -116,49 +192,44 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
-            if (BepInEx.ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
+            if (ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             events.Add(new EventWrapper(Now, e));
         }
 
         [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic) {
-            if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists.");
-            Type dynamicType = dynamic.GetType();
-            if (!SnapshotManager.types.Contains(dynamicType)) throw new ReplayTypeDoesNotExist($"Type '{dynamicType.FullName}' does not exist.");
+            Type dynType = dynamic.GetType();
+            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new SpawnDynamic(dynamic.Id));
-            dynamics.Add(dynamic);
-            mapOfDynamics.Add(dynamic.Id, dynamic);
+            dynamics[dynType].Add(dynamic);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) {
             Spawn(dynamic, dimensionIndex, position, Quaternion.identity);
         }
         [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) {
-            if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists.");
-            Type dynamicType = dynamic.GetType();
-            if (!SnapshotManager.types.Contains(dynamicType)) throw new ReplayTypeDoesNotExist($"Type '{dynamicType.FullName}' does not exist.");
+            Type dynType = dynamic.GetType();
+            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new SpawnDynamicAt(dynamic.Id, (byte)dimensionIndex, position, rotation));
-            dynamics.Add(dynamic);
-            mapOfDynamics.Add(dynamic.Id, dynamic);
+            dynamics[dynType].Add(dynamic);
         }
 
-        internal void Despawn(int id) {
-            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
-            if (!mapOfDynamics.ContainsKey(id)) throw new ReplayDynamicDoesNotExist($"Dynamic [{id}] does not exist.");
+        internal void Despawn(Type dynType, int id) {
+            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new DespawnDynamic(id));
-            mapOfDynamics[id].remove = true;
-            mapOfDynamics.Remove(id);
+            dynamics[dynType].Remove(id);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic) {
-            Despawn(dynamic.Id);
+            Despawn(dynamic.GetType(), dynamic.Id);
         }
 
         private void Tick() {
@@ -168,7 +239,7 @@ namespace ReplayRecorder.Snapshot {
             // Check if this tick needs to be done
             // - are there any dynamics to serialize?
             // - are there any events to serialize?
-            int nDirtyDynamics = (ushort)dynamics.Where(d => d.IsDirty).Count();
+            int nDirtyDynamics = dynamics.Values.Sum(d => d.NDirtyDynamics);
             if (nDirtyDynamics == 0 && events.Count == 0)
                 return;
 
@@ -195,22 +266,11 @@ namespace ReplayRecorder.Snapshot {
             }
 
             // Serialize dynamic properties
-            BitHelper.WriteBytes(nDirtyDynamics, fs);
-            _dynamics.Clear();
-            for (int i = 0; i < dynamics.Count; i++) {
-                ReplayDynamic dynamic = dynamics[i];
-
-                if (!dynamic.remove) {
-                    if (dynamic.IsDirty) {
-                        if (BepInEx.ConfigManager.Debug && BepInEx.ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
-                        dynamic.Write(fs);
-                    }
-                    _dynamics.Add(dynamic);
+            foreach (DynamicCollection collection in dynamics.Values) {
+                if (collection.Write(fs) && ConfigManager.Debug) {
+                    APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
                 }
             }
-            List<ReplayDynamic> temp = dynamics;
-            dynamics = _dynamics;
-            _dynamics = temp;
 
             // Flush file stream
             fs.Flush();
