@@ -29,14 +29,15 @@ let replay: Replay | undefined = undefined;
         const fs = new FileStream(ipc, path, finite);
         await fs.open();
 
-        const getModule = async (bytes: ByteStream | FileStream): Promise<Module | undefined> => {
+        const getModule = async (bytes: ByteStream | FileStream): Promise<Module> => {
             const id = await BitHelper.readUShort(bytes);
-            return replay!.typemap.get(id);
+            const module = replay!.typemap.get(id);
+            if (module === undefined) throw new UnknownModuleType(`No module was found for '${id}'.`);
+            return module;
         };
         
         // Parse Typemap
         const headerSize = await BitHelper.readInt(fs);
-        console.log(`header: ${headerSize}`);
         const bytes = await fs.getBytes(headerSize);
         const typeMapVersion = await BitHelper.readString(bytes);
         if (Typemap.parsers[typeMapVersion] === undefined) {
@@ -47,7 +48,6 @@ let replay: Replay | undefined = undefined;
         // Parse Headers
         let module = await getModule(bytes);
         while (module?.typename !== "ReplayRecorder.EndOfHeader") {
-            if (module === undefined) throw new UnknownModuleType();
             const func = ModuleLoader.get(module);
             if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
             await func.parse(bytes, replay.header);
@@ -57,11 +57,27 @@ let replay: Replay | undefined = undefined;
         ipc.send("eoh", replay.header);
 
         // Parse snapshots
-        const parseTypes = async (state: Replay.Snapshot) => {
+        const parseEvents = async (bytes: ByteStream, state: Replay.Snapshot) => {
             const size = await BitHelper.readInt(bytes);
+            console.log(`size: ${size}`);
+            for (let i = 0; i < size; ++i) {
+                console.log(bytes);
+                const delta = await BitHelper.readUShort(bytes);
+                console.log(`delta: ${delta}`);
+                const module = await getModule(bytes);
+                console.log(`[module: ${module.typename}(${module.version})]`);
+                const func = ModuleLoader.get(module);
+                if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
+                const data = await func.parse(bytes);
+                if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
+                func.exec(data, state, 1);
+            }
+        };
+        const parseDynamicCollection = async (bytes: ByteStream, state: Replay.Snapshot) => {
+            const size = await BitHelper.readInt(bytes);
+            console.log(`size: ${size}`);
             for (let i = 0; i < size; ++i) {
                 const module = await getModule(bytes);
-                if (module === undefined) throw new UnknownModuleType();
                 console.log(`[module: ${module.typename}(${module.version})]`);
                 const func = ModuleLoader.get(module);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
@@ -73,15 +89,22 @@ let replay: Replay | undefined = undefined;
 
         const state: Replay.Snapshot = {} as any;
         try {
-            const snapshotSize = await BitHelper.readInt(fs);
-            console.log(`snapshot: ${snapshotSize}`);
-            const bytes = await fs.getBytes(snapshotSize);
+            for (;;) {
+                const snapshotSize = await BitHelper.readInt(fs);
+                console.log(`snapshot: ${snapshotSize}`);
+                const bytes = await fs.getBytes(snapshotSize);
 
-            const now = await BitHelper.readUInt(bytes);
-            console.log(`now: ${now}`);
+                const now = await BitHelper.readUInt(bytes);
+                console.log(`now: ${now}`);
+                
+                await parseEvents(bytes, state); // parse events
+                const nDynamicCollections = await BitHelper.readInt(bytes);
+                for (let i = 0; i < nDynamicCollections; ++i) {
+                    await parseDynamicCollection(bytes, state); // parse dynamics
+                }
 
-            const nEvents = await BitHelper.readInt(bytes);
-            console.log(`nEvents: ${nEvents}`);
+                console.log(state);
+            }
         } catch(err) {
             if (!(err instanceof RangeError)) {
                 throw err;

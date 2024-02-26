@@ -94,24 +94,3 @@ class InvalidWorkerEvent extends Error {
         super(message);
     }
 }
-
-/* exported NoExecFunc */
-class NoExecFunc extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}
-
-/* exported UnknownModuleType */
-class UnknownModuleType extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}
-
-/* exported ModuleVersionNotFound */
-class ModuleNotFound extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}

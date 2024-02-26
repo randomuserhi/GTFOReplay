@@ -4,6 +4,7 @@ using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using SNetwork;
 
 namespace Vanilla.Player {
     internal static class PlayerReplayManager {
@@ -13,6 +14,22 @@ namespace Vanilla.Player {
 
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
                 Spawn(player);
+            }
+        }
+
+        [ReplayTick]
+        private static void Tick() {
+            PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
+            foreach (rPlayer player in players.ToArray()) {
+                SNet_Player owner = player.agent.Owner;
+                if (!agents.Any(p => p.Owner.Lookup == owner.Lookup)) {
+                    Despawn(player.agent);
+                }
+            }
+            foreach (PlayerAgent player in agents) {
+                if (!players.Any(p => p.agent.Owner.Lookup == player.Owner.Lookup)) {
+                    Spawn(player);
+                }
             }
         }
 
@@ -74,7 +91,6 @@ namespace Vanilla.Player {
 
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(player.Owner.Lookup, buffer);
-            BitHelper.WriteBytes(player.GlobalID, buffer);
         }
     }
 

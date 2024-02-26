@@ -6,6 +6,13 @@ interface Vector {
 
 /* exported Vec */
 namespace Vec {
+    export function zero(): Vector {
+        return {
+            x: 0,
+            y: 0,
+            z: 0
+        };
+    }
     export function lerp(a: Vector, b: Vector, lerp: number): Vector {
         return {
             x: a.x + (b.x - a.x) * lerp,
@@ -54,6 +61,14 @@ interface Quaternion {
 }
 /* exported Quat */
 namespace Quat {
+    export function identity(): Quaternion {
+        return {
+            w: 1,
+            x: 0,
+            y: 0,
+            z: 0
+        };
+    }
     export function euler(a: Quaternion): Vector {
         const euler: Vector = {x: 0, y: 0, z: 0};
         const sqw = a.w*a.w;

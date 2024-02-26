@@ -21,6 +21,7 @@ namespace ReplayRecorder.Core {
 
     public struct AgentTransform : IReplayTransform {
         private Agent agent;
+        public bool active => agent != null;
         public byte dimensionIndex => (byte)agent.m_dimensionIndex;
         public Vector3 position => agent.transform.position;
         public Quaternion rotation => agent.transform.rotation;
@@ -52,7 +53,6 @@ namespace ReplayRecorder.Core {
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
 
-            BitHelper.WriteBytes((byte)(1), buffer);
             BitHelper.WriteBytes(position, buffer);
             if (float.IsNaN(rotation.x) || float.IsNaN(rotation.y) ||
                 float.IsNaN(rotation.z) || float.IsNaN(rotation.w)) {
@@ -79,7 +79,7 @@ namespace ReplayRecorder.Core {
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z})";
 
         public override int Id => id;
-        public override bool IsDirty => transform.position != oldPosition;
+        public override bool IsDirty => transform.active && (transform.position != oldPosition);
 
         public DynamicPosition(int id, IReplayTransform transform) {
             this.id = id;
@@ -99,14 +99,13 @@ namespace ReplayRecorder.Core {
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
                 BitHelper.WriteBytes((byte)(1), buffer);
                 BitHelper.WriteBytes(transform.position, buffer);
-                BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             }
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), buffer);
                 BitHelper.WriteHalf(transform.position - oldPosition, buffer);
-                BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             }
+            BitHelper.WriteBytes(transform.dimensionIndex, buffer);
 
             oldPosition = transform.position;
         }
@@ -121,7 +120,7 @@ namespace ReplayRecorder.Core {
         public override string? Debug => $"{id} - ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
         public override int Id => id;
-        public override bool IsDirty => transform.rotation != oldRotation;
+        public override bool IsDirty => transform.active && (transform.rotation != oldRotation);
 
         public DynamicRotation(int id, IReplayTransform transform) {
             this.id = id;
@@ -155,8 +154,8 @@ namespace ReplayRecorder.Core {
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z}) ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
         public override int Id => id;
-        public override bool IsDirty => transform.position != oldPosition ||
-                                        transform.rotation != oldRotation;
+        public override bool IsDirty => transform.active && (transform.position != oldPosition ||
+                                                             transform.rotation != oldRotation);
 
         public DynamicTransform(int id, IReplayTransform transform) {
             this.id = id;
@@ -184,24 +183,18 @@ namespace ReplayRecorder.Core {
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
                 BitHelper.WriteBytes((byte)(1), buffer);
                 BitHelper.WriteBytes(transform.position, buffer);
-                if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
-                    float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
-                    BitHelper.WriteHalf(Quaternion.identity, buffer);
-                    APILogger.Warn("Dynamic rotation had NaN component.");
-                } else BitHelper.WriteHalf(transform.rotation, buffer);
-                BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             }
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), buffer);
                 BitHelper.WriteHalf(transform.position - oldPosition, buffer);
-                if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
-                    float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
-                    BitHelper.WriteHalf(Quaternion.identity, buffer);
-                    APILogger.Warn("Dynamic rotation had NaN component.");
-                } else BitHelper.WriteHalf(transform.rotation, buffer);
-                BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             }
+            if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
+                    float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
+                BitHelper.WriteHalf(Quaternion.identity, buffer);
+                APILogger.Warn("Dynamic rotation had NaN component.");
+            } else BitHelper.WriteHalf(transform.rotation, buffer);
+            BitHelper.WriteBytes(transform.dimensionIndex, buffer);
 
             oldPosition = transform.position;
             oldRotation = transform.rotation;

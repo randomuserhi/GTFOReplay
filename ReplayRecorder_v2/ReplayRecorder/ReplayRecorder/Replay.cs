@@ -13,6 +13,7 @@ namespace ReplayRecorder {
             foreach (MethodInfo method in t.GetMethods(Utils.AnyBindingFlags).Where(m =>
                 m.GetCustomAttribute<ReplayReset>() != null ||
                 m.GetCustomAttribute<ReplayInit>() != null ||
+                m.GetCustomAttribute<ReplayTick>() != null ||
                 m.GetCustomAttribute<ReplayOnHeaderCompletion>() != null ||
                 m.GetCustomAttribute<ReplayOnGameplayStart>() != null)
             ) {
@@ -27,6 +28,9 @@ namespace ReplayRecorder {
                     } else if (method.GetCustomAttribute<ReplayOnGameplayStart>() != null) {
                         type = nameof(ReplayOnGameplayStart);
                         OnGameplayStart += (Action)method.CreateDelegate(typeof(Action));
+                    } else if (method.GetCustomAttribute<ReplayTick>() != null) {
+                        type = nameof(ReplayTick);
+                        OnTick += (Action)method.CreateDelegate(typeof(Action));
                     } else {
                         OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
                     }
@@ -96,5 +100,6 @@ namespace ReplayRecorder {
         public static Action? OnExpeditionStart;
         public static Action? OnGameplayStart;
         public static Action? OnHeaderCompletion;
+        public static Action? OnTick;
     }
 }

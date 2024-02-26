@@ -259,6 +259,9 @@ namespace ReplayRecorder.Snapshot {
             if (fs == null) throw new ReplaySnapshotNotInitialized();
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
 
+            // Invoke tick processes
+            Replay.OnTick?.Invoke();
+
             // Check if this tick needs to be done
             // - are there any dynamics to serialize?
             // - are there any events to serialize?

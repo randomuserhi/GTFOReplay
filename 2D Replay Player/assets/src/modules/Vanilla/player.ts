@@ -1,13 +1,76 @@
+/* exported Replay */
+declare namespace Replay {
+    interface Snapshot {
+        players: Map<bigint, Player>;
+    }
+}
+
+interface Player {
+    snet: bigint;
+    dyn: number;
+    nickname: string;
+    slot: number;
+}
+
+/* exported PlayerNotFound */
+class PlayerNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+/* exported DuplicatePlayer */
+class DuplicatePlayer extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
-        const module = { typename: "ReplayRecorder.Dynamic", version: "0.0.1" };
-        const func = ModuleLoader.get(module);
-        if (func === undefined) throw new ModuleNotFound(`Could not find parser for ${module.typename}(${module.version})`);
-        return func.parse(data);
+        return ModuleLoader.getParseFunc({ 
+            typename: "ReplayRecorder.Dynamic", 
+            version: "0.0.1" 
+        })(data);
     }, (data, snapshot, lerp) => {
-        const module = { typename: "ReplayRecorder.Dynamic", version: "0.0.1" };
-        const func = ModuleLoader.get(module);
-        if (func === undefined || func.exec === undefined) throw new NoExecFunc(`Could not find exec function for ${module.typename}(${module.version})`);
-        return func.exec(data, snapshot, lerp);
+        return ModuleLoader.getExecFunc({ 
+            typename: "ReplayRecorder.Dynamic", 
+            version: "0.0.1" 
+        })(data, snapshot, lerp);
     });
 })("Vanilla.Player");
+
+(function(typename: string) {
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        return {
+            snet: await BitHelper.readULong(data),
+            dyn: await BitHelper.readUShort(data),
+            slot: await BitHelper.readByte(data),
+            nickname: await BitHelper.readString(data)
+        };
+    }, (data, snapshot) => {
+        if (snapshot.players === undefined) {
+            snapshot.players = new Map();
+        }
+
+        const { snet } = data;
+        if (snapshot.players.has(snet)) throw new DuplicatePlayer(`Player of snet '${snet}' already exists.`);
+        snapshot.players.set(snet, data);
+    });
+})("Vanilla.Player.Spawn");
+
+(function(typename: string) {
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        return {
+            snet: await BitHelper.readULong(data),
+        };
+    }, (data, snapshot) => {
+        if (snapshot.players === undefined) {
+            snapshot.players = new Map();
+        }
+
+        const { snet } = data;
+        if (!snapshot.players.has(snet)) throw new PlayerNotFound(`Player of snet '${snet}' did not exist.`);
+        snapshot.players.delete(snet);
+    });
+})("Vanilla.Player.Despawn");
