@@ -17,19 +17,20 @@ declare namespace Timeline {
 interface Snapshot {
     time: number;
     tick: number;
-    dynamics: Map<number, Map<number, unknown>>;
+    dynamics: Map<string, Map<number, unknown>>;
 }
 
 declare namespace Snapshot {
     interface API { 
-        get(typename: string, version?: string): Map<number, unknown> 
+        get(typename: string, version: string): Map<number, unknown>;
+        header(typename: string, version?: string): unknown;
     }
 }
 
 /* exported Replay */
 class Replay {
-    types: Map<string, number>;
     typemap: Map<number, Module>;
+    types: Map<string, number>;
     header: Map<number, unknown>;
     timeline: Timeline.Snapshot[];
     snapshots: Snapshot[];
@@ -45,13 +46,18 @@ class Replay {
     public api(state: Snapshot): Snapshot.API {
         const replay = this;
         return {
-            get(typename: string, version?: string): Map<number, unknown> {
+            get(typename: string, version: string): Map<number, unknown> {
+                if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
+                const identifier = `${typename}(${version})`;
+                if (!state.dynamics.has(identifier)) state.dynamics.set(identifier, new Map());
+                return state.dynamics.get(identifier)!;
+            },
+            header(typename: string, version?: string): unknown {
                 const type = replay.types.get(typename);
-                if (type === undefined) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
+                if (type === undefined || !replay.header.has(type)) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
                 const module = replay.typemap.get(type);
                 if (module === undefined || (version !== undefined && module.version !== version)) throw new ModuleNotFound(`No valid module was found for '${typename}(${version})'.`);
-                if (!state.dynamics.has(type)) state.dynamics.set(type, new Map());
-                return state.dynamics.get(type)!;
+                return replay.header.get(type)!;
             }
         };
     }
@@ -62,9 +68,7 @@ class Replay {
         return module;
     }
 
-    private exec(time: number, state: Snapshot, snapshot: Timeline.Snapshot) {
-        const api = this.api(state);
-
+    private exec(time: number, api: Snapshot.API, state: Snapshot, snapshot: Timeline.Snapshot) {
         // perform events
         for (const { type, data, delta } of snapshot.events) {
             const exec = ModuleLoader.getExecFunc(this.get(type));
@@ -112,12 +116,13 @@ class Replay {
     public getSnapshot(time: number): Snapshot {
         // Get nearest snapshot from cache
         const state = structuredClone(this.getNearestSnapshot(time));
+        const api = this.api(state);
 
         // extrapolate snapshot until time
         let tick = state.tick;
         for (; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
-            this.exec(time, state, snapshot);
+            this.exec(time, api, state, snapshot);
             if (snapshot.time > state.time) break;
         }
 

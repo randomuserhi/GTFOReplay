@@ -39,21 +39,18 @@ namespace ReplayRecorder.Snapshot.Types {
             }
         }
 
-        private string Clean(string typename) {
-            return typename.Replace(" ", "").Trim();
-        }
-
         public void RegisterType(ReplayData data, Type type) {
-            string typename = Clean(data.Typename);
-
-            if (typenameMap.ContainsKey(typename)) {
-                throw new ReplayDuplicateTypeName($"Typename '{typename}' already exists.");
+            if (data.Typename == string.Empty) {
+                throw new ReplayEmptyTypename($"Typename cannot be a blank string.");
+            }
+            if (typenameMap.ContainsKey(data.Typename)) {
+                throw new ReplayDuplicateTypeName($"Typename '{data.Typename}' already exists.");
             }
             if (typeMap.ContainsKey(type)) {
                 throw new ReplayDuplicateType($"Type '{type.FullName}' already exists.");
             }
             if (staticType == ushort.MaxValue) {
-                throw new ReplayTypeOverflow($"Could not assign type '{typename}' as there are no more indicies that can be assigned.");
+                throw new ReplayTypeOverflow($"Could not assign type '{data.Typename}' as there are no more indicies that can be assigned.");
             }
             string t;
             if (typeof(ReplayDynamic).IsAssignableFrom(type)) {
@@ -70,11 +67,11 @@ namespace ReplayRecorder.Snapshot.Types {
             }
 
             ushort id = staticType++;
-            typenameMap.Add(typename, type);
+            typenameMap.Add(data.Typename, type);
             typeMap.Add(type, id);
             versionMap.Add(type, data.Version);
 
-            APILogger.Debug($"Registered {t}: '{typename}' => {type.FullName}[{id}]");
+            APILogger.Debug($"Registered {t}: '{data.Typename}' => {type.FullName}[{id}]");
         }
 
         public void Write(ByteBuffer buffer) {

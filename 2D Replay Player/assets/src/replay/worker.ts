@@ -1,9 +1,3 @@
-class InvalidWorkerCommand extends Error {
-    constructor(message: string) {
-        super(message);
-    }
-}
-
 let replay: Replay | undefined = undefined;
 
 (() => {
@@ -90,7 +84,7 @@ let replay: Replay | undefined = undefined;
             }
             return events;
         };
-        const parseDynamicCollection = async (bytes: ByteStream, state: Snapshot): Promise<[unknown[], number]> => {
+        const parseDynamicCollection = async (bytes: ByteStream): Promise<[unknown[], number]> => {
             const dynamics: unknown[] = [];
             const [module, type] = await getModule(bytes);
             const func = ModuleLoader.get(module);
@@ -122,7 +116,7 @@ let replay: Replay | undefined = undefined;
                 snapshot.events = await parseEvents(bytes); // parse events
                 const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {
-                    const [dynamics, type] = await parseDynamicCollection(bytes, state);
+                    const [dynamics, type] = await parseDynamicCollection(bytes);
                     snapshot.dynamics.set(type, dynamics); // parse dynamics
                 }
                 

@@ -1,4 +1,7 @@
 ﻿namespace ReplayRecorder.Snapshot.Exceptions {
+    public class ReplayEmptyTypename : Exception {
+        public ReplayEmptyTypename(string message) : base(message) { }
+    }
     public class ReplayIncompatibleType : Exception {
         public ReplayIncompatibleType(string message) : base(message) { }
     }
