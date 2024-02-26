@@ -43,9 +43,9 @@ class Parser {
         this.dispatchEvent = node.dispatchEvent.bind(node);
     }
 
-    public parse() {
+    public parse(finite: boolean = true) {
         if (this.current !== undefined) return this.current;
-        if (this.worker !== undefined) this.worker.terminate();
+        if (this.worker !== undefined) this.terminate();
         const replay = this.current = new Replay();
 
         // Setup worker and communication
@@ -79,12 +79,15 @@ class Parser {
         });
 
         // Start parsing
-        ipc.send("init", this.path, [...ModuleLoader.links.keys()]);
+        ipc.send("init", this.path, [...ModuleLoader.links.keys()], finite);
         return replay;
     }
 
     public terminate() {
-        if (this.worker !== undefined) this.worker.terminate();
+        if (this.worker !== undefined) {
+            this.worker.terminate();
+            window.api.send("close", this.path);
+        }
     }
 }
 

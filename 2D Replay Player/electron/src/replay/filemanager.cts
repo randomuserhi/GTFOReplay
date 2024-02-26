@@ -3,10 +3,11 @@ import * as fs from "fs";
 
 class File {
     readonly path: string;
-    private watcher: chokidar.FSWatcher | null;
+    private watcher: chokidar.FSWatcher | undefined;
     private requests: {
         start: number;
         end: number;
+        numBytes: number;
         callback: (bytes?: ArrayBufferLike) => void;
     }[];
 
@@ -15,24 +16,45 @@ class File {
         this.requests = [];
     }
 
-    private doRequest(request: { start: number; end: number; callback: (bytes?: ArrayBufferLike) => void }, wait: boolean = true) {
-        const { start, end, callback } = request;
+    public open() {
+        if (this.watcher !== undefined) {
+            this.watcher.close();
+        }
+        this.watcher = chokidar.watch(this.path, {
+            usePolling: true
+        }); // TODO(randomuserhi): requires polling for some reason => shouldn't need to tho?
+        this.watcher.on("change", () => {
+            const requests = this.requests;
+            this.requests = [];
+            requests.forEach(r => this.doRequest(r));
+        });
+    }
+
+    public close() {
+        if (this.watcher !== undefined) {
+            this.watcher.close();
+        }
+    }
+
+    private doRequest(request: { start: number; end: number; numBytes: number; callback: (bytes?: ArrayBufferLike) => void }, wait: boolean = true) {
+        const { start, end, numBytes, callback } = request;
         if (end < start) {
             callback();
             return;
         }
-        this.getBytesImpl(start, end).then(callback).catch(() => {
+        this.getBytesImpl(start, end, numBytes).then(callback).catch(() => {
             if (wait) {
                 this.requests.push({
                     start,
                     end,
+                    numBytes,
                     callback
                 });
             } else callback();
         });
     }
 
-    private getBytesImpl(start: number, end: number): Promise<ArrayBufferLike> {
+    private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
             const stream = fs.createReadStream(this.path, {
                 flags: "r",
@@ -45,7 +67,9 @@ class File {
                 chunks.push(chunk);
             });
             stream.on("end", () => {
-                resolve(Buffer.concat(chunks));
+                const buffer = Buffer.concat(chunks);
+                if (buffer.byteLength === numBytes) resolve(buffer);
+                else reject();
                 stream.close();
             });
         });
@@ -57,6 +81,7 @@ class File {
             this.doRequest({
                 start,
                 end,
+                numBytes,
                 callback: resolve
             }, wait);
         });
@@ -91,9 +116,11 @@ export class FileManager {
         ipc.handle("open", (_, path: string) => {
             if (this.files.has(path)) return;
             const replay = new File(path);
+            replay.open();
             this.files.set(path, replay);
         });
         ipc.on("close", (_, path: string) => {
+            this.files.get(path)?.close();
             this.files.delete(path);
         });
         

@@ -12,14 +12,15 @@ let replay: Replay | undefined = undefined;
     importScripts("./typemap.js");
     importScripts("./replay.js");
     importScripts("./ipc.js");
+    importScripts("./math.js");
 
     const ipc = new IpcInterface({
         on: (callback) => self.addEventListener("message", (e) => { callback(e.data); }),
         send: self.postMessage.bind(self)
     });
-    ipc.on("init", (path: string, links: string[]) => {
+    ipc.on("init", (path: string, links: string[], finite: boolean = true) => {
         importScripts(...links);
-        parse(path);
+        parse(path, finite);
     });
 
     async function parse(path: string, finite: boolean = true) {
@@ -74,15 +75,14 @@ let replay: Replay | undefined = undefined;
             }
         };
         const parseDynamicCollection = async (bytes: ByteStream, state: Replay.Snapshot) => {
+            const module = await getModule(bytes);
+            const func = ModuleLoader.get(module);
+            if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
+            if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
+
             const size = await BitHelper.readInt(bytes);
-            console.log(`size: ${size}`);
             for (let i = 0; i < size; ++i) {
-                const module = await getModule(bytes);
-                console.log(`[module: ${module.typename}(${module.version})]`);
-                const func = ModuleLoader.get(module);
-                if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                 const data = await func.parse(bytes);
-                if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
                 func.exec(data, state, 1);
             }
         };
@@ -91,19 +91,15 @@ let replay: Replay | undefined = undefined;
         try {
             for (;;) {
                 const snapshotSize = await BitHelper.readInt(fs);
-                console.log(`snapshot: ${snapshotSize}`);
                 const bytes = await fs.getBytes(snapshotSize);
 
                 const now = await BitHelper.readUInt(bytes);
-                console.log(`now: ${now}`);
                 
                 await parseEvents(bytes, state); // parse events
-                const nDynamicCollections = await BitHelper.readInt(bytes);
+                const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {
                     await parseDynamicCollection(bytes, state); // parse dynamics
                 }
-
-                console.log(state);
             }
         } catch(err) {
             if (!(err instanceof RangeError)) {

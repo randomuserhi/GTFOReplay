@@ -87,13 +87,12 @@ namespace ReplayRecorder.Core {
         }
 
         public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+
             /// Format:
-            /// int => instance ID of object (not necessarily the gameobject)
             /// byte => absolute or relative position
             /// Vector3(Full/Half) => full precision / half precision based on absolute or relative position
             /// byte => Dimension of transform
-
-            BitHelper.WriteBytes(id, buffer);
 
             // If object has moved too far, write absolute position
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
@@ -128,6 +127,8 @@ namespace ReplayRecorder.Core {
         }
 
         public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+
             /// Format:
             /// int => instance ID of object (not necessarily the gameobject)
             /// Quaternion(Half) => rotation
@@ -163,8 +164,9 @@ namespace ReplayRecorder.Core {
         }
 
         public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+
             /// Format:
-            /// int => instance ID of object (not necessarily the gameobject)
             /// byte => absolute or relative position
             /// Vector3(Full/Half) => full precision / half precision based on absolute or relative position
             /// Quaternion(Half) => rotation

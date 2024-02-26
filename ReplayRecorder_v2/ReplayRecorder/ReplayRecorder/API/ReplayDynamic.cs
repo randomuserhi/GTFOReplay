@@ -7,6 +7,8 @@
         public abstract int Id { get; }
         public abstract bool IsDirty { get; }
 
-        public abstract void Write(ByteBuffer buffer);
+        public virtual void Write(ByteBuffer buffer) {
+            BitHelper.WriteBytes(Id, buffer);
+        }
     }
 }
