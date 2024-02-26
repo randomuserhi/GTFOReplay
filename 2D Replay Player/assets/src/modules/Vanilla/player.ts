@@ -1,10 +1,4 @@
-/* exported Replay */
-declare namespace Replay {
-    interface Snapshot {
-        players: Map<bigint, Player>;
-    }
-}
-
+/* exported Player */
 interface Player {
     snet: bigint;
     dyn: number;
@@ -40,7 +34,7 @@ class DuplicatePlayer extends Error {
     });
 })("Vanilla.Player");
 
-(function(typename: string) {
+((typename: string) => {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
         return {
             snet: await BitHelper.readULong(data),
@@ -49,28 +43,24 @@ class DuplicatePlayer extends Error {
             nickname: await BitHelper.readString(data)
         };
     }, (data, snapshot) => {
-        if (snapshot.players === undefined) {
-            snapshot.players = new Map();
-        }
+        const players = snapshot.get("Vanilla.Player", "0.0.1");
 
         const { snet } = data;
-        if (snapshot.players.has(snet)) throw new DuplicatePlayer(`Player of snet '${snet}' already exists.`);
-        snapshot.players.set(snet, data);
+        if (players.has(snet)) throw new DuplicatePlayer(`Player of snet '${snet}' already exists.`);
+        players.set(snet, data);
     });
 })("Vanilla.Player.Spawn");
 
-(function(typename: string) {
+((typename: string) => {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
         return {
             snet: await BitHelper.readULong(data),
         };
     }, (data, snapshot) => {
-        if (snapshot.players === undefined) {
-            snapshot.players = new Map();
-        }
+        const players = snapshot.get("Vanilla.Player", "0.0.1");
 
         const { snet } = data;
-        if (!snapshot.players.has(snet)) throw new PlayerNotFound(`Player of snet '${snet}' did not exist.`);
-        snapshot.players.delete(snet);
+        if (!players.has(snet)) throw new PlayerNotFound(`Player of snet '${snet}' did not exist.`);
+        players.delete(snet);
     });
 })("Vanilla.Player.Despawn");

@@ -1,16 +1,11 @@
 (function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (data, header: Replay.Header) => {
-        header.version = await BitHelper.readString(data);
-        header.isMaster = await BitHelper.readByte(data) == 1;
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        return {
+            version: await BitHelper.readString(data),
+            isMaster: await BitHelper.readByte(data) == 1
+        };
     });
 })("ReplayRecorder.Header");
-
-/* exported Replay */
-declare namespace Replay {
-    interface Snapshot {
-        dynamics: Map<number, Dynamic>;
-    }
-}
 
 interface Dynamic {
     id: number;
@@ -39,13 +34,11 @@ class DuplicateDynamic extends Error {
             id: await BitHelper.readInt(data)
         };
     }, (data, snapshot) => {
-        if (snapshot.dynamics === undefined) {
-            snapshot.dynamics = new Map();
-        }
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
 
         const { id } = data;
-        if (snapshot.dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
-        snapshot.dynamics.set(id, {
+        if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
+        dynamics.set(id, {
             id,
             position: Vec.zero(),
             rotation: Quat.identity(),
@@ -63,13 +56,11 @@ class DuplicateDynamic extends Error {
             dimension: await BitHelper.readByte(data)
         };
     }, (data, snapshot) => {
-        if (snapshot.dynamics === undefined) {
-            snapshot.dynamics = new Map();
-        }
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
 
         const { id } = data;
-        if (snapshot.dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
-        snapshot.dynamics.set(id, data);
+        if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
+        dynamics.set(id, data);
     });
 })("ReplayRecorder.Spawn.DynamicAt");
 
@@ -79,13 +70,11 @@ class DuplicateDynamic extends Error {
             id: await BitHelper.readInt(data)
         };
     }, (data, snapshot) => {
-        if (snapshot.dynamics === undefined) {
-            snapshot.dynamics = new Map();
-        }
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
 
         const { id } = data;
-        if (!snapshot.dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' does not exist.`);
-        snapshot.dynamics.delete(id);
+        if (!dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' does not exist.`);
+        dynamics.delete(id);
     });
 })("ReplayRecorder.Despawn.Dynamic");
 
@@ -100,13 +89,11 @@ class DuplicateDynamic extends Error {
             dimension: await BitHelper.readByte(data)
         };
     }, (data, snapshot, lerp) => {
-        if (snapshot.dynamics === undefined) {
-            snapshot.dynamics = new Map();
-        }
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1") as Map<number, Dynamic>;
 
         const { id, absolute, position, rotation, dimension } = data;
-        if (!snapshot.dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
-        const dyn = snapshot.dynamics.get(id)!;
+        if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
+        const dyn = dynamics.get(id)!;
         const fpos = absolute ? position : Vec.add(dyn.position, position);
         dyn.position = Vec.lerp(dyn.position, fpos, lerp);
         dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);

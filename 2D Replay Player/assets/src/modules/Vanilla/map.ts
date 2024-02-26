@@ -15,21 +15,14 @@ namespace BitHelper {
     }
 }
 
-/* exported Replay */
-declare namespace Replay {
-    interface Header {
-        dimensions: { [k in number]: MapGeometry[] };
-    }
-}
-
 interface MapGeometry {
     vertices: Vector[];
     indices: number[];
 }
 
-(function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (data, header: Replay.Header) => {
-        header.dimensions = {};
+((typename: string) => {
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        const map = new Map<number, MapGeometry[]>();
 
         const nDimensions = await BitHelper.readByte(data);
         for (let i = 0; i < nDimensions; ++i) {
@@ -44,7 +37,15 @@ interface MapGeometry {
                     indices: await BitHelper.readUShortArray(data, nIndicies)
                 });
             }
-            header.dimensions[dimension] = surfaces;
+            map.set(dimension, surfaces);
         }
+
+        return map;
     });
 })("Vanilla.Map.Geometry");
+
+/*(() => {
+    Renderer.register((header, state) => {
+        const map = header.get("Vanilla.Map.Geometry", "0.0.1");
+    });
+})();*/

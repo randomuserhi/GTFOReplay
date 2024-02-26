@@ -179,8 +179,6 @@ namespace ReplayRecorder.Core {
             //                     original first byte from the quaternion bytes: 0b00xx where xx is the number
             //                     0,1,2,3 for which component was missing.
 
-            BitHelper.WriteBytes(id, buffer);
-
             // If object has moved too far, write absolute position
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
                 BitHelper.WriteBytes((byte)(1), buffer);

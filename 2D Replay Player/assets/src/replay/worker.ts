@@ -31,8 +31,9 @@ let replay: Replay | undefined = undefined;
         await fs.open();
 
         const getModule = async (bytes: ByteStream | FileStream): Promise<[Module, number]> => {
+            if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
             const id = await BitHelper.readUShort(bytes);
-            const module = replay!.typemap.get(id);
+            const module = replay.typemap.get(id);
             if (module === undefined) throw new UnknownModuleType(`No module was found for '${id}'.`);
             return [module, id];
         };
@@ -47,18 +48,30 @@ let replay: Replay | undefined = undefined;
         await Typemap.parsers[typeMapVersion](bytes, replay);
 
         // Parse Headers
-        let [module] = await getModule(bytes);
+        let [module, type] = await getModule(bytes);
         while (module?.typename !== "ReplayRecorder.EndOfHeader") {
             const func = ModuleLoader.get(module);
             if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-            await func.parse(bytes, replay.header);
-            [module] = await getModule(bytes);
+            replay.header.set(type, await func.parse(bytes));
+            [module, type] = await getModule(bytes);
         }
 
-        ipc.send("eoh", replay.typemap, replay.header);
+        ipc.send("eoh", replay.typemap, replay.types, replay.header);
 
         // Parse snapshots
-        const parseEvents = async (bytes: ByteStream, state: Replay.Snapshot): Promise<Timeline.Event[]> => {
+        const state: Snapshot = {
+            tick: 0,
+            time: 0,
+            dynamics: new Map()
+        };
+        ipc.send("snapshot", {
+            tick: 0,
+            time: 0,
+            events: [],
+            dynamics: new Map()
+        }, state);
+        const api = replay.api(state);
+        const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
             const events: Timeline.Event[] = [];
             const size = await BitHelper.readInt(bytes);
             for (let i = 0; i < size; ++i) {
@@ -73,11 +86,11 @@ let replay: Replay | undefined = undefined;
                     data
                 });
                 if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                func.exec(data, state, 1);
+                func.exec(data, api, 1);
             }
             return events;
         };
-        const parseDynamicCollection = async (bytes: ByteStream, state: Replay.Snapshot): Promise<[unknown[], number]> => {
+        const parseDynamicCollection = async (bytes: ByteStream, state: Snapshot): Promise<[unknown[], number]> => {
             const dynamics: unknown[] = [];
             const [module, type] = await getModule(bytes);
             const func = ModuleLoader.get(module);
@@ -88,34 +101,32 @@ let replay: Replay | undefined = undefined;
             for (let i = 0; i < size; ++i) {
                 const data = await func.parse(bytes);
                 dynamics.push(data);
-                func.exec(data, state, 1);
+                func.exec(data, api, 1);
             }
             return [dynamics, type];
         };
-
-        const state: Replay.Snapshot = {} as any;
         try {
-            for (let tick = 0;;++tick) {
+            for (;;) {
                 const snapshotSize = await BitHelper.readInt(fs);
                 const bytes = await fs.getBytes(snapshotSize);
                 
                 const now = await BitHelper.readUInt(bytes);
                 state.time = now;
-                state.tick = tick;
+                ++state.tick;
                 const snapshot: Timeline.Snapshot = {
-                    tick,
+                    tick: state.tick,
                     time: now,
                     dynamics: new Map()
                 } as any;
 
-                snapshot.events = await parseEvents(bytes, state); // parse events
+                snapshot.events = await parseEvents(bytes); // parse events
                 const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {
                     const [dynamics, type] = await parseDynamicCollection(bytes, state);
                     snapshot.dynamics.set(type, dynamics); // parse dynamics
                 }
                 
-                ipc.send("snapshot", snapshot, (tick % 50) === 0 ? state : undefined);
+                ipc.send("snapshot", snapshot, (state.tick % 50) === 0 ? state : undefined);
             }
         } catch(err) {
             if (!(err instanceof RangeError)) {

@@ -1,7 +1,7 @@
 /* exported ParseFunc */
-type ParseFunc = (data: ByteStream, ...args: any[]) => Promise<any>; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
+type ParseFunc = (data: ByteStream) => Promise<any>; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 /* exported ExecFunc */
-type ExecFunc = (data: any, snapshot: Partial<Replay.Snapshot>, lerp: number) => void; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
+type ExecFunc = (data: any, state: Snapshot.API, lerp: number) => void; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 
 /* exported Parser */
 class Parser {
@@ -73,12 +73,13 @@ class Parser {
         });
 
         // Events
-        ipc.on("eoh", (typemap, header) => {
+        ipc.on("eoh", (typemap, types, header) => {
             replay.typemap = typemap;
+            replay.types = types;
             replay.header = header;
             this.dispatchEvent(RHU.CustomEvent("eoh", undefined));
         });
-        ipc.on("snapshot", (snapshot: Timeline.Snapshot, state?: Replay.Snapshot) => {
+        ipc.on("snapshot", (snapshot: Timeline.Snapshot, state?: Snapshot) => {
             replay.timeline.push(snapshot);
             if (state !== undefined) replay.snapshots.push(state);
         });

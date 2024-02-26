@@ -1,18 +1,4 @@
-/* exported Replay */
-declare namespace Replay {
-    interface Header {
-        version: string;
-        isMaster: boolean;
-    }
-    interface Snapshot { 
-        time: number;
-        tick: number;
-    }
-}
-
 declare namespace Timeline {
-
-
     interface Event<T = unknown> {
         delta: number;
         type: number;
@@ -28,19 +14,46 @@ declare namespace Timeline {
     }
 }
 
-type PartialSnapshot = Partial<Replay.Snapshot> & { tick: number, time: number }; 
+interface Snapshot {
+    time: number;
+    tick: number;
+    dynamics: Map<number, Map<number, unknown>>;
+}
 
+declare namespace Snapshot {
+    interface API { 
+        get(typename: string, version?: string): Map<number, unknown> 
+    }
+}
+
+/* exported Replay */
 class Replay {
+    types: Map<string, number>;
     typemap: Map<number, Module>;
-    header: Partial<Replay.Header>;
+    header: Map<number, unknown>;
     timeline: Timeline.Snapshot[];
-    snapshots: PartialSnapshot[];
+    snapshots: Snapshot[];
     
     constructor() {
         this.typemap = new Map();
-        this.header = {};
+        this.types = new Map();
+        this.header = new Map();
         this.timeline = [];
         this.snapshots = [];
+    }
+
+    public api(state: Snapshot): Snapshot.API {
+        const replay = this;
+        return {
+            get(typename: string, version?: string): Map<number, unknown> {
+                const type = replay.types.get(typename);
+                if (type === undefined) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
+                const module = replay.typemap.get(type);
+                if (module === undefined || (version !== undefined && module.version !== version)) throw new ModuleNotFound(`No valid module was found for '${typename}(${version})'.`);
+                if (!state.dynamics.has(type)) state.dynamics.set(type, new Map());
+                return state.dynamics.get(type)!;
+            }
+        };
     }
 
     private get(type: number): Module {
@@ -49,11 +62,13 @@ class Replay {
         return module;
     }
 
-    private exec(time: number, state: PartialSnapshot, snapshot: Timeline.Snapshot) {
+    private exec(time: number, state: Snapshot, snapshot: Timeline.Snapshot) {
+        const api = this.api(state);
+
         // perform events
         for (const { type, data, delta } of snapshot.events) {
             const exec = ModuleLoader.getExecFunc(this.get(type));
-            exec(data, state, time >= state.time + delta ? 1 : 0);
+            exec(data, api, time >= state.time + delta ? 1 : 0);
         }
 
         const diff = snapshot.time - state.time;
@@ -68,7 +83,7 @@ class Replay {
             for (const [type, collection] of snapshot.dynamics) {
                 const exec = ModuleLoader.getExecFunc(this.get(type));
                 for (const data of collection) {
-                    exec(data, state, lerp);
+                    exec(data, api, lerp);
                 }
             }
         } 
@@ -77,7 +92,7 @@ class Replay {
         state.time = time;
     }
 
-    private getNearestSnapshot(time: number): PartialSnapshot {
+    private getNearestSnapshot(time: number): Snapshot {
         // Binary search to find nearest snapshot
         let min = 0;
         let max = this.snapshots.length;
@@ -94,7 +109,7 @@ class Replay {
         return this.snapshots[min];
     }
 
-    public getSnapshot(time: number): PartialSnapshot {
+    public getSnapshot(time: number): Snapshot {
         // Get nearest snapshot from cache
         const state = structuredClone(this.getNearestSnapshot(time));
 
@@ -107,5 +122,9 @@ class Replay {
         }
 
         return state;
+    }
+
+    public length(): number {
+        return this.snapshots.length === 0 ? 0 : this.snapshots[this.snapshots.length - 1].time;
     }
 }
