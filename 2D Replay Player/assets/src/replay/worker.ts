@@ -36,7 +36,6 @@ let replay: Replay | undefined = undefined;
         
         // Parse Header
         const headerSize = await BitHelper.readInt(fs);
-        console.log(`header: ${headerSize} bytes`);
         const bytes = await fs.getBytes(headerSize);
         const typeMapVersion = await BitHelper.readString(bytes);
         if (Typemap.parsers[typeMapVersion] === undefined) {
@@ -52,6 +51,8 @@ let replay: Replay | undefined = undefined;
             await func.parse(bytes, replay.header);
             m = await module(bytes);
         }
+
+        ipc.send("eoh");
 
         fs.close();
         self.close();
