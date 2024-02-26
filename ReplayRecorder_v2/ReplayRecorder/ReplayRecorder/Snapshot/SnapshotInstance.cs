@@ -34,7 +34,7 @@ namespace ReplayRecorder.Snapshot {
             public Type Type { get; private set; }
             public ushort Id { get; private set; }
 
-            private bool isDirty = false;
+            internal bool isDirty = false;
             private int _nDirtyDynamics = 0;
             public int NDirtyDynamics {
                 get {
@@ -57,18 +57,24 @@ namespace ReplayRecorder.Snapshot {
             }
 
             [HideFromIl2Cpp]
-            public void Add(ReplayDynamic dynamic) {
+            public void Add(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot add '{dynType.FullName}' to DynamicCollection of type '{Type.FullName}'.");
-                if (mapOfDynamics.ContainsKey(dynamic.Id)) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists in DynamicCollection of type '{Type.FullName}'.");
+                if (mapOfDynamics.ContainsKey(dynamic.Id)) {
+                    if (errorOnDuplicate) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists in DynamicCollection of type '{Type.FullName}'.");
+                    return;
+                }
                 isDirty = true;
                 dynamics.Add(dynamic);
                 mapOfDynamics.Add(dynamic.Id, dynamic);
             }
 
             [HideFromIl2Cpp]
-            public void Remove(int id) {
-                if (!mapOfDynamics.ContainsKey(id)) throw new ReplayDynamicDoesNotExist($"Dynamic [{id}] does not exist in DynamicCollection of type '{Type.FullName}'.");
+            public void Remove(int id, bool errorOnNotFound = true) {
+                if (!mapOfDynamics.ContainsKey(id)) {
+                    if (errorOnNotFound) throw new ReplayDynamicDoesNotExist($"Dynamic [{id}] does not exist in DynamicCollection of type '{Type.FullName}'.");
+                    return;
+                }
                 isDirty = true;
                 mapOfDynamics[id].remove = true;
                 mapOfDynamics.Remove(id);
@@ -200,12 +206,12 @@ namespace ReplayRecorder.Snapshot {
         }
 
         [HideFromIl2Cpp]
-        internal void Spawn(ReplayDynamic dynamic) {
+        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
             Type dynType = dynamic.GetType();
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new SpawnDynamic(dynamic.Id));
-            dynamics[dynType].Add(dynamic);
+            dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -222,17 +228,31 @@ namespace ReplayRecorder.Snapshot {
             dynamics[dynType].Add(dynamic);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [HideFromIl2Cpp]
-        internal void Despawn(Type dynType, int id) {
+        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, byte dimensionIndex, Vector3 position) {
+            Spawn(dynamic, errorOnDuplicate, dimensionIndex, position, Quaternion.identity);
+        }
+        [HideFromIl2Cpp]
+        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, byte dimensionIndex, Vector3 position, Quaternion rotation) {
+            Type dynType = dynamic.GetType();
+            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+
+            Trigger(new SpawnDynamicAt(dynamic.Id, (byte)dimensionIndex, position, rotation));
+            dynamics[dynType].Add(dynamic, errorOnDuplicate);
+        }
+
+        [HideFromIl2Cpp]
+        internal void Despawn(Type dynType, int id, bool errorOnNotFound = true) {
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new DespawnDynamic(id));
-            dynamics[dynType].Remove(id);
+            dynamics[dynType].Remove(id, errorOnNotFound);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [HideFromIl2Cpp]
-        internal void Despawn(ReplayDynamic dynamic) {
-            Despawn(dynamic.GetType(), dynamic.Id);
+        internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
+            Despawn(dynamic.GetType(), dynamic.Id, errorOnNotFound);
         }
 
         private void Tick() {
@@ -242,7 +262,7 @@ namespace ReplayRecorder.Snapshot {
             // Check if this tick needs to be done
             // - are there any dynamics to serialize?
             // - are there any events to serialize?
-            int nDirtyDynamics = dynamics.Values.Sum(d => d.NDirtyDynamics);
+            int nDirtyDynamics = dynamics.Values.Sum(d => { d.isDirty = true; return d.NDirtyDynamics; });
             if (nDirtyDynamics == 0 && events.Count == 0)
                 return;
 

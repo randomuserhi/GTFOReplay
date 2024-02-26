@@ -18,7 +18,7 @@ namespace BitHelper {
 /* exported Replay */
 declare namespace Replay {
     interface Header {
-        dimensions: Map<number, MapGeometry[]>;
+        dimensions: { [k in number]: MapGeometry[] };
     }
 }
 
@@ -29,7 +29,7 @@ interface MapGeometry {
 
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data, header: Replay.Header) => {
-        header.dimensions = new Map();
+        header.dimensions = {};
 
         const nDimensions = await BitHelper.readByte(data);
         for (let i = 0; i < nDimensions; ++i) {
@@ -44,7 +44,7 @@ interface MapGeometry {
                     indices: await BitHelper.readUShortArray(data, nIndicies)
                 });
             }
-            header.dimensions.set(dimension, surfaces);
+            header.dimensions[dimension] = surfaces;
         }
     });
 })("Vanilla.Map.Geometry");

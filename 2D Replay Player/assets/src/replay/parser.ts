@@ -73,7 +73,10 @@ class Parser {
         });
 
         // Events
-        ipc.on("eoh", () => this.dispatchEvent(RHU.CustomEvent("eoh", undefined)));
+        ipc.on("eoh", (header) => {
+            replay.header = header;
+            this.dispatchEvent(RHU.CustomEvent("eoh", undefined));
+        });
 
         // Start parsing
         ipc.send("init", this.path, [...ModuleLoader.links.keys()]);

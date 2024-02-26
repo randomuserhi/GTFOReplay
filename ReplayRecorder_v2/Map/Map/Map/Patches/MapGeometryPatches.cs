@@ -40,7 +40,7 @@ namespace Vanilla.Map.Patches {
         [HarmonyPatch(typeof(GS_ReadyToStopElevatorRide), nameof(GS_ReadyToStopElevatorRide.Enter))]
         [HarmonyPostfix]
         private static void StopElevatorRide() {
-            Replay.Trigger(new MapGeometry(MapGeometryManager.map));
+            Replay.Trigger(new rMapGeometry(MapGeometryManager.map));
         }
     }
 }

@@ -52,8 +52,8 @@ namespace Vanilla.Map {
     }
 
     internal static class MapGeometryManager {
-        [ReplayReset]
-        private static void Reset() {
+        [ReplayInit]
+        private static void Init() {
             map = new Dictionary<eDimensionIndex, Map>();
             processed.Clear();
             MapGeometryPatches.dimensions = null;
@@ -194,12 +194,12 @@ namespace Vanilla.Map {
     }
 
     [ReplayData("Vanilla.Map.Geometry", "0.0.1")]
-    internal class MapGeometry : ReplayHeader {
+    internal class rMapGeometry : ReplayHeader {
         private Dictionary<eDimensionIndex, Map> map;
 
         public override string? Debug => $"{map.Count} dimensions.";
 
-        public MapGeometry(Dictionary<eDimensionIndex, Map> map) {
+        public rMapGeometry(Dictionary<eDimensionIndex, Map> map) {
             this.map = map;
         }
 
