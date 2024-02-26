@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using API;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -36,6 +37,7 @@ namespace ReplayRecorder {
         }
 
         internal void Flush(FileStream fs) {
+            APILogger.Debug($"Flushed snapshot: {count} bytes.");
             BitHelper.WriteBytes(count, fs);
             fs.Write(Array);
             fs.Flush();

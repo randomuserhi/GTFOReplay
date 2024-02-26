@@ -36,6 +36,7 @@ let replay: Replay | undefined = undefined;
         
         // Parse Typemap
         const headerSize = await BitHelper.readInt(fs);
+        console.log(`header: ${headerSize}`);
         const bytes = await fs.getBytes(headerSize);
         const typeMapVersion = await BitHelper.readString(bytes);
         if (Typemap.parsers[typeMapVersion] === undefined) {
@@ -57,10 +58,11 @@ let replay: Replay | undefined = undefined;
 
         // Parse snapshots
         const parseTypes = async (state: Replay.Snapshot) => {
-            const size = await BitHelper.readUInt(bytes);
+            const size = await BitHelper.readInt(bytes);
             for (let i = 0; i < size; ++i) {
                 const module = await getModule(bytes);
                 if (module === undefined) throw new UnknownModuleType();
+                console.log(`[module: ${module.typename}(${module.version})]`);
                 const func = ModuleLoader.get(module);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                 const data = await func.parse(bytes);
@@ -71,15 +73,15 @@ let replay: Replay | undefined = undefined;
 
         const state: Replay.Snapshot = {} as any;
         try {
-            for (;;) {
-                const snapshotSize = await BitHelper.readInt(fs);
-                const bytes = await fs.getBytes(snapshotSize);
+            const snapshotSize = await BitHelper.readInt(fs);
+            console.log(`snapshot: ${snapshotSize}`);
+            const bytes = await fs.getBytes(snapshotSize);
 
-                const now = await BitHelper.readUInt(bytes);
-                
-                parseTypes(state); // parse events
-                parseTypes(state); // parse dynamics
-            }
+            const now = await BitHelper.readUInt(bytes);
+            console.log(`now: ${now}`);
+
+            const nEvents = await BitHelper.readInt(bytes);
+            console.log(`nEvents: ${nEvents}`);
         } catch(err) {
             if (!(err instanceof RangeError)) {
                 throw err;
