@@ -5,29 +5,34 @@ interface Module {
 
 /* exported ModuleLoader */
 namespace ModuleLoader {
-    const links = new Map<string, Module[]>();
-    export const library: Map<string, Map<string, ParseFunc>> = new Map();
+    export const links = new Map<string, Module[]>();
+    export const library: Map<string, Map<string, { parse: ParseFunc, exec?: ExecFunc }>> = new Map();
 
-    export function get(module: Module): ParseFunc | undefined {
+    export function get(module: Module): { parse: ParseFunc, exec?: ExecFunc } | undefined {
         return library.get(module.typename)?.get(module.version);
     }
 
     // TODO(randomuserhi): console message / warning when replacing or updating an existing type
-    export function register(typename: string, version: string, func: ParseFunc) {
-        const link = document.currentScript?.getAttribute("src");
-        if (link == null) {
-            console.warn(`Unable to link parser for type '${typename}(${version})'.`);
-            return;
+    export function register(typename: string, version: string, parse: ParseFunc, exec?: ExecFunc) {
+        if (self.document !== undefined) {
+            const link = self.document.currentScript?.getAttribute("src");
+            if (link == null) {
+                console.warn(`Unable to link parser for type '${typename}(${version})'.`);
+                return;
+            }
+            if (!links.has(link)) {
+                links.set(link, []);
+            }
+            links.get(link)!.push({ typename, version });
         }
-        if (!links.has(link)) {
-            links.set(link, []);
-        }
-        links.get(link)!.push({ typename, version });
 
         if (!library.has(typename)) {
             library.set(typename, new Map());
         }
-        library.get(typename)!.set(version, func);
+        library.get(typename)!.set(version, {
+            parse,
+            exec
+        });
     }
 
     export function loadModule(path: string) {

@@ -7,20 +7,9 @@ declare namespace Replay {
     interface Snapshot { }
 }
 
-interface Event {
-
-}
-
-interface Dynamic {
-
-}
-
 class Snapshot {
     tick: number;
     time: number;
-
-    events: Event[];
-    dynamics: Dynamic[];
 
     constructor() {
     }

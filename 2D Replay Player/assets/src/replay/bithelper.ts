@@ -3,20 +3,22 @@ class FileStream {
     readonly path: string;
     finite: boolean;
     private index: number;
+    ipc: Ipc;
 
     // NOTE(randomuserhi): If the filestream is finite then when EndOfFile is reached, it will terminate.
-    constructor(path: string, finite: boolean = true) {
+    constructor(ipc: Ipc, path: string, finite: boolean = true) {
         this.path = path;
         this.index = 0;
         this.finite = finite;
+        this.ipc = ipc;
     }
 
     public open(): Promise<void> {
-        return window.api.invoke("open", this.path);
+        return this.ipc.invoke("open", this.path);
     }
 
     public close(): void {
-        window.api.send("close", this.path);
+        this.ipc.send("close", this.path);
     }
 
     public async getBytes(numBytes: number): Promise<ByteStream> {
@@ -26,7 +28,7 @@ class FileStream {
     }
 
     public async peekBytes(numBytes: number): Promise<ByteStream> {
-        return new ByteStream(await window.api.invoke("getBytes", this.path, this.index, numBytes, !this.finite));
+        return new ByteStream(await this.ipc.invoke("getBytes", this.path, this.index, numBytes, !this.finite));
     }
 }
 

@@ -1,92 +1,67 @@
 /* exported ParseFunc */
-type ParseFunc = (data: ByteStream, ...args: any[]) => Promise<void>;
+type ParseFunc = (data: ByteStream, ...args: any[]) => Promise<any>; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
+/* exported ExecFunc */
+type ExecFunc = (data: any, snapshot: Partial<Replay.Snapshot>, lerp: number) => void; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 
 /* exported Parser */
 class Parser {
-    static typemapParsers: { [v in string]: ParseFunc } = {
-        "0.0.1": async (data: ByteStream, replay: Replay) => {
-            const size = await BitHelper.readUShort(data);
-            for (let i = 0; i < size; ++i) {
-                replay.typemap.set(await BitHelper.readUShort(data), {
-                    typename: await BitHelper.readString(data),
-                    version: await BitHelper.readString(data)
-                });
-            }
-        }
-    };
-
     readonly path: string;
     private current?: Replay; 
+    private worker?: Worker;
 
     constructor(path: string) {
         this.path = path;
     }
 
-    public async parseSync(): Promise<Replay> {
+    public parse() {
         if (this.current !== undefined) return this.current;
+        if (this.worker !== undefined) this.worker.terminate();
         const replay = this.current = new Replay();
-        const fs = new FileStream(this.path, true);
-        await fs.open();
 
-        const module = async (bytes: ByteStream | FileStream): Promise<Module | undefined> => {
-            const id = await BitHelper.readUShort(bytes);
-            return replay.typemap.get(id);
-        };
-        
-        // Parse Header
-        const headerSize = await BitHelper.readInt(fs);
-        console.log(`header: ${headerSize} bytes`);
-        const bytes = await fs.getBytes(headerSize);
-        const typeMapVersion = await BitHelper.readString(bytes);
-        if (Parser.typemapParsers[typeMapVersion] === undefined) {
-            throw new ModuleNotFound(`No valid parser was found for 'ReplayRecorder.TypeMap(${typeMapVersion})'.`);
-        }
-        await Parser.typemapParsers[typeMapVersion](bytes, replay);
-        // Parse Headers
-        let m = await module(bytes);
-        while (m?.typename !== "ReplayRecorder.EndOfHeader") {
-            if (m === undefined) throw new UnknownModuleType();
-            const func = ModuleLoader.get(m);
-            if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-            await func(bytes, replay.header);
-            m = await module(bytes);
-        }
-        // Parse Snapshots
-        try {
-            for (;;) {
-                // TODO(randomuserhi): Previous state, Next state
-                // TODO(randomuserhi): Timeline
-                const now: Snapshot = new Snapshot();
-                const prev: Snapshot = new Snapshot();
+        this.worker = new Worker("../replay/worker.js");
+        const _addEventListener = this.worker.addEventListener.bind(this.worker);
+        const ipc = new IpcInterface({
+            on: (callback) => _addEventListener("message", (e: MessageEvent) => { callback(e.data); }),
+            send: this.worker.postMessage.bind(this.worker)
+        });
+        ipc.resp("open", async (...args: any[]) => {
+            await window.api.invoke("open", ...args);
+            return {};
+        });
+        ipc.on("close", (...args: any[]) => window.api.send("close", ...args));
+        ipc.resp("getBytes", async (...args: any[]) => {
+            const buffer: Uint8Array | undefined = await window.api.invoke("getBytes", ...args);
+            return {
+                data: buffer,
+                args: [{
+                    transfer: buffer === undefined ? undefined : [
+                        buffer.buffer
+                    ]
+                }]
+            };
+        });
 
-                    
-                const snapshotSize = await BitHelper.readInt(fs);
-                console.log(`snapshot: ${snapshotSize} bytes`);
-                const bytes = await fs.getBytes(snapshotSize);
-                const timestamp = await BitHelper.readUInt(bytes);
+        ipc.send("init", this.path, [...ModuleLoader.links.keys()]);
 
-                const nEvents = await BitHelper.readInt(bytes);
-                for (let i = 0; i < nEvents; ++i) {
-                    const delta = await BitHelper.readUShort(bytes);
-                    m = await module(bytes);
-                    if (m === undefined) throw new UnknownModuleType();
-                    const func = ModuleLoader.get(m);
-                    if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-                    await func(bytes, prev, now);
-                }
+        return replay;
+    }
 
-                const nDynamicCollections = await BitHelper.readUShort(bytes);
-                for (let i = 0; i < nDynamicCollections; ++i) {
-                    m = await module(bytes);
-                    if (m === undefined) throw new UnknownModuleType();
-                    const func = ModuleLoader.get(m);
-                    if (func === undefined) throw new ModuleNotFound(`No valid parser was found for '${m.typename}(${m.version})'.`);
-                    await func(bytes, prev, now);
-                }
-            } 
-        } catch { /* empty */ }
-        fs.close();
-        return this.current;
+    public terminate() {
+        if (this.worker !== undefined) this.worker.terminate();
+    }
+}
+
+/* exported InvalidWorkerEvent */
+class InvalidWorkerEvent extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+/* exported NoExecFunc */
+class NoExecFunc extends Error {
+    constructor(message?: string) {
+        super(message);
     }
 }
 
