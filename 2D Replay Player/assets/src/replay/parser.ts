@@ -73,9 +73,14 @@ class Parser {
         });
 
         // Events
-        ipc.on("eoh", (header) => {
+        ipc.on("eoh", (typemap, header) => {
+            replay.typemap = typemap;
             replay.header = header;
             this.dispatchEvent(RHU.CustomEvent("eoh", undefined));
+        });
+        ipc.on("snapshot", (snapshot: Timeline.Snapshot, state?: Replay.Snapshot) => {
+            replay.timeline.push(snapshot);
+            if (state !== undefined) replay.snapshots.push(state);
         });
 
         // Start parsing
