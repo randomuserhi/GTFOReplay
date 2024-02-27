@@ -83,6 +83,9 @@ class Parser {
             replay.timeline.push(snapshot);
             if (state !== undefined) replay.snapshots.push(state);
         });
+        ipc.on("end", () => {
+            this.dispatchEvent(RHU.CustomEvent("end", undefined));
+        });
 
         // Start parsing
         ipc.send("init", this.path, [...ModuleLoader.links.keys()], finite);
