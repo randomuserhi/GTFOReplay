@@ -20,6 +20,21 @@ class DuplicatePlayer extends Error {
     }
 }
 
+// Example event
+/*(function(typename: string) {
+    ModuleLoader.register(typename, "0.0.1", {
+        parse: async (data) => {
+            return await BitHelper.readString(data);
+        }, 
+        exec: (data, snapshot) => {
+            const block = snapshot.data("TestEvent", "0.0.1") as any;
+            if (block.count === undefined) block.count = 0;
+            block.count += 1;
+            block.text = data;
+        }
+    });
+})("TestEvent");*/
+
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", {
         parse: async (data) => {
@@ -27,7 +42,7 @@ class DuplicatePlayer extends Error {
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const dynamics = snapshot.get("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
 
             if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
             ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
@@ -44,8 +59,8 @@ class DuplicatePlayer extends Error {
             };
         },
         exec: (id, data, snapshot) => {
-            const players = snapshot.get("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.get("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+            const players = snapshot.buffer("Vanilla.Player", "0.0.1");
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
     
             const { snet } = data;
     
@@ -62,8 +77,8 @@ class DuplicatePlayer extends Error {
             };
         }, 
         exec: (id, data, snapshot) => {
-            const players = snapshot.get("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.get("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+            const players = snapshot.buffer("Vanilla.Player", "0.0.1");
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
     
             const { snet } = data;
     

@@ -56,7 +56,8 @@ let replay: Replay | undefined = undefined;
             const state: Snapshot = {
                 tick: 0,
                 time: 0,
-                dynamics: new Map()
+                dynamics: new Map(),
+                data: new Map()
             };
             const api = replay.api(state);
             const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {

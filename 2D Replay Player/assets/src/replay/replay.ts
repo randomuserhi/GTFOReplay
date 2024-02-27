@@ -23,11 +23,13 @@ interface Snapshot {
     time: number;
     tick: number;
     dynamics: Map<string, Map<number, Timeline.Dynamic>>;
+    data: Map<string, unknown>;
 }
 
 declare namespace Snapshot {
     interface API { 
-        get(typename: string, version: string): Map<number, unknown>;
+        buffer(typename: string, version: string): Map<number, unknown>;
+        data(typename: string, version: string): unknown;
         header(typename: string, version?: string): unknown;
     }
 }
@@ -51,7 +53,13 @@ class Replay {
     public api(state: Snapshot): Snapshot.API {
         const replay = this;
         return {
-            get(typename: string, version: string): Map<number, unknown> {
+            data(typename: string, version?: string): any {
+                if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
+                const identifier = `${typename}(${version})`;
+                if (!state.data.has(identifier)) state.data.set(identifier, {} as any);
+                return state.data.get(identifier)!;
+            },
+            buffer(typename: string, version: string): Map<number, unknown> {
                 if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
                 const identifier = `${typename}(${version})`;
                 if (!state.dynamics.has(identifier)) state.dynamics.set(identifier, new Map());
