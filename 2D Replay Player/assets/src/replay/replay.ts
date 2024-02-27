@@ -1,6 +1,7 @@
 declare namespace Timeline {
     interface Event<T = unknown> {
         eventType: number;
+        dynamicType?: number;
         delta: number;
         type: number;
         data: T;
@@ -59,10 +60,8 @@ class Replay {
                 return state.dynamics.get(identifier)!;
             },
             header(typename: string, version?: string): unknown {
-                const type = replay.types.get(typename);
+                const type = replay.types.get(`${typename}(${version})`);
                 if (type === undefined || !replay.header.has(type)) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
-                const module = replay.typemap.get(type);
-                if (module === undefined || (version !== undefined && module.version !== version)) throw new ModuleNotFound(`No valid module was found for '${typename}(${version})'.`);
                 return replay.header.get(type)!;
             }
         };
@@ -75,24 +74,41 @@ class Replay {
     }
 
     private exec(time: number, api: Snapshot.API, state: Snapshot, snapshot: Timeline.Snapshot) {
-        const spawned = new Set<number>();
-        const despawned = new Set<number>();
+        const exists = new Map<number, Map<number, boolean>>();
 
         // perform events
-        for (const { eventType, type, data, delta } of snapshot.events) {
+        for (const { dynamicType, eventType, type, data, delta } of snapshot.events) {
             const exec = ModuleLoader.getExecFunc(this.get(type));
+            console.log(state);
+            console.log(`event: ${dynamicType} ${eventType} ${type} - ${time} >= ${snapshot.time + delta}`);
             if (time >= snapshot.time + delta) {
                 exec(data, api, 1);
+                if (eventType !== 0) {
+                    if (dynamicType === undefined) throw new Error("Spawn / Despawn events should have a dynamic type associated with them.");
+                    const id = (data as any).id;
+
+                    if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
+                    const collection = exists.get(dynamicType)!;
+
+                    if (eventType === 2) { // Despawn event has been triggered
+                        collection.set(id, false);
+                    } else if (eventType === 1) { // Spawn event has been triggered
+                        collection.set(id, true);
+                    }
+                }
             } else {
-                switch(eventType) {
-                case 1: // spawn event
-                    spawned.add((data as any).id);
-                    despawned.delete((data as any).id);
-                    break;
-                case 2: // despawn event
-                    spawned.delete((data as any).id);
-                    despawned.add((data as any).id);
-                    break;
+                if (eventType !== 0) {
+                    if (dynamicType === undefined) throw new Error("Spawn / Despawn events should have a dynamic type associated with them.");
+                    const id = (data as any).id;
+
+                    if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
+                    const collection = exists.get(dynamicType)!;
+
+                    if (eventType === 1) { // Spawn event has not yet been triggered
+                        if (!collection.has(id)) {
+                            collection.set(id, false);
+                        }
+                    }
                 }
             }
         }
@@ -108,7 +124,8 @@ class Replay {
             for (const [type, collection] of snapshot.dynamics) {
                 const exec = ModuleLoader.getExecFunc(this.get(type));
                 for (const { id, data } of collection) {
-                    if (!spawned.has(id) && !despawned.has(id)) {
+                    const exist = exists.get(type)?.get(id);
+                    if (exist === undefined || exist === true) {
                         exec(id, data, api, lerp);
                     }
                 }
@@ -142,9 +159,10 @@ class Replay {
         const api = this.api(state);
 
         // extrapolate snapshot until time
-        let tick = state.tick;
+        let tick = state.tick + 1;
         for (; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
+            console.log(`tick: ${tick}`);
             this.exec(time, api, state, snapshot);
             if (snapshot.time > state.time) break;
         }

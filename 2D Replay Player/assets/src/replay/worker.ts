@@ -65,8 +65,9 @@ let replay: Replay | undefined = undefined;
             dynamics: new Map()
         }, state);
         const api = replay.api(state);
-        const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
+        const parseEvents = async (bytes: ByteStream): Promise<[Timeline.Event[], (() => void)[]]> => {
             const events: Timeline.Event[] = [];
+            const despawnJobs: (() => void)[] = []; // NOTE(randomuserhi): despawns need to happen after parsing dynamics.
             const size = await BitHelper.readInt(bytes);
             for (let i = 0; i < size; ++i) {
                 const delta = await BitHelper.readUShort(bytes);
@@ -74,17 +75,29 @@ let replay: Replay | undefined = undefined;
                 const func = ModuleLoader.get(module);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                 const eventType = await BitHelper.readByte(bytes);
+                let dynamicType: number | undefined = undefined;
+                switch (eventType) {
+                case 1:
+                case 2:
+                    dynamicType = await BitHelper.readUShort(bytes);
+                    break;
+                }
                 const data = await func.parse(bytes);
                 events.push({
                     eventType,
+                    dynamicType,
                     type,
                     delta,
                     data
                 });
                 if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                func.exec(data, api, 1);
+                if (eventType !== 2) func.exec(data, api, 1);
+                else despawnJobs.push(() => {
+                    if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
+                    func.exec(data, api, 1);
+                });
             }
-            return events;
+            return [events.sort((a, b) => a.delta - b.delta), despawnJobs];
         };
         const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {
             const dynamics: Timeline.Dynamic[] = [];
@@ -116,12 +129,15 @@ let replay: Replay | undefined = undefined;
                     dynamics: new Map()
                 } as any;
 
-                snapshot.events = await parseEvents(bytes); // parse events
+                const [events, despawnJobs] = await parseEvents(bytes);
+                snapshot.events = events; // parse events
                 const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {
                     const [dynamics, type] = await parseDynamicCollection(bytes);
                     snapshot.dynamics.set(type, dynamics); // parse dynamics
                 }
+                // perform despawns
+                despawnJobs.forEach(d => d());
                 
                 ipc.send("snapshot", snapshot, (state.tick % 50) === 0 ? state : undefined);
             }

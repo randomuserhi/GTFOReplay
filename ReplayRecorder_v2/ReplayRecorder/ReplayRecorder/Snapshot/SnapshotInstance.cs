@@ -97,12 +97,12 @@ namespace ReplayRecorder.Snapshot {
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
 
+                    if (dynamic.IsDirty) {
+                        if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
+                        dynamic._Write(buffer);
+                        dynamic.Write(buffer);
+                    }
                     if (!dynamic.remove) {
-                        if (dynamic.IsDirty) {
-                            if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
-                            dynamic._Write(buffer);
-                            dynamic.Write(buffer);
-                        }
                         _dynamics.Add(dynamic);
                     }
                 }
@@ -212,6 +212,7 @@ namespace ReplayRecorder.Snapshot {
             Type dynType = dynamic.GetType();
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
+            spawnEvent.type = SnapshotManager.types[dynamic.GetType()];
             Trigger(spawnEvent);
             dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
@@ -220,6 +221,7 @@ namespace ReplayRecorder.Snapshot {
         internal void Despawn<T>(T despawnEvent, Type dynType, int id, bool errorOnNotFound = true) where T : ReplayDespawn {
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
+            despawnEvent.type = SnapshotManager.types[dynType];
             Trigger(despawnEvent);
             dynamics[dynType].Remove(id, errorOnNotFound);
         }

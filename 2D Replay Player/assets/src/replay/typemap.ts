@@ -11,7 +11,7 @@ namespace Typemap {
                     typename,
                     version
                 });
-                replay.types.set(typename, type);
+                replay.types.set(`${typename}(${version})`, type);
             }
         }
     };
