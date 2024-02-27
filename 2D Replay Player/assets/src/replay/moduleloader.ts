@@ -5,27 +5,32 @@ interface Module {
 
 /* exported ModuleLoader */
 namespace ModuleLoader {
+    export interface ModuleFunc { 
+        parse: ParseFunc;
+        exec?: ExecFunc;
+    }
+
     export const links = new Map<string, Module[]>();
-    export const library: Map<string, Map<string, { parse: ParseFunc, exec?: ExecFunc }>> = new Map();
+    export const library: Map<string, Map<string, { main: ModuleFunc, spawn?: ModuleFunc, despawn?: ModuleFunc }>> = new Map();
 
     export function getParseFunc(module: Module): ParseFunc {
-        const func = library.get(module.typename)?.get(module.version)?.parse;
+        const func = library.get(module.typename)?.get(module.version)?.main.parse;
         if (func === undefined) throw new ModuleNotFound(`Could not find parser for ${module.typename}(${module.version})`);
         return func;
     }
 
     export function getExecFunc(module: Module): ExecFunc {
-        const func = library.get(module.typename)?.get(module.version)?.exec;
+        const func = library.get(module.typename)?.get(module.version)?.main.exec;
         if (func === undefined) throw new ModuleNotFound(`Could not find exec function for ${module.typename}(${module.version})`);
         return func;
     }
 
-    export function get(module: Module): { parse: ParseFunc, exec?: ExecFunc } | undefined {
+    export function get(module: Module): { main: ModuleFunc, spawn?: ModuleFunc, despawn?: ModuleFunc } | undefined {
         return library.get(module.typename)?.get(module.version);
     }
 
     // TODO(randomuserhi): console message / warning when replacing or updating an existing type
-    export function register(typename: string, version: string, parse: ParseFunc, exec?: ExecFunc) {
+    export function register(typename: string, version: string, main: ModuleFunc, spawn?: ModuleFunc, despawn?: ModuleFunc) {
         if (self.document !== undefined) {
             const link = self.document.currentScript?.getAttribute("src");
             if (link == null) {
@@ -42,8 +47,9 @@ namespace ModuleLoader {
             library.set(typename, new Map());
         }
         library.get(typename)!.set(version, {
-            parse,
-            exec
+            main,
+            spawn,
+            despawn
         });
     }
 

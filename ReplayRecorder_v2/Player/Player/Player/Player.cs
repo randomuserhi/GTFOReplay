@@ -1,7 +1,6 @@
 ﻿using API;
 using Player;
 using ReplayRecorder;
-using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using SNetwork;
@@ -46,7 +45,7 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
             player = new rPlayer(agent);
-            Replay.Spawn(new rPlayerSpawn(player.agent), player);
+            Replay.Spawn(player);
             players.Add(player);
         }
 
@@ -58,36 +57,8 @@ namespace Vanilla.Player {
             }
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
-            Replay.Despawn(new rPlayerDespawn(player), player);
+            Replay.Despawn(player);
             players.Remove(player);
-        }
-    }
-
-    [ReplayData("Vanilla.Player.Spawn", "0.0.1")]
-    internal class rPlayerSpawn : ReplaySpawnAt {
-        private PlayerAgent player;
-
-        public rPlayerSpawn(PlayerAgent player) : base(player.GlobalID, player.DimensionIndex, player.Position, player.Rotation) {
-            this.player = player;
-        }
-
-        public override void Write(ByteBuffer buffer) {
-            BitHelper.WriteBytes(player.Owner.Lookup, buffer);
-            BitHelper.WriteBytes((byte)player.PlayerSlotIndex, buffer);
-            BitHelper.WriteBytes(player.Owner.NickName, buffer);
-        }
-    }
-
-    [ReplayData("Vanilla.Player.Despawn", "0.0.1")]
-    internal class rPlayerDespawn : ReplayDespawn {
-        private rPlayer player;
-
-        public rPlayerDespawn(rPlayer player) : base(player.Id) {
-            this.player = player;
-        }
-
-        public override void Write(ByteBuffer buffer) {
-            BitHelper.WriteBytes(player.agent.Owner.Lookup, buffer);
         }
     }
 
@@ -97,6 +68,17 @@ namespace Vanilla.Player {
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
+        }
+
+        public override void Spawn(ByteBuffer buffer) {
+            base.Spawn(buffer);
+            BitHelper.WriteBytes(agent.Owner.Lookup, buffer);
+            BitHelper.WriteBytes((byte)agent.PlayerSlotIndex, buffer);
+            BitHelper.WriteBytes(agent.Owner.NickName, buffer);
+        }
+
+        public override void Despawn(ByteBuffer buffer) {
+            BitHelper.WriteBytes(agent.Owner.Lookup, buffer);
         }
     }
 }

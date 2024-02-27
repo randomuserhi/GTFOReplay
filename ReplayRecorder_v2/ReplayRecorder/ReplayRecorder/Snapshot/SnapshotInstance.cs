@@ -6,7 +6,6 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -26,7 +25,6 @@ namespace ReplayRecorder.Snapshot {
 
             public void Write(ByteBuffer buffer) {
                 BitHelper.WriteBytes(id, buffer);
-                e._Write(buffer);
                 e.Write(buffer);
             }
         }
@@ -208,27 +206,20 @@ namespace ReplayRecorder.Snapshot {
         }
 
         [HideFromIl2Cpp]
-        internal void Spawn<T>(T spawnEvent, ReplayDynamic dynamic, bool errorOnDuplicate = true) where T : ReplaySpawn {
+        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
             Type dynType = dynamic.GetType();
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
-            spawnEvent.type = SnapshotManager.types[dynamic.GetType()];
-            Trigger(spawnEvent);
+            Trigger(new ReplaySpawn(dynamic));
             dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
-
         [HideFromIl2Cpp]
-        internal void Despawn<T>(T despawnEvent, Type dynType, int id, bool errorOnNotFound = true) where T : ReplayDespawn {
+        internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
+            Type dynType = dynamic.GetType();
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
-            despawnEvent.type = SnapshotManager.types[dynType];
-            Trigger(despawnEvent);
-            dynamics[dynType].Remove(id, errorOnNotFound);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [HideFromIl2Cpp]
-        internal void Despawn<T>(T despawnEvent, ReplayDynamic dynamic, bool errorOnNotFound = true) where T : ReplayDespawn {
-            Despawn(despawnEvent, dynamic.GetType(), dynamic.Id, errorOnNotFound);
+            Trigger(new ReplayDespawn(dynamic));
+            dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
         }
 
         private void Tick() {

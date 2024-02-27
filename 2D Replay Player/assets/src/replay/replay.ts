@@ -1,7 +1,5 @@
 declare namespace Timeline {
     interface Event<T = unknown> {
-        eventType: number;
-        dynamicType?: number;
         delta: number;
         type: number;
         data: T;
@@ -77,37 +75,51 @@ class Replay {
         const exists = new Map<number, Map<number, boolean>>();
 
         // perform events
-        for (const { dynamicType, eventType, type, data, delta } of snapshot.events) {
-            const exec = ModuleLoader.getExecFunc(this.get(type));
-            if (time >= snapshot.time + delta) {
-                exec(data, api, 1);
-                if (eventType !== 0) {
-                    if (dynamicType === undefined) throw new Error("Spawn / Despawn events should have a dynamic type associated with them.");
-                    const id = (data as any).id;
+        for (const { type, data, delta } of snapshot.events) {
+            const module = this.typemap.get(type);
+            if (module === undefined) throw new UnknownModuleType(`Unknown module type '${type}'.`);
+            const runEvent = time >= snapshot.time - delta;
+            if (module.typename === "ReplayRecorder.Spawn" || module.typename === "ReplayRecorder.Despawn") {
+                // Special case for spawn events
+                const isSpawn = module.typename === "ReplayRecorder.Spawn";
+                const isDespawn = module.typename === "ReplayRecorder.Despawn";
+                const exec = Internal.DynamicExec[module.typename][module.version];
+                if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
 
-                    if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
-                    const collection = exists.get(dynamicType)!;
+                if (runEvent) {
+                    exec(data, this, api);
+                    if (isSpawn || isDespawn) {
+                        const dynamicType: number = (data as any).type;
+                        const id = (data as any).id;
 
-                    if (eventType === 2) { // Despawn event has been triggered
-                        collection.set(id, false);
-                    } else if (eventType === 1) { // Spawn event has been triggered
-                        collection.set(id, true);
-                    }
-                }
-            } else {
-                if (eventType !== 0) {
-                    if (dynamicType === undefined) throw new Error("Spawn / Despawn events should have a dynamic type associated with them.");
-                    const id = (data as any).id;
+                        if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
+                        const collection = exists.get(dynamicType)!;
 
-                    if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
-                    const collection = exists.get(dynamicType)!;
-
-                    if (eventType === 1) { // Spawn event has not yet been triggered
-                        if (!collection.has(id)) {
+                        if (isDespawn) { // Despawn event has been triggered
                             collection.set(id, false);
+                        } else if (isSpawn) { // Spawn event has been triggered
+                            collection.set(id, true);
+                        }
+                    }
+                } else {
+                    if (isSpawn || isDespawn) {
+                        const dynamicType: number = (data as any).type;
+                        const id = (data as any).id;
+
+                        if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
+                        const collection = exists.get(dynamicType)!;
+
+                        if (isSpawn) { // Spawn event has not yet been triggered
+                            if (!collection.has(id)) {
+                                collection.set(id, false);
+                            }
                         }
                     }
                 }
+            } else if (runEvent) {
+                const exec = ModuleLoader.get(module)?.main.exec;
+                if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
+                exec(data, api);
             }
         }
 
