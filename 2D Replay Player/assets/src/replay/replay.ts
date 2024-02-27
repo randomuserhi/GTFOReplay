@@ -151,7 +151,9 @@ class Replay {
         return this.snapshots[min];
     }
 
-    public getSnapshot(time: number): Snapshot {
+    public getSnapshot(time: number): Snapshot | undefined {
+        if (this.snapshots.length === 0) return undefined;
+
         // Get nearest snapshot from cache
         const state = structuredClone(this.getNearestSnapshot(time));
         const api = this.api(state);

@@ -23,7 +23,7 @@ class File {
         this.watcher = chokidar.watch(this.path, {
             usePolling: true
         }); // TODO(randomuserhi): requires polling for some reason => shouldn't need to tho?
-        this.watcher.on("change", () => {
+        this.watcher.on("all", () => {
             const requests = this.requests;
             this.requests = [];
             requests.forEach(r => this.doRequest(r));

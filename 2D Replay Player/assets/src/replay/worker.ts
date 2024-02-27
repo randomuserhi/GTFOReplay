@@ -22,7 +22,6 @@ let replay: Replay | undefined = undefined;
         replay = new Replay();
 
         const fs = new FileStream(ipc, path, finite);
-        await fs.open();
 
         const getModule = async (bytes: ByteStream | FileStream): Promise<[Module, number]> => {
             if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
@@ -32,90 +31,90 @@ let replay: Replay | undefined = undefined;
             return [module, id];
         };
         
-        // Parse Typemap
-        const headerSize = await BitHelper.readInt(fs);
-        const bytes = await fs.getBytes(headerSize);
-        const typeMapVersion = await BitHelper.readString(bytes);
-        if (Typemap.parsers[typeMapVersion] === undefined) {
-            throw new ModuleNotFound(`No valid parser was found for 'ReplayRecorder.TypeMap(${typeMapVersion})'.`);
-        }
-        await Typemap.parsers[typeMapVersion](bytes, replay);
+        try {
+            // Parse Typemap
+            const headerSize = await BitHelper.readInt(fs);
+            const bytes = await fs.getBytes(headerSize);
+            const typeMapVersion = await BitHelper.readString(bytes);
+            if (Typemap.parsers[typeMapVersion] === undefined) {
+                throw new ModuleNotFound(`No valid parser was found for 'ReplayRecorder.TypeMap(${typeMapVersion})'.`);
+            }
+            await Typemap.parsers[typeMapVersion](bytes, replay);
 
-        // Parse Headers
-        let [module, type] = await getModule(bytes);
-        while (module?.typename !== "ReplayRecorder.EndOfHeader") {
-            const func = ModuleLoader.get(module);
-            if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-            replay.header.set(type, await func.parse(bytes));
-            [module, type] = await getModule(bytes);
-        }
+            // Parse Headers
+            let [module, type] = await getModule(bytes);
+            while (module?.typename !== "ReplayRecorder.EndOfHeader") {
+                const func = ModuleLoader.get(module);
+                if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
+                replay.header.set(type, await func.parse(bytes));
+                [module, type] = await getModule(bytes);
+            }
 
-        ipc.send("eoh", replay.typemap, replay.types, replay.header);
+            ipc.send("eoh", replay.typemap, replay.types, replay.header);
 
-        // Parse snapshots
-        const state: Snapshot = {
-            tick: 0,
-            time: 0,
-            dynamics: new Map()
-        };
-        ipc.send("snapshot", {
-            tick: 0,
-            time: 0,
-            events: [],
-            dynamics: new Map()
-        }, state);
-        const api = replay.api(state);
-        const parseEvents = async (bytes: ByteStream): Promise<[Timeline.Event[], (() => void)[]]> => {
-            const events: Timeline.Event[] = [];
-            const despawnJobs: (() => void)[] = []; // NOTE(randomuserhi): despawns need to happen after parsing dynamics.
-            const size = await BitHelper.readInt(bytes);
-            for (let i = 0; i < size; ++i) {
-                const delta = await BitHelper.readUShort(bytes);
+            // Parse snapshots
+            const state: Snapshot = {
+                tick: 0,
+                time: 0,
+                dynamics: new Map()
+            };
+            ipc.send("snapshot", {
+                tick: 0,
+                time: 0,
+                events: [],
+                dynamics: new Map()
+            }, state);
+            const api = replay.api(state);
+            const parseEvents = async (bytes: ByteStream): Promise<[Timeline.Event[], (() => void)[]]> => {
+                const events: Timeline.Event[] = [];
+                const despawnJobs: (() => void)[] = []; // NOTE(randomuserhi): despawns need to happen after parsing dynamics.
+                const size = await BitHelper.readInt(bytes);
+                for (let i = 0; i < size; ++i) {
+                    const delta = await BitHelper.readUShort(bytes);
+                    const [module, type] = await getModule(bytes);
+                    const func = ModuleLoader.get(module);
+                    if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
+                    const eventType = await BitHelper.readByte(bytes);
+                    let dynamicType: number | undefined = undefined;
+                    switch (eventType) {
+                    case 1:
+                    case 2:
+                        dynamicType = await BitHelper.readUShort(bytes);
+                        break;
+                    }
+                    const data = await func.parse(bytes);
+                    events.push({
+                        eventType,
+                        dynamicType,
+                        type,
+                        delta,
+                        data
+                    });
+                    if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
+                    if (eventType !== 2) func.exec(data, api, 1);
+                    else despawnJobs.push(() => {
+                        if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
+                        func.exec(data, api, 1);
+                    });
+                }
+                return [events.sort((a, b) => a.delta - b.delta), despawnJobs];
+            };
+            const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {
+                const dynamics: Timeline.Dynamic[] = [];
                 const [module, type] = await getModule(bytes);
                 const func = ModuleLoader.get(module);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                const eventType = await BitHelper.readByte(bytes);
-                let dynamicType: number | undefined = undefined;
-                switch (eventType) {
-                case 1:
-                case 2:
-                    dynamicType = await BitHelper.readUShort(bytes);
-                    break;
-                }
-                const data = await func.parse(bytes);
-                events.push({
-                    eventType,
-                    dynamicType,
-                    type,
-                    delta,
-                    data
-                });
                 if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                if (eventType !== 2) func.exec(data, api, 1);
-                else despawnJobs.push(() => {
-                    if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                    func.exec(data, api, 1);
-                });
-            }
-            return [events.sort((a, b) => a.delta - b.delta), despawnJobs];
-        };
-        const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {
-            const dynamics: Timeline.Dynamic[] = [];
-            const [module, type] = await getModule(bytes);
-            const func = ModuleLoader.get(module);
-            if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-            if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
 
-            const size = await BitHelper.readInt(bytes);
-            for (let i = 0; i < size; ++i) {
-                const id = await BitHelper.readInt(bytes);
-                const data = await func.parse(bytes);
-                dynamics.push({ id, data });
-                func.exec(id, data, api, 1);
-            }
-            return [dynamics, type];
-        };
-        try {
+                const size = await BitHelper.readInt(bytes);
+                for (let i = 0; i < size; ++i) {
+                    const id = await BitHelper.readInt(bytes);
+                    const data = await func.parse(bytes);
+                    dynamics.push({ id, data });
+                    func.exec(id, data, api, 1);
+                }
+                return [dynamics, type];
+            };
             for (;;) {
                 const snapshotSize = await BitHelper.readInt(fs);
                 const bytes = await fs.getBytes(snapshotSize);
@@ -147,7 +146,6 @@ let replay: Replay | undefined = undefined;
             }
         }
 
-        fs.close();
         ipc.send("end");
         self.close();
     }
