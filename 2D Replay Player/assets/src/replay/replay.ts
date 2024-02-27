@@ -86,6 +86,7 @@ class Replay {
                 return state.dynamics.get(identifier)!;
             },
             header(typename: string, version: string): unknown {
+                if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
                 const type = replay.types.get(`${typename}(${version})`);
                 if (type === undefined || !replay.header.has(type)) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
                 return replay.header.get(type)!;
