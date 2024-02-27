@@ -45,7 +45,7 @@ interface MapGeometry {
 })("Vanilla.Map.Geometry");
 
 /*(() => {
-    Renderer.register((header, state) => {
+    Renderer.register((state) => {
         const map = header.get("Vanilla.Map.Geometry", "0.0.1");
     });
 })();*/

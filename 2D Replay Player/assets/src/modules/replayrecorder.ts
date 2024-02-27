@@ -78,25 +78,36 @@ class DuplicateDynamic extends Error {
     });
 })("ReplayRecorder.Despawn.Dynamic");
 
+namespace ReplayRecorder {
+    export namespace Dynamic {
+        export async function parse(data: ByteStream): Promise<any> {
+            const id = await BitHelper.readInt(data);
+            const absolute = await BitHelper.readByte(data) != 0;
+            return {
+                id, absolute,
+                position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data),
+                rotation: await BitHelper.readHalfQuaternion(data),
+                dimension: await BitHelper.readByte(data)
+            };
+        }
+        export function lerp(dyn: Dynamic, data: any, lerp: number): void {
+            const { absolute, position, rotation, dimension } = data;
+            const fpos = absolute ? position : Vec.add(dyn.position, position);
+            dyn.position = Vec.lerp(dyn.position, fpos, lerp);
+            dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);
+            dyn.dimension = dimension;
+        }
+    }
+}
+
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
-        const id = await BitHelper.readInt(data);
-        const absolute = await BitHelper.readByte(data) != 0;
-        return {
-            id, absolute,
-            position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data),
-            rotation: await BitHelper.readHalfQuaternion(data),
-            dimension: await BitHelper.readByte(data)
-        };
+        return ReplayRecorder.Dynamic.parse(data);
     }, (data, snapshot, lerp) => {
         const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1") as Map<number, Dynamic>;
 
-        const { id, absolute, position, rotation, dimension } = data;
+        const { id } = data;
         if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
-        const dyn = dynamics.get(id)!;
-        const fpos = absolute ? position : Vec.add(dyn.position, position);
-        dyn.position = Vec.lerp(dyn.position, fpos, lerp);
-        dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);
-        dyn.dimension = dimension;
+        ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
     });
 })("ReplayRecorder.Dynamic");

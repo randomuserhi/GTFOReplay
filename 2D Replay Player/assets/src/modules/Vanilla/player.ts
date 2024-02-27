@@ -22,15 +22,13 @@ class DuplicatePlayer extends Error {
 
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
-        return ModuleLoader.getParseFunc({ 
-            typename: "ReplayRecorder.Dynamic", 
-            version: "0.0.1" 
-        })(data);
+        return ReplayRecorder.Dynamic.parse(data);
     }, (data, snapshot, lerp) => {
-        return ModuleLoader.getExecFunc({ 
-            typename: "ReplayRecorder.Dynamic", 
-            version: "0.0.1" 
-        })(data, snapshot, lerp);
+        const dynamics = snapshot.get("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+
+        const { id } = data;
+        if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
+        ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
     });
 })("Vanilla.Player");
 
