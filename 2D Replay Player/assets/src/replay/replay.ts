@@ -75,23 +75,23 @@ class Replay {
     }
 
     private exec(time: number, api: Snapshot.API, state: Snapshot, snapshot: Timeline.Snapshot) {
-        const spawned = new Map<number, number>();
-        const despawned = new Map<number, number>();
+        const spawned = new Set<number>();
+        const despawned = new Set<number>();
 
         // perform events
         for (const { eventType, type, data, delta } of snapshot.events) {
             const exec = ModuleLoader.getExecFunc(this.get(type));
-            if (time >= state.time + delta) {
+            if (time >= snapshot.time + delta) {
                 exec(data, api, 1);
             } else {
                 switch(eventType) {
                 case 1: // spawn event
-                    spawned.set((data as any).id, delta);
+                    spawned.add((data as any).id);
                     despawned.delete((data as any).id);
                     break;
                 case 2: // despawn event
                     spawned.delete((data as any).id);
-                    despawned.set((data as any).id, delta);
+                    despawned.add((data as any).id);
                     break;
                 }
             }
@@ -108,9 +108,7 @@ class Replay {
             for (const [type, collection] of snapshot.dynamics) {
                 const exec = ModuleLoader.getExecFunc(this.get(type));
                 for (const { id, data } of collection) {
-                    if ((!spawned.has(id) && !despawned.has(id)) || 
-                        (spawned.has(id) && (time >= state.time + spawned.get(id)!)) ||
-                        (despawned.has(id) && (time < state.time + spawned.get(id)!))) {
+                    if (!spawned.has(id) && !despawned.has(id)) {
                         exec(id, data, api, lerp);
                     }
                 }
