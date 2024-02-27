@@ -13,6 +13,18 @@ namespace ModuleLoader {
                 ? (data: ReplayRecorder.Events[T], snapshot: Snapshot.API) => void
                 : (...args: any[]) => void;
     }
+    export interface SpawnModuleFunc<T = unknown, R = any> { 
+        parse: ParseFunc<R>;
+        exec?: T extends keyof ReplayRecorder.Spawn
+            ? (id: number, data: ReplayRecorder.Spawn[T], snapshot: Snapshot.API, lerp: number) => void
+            : (...args: any[]) => void;
+    }
+    export interface DespawnModuleFunc<T = unknown, R = any> { 
+        parse: ParseFunc<R>;
+        exec?: T extends keyof ReplayRecorder.Despawn 
+            ? (id: number, data: ReplayRecorder.Despawn[T], snapshot: Snapshot.API, lerp: number) => void
+            : (...args: any[]) => void;
+    }
 
     export const links = new Map<string, Module[]>();
     export const library: Map<string, Map<string, { main: ModuleFunc, spawn?: ModuleFunc, despawn?: ModuleFunc }>> = new Map();
@@ -36,7 +48,7 @@ namespace ModuleLoader {
     interface ModuleRetTypes extends ReplayRecorder.Headers, ReplayRecorder.Dynamics, ReplayRecorder.Events {}
     type ModuleTypename = keyof ModuleRetTypes;
     // TODO(randomuserhi): console message / warning when replacing or updating an existing type
-    export function register<T extends ModuleTypename>(typename: T, version: string, main: ModuleFunc<T, ModuleRetTypes[T]>, spawn?: ModuleFunc<T extends keyof ReplayRecorder.Spawn ? ReplayRecorder.Spawn[T] : unknown>, despawn?: ModuleFunc<T extends keyof ReplayRecorder.Despawn ? ReplayRecorder.Despawn[T] : unknown>) {
+    export function register<T extends ModuleTypename>(typename: T, version: string, main: ModuleFunc<T, ModuleRetTypes[T]>, spawn?: SpawnModuleFunc<T, T extends keyof ReplayRecorder.Spawn ? ReplayRecorder.Spawn[T] : unknown>, despawn?: DespawnModuleFunc<T, T extends keyof ReplayRecorder.Despawn ? ReplayRecorder.Despawn[T] : unknown>) {
         if (self.document !== undefined) {
             const link = self.document.currentScript?.getAttribute("src");
             if (link == null) {

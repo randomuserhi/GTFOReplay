@@ -39,10 +39,18 @@ interface Snapshot {
 }
 
 declare namespace Snapshot {
+    interface Buffers {
+
+    }
+
+    interface Data {
+
+    }
+
     interface API { 
-        buffer(typename: string, version: string): Map<number, unknown>;
-        data(typename: string, version: string): unknown;
-        header(typename: string, version?: string): unknown;
+        buffer<T extends keyof Buffers>(typename: T, version: string): Map<any, Buffers[T]>;
+        data<T extends keyof Data>(typename: T, version: string): Data[T];
+        header<T extends keyof ReplayRecorder.Headers>(typename: T, version: string): ReplayRecorder.Headers[T];
     }
 }
 
@@ -77,12 +85,12 @@ class Replay {
                 if (!state.dynamics.has(identifier)) state.dynamics.set(identifier, new Map());
                 return state.dynamics.get(identifier)!;
             },
-            header(typename: string, version?: string): unknown {
+            header(typename: string, version: string): unknown {
                 const type = replay.types.get(`${typename}(${version})`);
                 if (type === undefined || !replay.header.has(type)) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
                 return replay.header.get(type)!;
             }
-        };
+        } as any;
     }
 
     private get(type: number): Module {

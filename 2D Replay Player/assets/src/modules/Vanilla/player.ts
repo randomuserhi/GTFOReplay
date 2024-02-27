@@ -1,3 +1,15 @@
+/* exported Snapshot */
+declare namespace Snapshot {
+    interface Buffers {
+        "Vanilla.Player.Dynamic": ReplayRecorder.Dynamic;
+        "Vanilla.Player": {
+            dimension: number;
+            position: Vector;
+            rotation: Quaternion;
+        };
+    }
+}
+
 /* exported ReplayRecorder */
 declare namespace ReplayRecorder {
     interface Dynamics {
@@ -32,7 +44,7 @@ declare namespace ReplayRecorder {
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, ReplayRecorder.Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1");
 
             if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
             ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
@@ -50,7 +62,7 @@ declare namespace ReplayRecorder {
         },
         exec: (id, data, snapshot) => {
             const players = snapshot.buffer("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, ReplayRecorder.Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1");
     
             const { snet } = data;
     
@@ -58,7 +70,7 @@ declare namespace ReplayRecorder {
             players.set(snet, data);
     
             if (dynamics.has(id)) throw new DuplicateDynamic(`Player.Dynamic of id '${id}' already exists.`);
-            dynamics.set(id, ReplayRecorder.Dynamic.create(data));
+            dynamics.set(id, ReplayRecorder.Dynamic.create({ id, ...data }));
         }
     }, {
         parse: async (data) => {
@@ -68,7 +80,7 @@ declare namespace ReplayRecorder {
         }, 
         exec: (id, data, snapshot) => {
             const players = snapshot.buffer("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, ReplayRecorder.Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1");
     
             const { snet } = data;
     
