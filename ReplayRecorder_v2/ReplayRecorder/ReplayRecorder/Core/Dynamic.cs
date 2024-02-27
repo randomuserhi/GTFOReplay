@@ -32,39 +32,21 @@ namespace ReplayRecorder.Core {
     }
 
     [ReplayData("ReplayRecorder.Spawn.Dynamic", "0.0.1")]
-    internal class SpawnDynamic : Id {
+    internal class SpawnDynamic : ReplaySpawn {
+        public override string? Debug => $"{Id}";
+
         public SpawnDynamic(int id) : base(id) { }
     }
 
     [ReplayData("ReplayRecorder.Spawn.DynamicAt", "0.0.1")]
-    internal class SpawnDynamicAt : Id {
-        public byte dimensionIndex;
-        public Vector3 position;
-        public Quaternion rotation;
+    internal class SpawnDynamicAt : ReplaySpawnAt {
+        public override string? Debug => $"{Id} - [{DimensionIndex}] ({Position.x}, {Position.y}, {Position.z}) ({Rotation.x}, {Rotation.y}, {Rotation.z}, {Rotation.w})";
 
-        public override string? Debug => $"{id} - [{dimensionIndex}] ({position.x}, {position.y}, {position.z}) ({rotation.x}, {rotation.y}, {rotation.z}, {rotation.w})";
-
-        public SpawnDynamicAt(int id, byte dimensionIndex, Vector3 position, Quaternion rotation) : base(id) {
-            this.dimensionIndex = dimensionIndex;
-            this.position = position;
-            this.rotation = rotation;
-        }
-
-        public override void Write(ByteBuffer buffer) {
-            base.Write(buffer);
-
-            BitHelper.WriteBytes(position, buffer);
-            if (float.IsNaN(rotation.x) || float.IsNaN(rotation.y) ||
-                float.IsNaN(rotation.z) || float.IsNaN(rotation.w)) {
-                BitHelper.WriteHalf(Quaternion.identity, buffer);
-                APILogger.Warn("Dynamic rotation had NaN component.");
-            } else BitHelper.WriteHalf(rotation, buffer);
-            BitHelper.WriteBytes(dimensionIndex, buffer);
-        }
+        public SpawnDynamicAt(int id, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) : base(id, dimensionIndex, position, rotation) { }
     }
 
     [ReplayData("ReplayRecorder.Despawn.Dynamic", "0.0.1")]
-    internal class DespawnDynamic : Id {
+    internal class DespawnDynamic : ReplayDespawn {
         public DespawnDynamic(int id) : base(id) { }
     }
 

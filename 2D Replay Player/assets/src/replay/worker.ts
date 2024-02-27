@@ -73,8 +73,10 @@ let replay: Replay | undefined = undefined;
                 const [module, type] = await getModule(bytes);
                 const func = ModuleLoader.get(module);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
+                const eventType = await BitHelper.readByte(bytes);
                 const data = await func.parse(bytes);
                 events.push({
+                    eventType,
                     type,
                     delta,
                     data
@@ -84,8 +86,8 @@ let replay: Replay | undefined = undefined;
             }
             return events;
         };
-        const parseDynamicCollection = async (bytes: ByteStream): Promise<[unknown[], number]> => {
-            const dynamics: unknown[] = [];
+        const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {
+            const dynamics: Timeline.Dynamic[] = [];
             const [module, type] = await getModule(bytes);
             const func = ModuleLoader.get(module);
             if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
@@ -93,9 +95,10 @@ let replay: Replay | undefined = undefined;
 
             const size = await BitHelper.readInt(bytes);
             for (let i = 0; i < size; ++i) {
+                const id = await BitHelper.readInt(bytes);
                 const data = await func.parse(bytes);
-                dynamics.push(data);
-                func.exec(data, api, 1);
+                dynamics.push({ id, data });
+                func.exec(id, data, api, 1);
             }
             return [dynamics, type];
         };

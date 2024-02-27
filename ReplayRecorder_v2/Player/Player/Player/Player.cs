@@ -46,8 +46,7 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
             player = new rPlayer(agent);
-            Replay.Trigger(new rPlayerSpawn(player.agent));
-            Replay.Spawn(player, agent.DimensionIndex, agent.transform.position, agent.transform.rotation);
+            Replay.Spawn(new rPlayerSpawn(player.agent), player);
             players.Add(player);
         }
 
@@ -59,38 +58,36 @@ namespace Vanilla.Player {
             }
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
-            Replay.Trigger(new rPlayerDespawn(player.agent));
-            Replay.Despawn(player);
+            Replay.Despawn(new rPlayerDespawn(player), player);
             players.Remove(player);
         }
     }
 
     [ReplayData("Vanilla.Player.Spawn", "0.0.1")]
-    internal class rPlayerSpawn : ReplayEvent {
+    internal class rPlayerSpawn : ReplaySpawnAt {
         private PlayerAgent player;
 
-        public rPlayerSpawn(PlayerAgent player) {
+        public rPlayerSpawn(PlayerAgent player) : base(player.GlobalID, player.DimensionIndex, player.Position, player.Rotation) {
             this.player = player;
         }
 
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(player.Owner.Lookup, buffer);
-            BitHelper.WriteBytes(player.GlobalID, buffer);
             BitHelper.WriteBytes((byte)player.PlayerSlotIndex, buffer);
             BitHelper.WriteBytes(player.Owner.NickName, buffer);
         }
     }
 
     [ReplayData("Vanilla.Player.Despawn", "0.0.1")]
-    internal class rPlayerDespawn : ReplayEvent {
-        private PlayerAgent player;
+    internal class rPlayerDespawn : ReplayDespawn {
+        private rPlayer player;
 
-        public rPlayerDespawn(PlayerAgent player) {
+        public rPlayerDespawn(rPlayer player) : base(player.Id) {
             this.player = player;
         }
 
         public override void Write(ByteBuffer buffer) {
-            BitHelper.WriteBytes(player.Owner.Lookup, buffer);
+            BitHelper.WriteBytes(player.agent.Owner.Lookup, buffer);
         }
     }
 

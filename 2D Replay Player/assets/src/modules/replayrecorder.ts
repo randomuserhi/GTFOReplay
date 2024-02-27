@@ -28,63 +28,43 @@ class DuplicateDynamic extends Error {
     }
 }
 
-(function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (data) => {
+
+namespace ReplayRecorder {
+    export async function Spawn(data: ByteStream): Promise<any> {
         return {
             id: await BitHelper.readInt(data)
         };
-    }, (data, snapshot) => {
-        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
+    }
 
-        const { id } = data;
-        if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
-        dynamics.set(id, {
-            id,
-            position: Vec.zero(),
-            rotation: Quat.identity(),
-            dimension: 0
-        });
-    });
-})("ReplayRecorder.Spawn.Dynamic");
-
-(function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (data) => {
+    export async function SpawnAt(data: ByteStream): Promise<any> {
+        const spawn = await ReplayRecorder.Spawn(data);
         return {
-            id: await BitHelper.readInt(data),
+            ...spawn,
             position: await BitHelper.readVector(data),
             rotation: await BitHelper.readHalfQuaternion(data),
             dimension: await BitHelper.readByte(data)
         };
-    }, (data, snapshot) => {
-        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
+    }
 
-        const { id } = data;
-        if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
-        dynamics.set(id, data);
-    });
-})("ReplayRecorder.Spawn.DynamicAt");
-
-(function(typename: string) {
-    ModuleLoader.register(typename, "0.0.1", async (data) => {
+    export async function Despawn(data: ByteStream): Promise<any> {
         return {
             id: await BitHelper.readInt(data)
         };
-    }, (data, snapshot) => {
-        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
+    }
 
-        const { id } = data;
-        if (!dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' does not exist.`);
-        dynamics.delete(id);
-    });
-})("ReplayRecorder.Despawn.Dynamic");
-
-namespace ReplayRecorder {
     export namespace Dynamic {
+        export function create({ id, position, rotation, dimension }: { id: number, position?: Vector, rotation?: Quaternion, dimension?: number }): { id: number, position: Vector, rotation: Quaternion, dimension: number } {
+            return {
+                id,
+                position: position === undefined ? Vec.zero() : position,
+                rotation: rotation === undefined ? Quat.identity() : rotation,
+                dimension: dimension === undefined ? 0 : dimension
+            };
+        }
         export async function parse(data: ByteStream): Promise<any> {
-            const id = await BitHelper.readInt(data);
             const absolute = await BitHelper.readByte(data) != 0;
             return {
-                id, absolute,
+                absolute,
                 position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
                 dimension: await BitHelper.readByte(data)
@@ -102,11 +82,46 @@ namespace ReplayRecorder {
 
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
-        return ReplayRecorder.Dynamic.parse(data);
-    }, (data, snapshot, lerp) => {
-        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1") as Map<number, Dynamic>;
+        return await ReplayRecorder.Spawn(data);
+    }, (data, snapshot) => {
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
 
         const { id } = data;
+        if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
+        dynamics.set(id, ReplayRecorder.Dynamic.create(data));
+    });
+})("ReplayRecorder.Spawn.Dynamic");
+
+(function(typename: string) {
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        return await ReplayRecorder.SpawnAt(data);
+    }, (data, snapshot) => {
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
+
+        const { id } = data;
+        if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
+        dynamics.set(id, ReplayRecorder.Dynamic.create(data));
+    });
+})("ReplayRecorder.Spawn.DynamicAt");
+
+(function(typename: string) {
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        return await ReplayRecorder.Despawn(data);
+    }, (data, snapshot) => {
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1");
+
+        const { id } = data;
+        if (!dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' does not exist.`);
+        dynamics.delete(id);
+    });
+})("ReplayRecorder.Despawn.Dynamic");
+
+(function(typename: string) {
+    ModuleLoader.register(typename, "0.0.1", async (data) => {
+        return await ReplayRecorder.Dynamic.parse(data);
+    }, (id, data, snapshot, lerp) => {
+        const dynamics = snapshot.get("ReplayRecorder.Dynamic", "0.0.1") as Map<number, Dynamic>;
+
         if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
         ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
     });

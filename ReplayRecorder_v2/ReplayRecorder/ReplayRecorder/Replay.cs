@@ -5,7 +5,6 @@ using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Exceptions;
 using ReplayRecorder.Snapshot;
 using System.Reflection;
-using UnityEngine;
 
 namespace ReplayRecorder {
     public static class Replay {
@@ -74,27 +73,11 @@ namespace ReplayRecorder {
         [HideFromIl2Cpp]
         public static void Trigger(ReplayHeader header) => SnapshotManager.GetInstance().Trigger(header);
         [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, eDimensionIndex dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, (byte)dimensionIndex, position);
+        public static void Spawn<T>(T spawnEvent, ReplayDynamic dynamic, bool errorOnDuplicate = true) where T : ReplaySpawn => SnapshotManager.GetInstance().Spawn(spawnEvent, dynamic, errorOnDuplicate);
         [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, (byte)dimensionIndex, position, rotation);
+        public static void Despawn<T>(T despawnEvent, Type dynType, int id, bool errorOnNotFound = true) where T : ReplayDespawn => SnapshotManager.GetInstance().Despawn(despawnEvent, dynType, id, errorOnNotFound);
         [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, dimensionIndex, position);
-        [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, dimensionIndex, position, rotation);
-        [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, eDimensionIndex dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate, (byte)dimensionIndex, position);
-        [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate, (byte)dimensionIndex, position, rotation);
-        [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, byte dimensionIndex, Vector3 position) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate, dimensionIndex, position);
-        [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, byte dimensionIndex, Vector3 position, Quaternion rotation) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate, dimensionIndex, position, rotation);
-        [HideFromIl2Cpp]
-        public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate);
-        [HideFromIl2Cpp]
-        public static void Despawn(Type dynType, int id, bool errorOnNotFound = true) => SnapshotManager.GetInstance().Despawn(dynType, id, errorOnNotFound);
-        [HideFromIl2Cpp]
-        public static void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) => SnapshotManager.GetInstance().Despawn(dynamic, errorOnNotFound);
+        public static void Despawn<T>(T despawnEvent, ReplayDynamic dynamic, bool errorOnNotFound = true) where T : ReplayDespawn => SnapshotManager.GetInstance().Despawn(despawnEvent, dynamic, errorOnNotFound);
 
         public static Action? OnExpeditionEnd;
         public static Action? OnExpeditionStart;

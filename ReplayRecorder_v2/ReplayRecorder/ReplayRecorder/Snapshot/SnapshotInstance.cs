@@ -26,6 +26,7 @@ namespace ReplayRecorder.Snapshot {
 
             public void Write(ByteBuffer buffer) {
                 BitHelper.WriteBytes(id, buffer);
+                e._Write(buffer);
                 e.Write(buffer);
             }
         }
@@ -99,6 +100,7 @@ namespace ReplayRecorder.Snapshot {
                     if (!dynamic.remove) {
                         if (dynamic.IsDirty) {
                             if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
+                            dynamic._Write(buffer);
                             dynamic.Write(buffer);
                         }
                         _dynamics.Add(dynamic);
@@ -206,53 +208,25 @@ namespace ReplayRecorder.Snapshot {
         }
 
         [HideFromIl2Cpp]
-        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
+        internal void Spawn<T>(T spawnEvent, ReplayDynamic dynamic, bool errorOnDuplicate = true) where T : ReplaySpawn {
             Type dynType = dynamic.GetType();
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
-            Trigger(new SpawnDynamic(dynamic.Id));
-            dynamics[dynType].Add(dynamic, errorOnDuplicate);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [HideFromIl2Cpp]
-        internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position) {
-            Spawn(dynamic, dimensionIndex, position, Quaternion.identity);
-        }
-        [HideFromIl2Cpp]
-        internal void Spawn(ReplayDynamic dynamic, byte dimensionIndex, Vector3 position, Quaternion rotation) {
-            Type dynType = dynamic.GetType();
-            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
-
-            Trigger(new SpawnDynamicAt(dynamic.Id, (byte)dimensionIndex, position, rotation));
-            dynamics[dynType].Add(dynamic);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [HideFromIl2Cpp]
-        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, byte dimensionIndex, Vector3 position) {
-            Spawn(dynamic, errorOnDuplicate, dimensionIndex, position, Quaternion.identity);
-        }
-        [HideFromIl2Cpp]
-        internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate, byte dimensionIndex, Vector3 position, Quaternion rotation) {
-            Type dynType = dynamic.GetType();
-            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
-
-            Trigger(new SpawnDynamicAt(dynamic.Id, (byte)dimensionIndex, position, rotation));
+            Trigger(spawnEvent);
             dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
 
         [HideFromIl2Cpp]
-        internal void Despawn(Type dynType, int id, bool errorOnNotFound = true) {
+        internal void Despawn<T>(T despawnEvent, Type dynType, int id, bool errorOnNotFound = true) where T : ReplayDespawn {
             if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
-            Trigger(new DespawnDynamic(id));
+            Trigger(despawnEvent);
             dynamics[dynType].Remove(id, errorOnNotFound);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [HideFromIl2Cpp]
-        internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
-            Despawn(dynamic.GetType(), dynamic.Id, errorOnNotFound);
+        internal void Despawn<T>(T despawnEvent, ReplayDynamic dynamic, bool errorOnNotFound = true) where T : ReplayDespawn {
+            Despawn(despawnEvent, dynamic.GetType(), dynamic.Id, errorOnNotFound);
         }
 
         private void Tick() {

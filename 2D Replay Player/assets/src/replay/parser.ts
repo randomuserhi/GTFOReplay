@@ -1,7 +1,7 @@
 /* exported ParseFunc */
 type ParseFunc = (data: ByteStream) => Promise<any>; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 /* exported ExecFunc */
-type ExecFunc = (data: any, state: Snapshot.API, lerp: number) => void; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
+type ExecFunc = (...args: any[]) => void; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 
 /* exported Parser */
 class Parser {
