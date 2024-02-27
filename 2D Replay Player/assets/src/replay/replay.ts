@@ -79,8 +79,6 @@ class Replay {
         // perform events
         for (const { dynamicType, eventType, type, data, delta } of snapshot.events) {
             const exec = ModuleLoader.getExecFunc(this.get(type));
-            console.log(state);
-            console.log(`event: ${dynamicType} ${eventType} ${type} - ${time} >= ${snapshot.time + delta}`);
             if (time >= snapshot.time + delta) {
                 exec(data, api, 1);
                 if (eventType !== 0) {
@@ -162,7 +160,6 @@ class Replay {
         let tick = state.tick + 1;
         for (; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
-            console.log(`tick: ${tick}`);
             this.exec(time, api, state, snapshot);
             if (snapshot.time > state.time) break;
         }
