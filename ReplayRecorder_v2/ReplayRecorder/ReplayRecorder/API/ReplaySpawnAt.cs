@@ -1,28 +1,32 @@
 ﻿using API;
+using ReplayRecorder.API.Attributes;
 using UnityEngine;
 
 namespace ReplayRecorder.API {
-    public abstract class ReplaySpawnAt : ReplaySpawn {
-        public byte DimensionIndex { get; private set; }
-        public Vector3 Position { get; private set; }
-        public Quaternion Rotation { get; private set; }
+    [ReplayData("ReplayRecorder.SpawnAt", "0.0.1")]
+    public class ReplaySpawnAt : ReplaySpawn {
+        protected byte dimensionIndex;
+        protected Vector3 position;
+        protected Quaternion rotation;
+
+        public override string? Debug => $"{Id} - [{dimensionIndex}] ({position.x}, {position.y}, {position.z}) ({rotation.x}, {rotation.y}, {rotation.z}, {rotation.w})";
 
         public ReplaySpawnAt(int id, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) : base(id) {
-            DimensionIndex = (byte)dimensionIndex;
-            Position = position;
-            Rotation = rotation;
+            this.dimensionIndex = (byte)dimensionIndex;
+            this.position = position;
+            this.rotation = rotation;
         }
 
         internal override void _Write(ByteBuffer buffer) {
             base._Write(buffer);
 
-            BitHelper.WriteBytes(Position, buffer);
-            if (float.IsNaN(Rotation.x) || float.IsNaN(Rotation.y) ||
-                float.IsNaN(Rotation.z) || float.IsNaN(Rotation.w)) {
+            BitHelper.WriteBytes(position, buffer);
+            if (float.IsNaN(rotation.x) || float.IsNaN(rotation.y) ||
+                float.IsNaN(rotation.z) || float.IsNaN(rotation.w)) {
                 BitHelper.WriteHalf(Quaternion.identity, buffer);
                 APILogger.Warn("Dynamic rotation had NaN component.");
-            } else BitHelper.WriteHalf(Rotation, buffer);
-            BitHelper.WriteBytes(DimensionIndex, buffer);
+            } else BitHelper.WriteHalf(rotation, buffer);
+            BitHelper.WriteBytes(dimensionIndex, buffer);
         }
     }
 }

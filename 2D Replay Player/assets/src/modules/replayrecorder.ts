@@ -90,7 +90,7 @@ namespace ReplayRecorder {
         if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
         dynamics.set(id, ReplayRecorder.Dynamic.create(data));
     });
-})("ReplayRecorder.Spawn.Dynamic");
+})("ReplayRecorder.Spawn");
 
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
@@ -102,7 +102,7 @@ namespace ReplayRecorder {
         if (dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' already exists.`);
         dynamics.set(id, ReplayRecorder.Dynamic.create(data));
     });
-})("ReplayRecorder.Spawn.DynamicAt");
+})("ReplayRecorder.SpawnAt");
 
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {
@@ -114,7 +114,7 @@ namespace ReplayRecorder {
         if (!dynamics.has(id)) throw new DuplicateDynamic(`Dynamic of id '${id}' does not exist.`);
         dynamics.delete(id);
     });
-})("ReplayRecorder.Despawn.Dynamic");
+})("ReplayRecorder.Despawn");
 
 (function(typename: string) {
     ModuleLoader.register(typename, "0.0.1", async (data) => {

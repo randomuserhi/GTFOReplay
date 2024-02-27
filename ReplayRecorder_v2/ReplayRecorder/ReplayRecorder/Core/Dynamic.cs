@@ -31,25 +31,6 @@ namespace ReplayRecorder.Core {
         }
     }
 
-    [ReplayData("ReplayRecorder.Spawn.Dynamic", "0.0.1")]
-    internal class SpawnDynamic : ReplaySpawn {
-        public override string? Debug => $"{Id}";
-
-        public SpawnDynamic(int id) : base(id) { }
-    }
-
-    [ReplayData("ReplayRecorder.Spawn.DynamicAt", "0.0.1")]
-    internal class SpawnDynamicAt : ReplaySpawnAt {
-        public override string? Debug => $"{Id} - [{DimensionIndex}] ({Position.x}, {Position.y}, {Position.z}) ({Rotation.x}, {Rotation.y}, {Rotation.z}, {Rotation.w})";
-
-        public SpawnDynamicAt(int id, eDimensionIndex dimensionIndex, Vector3 position, Quaternion rotation) : base(id, dimensionIndex, position, rotation) { }
-    }
-
-    [ReplayData("ReplayRecorder.Despawn.Dynamic", "0.0.1")]
-    internal class DespawnDynamic : ReplayDespawn {
-        public DespawnDynamic(int id) : base(id) { }
-    }
-
     [ReplayData("ReplayRecorder.Dynamic.Position", "0.0.1")]
     public class DynamicPosition : ReplayDynamic {
         private int id;

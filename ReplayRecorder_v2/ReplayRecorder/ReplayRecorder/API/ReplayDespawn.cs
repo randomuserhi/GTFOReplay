@@ -1,5 +1,8 @@
-﻿namespace ReplayRecorder.API {
-    public abstract class ReplayDespawn : ReplayEvent {
+﻿using ReplayRecorder.API.Attributes;
+
+namespace ReplayRecorder.API {
+    [ReplayData("ReplayRecorder.Despawn", "0.0.1")]
+    public class ReplayDespawn : ReplayEvent {
         public int Id { get; private set; }
         internal ushort type = ushort.MaxValue;
 
