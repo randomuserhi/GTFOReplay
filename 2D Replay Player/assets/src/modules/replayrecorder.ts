@@ -7,8 +7,6 @@ declare namespace ReplayRecorder {
         }
     }
 }
-
-
 (function() {
     const typename = "ReplayRecorder.Header";
     ModuleLoader.register(typename, "0.0.1", { 
@@ -20,14 +18,6 @@ declare namespace ReplayRecorder {
         }
     });
 })();
-
-/* exported Dynamic */
-interface Dynamic {
-    id: number;
-    position: Vector;
-    rotation: Quaternion;
-    dimension: number;
-}
 
 /* exported DynamicNotFound */
 class DynamicNotFound extends Error {
@@ -45,6 +35,14 @@ class DuplicateDynamic extends Error {
 
 /* exported ReplayRecorder */
 namespace ReplayRecorder {
+
+    export interface Dynamic {
+        id: number;
+        position: Vector;
+        rotation: Quaternion;
+        dimension: number;
+    }
+
     export namespace Dynamic {
         export function create({ id, position, rotation, dimension }: { id: number, position?: Vector, rotation?: Quaternion, dimension?: number }): { id: number, position: Vector, rotation: Quaternion, dimension: number } {
             return {

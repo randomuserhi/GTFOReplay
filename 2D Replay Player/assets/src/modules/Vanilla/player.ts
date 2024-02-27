@@ -1,47 +1,5 @@
-/* exported Player */
-interface Player {
-    snet: bigint;
-    dyn: number;
-    nickname: string;
-    slot: number;
-}
-
-/* exported PlayerNotFound */
-class PlayerNotFound extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}
-
-/* exported DuplicatePlayer */
-class DuplicatePlayer extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}
-
-// Example event
-/*(function() {
-    const typename = "TestEvent";
-    ModuleLoader.register(typename, "0.0.1", {
-        parse: async (data) => {
-            return await BitHelper.readString(data);
-        }, 
-        exec: (data, snapshot) => {
-            const block = snapshot.data("TestEvent", "0.0.1") as any;
-            if (block.count === undefined) block.count = 0;
-            block.count += 1;
-            block.text = data;
-        }
-    });
-})();*/
-
 /* exported ReplayRecorder */
 declare namespace ReplayRecorder {
-    interface Events {
-        "TestEvent": string
-    }
-
     interface Dynamics {
         "Vanilla.Player": {
             dimension: number;
@@ -50,7 +8,6 @@ declare namespace ReplayRecorder {
             rotation: Quaternion;
         };
     }
-
     interface Spawn {
         "Vanilla.Player": {
             dimension: number;
@@ -61,14 +18,12 @@ declare namespace ReplayRecorder {
             nickname: string;
         };
     }
-
     interface Despawn {
         "Vanilla.Player": {
             snet: bigint;
         };
     }
 }
-
 (function() {
     const typename = "Vanilla.Player";
     ModuleLoader.register(typename, "0.0.1", {
@@ -77,7 +32,7 @@ declare namespace ReplayRecorder {
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, ReplayRecorder.Dynamic>;
 
             if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
             ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
@@ -95,7 +50,7 @@ declare namespace ReplayRecorder {
         },
         exec: (id, data, snapshot) => {
             const players = snapshot.buffer("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, ReplayRecorder.Dynamic>;
     
             const { snet } = data;
     
@@ -113,7 +68,7 @@ declare namespace ReplayRecorder {
         }, 
         exec: (id, data, snapshot) => {
             const players = snapshot.buffer("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, Dynamic>;
+            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1") as Map<number, ReplayRecorder.Dynamic>;
     
             const { snet } = data;
     
@@ -125,3 +80,39 @@ declare namespace ReplayRecorder {
         }
     });
 })();
+
+/* exported ReplayRecorder */
+declare namespace ReplayRecorder {
+    interface Events {
+        "TestEvent": string
+    }
+}
+// Example event
+/*(function() {
+    const typename = "TestEvent";
+    ModuleLoader.register(typename, "0.0.1", {
+        parse: async (data) => {
+            return await BitHelper.readString(data);
+        }, 
+        exec: (data, snapshot) => {
+            const block = snapshot.data("TestEvent", "0.0.1") as any;
+            if (block.count === undefined) block.count = 0;
+            block.count += 1;
+            block.text = data;
+        }
+    });
+})();*/
+
+/* exported PlayerNotFound */
+class PlayerNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+/* exported DuplicatePlayer */
+class DuplicatePlayer extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
