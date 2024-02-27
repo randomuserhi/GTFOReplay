@@ -1,3 +1,10 @@
+/* exported ReplayRecorder */
+declare namespace ReplayRecorder {
+    interface Headers {
+        "Vanilla.Map.Geometry": Map<number, MapGeometry[]>;
+    }
+}
+
 /* exported BitHelper */
 namespace BitHelper {
     export async function readUShortArray(stream: ByteStream | FileStream, length: number): Promise<number[]> {
@@ -20,7 +27,8 @@ interface MapGeometry {
     indices: number[];
 }
 
-((typename: string) => {
+(() => {
+    const typename = "Vanilla.Map.Geometry";
     ModuleLoader.register(typename, "0.0.1", {
         parse: async (data) => {
             const map = new Map<number, MapGeometry[]>();
@@ -44,7 +52,7 @@ interface MapGeometry {
             return map;
         }
     });
-})("Vanilla.Map.Geometry");
+})();
 
 /*(() => {
     Renderer.register((state) => {

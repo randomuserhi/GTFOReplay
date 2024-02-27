@@ -21,7 +21,8 @@ class DuplicatePlayer extends Error {
 }
 
 // Example event
-/*(function(typename: string) {
+/*(function() {
+    const typename = "TestEvent";
     ModuleLoader.register(typename, "0.0.1", {
         parse: async (data) => {
             return await BitHelper.readString(data);
@@ -33,12 +34,46 @@ class DuplicatePlayer extends Error {
             block.text = data;
         }
     });
-})("TestEvent");*/
+})();*/
 
-(function(typename: string) {
+/* exported ReplayRecorder */
+declare namespace ReplayRecorder {
+    interface Events {
+        "TestEvent": string
+    }
+
+    interface Dynamics {
+        "Vanilla.Player": {
+            dimension: number;
+            absolute: boolean;
+            position: Vector;
+            rotation: Quaternion;
+        };
+    }
+
+    interface Spawn {
+        "Vanilla.Player": {
+            dimension: number;
+            position: Vector;
+            rotation: Quaternion;
+            snet: bigint;
+            slot: number;
+            nickname: string;
+        };
+    }
+
+    interface Despawn {
+        "Vanilla.Player": {
+            snet: bigint;
+        };
+    }
+}
+
+(function() {
+    const typename = "Vanilla.Player";
     ModuleLoader.register(typename, "0.0.1", {
         parse: async (data) => {
-            const result = await ReplayRecorder.Dynamic.parse(data);
+            const result = await ReplayRecorder.Dynamic.parseTransform(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -89,4 +124,4 @@ class DuplicatePlayer extends Error {
             dynamics.delete(id);
         }
     });
-})("Vanilla.Player");
+})();

@@ -1,3 +1,15 @@
+/* exported ReplayRecorder */
+declare namespace ReplayRecorder {
+    interface Headers {
+    }
+
+    interface Events {
+    }
+
+    interface Dynamics {
+    }
+}
+
 declare namespace Timeline {
     interface Event<T = unknown> {
         delta: number;

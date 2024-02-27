@@ -5,9 +5,13 @@ interface Module {
 
 /* exported ModuleLoader */
 namespace ModuleLoader {
-    export interface ModuleFunc { 
-        parse: ParseFunc;
-        exec?: ExecFunc;
+    export interface ModuleFunc<T = unknown, R = any> { 
+        parse: ParseFunc<R>;
+        exec?: T extends keyof ReplayRecorder.Dynamics 
+            ? (id: number, data: ReplayRecorder.Dynamics[T], snapshot: Snapshot.API, lerp: number) => void
+            : T extends keyof ReplayRecorder.Events 
+                ? (data: ReplayRecorder.Events[T], snapshot: Snapshot.API) => void
+                : (...args: any[]) => void;
     }
 
     export const links = new Map<string, Module[]>();
@@ -29,8 +33,10 @@ namespace ModuleLoader {
         return library.get(module.typename)?.get(module.version);
     }
 
+    interface ModuleRetTypes extends ReplayRecorder.Headers, ReplayRecorder.Dynamics, ReplayRecorder.Events {}
+    type ModuleTypename = keyof ModuleRetTypes;
     // TODO(randomuserhi): console message / warning when replacing or updating an existing type
-    export function register(typename: string, version: string, main: ModuleFunc, spawn?: ModuleFunc, despawn?: ModuleFunc) {
+    export function register<T extends ModuleTypename>(typename: T, version: string, main: ModuleFunc<T, ModuleRetTypes[T]>, spawn?: ModuleFunc<T extends keyof ReplayRecorder.Spawn ? ReplayRecorder.Spawn[T] : unknown>, despawn?: ModuleFunc<T extends keyof ReplayRecorder.Despawn ? ReplayRecorder.Despawn[T] : unknown>) {
         if (self.document !== undefined) {
             const link = self.document.currentScript?.getAttribute("src");
             if (link == null) {

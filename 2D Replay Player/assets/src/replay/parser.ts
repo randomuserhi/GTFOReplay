@@ -1,5 +1,5 @@
 /* exported ParseFunc */
-type ParseFunc = (data: ByteStream) => Promise<any>; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
+type ParseFunc<T = any> = (data: ByteStream) => Promise<T>; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 /* exported ExecFunc */
 type ExecFunc = (...args: any[]) => void; // TODO(randomuserhi): Typescript templates for header and snapshot parse funcs
 

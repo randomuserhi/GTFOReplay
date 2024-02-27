@@ -1,4 +1,16 @@
-(function(typename: string) {
+/* exported ReplayRecorder */
+declare namespace ReplayRecorder {
+    interface Headers {
+        "ReplayRecorder.Header": {
+            version: string;
+            isMaster: boolean;
+        }
+    }
+}
+
+
+(function() {
+    const typename = "ReplayRecorder.Header";
     ModuleLoader.register(typename, "0.0.1", { 
         parse: async (data) => {
             return {
@@ -7,7 +19,7 @@
             };
         }
     });
-})("ReplayRecorder.Header");
+})();
 
 /* exported Dynamic */
 interface Dynamic {
@@ -42,12 +54,25 @@ namespace ReplayRecorder {
                 rotation: rotation === undefined ? Quat.identity() : rotation
             };
         }
-        export async function parse(data: ByteStream): Promise<any> {
+        export async function parseTransform(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector, rotation: Quaternion }> {
             const dimension = await BitHelper.readByte(data);
             const absolute = await BitHelper.readByte(data) != 0;
             return {
                 dimension, absolute,
                 position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data),
+                rotation: await BitHelper.readHalfQuaternion(data)
+            };
+        }
+        export async function parsePosition(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector }> {
+            const dimension = await BitHelper.readByte(data);
+            const absolute = await BitHelper.readByte(data) != 0;
+            return {
+                dimension, absolute,
+                position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data)
+            };
+        }
+        export async function parseRotation(data: ByteStream): Promise<{ rotation: Quaternion }> {
+            return {
                 rotation: await BitHelper.readHalfQuaternion(data)
             };
         }
