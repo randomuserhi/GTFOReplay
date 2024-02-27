@@ -79,9 +79,11 @@ class Parser {
             replay.header = header;
             this.dispatchEvent(RHU.CustomEvent("eoh", undefined));
         });
-        ipc.on("snapshot", (snapshot: Timeline.Snapshot, state?: Snapshot) => {
+        ipc.on("snapshot", (snapshot: Timeline.Snapshot) => {
             replay.timeline.push(snapshot);
-            if (state !== undefined) replay.snapshots.push(state);
+        });
+        ipc.on("state", (state: Snapshot) => {
+            replay.snapshots.push(state);
         });
         ipc.on("end", () => {
             this.dispatchEvent(RHU.CustomEvent("end", undefined));

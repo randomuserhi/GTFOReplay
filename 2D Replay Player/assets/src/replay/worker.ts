@@ -58,12 +58,6 @@ let replay: Replay | undefined = undefined;
                 time: 0,
                 dynamics: new Map()
             };
-            ipc.send("snapshot", {
-                tick: 0,
-                time: 0,
-                events: [],
-                dynamics: new Map()
-            }, state);
             const api = replay.api(state);
             const parseEvents = async (bytes: ByteStream): Promise<[Timeline.Event[], (() => void)[]]> => {
                 const events: Timeline.Event[] = [];
@@ -119,11 +113,12 @@ let replay: Replay | undefined = undefined;
                 const snapshotSize = await BitHelper.readInt(fs);
                 const bytes = await fs.getBytes(snapshotSize);
                 
+                if (state.tick % 50) ipc.send("state", state);
+                
                 const now = await BitHelper.readUInt(bytes);
                 state.time = now;
-                ++state.tick;
                 const snapshot: Timeline.Snapshot = {
-                    tick: state.tick,
+                    tick: ++state.tick,
                     time: now,
                     dynamics: new Map()
                 } as any;
@@ -138,7 +133,7 @@ let replay: Replay | undefined = undefined;
                 // perform despawns
                 despawnJobs.forEach(d => d());
                 
-                ipc.send("snapshot", snapshot, (state.tick % 50) === 0 ? state : undefined);
+                ipc.send("snapshot", snapshot);
             }
         } catch(err) {
             if (!(err instanceof RangeError)) {

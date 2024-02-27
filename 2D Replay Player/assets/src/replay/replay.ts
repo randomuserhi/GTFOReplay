@@ -159,7 +159,7 @@ class Replay {
         const api = this.api(state);
 
         // extrapolate snapshot until time
-        let tick = state.tick + 1;
+        let tick = state.tick;
         for (; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
             this.exec(time, api, state, snapshot);
