@@ -98,9 +98,9 @@ class Renderer {
                 
         // add lights
         // https://stackoverflow.com/a/63507923/9642458
-        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.1);
+        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.4);
         this.scene.add(ambient);
-        const light = new THREE.DirectionalLight(0xFFFFFF, 0.5);
+        const light = new THREE.DirectionalLight(0xFFFFFF, 1);
         light.position.y = 100;
         // TODO(randomuserhi): Setup better using bounding box of surfaces
         light.shadow.mapSize.x = 4096;
@@ -117,22 +117,24 @@ class Renderer {
         light.castShadow = true;
         this.scene.add(light);
         this.scene.add(light.target);
-        light.target.translateX(100);
+        light.target.translateX(0);
         light.target.translateY(-10);
                 
         const helper = new THREE.CameraHelper(light.shadow.camera);
         this.scene.add(helper);
 
-        const point = new THREE.PointLight(0xFFFFFF, 1);
+        this.scene.fog = new THREE.FogExp2(0x333333, 0.003);
+
+        /*const point = new THREE.PointLight(0xFFFFFF, 2);
         point.shadow.mapSize.x = 4096;
         point.shadow.mapSize.y = 4096;
-        point.shadow.bias = -0.01;
         point.distance = 250;
-        point.castShadow = true;
-        this.scene.add(point);
+        //point.shadow.bias = -0.01;
+        point.castShadow = false;
+        this.scene.add(point);*/
 
         const update = () => {
-            point.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
+            //point.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
 
             this.renderer.render(this.scene, this.camera);
             requestAnimationFrame(update);
