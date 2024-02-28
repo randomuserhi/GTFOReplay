@@ -40,7 +40,7 @@ RHU.module(new Error(), "routes/player", {
             this.addEventListener("mount", resize);
 
             // dummy load
-            (async () => {
+            /*(async () => {
                 const path = "./GTFOReplays/R8B1 2024-02-28 01-13";
                 await window.api.invoke("open", path);
                 const parser = new Parser(path);
@@ -51,7 +51,7 @@ RHU.module(new Error(), "routes/player", {
                     this.renderer.Test(replay.api(replay.getSnapshot(10)!));
                 });
                 const replay = await parser.parse();
-            })();
+            })();*/
         } as RHU.Macro.Constructor<Routes.player>;
 
         return player;
