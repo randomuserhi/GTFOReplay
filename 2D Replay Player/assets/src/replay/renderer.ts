@@ -95,6 +95,7 @@ class Renderer {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         //this.renderer.shadowMap.type = THREE.PCFShadowMap;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        //this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
                 
         // add lights
         // https://stackoverflow.com/a/63507923/9642458
@@ -135,7 +136,7 @@ class Renderer {
 
         const update = () => {
             //point.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
-
+            this.materials?.forEach(m => m.update());
             this.renderer.render(this.scene, this.camera);
             requestAnimationFrame(update);
         };
@@ -148,8 +149,10 @@ class Renderer {
         this.renderer.setSize(width, height);
     }
 
+    materials: HolographicMaterial[];
     public Test(replay: Replay.Api) {
         const meshes = replay.header.get("Vanilla.Map.Geometry")!.get(0)!;
+        this.materials = [];
         for (let i = 0; i < meshes.length; ++i) {
             const geometry = new THREE.BufferGeometry();
                     
@@ -157,19 +160,51 @@ class Renderer {
             
             geometry.setAttribute("position", new THREE.BufferAttribute(meshes[i].vertices, 3));
             geometry.computeVertexNormals();
-
-            //const material = new THREE.MeshStandardMaterial({
-            //const material = new THREE.MeshPhongMaterial({
-            const material = new THREE.MeshStandardMaterial({
-                color: 0xaaaaaa,
-                side: THREE.DoubleSide, // causes issues for shadows :(
+            
+            {
+                //const material = new THREE.MeshStandardMaterial({
+                //const material = new THREE.MeshPhongMaterial({
+                const material = new HolographicMaterial({
+                    hologramColor: 0x00d5ff,
+                    fresnelOpacity: 0.5,
+                    scanlineSize: 20,
+                    signalSpeed: 0,
+                    enableBlinking: true,
+                    hologramOpacity: 0.7,
+                    depthTest: true,
+                    blendMode: THREE.AdditiveBlending,
+                    hologramBrightness: 2,
+                    //color: 0x3e6078,
+                    side: THREE.DoubleSide, // causes issues for shadows :(
                 //flatShading: true,
-            });
+                });
+                this.materials.push(material);
                     
-            const surface = new THREE.Mesh(geometry, material);
-            surface.castShadow = true;
-            surface.receiveShadow = true;
-            this.scene.add(surface);
+                {
+                    const surface = new THREE.Mesh(geometry, material);
+                    surface.position.y += 0.1;
+                    //surface.castShadow = true;
+                    //surface.receiveShadow = true;
+                    this.scene.add(surface);
+                }
+                const surface = new THREE.Mesh(geometry, material);
+                surface.position.y -= 0.1;
+                //surface.castShadow = true;
+                //surface.receiveShadow = true;
+                this.scene.add(surface);
+            }
+
+            {
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x1f3e54,
+                    side: THREE.DoubleSide, // causes issues for shadows :(
+                });
+                    
+                const surface = new THREE.Mesh(geometry, material);
+                surface.castShadow = true;
+                surface.receiveShadow = true;
+                this.scene.add(surface);
+            }
 
             /*const edges = new THREE.EdgesGeometry( geometry ); 
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial( { color: 0x888888 } ) ); 
@@ -179,6 +214,265 @@ class Renderer {
             //this.scene.add(helper);
         }
     }
+}
+
+// TAKEN FROM https://github.com/ektogamat/threejs-vanilla-holographic-material/blob/main/src/HolographicMaterialVanilla.js
+class HolographicMaterial extends THREE.ShaderMaterial {
+
+    /**
+     * Create a HolographicMaterial.
+     *
+     * @param {Object} parameters - The parameters to configure the material.
+     * @param {number} [parameters.time=0.0] - The time uniform representing animation time.
+     * @param {number} [parameters.fresnelOpacity=1.0] - The opacity for the fresnel effect.
+     * @param {number} [parameters.fresnelAmount=1.0] - The strength of the fresnel effect.
+     * @param {number} [parameters.scanlineSize=15.0] - The size of the scanline effect.
+     * @param {number} [parameters.hologramBrightness=1.0] - The brightness of the hologram.
+     * @param {number} [parameters.signalSpeed=1.0] - The speed of the signal effect.
+     * @param {Color} [parameters.hologramColor=new Color('#00d5ff')] - The color of the hologram.
+     * @param {boolean} [parameters.enableBlinking=true] - Enable/disable blinking effect.
+     * @param {boolean} [parameters.blinkFresnelOnly=false] - Enable blinking only on the fresnel effect.
+     * @param {number} [parameters.hologramOpacity=1.0] - The opacity of the hologram.
+     * @param {number} [parameters.blendMode=NormalBlending] - The blending mode. Use `THREE.NormalBlending` or `THREE.AdditiveBlending`.
+     * @param {number} [parameters.side=FrontSide] - The rendering side. Use `THREE.FrontSide`, `THREE.BackSide`, or `THREE.DoubleSide`.
+     * @param {Boolean} [parameters.depthTest=true] - Enable or disable depthTest.
+     */
+  
+    clock: THREE.Clock;
+
+    constructor(parameters: {
+        time?: number,
+        fresnelOpacity?: number,
+        fresnelAmount?: number,
+        scanlineSize?: number,
+        hologramBrightness?: number,
+        signalSpeed?: number,
+        hologramColor?: number,
+        enableBlinking?: boolean,
+        blinkFresnelOnly?: boolean,
+        hologramOpacity?: number,
+        blendMode?: THREE.Blending,
+        side?: THREE.Side,
+        depthTest?: boolean,
+    } = {}) {
+        super();
+  
+        this.vertexShader = /*GLSL */
+      `
+        #define STANDARD
+        varying vec3 vViewPosition;
+        #ifdef USE_TRANSMISSION
+        varying vec3 vWorldPosition;
+        #endif
+      
+        varying vec2 vUv;
+        varying vec4 vPos;
+        varying vec3 vNormalW;
+        varying vec3 vPositionW;
+  
+        #include <common>
+        #include <uv_pars_vertex>
+        #include <envmap_pars_vertex>
+        #include <color_pars_vertex>
+        #include <fog_pars_vertex>
+        #include <morphtarget_pars_vertex>
+        #include <skinning_pars_vertex>
+        #include <logdepthbuf_pars_vertex>
+        #include <clipping_planes_pars_vertex>
+  
+        void main() {
+          
+          #include <uv_vertex>
+          #include <color_vertex>
+          #include <morphcolor_vertex>
+        
+          #if defined ( USE_ENVMAP ) || defined ( USE_SKINNING )
+        
+            #include <beginnormal_vertex>
+            #include <morphnormal_vertex>
+            #include <skinbase_vertex>
+            #include <skinnormal_vertex>
+            #include <defaultnormal_vertex>
+        
+          #endif
+        
+          #include <begin_vertex>
+          #include <morphtarget_vertex>
+          #include <skinning_vertex>
+          #include <project_vertex>
+          #include <logdepthbuf_vertex>
+          #include <clipping_planes_vertex>
+        
+          #include <worldpos_vertex>
+          #include <envmap_vertex>
+          #include <fog_vertex>
+  
+          mat4 modelViewProjectionMatrix = projectionMatrix * modelViewMatrix;
+  
+          vUv = uv;
+          vPos = projectionMatrix * modelViewMatrix * vec4( transformed, 1.0 );
+          vPositionW = vec3( vec4( transformed, 1.0 ) * modelMatrix);
+          vNormalW = normalize( vec3( vec4( normal, 0.0 ) * modelMatrix ) );
+          
+          gl_Position = modelViewProjectionMatrix * vec4( transformed, 1.0 );
+  
+        }`;
+  
+        this.fragmentShader = /*GLSL */
+      ` 
+        varying vec2 vUv;
+        varying vec3 vPositionW;
+        varying vec4 vPos;
+        varying vec3 vNormalW;
+        
+        uniform float time;
+        uniform float fresnelOpacity;
+        uniform float scanlineSize;
+        uniform float fresnelAmount;
+        uniform float signalSpeed;
+        uniform float hologramBrightness;
+        uniform float hologramOpacity;
+        uniform bool blinkFresnelOnly;
+        uniform bool enableBlinking;
+        uniform vec3 hologramColor;
+  
+        float flicker( float amt, float time ) {return clamp( fract( cos( time ) * 43758.5453123 ), amt, 1.0 );}
+        float random(in float a, in float b) { return fract((cos(dot(vec2(a,b) ,vec2(12.9898,78.233))) * 43758.5453)); }
+  
+        void main() {
+          vec2 vCoords = vPos.xy;
+          vCoords /= vPos.w;
+          vCoords = vCoords * 0.5 + 0.5;
+          vec2 myUV = fract( vCoords );
+  
+          // Defines hologram main color
+          vec4 hologramColor = vec4(hologramColor, mix(hologramBrightness, vUv.y, 0.5));
+  
+          // Add scanlines
+          float scanlines = 10.;
+          scanlines += 20. * sin(time *signalSpeed * 20.8 - myUV.y * 60. * scanlineSize);
+          scanlines *= smoothstep(1.3 * cos(time *signalSpeed + myUV.y * scanlineSize), 0.78, 0.9);
+          scanlines *= max(0.25, sin(time *signalSpeed) * 1.0);        
+          
+          // Scanlines offsets
+          float r = random(vUv.x, vUv.y);
+          float g = random(vUv.y * 20.2, 	vUv.y * .2);
+          float b = random(vUv.y * .9, 	vUv.y * .2);
+  
+          // Scanline composition
+          hologramColor += vec4(r*scanlines, b*scanlines, r, 1.0) / 84.;
+          vec4 scanlineMix = mix(vec4(0.0), hologramColor, hologramColor.a);
+  
+          // Calculates fresnel
+          vec3 viewDirectionW = normalize(cameraPosition - vPositionW);
+          float fresnelEffect = dot(viewDirectionW, vNormalW) * (1.6 - fresnelOpacity/2.);
+          fresnelEffect = clamp(fresnelAmount - fresnelEffect, 0., fresnelOpacity);
+  
+          // Blinkin effect
+          //Suggested by Octano - https://x.com/OtanoDesign?s=20
+          float blinkValue = enableBlinking ? 0.6 - signalSpeed : 1.0;
+          float blink = flicker(blinkValue, time * signalSpeed * .02);
+      
+          // Final shader composition
+          vec3 finalColor;
+  
+          if(blinkFresnelOnly){
+            finalColor = scanlineMix.rgb + fresnelEffect * blink;
+          }else{
+            finalColor = scanlineMix.rgb * blink + fresnelEffect;
+          }
+  
+          gl_FragColor = vec4( finalColor, hologramOpacity);
+  
+        }`;
+  
+        // Set default values or modify existing properties if needed
+        this.uniforms = {
+            /**
+           * The time uniform representing animation time.
+           * @type {Uniform<number>}
+           * @default 0.0
+           */
+            time: new THREE.Uniform(0),
+    
+            /**
+           * The opacity for the fresnel effect.
+           * @type {Uniform<number>}
+           * @default 1.0
+           */
+            fresnelOpacity: new THREE.Uniform(parameters.fresnelOpacity !== undefined ? parameters.fresnelOpacity : 1.0),
+    
+            /**
+           * The strength of the fresnel effect.
+           * @type {Uniform<number>}
+           * @default 1.0
+           */
+            fresnelAmount: new THREE.Uniform(parameters.fresnelAmount !== undefined ? parameters.fresnelAmount : 0.45),
+    
+            /**
+           * The size of the scanline effect.
+           * @type {Uniform<number>}
+           * @default 1.0
+           */
+            scanlineSize: new THREE.Uniform(parameters.scanlineSize !== undefined ? parameters.scanlineSize : 8.0),
+    
+            /**
+           * The brightness of the hologram.
+           * @type {Uniform<number>}
+           * @default 1.0
+           */
+            hologramBrightness: new THREE.Uniform(parameters.hologramBrightness !== undefined ? parameters.hologramBrightness : 1.0),
+    
+            /**
+           * The speed of the signal effect.
+           * @type {Uniform<number>}
+           * @default 1.0
+           */
+            signalSpeed: new THREE.Uniform(parameters.signalSpeed !== undefined ? parameters.signalSpeed : 1.0),
+    
+            /**
+           * The color of the hologram.
+           * @type {Uniform<Color>}
+           * @default new Color(0xFFFFFF)
+           */
+            hologramColor: new THREE.Uniform(parameters.hologramColor !== undefined ? new THREE.Color(parameters.hologramColor) : new THREE.Color("#00d5ff")),
+    
+            /**
+           * Enable/disable blinking effect.
+           * @type {Uniform<boolean>}
+           * @default true
+           */
+            enableBlinking: new THREE.Uniform(parameters.enableBlinking !== undefined ? parameters.enableBlinking : true),
+    
+            /**
+           * Enable blinking only on the fresnel effect.
+           * @type {Uniform<boolean>}
+           * @default false
+           */
+            blinkFresnelOnly: new THREE.Uniform(parameters.blinkFresnelOnly !== undefined ? parameters.blinkFresnelOnly : true),
+    
+            /**
+           * The opacity of the hologram.
+           * @type {Uniform<number>}
+           * @default 1.0
+           */
+            hologramOpacity: new THREE.Uniform(parameters.hologramOpacity !== undefined ? parameters.hologramOpacity : 1.0),
+        };
+    
+        this.clock = new THREE.Clock();
+        this.setValues(parameters as any);
+        this.depthTest = parameters.depthTest !== undefined ? parameters.depthTest : false;
+        this.blending = parameters.blendMode !== undefined ? parameters.blendMode : THREE.AdditiveBlending;
+        this.transparent = true;
+        this.side = parameters.side !== undefined ? parameters.side : THREE.FrontSide;
+  
+    }
+  
+  
+    update() {
+        this.uniforms.time.value = this.clock.getElapsedTime();
+    }
+  
 }
 
 // TAKEN FROM: https://github.com/mrdoob/three.js/blob/dev/examples/jsm/helpers/VertexNormalsHelper.js FOR DEBUGGING
