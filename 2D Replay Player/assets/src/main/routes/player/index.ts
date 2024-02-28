@@ -28,7 +28,7 @@ RHU.module(new Error(), "routes/player", {
             (window as any).renderer = this.renderer;
 
             const resize = () => {
-                const computed = getComputedStyle(this.canvas);
+                const computed = getComputedStyle(this);
                 const width = parseInt(computed.width);
                 const height = parseInt(computed.height);
                 this.canvas.width = width;
@@ -38,6 +38,20 @@ RHU.module(new Error(), "routes/player", {
             };
             window.addEventListener("resize", resize);
             this.addEventListener("mount", resize);
+
+            // dummy load
+            (async () => {
+                const path = "./GTFO Replays/R8B1 2024-02-28 01-13";
+                await window.api.invoke("open", path);
+                const parser = new Parser(path);
+                parser.addEventListener("end", () => {
+                    console.log("finished");
+                    window.api.send("close", path);
+            
+                    this.renderer.Test(replay.api(replay.getSnapshot(10)!));
+                });
+                const replay = await parser.parse();
+            })();
         } as RHU.Macro.Constructor<Routes.player>;
 
         return player;
