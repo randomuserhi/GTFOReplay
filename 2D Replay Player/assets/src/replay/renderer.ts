@@ -85,28 +85,33 @@ class Renderer {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
-                
+
         this.camera = new THREE.PerspectiveCamera(75, this.canvas.width / this.canvas.height, 0.1, 1000);
         this.camera.rotation.order = "YXZ";
                 
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.BasicShadowMap;
+        //this.renderer.shadowMap.type = THREE.BasicShadowMap;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        //this.renderer.shadowMap.type = THREE.PCFShadowMap;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 
         // add lights
-        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.01);
+        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.7);
         this.scene.add(ambient);
         const light = new THREE.DirectionalLight(0xFFFFFF, 1);
         light.position.y = 100;
         // TODO(randomuserhi): Setup better using bounding box of surfaces
-        light.shadow.mapSize.x = 1000;
-        light.shadow.mapSize.y = 1000;
-        light.shadow.camera.left = -1000;
-        light.shadow.camera.right = 1000;
-        light.shadow.camera.top = 1000;
-        light.shadow.camera.bottom = -1000;
+        light.shadow.mapSize.x = 4096;
+        light.shadow.mapSize.y = 4096;
+        light.shadow.camera.left = -250;
+        light.shadow.camera.right = 250;
+        light.shadow.camera.top = 250;
+        light.shadow.camera.bottom = -250;
         light.shadow.camera.far = 200;
         light.shadow.camera.near = 0.1;
+        //light.shadow.blurSamples = 25;
+        //light.shadow.radius = 0.5;
         light.shadow.bias = -0.01; // https://discourse.threejs.org/t/shadows-intersecting-on-flat-2-sided-objects/36824/2
         light.castShadow = true;
         this.scene.add(light);
@@ -140,7 +145,8 @@ class Renderer {
             geometry.setAttribute("position", new THREE.BufferAttribute(meshes[i].vertices, 3));
             geometry.computeVertexNormals();
 
-            const material = new THREE.MeshStandardMaterial({
+            //const material = new THREE.MeshStandardMaterial({
+            const material = new THREE.MeshPhongMaterial({
                 color: 0x339933,
                 side: THREE.DoubleSide, // causes issues for shadows :(
                 //flatShading: true,
