@@ -94,9 +94,9 @@ class Replay {
                 return state.dynamics.get(typename)!;
             },
             header: {
-                get: replay.get.bind(replay),
-                set: replay.get.bind(replay),
-                has: replay.get.bind(replay),
+                get: Replay.prototype.get.bind(replay),
+                set: Replay.prototype.set.bind(replay),
+                has: Replay.prototype.has.bind(replay),
             }
         } as any;
     }

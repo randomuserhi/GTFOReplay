@@ -13,38 +13,31 @@ declare namespace RHU {
 declare namespace Routes {
     interface player extends HTMLDivElement {
         canvas: HTMLCanvasElement;
-
-        // webgl
-        gl: gl;
+        renderer: Renderer;
     }
 }
 
 RHU.module(new Error(), "routes/player", { 
-    Macro: "rhu/macro", style: "routes/player/style",
-    gl: "webgl2"
+    Macro: "rhu/macro", style: "routes/player/style"
 }, function({ 
-    Macro, style,
-    gl
+    Macro, style
 }) {
     const player = Macro((() => {
         const player = function(this: Routes.player) {
+            this.renderer = new Renderer(this.canvas);
+            (window as any).renderer = this.renderer;
+
             const resize = () => {
                 const computed = getComputedStyle(this.canvas);
                 const width = parseInt(computed.width);
                 const height = parseInt(computed.height);
                 this.canvas.width = width;
                 this.canvas.height = height;
+
+                this.renderer.resize(width, height);
             };
             window.addEventListener("resize", resize);
             this.addEventListener("mount", resize);
-
-            const _gl = this.canvas.getContext("webgl2");
-            if (_gl) {
-                this.gl = new gl(_gl);
-            } else {
-                // TODO(randomuserhi): no web gl support
-                throw new Error("No webgl support.");
-            }
         } as RHU.Macro.Constructor<Routes.player>;
 
         return player;

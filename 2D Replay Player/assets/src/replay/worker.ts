@@ -47,9 +47,9 @@ let replay: Replay | undefined = undefined;
                 const func = ModuleLoader.getHeader(module as any);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                 await func.parse(bytes, {
-                    get: replay.get.bind(replay),
-                    set: replay.set.bind(replay),
-                    has: replay.has.bind(replay)
+                    get: Replay.prototype.get.bind(replay),
+                    set: Replay.prototype.set.bind(replay),
+                    has: Replay.prototype.has.bind(replay)
                 });
                 [module] = await getModule(bytes);
             }
