@@ -1,15 +1,3 @@
-/* exported ReplayRecorder */
-declare namespace ReplayRecorder {
-    interface Headers {
-    }
-
-    interface Events {
-    }
-
-    interface Dynamics {
-    }
-}
-
 declare namespace Timeline {
     interface Event<T = unknown> {
         delta: number;
@@ -38,27 +26,27 @@ interface Snapshot {
     data: Map<string, unknown>;
 }
 
-declare namespace Snapshot {
-    interface Buffers {
-
-    }
-
-    interface Data {
-
-    }
-
-    interface API { 
-        buffer<T extends keyof Buffers>(typename: T, version: string): Map<any, Buffers[T]>;
-        data<T extends keyof Data>(typename: T, version: string): Data[T];
-        header<T extends keyof ReplayRecorder.Headers>(typename: T, version: string): ReplayRecorder.Headers[T];
+declare namespace Replay {
+    interface Api { 
+        buffer<T extends keyof Typemap.Buffers>(typename: T): Map<any, Typemap.Buffers[T]>;
+        data: {
+            get<T extends keyof Typemap.Data>(typename: T): Typemap.Data[T] | undefined;
+            set<T extends keyof Typemap.Data>(typename: T, value: Typemap.Data[T]): void;
+            has<T extends keyof Typemap.Data>(typename: T): boolean;
+        };
+        header: {
+            get<T extends keyof Typemap.Headers>(typename: T): Typemap.Headers[T] | undefined;
+            set<T extends keyof Typemap.Headers>(typename: T, value: Typemap.Headers[T]): void;
+            has<T extends keyof Typemap.Headers>(typename: T): boolean;
+        }
     }
 }
 
 /* exported Replay */
 class Replay {
-    typemap: Map<number, Module>;
+    typemap: Map<number, ModuleDesc>;
     types: Map<string, number>;
-    header: Map<number, unknown>;
+    header: Map<string, unknown>;
     timeline: Timeline.Snapshot[];
     snapshots: Snapshot[];
     
@@ -69,38 +57,57 @@ class Replay {
         this.timeline = [];
         this.snapshots = [];
     }
+    
+    public get<T extends keyof Typemap.Headers>(typename: T): Typemap.Headers[T] | undefined {
+        if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+        return this.header.get(typename) as any;
+    }
+    public set<T extends keyof Typemap.Headers>(typename: T, value: Typemap.Headers[T]): void {
+        if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+        this.header.set(typename, value);
+    }
+    public  has<T extends keyof Typemap.Headers>(typename: T): boolean{
+        if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+        return this.header.has(typename);
+    }
 
-    public api(state: Snapshot): Snapshot.API {
+    public api(state: Snapshot): Replay.Api {
         const replay = this;
         return {
-            data(typename: string, version?: string): any {
-                if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
-                const identifier = `${typename}(${version})`;
-                if (!state.data.has(identifier)) state.data.set(identifier, {} as any);
-                return state.data.get(identifier)!;
+            data: {
+                get(typename: string): any {
+                    if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                    return state.data.get(typename);
+                },
+                set(typename: string, value: any): void {
+                    if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                    state.data.set(typename, value);
+                },
+                has(typename: string): boolean {
+                    if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                    return state.data.has(typename);
+                }
             },
-            buffer(typename: string, version: string): Map<number, unknown> {
-                if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
-                const identifier = `${typename}(${version})`;
-                if (!state.dynamics.has(identifier)) state.dynamics.set(identifier, new Map());
-                return state.dynamics.get(identifier)!;
+            buffer(typename: string): Map<number, unknown> {
+                if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                if (!state.dynamics.has(typename)) state.dynamics.set(typename, new Map());
+                return state.dynamics.get(typename)!;
             },
-            header(typename: string, version: string): unknown {
-                if (typename === "" || version === "" || typename === undefined || version === undefined) throw new SyntaxError("Typename or version cannot be blank.");
-                const type = replay.types.get(`${typename}(${version})`);
-                if (type === undefined || !replay.header.has(type)) throw new TypeError(`Type '${typename}(${version})' does not exist.`);
-                return replay.header.get(type)!;
+            header: {
+                get: replay.get.bind(replay),
+                set: replay.get.bind(replay),
+                has: replay.get.bind(replay),
             }
         } as any;
     }
 
-    private get(type: number): Module {
+    private getModule(type: number): ModuleDesc {
         const module = this.typemap.get(type);
         if (module === undefined) throw new UnknownModuleType(`Unknown module of type '${type}'.`);
         return module;
     }
 
-    private exec(time: number, api: Snapshot.API, state: Snapshot, snapshot: Timeline.Snapshot) {
+    private exec(time: number, api: Replay.Api, state: Snapshot, snapshot: Timeline.Snapshot) {
         const exists = new Map<number, Map<number, boolean>>();
 
         // perform events
@@ -146,9 +153,9 @@ class Replay {
                     }
                 }
             } else if (runEvent) {
-                const exec = ModuleLoader.get(module)?.main.exec;
+                const exec = ModuleLoader.getEvent(module as any)?.exec;
                 if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
-                exec(data, api);
+                exec(data as never, api);
             }
         }
 
@@ -161,11 +168,11 @@ class Replay {
         if (diff <= largestTickRate) {
             // perform dynamics
             for (const [type, collection] of snapshot.dynamics) {
-                const exec = ModuleLoader.getExecFunc(this.get(type));
+                const exec = ModuleLoader.getDynamic(this.getModule(type) as any).main.exec;
                 for (const { id, data } of collection) {
                     const exist = exists.get(type)?.get(id);
                     if (exist === undefined || exist === true) {
-                        exec(id, data, api, lerp);
+                        exec(id, data as never, api, lerp);
                     }
                 }
             }

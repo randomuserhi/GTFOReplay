@@ -20,35 +20,34 @@ interface MapGeometry {
     indices: number[];
 }
 
-/* exported ReplayRecorder */
-declare namespace ReplayRecorder {
+/* exported Typemap */
+declare namespace Typemap {
     interface Headers {
         "Vanilla.Map.Geometry": Map<number, MapGeometry[]>;
     }
 }
-(() => {
-    const typename = "Vanilla.Map.Geometry";
-    ModuleLoader.register(typename, "0.0.1", {
-        parse: async (data) => {
-            const map = new Map<number, MapGeometry[]>();
 
-            const nDimensions = await BitHelper.readByte(data);
-            for (let i = 0; i < nDimensions; ++i) {
-                const dimension = await BitHelper.readByte(data);
-                const nSurfaces = await BitHelper.readUShort(data);
-                const surfaces: MapGeometry[] = [];
-                for (let j = 0; j < nSurfaces; ++j) {
-                    const nVertices = await BitHelper.readUShort(data);
-                    const nIndicies = await BitHelper.readUInt(data);
-                    surfaces.push({
-                        vertices: await BitHelper.readVectorArray(data, nVertices),
-                        indices: await BitHelper.readUShortArray(data, nIndicies)
-                    });
-                }
-                map.set(dimension, surfaces);
+ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
+    parse: async (data, header) => {
+        const map = new Map<number, MapGeometry[]>();
+
+        const nDimensions = await BitHelper.readByte(data);
+        for (let i = 0; i < nDimensions; ++i) {
+            const dimension = await BitHelper.readByte(data);
+            const nSurfaces = await BitHelper.readUShort(data);
+            const surfaces: MapGeometry[] = [];
+            for (let j = 0; j < nSurfaces; ++j) {
+                const nVertices = await BitHelper.readUShort(data);
+                const nIndicies = await BitHelper.readUInt(data);
+                surfaces.push({
+                    vertices: await BitHelper.readVectorArray(data, nVertices),
+                    indices: await BitHelper.readUShortArray(data, nIndicies)
+                });
             }
-
-            return map;
+            map.set(dimension, surfaces);
         }
-    });
-})();
+
+        if (header.has("Vanilla.Map.Geometry")) throw new DuplicateHeaderData("Map Geometry was already written.");
+        else header.set("Vanilla.Map.Geometry", map);
+    }
+});

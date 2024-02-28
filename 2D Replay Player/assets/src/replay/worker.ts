@@ -23,7 +23,7 @@ let replay: Replay | undefined = undefined;
 
         const fs = new FileStream(ipc, path, finite);
 
-        const getModule = async (bytes: ByteStream | FileStream): Promise<[Module, number]> => {
+        const getModule = async (bytes: ByteStream | FileStream): Promise<[ModuleDesc, number]> => {
             if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
             const id = await BitHelper.readUShort(bytes);
             const module = replay.typemap.get(id);
@@ -42,12 +42,16 @@ let replay: Replay | undefined = undefined;
             await Internal.parsers[typeMapVersion](bytes, replay);
 
             // Parse Headers
-            let [module, type] = await getModule(bytes);
+            let [module] = await getModule(bytes);
             while (module?.typename !== "ReplayRecorder.EndOfHeader") {
-                const func = ModuleLoader.get(module);
+                const func = ModuleLoader.getHeader(module as any);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                replay.header.set(type, await func.main.parse(bytes));
-                [module, type] = await getModule(bytes);
+                await func.parse(bytes, {
+                    get: replay.get.bind(replay),
+                    set: replay.set.bind(replay),
+                    has: replay.has.bind(replay)
+                });
+                [module] = await getModule(bytes);
             }
 
             ipc.send("eoh", replay.typemap, replay.types, replay.header);
@@ -85,16 +89,16 @@ let replay: Replay | undefined = undefined;
                         exec(data, replay, api);
                     } else {
                         // Parse regular events
-                        const func = ModuleLoader.get(module);
+                        const func = ModuleLoader.getEvent(module as any);
                         if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                        data = await func.main.parse(bytes);
+                        data = await func.parse(bytes);
                         events.push({
                             type,
                             delta,
                             data
                         });
-                        if (func.main.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                        func.main.exec(data, api, 1);
+                        if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
+                        func.exec(data as never, api);
                     }
                 }
                 return events.sort((a, b) => b.delta - a.delta);
@@ -102,7 +106,7 @@ let replay: Replay | undefined = undefined;
             const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {
                 const dynamics: Timeline.Dynamic[] = [];
                 const [module, type] = await getModule(bytes);
-                const func = ModuleLoader.get(module);
+                const func = ModuleLoader.getDynamic(module as any);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                 if (func.main.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
 

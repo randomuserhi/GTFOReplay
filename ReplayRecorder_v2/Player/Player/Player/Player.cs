@@ -76,9 +76,5 @@ namespace Vanilla.Player {
             BitHelper.WriteBytes((byte)agent.PlayerSlotIndex, buffer);
             BitHelper.WriteBytes(agent.Owner.NickName, buffer);
         }
-
-        public override void Despawn(ByteBuffer buffer) {
-            BitHelper.WriteBytes(agent.Owner.Lookup, buffer);
-        }
     }
 }

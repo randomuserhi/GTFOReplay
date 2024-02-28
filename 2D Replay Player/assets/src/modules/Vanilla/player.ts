@@ -1,55 +1,50 @@
-/* exported Snapshot */
-declare namespace Snapshot {
-    interface Buffers {
-        "Vanilla.Player.Dynamic": ReplayRecorder.Dynamic;
+/* exported Typemap */
+declare namespace Typemap {
+    interface Dynamics {
         "Vanilla.Player": {
-            dimension: number;
-            position: Vector;
-            rotation: Quaternion;
+            parse: {
+                dimension: number;
+                absolute: boolean;
+                position: Vector;
+                rotation: Quaternion;
+            };
+            spawn: {
+                dimension: number;
+                position: Vector;
+                rotation: Quaternion;
+                snet: bigint;
+                slot: number;
+                nickname: string;
+            };
+            despawn: void;
         };
+    }
+
+    interface Buffers {
+        "Vanilla.Player": Player
     }
 }
 
-/* exported ReplayRecorder */
-declare namespace ReplayRecorder {
-    interface Dynamics {
-        "Vanilla.Player": {
-            dimension: number;
-            absolute: boolean;
-            position: Vector;
-            rotation: Quaternion;
-        };
-    }
-    interface Spawn {
-        "Vanilla.Player": {
-            dimension: number;
-            position: Vector;
-            rotation: Quaternion;
-            snet: bigint;
-            slot: number;
-            nickname: string;
-        };
-    }
-    interface Despawn {
-        "Vanilla.Player": {
-            snet: bigint;
-        };
-    }
+interface Player extends ReplayRecorder.Dynamic {
+    snet: bigint;
+    slot: number;
+    nickname: string;
 }
-(function() {
-    const typename = "Vanilla.Player";
-    ModuleLoader.register(typename, "0.0.1", {
+
+ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
+    main: {
         parse: async (data) => {
             const result = await ReplayRecorder.Dynamic.parseTransform(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1");
-
-            if (!dynamics.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
-            ReplayRecorder.Dynamic.lerp(dynamics.get(id)!, data, lerp);
+            const players = snapshot.buffer("Vanilla.Player");
+    
+            if (!players.has(id)) throw new DynamicNotFound(`Dynamic of id '${id}' was not found.`);
+            ReplayRecorder.Dynamic.lerp(players.get(id)!, data, lerp);
         }
-    }, {
+    },
+    spawn: {
         parse: async (data) => {
             return {
                 dimension: await BitHelper.readByte(data),
@@ -61,59 +56,25 @@ declare namespace ReplayRecorder {
             };
         },
         exec: (id, data, snapshot) => {
-            const players = snapshot.buffer("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1");
-    
+            const players = snapshot.buffer("Vanilla.Player");
+        
             const { snet } = data;
-    
-            if (players.has(snet)) throw new DuplicatePlayer(`Player of snet '${snet}' already exists.`);
-            players.set(snet, data);
-    
-            if (dynamics.has(id)) throw new DuplicateDynamic(`Player.Dynamic of id '${id}' already exists.`);
-            dynamics.set(id, ReplayRecorder.Dynamic.create({ id, ...data }));
+        
+            if (players.has(id)) throw new DuplicatePlayer(`Player of snet '${snet}' already exists.`);
+            players.set(id, { id, ...data });
         }
-    }, {
-        parse: async (data) => {
-            return {
-                snet: await BitHelper.readULong(data),
-            };
+    },
+    despawn: {
+        parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const players = snapshot.buffer("Vanilla.Player", "0.0.1");
-            const dynamics = snapshot.buffer("Vanilla.Player.Dynamic", "0.0.1");
-    
-            const { snet } = data;
-    
-            if (!players.has(snet)) throw new PlayerNotFound(`Player of snet '${snet}' did not exist.`);
-            players.delete(snet);
-    
-            if (!dynamics.has(id)) throw new DynamicNotFound(`Player.Dynamic of id '${id}' did not exist.`);
-            dynamics.delete(id);
-        }
-    });
-})();
+            const players = snapshot.buffer("Vanilla.Player");
 
-/* exported ReplayRecorder */
-declare namespace ReplayRecorder {
-    interface Events {
-        "TestEvent": string
-    }
-}
-// Example event
-/*(function() {
-    const typename = "TestEvent";
-    ModuleLoader.register(typename, "0.0.1", {
-        parse: async (data) => {
-            return await BitHelper.readString(data);
-        }, 
-        exec: (data, snapshot) => {
-            const block = snapshot.data("TestEvent", "0.0.1") as any;
-            if (block.count === undefined) block.count = 0;
-            block.count += 1;
-            block.text = data;
+            if (!players.has(id)) throw new DynamicNotFound(`Player.Dynamic of id '${id}' did not exist.`);
+            players.delete(id);
         }
-    });
-})();*/
+    }
+});
 
 /* exported PlayerNotFound */
 class PlayerNotFound extends Error {

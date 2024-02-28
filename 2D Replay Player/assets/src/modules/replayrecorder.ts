@@ -1,5 +1,5 @@
-/* exported ReplayRecorder */
-declare namespace ReplayRecorder {
+/* exported Typemap */
+declare namespace Typemap {
     interface Headers {
         "ReplayRecorder.Header": {
             version: string;
@@ -7,17 +7,23 @@ declare namespace ReplayRecorder {
         }
     }
 }
-(function() {
-    const typename = "ReplayRecorder.Header";
-    ModuleLoader.register(typename, "0.0.1", { 
-        parse: async (data) => {
-            return {
-                version: await BitHelper.readString(data),
-                isMaster: await BitHelper.readByte(data) == 1
-            };
-        }
-    });
-})();
+
+ModuleLoader.registerHeader("ReplayRecorder.Header", "0.0.1", { 
+    parse: async (data, header) => {
+        if (header.has("ReplayRecorder.Header")) throw new DuplicateHeaderData("Replay header was already written.");
+        header.set("ReplayRecorder.Header", {
+            version: await BitHelper.readString(data),
+            isMaster: await BitHelper.readByte(data) == 1
+        });
+    }
+});
+
+/* exported DuplicateHeaderData */
+class DuplicateHeaderData extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
 
 /* exported DynamicNotFound */
 class DynamicNotFound extends Error {
