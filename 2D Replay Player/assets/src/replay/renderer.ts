@@ -84,7 +84,7 @@ class Renderer {
         });
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xffffff);
+        this.scene.background = new THREE.Color(0x333333);
 
         this.camera = new THREE.PerspectiveCamera(75, this.canvas.width / this.canvas.height, 0.1, 1000);
         this.camera.rotation.order = "YXZ";
@@ -98,9 +98,9 @@ class Renderer {
                 
         // add lights
         // https://stackoverflow.com/a/63507923/9642458
-        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.7);
+        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.1);
         this.scene.add(ambient);
-        const light = new THREE.DirectionalLight(0xFFFFFF, 1);
+        const light = new THREE.DirectionalLight(0xFFFFFF, 0.5);
         light.position.y = 100;
         // TODO(randomuserhi): Setup better using bounding box of surfaces
         light.shadow.mapSize.x = 4096;
@@ -117,13 +117,23 @@ class Renderer {
         light.castShadow = true;
         this.scene.add(light);
         this.scene.add(light.target);
-        light.target.translateX(10);
+        light.target.translateX(100);
         light.target.translateY(-10);
                 
         const helper = new THREE.CameraHelper(light.shadow.camera);
         this.scene.add(helper);
 
+        const point = new THREE.PointLight(0xFFFFFF, 1);
+        point.shadow.mapSize.x = 4096;
+        point.shadow.mapSize.y = 4096;
+        point.shadow.bias = -0.01;
+        point.distance = 250;
+        point.castShadow = true;
+        this.scene.add(point);
+
         const update = () => {
+            point.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
+
             this.renderer.render(this.scene, this.camera);
             requestAnimationFrame(update);
         };
@@ -147,8 +157,9 @@ class Renderer {
             geometry.computeVertexNormals();
 
             //const material = new THREE.MeshStandardMaterial({
-            const material = new THREE.MeshPhongMaterial({
-                color: 0x339933,
+            //const material = new THREE.MeshPhongMaterial({
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xaaaaaa,
                 side: THREE.DoubleSide, // causes issues for shadows :(
                 //flatShading: true,
             });
@@ -157,6 +168,10 @@ class Renderer {
             surface.castShadow = true;
             surface.receiveShadow = true;
             this.scene.add(surface);
+
+            /*const edges = new THREE.EdgesGeometry( geometry ); 
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial( { color: 0x888888 } ) ); 
+            this.scene.add( line );*/
 
             //const helper = new VertexNormalsHelper(surface);
             //this.scene.add(helper);
