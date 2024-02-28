@@ -137,7 +137,7 @@ class Renderer {
                     
             geometry.setIndex(meshes[i].indices);
             
-            geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(meshes[i].vertices), 3));
+            geometry.setAttribute("position", new THREE.BufferAttribute(meshes[i].vertices, 3));
             geometry.computeVertexNormals();
 
             const material = new THREE.MeshStandardMaterial({
