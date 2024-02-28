@@ -89,7 +89,7 @@ class Renderer {
         this.camera = new THREE.PerspectiveCamera(75, this.canvas.width / this.canvas.height, 0.1, 1000);
         this.camera.rotation.order = "YXZ";
                 
-        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.renderer.shadowMap.enabled = true;
         //this.renderer.shadowMap.type = THREE.BasicShadowMap;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -97,6 +97,7 @@ class Renderer {
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 
         // add lights
+        // https://stackoverflow.com/a/63507923/9642458
         const ambient = new THREE.AmbientLight(0xFFFFFF, 0.7);
         this.scene.add(ambient);
         const light = new THREE.DirectionalLight(0xFFFFFF, 1);
@@ -157,8 +158,8 @@ class Renderer {
             surface.receiveShadow = true;
             this.scene.add(surface);
 
-            const helper = new VertexNormalsHelper(surface);
-            this.scene.add(helper);
+            //const helper = new VertexNormalsHelper(surface);
+            //this.scene.add(helper);
         }
     }
 }
