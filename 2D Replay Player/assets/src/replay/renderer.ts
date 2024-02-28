@@ -136,15 +136,8 @@ class Renderer {
             const geometry = new THREE.BufferGeometry();
                     
             geometry.setIndex(meshes[i].indices);
-
-            const vertices = new Array(meshes[i].vertices.length * 3);
-            for (let j = 0, v = 0; j < meshes[i].vertices.length; ++j) {
-                vertices[v++] = meshes[i].vertices[j].x;
-                vertices[v++] = meshes[i].vertices[j].y;
-                vertices[v++] = meshes[i].vertices[j].z;
-            }
             
-            geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(meshes[i].vertices), 3));
             geometry.computeVertexNormals();
 
             const material = new THREE.MeshStandardMaterial({

@@ -13,11 +13,18 @@ namespace BitHelper {
         }
         return array;
     }
+    export async function readFloat32Array(stream: ByteStream | FileStream, length: number): Promise<Float32Array> {
+        const array = new Array<number>(length);
+        for (let i = 0; i < length; ++i) {
+            array[i] = await BitHelper.readFloat(stream);
+        }
+        return new Float32Array(array);
+    }
 }
 
 declare namespace Vanilla {
     interface MapGeometry {
-        vertices: Vector[];
+        vertices: Float32Array;
         indices: number[];
     }
 }
@@ -42,7 +49,7 @@ ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
                 const nVertices = await BitHelper.readUShort(data);
                 const nIndicies = await BitHelper.readUInt(data);
                 surfaces.push({
-                    vertices: await BitHelper.readVectorArray(data, nVertices),
+                    vertices: await BitHelper.readFloat32Array(data, nVertices * 3),
                     indices: await BitHelper.readUShortArray(data, nIndicies)
                 });
             }
