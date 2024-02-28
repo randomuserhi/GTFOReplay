@@ -41,7 +41,7 @@ RHU.module(new Error(), "routes/player", {
 
             // dummy load
             (async () => {
-                const path = "./GTFO Replays/R8B1 2024-02-28 01-13";
+                const path = "./assets/GTFOReplays/R8B1 2024-02-28 01-13";
                 await window.api.invoke("open", path);
                 const parser = new Parser(path);
                 parser.addEventListener("end", () => {
