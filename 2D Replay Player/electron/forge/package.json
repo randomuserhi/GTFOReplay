@@ -9,7 +9,7 @@
         "electron": "24.3.0"
     },
     "config": {
-        "forge": "../forge/forge.config.js"
+        "forge": "../forge/forge.config.cjs"
     }
   }
   
