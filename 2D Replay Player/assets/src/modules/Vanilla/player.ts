@@ -21,14 +21,16 @@ declare namespace Typemap {
     }
 
     interface Buffers {
-        "Vanilla.Player": Player
+        "Vanilla.Player": Vanilla.Player
     }
 }
 
-interface Player extends ReplayRecorder.Dynamic {
-    snet: bigint;
-    slot: number;
-    nickname: string;
+declare namespace Vanilla {
+    interface Player extends ReplayRecorder.Dynamic {
+        snet: bigint;
+        slot: number;
+        nickname: string;
+    }
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {

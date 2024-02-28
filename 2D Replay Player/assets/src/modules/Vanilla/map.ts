@@ -15,27 +15,29 @@ namespace BitHelper {
     }
 }
 
-interface MapGeometry {
-    vertices: Vector[];
-    indices: number[];
+declare namespace Vanilla {
+    interface MapGeometry {
+        vertices: Vector[];
+        indices: number[];
+    }
 }
 
 /* exported Typemap */
 declare namespace Typemap {
     interface Headers {
-        "Vanilla.Map.Geometry": Map<number, MapGeometry[]>;
+        "Vanilla.Map.Geometry": Map<number, Vanilla.MapGeometry[]>;
     }
 }
 
 ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
     parse: async (data, header) => {
-        const map = new Map<number, MapGeometry[]>();
+        const map = new Map<number, Vanilla.MapGeometry[]>();
 
         const nDimensions = await BitHelper.readByte(data);
         for (let i = 0; i < nDimensions; ++i) {
             const dimension = await BitHelper.readByte(data);
             const nSurfaces = await BitHelper.readUShort(data);
-            const surfaces: MapGeometry[] = [];
+            const surfaces: Vanilla.MapGeometry[] = [];
             for (let j = 0; j < nSurfaces; ++j) {
                 const nVertices = await BitHelper.readUShort(data);
                 const nIndicies = await BitHelper.readUInt(data);
