@@ -39,6 +39,7 @@
     "del-cli": "^5.1.0",
     "electron": "^24.8.8",
     "eslint": "^8.56.0",
+    "eslint-plugin-unused-imports": "^3.1.0",
     "typescript": "^5.3.3"
   }
 }

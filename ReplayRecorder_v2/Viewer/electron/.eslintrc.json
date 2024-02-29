@@ -16,6 +16,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "unused-imports/no-unused-imports-ts": "on",
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/no-namespace": "off",
         "brace-style": ["error", "1tbs", { "allowSingleLine": true }],

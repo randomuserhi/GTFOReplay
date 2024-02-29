@@ -1,7 +1,7 @@
+import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { Macro, Constructor } from "@/rhu/macro.js";
-import { Renderer } from "../../replay/renderer.js";
 import { Parser } from "../../replay/parser.js";
+import { Renderer } from "../../replay/renderer.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -66,11 +66,16 @@ export const player = Macro((() => {
                 console.log("finished");
                 window.api.send("close", path);
         
-                this.renderer.Test(replay.api(replay.getSnapshot(10)!));
+                //this.renderer.Test(replay.api(replay.getSnapshot(10)!));
             });
             const replay = await parser.parse();
             (window as any).replay = replay;
         })();
+
+        const update = () => {
+            this.renderer.render();
+            requestAnimationFrame(update);
+        }
     } as Constructor<player>;
 
     return player;

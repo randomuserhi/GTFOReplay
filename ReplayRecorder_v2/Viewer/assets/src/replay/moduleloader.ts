@@ -1,3 +1,4 @@
+import { Renderer } from "./renderer.js";
 import { ByteStream } from "./stream.js";
 
 export declare namespace Typemap {
@@ -23,6 +24,10 @@ export declare namespace Typemap {
 
     }
     type DataNames = keyof Data;
+
+    interface Render {
+    }
+    type RenderNames = keyof Render;
 }
 
 export interface ModuleDesc<T extends Typemap.AllNames | string & {} = string> {
@@ -75,6 +80,7 @@ export namespace ModuleLoader {
         spawn: DynamicSpawner<T>;
         despawn: DynamicDespawner<T>;
     }
+    type RenderModule = (renderer: Renderer) => void;
 
     type ModuleLibrary<T> = Map<string, Map<string, T>>;
 
@@ -83,10 +89,12 @@ export namespace ModuleLoader {
         header: ModuleLibrary<HeaderModule>
         event: ModuleLibrary<EventModule>
         dynamic: ModuleLibrary<DynamicModule>
+        render: ModuleLibrary<RenderModule>
     } = {
         header: new Map(),
         event: new Map(),
-        dynamic: new Map()
+        dynamic: new Map(),
+        render: new Map()
     };
 
     export function getHeader<T extends Typemap.HeaderNames>({ typename, version }: ModuleDesc<T>): HeaderModule {
@@ -122,6 +130,13 @@ export namespace ModuleLoader {
             library.dynamic.set(typename as string, new Map());
         }
         library.dynamic.get(typename as string)!.set(version, parser as any);
+    }
+
+    export function registerRender<T extends Typemap.RenderNames>(typename: T, version: string, func: RenderModule) {
+        if (!library.render.has(typename as string)) {
+            library.render.set(typename as string, new Map());
+        }
+        library.render.get(typename as string)!.set(version, func);
     }
 
     export function loadModule(path: string) {
