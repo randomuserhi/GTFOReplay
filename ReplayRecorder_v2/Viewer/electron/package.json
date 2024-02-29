@@ -39,6 +39,6 @@
     "del-cli": "^5.1.0",
     "electron": "^24.8.8",
     "eslint": "^8.56.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.3.3"
   }
 }
