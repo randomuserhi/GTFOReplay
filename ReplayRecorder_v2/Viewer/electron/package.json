@@ -1,0 +1,44 @@
+{
+  "name": "gtfo-replay-viewer",
+  "version": "1.0.0",
+  "description": "Viewer app for GTFOReplay.",
+  "main": "build/app.cjs",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src",
+    "lint-fix": "eslint src --fix",
+    "transpile": "tsc",
+    "build-assets": "npm run --prefix ../assets build && npm run --prefix ../assets offload",
+    "build": "del-cli build/**/* !build/assets && npm run transpile && copyfiles -u 1 forge/package.json build",
+    "start": "electron-forge start ./build",
+    "package": "electron-forge package ./build",
+    "make": "electron-forge make ./build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomuserhi/GTFOReplay.git"
+  },
+  "author": "randomuserhi",
+  "license": "ISC",
+  "dependencies": {
+    "@types/ws": "^8.5.4",
+    "chokidar": "^3.6.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.1.1",
+    "@electron-forge/maker-deb": "^6.1.1",
+    "@electron-forge/maker-rpm": "^6.1.1",
+    "@electron-forge/maker-squirrel": "^6.1.1",
+    "@electron-forge/maker-zip": "^6.1.1",
+    "@types/electron": "^1.6.10",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "copyfiles": "^2.4.1",
+    "del-cli": "^5.1.0",
+    "electron": "^24.8.8",
+    "eslint": "^8.56.0",
+    "typescript": "^5.0.4"
+  }
+}
