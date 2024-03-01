@@ -1,4 +1,4 @@
-import { Renderer } from "./renderer.js";
+import { RendererApi } from "./renderer.js";
 import { ByteStream } from "./stream.js";
 
 export declare namespace Typemap {
@@ -80,7 +80,7 @@ export namespace ModuleLoader {
         spawn: DynamicSpawner<T>;
         despawn: DynamicDespawner<T>;
     }
-    type RenderModule = (renderer: Renderer) => void;
+    type RenderModule = (renderer: RendererApi) => void;
 
     type ModuleLibrary<T> = Map<string, Map<string, T>>;
 

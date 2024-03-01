@@ -1,8 +1,8 @@
+import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { Macro, Constructor } from "@/rhu/macro.js";
 import { Theme } from "@/rhu/theme.js";
-import { winNav } from "./global/components/organisms/winNav.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
+import { winNav } from "./global/components/organisms/winNav.js";
 import { player } from "./routes/player.js";
 
 async function __main__() {
