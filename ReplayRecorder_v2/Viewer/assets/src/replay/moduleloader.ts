@@ -15,19 +15,18 @@ export declare namespace Typemap {
     type DynamicNames = keyof Dynamics;
     type AllNames = HeaderNames | EventNames | DynamicNames;
 
-    interface Buffers {
-
-    }
-    type BufferNames = keyof Buffers;
-
     interface Data {
 
     }
     type DataNames = keyof Data;
 
-    interface Render {
+    interface RenderData {
     }
-    type RenderNames = keyof Render;
+    type RenderDataNames = keyof RenderData;
+
+    interface RenderPasses {
+    }
+    type RenderPassNames = keyof RenderPasses;
 }
 
 export interface ModuleDesc<T extends Typemap.AllNames | string & {} = string> {
@@ -35,18 +34,19 @@ export interface ModuleDesc<T extends Typemap.AllNames | string & {} = string> {
     version: string;
 }
 
-export interface ReplayApi { 
-    buffer<T extends keyof Typemap.Buffers>(typename: T): Map<any, Typemap.Buffers[T]>;
-    data: {
-        get<T extends keyof Typemap.Data>(typename: T): Typemap.Data[T] | undefined;
-        set<T extends keyof Typemap.Data>(typename: T, value: Typemap.Data[T]): void;
-        has<T extends keyof Typemap.Data>(typename: T): boolean;
-    };
-    header: {
-        get<T extends keyof Typemap.Headers>(typename: T): Typemap.Headers[T] | undefined;
-        set<T extends keyof Typemap.Headers>(typename: T, value: Typemap.Headers[T]): void;
-        has<T extends keyof Typemap.Headers>(typename: T): boolean;
-    }
+export interface ReplayApi {
+    getOrDefault<T extends keyof Typemap.Data>(typename: T, def: () => Typemap.Data[T]): Typemap.Data[T];
+    get<T extends keyof Typemap.Data>(typename: T): Typemap.Data[T] | undefined;
+    set<T extends keyof Typemap.Data>(typename: T, value: Typemap.Data[T]): void;
+    has<T extends keyof Typemap.Data>(typename: T): boolean;
+    header: HeaderApi;
+}
+
+export interface HeaderApi {
+    getOrDefault<T extends keyof Typemap.Headers>(typename: T, def: () => Typemap.Headers[T]): Typemap.Headers[T];
+    get<T extends keyof Typemap.Headers>(typename: T): Typemap.Headers[T] | undefined;
+    set<T extends keyof Typemap.Headers>(typename: T, value: Typemap.Headers[T]): void;
+    has<T extends keyof Typemap.Headers>(typename: T): boolean;
 }
 
 interface DynamicParser<T extends Typemap.DynamicNames> {
@@ -80,7 +80,7 @@ export namespace ModuleLoader {
         spawn: DynamicSpawner<T>;
         despawn: DynamicDespawner<T>;
     }
-    type RenderModule = (renderer: RendererApi) => void;
+    type RenderModule = (name: string, renderer: RendererApi) => void;
 
     type ModuleLibrary<T> = Map<string, Map<string, T>>;
 
@@ -89,7 +89,7 @@ export namespace ModuleLoader {
         header: ModuleLibrary<HeaderModule>
         event: ModuleLibrary<EventModule>
         dynamic: ModuleLibrary<DynamicModule>
-        render: ModuleLibrary<RenderModule>
+        render: Map<string, RenderModule>
     } = {
         header: new Map(),
         event: new Map(),
@@ -132,11 +132,8 @@ export namespace ModuleLoader {
         library.dynamic.get(typename as string)!.set(version, parser as any);
     }
 
-    export function registerRender<T extends Typemap.RenderNames>(typename: T, version: string, func: RenderModule) {
-        if (!library.render.has(typename as string)) {
-            library.render.set(typename as string, new Map());
-        }
-        library.render.get(typename as string)!.set(version, func);
+    export function registerRender<T extends Typemap.RenderPassNames>(name: T, func: RenderModule) {
+        library.render.set(name, func);
     }
 
     export function loadModule(path: string) {

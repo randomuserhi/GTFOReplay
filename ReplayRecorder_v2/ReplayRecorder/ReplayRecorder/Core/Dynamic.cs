@@ -23,7 +23,7 @@ namespace ReplayRecorder.Core {
         public bool active => agent != null;
         public byte dimensionIndex => (byte)agent.m_dimensionIndex;
         public Vector3 position => agent.transform.position;
-        public Quaternion rotation => agent.transform.rotation;
+        public Quaternion rotation => Quaternion.LookRotation(agent.TargetLookDir);
 
         public AgentTransform(Agent agent) {
             this.agent = agent;
@@ -76,6 +76,9 @@ namespace ReplayRecorder.Core {
         public override void Spawn(ByteBuffer buffer) {
             BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             BitHelper.WriteBytes(transform.position, buffer);
+
+            oldDimensionIndex = transform.dimensionIndex;
+            oldPosition = transform.position;
         }
     }
 
@@ -116,6 +119,8 @@ namespace ReplayRecorder.Core {
                 BitHelper.WriteHalf(Quaternion.identity, buffer);
                 APILogger.Warn("Dynamic rotation had NaN component.");
             } else BitHelper.WriteHalf(transform.rotation, buffer);
+
+            oldRotation = transform.rotation;
         }
     }
 
@@ -184,6 +189,10 @@ namespace ReplayRecorder.Core {
                 BitHelper.WriteHalf(Quaternion.identity, buffer);
                 APILogger.Warn("Dynamic rotation had NaN component.");
             } else BitHelper.WriteHalf(transform.rotation, buffer);
+
+            oldDimensionIndex = transform.dimensionIndex;
+            oldPosition = transform.position;
+            oldRotation = transform.rotation;
         }
     }
 }

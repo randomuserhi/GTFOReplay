@@ -1,9 +1,9 @@
+import * as BitHelper from "./bithelper.js";
+import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleDesc, ModuleLoader, ModuleNotFound, NoExecFunc, UnknownModuleType } from "./moduleloader.js";
 import { Replay, Snapshot, Timeline } from "./replay.js";
 import { ByteStream, FileStream } from "./stream.js";
-import * as BitHelper from "./bithelper.js";
-import { Internal } from "./internal.js";
 
 let replay: Replay | undefined = undefined;
 
@@ -13,8 +13,6 @@ let replay: Replay | undefined = undefined;
         send: self.postMessage.bind(self)
     });
     ipc.on("init", async (path: string, links: string[], finite: boolean = true) => {
-        console.log(path);
-        console.log(links);
         await Promise.all(links.map(link => import(link)));
         parse(path, finite);
     });
@@ -33,7 +31,7 @@ let replay: Replay | undefined = undefined;
             return [module, id];
         };
         
-        try {
+        await (async () => {
             // Parse Typemap
             const headerSize = await BitHelper.readInt(fs);
             const bytes = await fs.getBytes(headerSize);
@@ -49,6 +47,7 @@ let replay: Replay | undefined = undefined;
                 const func = ModuleLoader.getHeader(module as any);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                 await func.parse(bytes, {
+                    getOrDefault: Replay.prototype.getOrDefault.bind(replay),
                     get: Replay.prototype.get.bind(replay),
                     set: Replay.prototype.set.bind(replay),
                     has: Replay.prototype.has.bind(replay)
@@ -124,7 +123,7 @@ let replay: Replay | undefined = undefined;
             for (;;) {
                 const snapshotSize = await BitHelper.readInt(fs);
                 const bytes = await fs.getBytes(snapshotSize);
-                
+
                 if ((state.tick % 50) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
@@ -144,13 +143,13 @@ let replay: Replay | undefined = undefined;
                 
                 ipc.send("snapshot", snapshot);
             }
-        } catch(err) {
+        })().catch((err) => {
             if (!(err instanceof RangeError)) {
                 throw err;
             }
-        }
-
-        ipc.send("end");
-        self.close();
+        }).finally(() => {
+            ipc.send("end");
+            self.close();
+        });
     }
 })();

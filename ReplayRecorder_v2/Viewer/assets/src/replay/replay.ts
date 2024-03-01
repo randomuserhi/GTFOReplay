@@ -44,6 +44,11 @@ export class Replay {
         this.snapshots = [];
     }
     
+    public getOrDefault<T extends keyof Typemap.Headers>(typename: T, def: () => Typemap.Headers[T]): Typemap.Headers[T] {
+        if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+        if (!this.header.has(typename)) this.header.set(typename, def());
+        return this.header.get(typename) as any;
+    }
     public get<T extends keyof Typemap.Headers>(typename: T): Typemap.Headers[T] | undefined {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.header.get(typename) as any;
@@ -52,7 +57,7 @@ export class Replay {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         this.header.set(typename, value);
     }
-    public  has<T extends keyof Typemap.Headers>(typename: T): boolean{
+    public has<T extends keyof Typemap.Headers>(typename: T): boolean{
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.header.has(typename);
     }
@@ -60,31 +65,30 @@ export class Replay {
     public api(state: Snapshot): ReplayApi {
         const replay = this;
         return {
-            data: {
-                get(typename: string): any {
-                    if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
-                    return state.data.get(typename);
-                },
-                set(typename: string, value: any): void {
-                    if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
-                    state.data.set(typename, value);
-                },
-                has(typename: string): boolean {
-                    if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
-                    return state.data.has(typename);
-                }
-            },
-            buffer(typename: string): Map<number, unknown> {
+            getOrDefault(typename: string, def: () => any): any {
                 if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
-                if (!state.dynamics.has(typename)) state.dynamics.set(typename, new Map());
-                return state.dynamics.get(typename)!;
+                if (!state.data.has(typename)) state.data.set(typename, def());
+                return state.data.get(typename);
+            },
+            get(typename: string): any {
+                if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                return state.data.get(typename);
+            },
+            set(typename: string, value: any): void {
+                if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                state.data.set(typename, value);
+            },
+            has(typename: string): boolean {
+                if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+                return state.data.has(typename);
             },
             header: {
+                getOrDefault: Replay.prototype.getOrDefault.bind(replay),
                 get: Replay.prototype.get.bind(replay),
                 set: Replay.prototype.set.bind(replay),
                 has: Replay.prototype.has.bind(replay),
             }
-        } as any;
+        };
     }
 
     private getModule(type: number): ModuleDesc {
@@ -147,7 +151,7 @@ export class Replay {
 
         const diff = snapshot.time - state.time;
         const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
-        const largestTickRate = 0.2;
+        const largestTickRate = 250; //ms
         // NOTE(randomuserhi): If the difference in time between current state and snapshot we are lerping to
         //                     is greater than the longest possible time taken between ticks, then no dynamics
         //                     have moved as they are recorded on each tick.

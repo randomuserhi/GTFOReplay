@@ -1,8 +1,8 @@
+import { CreateEvent } from "@/rhu";
 import { ShimWorker } from "./es-shim-worker.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleLoader } from "./moduleloader.js";
 import { Replay, Snapshot, Timeline } from "./replay.js";
-import { CreateEvent } from "@/rhu";
 
 export class Parser {
     readonly path: string;
@@ -50,7 +50,7 @@ export class Parser {
 
         // Setup worker and communication
         this.shim = new ShimWorker("../replay/worker.js", (worker) => {
-            const _addEventListener = worker.addEventListener.bind(worker);
+            const _addEventListener = Worker.prototype.addEventListener.bind(worker);
             const ipc = new IpcInterface({
                 on: (callback) => _addEventListener("message", (e: MessageEvent) => { callback(e.data); }),
                 send: worker.postMessage.bind(worker)

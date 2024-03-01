@@ -38,7 +38,7 @@ export class IpcInterface {
             if (id === undefined) {
                 this.listeners.get(event)?.forEach(cb => cb(...data));
             } else {
-                if (type == "in") {
+                if (type === "in") {
                     if (error !== undefined) throw new IpcError(error);
                     const resolve = this.promises.get(event)?.get(id);
                     if (resolve !== undefined) resolve(data[0]);

@@ -89,6 +89,7 @@ namespace ReplayRecorder.Snapshot {
             public bool Write(ByteBuffer buffer) {
                 if (NDirtyDynamics == 0) return false;
 
+                int numWritten = 0;
                 BitHelper.WriteBytes(Id, buffer);
                 BitHelper.WriteBytes(NDirtyDynamics, buffer);
                 _dynamics.Clear();
@@ -97,6 +98,7 @@ namespace ReplayRecorder.Snapshot {
 
                     if (dynamic.IsDirty) {
                         if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
+                        ++numWritten;
                         dynamic._Write(buffer);
                         dynamic.Write(buffer);
                     }
@@ -107,6 +109,11 @@ namespace ReplayRecorder.Snapshot {
                 List<ReplayDynamic> temp = dynamics;
                 dynamics = _dynamics;
                 _dynamics = temp;
+
+                if (numWritten != NDirtyDynamics) {
+                    throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection: {Type.FullName}({SnapshotManager.types[Type]})]: Number of written dynamics ({numWritten}) does not match dirty dynamics ({NDirtyDynamics}).");
+                }
+
                 return true;
             }
         }
@@ -260,12 +267,21 @@ namespace ReplayRecorder.Snapshot {
             }
 
             // Serialize dynamic properties
-            IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => collection.NDirtyDynamics > 0);
-            BitHelper.WriteBytes((ushort)dirtyCollections.Count(), bs);
+            int numWritten = 0;
+            IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => {
+                collection.isDirty = true;
+                return collection.NDirtyDynamics > 0;
+            });
+            int nDirtyCollections = dirtyCollections.Count();
+            BitHelper.WriteBytes((ushort)nDirtyCollections, bs);
             foreach (DynamicCollection collection in dirtyCollections) {
                 if (collection.Write(bs) && ConfigManager.Debug) {
+                    ++numWritten;
                     APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
                 }
+            }
+            if (numWritten != nDirtyCollections) {
+                throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection]: Number of written collections ({numWritten}) does not match dirty collections ({nDirtyCollections}).");
             }
 
             // Flush to file stream

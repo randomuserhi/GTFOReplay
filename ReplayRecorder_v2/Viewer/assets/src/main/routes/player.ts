@@ -2,6 +2,7 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Parser } from "../../replay/parser.js";
 import { Renderer } from "../../replay/renderer.js";
+import { Replay } from "../../replay/replay.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -30,7 +31,13 @@ const style = Style(({ style }) => {
 
 export interface player extends HTMLDivElement {
     canvas: HTMLCanvasElement;
+
     renderer: Renderer;
+
+    replay?: Replay;
+    time: number;
+    prevTime: number;
+    update: () => void;
 }
 
 declare module "@/rhu/macro.js" {
@@ -42,7 +49,6 @@ declare module "@/rhu/macro.js" {
 export const player = Macro((() => {
     const player = function(this: player) {
         this.renderer = new Renderer(this.canvas);
-        (window as any).renderer = this.renderer;
 
         const resize = () => {
             const computed = getComputedStyle(this);
@@ -56,9 +62,11 @@ export const player = Macro((() => {
         window.addEventListener("resize", resize);
         this.addEventListener("mount", resize);
 
+        (window as any).player = this;
+
         // dummy load
         (async () => {
-            const path = "D:\\GTFO Replays\\R8B1 2024-02-28 01-13";
+            const path = "D:\\GTFO Replays\\R1A1 2024-03-01 22-19";
             console.log(path);
             await window.api.invoke("open", path);
             const parser = new Parser(path);
@@ -66,17 +74,34 @@ export const player = Macro((() => {
                 console.log("finished");
                 window.api.send("close", path);
         
-                //this.renderer.Test(replay.api(replay.getSnapshot(10)!));
-            });
-            const replay = await parser.parse();
-            (window as any).replay = replay;
-        })();
+                if (this.replay === undefined) return;
 
-        const update = () => {
-            this.renderer.render();
-            requestAnimationFrame(update);
-        }
+                this.renderer.init(this.replay);
+
+                this.time = 0;
+                this.prevTime = Date.now();
+                this.update();
+            });
+            this.replay = await parser.parse();
+        })();
     } as Constructor<player>;
+    
+    player.prototype.update = function() {
+        if (this.replay === undefined) return;
+
+        const now = Date.now();
+        const dt = now - this.prevTime;
+        this.prevTime = now;
+
+        this.time += dt;
+
+        const snapshot = this.replay.getSnapshot(this.time);
+        if (snapshot !== undefined) {
+            const api = this.replay.api(snapshot);
+            this.renderer.render(api);
+        }
+        requestAnimationFrame(() => this.update());
+    };
 
     return player;
 })(), "routes/player", //html

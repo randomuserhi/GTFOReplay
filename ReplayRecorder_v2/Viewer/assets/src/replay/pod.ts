@@ -68,6 +68,15 @@ export namespace Quat {
             z: 0
         };
     }
+    export function normalize(a: Quaternion): Quaternion {
+        const length = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w);
+        return {
+            x: a.x / length,
+            y: a.y / length,
+            z: a.z / length,
+            w: a.w / length
+        };
+    }
     export function euler(a: Quaternion): Vector {
         const euler: Vector = {x: 0, y: 0, z: 0};
         const sqw = a.w*a.w;
@@ -120,11 +129,17 @@ export namespace Quat {
         }
         const ratioA = Math.sin((1 - lerp) * halfTheta) / sinHalfTheta;
         const ratioB = Math.sin(lerp * halfTheta) / sinHalfTheta;
-        return {
+        const result = {
             w: (a.w * ratioA + b.w * ratioB),
             x: (a.x * ratioA + b.x * ratioB),
             y: (a.y * ratioA + b.y * ratioB),
             z: (a.z * ratioA + b.z * ratioB)
         };
+        const length = Math.sqrt(result.x * result.x + result.y * result.y + result.z * result.z + result.w * result.w);
+        result.x /= length;
+        result.y /= length;
+        result.z /= length;
+        result.w /= length;
+        return result;
     }
 }
