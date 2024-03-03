@@ -69,7 +69,7 @@ export const player = Macro((() => {
         // dummy load
         (async () => {
             const file = {
-                path: "D:\\GTFO Replays\\R1A1 2024-03-03 15-48",
+                path: "D:\\GTFO Replays\\R1A1 2024-03-03 16-13",
                 finite: false
             };
             await window.api.invoke("open", file);

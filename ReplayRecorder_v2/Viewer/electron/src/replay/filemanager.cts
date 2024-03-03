@@ -50,6 +50,8 @@ class File {
                     this.cyclicStart.offset += 1;
                 }
             }
+
+            this.doAllRequests();
         });
     }
 
@@ -76,9 +78,7 @@ class File {
             usePolling: true
         }); // TODO(randomuserhi): requires polling for some reason => shouldn't need to tho?
         this.watcher.on("all", () => {
-            const requests = this.requests;
-            this.requests = [];
-            requests.forEach(r => this.doRequest(r));
+            this.doAllRequests();
         });
     }
 
@@ -87,6 +87,12 @@ class File {
             this.watcher.close();
         }
         this.unlink();
+    }
+
+    private doAllRequests() {
+        const requests = this.requests;
+        this.requests = [];
+        requests.forEach(r => this.doRequest(r));
     }
 
     private doRequest(request: { start: number; end: number; numBytes: number; callback: (bytes?: ArrayBufferLike) => void }, wait: boolean = true) {
