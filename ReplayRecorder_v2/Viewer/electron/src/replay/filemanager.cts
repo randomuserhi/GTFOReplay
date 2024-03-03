@@ -17,7 +17,7 @@ class File {
         this.requests = [];
 
         this.client = new TcpClient();
-        this.cyclicBuffer = new Uint8Array(1024);
+        /*this.cyclicBuffer = new Uint8Array(1024);
         this.cyclicEnd = {
             index: 0,
             offset: 0
@@ -43,21 +43,21 @@ class File {
                 }
             }
             console.log(`start: ${this.cyclicStart.offset} ${this.cyclicEnd.offset} ${this.cyclicStart.index} ${this.cyclicEnd.index}`);
-        });
+        });*/
     }
 
     private client: TcpClient;
-    private cyclicBuffer: Uint8Array;
+    /*private cyclicBuffer: Uint8Array;
     private cyclicStart?: { index: number, offset: number };
-    private cyclicEnd: { index: number, offset: number };
+    private cyclicEnd: { index: number, offset: number };*/
     public link(port: number) {
         console.log("setting up link");
         if (this.client.active()) {
             this.client.disconnect();
         }
-        this.cyclicStart = undefined;
+        /*this.cyclicStart = undefined;
         this.cyclicEnd.index = 0;
-        this.cyclicEnd.offset = 0;
+        this.cyclicEnd.offset = 0;*/
         this.client.connect("127.0.0.1", port);
         console.log("link setup");
     }
@@ -107,8 +107,7 @@ class File {
 
     private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
-            console.log(`request bytes: ${start} ${end} (${numBytes})`);
-            if (this.client.active() && this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
+            /*if (this.client.active() && this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
                 start >= this.cyclicStart.offset && (end + 1) <= this.cyclicEnd.offset) {
                 console.log("Retrieved Bytes from link.");
                 const bytes = new Uint8Array(numBytes);
@@ -118,24 +117,24 @@ class File {
                     bytes[i] = this.cyclicBuffer[index];
                 }
                 resolve(bytes);
-            } else {
-                const stream = fs.createReadStream(this.path, {
-                    flags: "r",
-                    start,
-                    end
-                });
-                stream.on("error", reject);
-                const chunks: Buffer[] = [];
-                stream.on("data", (chunk: Buffer) => {
-                    chunks.push(chunk);
-                });
-                stream.on("end", () => {
-                    const buffer = Buffer.concat(chunks);
-                    if (buffer.byteLength === numBytes) resolve(buffer);
-                    else reject();
-                    stream.close();
-                });
-            }
+            } else {*/
+            const stream = fs.createReadStream(this.path, {
+                flags: "r",
+                start,
+                end
+            });
+            stream.on("error", reject);
+            const chunks: Buffer[] = [];
+            stream.on("data", (chunk: Buffer) => {
+                chunks.push(chunk);
+            });
+            stream.on("end", () => {
+                const buffer = Buffer.concat(chunks);
+                if (buffer.byteLength === numBytes) resolve(buffer);
+                else reject();
+                stream.close();
+            });
+            //}
         });
     }
     public getBytes(index: number, numBytes: number, wait: boolean = true): Promise<ArrayBufferLike | undefined> {

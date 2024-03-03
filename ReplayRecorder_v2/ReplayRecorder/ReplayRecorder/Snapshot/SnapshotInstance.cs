@@ -185,6 +185,9 @@ namespace ReplayRecorder.Snapshot {
         private FileStream? fs;
         private ByteBuffer writeBuffer = new ByteBuffer();
 
+        public bool Ready => Active && completedHeader;
+        public bool Active => fs != null;
+
         private long start = 0;
         private long Now => Raudy.Now - start;
 
@@ -316,8 +319,8 @@ namespace ReplayRecorder.Snapshot {
             writeBuffer.Clear();
             if (writeState.Write(now, writeBuffer)) {
                 // Send across socket
-                _ = server.Send(new ArraySegment<byte>(writeBuffer.array, 0, writeBuffer.count), offset);
-                offset += sizeof(int) + writeBuffer.count;
+                /*_ = server.Send(new ArraySegment<byte>(writeBuffer.array, 0, writeBuffer.count), offset);
+                offset += sizeof(int) + writeBuffer.count;*/
 
                 // Flush to file stream
                 writeBuffer.Flush(fs);
@@ -366,7 +369,6 @@ namespace ReplayRecorder.Snapshot {
                 timer = 0;
                 tickRate = rate;
             }
-            APILogger.Debug(rate.ToString());
 
             timer += Time.deltaTime;
             if (timer > tickRate) {

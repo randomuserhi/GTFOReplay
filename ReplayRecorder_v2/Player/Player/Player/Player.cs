@@ -35,6 +35,8 @@ namespace Vanilla.Player {
         private static List<rPlayer> players = new List<rPlayer>();
 
         public static void Spawn(PlayerAgent agent) {
+            if (!Replay.Active) return;
+
             rPlayer? player = players.Find(p => p.agent.Owner.Lookup == agent.Owner.Lookup);
             if (player != null) {
                 // Replace old elevator agent with agent in level
@@ -50,6 +52,8 @@ namespace Vanilla.Player {
         }
 
         public static void Despawn(PlayerAgent agent) {
+            if (!Replay.Active) return;
+
             rPlayer? player = players.Find(p => p.agent.Owner.Lookup == agent.Owner.Lookup);
             if (player == null) {
                 APILogger.Error($"(DespawnPlayer) Could not find player in managed list.");

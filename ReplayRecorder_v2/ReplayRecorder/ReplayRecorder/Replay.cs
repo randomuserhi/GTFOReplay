@@ -77,6 +77,9 @@ namespace ReplayRecorder {
         [HideFromIl2Cpp]
         public static void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) => SnapshotManager.GetInstance().Despawn(dynamic, errorOnNotFound);
 
+        public static bool Ready => SnapshotManager.Ready;
+        public static bool Active => SnapshotManager.Active;
+
         public static Action? OnExpeditionEnd;
         public static Action? OnExpeditionStart;
         public static Action? OnGameplayStart;

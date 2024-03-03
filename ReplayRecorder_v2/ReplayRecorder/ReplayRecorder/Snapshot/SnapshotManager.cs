@@ -12,7 +12,8 @@ namespace ReplayRecorder.Snapshot {
                 instance.Init();
             } else throw new ReplaySnapshotAlreadyInitialized();
         }
-
+        internal static bool Ready => instance != null && instance.Ready;
+        internal static bool Active => instance != null && instance.Active;
         internal static SnapshotInstance GetInstance() {
             if (instance == null) {
                 throw new ReplaySnapshotNotInitialized();

@@ -68,7 +68,7 @@ export const player = Macro((() => {
 
         // dummy load
         (async () => {
-            const path = "D:\\GTFO Replays\\R1A1 2024-03-03 10-25";
+            const path = "D:\\GTFO Replays\\R1A1 2024-03-03 10-55";
             console.log(path);
             await window.api.invoke("open", path);
             this.parser = new Parser(path);
@@ -80,7 +80,7 @@ export const player = Macro((() => {
                 this.renderer.init(this.replay);
 
                 this.time = 0;
-                this.lerp = 20;
+                this.lerp = 20; // TODO(randomuserhi): Should be adjustable for various tick rates
                 this.prevTime = Date.now();
                 this.update();
             });
@@ -98,9 +98,9 @@ export const player = Macro((() => {
         const dt = (now - this.prevTime) / 1000;
         this.prevTime = now;
 
-        this.time += dt;
+        //this.time += dt;
         const length = this.replay.length();
-        //this.time += (length - this.time) * dt * this.lerp; // For live replay -> lerp to latest time stamp
+        this.time += (length - this.time) * dt * this.lerp; // For live replay -> lerp to latest time stamp
         if (this.time > length) this.time = length;
 
         const snapshot = this.replay.getSnapshot(this.time);
