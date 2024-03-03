@@ -34,8 +34,10 @@ export interface player extends HTMLDivElement {
 
     renderer: Renderer;
 
+    parser?: Parser;
     replay?: Replay;
     time: number;
+    lerp: number;
     prevTime: number;
     update: () => void;
 }
@@ -66,23 +68,26 @@ export const player = Macro((() => {
 
         // dummy load
         (async () => {
-            const path = "D:\\GTFO Replays\\R1A1 2024-03-01 22-19";
+            const path = "D:\\GTFO Replays\\R1A1 2024-03-03 08-23";
             console.log(path);
             await window.api.invoke("open", path);
-            const parser = new Parser(path);
-            parser.addEventListener("end", () => {
-                console.log("finished");
-                window.api.send("close", path);
+            this.parser = new Parser(path);
+            this.parser.addEventListener("eoh", () => {
+                console.log("ready");
         
                 if (this.replay === undefined) return;
 
                 this.renderer.init(this.replay);
 
                 this.time = 0;
+                this.lerp = 1;
                 this.prevTime = Date.now();
                 this.update();
             });
-            this.replay = await parser.parse();
+            this.parser.addEventListener("end", () => {
+                window.api.send("close", path);
+            });
+            this.replay = await this.parser.parse(false);
         })();
     } as Constructor<player>;
     
@@ -90,10 +95,12 @@ export const player = Macro((() => {
         if (this.replay === undefined) return;
 
         const now = Date.now();
-        const dt = now - this.prevTime;
+        const dt = (now - this.prevTime) / 1000;
         this.prevTime = now;
 
-        this.time += dt;
+        //this.time += dt;
+        this.time += (this.replay.length() - this.time) * dt * this.lerp;
+        //if (this.time > length) this.time = length;
 
         const snapshot = this.replay.getSnapshot(this.time);
         if (snapshot !== undefined) {

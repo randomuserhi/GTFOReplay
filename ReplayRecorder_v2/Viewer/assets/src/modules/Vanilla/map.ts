@@ -32,7 +32,7 @@ ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
                 const nVertices = await BitHelper.readUShort(data);
                 const nIndicies = await BitHelper.readUInt(data);
                 surfaces.push({
-                    vertices: await BitHelper.readFloat32Array(data, nVertices * 3),
+                    vertices: await BitHelper.readVectorArrayAsFloat32(data, nVertices),
                     indices: await BitHelper.readUShortArray(data, nIndicies)
                 });
             }

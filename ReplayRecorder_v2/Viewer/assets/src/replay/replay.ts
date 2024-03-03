@@ -1,5 +1,5 @@
 import { Internal } from "./internal.js";
-import { ReplayApi, ModuleDesc, ModuleLoader, NoExecFunc, Typemap, UnknownModuleType } from "./moduleloader.js";
+import { ModuleDesc, ModuleLoader, NoExecFunc, ReplayApi, Typemap, UnknownModuleType } from "./moduleloader.js";
 
 export declare namespace Timeline {
     interface Event<T = unknown> {
@@ -208,6 +208,6 @@ export class Replay {
     }
 
     public length(): number {
-        return this.snapshots.length === 0 ? 0 : this.snapshots[this.snapshots.length - 1].time;
+        return this.timeline.length === 0 ? 0 : this.timeline[this.timeline.length - 1].time;
     }
 }

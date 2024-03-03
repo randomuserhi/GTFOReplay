@@ -248,10 +248,10 @@ export async function readHalfQuaternion(stream: ByteStream | FileStream): Promi
     return { x: x, y: y, z: z, w: w };
 }
 export async function readVector(stream: ByteStream | FileStream): Promise<Vector> {
-    return { x: await readFloat(stream), y: await readFloat(stream), z: await readFloat(stream) };
+    return { x: -await readFloat(stream), y: await readFloat(stream), z: await readFloat(stream) };
 }
 export async function readHalfVector(stream: ByteStream | FileStream): Promise<Vector> {
-    return { x: await readHalf(stream), y: await readHalf(stream), z: await readHalf(stream) };
+    return { x: -await readHalf(stream), y: await readHalf(stream), z: await readHalf(stream) };
 }
 
 export async function readUShortArray(stream: ByteStream | FileStream, length: number): Promise<number[]> {
@@ -266,6 +266,16 @@ export async function readVectorArray(stream: ByteStream | FileStream, length: n
         array[i] = await readVector(stream);
     }
     return array;
+}
+export async function readVectorArrayAsFloat32(stream: ByteStream | FileStream, length: number): Promise<Float32Array> {
+    length *= 3;
+    const array = new Array<number>(length);
+    for (let i = 0; i < length;) {
+        array[i++] = -await readFloat(stream);
+        array[i++] = await readFloat(stream);
+        array[i++] = await readFloat(stream);
+    }
+    return new Float32Array(array);
 }
 export async function readFloat32Array(stream: ByteStream | FileStream, length: number): Promise<Float32Array> {
     const array = new Array<number>(length);

@@ -110,73 +110,72 @@ namespace ReplayRecorder {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe void _WriteBytes(byte* source, int size, byte[] destination, ref int index) {
+        private static unsafe void _WriteBytes(byte* source, int size, ArraySegment<byte> destination, ref int index) {
             for (int i = 0; i < size;) {
                 destination[index++] = source[i++];
             }
         }
 
-        public static unsafe void WriteBytes(byte value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(byte value, ArraySegment<byte> destination, ref int index) {
             destination[index++] = value;
         }
 
-        public static unsafe void WriteBytes(ulong value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(ulong value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ulong), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(uint value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(uint value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(uint), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(ushort value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(ushort value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ushort), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(long value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(long value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(long), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(int value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(int value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(int), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(short value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(short value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(short), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(float value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(float value, ArraySegment<byte> destination, ref int index) {
             int to32 = *((int*)&value);
             if (!BitConverter.IsLittleEndian) to32 = ReverseEndianness(to32);
             _WriteBytes((byte*)&to32, sizeof(int), destination, ref index);
         }
 
-        public static unsafe void WriteBytes(string value, byte[] destination, ref int index) {
+        public static unsafe void WriteBytes(string value, ArraySegment<byte> destination, ref int index) {
             byte[] temp = Encoding.UTF8.GetBytes(value);
             if (temp.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, length must be smaller than {ushort.MaxValue}.");
             WriteBytes((ushort)temp.Length, destination, ref index);
-            Array.Copy(temp, 0, destination, index, temp.Length);
+            Array.Copy(temp, 0, destination.Array!, destination.Offset + index, temp.Length);
             index += temp.Length;
         }
         public static int SizeOfString(string value) {
             return sizeof(ushort) + Encoding.UTF8.GetBytes(value).Length;
         }
 
-        public static unsafe void WriteBytes(byte[] buffer, byte[] destination, ref int index) {
-            if (buffer.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"Buffer is too large, length must be smaller than {ushort.MaxValue}.");
-            WriteBytes((ushort)buffer.Length, destination, ref index);
-            Array.Copy(buffer, 0, destination, index, buffer.Length);
-            index += buffer.Length;
+        public static unsafe void WriteBytes(ArraySegment<byte> buffer, ArraySegment<byte> destination, ref int index) {
+            WriteBytes(buffer.Count, destination, ref index);
+            Array.Copy(buffer.Array!, buffer.Offset, destination.Array!, destination.Offset + index, buffer.Count);
+            index += buffer.Count;
         }
 
         public const int SizeOfHalf = sizeof(ushort);
         // Special function to halve precision of float
-        public static void WriteHalf(float value, byte[] destination, ref int index) {
+        public static void WriteHalf(float value, ArraySegment<byte> destination, ref int index) {
             WriteBytes(FloatToHalf(value), destination, ref index);
         }
 
@@ -239,8 +238,7 @@ namespace ReplayRecorder {
         }
 
         public static unsafe void WriteBytes(byte[] bytes, ByteBuffer buffer) {
-            if (buffer.Count > ushort.MaxValue) throw new BitHelperBufferTooLarge($"Buffer is too large, length must be smaller than {ushort.MaxValue}.");
-            WriteBytes((ushort)bytes.Length, buffer);
+            WriteBytes(bytes.Length, buffer);
             Array.Copy(bytes, 0, buffer.array, buffer.count, bytes.Length);
             buffer.count += bytes.Length;
         }
@@ -305,8 +303,7 @@ namespace ReplayRecorder {
         }
 
         public static unsafe void WriteBytes(byte[] buffer, FileStream fs) {
-            if (buffer.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"Buffer is too large, length must be smaller than {ushort.MaxValue}.");
-            WriteBytes((ushort)buffer.Length, fs);
+            WriteBytes(buffer.Length, fs);
             fs.Write(buffer);
         }
 
@@ -712,7 +709,7 @@ namespace ReplayRecorder {
 
         public const int SizeOfHalfVector3 = SizeOfHalf * 3;
 
-        public static void WriteHalf(Vector3 value, byte[] destination, ref int index) {
+        public static void WriteHalf(Vector3 value, ArraySegment<byte> destination, ref int index) {
             WriteHalf(value.x, destination, ref index);
             WriteHalf(value.y, destination, ref index);
             WriteHalf(value.z, destination, ref index);
@@ -720,7 +717,7 @@ namespace ReplayRecorder {
 
         public const int SizeOfHalfQuaternion = 1 + SizeOfHalf * 3;
         // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
-        public static void WriteHalf(Quaternion value, byte[] destination, ref int index) {
+        public static void WriteHalf(Quaternion value, ArraySegment<byte> destination, ref int index) {
             value = value.normalized;
 
             float largest = value.x;

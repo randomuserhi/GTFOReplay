@@ -99,6 +99,10 @@ export class Parser {
         return replay;
     }
 
+    public link(port: number) {
+        window.api.send("link", this.path, port);
+    }
+
     public terminate() {
         if (this.shim !== undefined) {
             this.shim.terminate();
