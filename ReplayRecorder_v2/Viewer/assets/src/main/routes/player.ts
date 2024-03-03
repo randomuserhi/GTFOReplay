@@ -68,7 +68,7 @@ export const player = Macro((() => {
 
         // dummy load
         (async () => {
-            const path = "D:\\GTFO Replays\\R1A1 2024-03-03 08-23";
+            const path = "D:\\GTFO Replays\\R1A1 2024-03-03 10-25";
             console.log(path);
             await window.api.invoke("open", path);
             this.parser = new Parser(path);
@@ -80,7 +80,7 @@ export const player = Macro((() => {
                 this.renderer.init(this.replay);
 
                 this.time = 0;
-                this.lerp = 1;
+                this.lerp = 60;
                 this.prevTime = Date.now();
                 this.update();
             });

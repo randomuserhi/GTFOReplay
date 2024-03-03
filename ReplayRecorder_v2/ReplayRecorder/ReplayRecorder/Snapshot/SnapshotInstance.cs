@@ -6,6 +6,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
+using System.Net;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -118,18 +119,77 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
+        private class DeltaState {
+            internal List<EventWrapper> events = new List<EventWrapper>();
+            internal Dictionary<Type, DynamicCollection> dynamics = new Dictionary<Type, DynamicCollection>();
+
+            internal void Clear() {
+                events.Clear();
+                dynamics.Clear();
+            }
+
+            internal bool Write(long now, ByteBuffer bs) {
+                // Check if this tick needs to be done
+                // - are there any dynamics to serialize?
+                // - are there any events to serialize?
+                int nDirtyDynamics = dynamics.Values.Sum(d => { d.isDirty = true; return d.NDirtyDynamics; });
+                if (nDirtyDynamics == 0 && events.Count == 0)
+                    return false;
+
+                // Tick header
+                BitHelper.WriteBytes((uint)now, bs);
+
+                // Write Events
+                BitHelper.WriteBytes(events.Count, bs);
+                for (int i = 0; i < events.Count; ++i) {
+                    EventWrapper e = events[i];
+
+                    long delta = now - e.now;
+                    if (delta < 0 || delta > ushort.MaxValue) {
+                        throw new ReplayInvalidDeltaTime($"Delta time of {delta}ms is invalid. Max is {ushort.MaxValue}ms and minimum is 0ms.");
+                    }
+
+                    // Event header
+                    BitHelper.WriteBytes((ushort)delta, bs);
+                    e.Write(bs);
+                }
+
+                // Serialize dynamic properties
+                int numWritten = 0;
+                IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => {
+                    collection.isDirty = true;
+                    return collection.NDirtyDynamics > 0;
+                });
+                int nDirtyCollections = dirtyCollections.Count();
+                BitHelper.WriteBytes((ushort)nDirtyCollections, bs);
+                foreach (DynamicCollection collection in dirtyCollections) {
+                    if (collection.Write(bs) && ConfigManager.Debug) {
+                        ++numWritten;
+                        APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
+                    }
+                }
+                if (numWritten != nDirtyCollections) {
+                    throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection]: Number of written collections ({numWritten}) does not match dirty collections ({nDirtyCollections}).");
+                }
+
+                events.Clear();
+
+                return true;
+            }
+        }
+
+        private DeltaState writeState = new DeltaState();
+
+        private TCPServer? server;
+        private int offset = 0;
         private FileStream? fs;
-        private ByteBuffer bs = new ByteBuffer();
+        private ByteBuffer writeBuffer = new ByteBuffer();
 
         private long start = 0;
         private long Now => Raudy.Now - start;
 
         private bool completedHeader = false;
         private HashSet<Type> unwrittenHeaders = new HashSet<Type>();
-
-        private List<EventWrapper> events = new List<EventWrapper>();
-
-        private Dictionary<Type, DynamicCollection> dynamics = new Dictionary<Type, DynamicCollection>();
 
         private string fullpath = "replay.gtfo";
         internal void Init() {
@@ -157,13 +217,15 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
-            bs.Clear();
-            SnapshotManager.types.Write(bs);
+            writeBuffer.Clear();
+            SnapshotManager.types.Write(writeBuffer);
             foreach (Type t in SnapshotManager.types.headers) {
                 unwrittenHeaders.Add(t);
             }
+
+            writeState.Clear();
             foreach (Type t in SnapshotManager.types.dynamics) {
-                dynamics.Add(t, new DynamicCollection(t));
+                writeState.dynamics.Add(t, new DynamicCollection(t));
             }
         }
 
@@ -183,8 +245,8 @@ namespace ReplayRecorder.Snapshot {
             }
             ushort id = SnapshotManager.types[headerType];
             APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
-            BitHelper.WriteBytes(id, bs);
-            header.Write(bs);
+            BitHelper.WriteBytes(id, writeBuffer);
+            header.Write(writeBuffer);
 
             if (unwrittenHeaders.Count == 0) {
                 completedHeader = true;
@@ -197,98 +259,69 @@ namespace ReplayRecorder.Snapshot {
 
             EndOfHeader eoh = new EndOfHeader();
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
-            eoh.Write(bs);
+            eoh.Write(writeBuffer);
 
-            bs.Flush(fs);
+            offset = sizeof(int) + writeBuffer.count;
+            writeBuffer.Flush(fs);
             start = Raudy.Now;
 
             Replay.OnHeaderCompletion?.Invoke();
+
+            if (server != null) {
+                server.Dispose();
+            }
+            server = new TCPServer();
+            server.Bind(new IPEndPoint(IPAddress.Any, 56759));
         }
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
             if (ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
-            events.Add(new EventWrapper(Now, e));
+            writeState.events.Add(new EventWrapper(Now, e));
         }
 
         [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
             Type dynType = dynamic.GetType();
-            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+            if (!writeState.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new ReplaySpawn(dynamic));
-            dynamics[dynType].Add(dynamic, errorOnDuplicate);
+            writeState.dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
             Type dynType = dynamic.GetType();
-            if (!dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+            if (!writeState.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new ReplayDespawn(dynamic));
-            dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
+            writeState.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
         }
 
         private void Tick() {
-            if (fs == null) throw new ReplaySnapshotNotInitialized();
+            if (fs == null || server == null) throw new ReplaySnapshotNotInitialized();
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
 
             // Invoke tick processes
             Replay.OnTick?.Invoke();
 
-            // Check if this tick needs to be done
-            // - are there any dynamics to serialize?
-            // - are there any events to serialize?
-            int nDirtyDynamics = dynamics.Values.Sum(d => { d.isDirty = true; return d.NDirtyDynamics; });
-            if (nDirtyDynamics == 0 && events.Count == 0)
-                return;
-
-            // Tick header
-            long _Now = Now;
-            if (_Now > uint.MaxValue) {
+            // Prepare time
+            long now = Now;
+            if (now > uint.MaxValue) {
                 Dispose();
                 throw new ReplayInvalidTimestamp($"ReplayRecorder does not support replays longer than {uint.MaxValue}ms.");
             }
-            BitHelper.WriteBytes((uint)_Now, bs);
 
-            // Write Events
-            BitHelper.WriteBytes(events.Count, bs);
-            for (int i = 0; i < events.Count; ++i) {
-                EventWrapper e = events[i];
+            // Clear write buffer
+            writeBuffer.Clear();
+            if (writeState.Write(now, writeBuffer)) {
+                // Send across socket
+                _ = server.Send(new ArraySegment<byte>(writeBuffer.array, 0, writeBuffer.count), offset);
+                offset += sizeof(int) + writeBuffer.count;
 
-                long delta = _Now - e.now;
-                if (delta < 0 || delta > ushort.MaxValue) {
-                    throw new ReplayInvalidDeltaTime($"Delta time of {delta}ms is invalid. Max is {ushort.MaxValue}ms and minimum is 0ms.");
-                }
-
-                // Event header
-                BitHelper.WriteBytes((ushort)delta, bs);
-                e.Write(bs);
+                // Flush to file stream
+                writeBuffer.Flush(fs);
             }
-
-            // Serialize dynamic properties
-            int numWritten = 0;
-            IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => {
-                collection.isDirty = true;
-                return collection.NDirtyDynamics > 0;
-            });
-            int nDirtyCollections = dirtyCollections.Count();
-            BitHelper.WriteBytes((ushort)nDirtyCollections, bs);
-            foreach (DynamicCollection collection in dirtyCollections) {
-                if (collection.Write(bs) && ConfigManager.Debug) {
-                    ++numWritten;
-                    APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
-                }
-            }
-            if (numWritten != nDirtyCollections) {
-                throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection]: Number of written collections ({numWritten}) does not match dirty collections ({nDirtyCollections}).");
-            }
-
-            // Flush to file stream
-            bs.Flush(fs);
-
-            // Flush event buffer
-            events.Clear();
         }
 
         internal void Dispose() {
@@ -299,6 +332,9 @@ namespace ReplayRecorder.Snapshot {
                 fs.Dispose();
                 fs = null;
             }
+            if (server != null) {
+                server.Dispose();
+            }
 
             Destroy(gameObject);
         }
@@ -306,27 +342,30 @@ namespace ReplayRecorder.Snapshot {
         private float tickRate = 1f / 5f;
         private float timer = 0;
         private void Update() {
-            if (fs == null || !completedHeader) {
+            if (fs == null || server == null || !completedHeader) {
                 return;
             }
 
-            float rate;
-            // Change tick rate based on state:
-            switch (DramaManager.CurrentStateEnum) {
-            case DRAMA_State.Encounter:
-            case DRAMA_State.Survival:
-            case DRAMA_State.IntentionalCombat:
-            case DRAMA_State.Combat:
-                rate = 1f / 20f;
-                break;
-            default:
-                rate = 1f / 5f;
-                break;
+            float rate = 1f / 60f;
+            // Change tick rate based on state / live view:
+            if (server.Connections.Count() == 0) {
+                switch (DramaManager.CurrentStateEnum) {
+                case DRAMA_State.Encounter:
+                case DRAMA_State.Survival:
+                case DRAMA_State.IntentionalCombat:
+                case DRAMA_State.Combat:
+                    rate = 1f / 20f;
+                    break;
+                default:
+                    rate = 1f / 5f;
+                    break;
+                }
             }
             if (tickRate != rate) {
                 timer = 0;
                 tickRate = rate;
             }
+            APILogger.Debug(rate.ToString());
 
             timer += Time.deltaTime;
             if (timer > tickRate) {
