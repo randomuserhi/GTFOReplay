@@ -1,9 +1,8 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs";
-import { VirtualFile } from "./virtualfile.cjs";
+import { TcpClient } from "../net/tcpClient.cjs";
 
 interface FileHandle { 
-    virtual?: [string, number];
     path?: string;
     finite?: boolean ;
 }
@@ -18,9 +17,55 @@ class File {
         callback: (bytes?: ArrayBufferLike) => void;
     }[];
 
+    private client: TcpClient;
+    private cyclicBuffer: Uint8Array;
+    private cyclicStart?: { index: number, offset: number };
+    private cyclicEnd: { index: number, offset: number };
+
     constructor(path: string) {
         this.path = path;
         this.requests = [];
+
+        this.client = new TcpClient();
+        this.cyclicBuffer = new Uint8Array(32768);
+        this.cyclicEnd = {
+            index: 0,
+            offset: 0
+        };
+        this.client.addEventListener("message", ({ offset, bytes }) => {
+            if (this.cyclicStart === undefined) {
+                this.cyclicStart = {
+                    index: 0,
+                    offset: offset
+                };
+                this.cyclicEnd.offset = offset;
+            }
+            if (offset !== this.cyclicEnd.offset) return;
+            for (let i = 0; i < bytes.length; ++i) {
+                this.cyclicBuffer[this.cyclicEnd.index] = bytes[i];
+                this.cyclicEnd.index = (this.cyclicEnd.index + 1) % this.cyclicBuffer.length; 
+                this.cyclicEnd.offset += 1;
+                if (this.cyclicEnd.index === this.cyclicStart.index) {
+                    this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicBuffer.length; 
+                    this.cyclicStart.offset += 1;
+                }
+            }
+        });
+    }
+
+    public async link(ip: string, port: number) {
+        if (this.client.active()) {
+            this.client.disconnect();
+        }
+        this.cyclicStart = undefined;
+        this.cyclicEnd.index = 0;
+        this.cyclicEnd.offset = 0;
+        await this.client.connect(ip, port);
+    }
+
+    public unlink() {
+        if (!this.client.active()) return;
+        this.client.disconnect();
     }
 
     public open() {
@@ -41,6 +86,7 @@ class File {
         if (this.watcher !== undefined) {
             this.watcher.close();
         }
+        this.unlink();
     }
 
     private doRequest(request: { start: number; end: number; numBytes: number; callback: (bytes?: ArrayBufferLike) => void }, wait: boolean = true) {
@@ -63,22 +109,34 @@ class File {
 
     private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
-            const stream = fs.createReadStream(this.path, {
-                flags: "r",
-                start,
-                end
-            });
-            stream.on("error", reject);
-            const chunks: Buffer[] = [];
-            stream.on("data", (chunk: Buffer) => {
-                chunks.push(chunk);
-            });
-            stream.on("end", () => {
-                const buffer = Buffer.concat(chunks);
-                if (buffer.byteLength === numBytes) resolve(buffer);
-                else reject();
-                stream.close();
-            });
+            if (this.client.active() && this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
+                start >= this.cyclicStart.offset && (end + 1) <= this.cyclicEnd.offset) {
+                const bytes = new Uint8Array(numBytes);
+                const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
+                for (let i = 0; i < numBytes; ++i) {
+                    const index = (readHead + i) % this.cyclicBuffer.length;
+                    bytes[i] = this.cyclicBuffer[index];
+                }
+                resolve(bytes);
+            } else {
+                const stream = fs.createReadStream(this.path, {
+                    flags: "r",
+                    start,
+                    end
+                });
+                stream.on("error", reject);
+                const chunks: Buffer[] = [];
+                stream.on("data", (chunk: Buffer) => {
+                    chunks.push(chunk);
+                });
+                stream.on("end", () => {
+                    const buffer = Buffer.concat(chunks);
+                    if (buffer.byteLength === numBytes) {
+                        resolve(buffer);
+                    } else reject();
+                    stream.close();
+                });
+            }
         });
     }
     public getBytes(index: number, numBytes: number, wait: boolean = true): Promise<ArrayBufferLike | undefined> {
@@ -113,25 +171,26 @@ class File {
 }
 
 export class FileManager {
-    private file?: File | VirtualFile;
+    private file?: File;
 
     constructor() {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
         ipc.handle("open", async (_, file: FileHandle) => {
-            if (this.file !== undefined) return;
-            if (file.path !== undefined) {
-                this.file = new File(file.path);
-                await this.file.open();
-            } else if (file.virtual !== undefined) {
-                const [ip, port] = file.virtual;
-                this.file = new VirtualFile(ip, port);
-                await this.file.open();
-            }
+            if (this.file !== undefined || file.path === undefined) return;
+            this.file = new File(file.path);
+            await this.file.open();
         });
         ipc.on("close", () => {
             this.file?.close();
+        });
+
+        ipc.on("link", (_, ip: string, port: number) => {
+            this.file?.link(ip, port);
+        });
+        ipc.on("unlink", () => {
+            this.file?.unlink();
         });
         
         ipc.handle("getBytes", async (_, index: number, numBytes: number, wait?: boolean) => {

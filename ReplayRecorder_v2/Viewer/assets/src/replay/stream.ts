@@ -1,9 +1,8 @@
 import { Ipc } from "./ipc";
 
-export interface FileHandle { 
-    virtual?: [string, number];
+export interface FileHandle {
     path?: string;
-    finite?: boolean ;
+    finite?: boolean;
 }
 
 export class FileStream {
@@ -14,8 +13,7 @@ export class FileStream {
 
     // NOTE(randomuserhi): If the filestream is finite then when EndOfFile is reached, it will terminate.
     constructor(ipc: Ipc, file: FileHandle) {
-        if (file.virtual === undefined && file.path === undefined) throw new SyntaxError("File must either be a virtual file or a path to a real file.");
-        if (file.virtual !== undefined && file.path !== undefined) throw new SyntaxError("Ambiguous file type.");
+        if (file.path === undefined) throw new SyntaxError("File must have a path.");
 
         this.file = file;
         this.index = 0;

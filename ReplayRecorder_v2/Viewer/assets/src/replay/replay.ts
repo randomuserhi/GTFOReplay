@@ -29,6 +29,9 @@ export interface Snapshot {
     data: Map<string, unknown>;
 }
 
+// TODO(randomuserhi): For the sake of RAM usage, I should store a m3u8 format for timestamps to files which contain snapshots + timeline data
+//                     Have the data split up across Storage and RAM much like how mp4 or streaming videos work with m3u8 to minimise RAM usage. 
+
 export class Replay {
     typemap: Map<number, ModuleDesc>;
     types: Map<string, number>;

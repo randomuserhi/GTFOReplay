@@ -179,12 +179,11 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
-        private DeltaState writeState = new DeltaState();
-        private DeltaState sendState = new DeltaState();
 
         private FileStream? fs;
+        private int byteOffset = 0;
+        private DeltaState writeState = new DeltaState();
         private ByteBuffer writeBuffer = new ByteBuffer();
-        private ByteBuffer sendBuffer = new ByteBuffer();
 
         public bool Ready => Active && completedHeader;
         public bool Active => fs != null;
@@ -221,7 +220,6 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
-            sendBuffer.Clear();
             writeBuffer.Clear();
             SnapshotManager.types.Write(writeBuffer);
 
@@ -230,10 +228,8 @@ namespace ReplayRecorder.Snapshot {
             }
 
             writeState.Clear();
-            sendState.Clear();
             foreach (Type t in SnapshotManager.types.dynamics) {
                 writeState.dynamics.Add(t, new DynamicCollection(t));
-                sendState.dynamics.Add(t, new DynamicCollection(t));
             }
         }
 
@@ -269,7 +265,7 @@ namespace ReplayRecorder.Snapshot {
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
             eoh.Write(writeBuffer);
 
-            Plugin.server.Send(writeBuffer);
+            byteOffset = sizeof(int) + writeBuffer.count;
             writeBuffer.Flush(fs);
 
             start = Raudy.Now;
@@ -282,7 +278,6 @@ namespace ReplayRecorder.Snapshot {
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             EventWrapper ev = new EventWrapper(Now, e);
             writeState.events.Add(ev);
-            sendState.events.Add(ev);
         }
 
         [HideFromIl2Cpp]
@@ -292,7 +287,6 @@ namespace ReplayRecorder.Snapshot {
 
             Trigger(new ReplaySpawn(dynamic));
             writeState.dynamics[dynType].Add(dynamic, errorOnDuplicate);
-            sendState.dynamics[dynType].Add(dynamic.Clone(), errorOnDuplicate);
         }
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
@@ -301,10 +295,9 @@ namespace ReplayRecorder.Snapshot {
 
             Trigger(new ReplayDespawn(dynamic));
             writeState.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
-            sendState.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
         }
 
-        private void Tick(bool write) {
+        private void Tick() {
             if (fs == null) throw new ReplaySnapshotNotInitialized();
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
 
@@ -318,17 +311,11 @@ namespace ReplayRecorder.Snapshot {
                 throw new ReplayInvalidTimestamp($"ReplayRecorder does not support replays longer than {uint.MaxValue}ms.");
             }
 
-            // Send data
-            sendBuffer.Clear();
-            if (sendState.Write(now, sendBuffer, false)) {
-                Plugin.server.Send(sendBuffer);
-            }
-
-            if (!write) return;
-
             // Clear write buffer
             writeBuffer.Clear();
             if (writeState.Write(now, writeBuffer)) {
+                Plugin.server.Send(writeBuffer, byteOffset);
+                byteOffset += sizeof(int) + writeBuffer.count;
                 writeBuffer.Flush(fs);
             }
         }
@@ -347,37 +334,17 @@ namespace ReplayRecorder.Snapshot {
             Destroy(gameObject);
         }
 
-        private float tickRate = 1f / 60f;
-        private int tick = 0;
-        private int frequency = 12;
+        private const float tickRate = 1f / 60f;
         private float timer = 0;
         private void Update() {
             if (fs == null || !completedHeader) {
                 return;
             }
 
-            int rate;
-            switch (DramaManager.CurrentStateEnum) {
-            case DRAMA_State.Encounter:
-            case DRAMA_State.Survival:
-            case DRAMA_State.IntentionalCombat:
-            case DRAMA_State.Combat:
-                rate = 3;
-                break;
-            default:
-                rate = 12;
-                break;
-            }
-            if (frequency != rate) {
-                tick = 0;
-                frequency = rate;
-            }
-
             timer += Time.deltaTime;
             if (timer > tickRate) {
                 timer = 0;
-                tick = (tick + 1) % frequency;
-                Tick(tick == 0);
+                Tick();
             }
         }
     }

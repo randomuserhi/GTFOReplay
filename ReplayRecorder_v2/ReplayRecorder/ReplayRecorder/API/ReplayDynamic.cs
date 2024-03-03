@@ -56,7 +56,5 @@ namespace ReplayRecorder.API {
         public virtual void Spawn(ByteBuffer buffer) { }
 
         public virtual void Despawn(ByteBuffer buffer) { }
-
-        public abstract ReplayDynamic Clone();
     }
 }

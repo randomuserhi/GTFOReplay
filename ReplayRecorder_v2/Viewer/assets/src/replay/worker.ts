@@ -22,7 +22,6 @@ let replay: Replay | undefined = undefined;
         replay = new Replay();
 
         const fs = new FileStream(ipc, file);
-        console.log(file.finite);
 
         const getModule = async (bytes: ByteStream | FileStream): Promise<[ModuleDesc, number]> => {
             if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
@@ -128,7 +127,7 @@ let replay: Replay | undefined = undefined;
                 }
                 const bytes = await fs.getBytes(snapshotSize);
 
-                if ((state.tick % 50) === 0) ipc.send("state", state);
+                if ((state.tick % 6000) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
                 state.time = now;

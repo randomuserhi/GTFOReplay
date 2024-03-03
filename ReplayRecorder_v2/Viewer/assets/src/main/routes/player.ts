@@ -69,9 +69,8 @@ export const player = Macro((() => {
         // dummy load
         (async () => {
             const file = {
-                path: "D:\\GTFO Replays\\R1A1 2024-03-03 15-11",
+                path: "D:\\GTFO Replays\\R1A1 2024-03-03 15-48",
                 finite: false
-                //virtual: ["127.0.0.1", 56759] as [string, number]
             };
             await window.api.invoke("open", file);
             this.parser = new Parser();

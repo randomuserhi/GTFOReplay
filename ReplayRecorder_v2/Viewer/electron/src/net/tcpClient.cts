@@ -4,7 +4,10 @@ import { core } from "../rnu/rnu.cjs";
 
 export interface MessageEventMap
 {
-    "message": Uint8Array;
+    "message": {
+        offset: number,
+        bytes: Uint8Array
+    };
 }
 
 export class TcpClient {
@@ -85,19 +88,98 @@ export class TcpClient {
         const socket = this.socket = new net.Socket();
 
         // TODO(randomuserhi): Handling Integer Overflow
+        const headerSize: number = 4;
+        let read: number = 0;
+        let state: "waiting" | "reading" = "waiting";
+        let msgSize: number;
+        let recvBuffer: Uint8Array = new Uint8Array(1024);
         let prevBytesRead = 0;
         socket.on("data", (buffer: Buffer): void => {
             if (socket === null)
                 return;
 
+            // TODO(randomuserhi): Handle integer overflow with socket.bytesRead
             const bytesRead = socket.bytesRead - prevBytesRead;
             prevBytesRead = socket.bytesRead;
-            const bytes = new Uint8Array(bytesRead);
-            for (let i = 0; i < bytesRead; ++i) {
-                bytes[i] = buffer[i];
-            }
+            
+            let slice: number = 0;
+            while (slice < bytesRead) {
+                switch(state) {
+                case "waiting":
+                    // Waiting for message header
 
-            this.dispatchEvent("message", bytes);
+                    if (recvBuffer.byteLength < headerSize)
+                        recvBuffer = new Uint8Array(headerSize);
+
+                    if (read < headerSize) {
+                        // Read message header from buffer
+                        for (let i = 0; i < headerSize && i < bytesRead; ++i, ++read) {
+                            recvBuffer[read] = buffer[slice + i];
+                        }
+                    } else {
+                        // Decode message header and transition to next state when applicable
+
+                        slice += read;
+                        read = 0;
+
+                        if (os.endianness() !== "LE") {
+                            msgSize = (recvBuffer[0] << 24) |
+                                    (recvBuffer[1] << 16) |
+                                    (recvBuffer[2] << 8)  |
+                                    (recvBuffer[3] << 0);
+                        } else {
+                            msgSize = (recvBuffer[0] << 0)  |
+                                    (recvBuffer[1] << 8)  |
+                                    (recvBuffer[2] << 16) |
+                                    (recvBuffer[3] << 24);
+                        }
+                        if (msgSize > 0) { // Transition to reading state when there is a message
+                            state = "reading";
+                        }
+                    }
+                    break;
+                case "reading":
+                    // Reading message
+
+                    if (recvBuffer.byteLength < msgSize)
+                        recvBuffer = new Uint8Array(msgSize);
+
+                    if (read < msgSize) {
+                        // Read message from buffer
+                        for (let i = 0; i < msgSize && i < bytesRead; ++i, ++read) {
+                            recvBuffer[read] = buffer[slice + i];
+                        }
+                    } else {
+                        // Decode message and trigger "message" event
+
+                        slice += read;
+                        read = 0;
+
+                        let offset;
+                        if (os.endianness() !== "LE") {
+                            offset = (recvBuffer[0] << 24) |
+                                    (recvBuffer[1] << 16) |
+                                    (recvBuffer[2] << 8)  |
+                                    (recvBuffer[3] << 0);
+                        } else {
+                            offset = (recvBuffer[0] << 0)  |
+                                    (recvBuffer[1] << 8)  |
+                                    (recvBuffer[2] << 16) |
+                                    (recvBuffer[3] << 24);
+                        }
+
+                        const bytes = new Uint8Array(msgSize - 4);
+                        for (let i = 0; i < msgSize - 4; ++i) {
+                            bytes[i] = recvBuffer[i + 4];
+                        }
+
+                        this.dispatchEvent("message", { offset, bytes });
+
+                        state = "waiting";
+                    }
+                    break;
+                }
+            }
         });
 
         return new Promise<void>((resolve, reject) => {
