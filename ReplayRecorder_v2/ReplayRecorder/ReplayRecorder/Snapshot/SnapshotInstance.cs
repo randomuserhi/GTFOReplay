@@ -346,6 +346,7 @@ namespace ReplayRecorder.Snapshot {
                 return;
             }
 
+            // TODO(randomuserhi): Make tick rate when in live view configurable => add warnings about space consumption at high tick rates
             float rate = 1f / 60f;
             // Change tick rate based on state / live view:
             if (server.Connections.Count() == 0) {

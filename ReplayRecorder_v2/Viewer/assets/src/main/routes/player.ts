@@ -80,7 +80,7 @@ export const player = Macro((() => {
                 this.renderer.init(this.replay);
 
                 this.time = 0;
-                this.lerp = 60;
+                this.lerp = 20;
                 this.prevTime = Date.now();
                 this.update();
             });
@@ -98,9 +98,10 @@ export const player = Macro((() => {
         const dt = (now - this.prevTime) / 1000;
         this.prevTime = now;
 
-        //this.time += dt;
-        this.time += (this.replay.length() - this.time) * dt * this.lerp;
-        //if (this.time > length) this.time = length;
+        this.time += dt;
+        const length = this.replay.length();
+        //this.time += (length - this.time) * dt * this.lerp; // For live replay -> lerp to latest time stamp
+        if (this.time > length) this.time = length;
 
         const snapshot = this.replay.getSnapshot(this.time);
         if (snapshot !== undefined) {
