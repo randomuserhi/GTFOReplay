@@ -68,10 +68,13 @@ export const player = Macro((() => {
 
         // dummy load
         (async () => {
-            const path = "D:\\GTFO Replays\\R1A1 2024-03-03 10-55";
-            console.log(path);
-            await window.api.invoke("open", path);
-            this.parser = new Parser(path);
+            const file = {
+                path: "D:\\GTFO Replays\\R1A1 2024-03-03 15-11",
+                finite: false
+                //virtual: ["127.0.0.1", 56759] as [string, number]
+            };
+            await window.api.invoke("open", file);
+            this.parser = new Parser();
             this.parser.addEventListener("eoh", () => {
                 console.log("ready");
         
@@ -85,9 +88,9 @@ export const player = Macro((() => {
                 this.update();
             });
             this.parser.addEventListener("end", () => {
-                window.api.send("close", path);
+                window.api.send("close", file);
             });
-            this.replay = await this.parser.parse(false);
+            this.replay = await this.parser.parse(file);
         })();
     } as Constructor<player>;
     
@@ -95,12 +98,12 @@ export const player = Macro((() => {
         if (this.replay === undefined) return;
 
         const now = Date.now();
-        const dt = (now - this.prevTime) / 1000;
+        const dt = now - this.prevTime;
         this.prevTime = now;
 
         //this.time += dt;
         const length = this.replay.length();
-        this.time += (length - this.time) * dt * this.lerp; // For live replay -> lerp to latest time stamp
+        this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
         if (this.time > length) this.time = length;
 
         const snapshot = this.replay.getSnapshot(this.time);

@@ -1,6 +1,12 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs";
-import { TcpClient } from "../net/tcpClient.cjs";
+import { VirtualFile } from "./virtualfile.cjs";
+
+interface FileHandle { 
+    virtual?: [string, number];
+    path?: string;
+    finite?: boolean ;
+}
 
 class File {
     readonly path: string;
@@ -15,56 +21,6 @@ class File {
     constructor(path: string) {
         this.path = path;
         this.requests = [];
-
-        this.client = new TcpClient();
-        /*this.cyclicBuffer = new Uint8Array(1024);
-        this.cyclicEnd = {
-            index: 0,
-            offset: 0
-        };
-        this.client.addEventListener("message", (data) => {
-            console.log(`offset: ${data.offset}`);
-            
-            if (this.cyclicStart === undefined) {
-                this.cyclicStart = {
-                    index: 0,
-                    offset: data.offset
-                };
-                this.cyclicEnd.offset = data.offset;
-            }
-            if (data.offset !== this.cyclicEnd.offset) return;
-            for (let i = 0; i < data.bytes.length; ++i) {
-                this.cyclicBuffer[this.cyclicEnd.index] = data.bytes[i];
-                this.cyclicEnd.index = (this.cyclicEnd.index + 1) % this.cyclicBuffer.length; 
-                this.cyclicEnd.offset += 1;
-                if (this.cyclicEnd.index === this.cyclicStart.index) {
-                    this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicBuffer.length; 
-                    this.cyclicStart.offset += 1;
-                }
-            }
-            console.log(`start: ${this.cyclicStart.offset} ${this.cyclicEnd.offset} ${this.cyclicStart.index} ${this.cyclicEnd.index}`);
-        });*/
-    }
-
-    private client: TcpClient;
-    /*private cyclicBuffer: Uint8Array;
-    private cyclicStart?: { index: number, offset: number };
-    private cyclicEnd: { index: number, offset: number };*/
-    public link(port: number) {
-        console.log("setting up link");
-        if (this.client.active()) {
-            this.client.disconnect();
-        }
-        /*this.cyclicStart = undefined;
-        this.cyclicEnd.index = 0;
-        this.cyclicEnd.offset = 0;*/
-        this.client.connect("127.0.0.1", port);
-        console.log("link setup");
-    }
-
-    public unlink() {
-        if (!this.client.active()) return;
-        this.client.disconnect();
     }
 
     public open() {
@@ -107,17 +63,6 @@ class File {
 
     private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
-            /*if (this.client.active() && this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
-                start >= this.cyclicStart.offset && (end + 1) <= this.cyclicEnd.offset) {
-                console.log("Retrieved Bytes from link.");
-                const bytes = new Uint8Array(numBytes);
-                const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
-                for (let i = 0; i < numBytes; ++i) {
-                    const index = (readHead + i) % this.cyclicBuffer.length;
-                    bytes[i] = this.cyclicBuffer[index];
-                }
-                resolve(bytes);
-            } else {*/
             const stream = fs.createReadStream(this.path, {
                 flags: "r",
                 start,
@@ -134,7 +79,6 @@ class File {
                 else reject();
                 stream.close();
             });
-            //}
         });
     }
     public getBytes(index: number, numBytes: number, wait: boolean = true): Promise<ArrayBufferLike | undefined> {
@@ -169,34 +113,29 @@ class File {
 }
 
 export class FileManager {
-    private files: Map<string, File>;
+    private file?: File | VirtualFile;
 
     constructor() {
-        this.files = new Map();
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
-        ipc.handle("open", (_, path: string) => {
-            if (this.files.has(path)) return;
-            const replay = new File(path);
-            replay.open();
-            this.files.set(path, replay);
+        ipc.handle("open", async (_, file: FileHandle) => {
+            if (this.file !== undefined) return;
+            if (file.path !== undefined) {
+                this.file = new File(file.path);
+                await this.file.open();
+            } else if (file.virtual !== undefined) {
+                const [ip, port] = file.virtual;
+                this.file = new VirtualFile(ip, port);
+                await this.file.open();
+            }
         });
-        ipc.on("close", (_, path: string) => {
-            this.files.get(path)?.close();
-            this.files.delete(path);
-        });
-        ipc.on("link", (_, path: string, port: number) => {
-            console.log("received link");
-            if (!this.files.has(path)) return;
-            this.files.get(path)!.link(port);
+        ipc.on("close", () => {
+            this.file?.close();
         });
         
-        ipc.handle("getBytes", async (_, path: string, index: number, numBytes: number, wait?: boolean) => {
-            return await this.files.get(path)?.getBytes(index, numBytes, wait);
-        });
-        ipc.handle("getAllBytes", async (_, path: string) => {
-            return await this.files.get(path)?.getAllBytes();
+        ipc.handle("getBytes", async (_, index: number, numBytes: number, wait?: boolean) => {
+            return await this.file?.getBytes(index, numBytes, wait);
         });
     }
 }

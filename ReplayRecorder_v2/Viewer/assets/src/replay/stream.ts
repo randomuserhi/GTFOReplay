@@ -1,25 +1,34 @@
 import { Ipc } from "./ipc";
 
+export interface FileHandle { 
+    virtual?: [string, number];
+    path?: string;
+    finite?: boolean ;
+}
+
 export class FileStream {
-    readonly path: string;
+    readonly file: FileHandle;
     finite: boolean;
     private index: number;
     ipc: Ipc;
 
     // NOTE(randomuserhi): If the filestream is finite then when EndOfFile is reached, it will terminate.
-    constructor(ipc: Ipc, path: string, finite: boolean = true) {
-        this.path = path;
+    constructor(ipc: Ipc, file: FileHandle) {
+        if (file.virtual === undefined && file.path === undefined) throw new SyntaxError("File must either be a virtual file or a path to a real file.");
+        if (file.virtual !== undefined && file.path !== undefined) throw new SyntaxError("Ambiguous file type.");
+
+        this.file = file;
         this.index = 0;
-        this.finite = finite;
+        this.finite = file.finite !== undefined ? file.finite : false;
         this.ipc = ipc;
     }
 
     public open(): Promise<void> {
-        return this.ipc.invoke("open", this.path);
+        return this.ipc.invoke("open", this.file);
     }
 
     public close(): void {
-        this.ipc.send("close", this.path);
+        this.ipc.send("close", this.file);
     }
 
     public async getBytes(numBytes: number): Promise<ByteStream> {
@@ -29,7 +38,7 @@ export class FileStream {
     }
 
     public async peekBytes(numBytes: number): Promise<ByteStream> {
-        return new ByteStream(await this.ipc.invoke("getBytes", this.path, this.index, numBytes, !this.finite));
+        return new ByteStream(await this.ipc.invoke("getBytes", this.index, numBytes, !this.finite));
     }
 }
 

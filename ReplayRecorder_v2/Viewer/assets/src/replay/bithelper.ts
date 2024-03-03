@@ -214,7 +214,7 @@ export async function readQuaternion(stream: ByteStream | FileStream): Promise<Q
         w = Math.sqrt(Math.clamp01(1 - x * x - y * y - z * z));
         break;
     }
-    return { x: x, y: y, z: z, w: w };
+    return { x: x, y: -y, z: -z, w: w };
 }
 export async function readHalfQuaternion(stream: ByteStream | FileStream): Promise<Quaternion> {
     const i = await readByte(stream);
@@ -245,7 +245,7 @@ export async function readHalfQuaternion(stream: ByteStream | FileStream): Promi
         w = Math.sqrt(Math.clamp01(1 - x * x - y * y - z * z));
         break;
     }
-    return { x: x, y: y, z: z, w: w };
+    return { x: x, y: -y, z: -z, w: w };
 }
 export async function readVector(stream: ByteStream | FileStream): Promise<Vector> {
     return { x: -await readFloat(stream), y: await readFloat(stream), z: await readFloat(stream) };

@@ -3,9 +3,9 @@ import { ShimWorker } from "./es-shim-worker.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleLoader } from "./moduleloader.js";
 import { Replay, Snapshot, Timeline } from "./replay.js";
+import { FileHandle } from "./stream.js";
 
 export class Parser {
-    readonly path: string;
     private current?: Replay; 
     private shim?: ShimWorker;
 
@@ -18,9 +18,7 @@ export class Parser {
     public removeEventListener: (type: string, callback: EventListenerOrEventListenerObject, options?: EventListenerOptions | boolean) => void;
     private dispatchEvent: (event: Event) => boolean;
 
-    constructor(path: string) {
-        this.path = path;
-
+    constructor() {
         this.listeners = new Map();
         const node = document.createTextNode("");
         const addEventListener = node.addEventListener.bind(node);
@@ -43,7 +41,7 @@ export class Parser {
         this.dispatchEvent = node.dispatchEvent.bind(node);
     }
 
-    public parse(finite: boolean = true) {
+    public parse(file: FileHandle) {
         if (this.current !== undefined) return this.current;
         if (this.shim !== undefined) this.terminate();
         const replay = this.current = new Replay();
@@ -91,7 +89,7 @@ export class Parser {
             });
 
             // Start parsing
-            ipc.send("init", this.path, [...ModuleLoader.links.values()], finite);
+            ipc.send("init", file, [...ModuleLoader.links.values()]);
         });
         const importMap = document.querySelector('script[type="importmap"]')?.textContent;
         if (importMap === undefined) throw new Error("Could not start web worker as no importMap was found.");
@@ -99,14 +97,10 @@ export class Parser {
         return replay;
     }
 
-    public link(port: number) {
-        window.api.send("link", this.path, port);
-    }
-
     public terminate() {
         if (this.shim !== undefined) {
             this.shim.terminate();
-            window.api.send("close", this.path);
+            window.api.send("close");
         }
     }
 }

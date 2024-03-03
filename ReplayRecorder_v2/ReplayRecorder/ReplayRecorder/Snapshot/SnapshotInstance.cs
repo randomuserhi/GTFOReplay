@@ -6,7 +6,6 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
-using System.Net;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -128,7 +127,7 @@ namespace ReplayRecorder.Snapshot {
                 dynamics.Clear();
             }
 
-            internal bool Write(long now, ByteBuffer bs) {
+            internal bool Write(long now, ByteBuffer bs, bool debug = true) {
                 // Check if this tick needs to be done
                 // - are there any dynamics to serialize?
                 // - are there any events to serialize?
@@ -163,9 +162,11 @@ namespace ReplayRecorder.Snapshot {
                 int nDirtyCollections = dirtyCollections.Count();
                 BitHelper.WriteBytes((ushort)nDirtyCollections, bs);
                 foreach (DynamicCollection collection in dirtyCollections) {
-                    if (collection.Write(bs) && ConfigManager.Debug) {
+                    if (collection.Write(bs)) {
                         ++numWritten;
-                        APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
+                        if (debug && ConfigManager.Debug) {
+                            APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
+                        }
                     }
                 }
                 if (numWritten != nDirtyCollections) {
@@ -179,11 +180,11 @@ namespace ReplayRecorder.Snapshot {
         }
 
         private DeltaState writeState = new DeltaState();
+        private DeltaState sendState = new DeltaState();
 
-        private TCPServer? server;
-        private int offset = 0;
         private FileStream? fs;
         private ByteBuffer writeBuffer = new ByteBuffer();
+        private ByteBuffer sendBuffer = new ByteBuffer();
 
         public bool Ready => Active && completedHeader;
         public bool Active => fs != null;
@@ -220,15 +221,19 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
+            sendBuffer.Clear();
             writeBuffer.Clear();
             SnapshotManager.types.Write(writeBuffer);
+
             foreach (Type t in SnapshotManager.types.headers) {
                 unwrittenHeaders.Add(t);
             }
 
             writeState.Clear();
+            sendState.Clear();
             foreach (Type t in SnapshotManager.types.dynamics) {
                 writeState.dynamics.Add(t, new DynamicCollection(t));
+                sendState.dynamics.Add(t, new DynamicCollection(t));
             }
         }
 
@@ -264,24 +269,20 @@ namespace ReplayRecorder.Snapshot {
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
             eoh.Write(writeBuffer);
 
-            offset = sizeof(int) + writeBuffer.count;
+            Plugin.server.Send(writeBuffer);
             writeBuffer.Flush(fs);
+
             start = Raudy.Now;
-
             Replay.OnHeaderCompletion?.Invoke();
-
-            if (server != null) {
-                server.Dispose();
-            }
-            server = new TCPServer();
-            server.Bind(new IPEndPoint(IPAddress.Any, 56759));
         }
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
             if (ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
-            writeState.events.Add(new EventWrapper(Now, e));
+            EventWrapper ev = new EventWrapper(Now, e);
+            writeState.events.Add(ev);
+            sendState.events.Add(ev);
         }
 
         [HideFromIl2Cpp]
@@ -291,6 +292,7 @@ namespace ReplayRecorder.Snapshot {
 
             Trigger(new ReplaySpawn(dynamic));
             writeState.dynamics[dynType].Add(dynamic, errorOnDuplicate);
+            sendState.dynamics[dynType].Add(dynamic.Clone(), errorOnDuplicate);
         }
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
@@ -299,10 +301,11 @@ namespace ReplayRecorder.Snapshot {
 
             Trigger(new ReplayDespawn(dynamic));
             writeState.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
+            sendState.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
         }
 
-        private void Tick() {
-            if (fs == null || server == null) throw new ReplaySnapshotNotInitialized();
+        private void Tick(bool write) {
+            if (fs == null) throw new ReplaySnapshotNotInitialized();
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
 
             // Invoke tick processes
@@ -315,14 +318,17 @@ namespace ReplayRecorder.Snapshot {
                 throw new ReplayInvalidTimestamp($"ReplayRecorder does not support replays longer than {uint.MaxValue}ms.");
             }
 
+            // Send data
+            sendBuffer.Clear();
+            if (sendState.Write(now, sendBuffer, false)) {
+                Plugin.server.Send(sendBuffer);
+            }
+
+            if (!write) return;
+
             // Clear write buffer
             writeBuffer.Clear();
             if (writeState.Write(now, writeBuffer)) {
-                // Send across socket
-                /*_ = server.Send(new ArraySegment<byte>(writeBuffer.array, 0, writeBuffer.count), offset);
-                offset += sizeof(int) + writeBuffer.count;*/
-
-                // Flush to file stream
                 writeBuffer.Flush(fs);
             }
         }
@@ -330,50 +336,48 @@ namespace ReplayRecorder.Snapshot {
         internal void Dispose() {
             APILogger.Debug("Ending Replay...");
 
+            Plugin.server.DisconnectClients();
+
             if (fs != null) {
                 fs.Flush();
                 fs.Dispose();
                 fs = null;
             }
-            if (server != null) {
-                server.Dispose();
-            }
 
             Destroy(gameObject);
         }
 
-        private float tickRate = 1f / 5f;
+        private float tickRate = 1f / 60f;
+        private int tick = 0;
+        private int frequency = 12;
         private float timer = 0;
         private void Update() {
-            if (fs == null || server == null || !completedHeader) {
+            if (fs == null || !completedHeader) {
                 return;
             }
 
-            // TODO(randomuserhi): Make tick rate when in live view configurable => add warnings about space consumption at high tick rates
-            float rate = 1f / 60f;
-            // Change tick rate based on state / live view:
-            if (server.Connections.Count() == 0) {
-                switch (DramaManager.CurrentStateEnum) {
-                case DRAMA_State.Encounter:
-                case DRAMA_State.Survival:
-                case DRAMA_State.IntentionalCombat:
-                case DRAMA_State.Combat:
-                    rate = 1f / 20f;
-                    break;
-                default:
-                    rate = 1f / 5f;
-                    break;
-                }
+            int rate;
+            switch (DramaManager.CurrentStateEnum) {
+            case DRAMA_State.Encounter:
+            case DRAMA_State.Survival:
+            case DRAMA_State.IntentionalCombat:
+            case DRAMA_State.Combat:
+                rate = 3;
+                break;
+            default:
+                rate = 12;
+                break;
             }
-            if (tickRate != rate) {
-                timer = 0;
-                tickRate = rate;
+            if (frequency != rate) {
+                tick = 0;
+                frequency = rate;
             }
 
             timer += Time.deltaTime;
             if (timer > tickRate) {
                 timer = 0;
-                Tick();
+                tick = (tick + 1) % frequency;
+                Tick(tick == 0);
             }
         }
     }

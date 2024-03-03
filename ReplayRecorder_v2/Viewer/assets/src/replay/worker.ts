@@ -3,7 +3,7 @@ import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleDesc, ModuleLoader, ModuleNotFound, NoExecFunc, UnknownModuleType } from "./moduleloader.js";
 import { Replay, Snapshot, Timeline } from "./replay.js";
-import { ByteStream, FileStream } from "./stream.js";
+import { ByteStream, FileHandle, FileStream } from "./stream.js";
 
 let replay: Replay | undefined = undefined;
 
@@ -12,16 +12,17 @@ let replay: Replay | undefined = undefined;
         on: (callback) => self.addEventListener("message", (e) => { callback(e.data); }),
         send: self.postMessage.bind(self)
     });
-    ipc.on("init", async (path: string, links: string[], finite: boolean = true) => {
+    ipc.on("init", async (file: FileHandle, links: string[]) => {
         await Promise.all(links.map(link => import(link)));
-        parse(path, finite);
+        parse(file);
     });
 
-    async function parse(path: string, finite: boolean = true) {
+    async function parse(file: FileHandle) {
         if (replay !== undefined) return;
         replay = new Replay();
 
-        const fs = new FileStream(ipc, path, finite);
+        const fs = new FileStream(ipc, file);
+        console.log(file.finite);
 
         const getModule = async (bytes: ByteStream | FileStream): Promise<[ModuleDesc, number]> => {
             if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
@@ -31,7 +32,7 @@ let replay: Replay | undefined = undefined;
             return [module, id];
         };
         
-        await (async () => {
+        try {
             // Parse Typemap
             const headerSize = await BitHelper.readInt(fs);
             const bytes = await fs.getBytes(headerSize);
@@ -122,6 +123,9 @@ let replay: Replay | undefined = undefined;
             };
             for (;;) {
                 const snapshotSize = await BitHelper.readInt(fs);
+                if (snapshotSize <= 0) {
+                    throw new Error(`Invalid Snapshot size of ${snapshotSize}.`);
+                }
                 const bytes = await fs.getBytes(snapshotSize);
 
                 if ((state.tick % 50) === 0) ipc.send("state", state);
@@ -143,13 +147,13 @@ let replay: Replay | undefined = undefined;
                 
                 ipc.send("snapshot", snapshot);
             }
-        })().catch((err) => {
+        } catch (err) {
             if (!(err instanceof RangeError)) {
                 throw err;
             }
-        }).finally(() => {
-            ipc.send("end");
-            self.close();
-        });
+        }
+
+        ipc.send("end");
+        self.close();
     }
 })();

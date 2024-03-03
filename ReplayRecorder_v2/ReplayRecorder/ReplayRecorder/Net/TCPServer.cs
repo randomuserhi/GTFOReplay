@@ -145,23 +145,29 @@ namespace ReplayRecorder {
             connection.Dispose();
         }
 
-        public async Task Send(ArraySegment<byte> data, int offset) {
+        public Task Send(ByteBuffer data) {
+            byte[] bytes = new byte[data.count];
+            Array.Copy(data.array, bytes, data.count);
+            return Send(bytes);
+        }
+
+        public async Task Send(ArraySegment<byte> data) {
             List<Task> tasks = new List<Task>();
             foreach (EndPoint remoteEP in acceptedConnections.Keys) {
-                tasks.Add(SendTo(data, offset, remoteEP));
+                tasks.Add(SendTo(data, remoteEP));
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        public async Task<int> SendTo(ArraySegment<byte> data, int offset, EndPoint remoteEP) {
+        public async Task<int> SendTo(ArraySegment<byte> data, EndPoint remoteEP) {
             if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
-                await connection.semaphoreSend.WaitAsync().ConfigureAwait(false); ;
+                await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
                 try {
 
                     if (data.Count > int.MaxValue) {
                         return 0;
                     }
-                    int size = sizeof(int) * 3 + data.Count;
+                    int size = sizeof(int) + data.Count;
                     int capacity = connection.sendBuffer.Length;
                     while (capacity < size) {
                         capacity *= 2;
@@ -170,10 +176,7 @@ namespace ReplayRecorder {
                         connection.sendBuffer = new byte[capacity];
                     }
                     int index = 0;
-                    BitHelper.WriteBytes(data.Count + sizeof(int) * 2, connection.sendBuffer, ref index);
-                    BitHelper.WriteBytes(offset, connection.sendBuffer, ref index);
-                    BitHelper.WriteBytes(data.Count, connection.sendBuffer, ref index);
-                    Array.Copy(data.Array!, data.Offset, connection.sendBuffer, index, data.Count);
+                    BitHelper.WriteBytes(data, connection.sendBuffer, ref index);
 
                     return await connection.socket.SendAsync(new ArraySegment<byte>(connection.sendBuffer, 0, size), SocketFlags.None).ConfigureAwait(false);
                 } catch (SocketException) {
@@ -189,16 +192,20 @@ namespace ReplayRecorder {
             Dispose();
         }
 
-        public void Dispose() {
-            if (socket == null) return;
-
-            socket.Dispose();
-            socket = null;
-
+        public void DisconnectClients() {
             foreach (Connection? connection in acceptedConnections.Values) {
                 connection.Dispose();
             }
             acceptedConnections.Clear();
+        }
+
+        public void Dispose() {
+            if (socket == null) return;
+
+            DisconnectClients();
+
+            socket.Dispose();
+            socket = null;
         }
     }
 }

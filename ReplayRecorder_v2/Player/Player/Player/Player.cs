@@ -1,6 +1,7 @@
 ﻿using API;
 using Player;
 using ReplayRecorder;
+using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using SNetwork;
@@ -79,6 +80,10 @@ namespace Vanilla.Player {
             BitHelper.WriteBytes(agent.Owner.Lookup, buffer);
             BitHelper.WriteBytes((byte)agent.PlayerSlotIndex, buffer);
             BitHelper.WriteBytes(agent.Owner.NickName, buffer);
+        }
+
+        public override ReplayDynamic Clone() {
+            return new rPlayer(agent);
         }
     }
 }
