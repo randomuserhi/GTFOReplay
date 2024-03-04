@@ -152,14 +152,16 @@ export class Replay {
             }
         }
 
-        const diff = snapshot.time - time;
-        const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
+        // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
         const largestTickRate = 100; //ms -> tick rate of 50ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
         // NOTE(randomuserhi): If the difference in time between current state and snapshot we are lerping to
         //                     is greater than the longest possible time taken between ticks, then no dynamics
         //                     have moved as they are recorded on each tick.
-        if (diff <= largestTickRate) {
-            // perform dynamics
+        if (snapshot.time - time <= largestTickRate) {
+            // Lerp dynamics -> pushing "start" to largestTickRate in the event of large breaks due to non-written snapshots for changes of 0.
+            const start = snapshot.time - Math.min(largestTickRate, snapshot.time - state.time);
+            const lerp = time < snapshot.time ? (time - start) / (snapshot.time - start) : 1;
+            if (lerp < 0 || lerp > 1) throw new Error(`Lerp should be between 0 and 1.`);
             for (const [type, collection] of snapshot.dynamics) {
                 const exec = ModuleLoader.getDynamic(this.getModule(type) as any).main.exec;
                 for (const { id, data } of collection) {
@@ -171,6 +173,10 @@ export class Replay {
             }
         } 
         
+        // Lerp state time
+        const diff = snapshot.time - state.time;
+        const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
+        if (lerp < 0 || lerp > 1) throw new Error(`Lerp should be between 0 and 1.`);
         state.tick = lerp === 1 ? snapshot.tick : state.tick;
         state.time = lerp === 1 ? snapshot.time : (state.time + lerp * diff);
     }
@@ -203,7 +209,7 @@ export class Replay {
         for (let tick = state.tick; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
             this.exec(time, api, state, snapshot);
-            if (snapshot.time > time) break;
+            if (snapshot.time > state.time) break;
         }
 
         return state;

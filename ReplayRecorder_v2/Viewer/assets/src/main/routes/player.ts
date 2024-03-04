@@ -69,7 +69,7 @@ export const player = Macro((() => {
         // dummy load
         (async () => {
             const file = {
-                path: "D:\\GTFO Replays\\R1A1 2024-03-04 05-09",
+                path: "D:\\GTFO Replays\\R1A1 2024-03-04 06-42",
                 finite: false
             };
             await window.api.invoke("open", file);
@@ -100,9 +100,9 @@ export const player = Macro((() => {
         const dt = now - this.prevTime;
         this.prevTime = now;
 
-        this.time += dt;
+        //this.time += dt;
         const length = this.replay.length();
-        //this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
+        this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
         if (this.time > length) this.time = length;
 
         const snapshot = this.replay.getSnapshot(this.time);
