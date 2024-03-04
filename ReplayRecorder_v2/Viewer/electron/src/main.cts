@@ -1,7 +1,8 @@
 import { BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
-import { ModuleLoader } from "./replay/moduleloader.cjs";
 import { FileManager } from "./replay/filemanager.cjs";
+import { GTFOManager } from "./replay/gtfomanager.cjs";
+import { ModuleLoader } from "./replay/moduleloader.cjs";
 
 /*declare module "./net/tcpClient.cjs"
 {
@@ -20,6 +21,7 @@ export default class Program {
 
     static moduleLoader: ModuleLoader;
     static fileManager: FileManager;
+    static gtfoManager: GTFOManager;
 
     private static onWindowAllClosed(): void {
         if (process.platform !== "darwin") {
@@ -40,6 +42,9 @@ export default class Program {
 
         this.fileManager = new FileManager();
         this.fileManager.setupIPC(ipcMain);
+
+        this.gtfoManager = new GTFOManager(this.fileManager);
+        this.gtfoManager.setupIPC(ipcMain);
 
         Program.win = new BrowserWindow({
             frame: false, // remove the window frame

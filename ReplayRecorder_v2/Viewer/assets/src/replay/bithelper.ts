@@ -141,11 +141,11 @@ export async function readHalf(stream: ByteStream | FileStream): Promise<number>
 
     // Set the Float16 into the last 16 bits of the dataview
     // So our dataView is [00xx]
-    dv.setUint16(2, ushort, false);
+    dv.setUint16(2, ushort);
 
     // Get all 32 bits as a 32 bit integer
     // (JS bitwise operations are performed on 32 bit signed integers)
-    const asInt32 = dv.getInt32(0, false);
+    const asInt32 = dv.getInt32(0);
 
     // All bits aside from the sign
     let rest = asInt32 & 0x7fff;
@@ -168,10 +168,10 @@ export async function readHalf(stream: ByteStream | FileStream): Promise<number>
     rest |= sign;
 
     // Set the adjusted float32 (stored as int32) back into the dataview
-    dv.setInt32(0, rest, false);
+    dv.setInt32(0, rest);
 
     // Get it back out as a float32 (which js will convert to a Number)
-    return dv.getFloat32(0, false);
+    return dv.getFloat32(0);
 }
 export async function readFloat(stream: ByteStream | FileStream): Promise<number> {
     const sizeof = 4;
@@ -283,4 +283,102 @@ export async function readFloat32Array(stream: ByteStream | FileStream, length: 
         array[i] = await readFloat(stream);
     }
     return new Float32Array(array);
+}
+
+function reserve(numBytes: number, stream: ByteStream) {
+    const size = stream.index + numBytes;
+    let capacity = stream.view.byteLength;
+    while (size > capacity) {
+        capacity *= 2;
+    }
+    if (capacity !== stream.view.byteLength) {
+        const newBuffer = new Uint8Array(capacity);
+        newBuffer.set(stream.bytes);
+        stream.assign(newBuffer);
+    }
+}
+
+export async function writeByte(byte: number, stream: ByteStream) {
+    if (byte < 0 || byte > 255) throw new TypeError("Value is not of type 'byte'.");
+    const sizeof = 1;
+    reserve(sizeof, stream);
+    stream.view.setUint8(stream.index, byte);
+    stream.index += sizeof;
+}
+
+export async function writeBytes(bytes: Uint8Array, stream: ByteStream) {
+    writeUShort(bytes.byteLength, stream);
+    reserve(bytes.byteLength, stream);
+    for (let i = 0; i < bytes.byteLength; ++i) {
+        writeByte(bytes[i], stream);
+    }
+}
+
+const textEncoder = new TextEncoder();
+export async function writeString(message: string, stream: ByteStream) {
+    writeBytes(textEncoder.encode(message), stream);
+}
+
+export async function writeULong(ulong: bigint, stream: ByteStream) {
+    const sizeof = 8;
+    reserve(sizeof, stream);
+    stream.view.setBigUint64(stream.index, ulong);
+    stream.index += sizeof;
+}
+export async function writeUInt(uint: number, stream: ByteStream) {
+    const sizeof = 4;
+    reserve(sizeof, stream);
+    stream.view.setUint32(stream.index, uint);
+    stream.index += sizeof;
+}
+export async function writeUShort(ushort: number, stream: ByteStream) {
+    if (ushort < 0 || ushort > 65535) throw new TypeError("Value is not of type 'ushort'.");
+    const sizeof = 2;
+    reserve(sizeof, stream);
+    stream.view.setUint16(stream.index, ushort);
+    stream.index += sizeof;
+}
+
+export async function writeLong(long: bigint, stream: ByteStream) {
+    const sizeof = 8;
+    reserve(sizeof, stream);
+    stream.view.setBigInt64(stream.index, long);
+    stream.index += sizeof;
+}
+export async function writeInt(int: number, stream: ByteStream) {
+    const sizeof = 4;
+    reserve(sizeof, stream);
+    stream.view.setInt32(stream.index, int);
+    stream.index += sizeof;
+}
+export async function writeShort(short: number, stream: ByteStream) {
+    if (short < 0 || short > 65535) throw new TypeError("Value is not of type 'short'.");
+    const sizeof = 2;
+    reserve(sizeof, stream);
+    stream.view.setInt16(stream.index, short);
+    stream.index += sizeof;
+}
+
+function ToInt(expr: boolean) {
+    return expr ? 1 : 0;
+}
+
+export async function writeHalf(float: number, stream: ByteStream) {
+    // Create a 32 bit DataView to store the input
+    const arr = new ArrayBuffer(4);
+    const dv = new DataView(arr);
+    dv.setFloat32(0, float);
+    const uint = dv.getUint32(0);
+
+    const b = uint + 0x00001000; // round-to-nearest-even: add last bit after truncated mantissa
+    const e = (b & 0x7F800000) >> 23; // exponent
+    const m = b & 0x007FFFFF; // mantissa; in line below: 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
+
+    writeUShort((b & 0x80000000) >> 16 | ToInt(e > 112) * ((((e - 112) << 10) & 0x7C00) | m >> 13) | (ToInt(e < 113) & ToInt(e > 101)) * ((((0x007FF000 + m) >> (125 - e)) + 1) >> 1) | ToInt(e > 143) * 0x7FFF, stream);
+}
+export async function writeFloat(float: number, stream: ByteStream) {
+    const sizeof = 4;
+    reserve(sizeof, stream);
+    stream.view.setFloat32(stream.index, float);
+    stream.index += sizeof;
 }

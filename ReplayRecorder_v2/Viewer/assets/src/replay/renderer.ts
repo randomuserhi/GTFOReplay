@@ -1,8 +1,8 @@
+import { CreateEvent } from "@/rhu";
 import { Scene, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
 import { Replay } from "./replay.js";
-import { CreateEvent } from "@/rhu";
 
 export interface RendererApi {
     getRenderLoop(): RenderPass[];
@@ -132,6 +132,7 @@ export class Renderer {
         this.initPasses = [];
         this.loadModules();
 
+        this.data.clear();
         this.scene.clear();
         this.composer.dispose();
         this.composer = new EffectComposer(this.renderer);

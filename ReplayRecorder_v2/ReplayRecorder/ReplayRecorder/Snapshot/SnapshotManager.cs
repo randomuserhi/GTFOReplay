@@ -5,7 +5,7 @@ using UnityEngine;
 namespace ReplayRecorder.Snapshot {
     internal static partial class SnapshotManager {
         internal static SnapshotTypeManager types = new SnapshotTypeManager();
-        private static SnapshotInstance? instance;
+        internal static SnapshotInstance? instance;
         internal static void OnElevatorStart() {
             if (instance == null) {
                 instance = new GameObject().AddComponent<SnapshotInstance>();
@@ -24,6 +24,8 @@ namespace ReplayRecorder.Snapshot {
             if (instance != null) {
                 instance.Dispose();
                 instance = null;
+
+                Replay.OnExpeditionEnd?.Invoke();
             }
         }
     }

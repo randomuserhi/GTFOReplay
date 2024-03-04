@@ -13,12 +13,20 @@ namespace ReplayRecorder {
     }
 
     public class ByteBuffer {
-        internal byte[] array = new byte[1024];
-        internal ReadOnlySpan<byte> Array => new ReadOnlySpan<byte>(array, 0, count);
+        internal ArraySegment<byte> _array = new byte[1024];
+        internal ArraySegment<byte> Array => new ArraySegment<byte>(_array.Array!, _array.Offset, count);
+
+        public ByteBuffer() {
+            _array = new byte[1024];
+        }
+
+        public ByteBuffer(ArraySegment<byte> array) {
+            this._array = array;
+        }
 
         internal byte this[int index] {
-            get { return array[index]; }
-            set { array[index] = value; }
+            get { return _array[index]; }
+            set { _array[index] = value; }
         }
 
         internal int count = 0;
@@ -29,10 +37,10 @@ namespace ReplayRecorder {
         }
 
         internal void Reserve(int size) {
-            if (array.Length - count < size) {
-                byte[] newArray = new byte[Mathf.Max(array.Length * 2, count + size)];
-                System.Array.Copy(array, newArray, array.Length);
-                array = newArray;
+            if (_array.Count - count < size) {
+                byte[] newArray = new byte[Mathf.Max(_array.Count * 2, count + size)];
+                System.Array.Copy(_array.Array!, _array.Offset, newArray, 0, _array.Count);
+                _array = newArray;
             }
         }
 
@@ -120,6 +128,7 @@ namespace ReplayRecorder {
             destination[index++] = value;
         }
 
+
         public static unsafe void WriteBytes(ulong value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ulong), destination, ref index);
@@ -158,7 +167,7 @@ namespace ReplayRecorder {
 
         public static unsafe void WriteBytes(string value, ArraySegment<byte> destination, ref int index) {
             byte[] temp = Encoding.UTF8.GetBytes(value);
-            if (temp.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, length must be smaller than {ushort.MaxValue}.");
+            if (temp.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, byte length must be smaller than {ushort.MaxValue}.");
             WriteBytes((ushort)temp.Length, destination, ref index);
             Array.Copy(temp, 0, destination.Array!, destination.Offset + index, temp.Length);
             index += temp.Length;
@@ -233,14 +242,15 @@ namespace ReplayRecorder {
             if (value.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, length must be smaller than {ushort.MaxValue}.");
             WriteBytes((ushort)temp.Length, buffer);
             buffer.Reserve(temp.Length);
-            Array.Copy(temp, 0, buffer.array, buffer.count, temp.Length);
+            Array.Copy(temp, 0, buffer._array.Array!, buffer._array.Offset + buffer.count, temp.Length);
             buffer.count += temp.Length;
         }
 
-        public static unsafe void WriteBytes(byte[] bytes, ByteBuffer buffer) {
-            WriteBytes(bytes.Length, buffer);
-            Array.Copy(bytes, 0, buffer.array, buffer.count, bytes.Length);
-            buffer.count += bytes.Length;
+        public static unsafe void WriteBytes(ArraySegment<byte> bytes, ByteBuffer buffer) {
+            WriteBytes(bytes.Count, buffer);
+            buffer.Reserve(bytes.Count);
+            Array.Copy(bytes.Array!, bytes.Offset, buffer._array.Array!, buffer._array.Offset + buffer.count, bytes.Count);
+            buffer.count += bytes.Count;
         }
 
         // Special function to halve precision of float
@@ -342,13 +352,13 @@ namespace ReplayRecorder {
             return (ushort)((b & 0x80000000) >> 16 | Convert.ToInt32(e > 112) * ((((e - 112) << 10) & 0x7C00) | m >> 13) | (Convert.ToInt32(e < 113) & Convert.ToInt32(e > 101)) * ((((0x007FF000 + m) >> (int)(125 - e)) + 1) >> 1) | Convert.ToUInt32(e > 143) * 0x7FFF); // sign : normalized : denormalized : saturate
         }
 
-        public static byte ReadByte(byte[] source, ref int index) {
+        public static byte ReadByte(ArraySegment<byte> source, ref int index) {
             return source[index++];
         }
 
-        public static unsafe ulong ReadULong(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe ulong ReadULong(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(ulong);
 
                 ulong result = *(ulong*)ptr;
@@ -359,9 +369,9 @@ namespace ReplayRecorder {
             }
         }
 
-        public static unsafe long ReadLong(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe long ReadLong(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(long);
 
                 long result = *(long*)ptr;
@@ -372,9 +382,9 @@ namespace ReplayRecorder {
             }
         }
 
-        public static unsafe uint ReadUInt(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe uint ReadUInt(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(uint);
 
                 uint result = *(uint*)ptr;
@@ -385,9 +395,9 @@ namespace ReplayRecorder {
             }
         }
 
-        public static unsafe int ReadInt(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe int ReadInt(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(int);
 
                 int result = *(int*)ptr;
@@ -398,9 +408,9 @@ namespace ReplayRecorder {
             }
         }
 
-        public static unsafe ushort ReadUShort(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe ushort ReadUShort(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(ushort);
 
                 ushort result = *(ushort*)ptr;
@@ -411,9 +421,9 @@ namespace ReplayRecorder {
             }
         }
 
-        public static unsafe short ReadShort(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe short ReadShort(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(short);
 
                 short result = *(short*)(ptr);
@@ -424,13 +434,13 @@ namespace ReplayRecorder {
             }
         }
 
-        public static float ReadHalf(byte[] source, ref int index) {
+        public static float ReadHalf(ArraySegment<byte> source, ref int index) {
             return HalfToFloat(ReadUShort(source, ref index));
         }
 
-        public static unsafe float ReadFloat(byte[] source, ref int index) {
-            fixed (byte* converted = source) {
-                byte* ptr = converted + index;
+        public static unsafe float ReadFloat(ArraySegment<byte> source, ref int index) {
+            fixed (byte* converted = source.Array!) {
+                byte* ptr = converted + source.Offset + index;
                 index += sizeof(float);
 
                 if (!BitConverter.IsLittleEndian) {
@@ -441,9 +451,9 @@ namespace ReplayRecorder {
             }
         }
 
-        public static string ReadString(byte[] source, ref int index) {
+        public static string ReadString(ArraySegment<byte> source, ref int index) {
             int length = ReadUShort(source, ref index);
-            string temp = Encoding.UTF8.GetString(source, index, length);
+            string temp = Encoding.UTF8.GetString(source.Array!, source.Offset + index, length);
             index += length;
             return temp;
         }
@@ -671,11 +681,11 @@ namespace ReplayRecorder {
             }
         }
 
-        public static Vector3 ReadVector3(byte[] source, ref int index) {
+        public static Vector3 ReadVector3(ArraySegment<byte> source, ref int index) {
             return new Vector3(ReadFloat(source, ref index), ReadFloat(source, ref index), ReadFloat(source, ref index));
         }
 
-        public static Quaternion ReadQuaternion(byte[] source, ref int index) {
+        public static Quaternion ReadQuaternion(ArraySegment<byte> source, ref int index) {
             byte i = ReadByte(source, ref index);
             float x = 0, y = 0, z = 0, w = 0;
             switch (i) {
@@ -932,12 +942,12 @@ namespace ReplayRecorder {
             }
         }
 
-        public static Vector3 ReadHalfVector3(byte[] source, ref int index) {
+        public static Vector3 ReadHalfVector3(ArraySegment<byte> source, ref int index) {
             return new Vector3(ReadHalf(source, ref index), ReadHalf(source, ref index), ReadHalf(source, ref index));
         }
 
         // TODO:: This is using a byte + 3 16-Float, but I should use 3 bits + 3 15-Float
-        public static Quaternion ReadHalfQuaternion(byte[] source, ref int index) {
+        public static Quaternion ReadHalfQuaternion(ArraySegment<byte> source, ref int index) {
             byte i = ReadByte(source, ref index);
             float x = 0, y = 0, z = 0, w = 0;
             switch (i) {

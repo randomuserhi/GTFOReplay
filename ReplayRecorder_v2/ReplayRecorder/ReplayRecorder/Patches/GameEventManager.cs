@@ -1,6 +1,7 @@
 ﻿using API;
 using HarmonyLib;
 using ReplayRecorder.Snapshot;
+using SNetwork;
 
 namespace ReplayRecorder {
     [HarmonyPatch]
@@ -18,7 +19,13 @@ namespace ReplayRecorder {
         private static void EndGameSession() {
             APILogger.Debug($"Level ended!");
             SnapshotManager.OnExpeditionEnd();
-            Replay.OnExpeditionEnd?.Invoke();
+        }
+
+        [HarmonyPatch(typeof(SNet_SessionHub), nameof(SNet_SessionHub.LeaveHub))]
+        [HarmonyPrefix]
+        private static void LeaveHub() {
+            APILogger.Debug($"Level ended!");
+            SnapshotManager.OnExpeditionEnd();
         }
     }
 }

@@ -6,6 +6,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
+using System.Net;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -195,7 +196,7 @@ namespace ReplayRecorder.Snapshot {
         private bool completedHeader = false;
         private HashSet<Type> unwrittenHeaders = new HashSet<Type>();
 
-        private string fullpath = "replay.gtfo";
+        internal string fullpath = "replay.gtfo";
         internal void Init() {
             if (fs != null) throw new ReplaySnapshotAlreadyInitialized();
 
@@ -315,7 +316,20 @@ namespace ReplayRecorder.Snapshot {
             // Clear write buffer
             buffer.Clear();
             if (state.Write(now, buffer)) {
-                Plugin.server.Send(buffer, byteOffset);
+                if (Plugin.acknowledged.Count > 0) {
+                    ByteBuffer packet = new ByteBuffer();
+                    // Header
+                    BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // type
+                    // Content
+                    BitHelper.WriteBytes(byteOffset, packet); // offset
+                    BitHelper.WriteBytes(sizeof(int) + buffer.count, packet); // number of bytes to read
+                    BitHelper.WriteBytes(buffer.Array, packet); // file-bytes
+
+                    foreach (EndPoint connection in Plugin.acknowledged) {
+                        if (!Plugin.server.Connections.Contains(connection)) continue;
+                        _ = Plugin.server.SendTo(packet.Array, connection);
+                    }
+                }
                 byteOffset += sizeof(int) + buffer.count;
                 buffer.Flush(fs);
             }
@@ -323,8 +337,6 @@ namespace ReplayRecorder.Snapshot {
 
         internal void Dispose() {
             APILogger.Debug("Ending Replay...");
-
-            Plugin.server.DisconnectClients();
 
             if (fs != null) {
                 fs.Flush();

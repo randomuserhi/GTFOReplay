@@ -1,6 +1,5 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs";
-import { TcpClient } from "../net/tcpClient.cjs";
 
 interface FileHandle { 
     path: string;
@@ -17,7 +16,6 @@ class File {
         callback: (bytes?: ArrayBufferLike) => void;
     }[];
 
-    private client: TcpClient;
     private cyclicBuffer: Uint8Array;
     private cyclicStart?: { index: number, offset: number };
     private cyclicEnd: { index: number, offset: number };
@@ -26,48 +24,35 @@ class File {
         this.path = path;
         this.requests = [];
 
-        this.client = new TcpClient();
         this.cyclicBuffer = new Uint8Array(32768);
         this.cyclicEnd = {
             index: 0,
             offset: 0
         };
-        this.client.addEventListener("message", ({ offset, bytes }) => {
-            if (this.cyclicStart === undefined) {
-                this.cyclicStart = {
-                    index: 0,
-                    offset: offset
-                };
-                this.cyclicEnd.offset = offset;
-            }
-            if (offset !== this.cyclicEnd.offset) return;
-            for (let i = 0; i < bytes.length; ++i) {
-                this.cyclicBuffer[this.cyclicEnd.index] = bytes[i];
-                this.cyclicEnd.index = (this.cyclicEnd.index + 1) % this.cyclicBuffer.length; 
-                this.cyclicEnd.offset += 1;
-                if (this.cyclicEnd.index === this.cyclicStart.index) {
-                    this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicBuffer.length; 
-                    this.cyclicStart.offset += 1;
-                }
-            }
-
-            this.doAllRequests();
-        });
     }
 
-    public async link(ip: string, port: number) {
-        if (this.client.active()) {
-            this.client.disconnect();
+    public receiveLiveBytes(data: { offset: number, bytes: Uint8Array }) {
+        const { offset, bytes } = data;
+        console.log(`${offset} | ${bytes.byteLength}`);
+        if (this.cyclicStart === undefined) {
+            this.cyclicStart = {
+                index: 0,
+                offset: offset
+            };
+            this.cyclicEnd.offset = offset;
         }
-        this.cyclicStart = undefined;
-        this.cyclicEnd.index = 0;
-        this.cyclicEnd.offset = 0;
-        await this.client.connect(ip, port);
-    }
+        if (offset !== this.cyclicEnd.offset) return;
+        for (let i = 0; i < bytes.length; ++i) {
+            this.cyclicBuffer[this.cyclicEnd.index] = bytes[i];
+            this.cyclicEnd.index = (this.cyclicEnd.index + 1) % this.cyclicBuffer.length; 
+            this.cyclicEnd.offset += 1;
+            if (this.cyclicEnd.index === this.cyclicStart.index) {
+                this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicBuffer.length; 
+                this.cyclicStart.offset += 1;
+            }
+        }
 
-    public unlink() {
-        if (!this.client.active()) return;
-        this.client.disconnect();
+        this.doAllRequests();
     }
 
     public open() {
@@ -91,7 +76,6 @@ class File {
         if (this.watcher !== undefined) {
             this.watcher.close();
         }
-        this.unlink();
     }
 
     private doAllRequests() {
@@ -120,8 +104,9 @@ class File {
 
     private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
-            if (this.client.active() && this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
+            if (this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
                 start >= this.cyclicStart.offset && (end + 1) <= this.cyclicEnd.offset) {
+                console.log("get from link");
                 const bytes = new Uint8Array(numBytes);
                 const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
                 for (let i = 0; i < numBytes; ++i) {
@@ -182,7 +167,7 @@ class File {
 }
 
 export class FileManager {
-    private file?: File;
+    file?: File;
 
     constructor() {
     }
@@ -197,19 +182,6 @@ export class FileManager {
         });
         ipc.on("close", () => {
             this.file?.close();
-        });
-
-        ipc.handle("link", async (_, port: number) => {
-            const ip = "127.0.0.1";
-            try {
-                await this.file!.link(ip, port);
-                return undefined;
-            } catch (err) {
-                return `${ip}(${port}): ${err.message}`;
-            }
-        });
-        ipc.on("unlink", () => {
-            this.file?.unlink();
         });
         
         ipc.handle("getBytes", async (_, index: number, numBytes: number, wait?: boolean) => {
