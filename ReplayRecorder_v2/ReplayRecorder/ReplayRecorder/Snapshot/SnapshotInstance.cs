@@ -38,7 +38,7 @@ namespace ReplayRecorder.Snapshot {
             public int NDirtyDynamics {
                 get {
                     if (isDirty) {
-                        _nDirtyDynamics = dynamics.Count(d => d.IsDirty);
+                        _nDirtyDynamics = dynamics.Count(d => d.IsDirty || !d.init);
                         isDirty = false;
                     }
                     return _nDirtyDynamics;
@@ -96,9 +96,10 @@ namespace ReplayRecorder.Snapshot {
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
 
-                    if (dynamic.IsDirty) {
+                    if (dynamic.IsDirty || !dynamic.init) {
                         if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
                         ++numWritten;
+                        dynamic.init = true;
                         dynamic._Write(buffer);
                         dynamic.Write(buffer);
                     }
@@ -182,8 +183,8 @@ namespace ReplayRecorder.Snapshot {
 
         private FileStream? fs;
         private int byteOffset = 0;
-        private DeltaState writeState = new DeltaState();
-        private ByteBuffer writeBuffer = new ByteBuffer();
+        private DeltaState state = new DeltaState();
+        private ByteBuffer buffer = new ByteBuffer();
 
         public bool Ready => Active && completedHeader;
         public bool Active => fs != null;
@@ -220,16 +221,16 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
-            writeBuffer.Clear();
-            SnapshotManager.types.Write(writeBuffer);
+            buffer.Clear();
+            SnapshotManager.types.Write(buffer);
 
             foreach (Type t in SnapshotManager.types.headers) {
                 unwrittenHeaders.Add(t);
             }
 
-            writeState.Clear();
+            state.Clear();
             foreach (Type t in SnapshotManager.types.dynamics) {
-                writeState.dynamics.Add(t, new DynamicCollection(t));
+                state.dynamics.Add(t, new DynamicCollection(t));
             }
         }
 
@@ -249,8 +250,8 @@ namespace ReplayRecorder.Snapshot {
             }
             ushort id = SnapshotManager.types[headerType];
             APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
-            BitHelper.WriteBytes(id, writeBuffer);
-            header.Write(writeBuffer);
+            BitHelper.WriteBytes(id, buffer);
+            header.Write(buffer);
 
             if (unwrittenHeaders.Count == 0) {
                 completedHeader = true;
@@ -263,10 +264,10 @@ namespace ReplayRecorder.Snapshot {
 
             EndOfHeader eoh = new EndOfHeader();
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
-            eoh.Write(writeBuffer);
+            eoh.Write(buffer);
 
-            byteOffset = sizeof(int) + writeBuffer.count;
-            writeBuffer.Flush(fs);
+            byteOffset = sizeof(int) + buffer.count;
+            buffer.Flush(fs);
 
             start = Raudy.Now;
             Replay.OnHeaderCompletion?.Invoke();
@@ -277,24 +278,24 @@ namespace ReplayRecorder.Snapshot {
             if (ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             EventWrapper ev = new EventWrapper(Now, e);
-            writeState.events.Add(ev);
+            state.events.Add(ev);
         }
 
         [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
             Type dynType = dynamic.GetType();
-            if (!writeState.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+            if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new ReplaySpawn(dynamic));
-            writeState.dynamics[dynType].Add(dynamic, errorOnDuplicate);
+            state.dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
             Type dynType = dynamic.GetType();
-            if (!writeState.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+            if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new ReplayDespawn(dynamic));
-            writeState.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
+            state.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
         }
 
         private void Tick() {
@@ -312,11 +313,11 @@ namespace ReplayRecorder.Snapshot {
             }
 
             // Clear write buffer
-            writeBuffer.Clear();
-            if (writeState.Write(now, writeBuffer)) {
-                Plugin.server.Send(writeBuffer, byteOffset);
-                byteOffset += sizeof(int) + writeBuffer.count;
-                writeBuffer.Flush(fs);
+            buffer.Clear();
+            if (state.Write(now, buffer)) {
+                Plugin.server.Send(buffer, byteOffset);
+                byteOffset += sizeof(int) + buffer.count;
+                buffer.Flush(fs);
             }
         }
 
@@ -334,12 +335,30 @@ namespace ReplayRecorder.Snapshot {
             Destroy(gameObject);
         }
 
-        private const float tickRate = 1f / 60f;
+        private float tickRate = 1f / 20f;
         private float timer = 0;
         private void Update() {
             if (fs == null || !completedHeader) {
                 return;
             }
+
+            /*float rate;
+            // Change tick rate based on state / live view:
+            switch (DramaManager.CurrentStateEnum) {
+            case DRAMA_State.Encounter:
+            case DRAMA_State.Survival:
+            case DRAMA_State.IntentionalCombat:
+            case DRAMA_State.Combat:
+                rate = 1f / 20f;
+                break;
+            default:
+                rate = 1f / 5f;
+                break;
+            }
+            if (tickRate != rate) {
+                timer = 0;
+                tickRate = rate;
+            }*/
 
             timer += Time.deltaTime;
             if (timer > tickRate) {
