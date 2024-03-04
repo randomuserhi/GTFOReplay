@@ -61,6 +61,13 @@ export namespace Dynamic {
             rotation: rotation === undefined ? Quat.identity() : rotation
         };
     }
+    export async function parseSpawn(data: ByteStream): Promise<{ dimension: number, position: Vector, rotation: Quaternion }> {
+        return {
+            dimension: await BitHelper.readByte(data),
+            position: await BitHelper.readVector(data),
+            rotation: await BitHelper.readHalfQuaternion(data)
+        };
+    }
     export async function parseTransform(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector, rotation: Quaternion }> {
         const dimension = await BitHelper.readByte(data);
         const absolute = await BitHelper.readByte(data) != 0;

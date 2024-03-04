@@ -1,5 +1,4 @@
 import { BoxGeometry, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { Dynamic } from "../replayrecorder.js";
@@ -7,7 +6,7 @@ import { Dynamic } from "../replayrecorder.js";
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
-            "Vanilla.Player": {
+            "Vanilla.Enemy": {
                 parse: {
                     dimension: number;
                     absolute: boolean;
@@ -18,78 +17,67 @@ declare module "../../replay/moduleloader.js" {
                     dimension: number;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
-                    snet: bigint;
-                    slot: number;
-                    nickname: string;
                 };
                 despawn: void;
             };
         }
     
         interface Data {
-            "Vanilla.Player": Map<number, Player>
+            "Vanilla.Enemy": Map<number, Enemy>
         }
     }
 }
 
-export interface Player extends Dynamic {
-    snet: bigint;
-    slot: number;
-    nickname: string;
+export interface Enemy extends Dynamic {
 }
 
-ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
         parse: async (data) => {
             const result = await Dynamic.parseTransform(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
     
-            if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
-            Dynamic.lerp(players.get(id)!, data, lerp);
+            if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
+            Dynamic.lerp(enemies.get(id)!, data, lerp);
         }
     },
     spawn: {
         parse: async (data) => {
             const spawn = await Dynamic.parseSpawn(data);
             const result = {
-                ...spawn,
-                snet: await BitHelper.readULong(data),
-                slot: await BitHelper.readByte(data),
-                nickname: await BitHelper.readString(data)
+                ...spawn
             };
             return result;
         },
         exec: (id, data, snapshot) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
         
-            const { snet } = data;
-        
-            if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
-            players.set(id, { id, ...data });
+            if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
+            enemies.set(id, { id, ...data });
         }
     },
     despawn: {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
 
-            if (!players.has(id)) throw new PlayerNotFound(`Player of id '${id}' did not exist.`);
-            players.delete(id);
+            if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
+            enemies.delete(id);
         }
     }
 });
 
-class PlayerNotFound extends Error {
+class EnemyNotFound extends Error {
     constructor(message?: string) {
         super(message);
     }
 }
 
-class DuplicatePlayer extends Error {
+class DuplicateEnemy extends Error {
     constructor(message?: string) {
         super(message);
     }
@@ -101,23 +89,23 @@ class DuplicatePlayer extends Error {
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
-            "Players": void;
+            "Enemies": void;
         }
 
         interface RenderData {
-            "Players": Map<number, Mesh>;
+            "Enemies": Map<number, Mesh>;
         }
     }
 }
 
-ModuleLoader.registerRender("Players", (name, api) => {
+ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 
         name, pass: (renderer, snapshot) => {
-            const models = renderer.getOrDefault("Players", () => new Map());
-            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-            for (const [id, player] of players) {
-                if (player.dimension !== renderer.get("Dimension")) {
+            const models = renderer.getOrDefault("Enemies", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            for (const [id, enemy] of enemies) {
+                if (enemy.dimension !== renderer.get("Dimension")) {
                     models.delete(id);
                     continue;
                 }
@@ -138,13 +126,13 @@ ModuleLoader.registerRender("Players", (name, api) => {
 
                 const model = models.get(id)!;
                 const offset = new Vector3(0, 1, 0);
-                model.position.set(player.position.x, player.position.y, player.position.z);
+                model.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
                 model.position.add(offset);
-                model.setRotationFromQuaternion(new Quaternion(player.rotation.x, player.rotation.y, player.rotation.z, player.rotation.w));
+                model.setRotationFromQuaternion(new Quaternion(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w));
             }
 
             for (const [id, model] of [...models.entries()]) {
-                if (!players.has(id)) {
+                if (!enemies.has(id)) {
                     renderer.scene.remove(model);
                     models.delete(id);
                 }

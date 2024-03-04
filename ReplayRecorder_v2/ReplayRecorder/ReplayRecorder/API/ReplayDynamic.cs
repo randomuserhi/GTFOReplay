@@ -7,7 +7,7 @@ namespace ReplayRecorder.API {
         private ReplayDynamic dynamic;
         private ushort type;
 
-        public override string? Debug => $"{dynamic.GetType().FullName}({type})";
+        public override string? Debug => $"{dynamic.GetType().FullName}({type}) {dynamic.Id}";
 
         public ReplaySpawn(ReplayDynamic dynamic) {
             this.dynamic = dynamic;
@@ -26,7 +26,7 @@ namespace ReplayRecorder.API {
         private ReplayDynamic dynamic;
         private ushort type;
 
-        public override string? Debug => $"{dynamic.GetType().FullName}({type})";
+        public override string? Debug => $"{dynamic.GetType().FullName}({type}) {dynamic.Id}";
 
         public ReplayDespawn(ReplayDynamic dynamic) {
             this.dynamic = dynamic;

@@ -203,7 +203,7 @@ export class Replay {
         for (let tick = state.tick; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
             this.exec(time, api, state, snapshot);
-            if (snapshot.time > state.time) break;
+            if (snapshot.time > time) break;
         }
 
         return state;
