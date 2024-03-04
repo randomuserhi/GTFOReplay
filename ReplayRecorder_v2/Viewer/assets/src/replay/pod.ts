@@ -13,6 +13,7 @@ export namespace Vec {
         };
     }
     export function lerp(a: Vector, b: Vector, lerp: number): Vector {
+        lerp = Math.clamp01(lerp);
         return {
             x: a.x + (b.x - a.x) * lerp,
             y: a.y + (b.y - a.y) * lerp,
@@ -101,6 +102,8 @@ export namespace Quat {
         return euler;
     }
     export function slerp(a: Quaternion, b: Quaternion, lerp: number) {
+        lerp = Math.clamp01(lerp);
+        
         const cosHalfTheta = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
         if (cosHalfTheta < 0) {
             // flip the quarternion if they face opposite directions to prevent slerp going the long way

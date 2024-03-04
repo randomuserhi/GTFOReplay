@@ -131,7 +131,7 @@ namespace ReplayRecorder.Core {
         private Quaternion oldRotation;
         private byte oldDimensionIndex;
 
-        private const float threshold = 50;
+        private const float threshold = 1000;
 
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z}) ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 

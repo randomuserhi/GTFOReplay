@@ -120,6 +120,7 @@ let replay: Replay | undefined = undefined;
                 }
                 return [dynamics, type];
             };
+            ipc.send("state", state);
             for (;;) {
                 const snapshotSize = await BitHelper.readInt(fs);
                 if (snapshotSize <= 0) {
@@ -127,7 +128,8 @@ let replay: Replay | undefined = undefined;
                 }
                 const bytes = await fs.getBytes(snapshotSize);
 
-                if ((state.tick % 6000) === 0) ipc.send("state", state);
+                //if ((state.tick % 6000) === 0) ipc.send("state", state);
+                //ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
                 state.time = now;

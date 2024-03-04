@@ -152,9 +152,9 @@ export class Replay {
             }
         }
 
-        const diff = snapshot.time - state.time;
+        const diff = snapshot.time - time;
         const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
-        const largestTickRate = 250; //ms
+        const largestTickRate = 100; //ms -> tick rate of 50ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
         // NOTE(randomuserhi): If the difference in time between current state and snapshot we are lerping to
         //                     is greater than the longest possible time taken between ticks, then no dynamics
         //                     have moved as they are recorded on each tick.
@@ -200,8 +200,7 @@ export class Replay {
         const api = this.api(state);
 
         // extrapolate snapshot until time
-        let tick = state.tick;
-        for (; tick < this.timeline.length; ++tick) {
+        for (let tick = state.tick; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
             this.exec(time, api, state, snapshot);
             if (snapshot.time > state.time) break;

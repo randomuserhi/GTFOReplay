@@ -128,7 +128,7 @@ namespace ReplayRecorder.Snapshot {
                 dynamics.Clear();
             }
 
-            internal bool Write(long now, ByteBuffer bs, bool debug = true) {
+            internal bool Write(long now, ByteBuffer bs) {
                 // Check if this tick needs to be done
                 // - are there any dynamics to serialize?
                 // - are there any events to serialize?
@@ -165,7 +165,7 @@ namespace ReplayRecorder.Snapshot {
                 foreach (DynamicCollection collection in dirtyCollections) {
                     if (collection.Write(bs)) {
                         ++numWritten;
-                        if (debug && ConfigManager.Debug) {
+                        if (ConfigManager.Debug) {
                             APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
                         }
                     }
