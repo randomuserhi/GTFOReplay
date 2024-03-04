@@ -1,7 +1,7 @@
 import { Ipc } from "./ipc";
 
 export interface FileHandle {
-    path?: string;
+    path: string;
     finite?: boolean;
 }
 

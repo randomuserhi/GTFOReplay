@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { TcpClient } from "../net/tcpClient.cjs";
 
 interface FileHandle { 
-    path?: string;
+    path: string;
     finite?: boolean ;
 }
 
@@ -83,6 +83,11 @@ class File {
     }
 
     public close() {
+        // close all on going requests
+        const requests = this.requests;
+        this.requests = [];
+        requests.forEach(r => r.callback());
+
         if (this.watcher !== undefined) {
             this.watcher.close();
         }
@@ -184,7 +189,9 @@ export class FileManager {
 
     public setupIPC(ipc: Electron.IpcMain) {
         ipc.handle("open", async (_, file: FileHandle) => {
-            if (this.file !== undefined || file.path === undefined) return;
+            if (this.file !== undefined) {
+                this.file.close();
+            } 
             this.file = new File(file.path);
             await this.file.open();
         });

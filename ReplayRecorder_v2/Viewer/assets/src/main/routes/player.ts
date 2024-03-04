@@ -3,6 +3,7 @@ import { Style } from "@/rhu/style.js";
 import { Parser } from "../../replay/parser.js";
 import { Renderer } from "../../replay/renderer.js";
 import { Replay } from "../../replay/replay.js";
+import { FileHandle } from "../../replay/stream.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -39,7 +40,9 @@ export interface player extends HTMLDivElement {
     time: number;
     lerp: number;
     prevTime: number;
-    update: () => void;
+    update(): void;
+    close(): void;
+    load(path: string): Promise<void>;
 }
 
 declare module "@/rhu/macro.js" {
@@ -64,52 +67,57 @@ export const player = Macro((() => {
         window.addEventListener("resize", resize);
         this.addEventListener("mount", resize);
 
+        this.update();
+
         (window as any).player = this;
-
-        // dummy load
-        (async () => {
-            const file = {
-                path: "D:\\GTFO Replays\\R1A1 2024-03-04 06-42",
-                finite: false
-            };
-            await window.api.invoke("open", file);
-            this.parser = new Parser();
-            this.parser.addEventListener("eoh", () => {
-                console.log("ready");
-        
-                if (this.replay === undefined) return;
-
-                this.renderer.init(this.replay);
-
-                this.time = 0;
-                this.lerp = 20; // TODO(randomuserhi): Should be adjustable for various tick rates
-                this.prevTime = Date.now();
-                this.update();
-            });
-            this.parser.addEventListener("end", () => {
-                window.api.send("close", file);
-            });
-            this.replay = await this.parser.parse(file);
-        })();
     } as Constructor<player>;
     
+    player.prototype.load = async function(path: string) {
+        const file: FileHandle = {
+            path, finite: false
+        };
+        await window.api.invoke("open", file);
+        this.parser = new Parser();
+        this.parser.addEventListener("eoh", () => {
+            console.log("ready");
+    
+            if (this.replay === undefined) return;
+
+            this.renderer.init(this.replay);
+
+            this.time = 0;
+            this.lerp = 20; // TODO(randomuserhi): Should be adjustable for various tick rates
+            this.prevTime = Date.now();
+        });
+        this.parser.addEventListener("end", () => {
+            window.api.send("close", file);
+        });
+        this.replay = await this.parser.parse(file);
+    };
+
+    player.prototype.close = function() {
+        window.api.send("close");
+    };
+
     player.prototype.update = function() {
-        if (this.replay === undefined) return;
+        if (this.replay !== undefined) {
+            const now = Date.now();
+            const dt = now - this.prevTime;
+            this.prevTime = now;
 
-        const now = Date.now();
-        const dt = now - this.prevTime;
-        this.prevTime = now;
+            this.time += dt;
+            const length = this.replay.length();
+            //this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
+            if (this.time > length) this.time = length;
 
-        //this.time += dt;
-        const length = this.replay.length();
-        this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
-        if (this.time > length) this.time = length;
-
-        const snapshot = this.replay.getSnapshot(this.time);
-        if (snapshot !== undefined) {
-            const api = this.replay.api(snapshot);
-            this.renderer.render(api);
+            const snapshot = this.replay.getSnapshot(this.time);
+            if (snapshot !== undefined) {
+                const api = this.replay.api(snapshot);
+                this.renderer.render(api);
+            }
         }
+
+        // TODO(randomuserhi): Method to dispose of loop when player is removed etc... 
         requestAnimationFrame(() => this.update());
     };
 
