@@ -199,8 +199,14 @@ export class FileManager {
             this.file?.close();
         });
 
-        ipc.on("link", (_, ip: string, port: number) => {
-            this.file?.link(ip, port);
+        ipc.handle("link", async (_, port: number) => {
+            const ip = "127.0.0.1";
+            try {
+                await this.file!.link(ip, port);
+                return undefined;
+            } catch (err) {
+                return `${ip}(${port}): ${err.message}`;
+            }
         });
         ipc.on("unlink", () => {
             this.file?.unlink();

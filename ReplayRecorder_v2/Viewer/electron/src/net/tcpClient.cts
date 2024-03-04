@@ -2,6 +2,10 @@ import * as net from "net";
 import * as os from "os";
 import { core } from "../rnu/rnu.cjs";
 
+// TODO(randomuserhi): - Proper message interface for different types of messages.
+//                     - Include replay path so that when a different replay is loaded to the replay being linked, bytes are discarded
+//                       instead of just causing errors. 
+
 export interface MessageEventMap
 {
     "message": {

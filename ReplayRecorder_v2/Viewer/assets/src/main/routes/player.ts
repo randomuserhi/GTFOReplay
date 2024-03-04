@@ -42,7 +42,9 @@ export interface player extends HTMLDivElement {
     prevTime: number;
     update(): void;
     close(): void;
-    load(path: string): Promise<void>;
+    link(ip: string, port: number): Promise<void>;
+    unlink(): void;
+    open(path: string): Promise<void>;
 }
 
 declare module "@/rhu/macro.js" {
@@ -72,7 +74,7 @@ export const player = Macro((() => {
         (window as any).player = this;
     } as Constructor<player>;
     
-    player.prototype.load = async function(path: string) {
+    player.prototype.open = async function(path: string) {
         const file: FileHandle = {
             path, finite: false
         };
@@ -97,6 +99,18 @@ export const player = Macro((() => {
 
     player.prototype.close = function() {
         window.api.send("close");
+    };
+
+    player.prototype.link = async function(port) {
+        const resp: string | undefined = await window.api.invoke("link", port);
+        if (resp !== undefined) {
+            // TODO(randomuserhi)
+            console.error(`Failed to link: ${resp}`);
+        }
+    };
+
+    player.prototype.unlink = async function() {
+        window.api.send("unlink");
     };
 
     player.prototype.update = function() {
