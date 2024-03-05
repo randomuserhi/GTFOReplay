@@ -5,11 +5,17 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player", "Player\Player.csproj", "{EEA06895-727C-45A0-B5D6-0FADBB58634E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Map", "Map\Map.csproj", "{996F3EE8-9042-470F-8AC8-FA61771BADE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapGeometry", "Map\MapGeometry.csproj", "{996F3EE8-9042-470F-8AC8-FA61771BADE1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enemy", "Enemy\Enemy.csproj", "{2CCA78E7-4D94-4B8D-8694-B52E311B3A30}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnemyTongue", "EnemyTongue\EnemyTongue.csproj", "{BF56EC43-F921-45B9-A446-D806F4921DC3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Map", "Map", "{2263F7D5-1BA8-4D3E-906C-9D28983D1B02}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Enemy", "Enemy", "{AAFBE019-EA0B-49C1-B8BB-BF9BB61B7A49}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player", "Player", "{D27E9350-D6C3-4106-B8CF-94D18E333896}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +42,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EEA06895-727C-45A0-B5D6-0FADBB58634E} = {D27E9350-D6C3-4106-B8CF-94D18E333896}
+		{996F3EE8-9042-470F-8AC8-FA61771BADE1} = {2263F7D5-1BA8-4D3E-906C-9D28983D1B02}
+		{2CCA78E7-4D94-4B8D-8694-B52E311B3A30} = {AAFBE019-EA0B-49C1-B8BB-BF9BB61B7A49}
+		{BF56EC43-F921-45B9-A446-D806F4921DC3} = {AAFBE019-EA0B-49C1-B8BB-BF9BB61B7A49}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D52A017E-D3A4-4AFF-94DE-148097B26CC9}
