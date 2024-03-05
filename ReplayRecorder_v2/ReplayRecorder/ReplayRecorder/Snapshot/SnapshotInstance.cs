@@ -39,7 +39,7 @@ namespace ReplayRecorder.Snapshot {
             public int NDirtyDynamics {
                 get {
                     if (isDirty) {
-                        _nDirtyDynamics = dynamics.Count(d => d.IsDirty || !d.init);
+                        _nDirtyDynamics = dynamics.Count(d => (d.Active && d.IsDirty) || !d.init);
                         isDirty = false;
                     }
                     return _nDirtyDynamics;
@@ -54,6 +54,13 @@ namespace ReplayRecorder.Snapshot {
                 if (!SnapshotManager.types.Contains(type)) throw new ReplayTypeDoesNotExist($"Could not create DynamicCollection of type '{type.FullName}'.");
                 Type = type;
                 Id = SnapshotManager.types[type];
+            }
+
+            [HideFromIl2Cpp]
+            public bool Has(ReplayDynamic dynamic) {
+                Type dynType = dynamic.GetType();
+                if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot add '{dynType.FullName}' to DynamicCollection of type '{Type.FullName}'.");
+                return mapOfDynamics.ContainsKey(dynamic.Id);
             }
 
             [HideFromIl2Cpp]
@@ -97,7 +104,7 @@ namespace ReplayRecorder.Snapshot {
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
 
-                    if (dynamic.IsDirty || !dynamic.init) {
+                    if ((dynamic.Active && dynamic.IsDirty) || !dynamic.init) {
                         if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
                         ++numWritten;
                         dynamic.init = true;
@@ -280,6 +287,14 @@ namespace ReplayRecorder.Snapshot {
             if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             EventWrapper ev = new EventWrapper(Now, e);
             state.events.Add(ev);
+        }
+
+        [HideFromIl2Cpp]
+        internal bool Has(ReplayDynamic dynamic) {
+            Type dynType = dynamic.GetType();
+            if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+
+            return state.dynamics[dynType].Has(dynamic);
         }
 
         [HideFromIl2Cpp]

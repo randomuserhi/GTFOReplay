@@ -167,11 +167,9 @@ export class TcpClient {
                         read = 0;
 
                         const recvStream = new ByteStream(recvBuffer);
-                        console.log(`received ${msgSize} bytes.`);
 
                         // Read message header
                         const type = BitHelper.readUShort(recvStream);
-                        console.log(`type: ${type}`);
 
                         const msgHeaderSize = 2;
                         const content = BitHelper.readBytes(msgSize - msgHeaderSize, recvStream);
@@ -196,7 +194,6 @@ export class TcpClient {
                 this.socket = null; 
 
                 if (this.onClose !== undefined) this.onClose();
-                console.log("closed");
             }); 
             socket.connect(port, ip, () => {
                 resolve();

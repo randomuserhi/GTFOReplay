@@ -65,6 +65,7 @@ let replay: Replay | undefined = undefined;
                 data: new Map()
             };
             const api = replay.api(state);
+            const exists = new Map<number, Map<number, boolean>>();
             const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
                 if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
 
@@ -88,6 +89,9 @@ let replay: Replay | undefined = undefined;
                         const exec = Internal.DynamicExec[module.typename][module.version];
                         if (exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
                         exec(data, replay, api);
+
+                        if (!exists.has(data.type)) exists.set(data.type, new Map());
+                        exists.get(data.type)!.set(data.id, module.typename === "ReplayRecorder.Spawn");
                     } else {
                         // Parse regular events
                         const func = ModuleLoader.getEvent(module as any);
@@ -116,7 +120,11 @@ let replay: Replay | undefined = undefined;
                     const id = await BitHelper.readInt(bytes);
                     const data = await func.main.parse(bytes);
                     dynamics.push({ id, data });
-                    func.main.exec(id, data, api, 1);
+
+                    if (!exists.has(type)) exists.set(type, new Map());
+                    if (exists.get(type)!.get(id) !== false) {
+                        func.main.exec(id, data, api, 1);
+                    }
                 }
                 return [dynamics, type];
             };
@@ -137,6 +145,7 @@ let replay: Replay | undefined = undefined;
                     dynamics: new Map()
                 } as any;
 
+                exists.clear();
                 snapshot.events = await parseEvents(bytes); // parse events
                 const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {

@@ -73,6 +73,8 @@ namespace ReplayRecorder {
         [HideFromIl2Cpp]
         public static void Trigger(ReplayHeader header) => SnapshotManager.GetInstance().Trigger(header);
         [HideFromIl2Cpp]
+        public static bool Has(ReplayDynamic dynamic) => SnapshotManager.GetInstance().Has(dynamic);
+        [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate);
         [HideFromIl2Cpp]
         public static void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) => SnapshotManager.GetInstance().Despawn(dynamic, errorOnNotFound);

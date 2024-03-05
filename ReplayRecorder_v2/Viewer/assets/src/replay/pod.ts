@@ -12,6 +12,9 @@ export namespace Vec {
             z: 0
         };
     }
+    export function length(v: Vector): number {
+        return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    }
     export function lerp(a: Vector, b: Vector, lerp: number): Vector {
         lerp = Math.clamp01(lerp);
         return {

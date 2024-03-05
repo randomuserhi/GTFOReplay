@@ -41,8 +41,9 @@ namespace ReplayRecorder.Core {
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z})";
 
         public override int Id => id;
-        public override bool IsDirty => transform.active && (transform.dimensionIndex != oldDimensionIndex ||
-                                                             transform.position != oldPosition);
+        public override bool Active => transform.active;
+        public override bool IsDirty => transform.dimensionIndex != oldDimensionIndex ||
+                                        transform.position != oldPosition;
 
         public DynamicPosition(int id, IReplayTransform transform) {
             this.id = id;
@@ -90,7 +91,8 @@ namespace ReplayRecorder.Core {
         public override string? Debug => $"{id} - ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
         public override int Id => id;
-        public override bool IsDirty => transform.active && (transform.rotation != oldRotation);
+        public override bool Active => transform.active;
+        public override bool IsDirty => (transform.rotation != oldRotation);
 
         public DynamicRotation(int id, IReplayTransform transform) {
             this.id = id;
@@ -136,9 +138,10 @@ namespace ReplayRecorder.Core {
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z}) ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
         public override int Id => id;
-        public override bool IsDirty => transform.active && (transform.dimensionIndex != oldDimensionIndex ||
-                                                             transform.position != oldPosition ||
-                                                             transform.rotation != oldRotation);
+        public override bool Active => transform.active;
+        public override bool IsDirty => transform.dimensionIndex != oldDimensionIndex ||
+                                        transform.position != oldPosition ||
+                                        transform.rotation != oldRotation;
 
         public DynamicTransform(int id, IReplayTransform transform) {
             this.id = id;

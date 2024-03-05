@@ -47,12 +47,15 @@ export class DuplicateDynamic extends Error {
 
 export interface Dynamic {
     id: number;
+}
+
+export interface DynamicTransform extends Dynamic {
     position: Vector;
     rotation: Quaternion;
     dimension: number;
 }
 
-export namespace Dynamic {
+export namespace DynamicTransform {
     export function create({ id, position, rotation, dimension }: { id: number, position?: Vector, rotation?: Quaternion, dimension?: number }): { id: number, position: Vector, rotation: Quaternion, dimension: number } {
         return {
             id,
@@ -90,7 +93,7 @@ export namespace Dynamic {
             rotation: await BitHelper.readHalfQuaternion(data)
         };
     }
-    export function lerp(dyn: Dynamic, data: { dimension: number; absolute: boolean; position: Vector; rotation: Quaternion; }, lerp: number): void {
+    export function lerp(dyn: DynamicTransform, data: { dimension: number; absolute: boolean; position: Vector; rotation: Quaternion; }, lerp: number): void {
         const { absolute, position, rotation, dimension } = data;
         const fpos = absolute ? position : Vec.add(dyn.position, position);
         dyn.position = Vec.lerp(dyn.position, fpos, lerp);

@@ -2,7 +2,7 @@ import { BoxGeometry, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
-import { Dynamic } from "../replayrecorder.js";
+import { DynamicTransform } from "../replayrecorder.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -32,7 +32,7 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
-export interface Player extends Dynamic {
+export interface Player extends DynamicTransform {
     snet: bigint;
     slot: number;
     nickname: string;
@@ -41,19 +41,19 @@ export interface Player extends Dynamic {
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await Dynamic.parseTransform(data);
+            const result = await DynamicTransform.parseTransform(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
     
             if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
-            Dynamic.lerp(players.get(id)!, data, lerp);
+            DynamicTransform.lerp(players.get(id)!, data, lerp);
         }
     },
     spawn: {
         parse: async (data) => {
-            const spawn = await Dynamic.parseSpawn(data);
+            const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
                 snet: await BitHelper.readULong(data),

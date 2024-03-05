@@ -10,7 +10,8 @@ namespace Vanilla.Enemy {
         }
 
         public static void Despawn(EnemyAgent enemy) {
-            Replay.Despawn(new rEnemy(enemy));
+            rEnemy rEnemy = new rEnemy(enemy);
+            if (Replay.Has(rEnemy)) Replay.Despawn(rEnemy);
         }
     }
 

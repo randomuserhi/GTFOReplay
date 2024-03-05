@@ -40,7 +40,7 @@ namespace ReplayRecorder.API {
         }
     }
 
-    public abstract class ReplayDynamic {
+    public abstract class ReplayDynamic : IEquatable<ReplayDynamic> {
         internal bool remove = false;
         internal bool init = false;
 
@@ -48,6 +48,7 @@ namespace ReplayRecorder.API {
 
         public abstract int Id { get; }
         public abstract bool IsDirty { get; }
+        public abstract bool Active { get; }
 
         internal virtual void _Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(Id, buffer);
@@ -57,5 +58,37 @@ namespace ReplayRecorder.API {
         public virtual void Spawn(ByteBuffer buffer) { }
 
         public virtual void Despawn(ByteBuffer buffer) { }
+
+        public static bool operator ==(ReplayDynamic lhs, ReplayDynamic rhs) {
+            if (lhs is null) {
+                if (rhs is null) {
+                    return true;
+                }
+                return false;
+            }
+            return lhs.Equals(rhs);
+        }
+        public static bool operator !=(ReplayDynamic lhs, ReplayDynamic rhs) => !(lhs == rhs);
+
+        public override bool Equals(object? obj) => Equals(obj as ReplayDynamic);
+        public bool Equals(ReplayDynamic? other) {
+            if (other is null) {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other)) {
+                return true;
+            }
+
+            if (GetType() != other.GetType()) {
+                return false;
+            }
+
+            return Id == other.Id;
+        }
+
+        public override int GetHashCode() {
+            return GetType().GetHashCode() ^ Id.GetHashCode();
+        }
     }
 }

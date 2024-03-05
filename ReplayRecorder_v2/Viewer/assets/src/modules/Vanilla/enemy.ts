@@ -1,7 +1,7 @@
 import { BoxGeometry, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
-import { Dynamic } from "../replayrecorder.js";
+import { DynamicTransform } from "../replayrecorder.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -28,25 +28,25 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
-export interface Enemy extends Dynamic {
+export interface Enemy extends DynamicTransform {
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await Dynamic.parseTransform(data);
+            const result = await DynamicTransform.parseTransform(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
     
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
-            Dynamic.lerp(enemies.get(id)!, data, lerp);
+            DynamicTransform.lerp(enemies.get(id)!, data, lerp);
         }
     },
     spawn: {
         parse: async (data) => {
-            const spawn = await Dynamic.parseSpawn(data);
+            const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn
             };

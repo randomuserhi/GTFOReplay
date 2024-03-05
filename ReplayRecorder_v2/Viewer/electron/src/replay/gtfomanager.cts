@@ -15,20 +15,22 @@ export class GTFOManager {
 
         this.client.addEventListener("close", () => {
             console.log("connection closed");
+            // TODO(randomuserhi)
         });
 
         this.client.addEventListener("startGame", (bytes) => {
             const path = BitHelper.readString(bytes);
             console.log(`game started: ${path}`);
+            // TODO(randomuserhi)
         });
 
         this.client.addEventListener("endGame", () => {
             console.log("game ended");
+            // TODO(randomuserhi)
         });
 
         // Handling file link
         this.client.addEventListener("liveBytes", (bytes) => {
-            console.log("received bytes");
             this.fileManager.file?.receiveLiveBytes({
                 offset: BitHelper.readInt(bytes),
                 bytes: BitHelper.readBytes(BitHelper.readInt(bytes), bytes)
