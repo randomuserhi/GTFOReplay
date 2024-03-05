@@ -4,7 +4,7 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using ReplayRecorder;
 
-namespace Vanilla.Map.BepInEx;
+namespace Vanilla.Map.Geometry.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 [BepInDependency(ReplayRecorder.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]

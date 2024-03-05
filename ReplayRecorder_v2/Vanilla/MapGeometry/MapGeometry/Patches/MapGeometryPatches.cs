@@ -31,7 +31,7 @@ namespace Vanilla.Map.Patches {
                 ++dimensionsLoaded; // Update number of dimensions that have finished loading
                 if (dimensionsLoaded == dimensions.Count) {
                     // When all have finished loading, finalize
-                    MapGeometryManager.GenerateMapInfo(dimensions);
+                    MapGeometryReplayManager.GenerateMapInfo(dimensions);
                 }
             }
         }
@@ -40,7 +40,7 @@ namespace Vanilla.Map.Patches {
         [HarmonyPatch(typeof(GS_ReadyToStopElevatorRide), nameof(GS_ReadyToStopElevatorRide.Enter))]
         [HarmonyPostfix]
         private static void StopElevatorRide() {
-            Replay.Trigger(new rMapGeometry(MapGeometryManager.map));
+            Replay.Trigger(new rMapGeometry(MapGeometryReplayManager.map));
         }
     }
 }

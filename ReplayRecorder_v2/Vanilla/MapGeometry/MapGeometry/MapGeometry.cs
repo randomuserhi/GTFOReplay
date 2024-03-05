@@ -51,7 +51,7 @@ namespace Vanilla.Map {
         }
     }
 
-    internal static class MapGeometryManager {
+    internal static class MapGeometryReplayManager {
         [ReplayInit]
         private static void Init() {
             map = new Dictionary<eDimensionIndex, Map>();
