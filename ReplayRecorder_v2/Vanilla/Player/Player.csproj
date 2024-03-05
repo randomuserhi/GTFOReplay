@@ -6,8 +6,8 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Nullable>enable</Nullable>
 		<DebugType>None</DebugType>
-		<AssemblyName>$(SolutionName)</AssemblyName>
-		<RootNamespace>$(SolutionName)</RootNamespace>
+		<AssemblyName>$(ProjectName)</AssemblyName>
+		<RootNamespace>$(ProjectName)</RootNamespace>
 		<!-- Bepinex file location -->
 		<BepInEx>E:\GTFO mods\BepInExPack_GTFO\BepInEx</BepInEx>
 		<AdditionalIncludes>E:\GTFO mods\BepInEx\Plugins</AdditionalIncludes>

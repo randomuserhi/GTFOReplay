@@ -29,6 +29,7 @@ declare module "../../replay/moduleloader.js" {
 }
 
 export interface Enemy extends DynamicTransform {
+    health: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -56,7 +57,10 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
         
             if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
-            enemies.set(id, { id, ...data });
+            enemies.set(id, { 
+                id, ...data,
+                health: 0 // TODO(randomuserhi) 
+            });
         }
     },
     despawn: {

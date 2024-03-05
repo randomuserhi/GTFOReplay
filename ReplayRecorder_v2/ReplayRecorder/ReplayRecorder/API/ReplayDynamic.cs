@@ -59,7 +59,7 @@ namespace ReplayRecorder.API {
 
         public virtual void Despawn(ByteBuffer buffer) { }
 
-        public static bool operator ==(ReplayDynamic lhs, ReplayDynamic rhs) {
+        public static bool operator ==(ReplayDynamic? lhs, ReplayDynamic? rhs) {
             if (lhs is null) {
                 if (rhs is null) {
                     return true;
@@ -68,7 +68,7 @@ namespace ReplayRecorder.API {
             }
             return lhs.Equals(rhs);
         }
-        public static bool operator !=(ReplayDynamic lhs, ReplayDynamic rhs) => !(lhs == rhs);
+        public static bool operator !=(ReplayDynamic? lhs, ReplayDynamic? rhs) => !(lhs == rhs);
 
         public override bool Equals(object? obj) => Equals(obj as ReplayDynamic);
         public bool Equals(ReplayDynamic? other) {
