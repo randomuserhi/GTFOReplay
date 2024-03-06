@@ -1,7 +1,7 @@
 ﻿using BepInEx.Logging;
-using Vanilla.Map.Door.BepInEx;
+using Vanilla.Map.Doors.BepInEx;
 
-namespace Vanilla.Map.Door.BepInEx {
+namespace Vanilla.Map.Doors.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
         public const string GUID = "randomuserhi.ReplayRecorder.Vanilla.Map.Door";

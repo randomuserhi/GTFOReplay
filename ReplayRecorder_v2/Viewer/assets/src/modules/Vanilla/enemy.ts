@@ -75,13 +75,13 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     }
 });
 
-class EnemyNotFound extends Error {
+export class EnemyNotFound extends Error {
     constructor(message?: string) {
         super(message);
     }
 }
 
-class DuplicateEnemy extends Error {
+export class DuplicateEnemy extends Error {
     constructor(message?: string) {
         super(message);
     }

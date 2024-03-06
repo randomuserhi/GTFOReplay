@@ -128,6 +128,9 @@ namespace ReplayRecorder {
             destination[index++] = value;
         }
 
+        public static void WriteBytes(bool value, ArraySegment<byte> destination, ref int index) {
+            WriteBytes((byte)(value ? 1 : 0), destination, ref index);
+        }
 
         public static unsafe void WriteBytes(ulong value, ArraySegment<byte> destination, ref int index) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
@@ -201,6 +204,10 @@ namespace ReplayRecorder {
             buffer[buffer.count++] = value;
         }
 
+        public static void WriteBytes(bool value, ByteBuffer buffer) {
+            WriteBytes((byte)(value ? 1 : 0), buffer);
+        }
+
         public static unsafe void WriteBytes(ulong value, ByteBuffer buffer) {
             if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
             _WriteBytes((byte*)&value, sizeof(ulong), buffer);
@@ -265,8 +272,12 @@ namespace ReplayRecorder {
             }
         }
 
-        public static unsafe void WriteBytes(byte value, FileStream fs) {
+        public static void WriteBytes(byte value, FileStream fs) {
             fs.WriteByte(value);
+        }
+
+        public static void WriteBytes(bool value, FileStream fs) {
+            WriteBytes((byte)(value ? 1 : 0), fs);
         }
 
         public static unsafe void WriteBytes(ulong value, FileStream fs) {
@@ -354,6 +365,10 @@ namespace ReplayRecorder {
 
         public static byte ReadByte(ArraySegment<byte> source, ref int index) {
             return source[index++];
+        }
+
+        public static bool ReadBool(ArraySegment<byte> source, ref int index) {
+            return ReadByte(source, ref index) != 0;
         }
 
         public static unsafe ulong ReadULong(ArraySegment<byte> source, ref int index) {

@@ -27,6 +27,12 @@ ModuleLoader.registerHeader("ReplayRecorder.Header", "0.0.1", {
     }
 });
 
+export class HeaderNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
 export class DuplicateHeaderData extends Error {
     constructor(message?: string) {
         super(message);
@@ -73,7 +79,7 @@ export namespace DynamicTransform {
     }
     export async function parseTransform(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector, rotation: Quaternion }> {
         const dimension = await BitHelper.readByte(data);
-        const absolute = await BitHelper.readByte(data) != 0;
+        const absolute = await BitHelper.readBool(data);
         return {
             dimension, absolute,
             position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data),
@@ -82,7 +88,7 @@ export namespace DynamicTransform {
     }
     export async function parsePosition(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector }> {
         const dimension = await BitHelper.readByte(data);
-        const absolute = await BitHelper.readByte(data) != 0;
+        const absolute = await BitHelper.readBool(data);
         return {
             dimension, absolute,
             position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data)

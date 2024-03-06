@@ -83,13 +83,13 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     }
 });
 
-class PlayerNotFound extends Error {
+export class PlayerNotFound extends Error {
     constructor(message?: string) {
         super(message);
     }
 }
 
-class DuplicatePlayer extends Error {
+export class DuplicatePlayer extends Error {
     constructor(message?: string) {
         super(message);
     }

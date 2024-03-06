@@ -52,6 +52,10 @@ export async function readByte(stream: ByteStream | FileStream): Promise<number>
     return stream.view.getUint8(stream.index++);
 }
 
+export async function readBool(stream: ByteStream | FileStream): Promise<boolean> {
+    return await readByte(stream) != 0;
+}
+
 export async function readString(stream: ByteStream | FileStream, length?: number): Promise<string> {
     if (length === undefined) length = await readUShort(stream);
     if (stream instanceof FileStream) {
@@ -298,7 +302,7 @@ function reserve(numBytes: number, stream: ByteStream) {
     }
 }
 
-export async function writeByte(byte: number, stream: ByteStream) {
+export function writeByte(byte: number, stream: ByteStream) {
     if (byte < 0 || byte > 255) throw new TypeError("Value is not of type 'byte'.");
     const sizeof = 1;
     reserve(sizeof, stream);
@@ -306,7 +310,11 @@ export async function writeByte(byte: number, stream: ByteStream) {
     stream.index += sizeof;
 }
 
-export async function writeBytes(bytes: Uint8Array, stream: ByteStream) {
+export function writeBool(bool: boolean, stream: ByteStream) {
+    writeByte(bool ? 1 : 0, stream);
+}
+
+export function writeBytes(bytes: Uint8Array, stream: ByteStream) {
     writeUShort(bytes.byteLength, stream);
     reserve(bytes.byteLength, stream);
     for (let i = 0; i < bytes.byteLength; ++i) {
@@ -315,23 +323,23 @@ export async function writeBytes(bytes: Uint8Array, stream: ByteStream) {
 }
 
 const textEncoder = new TextEncoder();
-export async function writeString(message: string, stream: ByteStream) {
+export function writeString(message: string, stream: ByteStream) {
     writeBytes(textEncoder.encode(message), stream);
 }
 
-export async function writeULong(ulong: bigint, stream: ByteStream) {
+export function writeULong(ulong: bigint, stream: ByteStream) {
     const sizeof = 8;
     reserve(sizeof, stream);
     stream.view.setBigUint64(stream.index, ulong);
     stream.index += sizeof;
 }
-export async function writeUInt(uint: number, stream: ByteStream) {
+export function writeUInt(uint: number, stream: ByteStream) {
     const sizeof = 4;
     reserve(sizeof, stream);
     stream.view.setUint32(stream.index, uint);
     stream.index += sizeof;
 }
-export async function writeUShort(ushort: number, stream: ByteStream) {
+export function writeUShort(ushort: number, stream: ByteStream) {
     if (ushort < 0 || ushort > 65535) throw new TypeError("Value is not of type 'ushort'.");
     const sizeof = 2;
     reserve(sizeof, stream);
@@ -339,19 +347,19 @@ export async function writeUShort(ushort: number, stream: ByteStream) {
     stream.index += sizeof;
 }
 
-export async function writeLong(long: bigint, stream: ByteStream) {
+export function writeLong(long: bigint, stream: ByteStream) {
     const sizeof = 8;
     reserve(sizeof, stream);
     stream.view.setBigInt64(stream.index, long);
     stream.index += sizeof;
 }
-export async function writeInt(int: number, stream: ByteStream) {
+export function writeInt(int: number, stream: ByteStream) {
     const sizeof = 4;
     reserve(sizeof, stream);
     stream.view.setInt32(stream.index, int);
     stream.index += sizeof;
 }
-export async function writeShort(short: number, stream: ByteStream) {
+export function writeShort(short: number, stream: ByteStream) {
     if (short < 0 || short > 65535) throw new TypeError("Value is not of type 'short'.");
     const sizeof = 2;
     reserve(sizeof, stream);
@@ -363,7 +371,7 @@ function ToInt(expr: boolean) {
     return expr ? 1 : 0;
 }
 
-export async function writeHalf(float: number, stream: ByteStream) {
+export function writeHalf(float: number, stream: ByteStream) {
     // Create a 32 bit DataView to store the input
     const arr = new ArrayBuffer(4);
     const dv = new DataView(arr);
@@ -376,7 +384,7 @@ export async function writeHalf(float: number, stream: ByteStream) {
 
     writeUShort((b & 0x80000000) >> 16 | ToInt(e > 112) * ((((e - 112) << 10) & 0x7C00) | m >> 13) | (ToInt(e < 113) & ToInt(e > 101)) * ((((0x007FF000 + m) >> (125 - e)) + 1) >> 1) | ToInt(e > 143) * 0x7FFF, stream);
 }
-export async function writeFloat(float: number, stream: ByteStream) {
+export function writeFloat(float: number, stream: ByteStream) {
     const sizeof = 4;
     reserve(sizeof, stream);
     stream.view.setFloat32(stream.index, float);

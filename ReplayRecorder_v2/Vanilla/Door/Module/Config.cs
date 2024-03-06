@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 
-namespace Vanilla.Map.Door.BepInEx {
+namespace Vanilla.Map.Doors.BepInEx {
     internal static partial class ConfigManager {
         static ConfigManager() {
             string text = Path.Combine(Paths.ConfigPath, $"{Module.Name}.cfg");

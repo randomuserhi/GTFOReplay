@@ -32,6 +32,10 @@ export function readByte(stream: ByteStream): number {
     return stream.view.getUint8(stream.index++);
 }
 
+export function readBool(stream: ByteStream): boolean {
+    return readByte(stream) != 0;
+}
+
 export function readBytes(numBytes: number, stream: ByteStream): Uint8Array {
     const buffer = new Uint8Array(numBytes);
     for (let i = 0; i < numBytes; ++i) {
@@ -153,6 +157,10 @@ export function writeByte(byte: number, stream: ByteStream) {
     reserve(sizeof, stream);
     stream.view.setUint8(stream.index, byte);
     stream.index += sizeof;
+}
+
+export function writeBool(bool: boolean, stream: ByteStream) {
+    writeByte(bool ? 1 : 0, stream);
 }
 
 export function writeBytes(bytes: Uint8Array, stream: ByteStream) {

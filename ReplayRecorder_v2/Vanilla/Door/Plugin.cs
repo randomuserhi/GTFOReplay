@@ -4,7 +4,7 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using ReplayRecorder;
 
-namespace Vanilla.Map.Door.BepInEx;
+namespace Vanilla.Map.Doors.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 [BepInDependency(ReplayRecorder.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]

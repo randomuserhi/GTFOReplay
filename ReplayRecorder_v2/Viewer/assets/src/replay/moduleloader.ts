@@ -123,7 +123,7 @@ export namespace ModuleLoader {
         if (!library.event.has(typename as string)) {
             library.event.set(typename as string, new Map());
         }
-        library.event.get(typename as string)!.set(version, parser);
+        library.event.get(typename as string)!.set(version, parser as any);
     }
     export function registerDynamic<T extends Typemap.DynamicNames>(typename: T, version: string, parser: DynamicModule<T>) {
         if (!library.dynamic.has(typename as string)) {

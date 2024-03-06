@@ -20,7 +20,7 @@ namespace ReplayRecorder.Core {
 
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(Module.Version, buffer);
-            BitHelper.WriteBytes(SNetwork.SNet.IsMaster ? (byte)1 : (byte)0, buffer);
+            BitHelper.WriteBytes(SNetwork.SNet.IsMaster, buffer);
         }
     }
 }
