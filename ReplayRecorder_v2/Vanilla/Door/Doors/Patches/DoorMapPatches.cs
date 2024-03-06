@@ -1,9 +1,8 @@
 ﻿using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
-using Vanilla.Map.Doors;
 
-namespace Doors.Patches {
+namespace Vanilla.Map.Doors.Patches {
     [HarmonyPatch]
     internal class DoorMapPatches {
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.Setup))]

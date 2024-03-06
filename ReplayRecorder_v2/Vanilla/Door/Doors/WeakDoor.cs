@@ -2,9 +2,8 @@
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
-using Vanilla.Map.Doors;
 
-namespace Doors {
+namespace Vanilla.Map.Doors {
     [ReplayData("Vanilla.Map.WeakDoor", "0.0.1")]
     internal class rWeakDoor : ReplayDynamic {
         private LG_WeakDoor door;

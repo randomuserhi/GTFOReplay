@@ -1,5 +1,4 @@
-﻿using Doors;
-using LevelGeneration;
+﻿using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
