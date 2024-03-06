@@ -152,8 +152,8 @@ namespace Vanilla.Map {
                 }
 
                 long end = Raudy.Now;
-                APILogger.Debug($"Found {relevantSurfaces.Count} relevant surfaces in {(end - start) / 1000f} seconds.");
-                surfaces = relevantSurfaces.Values.ToArray();
+                surfaces = relevantSurfaces.Values.Where(s => MeshUtils.GetSurfaceArea(s.mesh) > 50).ToArray(); // Cull surfaces that have too little surface area
+                APILogger.Debug($"Found {surfaces.Length} relevant surfaces in {(end - start) / 1000f} seconds.");
             } else {
                 surfaces = new Surface[meshes.Length];
                 for (int i = 0; i < meshes.Length; ++i) {

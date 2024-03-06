@@ -52,6 +52,24 @@ namespace Vanilla.Map {
             }
         }
 
+        // https://gamedev.stackexchange.com/questions/165643/how-to-calculate-the-surface-area-of-a-mesh
+        public static float GetSurfaceArea(Mesh mesh) {
+            var triangles = mesh.triangles;
+            var vertices = mesh.vertices;
+
+            double sum = 0.0;
+
+            for (int i = 0; i < triangles.Length; i += 3) {
+                Vector3 corner = vertices[triangles[i]];
+                Vector3 a = vertices[triangles[i + 1]] - corner;
+                Vector3 b = vertices[triangles[i + 2]] - corner;
+
+                sum += Vector3.Cross(a, b).magnitude;
+            }
+
+            return (float)(sum / 2.0);
+        }
+
         // https://stackoverflow.com/questions/24571624/separating-mesh
         // Seperates a navmesh into different surfaces
         public static Surface[] SplitNavmesh(Vector3[] vertices, int[] indices) {
