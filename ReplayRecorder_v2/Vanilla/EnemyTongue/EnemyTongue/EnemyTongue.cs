@@ -80,6 +80,7 @@ namespace Vanilla.EnemyTongue {
         }
 
         public override void Spawn(ByteBuffer buffer) {
+            BitHelper.WriteBytes(tongue.m_owner.GlobalID, buffer);
             Write(buffer);
         }
     }

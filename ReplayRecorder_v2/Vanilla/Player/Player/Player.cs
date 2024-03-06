@@ -70,8 +70,30 @@ namespace Vanilla.Player {
     internal class rPlayer : DynamicTransform {
         public PlayerAgent agent;
 
+        private byte prevState = 0;
+        private byte state {
+            get {
+                switch (agent.Locomotion.m_currentStateEnum) {
+                case PlayerLocomotion.PLOC_State.Crouch: return 1;
+                case PlayerLocomotion.PLOC_State.Downed: return 2;
+                case PlayerLocomotion.PLOC_State.Jump: return 3;
+                case PlayerLocomotion.PLOC_State.Fall: return 3;
+                default: return 0;
+                }
+            }
+        }
+
+        public override bool IsDirty => base.IsDirty || state != prevState;
+
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(state, buffer);
+
+            prevState = state;
         }
 
         public override void Spawn(ByteBuffer buffer) {

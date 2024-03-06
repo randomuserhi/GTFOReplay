@@ -1,4 +1,5 @@
-import { BoxGeometry, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three";
+import { BoxGeometry, CapsuleGeometry, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
+import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicTransform } from "../replayrecorder.js";
@@ -17,6 +18,7 @@ declare module "../../replay/moduleloader.js" {
                     dimension: number;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
+                    animFlags: number;
                 };
                 despawn: void;
             };
@@ -29,6 +31,7 @@ declare module "../../replay/moduleloader.js" {
 }
 
 export interface Enemy extends DynamicTransform {
+    animFlags: number;
     health: number;
 }
 
@@ -49,7 +52,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
         parse: async (data) => {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
-                ...spawn
+                ...spawn,
+                animFlags: await BitHelper.readUShort(data)
             };
             return result;
         },
@@ -89,7 +93,6 @@ export class DuplicateEnemy extends Error {
 
 // --------------------------- RENDERING ---------------------------
 
-
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
@@ -97,8 +100,94 @@ declare module "../../replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "Enemies": Map<number, Mesh>;
+            "Enemies": Map<number, EnemyModel>;
         }
+    }
+}
+
+export namespace AnimFlags {
+    export const Unspecified = 1;
+    export const EnemyCripple = 2;
+    export const EnemyRunner = 4;
+    export const EnemyFiddler = 8;
+    export const EnemyLow = 0x10;
+    export const EnemyCrawlFlip = 0x20;
+    export const EnemyCrawl = 0x40;
+    export const EnemyGiant = 0x80;
+    export const EnemyBig = 0x100;
+    export const EnemyExploder = 0x200;
+    export const EnemyBirtherCrawlFlip = 0x400;
+    export const EnemyPouncer = 0x800;
+}
+
+class EnemyModel {
+    readonly group: Group;
+    readonly body: Mesh;
+    readonly head: Group;
+    readonly eyes: Mesh;
+
+    readonly height: number;
+    readonly radius: number;
+
+    constructor(animFlags: number) {
+        this.group = new Group;
+
+        this.radius = 0.25;
+        this.height = 0.6;
+        if ((animFlags & AnimFlags.EnemyCrawl) !== 0) {
+            this.height = 0.25;
+        }
+
+        const material = new MeshPhongMaterial({
+            color: 0x00ff00
+        });
+        material.transparent = true;
+        material.opacity = 0.8;
+
+        {
+            const geometry = new CapsuleGeometry(this.radius * 1.1, this.height, 10, 10);
+
+            this.body = new Mesh(geometry, material);
+            this.body.castShadow = true;
+            this.body.receiveShadow = true;
+            this.group.add(this.body);
+            this.body.position.set(0, this.height / 2 + this.radius * 1.1, 0);
+        }
+
+        {
+            this.head = new Group();
+            this.group.add(this.head);
+            this.head.position.set(0, this.height + this.radius * 1.1, 0);
+        }
+
+        {
+            const geometry = new BoxGeometry(this.radius * 2, this.radius / 2, this.radius * 1.4);
+
+            this.eyes = new Mesh(geometry, material);
+            this.eyes.castShadow = true;
+            this.eyes.receiveShadow = true;
+            this.head.add(this.eyes);
+            this.eyes.position.set(0, 0, this.radius * 1.4 / 2);
+        }
+    }
+
+    public addToScene(scene: Scene) {
+        scene.add(this.group);
+    }
+
+    public removeFromScene(scene: Scene) {
+        scene.remove(this.group);
+    }
+
+    public setVisible(visible: boolean) {
+        this.group.visible = visible;
+    }    
+
+    public setPosition(x: number, y: number, z: number) {
+        this.group.position.set(x, y, z);
+    }
+    public setRotation(x: number, y: number, z: number, w: number) {
+        this.head.setRotationFromQuaternion(new Quaternion(x, y, z, w));
     }
 }
 
@@ -110,35 +199,21 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
             for (const [id, enemy] of enemies) {
-                if (enemy.dimension !== renderer.get("Dimension")) {
-                    models.delete(id);
-                    continue;
-                }
-
                 if (!models.has(id)) {
-                    const geometry = new BoxGeometry( 0.5, 0.5, 0.5 );
-                    const material = new MeshPhongMaterial({
-                        color: 0x00ff00
-                    });
-
-                    const model = new Mesh(geometry, material);
-                    model.castShadow = true;
-                    model.receiveShadow = true;
-
+                    const model = new EnemyModel(enemy.animFlags);
                     models.set(id, model);
-                    renderer.scene.add(model);
+                    model.addToScene(renderer.scene);
                 }
 
                 const model = models.get(id)!;
-                const offset = new Vector3(0, 1, 0);
-                model.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
-                model.position.add(offset);
-                model.setRotationFromQuaternion(new Quaternion(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w));
+                model.setPosition(enemy.position.x, enemy.position.y, enemy.position.z);
+                model.setRotation(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w);
+                model.setVisible(enemy.dimension === renderer.get("Dimension"));
             }
 
             for (const [id, model] of [...models.entries()]) {
                 if (!enemies.has(id)) {
-                    renderer.scene.remove(model);
+                    model.removeFromScene(renderer.scene);
                     models.delete(id);
                 }
             }

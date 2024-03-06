@@ -15,6 +15,7 @@ declare module "../../replay/moduleloader.js" {
                     spline: Pod.Vector[];
                 };
                 spawn: {
+                    owner: number;
                     dimension: number;
                     progress: number;
                     spline: Pod.Vector[];
@@ -30,6 +31,7 @@ declare module "../../replay/moduleloader.js" {
 }
 
 export interface Tongue extends Dynamic {
+    owner: number;
     dimension: number;
     progress: number;
     spline: Pod.Vector[];
@@ -66,6 +68,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Tongue", "0.0.1", {
     spawn: {
         parse: async (data) => {
             const header = {
+                owner: await BitHelper.readUShort(data),
                 dimension: await BitHelper.readByte(data),
                 progress: await BitHelper.readByte(data) / 255
             };
@@ -131,11 +134,10 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemy.Tongue", () => new Map());
             const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            const enemyModels = renderer.getOrDefault("Enemies", () => new Map());
             for (const [id, tongue] of tongues) {
-                if (tongue.dimension !== renderer.get("Dimension")) {
-                    models.delete(id);
-                    continue;
-                }
+                const owner = enemies.get(tongue.owner);
 
                 if (!models.has(id)) {
                     const geometry = new DynamicSplineGeometry(0.1, 6, 50, true);
@@ -148,19 +150,36 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                     models.set(id, { mesh, geometry });
                     renderer.scene.add(mesh);
                 }
+                const model = models.get(id)!;
+                if (owner === undefined) {
+                    model.mesh.visible = false;
+                    continue;
+                }
+
+                const enemyModel = enemyModels.get(owner.id)!;
+                const origin: Pod.Vector = {
+                    x: owner.position.x,
+                    y: owner.position.y + enemyModel.height + enemyModel.radius * 1.1 / 2,
+                    z: owner.position.z
+                };
 
                 let totalLength = 0;
-                for (let i = 1; i < tongue.spline.length; ++i) {
-                    totalLength += Pod.Vec.length(Pod.Vec.sub(tongue.spline[i], tongue.spline[i - 1]));
+                for (let i = 0; i < tongue.spline.length; ++i) {
+                    if (i === 0) {
+                        totalLength += Pod.Vec.length(Pod.Vec.sub(tongue.spline[i], origin));
+                    } else {
+                        totalLength += Pod.Vec.length(Pod.Vec.sub(tongue.spline[i], tongue.spline[i - 1]));
+                    }
                 }
                 const distance = tongue.progress * totalLength;
-                const points: Vector3[] = [new Vector3(
-                    tongue.spline[0].x,
-                    tongue.spline[0].y,
-                    tongue.spline[0].z
-                )];
-                for (let i = 1, d = 0; d <= distance && i < tongue.spline.length; ++i) {
-                    const diff = Pod.Vec.sub(tongue.spline[i], tongue.spline[i - 1]);
+                const points: Vector3[] = [new Vector3(origin.x, origin.y, origin.z)];
+                for (let i = 0, d = 0; d <= distance && i < tongue.spline.length; ++i) {
+                    let diff: Pod.Vector;
+                    if (i === 0) {
+                        diff = Pod.Vec.sub(tongue.spline[i], origin);
+                    } else {
+                        diff = Pod.Vec.sub(tongue.spline[i], tongue.spline[i - 1]);
+                    }
                     const dist = Pod.Vec.length(diff);
                     
                     let lerp = 1;
@@ -168,17 +187,25 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                     if (diffDist < dist) {
                         lerp = diffDist / dist;
                     }
-                    points.push(new Vector3(
-                        tongue.spline[i-1].x + diff.x * lerp,
-                        tongue.spline[i-1].y + diff.y * lerp,
-                        tongue.spline[i-1].z + diff.z * lerp
-                    ));
+                    if (i === 0) {
+                        points.push(new Vector3(
+                            origin.x + diff.x * lerp,
+                            origin.y + diff.y * lerp,
+                            origin.z + diff.z * lerp
+                        ));
+                    } else {
+                        points.push(new Vector3(
+                            tongue.spline[i-1].x + diff.x * lerp,
+                            tongue.spline[i-1].y + diff.y * lerp,
+                            tongue.spline[i-1].z + diff.z * lerp
+                        ));
+                    }
                     
                     d += dist;
                 }
 
-                const model = models.get(id)!;
                 model.geometry.morph(points);
+                model.mesh.visible = tongue.dimension === renderer.get("Dimension");
             }
 
             for (const [id, model] of [...models.entries()]) {

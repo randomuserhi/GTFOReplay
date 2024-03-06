@@ -78,7 +78,7 @@ namespace Vanilla.Map {
 
             Vector3[] vertices = triangulation.vertices;
             int[] indices = triangulation.indices;
-            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.05f, 1.3f);
+            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.1f, 1.3f);
 
             APILogger.Debug($"Splitting navmesh...");
             MeshUtils.Surface[] surfaceBuffer = MeshUtils.SplitNavmesh(vertices, indices);
