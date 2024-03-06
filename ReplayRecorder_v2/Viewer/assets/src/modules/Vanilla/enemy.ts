@@ -102,6 +102,7 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
+// TODO(randomuserhi): Proper enemy models + enemy types
 ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 

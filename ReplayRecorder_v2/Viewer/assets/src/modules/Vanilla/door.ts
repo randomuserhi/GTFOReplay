@@ -202,6 +202,7 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
+// TODO(randomuserhi): Proper door models
 ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
     const initPasses = api.getInitPasses();
     api.setInitPasses([{ 

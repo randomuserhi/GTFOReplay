@@ -110,6 +110,7 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
+// TODO(randomuserhi): Proper player models
 ModuleLoader.registerRender("Players", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 

@@ -119,9 +119,9 @@ export const player = Macro((() => {
             const dt = now - this.prevTime;
             this.prevTime = now;
 
-            //this.time += dt;
+            this.time += dt;
             const length = this.replay.length();
-            this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
+            //this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
             if (this.time > length) this.time = length;
 
             const snapshot = this.replay.getSnapshot(this.time);
