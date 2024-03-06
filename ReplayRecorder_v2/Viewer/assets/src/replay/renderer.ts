@@ -112,8 +112,9 @@ export class Renderer {
             getInitPasses: () => this.initPasses,
             setInitPasses: (loop: InitPass[]) => this.initPasses = loop,
 
-            // TODO(randomuserhi): Change to be conditional such that when this.loadModules is called, it then adds these based on their condition
-            // NOTE(randomuserhi): Needs to resolve circular dependencies
+            // NOTE(randomuserhi): These only apply to current order -> this means that you need to ensure the
+            //                     target pass is already loaded. This can be guaranteed by loading it prior
+            //                     in the same file / register call.
             setAfter: (target, pass, passes) => {
                 const index = passes.findIndex(p => p.name === target);
                 if (index === -1) throw new Error(`Target, '${target}', was not found.`);
