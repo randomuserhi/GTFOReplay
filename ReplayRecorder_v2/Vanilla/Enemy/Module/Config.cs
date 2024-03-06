@@ -1,10 +1,8 @@
 ﻿using BepInEx.Configuration;
-using ReplayRecorder.API.Attributes;
 
 namespace Vanilla.Enemy.BepInEx {
     internal static partial class ConfigManager {
-        [ReplayConfig]
-        static void Init() {
+        static ConfigManager() {
             ConfigFile configFile = ReplayRecorder.BepInEx.ConfigManager.configFile;
 
             debug = configFile.Bind(
@@ -15,9 +13,9 @@ namespace Vanilla.Enemy.BepInEx {
         }
 
         public static bool Debug {
-            get { return debug!.Value; }
-            set { debug!.Value = value; }
+            get { return debug.Value; }
+            set { debug.Value = value; }
         }
-        private static ConfigEntry<bool>? debug;
+        private static ConfigEntry<bool> debug;
     }
 }
