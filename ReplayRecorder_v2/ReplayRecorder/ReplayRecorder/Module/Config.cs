@@ -2,10 +2,12 @@
 using BepInEx.Configuration;
 
 namespace ReplayRecorder.BepInEx {
-    internal static partial class ConfigManager {
+    public static partial class ConfigManager {
+        public static ConfigFile configFile;
+
         static ConfigManager() {
             string text = Path.Combine(Paths.ConfigPath, $"{Module.Name}.cfg");
-            ConfigFile configFile = new ConfigFile(text, true);
+            configFile = new ConfigFile(text, true);
 
             debug = configFile.Bind(
                 "Debug",

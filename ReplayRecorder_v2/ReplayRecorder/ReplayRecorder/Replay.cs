@@ -14,7 +14,8 @@ namespace ReplayRecorder {
                 m.GetCustomAttribute<ReplayInit>() != null ||
                 m.GetCustomAttribute<ReplayTick>() != null ||
                 m.GetCustomAttribute<ReplayOnHeaderCompletion>() != null ||
-                m.GetCustomAttribute<ReplayOnGameplayStart>() != null)
+                m.GetCustomAttribute<ReplayOnGameplayStart>() != null ||
+                m.GetCustomAttribute<ReplayConfig>() != null)
             ) {
                 if (method.IsStatic) {
                     string type = nameof(ReplayReset);
@@ -30,12 +31,15 @@ namespace ReplayRecorder {
                     } else if (method.GetCustomAttribute<ReplayTick>() != null) {
                         type = nameof(ReplayTick);
                         OnTick += (Action)method.CreateDelegate(typeof(Action));
+                    } else if (method.GetCustomAttribute<ReplayConfig>() != null) {
+                        type = nameof(ReplayConfig);
+                        method.Invoke(null, null);
                     } else {
                         OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
                     }
                     APILogger.Debug($"Registered {type}: '{t.FullName}.{method.Name}'");
                 } else {
-                    APILogger.Error($"[ReplayReset] / [ReplayInit] can only be applied to static methods. '{method}' is not static.");
+                    APILogger.Error($"Replay attributes can only be applied to static methods. '{method}' is not static.");
                 }
             }
         }
