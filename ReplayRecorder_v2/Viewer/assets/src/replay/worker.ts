@@ -69,11 +69,15 @@ let replay: Replay | undefined = undefined;
             const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
                 if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
 
+                const now = state.time;
+
                 const events: Timeline.Event[] = [];
                 const size = await BitHelper.readInt(bytes);
                 for (let i = 0; i < size; ++i) {
                     const delta = await BitHelper.readUShort(bytes);
                     const [module, type] = await getModule(bytes);
+
+                    state.time = now - delta;
 
                     let data: any = undefined;
                     if (module.typename === "ReplayRecorder.Despawn" || module.typename === "ReplayRecorder.Spawn") {
@@ -106,6 +110,9 @@ let replay: Replay | undefined = undefined;
                         func.exec(data as never, api);
                     }
                 }
+
+                state.time = now;
+
                 return events.sort((a, b) => b.delta - a.delta);
             };
             const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {

@@ -68,6 +68,9 @@ export class Replay {
     public api(state: Snapshot): ReplayApi {
         const replay = this;
         return {
+            time(): number {
+                return state.time;
+            },
             getOrDefault(typename: string, def: () => any): any {
                 if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
                 if (!state.data.has(typename)) state.data.set(typename, def());

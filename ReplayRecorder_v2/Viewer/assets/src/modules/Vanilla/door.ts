@@ -1,7 +1,8 @@
-import { BoxGeometry, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three";
+import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
-import { DuplicateHeaderData, Dynamic, DynamicTransform, HeaderNotFound } from "../replayrecorder.js";
+import { Bezier } from "../bezier.js";
+import { DuplicateHeaderData, Dynamic, DynamicTransform } from "../replayrecorder.js";
 
 export type DoorType = 
     "WeakDoor" |
@@ -44,7 +45,11 @@ export interface Door extends DynamicTransform {
     isCheckpoint: boolean;
     type: DoorType;
     size: DoorSize;
+}
+
+export interface DoorState extends Dynamic {
     status: DoorStatus;
+    change?: number; // when the status change occured
 }
 
 export interface WeakDoor extends Dynamic {
@@ -81,6 +86,7 @@ declare module "../../replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Map.WeakDoor": Map<number, WeakDoor>
+            "Vanilla.Map.DoorState": Map<number, DoorState>
         }
     }
 }
@@ -106,7 +112,6 @@ ModuleLoader.registerHeader("Vanilla.Map.Doors", "0.0.1", {
                 id,
                 dimension, position, rotation,
                 serialNumber, isCheckpoint, type, size,
-                status: "Closed"
             });
         }
 
@@ -166,12 +171,15 @@ ModuleLoader.registerEvent("Vanilla.Map.DoorStatusChange", "0.0.1", {
         };
     },
     exec: (data, snapshot) => {
-        const doors = snapshot.header.get("Vanilla.Map.Doors");
-        if (doors === undefined) throw new HeaderNotFound(`Could not find header 'Vanilla.Map.Doors'.`); 
+        const doors = snapshot.getOrDefault("Vanilla.Map.DoorState", () => new Map());
 
         const { id, status } = data;
-        if (!doors.has(id)) throw new DoorNotFound(`Door of id '${id}' did not exist.`);
-        doors.get(id)!.status = status;
+        const exists = doors.has(id);
+        if (!exists) doors.set(id, { id, status });
+        const door = doors.get(id)!;
+        if (exists && door.status === status) throw new Error("Door state event triggered when door state hasn't changed.");
+        door.status = status;
+        door.change = snapshot.time();
     }
 });
 
@@ -196,9 +204,116 @@ declare module "../../replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "Doors": Map<number, Mesh>;
+            "Doors": Map<number, DoorModel>;
             "DoorDimension": number;
         }
+    }
+}
+
+class DoorModel {
+    group: Group;
+    left: Mesh;
+    right: Mesh;
+
+    shutter: Mesh;
+
+    mainColor: Color;
+    width: number;
+    height: number;
+
+    constructor(width: number, height: number, color: Color) {
+        this.group = new Group();
+
+        this.mainColor = color;
+        this.width = width;
+        this.height = height;
+
+        const postWidth = 0.3;
+        const doorWidth = 0.2;
+
+        {
+            const geometry = new BoxGeometry(postWidth, this.height, postWidth);
+            const material = new MeshPhongMaterial({
+                color: 0x00ff00
+            });
+            material.transparent = true;
+            material.opacity = 0.8;
+
+            this.left = new Mesh(geometry, material);
+            this.left.castShadow = true;
+            this.left.receiveShadow = true;
+            this.group.add(this.left);
+            this.left.position.set(-this.width / 2, 0, 0);
+
+            this.right = new Mesh(geometry, material);
+            this.right.castShadow = true;
+            this.right.receiveShadow = true;
+            this.group.add(this.right);
+            this.right.position.set(this.width / 2, 0, 0);
+        }
+    
+        {
+            const geometry = new BoxGeometry(this.width - postWidth, this.height, doorWidth);
+            const material = new MeshPhongMaterial({
+                color: 0x00ff00
+            });
+            material.transparent = true;
+            material.opacity = 0.5;
+
+            this.shutter = new Mesh(geometry, material);
+            this.shutter.castShadow = true;
+            this.shutter.receiveShadow = true;
+            this.group.add(this.shutter);
+            this.shutter.position.set(0, 0, 0);
+        }
+    }
+
+    private static bezier = Bezier(0.5, 0.0, 0.5, 1);
+    public update(t: number, door: DoorState) {
+        switch(door.status) {
+        case "Closed":
+        case "Open": {
+            const animDuration = 2000;
+            let lerp = 1;
+            if (door.change !== undefined) {
+                if (t < door.change) throw new Error(`Door state change happened after current time step? ${t} < ${door.change}`);
+                const diff = t - door.change;
+                lerp = DoorModel.bezier(Math.clamp01(diff / animDuration));
+            }
+
+            if (door.status === "Open") {
+                this.shutter.scale.y = Math.clamp01(0.05 + (1 - lerp));
+            } else if (door.status === "Closed") {
+                this.shutter.scale.y = Math.clamp01(0.05 + (lerp));
+            }
+        } break;
+        default: this.shutter.scale.y = 1; break;
+        }
+        this.shutter.position.set(this.shutter.position.x, this.height / 2 * (1 - this.shutter.scale.y), this.shutter.position.z);
+
+        let color = this.mainColor.getHex();
+        switch (door.status) {
+        case "Glued": color = 0x0000ff; break;
+        case "Destroyed": color = 0x444444; break;
+        }
+        (this.left.material as MeshPhongMaterial).color.setHex(color);
+        (this.right.material as MeshPhongMaterial).color.setHex(color);
+        (this.shutter.material as MeshPhongMaterial).color.setHex(color);
+    }
+
+    public addToScene(scene: Scene) {
+        scene.add(this.group);
+    }
+
+    public setVisible(visible: boolean) {
+        this.group.visible = visible;
+    }    
+
+    public setPosition(x: number, y: number, z: number) {
+        this.group.position.set(x, y + this.height / 2, z);
+    }
+    public setRotation(x: number, y: number, z: number, w: number) {
+        this.group.setRotationFromQuaternion(new Quaternion(x, y, z, w));
     }
 }
 
@@ -211,25 +326,21 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
             const models = renderer.getOrDefault("Doors", () => new Map());
             for (const [id, door] of doors) {
                 if (!models.has(id)) {
-                    const geometry = new BoxGeometry( 0.5, 0.5, 0.5 );
-                    const material = new MeshPhongMaterial({
-                        color: 0x00ff00
-                    });
+                    const height = 3;
+                    let width = 5;
+                    switch(door.size) {
+                    case "Small": width = 3; break;
+                    }
 
-                    const model = new Mesh(geometry, material);
-                    model.castShadow = true;
-                    model.receiveShadow = true;
-
+                    const model = new DoorModel(width, height, new Color(door.type === "WeakDoor" ? 0x00ff00 : 0xff5555));
                     models.set(id, model);
-                    renderer.scene.add(model);
+                    model.addToScene(renderer.scene);
                 }
 
                 const model = models.get(id)!;
-                const offset = new Vector3(0, 1, 0);
-                model.position.set(door.position.x, door.position.y, door.position.z);
-                model.position.add(offset);
-                model.setRotationFromQuaternion(new Quaternion(door.rotation.x, door.rotation.y, door.rotation.z, door.rotation.w));
-                model.visible = false;
+                model.setPosition(door.position.x, door.position.y, door.position.z);
+                model.setRotation(door.rotation.x, door.rotation.y, door.rotation.z, door.rotation.w);
+                model.setVisible(false);
             }
         } 
     }, ...initPasses]);
@@ -237,19 +348,19 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 
         name, pass: (renderer, snapshot) => {
+            const t = snapshot.time();
+
             const doors = snapshot.header.getOrDefault("Vanilla.Map.Doors", () => new Map());
+            const states = snapshot.getOrDefault("Vanilla.Map.DoorState", () => new Map());
             const models = renderer.getOrDefault("Doors", () => new Map());
             for (const [id, door] of doors) {
                 const model = models.get(id)!;
-                let color = 0x00ff00;
-                switch (door.status) {
-                case "Open": color = 0xff0000; break;
-                case "Closed": color = 0x00ff; break;
-                case "Glued": color = 0x0000ff; break;
-                case "Destroyed": color = 0x000000; break;
-                }
-                (model.material as MeshPhongMaterial).color.setHex(color);
-                model.visible = door.dimension === renderer.get("Dimension");
+
+                if (!states.has(id)) states.set(id, { id, status: "Closed" });
+                const state = states.get(id)!;
+
+                model.update(t, state);
+                model.setVisible(door.dimension === renderer.get("Dimension"));
             }
         } 
     }, ...renderLoop]);

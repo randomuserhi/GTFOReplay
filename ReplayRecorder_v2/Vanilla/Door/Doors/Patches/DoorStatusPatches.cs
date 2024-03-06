@@ -6,15 +6,15 @@ namespace Vanilla.Map.Doors.Patches {
     [HarmonyPatch]
     internal class DoorStatusPatches {
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorStateChange))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         private static void Weak_DoorStateChange(LG_WeakDoor __instance, pDoorState state) {
-            Replay.Trigger(new rDoorStatusChange(__instance.GetInstanceID(), state.status));
+            if (__instance.LastStatus != state.status) Replay.Trigger(new rDoorStatusChange(__instance.GetInstanceID(), state.status));
         }
 
         [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnSyncDoorStatusChange))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         private static void Security_DoorStateChange(LG_SecurityDoor __instance, pDoorState state) {
-            Replay.Trigger(new rDoorStatusChange(__instance.GetInstanceID(), state.status));
+            if (__instance.LastStatus != state.status) Replay.Trigger(new rDoorStatusChange(__instance.GetInstanceID(), state.status));
         }
     }
 }
