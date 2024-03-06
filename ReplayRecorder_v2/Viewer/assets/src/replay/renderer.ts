@@ -10,9 +10,6 @@ export interface RendererApi {
 
     getInitPasses(): InitPass[];
     setInitPasses(loop: InitPass[]): void;
-
-    setAfter<T extends Typemap.RenderPassNames>(target: T, pass: Pass, passes: Pass[]): Pass[];
-    setBefore<T extends Typemap.RenderPassNames>(target: T, pass: Pass, passes: Pass[]): Pass[];
 }
 
 interface Pass<T extends Typemap.RenderPassNames | unknown = unknown> {
@@ -35,7 +32,12 @@ export class Renderer {
     composer: EffectComposer;
 
     renderLoop: RenderPass[];
+    renderAfter: { target: string; pass: Pass<unknown> }[];
+    renderBefore: { target: string; pass: Pass<unknown> }[];
+
     initPasses: InitPass[];
+    initAfter: { target: string; pass: Pass<unknown> }[];
+    initBefore: { target: string; pass: Pass<unknown> }[];
 
     private data: Map<string, unknown>;
 
@@ -111,20 +113,6 @@ export class Renderer {
 
             getInitPasses: () => this.initPasses,
             setInitPasses: (loop: InitPass[]) => this.initPasses = loop,
-
-            // TODO(randomuserhi): Change to be conditional such that when this.loadModules is called, it then adds these based on their condition
-            // NOTE(randomuserhi): Needs to resolve circular dependencies
-            setAfter: (target, pass, passes) => {
-                const index = passes.findIndex(p => p.name === target);
-                if (index === -1) throw new Error(`Target, '${target}', was not found.`);
-                return [...passes.slice(0, index), pass, ...passes.slice(index)];
-            },
-            setBefore: (target, pass, passes) => {
-                let index = passes.findIndex(p => p.name === target);
-                if (index === -1) throw new Error(`Target, '${target}', was not found.`);
-                index -= 1;
-                return [...passes.slice(0, index), pass, ...passes.slice(index)];
-            }
         };
     }
 
