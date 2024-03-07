@@ -51,6 +51,11 @@ declare module "../../replay/moduleloader.js" {
                 id: number;
                 state: EnemyState;
             }
+
+            "Vanilla.Enemy.LimbDestruction": {
+                id: number;
+                limb: Limb; 
+            };
         }
 
         interface Data {
@@ -60,6 +65,12 @@ declare module "../../replay/moduleloader.js" {
         }
     }
 }
+
+type Limb = 
+    "Head";
+const limbTypemap: Limb[] = [
+    "Head"
+];
 
 type EnemyState = 
     "Default" |
@@ -80,6 +91,7 @@ export interface Enemy extends DynamicTransform {
     animFlags: number;
     health: number;
     state: EnemyState;
+    head: boolean;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -111,7 +123,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             enemies.set(id, { 
                 id, ...data,
                 health: 0, // TODO(randomuserhi)
-                state: "Default"
+                state: "Default",
+                head: true
             });
         }
     },
@@ -133,11 +146,11 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Model", "0.0.1", {
             const result = await Skeleton.parse(data);
             return result;
         }, 
-        exec: (id, data, snapshot) => {
+        exec: (id, data, snapshot, lerp) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
     
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
-            skeletons.set(id, data);
+            Skeleton.lerp(skeletons.get(id)!, data, lerp);
         }
     },
     spawn: {
@@ -160,6 +173,24 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Model", "0.0.1", {
 
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' did not exist.`);
             skeletons.delete(id);
+        }
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.LimbDestruction", "0.0.1", {
+    parse: async (data) => {
+        return {
+            id: await BitHelper.readInt(data),
+            limb: limbTypemap[await BitHelper.readByte(data)]
+        };
+    },
+    exec: (data, snapshot) => {
+        const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+
+        const { id, limb } = data;
+        if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
+        switch(limb) {
+        case "Head": enemies.get(id)!.head = false; break;
         }
     }
 });
@@ -268,6 +299,8 @@ export namespace AnimFlags {
 
 class EnemyModel extends SkeletonModel {
     public morph(enemy: Enemy): void {
+        this.head.visible = enemy.head;
+
         let color = 0xff0000;
         switch (enemy.state) {
         case "Stagger": color = 0xffffff; break;

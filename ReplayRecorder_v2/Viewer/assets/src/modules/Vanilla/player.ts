@@ -141,11 +141,11 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             const result = await Skeleton.parse(data);
             return result;
         }, 
-        exec: (id, data, snapshot) => {
+        exec: (id, data, snapshot, lerp) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
     
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
-            skeletons.set(id, data);
+            Skeleton.lerp(skeletons.get(id)!, data, lerp);
         }
     },
     spawn: {

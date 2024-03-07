@@ -170,4 +170,23 @@ export namespace Skeleton {
             RFoot: await BitHelper.readHalfVector(data)
         };
     }
+    export function lerp(skeleton: Skeleton, target: Skeleton, lerp: number) {
+        skeleton.head = Pod.Vec.lerp(skeleton.head, target.head, lerp);
+        
+        skeleton.LUArm = Pod.Vec.lerp(skeleton.LUArm, target.LUArm, lerp);
+        skeleton.LLArm = Pod.Vec.lerp(skeleton.LLArm, target.LLArm, lerp);
+        skeleton.LHand = Pod.Vec.lerp(skeleton.LHand, target.LHand, lerp);
+
+        skeleton.RUArm = Pod.Vec.lerp(skeleton.RUArm, target.RUArm, lerp);
+        skeleton.RLArm = Pod.Vec.lerp(skeleton.RLArm, target.RLArm, lerp);
+        skeleton.RHand = Pod.Vec.lerp(skeleton.RHand, target.RHand, lerp);
+
+        skeleton.LULeg = Pod.Vec.lerp(skeleton.LULeg, target.LULeg, lerp);
+        skeleton.LLLeg = Pod.Vec.lerp(skeleton.LLLeg, target.LLLeg, lerp);
+        skeleton.LFoot= Pod.Vec.lerp(skeleton.LFoot, target.LFoot, lerp);
+
+        skeleton.RULeg = Pod.Vec.lerp(skeleton.RULeg, target.RULeg, lerp);
+        skeleton.RLLeg= Pod.Vec.lerp(skeleton.RLLeg, target.RLLeg, lerp);
+        skeleton.RFoot = Pod.Vec.lerp(skeleton.RFoot, target.RFoot, lerp);
+    }
 }

@@ -7,7 +7,7 @@ namespace Vanilla.Enemy.Patches {
     internal class EnemyStatePatches {
         [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.DoHitReact))]
         [HarmonyPostfix]
-        private static void onStaggerEnter(ES_Hitreact __instance) {
+        private static void OnStaggerEnter(ES_Hitreact __instance) {
             if (!__instance.m_enemyAgent.Alive) return;
 
             Replay.Trigger(new rEnemyState(__instance.m_enemyAgent, rEnemyState.State.Stagger));
@@ -15,7 +15,7 @@ namespace Vanilla.Enemy.Patches {
 
         [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.CommonUpdate))]
         [HarmonyPrefix]
-        private static void onStaggerExit(ES_Hitreact __instance) {
+        private static void OnStaggerExit(ES_Hitreact __instance) {
             if (!__instance.m_enemyAgent.Alive) return;
 
             if (Clock.Time <= __instance.m_endTime) return;
@@ -24,7 +24,7 @@ namespace Vanilla.Enemy.Patches {
 
         [HarmonyPatch(typeof(ES_StuckInGlue), nameof(ES_StuckInGlue.Enter))]
         [HarmonyPostfix]
-        private static void onGlueEnter(ES_StuckInGlue __instance) {
+        private static void OnGlueEnter(ES_StuckInGlue __instance) {
             if (!__instance.m_enemyAgent.Alive) return;
 
             Replay.Trigger(new rEnemyState(__instance.m_enemyAgent, rEnemyState.State.Glue));
@@ -32,7 +32,7 @@ namespace Vanilla.Enemy.Patches {
 
         [HarmonyPatch(typeof(ES_StuckInGlue), nameof(ES_StuckInGlue.Exit))]
         [HarmonyPostfix]
-        private static void onGlueExit(ES_StuckInGlue __instance) {
+        private static void OnGlueExit(ES_StuckInGlue __instance) {
             if (!__instance.m_enemyAgent.Alive) return;
 
             Replay.Trigger(new rEnemyState(__instance.m_enemyAgent, rEnemyState.State.Default));
