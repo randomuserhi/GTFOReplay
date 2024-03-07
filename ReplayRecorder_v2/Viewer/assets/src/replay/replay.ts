@@ -156,7 +156,7 @@ export class Replay {
         }
 
         // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
-        const largestTickRate = 100; //ms -> tick rate of 50ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
+        const largestTickRate = 400; //ms -> tick rate of 50ms with anim tick rate of 200ms so longest possible time is 200ms. We add lee-way of an extra tick for variance.
         // NOTE(randomuserhi): If the difference in time between current state and snapshot we are lerping to
         //                     is greater than the longest possible time taken between ticks, then no dynamics
         //                     have moved as they are recorded on each tick.

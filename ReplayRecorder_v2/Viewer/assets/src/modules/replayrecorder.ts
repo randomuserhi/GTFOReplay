@@ -51,6 +51,19 @@ export class DuplicateDynamic extends Error {
     }
 }
 
+export interface DynamicParse {
+    dimension: number;
+    absolute: boolean;
+    position: Vector;
+    rotation: Quaternion;
+}
+
+export interface DynamicSpawn {
+    dimension: number;
+    position: Vector;
+    rotation: Quaternion;
+}
+
 export interface Dynamic {
     id: number;
 }

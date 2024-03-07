@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Enemy", "Enemy", "{AAFBE019
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player", "Player", "{D27E9350-D6C3-4106-B8CF-94D18E333896}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnemyProjectile", "EnemyProjectile\EnemyProjectile.csproj", "{1D545F4A-3DAC-44CD-B2F6-7B05DE3CBE1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{BF56EC43-F921-45B9-A446-D806F4921DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF56EC43-F921-45B9-A446-D806F4921DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF56EC43-F921-45B9-A446-D806F4921DC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D545F4A-3DAC-44CD-B2F6-7B05DE3CBE1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D545F4A-3DAC-44CD-B2F6-7B05DE3CBE1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D545F4A-3DAC-44CD-B2F6-7B05DE3CBE1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D545F4A-3DAC-44CD-B2F6-7B05DE3CBE1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +61,7 @@ Global
 		{2CCA78E7-4D94-4B8D-8694-B52E311B3A30} = {AAFBE019-EA0B-49C1-B8BB-BF9BB61B7A49}
 		{A4DEE5AF-2DB8-4B46-AC07-ADDB6B5822BE} = {2263F7D5-1BA8-4D3E-906C-9D28983D1B02}
 		{BF56EC43-F921-45B9-A446-D806F4921DC3} = {AAFBE019-EA0B-49C1-B8BB-BF9BB61B7A49}
+		{1D545F4A-3DAC-44CD-B2F6-7B05DE3CBE1B} = {AAFBE019-EA0B-49C1-B8BB-BF9BB61B7A49}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D52A017E-D3A4-4AFF-94DE-148097B26CC9}

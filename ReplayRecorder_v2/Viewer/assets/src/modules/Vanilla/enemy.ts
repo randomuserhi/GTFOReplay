@@ -2,19 +2,14 @@ import { Color, Mesh, MeshPhongMaterial, Quaternion, SphereGeometry } from "thre
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
-import { DuplicateDynamic, DynamicNotFound, DynamicPosition, DynamicTransform } from "../replayrecorder.js";
+import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../replayrecorder.js";
 import { Skeleton, SkeletonModel } from "./model.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy": {
-                parse: {
-                    dimension: number;
-                    absolute: boolean;
-                    position: Pod.Vector;
-                    rotation: Pod.Quaternion;
-                };
+                parse: DynamicParse;
                 spawn: {
                     dimension: number;
                     position: Pod.Vector;

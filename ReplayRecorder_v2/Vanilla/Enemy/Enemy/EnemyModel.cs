@@ -10,7 +10,7 @@ namespace Vanilla.Enemy {
         public static int tick = 0;
         [ReplayTick]
         private static void Update() {
-            tick = (tick + 1) % 2;
+            tick = (tick + 1) % 4;
         }
 
         public static bool isValid(EnemyAgent enemy) {

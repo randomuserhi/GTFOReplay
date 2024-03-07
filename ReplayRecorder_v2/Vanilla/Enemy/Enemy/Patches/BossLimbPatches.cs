@@ -1,16 +1,10 @@
 ﻿using Enemies;
 using HarmonyLib;
 using ReplayRecorder;
-using ReplayRecorder.API.Attributes;
 
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
     internal class BossLimbPatches {
-        [ReplayInit]
-        private static void Init() {
-
-        }
-
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]
         [HarmonyPostfix]
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {
