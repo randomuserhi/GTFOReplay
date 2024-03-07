@@ -64,6 +64,17 @@ namespace ReplayRecorder.Snapshot {
             }
 
             [HideFromIl2Cpp]
+            public bool Has(int id) {
+                return mapOfDynamics.ContainsKey(id);
+            }
+
+            [HideFromIl2Cpp]
+            public ReplayDynamic Get(int id) {
+                if (!mapOfDynamics.ContainsKey(id)) throw new ReplayDynamicDoesNotExist($"Cannot get dynamic of id '{id}'. Type: '{Type.FullName}'.");
+                return mapOfDynamics[id];
+            }
+
+            [HideFromIl2Cpp]
             public void Add(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot add '{dynType.FullName}' to DynamicCollection of type '{Type.FullName}'.");
@@ -92,6 +103,20 @@ namespace ReplayRecorder.Snapshot {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot remove dynamic of type '{dynType.FullName}' from DynamicCollection of type '{Type.FullName}'.");
                 Remove(dynamic.Id);
+            }
+
+            public void CheckRemoval() {
+                if (NDirtyDynamics != 0) return;
+                _dynamics.Clear();
+                for (int i = 0; i < dynamics.Count; i++) {
+                    ReplayDynamic dynamic = dynamics[i];
+                    if (!dynamic.remove) {
+                        _dynamics.Add(dynamic);
+                    }
+                }
+                List<ReplayDynamic> temp = dynamics;
+                dynamics = _dynamics;
+                _dynamics = temp;
             }
 
             public bool Write(ByteBuffer buffer) {
@@ -170,13 +195,13 @@ namespace ReplayRecorder.Snapshot {
                 });
                 int nDirtyCollections = dirtyCollections.Count();
                 BitHelper.WriteBytes((ushort)nDirtyCollections, bs);
-                foreach (DynamicCollection collection in dirtyCollections) {
+                foreach (DynamicCollection collection in dynamics.Values) {
                     if (collection.Write(bs)) {
                         ++numWritten;
                         if (ConfigManager.Debug) {
                             APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
                         }
-                    }
+                    } else collection.CheckRemoval();
                 }
                 if (numWritten != nDirtyCollections) {
                     throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection]: Number of written collections ({numWritten}) does not match dirty collections ({nDirtyCollections}).");
@@ -295,6 +320,20 @@ namespace ReplayRecorder.Snapshot {
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             return state.dynamics[dynType].Has(dynamic);
+        }
+
+        [HideFromIl2Cpp]
+        internal bool Has(Type type, int id) {
+            if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
+
+            return state.dynamics[type].Has(id);
+        }
+
+        [HideFromIl2Cpp]
+        internal ReplayDynamic Get(Type type, int id) {
+            if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
+
+            return state.dynamics[type].Get(id);
         }
 
         [HideFromIl2Cpp]

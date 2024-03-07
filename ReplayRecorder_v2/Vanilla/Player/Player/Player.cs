@@ -48,6 +48,7 @@ namespace Vanilla.Player {
             APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
             player = new rPlayer(agent);
             Replay.Spawn(player);
+            Replay.Spawn(new rPlayerModel(agent));
             players.Add(player);
         }
 
@@ -62,6 +63,7 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
             Replay.Despawn(player);
+            Replay.Despawn(new rPlayerModel(agent));
             players.Remove(player);
         }
     }

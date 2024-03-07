@@ -61,6 +61,11 @@ export interface DynamicTransform extends Dynamic {
     dimension: number;
 }
 
+export interface DynamicPosition extends Dynamic {
+    position: Vector;
+    dimension: number;
+}
+
 export namespace DynamicTransform {
     export function create({ id, position, rotation, dimension }: { id: number, position?: Vector, rotation?: Quaternion, dimension?: number }): { id: number, position: Vector, rotation: Quaternion, dimension: number } {
         return {
@@ -104,6 +109,21 @@ export namespace DynamicTransform {
         const fpos = absolute ? position : Vec.add(dyn.position, position);
         dyn.position = Vec.lerp(dyn.position, fpos, lerp);
         dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);
+        dyn.dimension = dimension;
+    }
+}
+
+export namespace DynamicPosition {
+    export async function parseSpawn(data: ByteStream): Promise<{ dimension: number, position: Vector }> {
+        return {
+            dimension: await BitHelper.readByte(data),
+            position: await BitHelper.readVector(data)
+        };
+    }
+    export function lerp(dyn: DynamicPosition, data: { dimension: number; absolute: boolean; position: Vector; }, lerp: number): void {
+        const { absolute, position, dimension } = data;
+        const fpos = absolute ? position : Vec.add(dyn.position, position);
+        dyn.position = Vec.lerp(dyn.position, fpos, lerp);
         dyn.dimension = dimension;
     }
 }

@@ -1,8 +1,9 @@
-import { BoxGeometry, CapsuleGeometry, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
+import { Color, Mesh, MeshPhongMaterial, Quaternion, SphereGeometry } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
-import { DynamicTransform } from "../replayrecorder.js";
+import { DuplicateDynamic, DynamicNotFound, DynamicPosition, DynamicTransform } from "../replayrecorder.js";
+import { Skeleton, SkeletonModel } from "./model.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -22,17 +23,63 @@ declare module "../../replay/moduleloader.js" {
                 };
                 despawn: void;
             };
+
+            "Vanilla.Enemy.Model": {
+                parse: Skeleton;
+                spawn: Skeleton;
+                despawn: void;
+            };
+
+            "Vanilla.Enemy.LimbCustom": {
+                parse: {
+                    dimension: number;
+                    absolute: boolean;
+                    position: Pod.Vector;
+                };
+                spawn: {
+                    dimension: number;
+                    position: Pod.Vector;
+                    owner: number;
+                    scale: number;
+                };
+                despawn: void;
+            };
         }
     
+        interface Events {
+            "Vanilla.Enemy.State": {
+                id: number;
+                state: EnemyState;
+            }
+        }
+
         interface Data {
-            "Vanilla.Enemy": Map<number, Enemy>
+            "Vanilla.Enemy": Map<number, Enemy>;
+            "Vanilla.Enemy.Model": Map<number, Skeleton>;
+            "Vanilla.Enemy.LimbCustom": Map<number, LimbCustom>;
         }
     }
+}
+
+type EnemyState = 
+    "Default" |
+    "Stagger" |
+    "Glue"; 
+const enemyStateTypemap: EnemyState[] = [
+    "Default",
+    "Stagger",
+    "Glue"
+];
+
+export interface LimbCustom extends DynamicPosition {
+    owner: number;
+    scale: number;
 }
 
 export interface Enemy extends DynamicTransform {
     animFlags: number;
     health: number;
+    state: EnemyState;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -63,7 +110,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
             enemies.set(id, { 
                 id, ...data,
-                health: 0 // TODO(randomuserhi) 
+                health: 0, // TODO(randomuserhi)
+                state: "Default"
             });
         }
     },
@@ -76,6 +124,103 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
             enemies.delete(id);
         }
+    }
+});
+
+ModuleLoader.registerDynamic("Vanilla.Enemy.Model", "0.0.1", {
+    main: {
+        parse: async (data) => {
+            const result = await Skeleton.parse(data);
+            return result;
+        }, 
+        exec: (id, data, snapshot) => {
+            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
+    
+            if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
+            skeletons.set(id, data);
+        }
+    },
+    spawn: {
+        parse: async (data) => {
+            const result = await Skeleton.parse(data);
+            return result;
+        },
+        exec: (id, data, snapshot) => {
+            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
+        
+            if (skeletons.has(id)) throw new DuplicateDynamic(`Skeleton of id '${id}' already exists.`);
+            skeletons.set(id, data);
+        }
+    },
+    despawn: {
+        parse: async () => {
+        }, 
+        exec: (id, data, snapshot) => {
+            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
+
+            if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' did not exist.`);
+            skeletons.delete(id);
+        }
+    }
+});
+
+ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
+    main: {
+        parse: async (data) => {
+            const result = await DynamicTransform.parsePosition(data);
+            return result;
+        }, 
+        exec: (id, data, snapshot, lerp) => {
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+    
+            if (!limbs.has(id)) throw new DynamicNotFound(`Limb of id '${id}' was not found.`);
+            DynamicPosition.lerp(limbs.get(id)!, data, lerp);
+        }
+    },
+    spawn: {
+        parse: async (data) => {
+            const spawn = await DynamicPosition.parseSpawn(data);
+            const result = {
+                ...spawn,
+                owner: await BitHelper.readUShort(data),
+                scale: await BitHelper.readHalf(data)
+            };
+            return result;
+        },
+        exec: (id, data, snapshot) => {
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+        
+            if (limbs.has(id)) throw new DuplicateDynamic(`Limb of id '${id}' already exists.`);
+            limbs.set(id, { 
+                id, ...data
+            });
+        }
+    },
+    despawn: {
+        parse: async () => {
+        }, 
+        exec: (id, data, snapshot) => {
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+
+            if (!limbs.has(id)) throw new DynamicNotFound(`Limb of id '${id}' did not exist.`);
+            limbs.delete(id);
+        }
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.State", "0.0.1", {
+    parse: async (data) => {
+        return {
+            id: await BitHelper.readInt(data),
+            state: enemyStateTypemap[await BitHelper.readByte(data)]
+        };
+    },
+    exec: (data, snapshot) => {
+        const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+
+        const { id, state } = data;
+        if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
+        enemies.get(id)!.state = state;
     }
 });
 
@@ -101,6 +246,7 @@ declare module "../../replay/moduleloader.js" {
 
         interface RenderData {
             "Enemies": Map<number, EnemyModel>;
+            "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
     }
 }
@@ -120,74 +266,17 @@ export namespace AnimFlags {
     export const EnemyPouncer = 0x800;
 }
 
-class EnemyModel {
-    readonly group: Group;
-    readonly body: Mesh;
-    readonly head: Group;
-    readonly eyes: Mesh;
-
-    readonly height: number;
-    readonly radius: number;
-
-    constructor(animFlags: number) {
-        this.group = new Group;
-
-        this.radius = 0.25;
-        this.height = 0.6;
-        if ((animFlags & AnimFlags.EnemyCrawl) !== 0) {
-            this.height = 0.25;
-        }
-
-        const material = new MeshPhongMaterial({
-            color: 0x00ff00
-        });
-        material.transparent = true;
-        material.opacity = 0.8;
-
-        {
-            const geometry = new CapsuleGeometry(this.radius * 1.1, this.height, 10, 10);
-
-            this.body = new Mesh(geometry, material);
-            this.body.castShadow = true;
-            this.body.receiveShadow = true;
-            this.group.add(this.body);
-            this.body.position.set(0, this.height / 2 + this.radius * 1.1, 0);
-        }
-
-        {
-            this.head = new Group();
-            this.group.add(this.head);
-            this.head.position.set(0, this.height + this.radius * 1.1, 0);
-        }
-
-        {
-            const geometry = new BoxGeometry(this.radius * 2, this.radius / 2, this.radius * 1.4);
-
-            this.eyes = new Mesh(geometry, material);
-            this.eyes.castShadow = true;
-            this.eyes.receiveShadow = true;
-            this.head.add(this.eyes);
-            this.eyes.position.set(0, 0, this.radius * 1.4 / 2);
-        }
-    }
-
-    public addToScene(scene: Scene) {
-        scene.add(this.group);
-    }
-
-    public removeFromScene(scene: Scene) {
-        scene.remove(this.group);
-    }
-
-    public setVisible(visible: boolean) {
-        this.group.visible = visible;
-    }    
-
-    public setPosition(x: number, y: number, z: number) {
-        this.group.position.set(x, y, z);
-    }
-    public setRotation(x: number, y: number, z: number, w: number) {
-        this.head.setRotationFromQuaternion(new Quaternion(x, y, z, w));
+class EnemyModel extends SkeletonModel {
+    public morph(enemy: Enemy): void {
+        let color = 0xff0000;
+        switch (enemy.state) {
+        case "Stagger": color = 0xffffff; break;
+        case "Glue": color = 0x0000ff; break;
+        }     
+        this.material.color.setHex(color);
+        
+        this.group.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
+        this.head.setRotationFromQuaternion(new Quaternion(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w));
     }
 }
 
@@ -198,22 +287,72 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
-                    const model = new EnemyModel(enemy.animFlags);
+                    const model = new EnemyModel(new Color(0xff0000));
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }
 
                 const model = models.get(id)!;
-                model.setPosition(enemy.position.x, enemy.position.y, enemy.position.z);
-                model.setRotation(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w);
+                const skeleton = skeletons.get(id);
+                if (skeleton !== undefined) {
+                    model.update(skeleton);
+                    model.morph(enemy);
+                } else {
+                    // TODO(randomuserhi): no skeleton for this enemy
+                }
                 model.setVisible(enemy.dimension === renderer.get("Dimension"));
             }
 
             for (const [id, model] of [...models.entries()]) {
                 if (!enemies.has(id)) {
                     model.removeFromScene(renderer.scene);
+                    models.delete(id);
+                    skeletons.delete(id);
+                }
+            }
+        } 
+    }, { 
+        name, pass: (renderer, snapshot) => {
+            const models = renderer.getOrDefault("Enemy.LimbCustom", () => new Map());
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            for (const [id, limb] of limbs) {
+                const owner = enemies.get(limb.owner);
+                if (!models.has(id)) {
+                    const material = new MeshPhongMaterial({
+                        color: 0xff0000
+                    });
+                    material.transparent = true;
+                    material.opacity = 0.8;
+            
+                    const geometry = new SphereGeometry(limb.scale, 10, 10);
+            
+                    const mesh = new Mesh(geometry, material);
+                    models.set(id, { mesh, material });
+                    renderer.scene.add(mesh);
+                }
+                const model = models.get(id)!;
+                if (owner === undefined) {
+                    model.mesh.visible = false;
+                    continue;
+                }
+
+                let color = 0xff0000;
+                switch (owner.state) {
+                case "Stagger": color = 0xffffff; break;
+                case "Glue": color = 0x0000ff; break;
+                }     
+                model.material.color.setHex(color);
+                model.mesh.position.set(limb.position.x, limb.position.y, limb.position.z);
+                model.mesh.visible = limb.dimension === renderer.get("Dimension");
+            }
+
+            for (const [id, model] of [...models.entries()]) {
+                if (!limbs.has(id)) {
+                    renderer.scene.remove(model.mesh);
                     models.delete(id);
                 }
             }

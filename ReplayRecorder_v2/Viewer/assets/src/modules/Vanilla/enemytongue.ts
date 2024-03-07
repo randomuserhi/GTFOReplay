@@ -157,10 +157,12 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 }
 
                 const enemyModel = enemyModels.get(owner.id)!;
+                const originThree = new Vector3();
+                enemyModel.head.getWorldPosition(originThree);
                 const origin: Pod.Vector = {
-                    x: owner.position.x,
-                    y: owner.position.y + enemyModel.height + enemyModel.radius * 1.1 / 2,
-                    z: owner.position.z
+                    x: originThree.x,
+                    y: originThree.y,
+                    z: originThree.z
                 };
 
                 let totalLength = 0;

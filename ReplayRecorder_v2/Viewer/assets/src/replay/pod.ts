@@ -15,12 +15,25 @@ export namespace Vec {
     export function length(v: Vector): number {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
+    export function dist(a: Vector, b: Vector): number {
+        const x = a.x - b.x;
+        const y = a.y - b.y;
+        const z = a.z - b.z;
+        return Math.sqrt(x * x + y * y + z * z);
+    }
     export function lerp(a: Vector, b: Vector, lerp: number): Vector {
         lerp = Math.clamp01(lerp);
         return {
             x: a.x + (b.x - a.x) * lerp,
             y: a.y + (b.y - a.y) * lerp,
             z: a.z + (b.z - a.z) * lerp
+        };
+    }
+    export function mid(a: Vector, b: Vector): Vector {
+        return {
+            x: (a.x + b.x) / 2,
+            y: (a.y + b.y) / 2,
+            z: (a.z + b.z) / 2
         };
     }
     export function add(a: Vector, b: Vector): Vector {
