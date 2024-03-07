@@ -273,7 +273,7 @@ class DoorModel {
         switch(door.status) {
         case "Closed":
         case "Open": {
-            const animDuration = 2000;
+            const animDuration = 4000;
             let lerp = 1;
             if (door.change !== undefined) {
                 if (t < door.change) throw new Error(`Door state change happened after current time step? ${t} < ${door.change}`);
@@ -326,10 +326,10 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
             const models = renderer.getOrDefault("Doors", () => new Map());
             for (const [id, door] of doors) {
                 if (!models.has(id)) {
-                    const height = 3;
-                    let width = 5;
+                    const height = 4;
+                    let width = 7;
                     switch(door.size) {
-                    case "Small": width = 3; break;
+                    case "Small": width = 4; break;
                     }
 
                     const model = new DoorModel(width, height, new Color(door.type === "WeakDoor" ? 0x00ff00 : 0xff5555));

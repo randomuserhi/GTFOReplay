@@ -44,43 +44,81 @@ export class SkeletonModel {
     RLLeg: Mesh;
     //RFoot: Mesh;
 
+    points: Mesh[];
+
     readonly material: MeshPhongMaterial;
 
     constructor(color: Color) {
         this.group = new Group;
+        this.group.castShadow = true;
+        this.group.receiveShadow = true;
 
         this.material = new MeshPhongMaterial({ color });
-        this.material.transparent = true;
-        this.material.opacity = 0.8;
+        //this.material.transparent = true;
+        //this.material.opacity = 0.8;
 
         const geometry = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
-        
-        this.head = new Mesh(new SphereGeometry(0.25, 10, 10), this.material);
+
+        const radius = 0.05;
+
+        this.head = new Mesh(new SphereGeometry(0.15, 10, 10), this.material);
+        this.head.castShadow = true;
+        this.head.receiveShadow = true;
 
         this.body = new Mesh(geometry, this.material);
-        this.body.scale.set(0.1, 0.1, 0.1);
+        this.body.scale.set(radius, radius, radius);
+        this.body.castShadow = true;
+        this.body.receiveShadow = true;
 
         this.LUArm = new Mesh(geometry, this.material);
-        this.LUArm.scale.set(0.1, 0.1, 0.1);
+        this.LUArm.scale.set(radius, radius, radius);
+        this.LUArm.castShadow = true;
+        this.LUArm.receiveShadow = true;
+
         this.LLArm = new Mesh(geometry, this.material);
-        this.LLArm.scale.set(0.1, 0.1, 0.1);
+        this.LLArm.scale.set(radius, radius, radius);
+        this.LLArm.castShadow = true;
+        this.LLArm.receiveShadow = true;
 
         this.RUArm = new Mesh(geometry, this.material);
-        this.RUArm.scale.set(0.1, 0.1, 0.1);
+        this.RUArm.scale.set(radius, radius, radius);
+        this.RUArm.castShadow = true;
+        this.RUArm.receiveShadow = true;
+
         this.RLArm = new Mesh(geometry, this.material);
-        this.RLArm.scale.set(0.1, 0.1, 0.1);
+        this.RLArm.scale.set(radius, radius, radius);
+        this.RLArm.castShadow = true;
+        this.RLArm.receiveShadow = true;
 
         this.LULeg = new Mesh(geometry, this.material);
-        this.LULeg.scale.set(0.1, 0.1, 0.1);
+        this.LULeg.scale.set(radius, radius, radius);
+        this.LULeg.castShadow = true;
+        this.LULeg.receiveShadow = true;
+
         this.LLLeg = new Mesh(geometry, this.material);
-        this.LLLeg.scale.set(0.1, 0.1, 0.1);
+        this.LLLeg.scale.set(radius, radius, radius);
+        this.LLLeg.castShadow = true;
+        this.LLLeg.receiveShadow = true;
+
         //this.LFoot = new Mesh(geometry, this.material);
 
         this.RULeg = new Mesh(geometry, this.material);
-        this.RULeg.scale.set(0.1, 0.1, 0.1);
+        this.RULeg.scale.set(radius, radius, radius);
+        this.RULeg.castShadow = true;
+        this.RULeg.receiveShadow = true;
+
         this.RLLeg = new Mesh(geometry, this.material);
-        this.RLLeg.scale.set(0.1, 0.1, 0.1);
+        this.RLLeg.scale.set(radius, radius, radius);
+        this.RLLeg.castShadow = true;
+        this.RLLeg.receiveShadow = true;
+        
         //this.RFoot = new Mesh(geometry, this.material);
+        
+        const sphere = new SphereGeometry(radius, 10, 10);
+        this.points = new Array(14);
+        for (let i = 0; i < 14; ++i) {
+            this.points[i] = new Mesh(sphere, this.material);
+        }
 
         this.group.add(
             this.head,
@@ -90,49 +128,74 @@ export class SkeletonModel {
             this.LULeg, this.LLLeg, 
             this.RULeg, this.RLLeg, 
             //this.LFoot, this.RFoot,
+            ...this.points
         );
     }
 
     public update(skeleton: Skeleton) {
         this.head.position.set(skeleton.head.x, skeleton.head.y, skeleton.head.z);
         
+        const x = this.group.position.x;
+        const y = this.group.position.y;
+        const z = this.group.position.z;
+
+        let i = -1;
+
         const bodyTop = Pod.Vec.mid(skeleton.LUArm, skeleton.RUArm);
         const bodyBottom = Pod.Vec.mid(skeleton.LULeg, skeleton.RULeg);
         this.body.position.set(bodyTop.x, bodyTop.y, bodyTop.z);
-        this.body.lookAt(this.group.position.x + bodyBottom.x, this.group.position.y + bodyBottom.y, this.group.position.z + bodyBottom.z);
+        this.body.lookAt(x + bodyBottom.x, y + bodyBottom.y, z + bodyBottom.z);
         this.body.scale.z = Pod.Vec.dist(bodyTop, bodyBottom);
+        this.points[++i].position.set(bodyTop.x, bodyTop.y, bodyTop.z);
+        this.points[++i].position.set(bodyBottom.x, bodyBottom.y, bodyBottom.z);
 
         this.LUArm.position.set(skeleton.LUArm.x, skeleton.LUArm.y, skeleton.LUArm.z);
-        this.LUArm.lookAt(this.group.position.x + skeleton.LLArm.x, this.group.position.y + skeleton.LLArm.y, this.group.position.z + skeleton.LLArm.z);
+        this.LUArm.lookAt(x + skeleton.LLArm.x, y + skeleton.LLArm.y, z + skeleton.LLArm.z);
         this.LUArm.scale.z = Pod.Vec.dist(skeleton.LUArm, skeleton.LLArm);
 
         this.LLArm.position.set(skeleton.LLArm.x, skeleton.LLArm.y, skeleton.LLArm.z);
-        this.LLArm.lookAt(this.group.position.x + skeleton.LHand.x, this.group.position.y + skeleton.LHand.y, this.group.position.z + skeleton.LHand.z);
+        this.LLArm.lookAt(x + skeleton.LHand.x, y + skeleton.LHand.y, z + skeleton.LHand.z);
         this.LLArm.scale.z = Pod.Vec.dist(skeleton.LLArm, skeleton.LHand);
 
+        this.points[++i].position.set(skeleton.LUArm.x, skeleton.LUArm.y, skeleton.LUArm.z);
+        this.points[++i].position.set(skeleton.LLArm.x, skeleton.LLArm.y, skeleton.LLArm.z);
+        this.points[++i].position.set(skeleton.LHand.x, skeleton.LHand.y, skeleton.LHand.z);
+
         this.RUArm.position.set(skeleton.RUArm.x, skeleton.RUArm.y, skeleton.RUArm.z);
-        this.RUArm.lookAt(this.group.position.x + skeleton.RLArm.x, this.group.position.y + skeleton.RLArm.y, this.group.position.z + skeleton.RLArm.z);
+        this.RUArm.lookAt(x + skeleton.RLArm.x, y + skeleton.RLArm.y, z + skeleton.RLArm.z);
         this.RUArm.scale.z = Pod.Vec.dist(skeleton.RUArm, skeleton.RLArm);
 
         this.RLArm.position.set(skeleton.RLArm.x, skeleton.RLArm.y, skeleton.RLArm.z);
-        this.RLArm.lookAt(this.group.position.x + skeleton.RHand.x, this.group.position.y + skeleton.RHand.y, this.group.position.z + skeleton.RHand.z);
+        this.RLArm.lookAt(x + skeleton.RHand.x, y + skeleton.RHand.y, z + skeleton.RHand.z);
         this.RLArm.scale.z = Pod.Vec.dist(skeleton.RLArm, skeleton.RHand);
 
+        this.points[++i].position.set(skeleton.RUArm.x, skeleton.RUArm.y, skeleton.RUArm.z);
+        this.points[++i].position.set(skeleton.RLArm.x, skeleton.RLArm.y, skeleton.RLArm.z);
+        this.points[++i].position.set(skeleton.RHand.x, skeleton.RHand.y, skeleton.RHand.z);
+
         this.LULeg.position.set(skeleton.LULeg.x, skeleton.LULeg.y, skeleton.LULeg.z);
-        this.LULeg.lookAt(this.group.position.x + skeleton.LLLeg.x, this.group.position.y + skeleton.LLLeg.y, this.group.position.z + skeleton.LLLeg.z);
+        this.LULeg.lookAt(x + skeleton.LLLeg.x, y + skeleton.LLLeg.y, z + skeleton.LLLeg.z);
         this.LULeg.scale.z = Pod.Vec.dist(skeleton.LULeg, skeleton.LLLeg);
 
         this.LLLeg.position.set(skeleton.LLLeg.x, skeleton.LLLeg.y, skeleton.LLLeg.z);
-        this.LLLeg.lookAt(this.group.position.x + skeleton.LFoot.x, this.group.position.y + skeleton.LFoot.y, this.group.position.z + skeleton.LFoot.z);
+        this.LLLeg.lookAt(x + skeleton.LFoot.x, y + skeleton.LFoot.y, z + skeleton.LFoot.z);
         this.LLLeg.scale.z = Pod.Vec.dist(skeleton.LLLeg, skeleton.LFoot);
 
+        this.points[++i].position.set(skeleton.LULeg.x, skeleton.LULeg.y, skeleton.LULeg.z);
+        this.points[++i].position.set(skeleton.LLLeg.x, skeleton.LLLeg.y, skeleton.LLLeg.z);
+        this.points[++i].position.set(skeleton.LFoot.x, skeleton.LFoot.y, skeleton.LFoot.z);
+
         this.RULeg.position.set(skeleton.RULeg.x, skeleton.RULeg.y, skeleton.RULeg.z);
-        this.RULeg.lookAt(this.group.position.x + skeleton.RLLeg.x, this.group.position.y + skeleton.RLLeg.y, this.group.position.z + skeleton.RLLeg.z);
+        this.RULeg.lookAt(x + skeleton.RLLeg.x, y + skeleton.RLLeg.y, z + skeleton.RLLeg.z);
         this.RULeg.scale.z = Pod.Vec.dist(skeleton.RULeg, skeleton.RLLeg);
 
         this.RLLeg.position.set(skeleton.RLLeg.x, skeleton.RLLeg.y, skeleton.RLLeg.z);
-        this.RLLeg.lookAt(this.group.position.x + skeleton.RFoot.x, this.group.position.y + skeleton.RFoot.y, this.group.position.z + skeleton.RFoot.z);
+        this.RLLeg.lookAt(x + skeleton.RFoot.x, y + skeleton.RFoot.y, z + skeleton.RFoot.z);
         this.RLLeg.scale.z = Pod.Vec.dist(skeleton.RLLeg, skeleton.RFoot);
+
+        this.points[++i].position.set(skeleton.RULeg.x, skeleton.RULeg.y, skeleton.RULeg.z);
+        this.points[++i].position.set(skeleton.RLLeg.x, skeleton.RLLeg.y, skeleton.RLLeg.z);
+        this.points[++i].position.set(skeleton.RFoot.x, skeleton.RFoot.y, skeleton.RFoot.z);
     }
 
     public addToScene(scene: Scene) {

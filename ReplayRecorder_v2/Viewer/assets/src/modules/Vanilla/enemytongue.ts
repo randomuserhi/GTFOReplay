@@ -140,12 +140,11 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 const owner = enemies.get(tongue.owner);
 
                 if (!models.has(id)) {
-                    const geometry = new DynamicSplineGeometry(0.1, 6, 50, true);
+                    const geometry = new DynamicSplineGeometry(0.07, 6, 50, true);
                     const material = new MeshPhongMaterial( { color: 0xff0000 } );
 
                     const mesh = new Mesh(geometry, material);
                     mesh.castShadow = true;
-                    mesh.receiveShadow = true;
 
                     models.set(id, { mesh, geometry });
                     renderer.scene.add(mesh);
@@ -156,11 +155,13 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                     continue;
                 }
 
-                const enemyModel = enemyModels.get(owner.id)!;
+                const enemyModel = enemyModels.get(owner.id);
                 
-                const originThree = new Vector3();
-                if (owner.head) enemyModel.head.getWorldPosition(originThree);
-                else enemyModel.body.getWorldPosition(originThree);
+                const originThree = new Vector3(0, 1, 0);
+                if (enemyModel !== undefined) {
+                    if (owner.head) enemyModel.head.getWorldPosition(originThree);
+                    else enemyModel.body.getWorldPosition(originThree);
+                }
 
                 const origin: Pod.Vector = {
                     x: originThree.x,

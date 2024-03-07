@@ -91,11 +91,13 @@ export namespace ModuleLoader {
         event: ModuleLibrary<EventModule>
         dynamic: ModuleLibrary<DynamicModule>
         render: Map<string, RenderModule>
+        tick: Set<(snapshot: ReplayApi) => void>
     } = {
         header: new Map(),
         event: new Map(),
         dynamic: new Map(),
-        render: new Map()
+        render: new Map(),
+        tick: new Set()
     };
 
     export function getHeader<T extends Typemap.HeaderNames>({ typename, version }: ModuleDesc<T>): HeaderModule {
@@ -135,6 +137,10 @@ export namespace ModuleLoader {
 
     export function registerRender<T extends Typemap.RenderPassNames>(name: T, func: RenderModule) {
         library.render.set(name, func);
+    }
+
+    export function registerTick(func: (snapshot: ReplayApi) => void) {
+        library.tick.add(func);
     }
 
     export function loadModule(path: string) {

@@ -29,10 +29,14 @@ ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
             for (let j = 0; j < nSurfaces; ++j) {
                 const nVertices = await BitHelper.readUShort(data);
                 const nIndicies = await BitHelper.readUInt(data);
-                surfaces.push({
+                const surface = {
                     vertices: await BitHelper.readVectorArrayAsFloat32(data, nVertices),
                     indices: await BitHelper.readUShortArray(data, nIndicies)
-                });
+                };
+                for (let k = 0; k < surface.vertices.length; k += 3) {
+                    surface.vertices[k + 1] -= 0.05; // offset map a little in y-axis
+                }
+                surfaces.push(surface);
             }
             map.set(dimension, surfaces);
         }
@@ -74,18 +78,20 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                     
                     geometry.setAttribute("position", new BufferAttribute(meshes[i].vertices, 3));
                     geometry.computeVertexNormals();
-                    
-                    const material = new MeshPhongMaterial({
-                        color: 0x296fa3,
-                        side: DoubleSide, // causes issues for shadows :(
-                    });
-                        
-                    const surface = new Mesh(geometry, material);
-                    surface.castShadow = true;
-                    surface.receiveShadow = true;
-                    surface.visible = false;
-                    surfaces.push(surface);
-                    renderer.scene.add(surface);
+
+                    {
+                        const material = new MeshPhongMaterial({
+                            color: 0x296fa3,
+                            side: DoubleSide,
+                        });
+                            
+                        const surface = new Mesh(geometry, material);
+                        surface.castShadow = true;
+                        surface.receiveShadow = true;
+                        surface.visible = false;
+                        surfaces.push(surface);
+                        renderer.scene.add(surface);
+                    }
                 }
                 maps.set(dimension, surfaces);
             }

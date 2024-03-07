@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, PCFSoftShadowMap, PerspectiveCamera, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, CameraHelper, Color, DirectionalLight, FogExp2, PerspectiveCamera, VSMShadowMap, Vector3 } from "three";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import * as BitHelper from "../replay/bithelper.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
@@ -169,7 +169,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.scene.add(camera);
             
             r.renderer.shadowMap.enabled = true;
-            r.renderer.shadowMap.type = PCFSoftShadowMap;
+            r.renderer.shadowMap.type = VSMShadowMap; //PCFSoftShadowMap;
             r.renderer.toneMapping = ACESFilmicToneMapping;
 
             r.composer.addPass(new RenderPass(r.scene, camera));
@@ -182,7 +182,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             light.position.y = 100;
             light.shadow.mapSize.x = 4096;
             light.shadow.mapSize.y = 4096;
-            light.shadow.bias = -0.01;
+            light.shadow.bias = -0.001;
             light.castShadow = true;
 
             light.shadow.camera.left = -250;
@@ -193,6 +193,9 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             light.shadow.camera.near = 0.1;
             light.target.translateX(0);
             light.target.translateY(-10);
+
+            const helper = new CameraHelper(light.shadow.camera);
+            r.scene.add(helper);
 
             r.set("MainLight", light);
             r.scene.add(light);

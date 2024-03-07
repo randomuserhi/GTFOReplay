@@ -159,7 +159,11 @@ let replay: Replay | undefined = undefined;
                     const [dynamics, type] = await parseDynamicCollection(bytes);
                     snapshot.dynamics.set(type, dynamics); // parse dynamics
                 }
-                
+
+                for (const tick of ModuleLoader.library.tick) {
+                    tick(api);
+                }
+
                 ipc.send("snapshot", snapshot);
             }
         } catch (err) {

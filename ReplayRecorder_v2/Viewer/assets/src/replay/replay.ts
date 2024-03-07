@@ -176,6 +176,10 @@ export class Replay {
             }
         } 
         
+        for (const tick of ModuleLoader.library.tick) {
+            tick(api);
+        }
+
         // Lerp state time
         const diff = snapshot.time - state.time;
         const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
