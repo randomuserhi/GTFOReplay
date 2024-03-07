@@ -1,4 +1,4 @@
-import { Color, Quaternion } from "three";
+import { Color, ColorRepresentation, Quaternion } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
@@ -246,13 +246,35 @@ declare module "../../replay/moduleloader.js" {
 }
 
 class PlayerModel extends SkeletonModel {
+    public update(skeleton: Skeleton): void {
+        super.update(skeleton);
+        
+        const x = this.group.position.x;
+        const y = this.group.position.y;
+        const z = this.group.position.z;
+
+        const bodyTop = Pod.Vec.mid(skeleton.LULeg, skeleton.RULeg);
+        const bodyBottom = { x: skeleton.head.x, y: skeleton.head.y, z: skeleton.head.z };
+        this.body.position.set(bodyTop.x, bodyTop.y, bodyTop.z);
+        this.body.lookAt(x + bodyBottom.x, y + bodyBottom.y, z + bodyBottom.z);
+        this.body.scale.z = Pod.Vec.dist(bodyTop, bodyBottom) * 0.7;
+        this.points[0].position.set(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7);
+        this.points[1].position.set(bodyBottom.x, bodyBottom.y, bodyBottom.z);
+    }
+
     public morph(player: Player): void {
         this.group.position.set(player.position.x, player.position.y, player.position.z);
         this.head.setRotationFromQuaternion(new Quaternion(player.rotation.x, player.rotation.y, player.rotation.z, player.rotation.w));
     }
 }
 
-// TODO(randomuserhi): Proper player models
+const colors: ColorRepresentation[] = [
+    0xc21f4e,
+    0x18935e,
+    0x20558c,
+    0x7a1a8e
+];
+
 ModuleLoader.registerRender("Players", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 
@@ -262,7 +284,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
             for (const [id, player] of players) {
                 if (!models.has(id)) {
-                    const model = new PlayerModel(new Color(0x00ff00));
+                    const model = new PlayerModel(new Color(colors[player.slot]));
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

@@ -109,7 +109,6 @@ namespace Vanilla.Player {
             Vector3 pos = player.transform.position;
             Animator anim = player.AnimatorBody;
 
-            Vector3 headoffset = Vector3.zero;
             head = anim.GetBoneTransform(HumanBodyBones.Head).position;
 
             Vector3 offset = Vector3.zero;
@@ -123,8 +122,7 @@ namespace Vanilla.Player {
                 RHand = player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightHand).position;
 
                 offset = (anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position + anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position) / 2 - (LUArm + RUArm) / 2;
-                offset += player.transform.forward * 0.1f;
-                headoffset += player.transform.forward * 0.1f;
+                offset += player.transform.forward * 0.2f;
             } else {
                 LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
                 LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
@@ -143,7 +141,7 @@ namespace Vanilla.Player {
             RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
             RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
 
-            BitHelper.WriteHalf(headoffset + head - pos, buffer);
+            BitHelper.WriteHalf(head - pos, buffer);
 
             BitHelper.WriteHalf(offset + LUArm - pos, buffer);
             BitHelper.WriteHalf(offset + LLArm - pos, buffer);

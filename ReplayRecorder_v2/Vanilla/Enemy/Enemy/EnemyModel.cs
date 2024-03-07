@@ -3,6 +3,7 @@ using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using UnityEngine;
+using Vanilla.Enemy.BepInEx;
 
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Model", "0.0.1")]
@@ -10,7 +11,7 @@ namespace Vanilla.Enemy {
         public static int tick = 0;
         [ReplayTick]
         private static void Update() {
-            tick = (tick + 1) % 4;
+            tick = (tick + 1) % Mathf.Clamp(ConfigManager.AnimationTickRate, 1, int.MaxValue);
         }
 
         public static bool isValid(EnemyAgent enemy) {

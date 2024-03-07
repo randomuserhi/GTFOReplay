@@ -296,7 +296,7 @@ class EnemyModel extends SkeletonModel {
     public morph(enemy: Enemy): void {
         this.head.visible = enemy.head;
 
-        let color = 0xff0000;
+        let color = 0xaa0000;
         switch (enemy.state) {
         case "Stagger": color = 0xffffff; break;
         case "Glue": color = 0x0000ff; break;

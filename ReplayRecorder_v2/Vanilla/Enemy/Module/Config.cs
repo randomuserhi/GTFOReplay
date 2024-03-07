@@ -10,6 +10,12 @@ namespace Vanilla.Enemy.BepInEx {
                 "debug",
                 false,
                 "Enables debug messages when true.");
+
+            animationTickRate = configFile.Bind(
+                $"{Module.Name}",
+                "animationTickRate",
+                4,
+                "How many ticks until an animation frame is recorded. (The lower the value, the more storage space a replay will take). Value cannot be less than 1.");
         }
 
         public static bool Debug {
@@ -17,5 +23,11 @@ namespace Vanilla.Enemy.BepInEx {
             set { debug.Value = value; }
         }
         private static ConfigEntry<bool> debug;
+
+        public static int AnimationTickRate {
+            get { return animationTickRate.Value; }
+            set { animationTickRate.Value = value; }
+        }
+        private static ConfigEntry<int> animationTickRate;
     }
 }

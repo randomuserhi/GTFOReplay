@@ -175,7 +175,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.composer.addPass(new RenderPass(r.scene, camera));
 
             r.scene.fog = new FogExp2(0x333333, 0.003);
-            r.scene.add(new AmbientLight(0xFFFFFF, 0.1));
+            r.scene.add(new AmbientLight(0xFFFFFF, 0.5));
 
             // TODO(randomuserhi): Scale light based on map size -> also position properly
             const light = new DirectionalLight(0xFFFFFF, 1);
