@@ -47,11 +47,14 @@ namespace Vanilla.Enemy.Patches {
             case ES_StateEnum.Scream:
                 bool added = false;
                 foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
+                    if (!player.Alive) continue;
+
                     // TODO(randomuserhi): Option to limit isAggressive by a different range as well
                     float dist = (player.transform.position - agent.transform.position).sqrMagnitude;
                     bool isAggressive = agent.AI.m_mode == Agents.AgentMode.Agressive;
+                    bool isInAggressiveRange = dist < ConfigManager.AnimationAggressiveRange * ConfigManager.AnimationAggressiveRange;
                     bool isInRange = dist < ConfigManager.AnimationRange * ConfigManager.AnimationRange;
-                    if ((isAggressive || isInRange) && !aggressiveInRange.Contains(agent.GlobalID)) {
+                    if (((isAggressive && isInAggressiveRange) || isInRange) && !aggressiveInRange.Contains(agent.GlobalID)) {
                         agent.Anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                         added = true;
                         aggressiveInRange.Add(agent.GlobalID);

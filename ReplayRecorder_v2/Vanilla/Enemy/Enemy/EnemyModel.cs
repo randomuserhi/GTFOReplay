@@ -9,6 +9,17 @@ using Vanilla.Enemy.Patches;
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Model", "0.0.1")]
     internal class rEnemyModel : ReplayDynamic {
+        private static Dictionary<ushort, long> leeway = new Dictionary<ushort, long>();
+        [ReplayInit]
+        private static void Init() {
+            leeway.Clear();
+        }
+
+        public override void Despawn(ByteBuffer buffer) {
+            base.Despawn(buffer);
+            leeway.Remove(enemy.GlobalID);
+        }
+
         public static int tick = 0;
         [ReplayTick]
         private static void Update() {
@@ -62,10 +73,32 @@ namespace Vanilla.Enemy {
 
         public override bool Active => enemy != null;
         public override int Id => enemy.GlobalID;
+
         public override bool IsDirty {
             get {
                 if (tick != 0) return false;
-                if (!EnemyModelPatches.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) return false;
+                bool hasLeeway = leeway.ContainsKey(enemy.GlobalID);
+                if (!hasLeeway || (Raudy.Now - leeway[enemy.GlobalID] > ConfigManager.AnimationLeeWay)) {
+                    bool isScreaming = false;
+                    bool isLocomotion = false;
+                    switch (enemy.Locomotion.m_currentState.m_stateEnum) {
+                    case ES_StateEnum.Jump:
+                    case ES_StateEnum.JumpDissolve:
+                    case ES_StateEnum.StandStill:
+                    case ES_StateEnum.ClimbLadder:
+                    case ES_StateEnum.PathMove: isLocomotion = true; break;
+                    case ES_StateEnum.Scream:
+                    case ES_StateEnum.ScoutScream: isScreaming = true; break;
+                    }
+
+                    bool canAnimate = true;
+                    if (ConfigManager.NoLocomotionAnimation && isLocomotion) canAnimate = false;
+                    if (!isScreaming && !EnemyModelPatches.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) canAnimate = false;
+
+                    if (!canAnimate) return false;
+                    else if (!hasLeeway) leeway.Add(enemy.GlobalID, Raudy.Now);
+                    else leeway[enemy.GlobalID] = Raudy.Now;
+                }
 
                 return head != T_head.position ||
 

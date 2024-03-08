@@ -15,6 +15,7 @@ namespace Vanilla.EnemyTongue {
 
         public static void Spawn(MovingEnemyTentacleBase tongue) {
             if (!Replay.Ready) return;
+            if (Replay.Has<rEnemyTongue>(tongue.GetInstanceID())) return;
 
             rEnemyTongue rTongue = new rEnemyTongue(tongue);
             int owner = tongue.m_owner.GlobalID;

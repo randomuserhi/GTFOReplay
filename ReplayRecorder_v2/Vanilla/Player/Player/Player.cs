@@ -54,6 +54,7 @@ namespace Vanilla.Player {
 
         public static void Despawn(PlayerAgent agent) {
             if (!Replay.Active) return;
+            if (!Replay.Has<rPlayer>(agent.GlobalID)) return;
 
             rPlayer? player = players.Find(p => p.agent.Owner.Lookup == agent.Owner.Lookup);
             if (player == null) {

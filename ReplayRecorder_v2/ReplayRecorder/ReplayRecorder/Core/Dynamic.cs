@@ -45,9 +45,15 @@ namespace ReplayRecorder.Core {
         public override bool IsDirty => transform.dimensionIndex != oldDimensionIndex ||
                                         transform.position != oldPosition;
 
+        private Vector3 spawnPosition;
+        private byte spawnDimensionIndex;
+
         public DynamicPosition(int id, IReplayTransform transform) {
             this.id = id;
             this.transform = transform;
+
+            spawnPosition = transform.position;
+            spawnDimensionIndex = transform.dimensionIndex;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -75,11 +81,11 @@ namespace ReplayRecorder.Core {
         }
 
         public override void Spawn(ByteBuffer buffer) {
-            BitHelper.WriteBytes(transform.dimensionIndex, buffer);
-            BitHelper.WriteBytes(transform.position, buffer);
+            BitHelper.WriteBytes(spawnDimensionIndex, buffer);
+            BitHelper.WriteBytes(spawnPosition, buffer);
 
-            oldDimensionIndex = transform.dimensionIndex;
-            oldPosition = transform.position;
+            oldDimensionIndex = spawnDimensionIndex;
+            oldPosition = spawnPosition;
         }
     }
 
@@ -94,9 +100,13 @@ namespace ReplayRecorder.Core {
         public override bool Active => transform.active;
         public override bool IsDirty => (transform.rotation != oldRotation);
 
+        private Quaternion spawnRotation;
+
         public DynamicRotation(int id, IReplayTransform transform) {
             this.id = id;
             this.transform = transform;
+
+            spawnRotation = transform.rotation;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -116,13 +126,13 @@ namespace ReplayRecorder.Core {
         }
 
         public override void Spawn(ByteBuffer buffer) {
-            if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
-                    float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
+            if (float.IsNaN(spawnRotation.x) || float.IsNaN(spawnRotation.y) ||
+                    float.IsNaN(spawnRotation.z) || float.IsNaN(spawnRotation.w)) {
                 BitHelper.WriteHalf(Quaternion.identity, buffer);
                 APILogger.Warn("Dynamic rotation had NaN component.");
-            } else BitHelper.WriteHalf(transform.rotation, buffer);
+            } else BitHelper.WriteHalf(spawnRotation, buffer);
 
-            oldRotation = transform.rotation;
+            oldRotation = spawnRotation;
         }
     }
 
@@ -143,9 +153,17 @@ namespace ReplayRecorder.Core {
                                         transform.position != oldPosition ||
                                         transform.rotation != oldRotation;
 
+        private Vector3 spawnPosition;
+        private Quaternion spawnRotation;
+        private byte spawnDimensionIndex;
+
         public DynamicTransform(int id, IReplayTransform transform) {
             this.id = id;
             this.transform = transform;
+
+            spawnPosition = transform.position;
+            spawnRotation = transform.rotation;
+            spawnDimensionIndex = transform.dimensionIndex;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -185,17 +203,17 @@ namespace ReplayRecorder.Core {
         }
 
         public override void Spawn(ByteBuffer buffer) {
-            BitHelper.WriteBytes(transform.dimensionIndex, buffer);
-            BitHelper.WriteBytes(transform.position, buffer);
-            if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
-                    float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
+            BitHelper.WriteBytes(spawnDimensionIndex, buffer);
+            BitHelper.WriteBytes(spawnPosition, buffer);
+            if (float.IsNaN(spawnRotation.x) || float.IsNaN(spawnRotation.y) ||
+                    float.IsNaN(spawnRotation.z) || float.IsNaN(spawnRotation.w)) {
                 BitHelper.WriteHalf(Quaternion.identity, buffer);
                 APILogger.Warn("Dynamic rotation had NaN component.");
-            } else BitHelper.WriteHalf(transform.rotation, buffer);
+            } else BitHelper.WriteHalf(spawnRotation, buffer);
 
-            oldDimensionIndex = transform.dimensionIndex;
-            oldPosition = transform.position;
-            oldRotation = transform.rotation;
+            oldDimensionIndex = spawnDimensionIndex;
+            oldPosition = spawnPosition;
+            oldRotation = spawnRotation;
         }
     }
 }

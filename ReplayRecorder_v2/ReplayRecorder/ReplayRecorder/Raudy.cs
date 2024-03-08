@@ -50,7 +50,13 @@ namespace ReplayRecorder {
             APILogger.Debug($"Flushed snapshot: {count} bytes.");
             BitHelper.WriteBytes(count, fs);
             fs.Write(Array);
-            fs.Flush();
+            count = 0;
+        }
+
+        internal async Task AsyncFlush(FileStream fs) {
+            APILogger.Debug($"Async Flushed snapshot: {count} bytes.");
+            BitHelper.WriteBytes(count, fs);
+            await fs.WriteAsync(Array).ConfigureAwait(false);
             count = 0;
         }
 

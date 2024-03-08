@@ -11,6 +11,12 @@ namespace Vanilla.Enemy.BepInEx {
                 false,
                 "Enables debug messages when true.");
 
+            noLocomotionAnimation = configFile.Bind(
+                $"{Module.Name}",
+                "noLocomotionAnimation",
+                true,
+                "Disables animation recording for enemies simply moving. (Maintains stagger, attack animations, screams etc...). Helps to reduce replay file size.");
+
             animationTickRate = configFile.Bind(
                 $"{Module.Name}",
                 "animationTickRate",
@@ -21,7 +27,19 @@ namespace Vanilla.Enemy.BepInEx {
                 $"{Module.Name}",
                 "animationRange",
                 20.0f,
-                "The range an enemy needs to be within for animations to be processed.");
+                "The range an enemy needs to be within an alive player for animations to be processed. Scream animations can occure at any range.");
+
+            animationAggressiveRange = configFile.Bind(
+                $"{Module.Name}",
+                "animationRange",
+                40.0f,
+                "The range an enemy needs to be within an alive player for animations to be processed. Scream animations can occure at any range.");
+
+            animationLeeWay = configFile.Bind(
+                $"{Module.Name}",
+                "animationLeeWay",
+                3000,
+                "Buffer period in ms where animations will continue to be captured when they shouldnt be. This is to allow animation transitions to play out.");
         }
 
         public static bool Debug {
@@ -29,6 +47,12 @@ namespace Vanilla.Enemy.BepInEx {
             set { debug.Value = value; }
         }
         private static ConfigEntry<bool> debug;
+
+        public static bool NoLocomotionAnimation {
+            get { return noLocomotionAnimation.Value; }
+            set { noLocomotionAnimation.Value = value; }
+        }
+        private static ConfigEntry<bool> noLocomotionAnimation;
 
         public static int AnimationTickRate {
             get { return animationTickRate.Value; }
@@ -41,5 +65,17 @@ namespace Vanilla.Enemy.BepInEx {
             set { animationRange.Value = value; }
         }
         private static ConfigEntry<float> animationRange;
+
+        public static float AnimationAggressiveRange {
+            get { return animationAggressiveRange.Value; }
+            set { animationAggressiveRange.Value = value; }
+        }
+        private static ConfigEntry<float> animationAggressiveRange;
+
+        public static int AnimationLeeWay {
+            get { return animationLeeWay.Value; }
+            set { animationLeeWay.Value = value; }
+        }
+        private static ConfigEntry<int> animationLeeWay;
     }
 }

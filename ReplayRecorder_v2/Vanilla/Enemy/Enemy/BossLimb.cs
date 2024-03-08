@@ -21,7 +21,7 @@ namespace Vanilla.Enemy {
     internal class rLimbCustom : DynamicPosition {
         public Dam_EnemyDamageLimb_Custom limb;
 
-        public override bool IsDirty => rEnemyModel.tick == 0 && base.IsDirty;
+        public override bool IsDirty => base.IsDirty;
 
         public rLimbCustom(Dam_EnemyDamageLimb_Custom limb) : base(limb.GetInstanceID(), new LimbTransform(limb)) {
             this.limb = limb;

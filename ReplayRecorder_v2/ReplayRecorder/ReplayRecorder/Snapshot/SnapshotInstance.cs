@@ -39,7 +39,7 @@ namespace ReplayRecorder.Snapshot {
             public int NDirtyDynamics {
                 get {
                     if (isDirty) {
-                        _nDirtyDynamics = dynamics.Count(d => (d.Active && d.IsDirty) || !d.init);
+                        _nDirtyDynamics = dynamics.Count(d => d.Active && (d.IsDirty || !d.init));
                         isDirty = false;
                     }
                     return _nDirtyDynamics;
@@ -129,7 +129,7 @@ namespace ReplayRecorder.Snapshot {
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
 
-                    if ((dynamic.Active && dynamic.IsDirty) || !dynamic.init) {
+                    if (dynamic.Active && (dynamic.IsDirty || !dynamic.init)) {
                         if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
                         ++numWritten;
                         dynamic.init = true;
@@ -218,6 +218,8 @@ namespace ReplayRecorder.Snapshot {
         private int byteOffset = 0;
         private DeltaState state = new DeltaState();
         private ByteBuffer buffer = new ByteBuffer();
+        private ByteBuffer _buffer = new ByteBuffer();
+        private Task? writeTask;
 
         public bool Ready => Active && completedHeader;
         public bool Active => fs != null;
@@ -385,7 +387,13 @@ namespace ReplayRecorder.Snapshot {
                     }
                 }
                 byteOffset += sizeof(int) + buffer.count;
-                buffer.Flush(fs);
+                if (writeTask != null) {
+                    writeTask.Wait();
+                }
+                writeTask = buffer.AsyncFlush(fs);
+                ByteBuffer temp = _buffer;
+                _buffer = buffer;
+                buffer = temp;
             }
         }
 
