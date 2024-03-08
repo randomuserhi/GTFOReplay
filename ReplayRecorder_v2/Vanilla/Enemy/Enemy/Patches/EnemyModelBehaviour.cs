@@ -2,6 +2,7 @@
 using HarmonyLib;
 using Player;
 using UnityEngine;
+using Vanilla.Enemy.BepInEx;
 
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
@@ -20,8 +21,6 @@ namespace Vanilla.Enemy.Patches {
 
         private void Update() {
             if (agent == null) return;
-
-            const float threshold = 20;
 
             switch (agent.Locomotion.m_currentState.m_stateEnum) {
             case ES_StateEnum.PathMove:
@@ -43,7 +42,7 @@ namespace Vanilla.Enemy.Patches {
                 bool added = false;
                 foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
                     bool isAggressive = agent.AI.m_mode == Agents.AgentMode.Agressive;
-                    bool isInRange = (player.transform.position - agent.transform.position).sqrMagnitude < threshold * threshold;
+                    bool isInRange = (player.transform.position - agent.transform.position).sqrMagnitude < ConfigManager.AnimationRange * ConfigManager.AnimationRange;
                     if (isAggressive || isInRange) {
                         agent.Anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                         agent.MovingCuller.CullBucket.Show();

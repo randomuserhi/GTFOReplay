@@ -16,6 +16,12 @@ namespace Vanilla.Enemy.BepInEx {
                 "animationTickRate",
                 4,
                 "How many ticks until an animation frame is recorded. (The lower the value, the more storage space a replay will take). Value cannot be less than 1.");
+
+            animationRange = configFile.Bind(
+                $"{Module.Name}",
+                "animationRange",
+                20.0f,
+                "The range an enemy needs to be within for animations to be processed.");
         }
 
         public static bool Debug {
@@ -29,5 +35,11 @@ namespace Vanilla.Enemy.BepInEx {
             set { animationTickRate.Value = value; }
         }
         private static ConfigEntry<int> animationTickRate;
+
+        public static float AnimationRange {
+            get { return animationRange.Value; }
+            set { animationRange.Value = value; }
+        }
+        private static ConfigEntry<float> animationRange;
     }
 }
