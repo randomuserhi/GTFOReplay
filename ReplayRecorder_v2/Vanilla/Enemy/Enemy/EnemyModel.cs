@@ -4,6 +4,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using UnityEngine;
 using Vanilla.Enemy.BepInEx;
+using Vanilla.Enemy.Patches;
 
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Model", "0.0.1")]
@@ -46,6 +47,7 @@ namespace Vanilla.Enemy {
         public override bool IsDirty {
             get {
                 if (tick != 0) return false;
+                if (!EnemyModelBehaviour.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) return false;
 
                 Animator anim = enemy.Anim;
                 return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
