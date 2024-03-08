@@ -1,4 +1,5 @@
-import { ACESFilmicToneMapping, AmbientLight, CameraHelper, Color, DirectionalLight, FogExp2, PerspectiveCamera, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, CameraHelper, Color, DirectionalLight, FogExp2, PerspectiveCamera, VSMShadowMap } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import * as BitHelper from "../replay/bithelper.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
@@ -151,6 +152,8 @@ declare module "../replay/moduleloader.js" {
 
         interface RenderData {
             "Camera": PerspectiveCamera;
+            "FakeCamera": PerspectiveCamera;
+            "OrbitControls": OrbitControls;
             "MainLight": DirectionalLight;
         }
     }
@@ -201,7 +204,12 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.scene.add(light);
             r.scene.add(light.target);
 
-            // Setup camera controls -> TODO(randomuserhi): Make better
+            camera.position.set(0, 0, -10);
+            const fakeCamera = camera.clone();
+            r.set("FakeCamera", fakeCamera);
+            r.set("OrbitControls",  new OrbitControls(fakeCamera, r.renderer.domElement));
+
+            /*// Setup camera controls -> TODO(randomuserhi): Make better
             const mouse = {
                 x: 0,
                 y: 0,
@@ -267,7 +275,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
                     mouse.left = false;
                 else if (e.button === 2)
                     mouse.right = false;
-            });
+            });*/
 
             // Setup resize event
             r.addEventListener("resize", ({ width, height }) => {

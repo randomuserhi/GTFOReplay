@@ -278,9 +278,8 @@ namespace ReplayRecorder.Snapshot {
                 throw new ReplayAllHeadersAlreadyWritten($"Cannot write header '{headerType.FullName}' as all headers have been written already.");
             }
 
-            if (!unwrittenHeaders.Remove(headerType)) {
-                throw new ReplayHeaderAlreadyWritten($"Header '{headerType.FullName}' was already written.");
-            }
+            unwrittenHeaders.Remove(headerType);
+
             ushort id = SnapshotManager.types[headerType];
             APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
             BitHelper.WriteBytes(id, buffer);
@@ -301,6 +300,7 @@ namespace ReplayRecorder.Snapshot {
 
             byteOffset = sizeof(int) + buffer.count;
             buffer.Flush(fs);
+            buffer.Shrink();
 
             start = Raudy.Now;
             Replay.OnHeaderCompletion?.Invoke();

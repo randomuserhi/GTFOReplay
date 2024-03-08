@@ -16,6 +16,8 @@ namespace ReplayRecorder {
         internal ArraySegment<byte> _array = new byte[1024];
         internal ArraySegment<byte> Array => new ArraySegment<byte>(_array.Array!, _array.Offset, count);
 
+        internal bool inMemory = true;
+
         public ByteBuffer() {
             _array = new byte[1024];
         }
@@ -50,6 +52,11 @@ namespace ReplayRecorder {
             fs.Write(Array);
             fs.Flush();
             count = 0;
+        }
+
+        internal void Shrink() {
+            _array = new byte[1024];
+            GC.Collect();
         }
     }
 

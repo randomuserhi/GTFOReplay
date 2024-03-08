@@ -40,6 +40,7 @@ export interface player extends HTMLDivElement {
     time: number;
     lerp: number;
     prevTime: number;
+    frameRate: number;
     update(): void;
     close(): void;
     link(ip: string, port: number): Promise<void>;
@@ -114,9 +115,9 @@ export const player = Macro((() => {
     };
 
     player.prototype.update = function() {
+        const now = Date.now();
+        const dt = now - this.prevTime;
         if (this.replay !== undefined) {
-            const now = Date.now();
-            const dt = now - this.prevTime;
             this.prevTime = now;
 
             this.time += dt;
@@ -130,6 +131,7 @@ export const player = Macro((() => {
                 this.renderer.render(api);
             }
         }
+        this.frameRate = 1000 / dt;
 
         // TODO(randomuserhi): Method to dispose of loop when player is removed etc... 
         requestAnimationFrame(() => this.update());

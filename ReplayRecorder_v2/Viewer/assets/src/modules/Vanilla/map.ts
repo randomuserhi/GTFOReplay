@@ -1,8 +1,7 @@
-import { BufferAttribute, BufferGeometry, DoubleSide, Mesh, MeshPhongMaterial } from "three";
+import { BufferAttribute, BufferGeometry, DoubleSide, EdgesGeometry, LineBasicMaterial, LineSegments, Mesh, MeshPhongMaterial } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { HeaderApi, ModuleLoader } from "../../replay/moduleloader.js";
 import { Renderer } from "../../replay/renderer.js";
-import { DuplicateHeaderData } from "../replayrecorder.js";
 
 export interface MapGeometry {
     vertices: Float32Array;
@@ -13,36 +12,29 @@ declare module "../../replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Map.Geometry": Map<number, MapGeometry[]>;
+            "Vanilla.Map.Geometry.EOH": void;
         }
     }
 }
 
 ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
     parse: async (data, header) => {
-        const map = new Map<number, MapGeometry[]>();
+        const dimension = await BitHelper.readByte(data);
+        const nVertices = await BitHelper.readUShort(data);
+        const nIndicies = await BitHelper.readUInt(data);
+        const surface = {
+            vertices: await BitHelper.readVectorArrayAsFloat32(data, nVertices),
+            indices: await BitHelper.readUShortArray(data, nIndicies)
+        };
 
-        const nDimensions = await BitHelper.readByte(data);
-        for (let i = 0; i < nDimensions; ++i) {
-            const dimension = await BitHelper.readByte(data);
-            const nSurfaces = await BitHelper.readUShort(data);
-            const surfaces: MapGeometry[] = [];
-            for (let j = 0; j < nSurfaces; ++j) {
-                const nVertices = await BitHelper.readUShort(data);
-                const nIndicies = await BitHelper.readUInt(data);
-                const surface = {
-                    vertices: await BitHelper.readVectorArrayAsFloat32(data, nVertices),
-                    indices: await BitHelper.readUShortArray(data, nIndicies)
-                };
-                for (let k = 0; k < surface.vertices.length; k += 3) {
-                    surface.vertices[k + 1] -= 0.05; // offset map a little in y-axis
-                }
-                surfaces.push(surface);
-            }
-            map.set(dimension, surfaces);
-        }
+        const map = header.getOrDefault("Vanilla.Map.Geometry", () => new Map());
+        if (!map.has(dimension)) map.set(dimension, []);
+        map.get(dimension)!.push(surface);
+    }
+});
 
-        if (header.has("Vanilla.Map.Geometry")) throw new DuplicateHeaderData("Map Geometry was already written.");
-        else header.set("Vanilla.Map.Geometry", map);
+ModuleLoader.registerHeader("Vanilla.Map.Geometry.EOH", "0.0.1", {
+    parse: async () => {
     }
 });
 
@@ -91,6 +83,12 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                         surface.visible = false;
                         surfaces.push(surface);
                         renderer.scene.add(surface);
+                    }
+
+                    {
+                        const edges = new EdgesGeometry( geometry ); 
+                        const line = new LineSegments(edges, new LineBasicMaterial( { color: 0xffffff } ) ); 
+                        renderer.scene.add(line);
                     }
                 }
                 maps.set(dimension, surfaces);

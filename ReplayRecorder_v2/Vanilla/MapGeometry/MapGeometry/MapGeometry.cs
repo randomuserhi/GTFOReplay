@@ -9,61 +9,95 @@ using Vanilla.Map.Patches;
 
 namespace Vanilla.Map {
     internal class Surface {
-        public Mesh mesh;
+        public Mesh? mesh;
 
         public Surface(Mesh mesh) {
             this.mesh = mesh;
         }
     }
 
-    internal class Map {
-        public eDimensionIndex dimension;
-        public Surface[] surfaces;
-
-        public Map(eDimensionIndex dimension, Surface[] surfaces) {
-            this.dimension = dimension;
-            this.surfaces = surfaces;
-        }
-
-        public void Write(ByteBuffer buffer) {
-            if (surfaces.Length > ushort.MaxValue) {
-                APILogger.Error($"There were more than {ushort.MaxValue} surfaces.");
-                return;
-            }
-
-            BitHelper.WriteBytes((byte)dimension, buffer);
-            BitHelper.WriteBytes((ushort)surfaces.Length, buffer);
-            for (int i = 0; i < surfaces.Length; ++i) {
-                Surface surface = surfaces[i];
-                Vector3[] vertices = surface.mesh.vertices;
-                int[] indices = surface.mesh.triangles;
-
-                if (vertices.Length > ushort.MaxValue) {
-                    APILogger.Error($"There were more than {ushort.MaxValue} vertices");
-                    return;
-                }
-
-                BitHelper.WriteBytes((ushort)vertices.Length, buffer);
-                BitHelper.WriteBytes((uint)indices.Length, buffer);
-                for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteBytes(vertices[j], buffer);
-                for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], buffer);
-            }
-        }
-    }
-
     internal static class MapGeometryReplayManager {
         [ReplayInit]
         private static void Init() {
-            map = new Dictionary<eDimensionIndex, Map>();
             processed.Clear();
             MapGeometryPatches.dimensions = null;
         }
 
-        // Maps dimension to the surface map of that dimension
-        public static Dictionary<eDimensionIndex, Map> map = new Dictionary<eDimensionIndex, Map>();
-
         // private collection that maintains which dimensions have been processed
         private static HashSet<eDimensionIndex> processed = new HashSet<eDimensionIndex>();
+
+        private static int GetNewVertex(Dictionary<uint, int> newVectices, List<Vector3> vertices, int i1, int i2) {
+            if (i1 > ushort.MaxValue) throw new Exception("Only supports 16 bit indices.");
+            if (i2 > ushort.MaxValue) throw new Exception("Only supports 16 bit indices.");
+
+            // We have to test both directions since the edge
+            // could be reversed in another triangle
+            uint t1 = ((uint)i1 << 16) | (uint)i2;
+            uint t2 = ((uint)i2 << 16) | (uint)i1;
+            if (newVectices.ContainsKey(t2))
+                return newVectices[t2];
+            if (newVectices.ContainsKey(t1))
+                return newVectices[t1];
+            // generate vertex:
+            int newIndex = vertices.Count;
+            newVectices.Add(t1, newIndex);
+
+            // calculate new vertex
+            Vector3 pos = (vertices[i1] + vertices[i2]) * 0.5f;
+            if (NavMesh.Raycast(pos + Vector3.up, pos + Vector3.down, out var hit, 1)) {
+                pos = hit.position;
+            } else if (NavMesh.SamplePosition(pos, out var hit2, 5, 1)) {
+                pos = hit2.position;
+            }
+            vertices.Add(pos);
+
+            return newIndex;
+        }
+
+        private static void Subdivide(Mesh mesh) {
+            Dictionary<uint, int> newVectices = new Dictionary<uint, int>();
+
+            List<Vector3> vertices = new List<Vector3>(mesh.vertices);
+            List<int> indices = new List<int>();
+
+            for (int i = 0; i < mesh.triangles.Length; i += 3) {
+                int i1 = mesh.triangles[i + 0];
+                int i2 = mesh.triangles[i + 1];
+                int i3 = mesh.triangles[i + 2];
+
+                int a = GetNewVertex(newVectices, vertices, i1, i2);
+                int b = GetNewVertex(newVectices, vertices, i2, i3);
+                int c = GetNewVertex(newVectices, vertices, i3, i1);
+                indices.Add(i1);
+                indices.Add(a);
+                indices.Add(c);
+                indices.Add(i2);
+                indices.Add(b);
+                indices.Add(a);
+                indices.Add(i3);
+                indices.Add(c);
+                indices.Add(b);
+                indices.Add(a);
+                indices.Add(b);
+                indices.Add(c); // center triangle
+            }
+
+            mesh.vertices = vertices.ToArray();
+            mesh.triangles = indices.ToArray();
+        }
+
+        private static Vector3 ClosestVertex(Vector3 position, Mesh mesh) {
+            Vector3 closest = mesh.vertices[0];
+            float dist = (position - closest).sqrMagnitude;
+            for (int i = 1; i < mesh.vertices.Length; ++i) {
+                float d = (position - mesh.vertices[i]).sqrMagnitude;
+                if (d < dist) {
+                    closest = mesh.vertices[i];
+                    dist = d;
+                }
+            }
+            return closest;
+        }
 
         private static void GenerateMeshSurfaces(Dimension dimension) {
             NavMeshTriangulation triangulation = NavMesh.CalculateTriangulation();
@@ -78,7 +112,7 @@ namespace Vanilla.Map {
 
             Vector3[] vertices = triangulation.vertices;
             int[] indices = triangulation.indices;
-            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.05f, 1.3f);
+            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.1f, 1.3f);
 
             APILogger.Debug($"Splitting navmesh...");
             MeshUtils.Surface[] surfaceBuffer = MeshUtils.SplitNavmesh(vertices, indices);
@@ -96,6 +130,7 @@ namespace Vanilla.Map {
             for (int i = 0; i < surfaceBuffer.Length; ++i) {
                 meshes[i] = surfaceBuffer[i].ToMesh();
             }
+            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 50).ToArray(); // Cull meshes that are too small
 
             /// This works since each dimension has Layer information containing:
             /// - spawn locations
@@ -127,7 +162,7 @@ namespace Vanilla.Map {
                                 Vector3 gateLocation = gate.transform.position;
 
                                 int count = 0;
-                                foreach (Mesh mesh in meshes.OrderBy(m => (gateLocation - m.bounds.ClosestPoint(gateLocation)).sqrMagnitude)) {
+                                foreach (Mesh mesh in meshes.Where(m => gateLocation.y >= (m.bounds.center.y - m.bounds.extents.y - 0.1) && gateLocation.y <= (m.bounds.center.y + m.bounds.extents.y + 0.1)).OrderBy(m => (gateLocation - m.bounds.ClosestPoint(gateLocation)).sqrMagnitude)) {
                                     if (++count > 3) break;
                                     if (!relevantSurfaces.ContainsKey(mesh)) {
                                         relevantSurfaces.Add(mesh, new Surface(mesh));
@@ -152,7 +187,7 @@ namespace Vanilla.Map {
                 }
 
                 long end = Raudy.Now;
-                surfaces = relevantSurfaces.Values.Where(s => MeshUtils.GetSurfaceArea(s.mesh) > 50).ToArray(); // Cull surfaces that have too little surface area
+                surfaces = relevantSurfaces.Values.ToArray();
                 APILogger.Debug($"Found {surfaces.Length} relevant surfaces in {(end - start) / 1000f} seconds.");
             } else {
                 surfaces = new Surface[meshes.Length];
@@ -169,8 +204,14 @@ namespace Vanilla.Map {
                 return;
             }
 
-            // Add surfaces to map data
-            map.Add(dimension.DimensionIndex, new Map(dimension.DimensionIndex, surfaces));
+            // subdivide mesh and fix poor positions
+            for (int i = 0; i < surfaces.Length; ++i) {
+                Surface surface = surfaces[i];
+                Subdivide(surface.mesh!);
+                Replay.Trigger(new rMapGeometry((byte)dimension.DimensionIndex, surface));
+                surfaces[i].mesh = null;
+                GC.Collect();
+            }
         }
 
         public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions) {
@@ -195,21 +236,37 @@ namespace Vanilla.Map {
 
     [ReplayData("Vanilla.Map.Geometry", "0.0.1")]
     internal class rMapGeometry : ReplayHeader {
-        private Dictionary<eDimensionIndex, Map> map;
+        private byte dimension;
+        private Surface surface;
 
-        public override string? Debug => $"{map.Count} dimensions.";
-
-        public rMapGeometry(Dictionary<eDimensionIndex, Map> map) {
-            this.map = map;
+        public rMapGeometry(byte dimension, Surface surface) {
+            this.dimension = dimension;
+            this.surface = surface;
         }
 
         public override void Write(ByteBuffer buffer) {
-            // Write map info...
-            APILogger.Debug("Writing map data...");
-            BitHelper.WriteBytes((byte)map.Count, buffer); // Write number of dimensions
-            foreach (Map m in map.Values) {
-                m.Write(buffer);
+            if (surface.mesh == null) throw new NullReferenceException("Mesh was null.");
+
+            BitHelper.WriteBytes(dimension, buffer);
+
+            Vector3[] vertices = surface.mesh.vertices;
+            int[] indices = surface.mesh.triangles;
+
+            if (vertices.Length > ushort.MaxValue) {
+                APILogger.Error($"There were more than {ushort.MaxValue} vertices");
+                return;
             }
+
+            BitHelper.WriteBytes((ushort)vertices.Length, buffer);
+            BitHelper.WriteBytes((uint)indices.Length, buffer);
+            for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteBytes(vertices[j], buffer);
+            for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], buffer);
+        }
+    }
+
+    [ReplayData("Vanilla.Map.Geometry.EOH", "0.0.1")]
+    internal class rMapGeometryEOH : ReplayHeader {
+        public override void Write(ByteBuffer buffer) {
         }
     }
 }
