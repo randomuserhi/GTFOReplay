@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Vanilla.EnemyProjectile.Patches {
     [HarmonyPatch]
-    internal class EnemyProjectilePatches {
+    internal static class EnemyProjectilePatches {
         [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]
         [HarmonyPrefix]
         private static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data) {

@@ -4,7 +4,7 @@ using ReplayRecorder;
 
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
-    internal class BossLimbPatches {
+    internal static class BossLimbPatches {
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]
         [HarmonyPostfix]
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {

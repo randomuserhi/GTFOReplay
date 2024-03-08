@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
-    internal class SpawningPatches {
+    internal static class SpawningPatches {
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]
         [HarmonyPostfix]
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {

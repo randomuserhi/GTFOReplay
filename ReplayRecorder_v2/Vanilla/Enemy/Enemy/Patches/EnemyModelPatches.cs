@@ -4,34 +4,30 @@ using HarmonyLib;
 using Player;
 using UnityEngine;
 using Vanilla.Enemy.BepInEx;
+using static Enemies.EnemyUpdateManager;
 
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
-    internal class EnemyModelPatches {
-        [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]
-        [HarmonyPostfix]
-        private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {
-            EnemyModelBehaviour behaviour = __instance.m_agent.transform.gameObject.AddComponent<EnemyModelBehaviour>();
-            behaviour.agent = __instance.m_agent;
-        }
+    internal static class EnemyModelPatches {
+        public static HashSet<int> aggressiveInRange = new HashSet<int>();
 
         [HarmonyPatch(typeof(C_MovingCuller), nameof(C_MovingCuller.IsShown), MethodType.Getter)]
         [HarmonyPostfix]
         private static void GetIsShown(C_MovingCuller __instance, ref bool __result) {
             EnemyAgent? enemy = __instance.m_owner.TryCast<EnemyAgent>();
-            if (enemy != null && EnemyModelBehaviour.aggressiveInRange.Contains(enemy.GlobalID)) {
+            if (enemy != null) { // && EnemyModelBehaviour.aggressiveInRange.Contains(enemy.GlobalID)) {
                 __result = true;
             }
         }
-    }
 
-    internal class EnemyModelBehaviour : MonoBehaviour {
-        internal static HashSet<ushort> aggressiveInRange = new HashSet<ushort>();
-        internal EnemyAgent? agent;
+        [HarmonyPatch(typeof(UpdateLocomotionGroup), nameof(UpdateLocomotionGroup.UpdateMember))]
+        [HarmonyPostfix]
+        private static void UpdateLocomotionClose(UpdateLocomotionGroup __instance, EnemyLocomotion member) {
+            //if (Current.m_locomotionUpdatesClose.m_members.Contains(member)) return;
+            UpdateAnim(member.m_agent);
+        }
 
-        private void Update() {
-            if (agent == null) return;
-
+        private static void UpdateAnim(EnemyAgent agent) {
             switch (agent.Locomotion.m_currentState.m_stateEnum) {
             case ES_StateEnum.PathMove:
             case ES_StateEnum.KnockdownRecover:
@@ -53,14 +49,14 @@ namespace Vanilla.Enemy.Patches {
                 foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
                     bool isAggressive = agent.AI.m_mode == Agents.AgentMode.Agressive;
                     bool isInRange = (player.transform.position - agent.transform.position).sqrMagnitude < ConfigManager.AnimationRange * ConfigManager.AnimationRange;
-                    if (isAggressive || isInRange) {
+                    if ((isAggressive || isInRange) && !aggressiveInRange.Contains(agent.GlobalID)) {
                         agent.Anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                         added = true;
                         aggressiveInRange.Add(agent.GlobalID);
                         break;
                     }
                 }
-                if (!added) {
+                if (!added && aggressiveInRange.Contains(agent.GlobalID)) {
                     agent.Anim.cullingMode = AnimatorCullingMode.CullCompletely;
                     aggressiveInRange.Remove(agent.GlobalID);
                 }

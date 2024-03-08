@@ -6,11 +6,15 @@ using ReplayRecorder.Core;
 namespace Vanilla.Enemy {
     internal static class EnemyReplayManager {
         public static void Spawn(EnemyAgent enemy) {
+            if (!Replay.Active) return;
+
             Replay.Spawn(new rEnemy(enemy));
             if (rEnemyModel.isValid(enemy)) Replay.Spawn(new rEnemyModel(enemy));
         }
 
         public static void Despawn(EnemyAgent enemy) {
+            if (!Replay.Active) return;
+
             rEnemy rEnemy = new rEnemy(enemy);
             if (Replay.Has(rEnemy)) Replay.Despawn(rEnemy);
 

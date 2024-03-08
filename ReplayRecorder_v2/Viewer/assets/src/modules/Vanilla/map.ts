@@ -82,13 +82,12 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                         surface.receiveShadow = true;
                         surface.visible = false;
                         surfaces.push(surface);
-                        renderer.scene.add(surface);
-                    }
 
-                    {
                         const edges = new EdgesGeometry( geometry ); 
-                        const line = new LineSegments(edges, new LineBasicMaterial( { color: 0xffffff } ) ); 
-                        renderer.scene.add(line);
+                        const line = new LineSegments(edges, new LineBasicMaterial({ color: 0x3572a1 })); 
+                        surface.add(line);
+
+                        renderer.scene.add(surface);
                     }
                 }
                 maps.set(dimension, surfaces);

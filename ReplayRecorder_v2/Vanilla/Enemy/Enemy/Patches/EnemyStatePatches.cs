@@ -4,7 +4,7 @@ using ReplayRecorder;
 
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
-    internal class EnemyStatePatches {
+    internal static class EnemyStatePatches {
         [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.DoHitReact))]
         [HarmonyPostfix]
         private static void OnStaggerEnter(ES_Hitreact __instance) {

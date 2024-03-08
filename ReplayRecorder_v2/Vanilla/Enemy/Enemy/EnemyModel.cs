@@ -42,36 +42,72 @@ namespace Vanilla.Enemy {
 
         private EnemyAgent enemy;
 
+        private Transform T_head;
+
+        private Transform T_LUArm;
+        private Transform T_LLArm;
+        private Transform T_LHand;
+
+        private Transform T_RUArm;
+        private Transform T_RLArm;
+        private Transform T_RHand;
+
+        private Transform T_LULeg;
+        private Transform T_LLLeg;
+        private Transform T_LFoot;
+
+        private Transform T_RULeg;
+        private Transform T_RLLeg;
+        private Transform T_RFoot;
+
         public override bool Active => enemy != null;
         public override int Id => enemy.GlobalID;
         public override bool IsDirty {
             get {
                 if (tick != 0) return false;
-                if (!EnemyModelBehaviour.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) return false;
+                if (!EnemyModelPatches.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) return false;
 
-                Animator anim = enemy.Anim;
-                return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
+                return head != T_head.position ||
 
-                LUArm != anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position ||
-                LLArm != anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position ||
-                LHand != anim.GetBoneTransform(HumanBodyBones.LeftHand).position ||
+                LUArm != T_LUArm.position ||
+                LLArm != T_LLArm.position ||
+                LHand != T_LHand.position ||
 
-                RUArm != anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position ||
-                RLArm != anim.GetBoneTransform(HumanBodyBones.RightLowerArm).position ||
-                RHand != anim.GetBoneTransform(HumanBodyBones.RightHand).position ||
+                RUArm != T_RUArm.position ||
+                RLArm != T_RLArm.position ||
+                RHand != T_RHand.position ||
 
-                LULeg != anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position ||
-                LLLeg != anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position ||
-                LFoot != anim.GetBoneTransform(HumanBodyBones.LeftFoot).position ||
+                LULeg != T_LULeg.position ||
+                LLLeg != T_LLLeg.position ||
+                LFoot != T_LFoot.position ||
 
-                RULeg != anim.GetBoneTransform(HumanBodyBones.RightUpperLeg).position ||
-                RLLeg != anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position ||
-                RFoot != anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                RULeg != T_RULeg.position ||
+                RLLeg != T_RLLeg.position ||
+                RFoot != T_RFoot.position;
             }
         }
 
         public rEnemyModel(EnemyAgent enemy) {
             this.enemy = enemy;
+            Animator anim = enemy.Anim;
+
+            T_head = anim.GetBoneTransform(HumanBodyBones.Head);
+
+            T_LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            T_LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+            T_LHand = anim.GetBoneTransform(HumanBodyBones.LeftHand);
+
+            T_RUArm = anim.GetBoneTransform(HumanBodyBones.RightUpperArm);
+            T_RLArm = anim.GetBoneTransform(HumanBodyBones.RightLowerArm);
+            T_RHand = anim.GetBoneTransform(HumanBodyBones.RightHand);
+
+            T_LULeg = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+            T_LLLeg = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+            T_LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
+
+            T_RULeg = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+            T_RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+            T_RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot);
         }
 
         private Vector3 head;
@@ -94,25 +130,24 @@ namespace Vanilla.Enemy {
 
         public override void Write(ByteBuffer buffer) {
             Vector3 pos = enemy.transform.position;
-            Animator anim = enemy.Anim;
 
-            head = anim.GetBoneTransform(HumanBodyBones.Head).position;
+            head = T_head.position;
 
-            LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
-            LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
-            LHand = anim.GetBoneTransform(HumanBodyBones.LeftHand).position;
+            LUArm = T_LUArm.position;
+            LLArm = T_LLArm.position;
+            LHand = T_LHand.position;
 
-            RUArm = anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position;
-            RLArm = anim.GetBoneTransform(HumanBodyBones.RightLowerArm).position;
-            RHand = anim.GetBoneTransform(HumanBodyBones.RightHand).position;
+            RUArm = T_RUArm.position;
+            RLArm = T_RLArm.position;
+            RHand = T_RHand.position;
 
-            LULeg = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position;
-            LLLeg = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position;
-            LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+            LULeg = T_LULeg.position;
+            LLLeg = T_LLLeg.position;
+            LFoot = T_LFoot.position;
 
-            RULeg = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg).position;
-            RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
-            RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+            RULeg = T_RULeg.position;
+            RLLeg = T_RLLeg.position;
+            RFoot = T_RFoot.position;
 
             BitHelper.WriteHalf(head - pos, buffer);
 

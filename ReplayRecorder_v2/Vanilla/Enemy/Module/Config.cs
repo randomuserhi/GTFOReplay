@@ -14,7 +14,7 @@ namespace Vanilla.Enemy.BepInEx {
             animationTickRate = configFile.Bind(
                 $"{Module.Name}",
                 "animationTickRate",
-                4,
+                3,
                 "How many ticks until an animation frame is recorded. (The lower the value, the more storage space a replay will take). Value cannot be less than 1.");
 
             animationRange = configFile.Bind(

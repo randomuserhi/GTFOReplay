@@ -268,7 +268,7 @@ class PlayerModel extends SkeletonModel {
     }
 }
 
-const colors: ColorRepresentation[] = [
+export const playerColors: ColorRepresentation[] = [
     0xc21f4e,
     0x18935e,
     0x20558c,
@@ -284,7 +284,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
             for (const [id, player] of players) {
                 if (!models.has(id)) {
-                    const model = new PlayerModel(new Color(colors[player.slot]));
+                    const model = new PlayerModel(new Color(playerColors[player.slot]));
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }
