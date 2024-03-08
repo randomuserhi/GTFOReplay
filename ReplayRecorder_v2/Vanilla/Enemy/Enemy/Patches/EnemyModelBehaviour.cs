@@ -1,4 +1,5 @@
-﻿using Enemies;
+﻿using CullingSystem;
+using Enemies;
 using HarmonyLib;
 using Player;
 using UnityEngine;
@@ -12,6 +13,15 @@ namespace Vanilla.Enemy.Patches {
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {
             EnemyModelBehaviour behaviour = __instance.m_agent.transform.gameObject.AddComponent<EnemyModelBehaviour>();
             behaviour.agent = __instance.m_agent;
+        }
+
+        [HarmonyPatch(typeof(C_MovingCuller), nameof(C_MovingCuller.IsShown), MethodType.Getter)]
+        [HarmonyPostfix]
+        private static void GetIsShown(C_MovingCuller __instance, ref bool __result) {
+            EnemyAgent? enemy = __instance.m_owner.TryCast<EnemyAgent>();
+            if (enemy != null && EnemyModelBehaviour.aggressiveInRange.Contains(enemy.GlobalID)) {
+                __result = true;
+            }
         }
     }
 
@@ -45,13 +55,13 @@ namespace Vanilla.Enemy.Patches {
                     bool isInRange = (player.transform.position - agent.transform.position).sqrMagnitude < ConfigManager.AnimationRange * ConfigManager.AnimationRange;
                     if (isAggressive || isInRange) {
                         agent.Anim.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-                        agent.MovingCuller.CullBucket.Show();
                         added = true;
                         aggressiveInRange.Add(agent.GlobalID);
                         break;
                     }
                 }
                 if (!added) {
+                    agent.Anim.cullingMode = AnimatorCullingMode.CullCompletely;
                     aggressiveInRange.Remove(agent.GlobalID);
                 }
                 break;
