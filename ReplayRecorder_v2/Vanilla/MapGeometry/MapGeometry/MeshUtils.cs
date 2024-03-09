@@ -175,6 +175,7 @@ namespace Vanilla.Map {
 
         // Merge vertices that are within a threshhold of each other
         // Utilizes Spatial partitioning for performance (size of partition is based on bucketStep)
+        // TODO(randomuserhi): Use a better algorithm -> the current one creates poor mesh topology
         public static (Vector3[], int[]) Weld(Vector3[] vertices, int[] indices, float threshold, float bucketStep = 1.3f) {
             threshold *= threshold;
 

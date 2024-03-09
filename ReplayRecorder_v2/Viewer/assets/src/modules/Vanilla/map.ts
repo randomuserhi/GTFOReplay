@@ -152,7 +152,7 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                         edgeGeometry.setIndex(getBoundaryEdges(meshes[i].indices));
                         edgeGeometry.setAttribute("position", vertices);
 
-                        const line = new LineSegments(edgeGeometry, new LineBasicMaterial({ color: 0x3572a1 })); 
+                        const line = new LineSegments(edgeGeometry, new LineBasicMaterial({ color: 0x63ade6 })); 
                         surface.add(line);
 
                         renderer.scene.add(surface);
