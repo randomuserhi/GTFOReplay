@@ -59,7 +59,7 @@ namespace Vanilla.Map {
             return newIndex;
         }
 
-        private static void Subdivide(Mesh mesh) {
+        private static (Vector3[], int[]) Subdivide(Mesh mesh) {
             Dictionary<uint, int> newVectices = new Dictionary<uint, int>();
 
             List<Vector3> vertices = new List<Vector3>(mesh.vertices);
@@ -87,8 +87,7 @@ namespace Vanilla.Map {
                 indices.Add(c); // center triangle
             }
 
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = indices.ToArray();
+            return (vertices.ToArray(), indices.ToArray());
         }
 
         private static Vector3 ClosestVertex(Vector3 position, Mesh mesh) {
@@ -117,7 +116,7 @@ namespace Vanilla.Map {
 
             Vector3[] vertices = triangulation.vertices;
             int[] indices = triangulation.indices;
-            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.1f, 1.3f);
+            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.25f, 2f);
 
             APILogger.Debug($"Splitting navmesh...");
             MeshUtils.Surface[] surfaceBuffer = MeshUtils.SplitNavmesh(vertices, indices);
@@ -218,9 +217,12 @@ namespace Vanilla.Map {
             // subdivide mesh and fix poor positions
             for (int i = 0; i < surfaces.Length; ++i) {
                 Surface surface = surfaces[i];
-                Subdivide(surface.mesh!);
+                (vertices, indices) = Subdivide(surface.mesh!);
+                surface.mesh!.Clear();
+                surface.mesh.vertices = vertices;
+                surface.mesh.triangles = indices;
 
-                surface.mesh!.RecalculateBounds();
+                surface.mesh.RecalculateBounds();
                 float low = surface.mesh!.bounds.center.y - surface.mesh!.bounds.extents.y;
                 if (low < MapBounds.lowestPoint[(byte)dimension.DimensionIndex]) {
                     MapBounds.lowestPoint[(byte)dimension.DimensionIndex] = low;

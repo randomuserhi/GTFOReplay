@@ -1,11 +1,11 @@
 ﻿using BepInEx.Logging;
-using Vanilla.Cfoam.BepInEx;
+using Vanilla.ChainedPuzzles.BepInEx;
 
-namespace Vanilla.Cfoam.BepInEx {
+namespace Vanilla.ChainedPuzzles.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
-        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla.Cfoam";
-        public const string Name = "ReplayRecorder.Vanilla.Cfoam";
+        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla.ChainedPuzzles";
+        public const string Name = "ReplayRecorder.Vanilla.ChainedPuzzles";
         public const string Version = "0.0.1";
     }
 }

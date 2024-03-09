@@ -23,11 +23,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnemyProjectile", "EnemyPro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GunShots", "GunShots\GunShots.csproj", "{C75F8B52-2785-4382-99D4-0F5F65EA6E45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry", "Sentry\Sentry.csproj", "{86DF2FF9-4373-42DB-BDB1-5915F7FDD6C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentry", "Sentry\Sentry.csproj", "{86DF2FF9-4373-42DB-BDB1-5915F7FDD6C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mine", "Mine\Mine.csproj", "{E4787845-1905-4437-A8CE-9FC33E4B0E7C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mine", "Mine\Mine.csproj", "{E4787845-1905-4437-A8CE-9FC33E4B0E7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cfoam", "Cfoam\Cfoam.csproj", "{34A64FEA-B682-4860-85BC-BD866ED3882A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cfoam", "Cfoam\Cfoam.csproj", "{34A64FEA-B682-4860-85BC-BD866ED3882A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainedPuzzles", "ChainedPuzzles\ChainedPuzzles.csproj", "{07E7AFFD-492B-486C-8E21-9A18E019B06D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

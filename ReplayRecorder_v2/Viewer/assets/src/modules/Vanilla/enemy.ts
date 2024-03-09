@@ -356,6 +356,9 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
             for (const [id, enemy] of enemies) {
                 const skeleton = skeletons.get(id);
+                // TODO(randomuserhi): Sometimes skeleton is created late
+                //                     => I need to check enemy type rather than just checking instance of skeleton
+                //                     => Or store when spawning an enemy whether it has a valid skeleton
                 if (skeleton !== undefined) {
                     if (!models.has(id)) {
                         const model = new EnemyModel(new Color(0xff0000));

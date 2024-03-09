@@ -180,8 +180,6 @@ namespace Vanilla.Map {
 
             List<Vector3> newVertices = new List<Vector3>();
             int[] indexMap = new int[vertices.Length];
-            Dictionary<Vector3, int> vertexToIndex = new Dictionary<Vector3, int>();
-            int[] newIndices = new int[indices.Length];
 
             // Find AABB
             Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
@@ -227,11 +225,20 @@ namespace Vanilla.Map {
             skip:;
             }
 
-            for (int i = 0; i < indices.Length; ++i) {
-                newIndices[i] = indexMap[indices[i]];
+            List<int> newIndices = new List<int>();
+            for (int i = 0; i < indices.Length; i += 3) {
+                int a = indexMap[indices[i]];
+                int b = indexMap[indices[i + 1]];
+                int c = indexMap[indices[i + 2]];
+                if (a == b) continue;
+                if (a == c) continue;
+                if (b == c) continue;
+                newIndices.Add(a);
+                newIndices.Add(b);
+                newIndices.Add(c);
             }
 
-            return (newVertices.ToArray(), newIndices);
+            return (newVertices.ToArray(), newIndices.ToArray());
         }
     }
 }

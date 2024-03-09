@@ -4,8 +4,8 @@ using Vanilla.Mine.BepInEx;
 namespace Vanilla.Mine.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
-        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla.Sentry";
-        public const string Name = "ReplayRecorder.Vanilla.Sentry";
+        public const string GUID = "randomuserhi.ReplayRecorder.Vanilla.Mine";
+        public const string Name = "ReplayRecorder.Vanilla.Mine";
         public const string Version = "0.0.1";
     }
 }
