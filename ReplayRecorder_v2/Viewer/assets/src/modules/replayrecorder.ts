@@ -223,7 +223,9 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             camera.position.set(0, 0, -10);
             const fakeCamera = camera.clone();
             r.set("FakeCamera", fakeCamera);
-            r.set("OrbitControls",  new OrbitControls(fakeCamera, r.renderer.domElement));
+            const controls = new OrbitControls(fakeCamera, r.renderer.domElement);
+            controls.enablePan = false;
+            r.set("OrbitControls",  controls);
 
             /*// Setup camera controls -> TODO(randomuserhi): Make better
             const mouse = {
