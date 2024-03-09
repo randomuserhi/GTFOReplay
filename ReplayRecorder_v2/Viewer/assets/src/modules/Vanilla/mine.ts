@@ -160,8 +160,6 @@ class MineModel {
         const laserMaterial = new MeshStandardMaterial({ color });
         laserMaterial.transparent = true;
         laserMaterial.opacity = 0.5;
-
-        this.group = new Group();
         
         this.base = new Mesh(cylinder, material);
         this.group.add(this.base);

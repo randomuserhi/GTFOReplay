@@ -10,7 +10,7 @@ namespace Vanilla.Enemy.Patches {
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {
             foreach (Dam_EnemyDamageLimb limb in __instance.m_damage.DamageLimbs) {
                 Dam_EnemyDamageLimb_Custom? limbCustom = limb.TryCast<Dam_EnemyDamageLimb_Custom>();
-                if (limbCustom != null) {
+                if (limbCustom != null && limbCustom.HasDestruction()) {
                     Replay.Spawn(new rLimbCustom(limbCustom));
                 }
             }

@@ -1,4 +1,4 @@
-import { Color, Mesh, MeshPhongMaterial, Quaternion, SphereGeometry } from "three";
+import { Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene, SphereGeometry } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
@@ -272,6 +272,7 @@ declare module "../../replay/moduleloader.js" {
 
         interface RenderData {
             "Enemies": Map<number, EnemyModel>;
+            "Flyers": Map<number, FlyerModel>;
             "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
     }
@@ -308,30 +309,77 @@ class EnemyModel extends SkeletonModel {
     }
 }
 
+const sphereGeometry = new SphereGeometry(1, 10, 10);
+
+// TODO(randomuserhi)
+class FlyerModel {
+    readonly group: Group;
+
+    readonly body: Mesh;
+    
+    constructor(color: Color) {
+        this.group = new Group();
+
+        const material = new MeshPhongMaterial({ color });
+        
+        this.body = new Mesh(sphereGeometry, material);
+        this.group.add(this.body);
+        this.body.scale.set(0.5, 0.5, 0.5);
+    }
+
+    public update(enemy: Enemy) {
+        this.group.quaternion.set(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w);
+        this.group.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
+    }
+
+    public setVisible(visible: boolean) {
+        this.group.visible = visible;
+    }
+
+    public addToScene(scene: Scene) {
+        scene.add(this.group);
+    }
+
+    public removeFromScene(scene: Scene) {
+        scene.remove(this.group);
+    }
+}
+
 // TODO(randomuserhi): Proper enemy models + enemy types
 ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemies", () => new Map());
+            const flyers = renderer.getOrDefault("Flyers", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
             const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
             for (const [id, enemy] of enemies) {
-                if (!models.has(id)) {
-                    const model = new EnemyModel(new Color(0xff0000));
-                    models.set(id, model);
-                    model.addToScene(renderer.scene);
-                }
-
-                const model = models.get(id)!;
                 const skeleton = skeletons.get(id);
                 if (skeleton !== undefined) {
+                    if (!models.has(id)) {
+                        const model = new EnemyModel(new Color(0xff0000));
+                        models.set(id, model);
+                        model.addToScene(renderer.scene);
+                    }
+    
+                    const model: EnemyModel = models.get(id)!;
+
                     model.update(skeleton);
                     model.morph(enemy);
+                    model.setVisible(enemy.dimension === renderer.get("Dimension"));
                 } else {
-                    // TODO(randomuserhi): no skeleton for this enemy
+                    if (!flyers.has(id)) {
+                        const flyer = new FlyerModel(new Color(0xff0000));
+                        flyers.set(id, flyer);
+                        flyer.addToScene(renderer.scene);
+                    }
+    
+                    const flyer: FlyerModel = flyers.get(id)!;
+
+                    flyer.update(enemy);
+                    flyer.setVisible(enemy.dimension === renderer.get("Dimension"));
                 }
-                model.setVisible(enemy.dimension === renderer.get("Dimension"));
             }
 
             for (const [id, model] of [...models.entries()]) {
@@ -339,6 +387,13 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     model.removeFromScene(renderer.scene);
                     models.delete(id);
                     skeletons.delete(id);
+                }
+            }
+
+            for (const [id, flyer] of [...flyers.entries()]) {
+                if (!enemies.has(id)) {
+                    flyer.removeFromScene(renderer.scene);
+                    flyers.delete(id);
                 }
             }
         } 
