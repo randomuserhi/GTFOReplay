@@ -3,7 +3,7 @@ using ReplayRecorder;
 
 namespace Vanilla.Sentry.Patches {
     [HarmonyPatch]
-    internal class SpawnPatches {
+    internal static class SpawnPatches {
         [HarmonyPatch(typeof(SentryGunInstance), nameof(SentryGunInstance.OnSpawn))]
         [HarmonyPostfix]
         private static void OnSpawn(SentryGunInstance __instance, pGearSpawnData spawnData) {

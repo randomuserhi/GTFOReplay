@@ -34,8 +34,4 @@
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Mine\" />
-	</ItemGroup>
-
 </Project>

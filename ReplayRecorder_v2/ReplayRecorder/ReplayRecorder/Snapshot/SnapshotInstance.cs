@@ -39,7 +39,7 @@ namespace ReplayRecorder.Snapshot {
             public int NDirtyDynamics {
                 get {
                     if (isDirty) {
-                        _nDirtyDynamics = dynamics.Count(d => d.Active && (d.IsDirty || !d.init));
+                        _nDirtyDynamics = dynamics.Count(d => d.Active && (d.IsDirty/* || !d.init*/));
                         isDirty = false;
                     }
                     return _nDirtyDynamics;
@@ -129,10 +129,10 @@ namespace ReplayRecorder.Snapshot {
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
 
-                    if (dynamic.Active && (dynamic.IsDirty || !dynamic.init)) {
+                    if (dynamic.Active && (dynamic.IsDirty/* || !dynamic.init*/)) {
                         if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
                         ++numWritten;
-                        dynamic.init = true;
+                        //dynamic.init = true;
                         dynamic._Write(buffer);
                         dynamic.Write(buffer);
                     }

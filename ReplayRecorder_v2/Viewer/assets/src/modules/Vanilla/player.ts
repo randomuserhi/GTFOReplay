@@ -259,7 +259,7 @@ class PlayerModel extends SkeletonModel {
         this.body.lookAt(x + bodyBottom.x, y + bodyBottom.y, z + bodyBottom.z);
         this.body.scale.z = Pod.Vec.dist(bodyTop, bodyBottom) * 0.7;
         this.points[0].position.set(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7);
-        this.points[1].position.set(bodyBottom.x, bodyBottom.y, bodyBottom.z);
+        this.points[1].position.set(bodyTop.x, bodyTop.y, bodyTop.z);
     }
 
     public morph(player: Player): void {

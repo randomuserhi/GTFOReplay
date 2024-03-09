@@ -42,7 +42,7 @@ namespace ReplayRecorder.API {
 
     public abstract class ReplayDynamic : IEquatable<ReplayDynamic> {
         internal bool remove = false;
-        internal bool init = false;
+        //internal bool init = false;
 
         public virtual string? Debug => null;
 
