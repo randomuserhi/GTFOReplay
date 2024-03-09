@@ -49,9 +49,6 @@ const mineTypemap: MineType[] = [
 ];
 
 export interface Mine extends DynamicTransform {
-    position: Pod.Vector;
-    rotation: Pod.Quaternion;
-    dimension: number;
     type: MineType;
     owner: number;
     length: number;

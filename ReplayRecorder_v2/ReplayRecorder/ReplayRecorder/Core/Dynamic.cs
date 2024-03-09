@@ -32,7 +32,7 @@ namespace ReplayRecorder.Core {
 
     public abstract class DynamicPosition : ReplayDynamic {
         private int id;
-        protected IReplayTransform transform;
+        public IReplayTransform transform;
         private Vector3 oldPosition;
         private byte oldDimensionIndex;
 
@@ -91,7 +91,7 @@ namespace ReplayRecorder.Core {
 
     public abstract class DynamicRotation : ReplayDynamic {
         private int id;
-        protected IReplayTransform transform;
+        public IReplayTransform transform;
         private Quaternion oldRotation;
 
         public override string? Debug => $"{id} - ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
@@ -138,7 +138,7 @@ namespace ReplayRecorder.Core {
 
     public abstract class DynamicTransform : ReplayDynamic {
         private int id;
-        protected IReplayTransform transform;
+        public IReplayTransform transform;
         private Vector3 oldPosition;
         private Quaternion oldRotation;
         private byte oldDimensionIndex;

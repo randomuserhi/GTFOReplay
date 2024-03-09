@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry", "Sentry\Sentry.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mine", "Mine\Mine.csproj", "{E4787845-1905-4437-A8CE-9FC33E4B0E7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cfoam", "Cfoam\Cfoam.csproj", "{34A64FEA-B682-4860-85BC-BD866ED3882A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{E4787845-1905-4437-A8CE-9FC33E4B0E7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4787845-1905-4437-A8CE-9FC33E4B0E7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4787845-1905-4437-A8CE-9FC33E4B0E7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34A64FEA-B682-4860-85BC-BD866ED3882A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

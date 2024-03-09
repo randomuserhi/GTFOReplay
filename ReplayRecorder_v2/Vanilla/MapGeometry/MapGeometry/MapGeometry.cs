@@ -16,11 +16,16 @@ namespace Vanilla.Map {
         }
     }
 
+    public static class MapBounds {
+        public static Dictionary<byte, float> lowestPoint { get; internal set; } = new Dictionary<byte, float>();
+    }
+
     internal static class MapGeometryReplayManager {
         [ReplayInit]
         private static void Init() {
             processed.Clear();
             MapGeometryPatches.dimensions = null;
+            MapBounds.lowestPoint.Clear();
         }
 
         // private collection that maintains which dimensions have been processed
@@ -206,10 +211,21 @@ namespace Vanilla.Map {
                 return;
             }
 
+            if (!MapBounds.lowestPoint.ContainsKey((byte)dimension.DimensionIndex)) {
+                MapBounds.lowestPoint.Add((byte)dimension.DimensionIndex, float.PositiveInfinity);
+            }
+
             // subdivide mesh and fix poor positions
             for (int i = 0; i < surfaces.Length; ++i) {
                 Surface surface = surfaces[i];
                 Subdivide(surface.mesh!);
+
+                surface.mesh!.RecalculateBounds();
+                float low = surface.mesh!.bounds.center.y - surface.mesh!.bounds.extents.y;
+                if (low < MapBounds.lowestPoint[(byte)dimension.DimensionIndex]) {
+                    MapBounds.lowestPoint[(byte)dimension.DimensionIndex] = low;
+                }
+
                 Replay.Trigger(new rMapGeometry((byte)dimension.DimensionIndex, surface));
                 surfaces[i].mesh = null;
                 GC.Collect();
