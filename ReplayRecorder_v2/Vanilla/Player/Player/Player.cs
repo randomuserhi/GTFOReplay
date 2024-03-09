@@ -64,7 +64,7 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
             Replay.Despawn(player);
-            Replay.Despawn(new rPlayerModel(agent));
+            Replay.Despawn(Replay.Get<rPlayerModel>(agent.GlobalID));
             players.Remove(player);
         }
     }

@@ -15,11 +15,8 @@ namespace Vanilla.Enemy {
         public static void Despawn(EnemyAgent enemy) {
             if (!Replay.Active) return;
 
-            rEnemy rEnemy = new rEnemy(enemy);
-            if (Replay.Has(rEnemy)) Replay.Despawn(rEnemy);
-
-            rEnemyModel rModel = new rEnemyModel(enemy);
-            if (Replay.Has(rModel)) Replay.Despawn(rModel);
+            if (Replay.Has<rEnemy>(enemy.GlobalID)) Replay.Despawn(Replay.Get<rEnemy>(enemy.GlobalID));
+            if (Replay.Has<rEnemyModel>(enemy.GlobalID)) Replay.Despawn(Replay.Get<rEnemyModel>(enemy.GlobalID));
         }
     }
 

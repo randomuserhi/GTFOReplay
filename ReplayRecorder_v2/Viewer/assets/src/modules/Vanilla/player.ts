@@ -88,7 +88,7 @@ const meleeStateTypemap: MeleeState[] = [
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await DynamicTransform.parseTransform(data);
+            const result = await DynamicTransform.parse(data);
             return {
                 ...result,
                 state: playerStateTypemap[await BitHelper.readByte(data)]

@@ -21,8 +21,8 @@ namespace Vanilla.Enemy.Patches {
             foreach (Dam_EnemyDamageLimb limb in __instance.m_damage.DamageLimbs) {
                 Dam_EnemyDamageLimb_Custom? limbCustom = limb.TryCast<Dam_EnemyDamageLimb_Custom>();
                 if (limbCustom != null) {
-                    rLimbCustom rlimb = new rLimbCustom(limbCustom);
-                    if (Replay.Has(rlimb)) Replay.Despawn(rlimb);
+                    int id = limbCustom.GetInstanceID();
+                    if (Replay.Has<rLimbCustom>(id)) Replay.Despawn(Replay.Get<rLimbCustom>(id));
                 }
             }
         }

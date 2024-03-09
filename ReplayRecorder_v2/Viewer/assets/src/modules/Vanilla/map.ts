@@ -27,6 +27,11 @@ ModuleLoader.registerHeader("Vanilla.Map.Geometry", "0.0.1", {
             indices: await BitHelper.readUShortArray(data, nIndicies)
         };
 
+        // offset surface a little to deal with bad navmesh
+        for (let i = 0; i < surface.vertices.length; i += 3) {
+            surface.vertices[i + 1] -= 0.1;
+        }
+
         const map = header.getOrDefault("Vanilla.Map.Geometry", () => new Map());
         if (!map.has(dimension)) map.set(dimension, []);
         map.get(dimension)!.push(surface);

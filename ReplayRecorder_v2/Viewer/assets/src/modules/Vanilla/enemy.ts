@@ -92,7 +92,7 @@ export interface Enemy extends DynamicTransform {
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await DynamicTransform.parseTransform(data);
+            const result = await DynamicTransform.parse(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -193,7 +193,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.LimbDestruction", "0.0.1", {
 ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await DynamicTransform.parsePosition(data);
+            const result = await DynamicPosition.parse(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {

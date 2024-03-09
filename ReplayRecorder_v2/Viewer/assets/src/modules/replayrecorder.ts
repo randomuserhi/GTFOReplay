@@ -75,11 +75,6 @@ export interface DynamicTransform extends Dynamic {
     dimension: number;
 }
 
-export interface DynamicPosition extends Dynamic {
-    position: Vector;
-    dimension: number;
-}
-
 export namespace DynamicTransform {
     export function create({ id, position, rotation, dimension }: { id: number, position?: Vector, rotation?: Quaternion, dimension?: number }): { id: number, position: Vector, rotation: Quaternion, dimension: number } {
         return {
@@ -96,25 +91,12 @@ export namespace DynamicTransform {
             rotation: await BitHelper.readHalfQuaternion(data)
         };
     }
-    export async function parseTransform(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector, rotation: Quaternion }> {
+    export async function parse(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector, rotation: Quaternion }> {
         const dimension = await BitHelper.readByte(data);
         const absolute = await BitHelper.readBool(data);
         return {
             dimension, absolute,
             position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data),
-            rotation: await BitHelper.readHalfQuaternion(data)
-        };
-    }
-    export async function parsePosition(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector }> {
-        const dimension = await BitHelper.readByte(data);
-        const absolute = await BitHelper.readBool(data);
-        return {
-            dimension, absolute,
-            position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data)
-        };
-    }
-    export async function parseRotation(data: ByteStream): Promise<{ rotation: Quaternion }> {
-        return {
             rotation: await BitHelper.readHalfQuaternion(data)
         };
     }
@@ -127,6 +109,11 @@ export namespace DynamicTransform {
     }
 }
 
+export interface DynamicPosition extends Dynamic {
+    position: Vector;
+    dimension: number;
+}
+
 export namespace DynamicPosition {
     export async function parseSpawn(data: ByteStream): Promise<{ dimension: number, position: Vector }> {
         return {
@@ -134,11 +121,40 @@ export namespace DynamicPosition {
             position: await BitHelper.readVector(data)
         };
     }
+    export async function parse(data: ByteStream): Promise<{ dimension: number, absolute: boolean, position: Vector }> {
+        const dimension = await BitHelper.readByte(data);
+        const absolute = await BitHelper.readBool(data);
+        return {
+            dimension, absolute,
+            position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data)
+        };
+    }
     export function lerp(dyn: DynamicPosition, data: { dimension: number; absolute: boolean; position: Vector; }, lerp: number): void {
         const { absolute, position, dimension } = data;
         const fpos = absolute ? position : Vec.add(dyn.position, position);
         dyn.position = Vec.lerp(dyn.position, fpos, lerp);
         dyn.dimension = dimension;
+    }
+}
+
+export interface DynamicRotation extends Dynamic {
+    rotation: Quaternion;
+}
+
+export namespace DynamicRotation {
+    export async function parseSpawn(data: ByteStream): Promise<{ rotation: Quaternion }> {
+        return {
+            rotation: await BitHelper.readHalfQuaternion(data)
+        };
+    }
+    export async function parse(data: ByteStream): Promise<{ rotation: Quaternion }> {
+        return {
+            rotation: await BitHelper.readHalfQuaternion(data)
+        };
+    }
+    export function lerp(dyn: DynamicRotation, data: { rotation: Quaternion; }, lerp: number): void {
+        const { rotation } = data;
+        dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);
     }
 }
 

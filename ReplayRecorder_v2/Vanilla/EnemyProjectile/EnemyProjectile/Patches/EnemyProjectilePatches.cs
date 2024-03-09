@@ -29,13 +29,13 @@ namespace Vanilla.EnemyProjectile.Patches {
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.OnDestroy))]
         [HarmonyPrefix]
         private static void OnDestroy(ProjectileBase __instance) {
-            Replay.Despawn(new rEnemyProjectile(__instance.gameObject));
+            Replay.Despawn(Replay.Get<rEnemyProjectile>(__instance.gameObject.GetInstanceID()));
         }
 
         [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]
         [HarmonyPrefix]
         private static void OnCollision(ProjectileBase __instance) {
-            Replay.Despawn(new rEnemyProjectile(__instance.gameObject));
+            Replay.Despawn(Replay.Get<rEnemyProjectile>(__instance.gameObject.GetInstanceID()));
         }
     }
 }

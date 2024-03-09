@@ -32,7 +32,7 @@ export interface Trail {
 ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await DynamicTransform.parseTransform(data);
+            const result = await DynamicTransform.parse(data);
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
