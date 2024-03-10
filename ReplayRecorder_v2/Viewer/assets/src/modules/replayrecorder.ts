@@ -189,7 +189,10 @@ class CameraControls {
     left: boolean;
     right: boolean;
 
+    speed: number;
+
     constructor(camera: Camera, canvas: HTMLCanvasElement) {
+        this.speed = 20;
         const mouse = {
             x: 0,
             y: 0,
@@ -198,6 +201,13 @@ class CameraControls {
         };
         const origin = { x: 0, y: 0 };
         const old = { x: 0, y: 0 };
+        canvas.addEventListener("wheel", (e) => {
+            if (this.slot !== undefined) return;
+
+            e.preventDefault();
+            this.speed -= e.deltaY * 0.1;
+            this.speed = Math.clamp(this.speed, 1, 1000);
+        });
         window.addEventListener("keydown", (e) => {
             switch (e.keyCode) {
             case 32:
@@ -353,7 +363,7 @@ class CameraControls {
                 }
             }
         } else {
-            const speed = 20 * dt;
+            const speed = this.speed * dt;
             if (this.forward) {
                 const fwd = new Vector3(0, 0, 1).multiplyScalar(speed);
                 fwd.applyQuaternion(camera.quaternion);

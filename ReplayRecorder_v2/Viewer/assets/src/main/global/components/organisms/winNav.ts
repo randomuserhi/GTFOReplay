@@ -93,6 +93,7 @@ export const winNav = Macro((() => {
             window.api.minimizeWindow();
         };
         
+        // TODO(randomuserhi): dont put this here
         this.file.addEventListener("change", (e: any) => {
             try {
                 const files = e.target.files;

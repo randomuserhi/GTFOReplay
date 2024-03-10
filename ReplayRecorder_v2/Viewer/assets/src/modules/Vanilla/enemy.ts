@@ -31,6 +31,7 @@ declare module "../../replay/moduleloader.js" {
                     dimension: number;
                     absolute: boolean;
                     position: Pod.Vector;
+                    active: boolean;
                 };
                 spawn: {
                     dimension: number;
@@ -81,6 +82,7 @@ const enemyStateTypemap: EnemyState[] = [
 export interface LimbCustom extends DynamicPosition {
     owner: number;
     scale: number;
+    active: boolean;
 }
 
 export interface Enemy extends DynamicTransform {
@@ -197,13 +199,18 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
     main: {
         parse: async (data) => {
             const result = await DynamicPosition.parse(data);
-            return result;
+            return {
+                ...result,
+                active: await BitHelper.readBool(data)
+            };
         }, 
         exec: (id, data, snapshot, lerp) => {
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
     
             if (!limbs.has(id)) throw new DynamicNotFound(`Limb of id '${id}' was not found.`);
-            DynamicPosition.lerp(limbs.get(id)!, data, lerp);
+            const limb = limbs.get(id)!;
+            DynamicPosition.lerp(limb, data, lerp);
+            limb.active = data.active;
         }
     },
     spawn: {
@@ -221,7 +228,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
         
             if (limbs.has(id)) throw new DuplicateDynamic(`Limb of id '${id}' already exists.`);
             limbs.set(id, { 
-                id, ...data
+                id, ...data, active: true
             });
         }
     },
@@ -436,7 +443,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 }     
                 model.material.color.setHex(color);
                 model.mesh.position.set(limb.position.x, limb.position.y, limb.position.z);
-                model.mesh.visible = limb.dimension === renderer.get("Dimension");
+                model.mesh.visible = limb.active && limb.dimension === renderer.get("Dimension");
             }
 
             for (const [id, model] of [...models.entries()]) {

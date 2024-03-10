@@ -1,4 +1,5 @@
 ﻿using Player;
+using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
@@ -25,6 +26,15 @@ namespace Vanilla.EnemyProjectile {
     internal class rEnemyProjectile : DynamicTransform {
 
         public rEnemyProjectile(GameObject projectile) : base(projectile.GetInstanceID(), new ProjectileTransform(projectile)) {
+        }
+
+        public override bool Active {
+            get {
+                if (!transform.active && Replay.Has<rEnemyProjectile>(Id)) {
+                    Replay.Despawn(Replay.Get<rEnemyProjectile>(Id));
+                }
+                return base.Active;
+            }
         }
     }
 }

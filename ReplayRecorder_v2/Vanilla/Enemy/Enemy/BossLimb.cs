@@ -20,11 +20,20 @@ namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.LimbCustom", "0.0.1")]
     internal class rLimbCustom : DynamicPosition {
         public Dam_EnemyDamageLimb_Custom limb;
+        public Collider col;
 
-        public override bool IsDirty => base.IsDirty;
+        public override bool IsDirty => base.IsDirty || col.enabled != oldEnabled;
+        private bool oldEnabled = true;
 
         public rLimbCustom(Dam_EnemyDamageLimb_Custom limb) : base(limb.GetInstanceID(), new LimbTransform(limb)) {
             this.limb = limb;
+            col = limb.GetComponent<Collider>();
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(col.enabled, buffer);
+            oldEnabled = col.enabled;
         }
 
         public override void Spawn(ByteBuffer buffer) {
