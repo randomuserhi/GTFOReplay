@@ -35,9 +35,4 @@
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Bioscan\" />
-	  <Folder Include="Holopath\" />
-	</ItemGroup>
-
 </Project>

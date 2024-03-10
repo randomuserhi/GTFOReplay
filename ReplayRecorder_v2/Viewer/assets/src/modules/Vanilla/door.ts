@@ -178,8 +178,10 @@ ModuleLoader.registerEvent("Vanilla.Map.DoorStatusChange", "0.0.1", {
         if (!exists) doors.set(id, { id, status });
         const door = doors.get(id)!;
         if (exists && door.status === status) throw new Error("Door state event triggered when door state hasn't changed.");
+        if (door.status !== "Glued") {
+            door.change = snapshot.time();
+        }
         door.status = status;
-        door.change = snapshot.time();
     }
 });
 

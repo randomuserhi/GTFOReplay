@@ -120,8 +120,8 @@ export const player = Macro((() => {
         if (this.replay !== undefined) {
             this.prevTime = now;
 
-            //this.time += dt;
-            this.time = 1000000;
+            this.time += dt;
+            //this.time = 1000000;
             const length = this.replay.length();
             //this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
             if (this.time > length) this.time = length;
