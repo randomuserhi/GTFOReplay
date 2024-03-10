@@ -5,12 +5,26 @@ using ReplayRecorder;
 namespace Vanilla.Enemy.Patches {
     [HarmonyPatch]
     internal static class BossLimbPatches {
+        private static bool isBoss(EnemyAgent enemy) {
+            bool isBoss = false;
+            switch (enemy.EnemyData.persistentID) {
+            case 43:
+            case 44:
+            case 47:
+            case 36:
+            case 37:
+            case 29: isBoss = true; break;
+            }
+            return isBoss;
+        }
+
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]
         [HarmonyPostfix]
         private static void OnSpawn(EnemySync __instance, pEnemySpawnData spawnData) {
+            if (!isBoss(__instance.m_agent)) return;
             foreach (Dam_EnemyDamageLimb limb in __instance.m_damage.DamageLimbs) {
                 Dam_EnemyDamageLimb_Custom? limbCustom = limb.TryCast<Dam_EnemyDamageLimb_Custom>();
-                if (limbCustom != null && limbCustom.HasDestruction()) {
+                if (limbCustom != null) {
                     Replay.Spawn(new rLimbCustom(limbCustom));
                 }
             }
@@ -18,6 +32,7 @@ namespace Vanilla.Enemy.Patches {
         [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnDespawn))]
         [HarmonyPostfix]
         private static void OnDespawn(EnemySync __instance) {
+            if (!isBoss(__instance.m_agent)) return;
             foreach (Dam_EnemyDamageLimb limb in __instance.m_damage.DamageLimbs) {
                 Dam_EnemyDamageLimb_Custom? limbCustom = limb.TryCast<Dam_EnemyDamageLimb_Custom>();
                 if (limbCustom != null) {

@@ -115,6 +115,8 @@ export const player = Macro((() => {
     };
 
     player.prototype.update = function() {
+        if (this.time < 0) this.time = 0;
+
         const now = Date.now();
         const dt = now - this.prevTime;
         if (this.replay !== undefined) {
@@ -129,7 +131,7 @@ export const player = Macro((() => {
             const snapshot = this.replay.getSnapshot(this.time);
             if (snapshot !== undefined) {
                 const api = this.replay.api(snapshot);
-                this.renderer.render(api);
+                this.renderer.render(dt / 1000, api);
             }
         }
         this.frameRate = 1000 / dt;

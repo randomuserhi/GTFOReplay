@@ -24,7 +24,7 @@ export interface InitPass<T extends Typemap.RenderPassNames | unknown = unknown>
 }
 
 export interface RenderPass<T extends Typemap.RenderPassNames | unknown = unknown> extends Pass<T> {
-    pass: (renderer: Renderer, snapshot: ReplayApi) => void;
+    pass: (renderer: Renderer, snapshot: ReplayApi, dt: number) => void;
 }
 
 export class Renderer {
@@ -150,9 +150,9 @@ export class Renderer {
         }
     }
 
-    public render(snapshot: ReplayApi) {
+    public render(dt: number, snapshot: ReplayApi) {
         for (const func of this.renderLoop.values()) {
-            func.pass(this, snapshot);
+            func.pass(this, snapshot, dt);
         }
         this.composer.render();
     }

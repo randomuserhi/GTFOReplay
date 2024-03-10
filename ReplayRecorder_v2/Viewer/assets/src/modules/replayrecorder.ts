@@ -1,8 +1,8 @@
-import { ACESFilmicToneMapping, AmbientLight, CameraHelper, Color, DirectionalLight, FogExp2, PerspectiveCamera, VSMShadowMap } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, CameraHelper, Color, DirectionalLight, FogExp2, PerspectiveCamera, VSMShadowMap, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import * as BitHelper from "../replay/bithelper.js";
-import { ModuleLoader } from "../replay/moduleloader.js";
+import { ModuleLoader, ReplayApi } from "../replay/moduleloader.js";
 import { Quat, Quaternion, Vec, Vector } from "../replay/pod.js";
 import { Renderer } from "../replay/renderer.js";
 import { ByteStream } from "../replay/stream.js";
@@ -168,9 +168,222 @@ declare module "../replay/moduleloader.js" {
 
         interface RenderData {
             "Camera": PerspectiveCamera;
+            "CameraControls": CameraControls;
             "FakeCamera": PerspectiveCamera;
             "OrbitControls": OrbitControls;
             "MainLight": DirectionalLight;
+        }
+    }
+}
+
+// TODO(randomuserhi): make better
+// TODO(randomuserhi): fix bug related to event listeners stacking up
+
+class CameraControls {
+    slot?: number;
+
+    up: boolean;
+    down: boolean;
+    forward: boolean;
+    backward: boolean;
+    left: boolean;
+    right: boolean;
+
+    constructor(camera: Camera, canvas: HTMLCanvasElement) {
+        const mouse = {
+            x: 0,
+            y: 0,
+            left: false,
+            right: false
+        };
+        const origin = { x: 0, y: 0 };
+        const old = { x: 0, y: 0 };
+        window.addEventListener("keydown", (e) => {
+            switch (e.keyCode) {
+            case 32:
+                e.preventDefault();
+                this.up = true;
+                break;
+            case 17:
+                e.preventDefault();
+                this.down = true;
+                break;
+            case 68:
+                e.preventDefault();
+                this.right = true;
+                break;
+            case 65:
+                e.preventDefault();
+                this.left = true;
+                break;
+            case 87:
+                e.preventDefault();
+                this.forward = true;
+                break;
+            case 83:
+                e.preventDefault();
+                this.backward = true;
+                break;
+
+            case 49:
+                e.preventDefault();
+                this.slot = 0;
+                break;
+            case 51:
+                e.preventDefault();
+                this.slot = 1;
+                break;
+            case 52:
+                e.preventDefault();
+                this.slot = 2;
+                break;
+            case 53:
+                e.preventDefault();
+                this.slot = 3;
+                break;
+
+            case 38:
+                e.preventDefault();
+                (window as any).player.time += 10000;
+                break;
+            case 40:
+                e.preventDefault();
+                (window as any).player.time -= 10000;
+                break;
+            case 37:
+                e.preventDefault();
+                (window as any).player.time -= 5000;
+                break;
+            case 39:
+                e.preventDefault();
+                (window as any).player.time += 5000;
+                break;
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            switch (e.keyCode) {
+            case 32:
+                e.preventDefault();
+                this.up = false;
+                break;
+            case 17:
+                e.preventDefault();
+                this.down = false;
+                break;
+            case 68:
+                e.preventDefault();
+                this.right = false;
+                break;
+            case 65:
+                e.preventDefault();
+                this.left = false;
+                break;
+            case 87:
+                e.preventDefault();
+                this.forward = false;
+                break;
+            case 83:
+                e.preventDefault();
+                this.backward = false;
+                break;
+            }
+        });
+        canvas.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            if (e.button === 0)
+                mouse.left = true;
+            else if (e.button === 2)
+                mouse.right = true;
+
+            old.x = mouse.x;
+            old.y = mouse.y;
+            origin.x = mouse.x;
+            origin.y = mouse.y;
+        });
+        canvas.addEventListener("mousemove", (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+            
+            if (mouse.left) {
+                const deltaY = mouse.x - old.x;
+                const deltaX = mouse.y - old.y;
+                
+                camera.rotation.y += deltaY * 0.001;
+                camera.rotation.x += deltaX * 0.001;
+                
+                old.x = mouse.x;
+                old.y = mouse.y;
+            }
+        });
+        canvas.addEventListener("mouseup", (e) => {
+            e.preventDefault();
+            if (e.button === 0)
+                mouse.left = false;
+            else if (e.button === 2)
+                mouse.right = false;
+        });
+    }
+
+    public update(renderer: Renderer, snapshot: ReplayApi, dt: number) {
+        const camera = renderer.get("Camera")!;
+        if (this.slot !== undefined) {
+            if (this.forward || this.backward || this.left || this.right || this.up || this.down) {
+                this.slot = undefined;
+                const worldPos = new Vector3();
+                camera.getWorldPosition(worldPos);
+                camera.parent = renderer.scene;
+                camera.position.copy(worldPos);
+            } else {
+                console.log("r");
+                const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+                const models = renderer.getOrDefault("Players", () => new Map());
+                const first = [...players.values()][Math.clamp(this.slot, 0, 3)];
+                if (first !== undefined) {
+                    const model = models.get(first.id)!;
+                    if (camera.parent !== model.group) {
+                        camera.parent = model.group;
+                    }
+
+                    const fake = renderer.get("FakeCamera")!;
+                    camera.position.copy(fake.position);
+                    camera.translateY(1);
+                    camera.quaternion.copy(fake.quaternion);
+                }
+            }
+        } else {
+            const speed = 20 * dt;
+            if (this.forward) {
+                const fwd = new Vector3(0, 0, 1).multiplyScalar(speed);
+                fwd.applyQuaternion(camera.quaternion);
+                camera.position.sub(fwd);
+            }
+            if (this.backward) {
+                const bwd = new Vector3(0, 0, -1).multiplyScalar(speed);
+                bwd.applyQuaternion(camera.quaternion);
+                camera.position.sub(bwd);
+            }
+
+            if (this.left) {
+                const left = new Vector3(-1, 0, 0).multiplyScalar(speed);
+                left.applyQuaternion(camera.quaternion);
+                camera.position.add(left);
+            }
+            if (this.right) {
+                const right = new Vector3(1, 0, 0).multiplyScalar(speed);
+                right.applyQuaternion(camera.quaternion);
+                camera.position.add(right);
+            }
+
+            if (this.up) {
+                const up = new Vector3(0, 1, 0).multiplyScalar(speed);
+                camera.position.add(up);
+            }
+            if (this.down) {
+                const down = new Vector3(0, -1, 0).multiplyScalar(speed);
+                camera.position.add(down);
+            }
         }
     }
 }
@@ -227,73 +440,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             controls.enablePan = false;
             r.set("OrbitControls",  controls);
 
-            /*// Setup camera controls -> TODO(randomuserhi): Make better
-            const mouse = {
-                x: 0,
-                y: 0,
-                left: false,
-                right: false
-            };
-            const origin = { x: 0, y: 0 };
-            const old = { x: 0, y: 0 };
-            window.addEventListener("keydown", (e) => {
-                const fwd = new Vector3(0, 0, -1);
-                fwd.applyQuaternion(camera.quaternion);
-                switch (e.keyCode) {
-                case 68:
-                    break;
-                case 65:
-                    break;
-                case 87:
-                    e.preventDefault();
-                    camera.position.x += fwd.x;
-                    camera.position.y += fwd.y;
-                    camera.position.z += fwd.z;
-                    break;
-                case 83:
-                    e.preventDefault();
-                    camera.position.x -= fwd.x;
-                    camera.position.y -= fwd.y;
-                    camera.position.z -= fwd.z;
-                    break;
-                }
-            });
-            r.canvas.addEventListener("mousedown", (e) => {
-                e.preventDefault();
-                if (e.button === 0)
-                    mouse.left = true;
-                else if (e.button === 2)
-                    mouse.right = true;
-    
-                old.x = mouse.x;
-                old.y = mouse.y;
-                origin.x = mouse.x;
-                origin.y = mouse.y;
-            });
-            r.canvas.addEventListener("mousemove", (e) => {
-                e.preventDefault();
-                const rect = r.canvas.getBoundingClientRect();
-                mouse.x = e.clientX - rect.left;
-                mouse.y = e.clientY - rect.top;
-                
-                if (mouse.left) {
-                    const deltaY = mouse.x - old.x;
-                    const deltaX = mouse.y - old.y;
-                    
-                    camera.rotation.y += deltaY * 0.001;
-                    camera.rotation.x += deltaX * 0.001;
-                    
-                    old.x = mouse.x;
-                    old.y = mouse.y;
-                }
-            });
-            r.canvas.addEventListener("mouseup", (e) => {
-                e.preventDefault();
-                if (e.button === 0)
-                    mouse.left = false;
-                else if (e.button === 2)
-                    mouse.right = false;
-            });*/
+            r.set("CameraControls",  new CameraControls(camera, r.renderer.domElement));
 
             // Setup resize event
             r.addEventListener("resize", ({ width, height }) => {
@@ -303,4 +450,11 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
         } 
     };
     api.setInitPasses([pass, ...init]);
+
+    const renderLoop = api.getRenderLoop();
+    api.setRenderLoop([{ 
+        name, pass: (renderer, snapshot, dt) => {
+            renderer.get("CameraControls")!.update(renderer, snapshot, dt);
+        } 
+    }, ...renderLoop]);
 });

@@ -1,5 +1,5 @@
+import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { Macro, Constructor } from "@/rhu/macro.js";
 import * as icons from "../atoms/icons/index.js";
 
 const style = Style(({ style }) => {
@@ -55,10 +55,16 @@ const style = Style(({ style }) => {
     user-select: none;
     `;
 
+    const temp = style.class`
+    -webkit-app-region: no-drag;
+    pointer-events: auto;
+    `;
+
     return {
         wrapper,
         button,
-        text
+        text,
+        temp
     };
 });
 
@@ -66,6 +72,7 @@ export interface winNav extends HTMLDivElement {
     close: HTMLButtonElement;
     max: HTMLButtonElement;
     min: HTMLButtonElement;
+    file: HTMLInputElement;
 }
 
 declare module "@/rhu/macro.js" {
@@ -85,6 +92,24 @@ export const winNav = Macro((() => {
         this.min.onclick = () => {
             window.api.minimizeWindow();
         };
+        
+        this.file.addEventListener("change", (e: any) => {
+            try {
+                const files = e.target.files;
+                if (!files.length) {
+                    console.warn('No file selected!');
+                    return;
+                }
+                const loaded = files.length;
+                if (loaded !== 1) throw new Error("Can only load 1 file.");
+                for (const file of files) {
+                    console.log(file);
+                    (window as any).player.open(file.path);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
     } as Constructor<winNav>;
 
     return winNav;
@@ -101,6 +126,8 @@ export const winNav = Macro((() => {
     </div>
     <div class="${style.text}">
         GTFO Replay Viewer
+        <div style="width: 10px"></div>
+        <input class="${style.temp}" rhu-id="file" type="file"/>
     </div>
     `, {
     element: //html

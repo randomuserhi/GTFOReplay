@@ -38,7 +38,7 @@ namespace Vanilla.Enemy.BepInEx {
             animationLeeWay = configFile.Bind(
                 $"{Module.Name}",
                 "animationLeeWay",
-                3000,
+                10000,
                 "Buffer period in ms where animations will continue to be captured when they shouldnt be. This is to allow animation transitions to play out.");
         }
 

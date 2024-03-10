@@ -306,20 +306,6 @@ ModuleLoader.registerRender("Players", (name, api) => {
                     models.delete(id);
                 }
             }
-
-            const first = [...players.values()][0];
-            if (first !== undefined) {
-                const camera = renderer.get("Camera")!;
-                const model = models.get(first.id)!;
-                if (camera.parent !== model.group) {
-                    camera.parent = model.group;
-                }
-
-                const fake = renderer.get("FakeCamera")!;
-                camera.position.copy(fake.position);
-                camera.translateY(1);
-                camera.quaternion.copy(fake.quaternion);
-            }
         } 
     }, ...renderLoop]);
 });
