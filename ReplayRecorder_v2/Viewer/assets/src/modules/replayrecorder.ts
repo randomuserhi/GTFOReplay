@@ -239,15 +239,15 @@ class CameraControls {
                 e.preventDefault();
                 this.slot = 0;
                 break;
-            case 51:
+            case 50:
                 e.preventDefault();
                 this.slot = 1;
                 break;
-            case 52:
+            case 51:
                 e.preventDefault();
                 this.slot = 2;
                 break;
-            case 53:
+            case 52:
                 e.preventDefault();
                 this.slot = 3;
                 break;

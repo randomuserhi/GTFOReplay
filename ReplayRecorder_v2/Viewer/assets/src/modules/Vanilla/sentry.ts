@@ -1,4 +1,4 @@
-import { BoxGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
+import { BoxGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
@@ -164,7 +164,6 @@ class SentryModel {
         this.screen.scale.set(0.3, 0.2, 0.05);
         this.screen.rotateX(10);
 
-        this.group.add(this.gun);
         this.gun.position.set(0, 0.45, 0);
     }
 
@@ -172,12 +171,8 @@ class SentryModel {
         this.group.quaternion.set(sentry.baseRot.x, sentry.baseRot.y, sentry.baseRot.z, sentry.baseRot.w);
         this.group.position.set(sentry.position.x, sentry.position.y - 0.3, sentry.position.z);
 
-        const rotation = new Quaternion(sentry.rotation.x, sentry.rotation.y, sentry.rotation.z, sentry.rotation.w);
-        const local = rotation.multiply(this.group.quaternion.clone().invert());
-
-        this.group.remove(this.gun);
-        this.gun.quaternion.copy(local);
-        this.group.add(this.gun);
+        this.gun.quaternion.set(sentry.rotation.x, sentry.rotation.y, sentry.rotation.z, sentry.rotation.w);
+        this.gun.position.set(this.group.position.x, this.group.position.y + 0.45, this.group.position.z);
     }
 
     public setVisible(visible: boolean) {
@@ -186,10 +181,12 @@ class SentryModel {
 
     public addToScene(scene: Scene) {
         scene.add(this.group);
+        scene.add(this.gun);
     }
 
     public removeFromScene(scene: Scene) {
         scene.remove(this.group);
+        scene.remove(this.gun);
     }
 }
 
