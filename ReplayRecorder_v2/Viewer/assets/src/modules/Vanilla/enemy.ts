@@ -15,6 +15,7 @@ declare module "../../replay/moduleloader.js" {
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
                     animFlags: number;
+                    hasSkeleton: boolean;
                 };
                 despawn: void;
             };
@@ -87,6 +88,7 @@ export interface Enemy extends DynamicTransform {
     health: number;
     state: EnemyState;
     head: boolean;
+    hasSkeleton: boolean;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -107,7 +109,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
-                animFlags: await BitHelper.readUShort(data)
+                animFlags: await BitHelper.readUShort(data),
+                hasSkeleton: await BitHelper.readBool(data),
             };
             return result;
         },
@@ -359,7 +362,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 // TODO(randomuserhi): Sometimes skeleton is created late
                 //                     => I need to check enemy type rather than just checking instance of skeleton
                 //                     => Or store when spawning an enemy whether it has a valid skeleton
-                if (skeleton !== undefined) {
+                if (skeleton !== undefined && enemy.hasSkeleton) {
                     if (!models.has(id)) {
                         const model = new EnemyModel(new Color(0xff0000));
                         models.set(id, model);
@@ -371,7 +374,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     model.update(skeleton);
                     model.morph(enemy);
                     model.setVisible(enemy.dimension === renderer.get("Dimension"));
-                } else {
+                } else if (!enemy.hasSkeleton) {
                     if (!flyers.has(id)) {
                         const flyer = new FlyerModel(new Color(0xff0000));
                         flyers.set(id, flyer);

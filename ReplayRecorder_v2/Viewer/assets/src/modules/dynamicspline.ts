@@ -179,5 +179,6 @@ export class DynamicSplineGeometry extends BufferGeometry {
         
         this.attributes.position.needsUpdate = true;
         this.computeVertexNormals();
+        this.computeBoundingSphere();
     }
 }
