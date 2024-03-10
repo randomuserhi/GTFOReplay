@@ -78,27 +78,29 @@ namespace Vanilla.Enemy {
             get {
                 if (tick != 0) return false;
                 bool hasLeeway = leeway.ContainsKey(enemy.GlobalID);
-                if (!hasLeeway || (Raudy.Now - leeway[enemy.GlobalID] > ConfigManager.AnimationLeeWay)) {
-                    bool isScreaming = false;
-                    bool isLocomotion = false;
-                    switch (enemy.Locomotion.m_currentState.m_stateEnum) {
-                    case ES_StateEnum.Jump:
-                    case ES_StateEnum.JumpDissolve:
-                    case ES_StateEnum.StandStill:
-                    case ES_StateEnum.ClimbLadder:
-                    case ES_StateEnum.PathMove: isLocomotion = true; break;
-                    case ES_StateEnum.Scream:
-                    case ES_StateEnum.ScoutScream: isScreaming = true; break;
-                    }
 
-                    bool canAnimate = true;
-                    if (ConfigManager.NoLocomotionAnimation && isLocomotion) canAnimate = false;
-                    if (!isScreaming && !EnemyModelPatches.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) canAnimate = false;
-
-                    if (!canAnimate) return false;
-                    else if (!hasLeeway) leeway.Add(enemy.GlobalID, Raudy.Now);
-                    else leeway[enemy.GlobalID] = Raudy.Now;
+                bool isScreaming = false;
+                bool isLocomotion = false;
+                switch (enemy.Locomotion.m_currentState.m_stateEnum) {
+                case ES_StateEnum.Jump:
+                case ES_StateEnum.JumpDissolve:
+                case ES_StateEnum.StandStill:
+                case ES_StateEnum.ClimbLadder:
+                case ES_StateEnum.PathMove: isLocomotion = true; break;
+                case ES_StateEnum.Scream:
+                case ES_StateEnum.ScoutScream: isScreaming = true; break;
                 }
+
+                bool canAnimate = true;
+                if (ConfigManager.NoLocomotionAnimation && isLocomotion) canAnimate = false;
+                if (!isScreaming && !EnemyModelPatches.aggressiveInRange.Contains(enemy.GlobalID) && !enemy.MovingCuller.IsShown) canAnimate = false;
+
+                if (canAnimate) {
+                    if (!hasLeeway) leeway.Add(enemy.GlobalID, Raudy.Now);
+                    leeway[enemy.GlobalID] = Raudy.Now;
+                }
+
+                if (!canAnimate && (!hasLeeway || (Raudy.Now - leeway[enemy.GlobalID] > ConfigManager.AnimationLeeWay))) return false;
 
                 return head != T_head.position ||
 
