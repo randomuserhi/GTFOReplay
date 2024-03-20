@@ -210,6 +210,10 @@ class CameraControls {
         });
         window.addEventListener("keydown", (e) => {
             switch (e.keyCode) {
+            case 70:
+                e.preventDefault();
+                (window as any).player.pause = !(window as any).player.pause;
+                break;
             case 32:
                 e.preventDefault();
                 this.up = true;
@@ -320,8 +324,8 @@ class CameraControls {
                 const deltaY = mouse.x - old.x;
                 const deltaX = mouse.y - old.y;
                 
-                camera.rotation.y += deltaY * 0.001;
-                camera.rotation.x += deltaX * 0.001;
+                camera.rotation.y -= deltaY * 0.002;
+                camera.rotation.x -= deltaX * 0.002;
                 
                 old.x = mouse.x;
                 old.y = mouse.y;
@@ -346,7 +350,6 @@ class CameraControls {
                 camera.parent = renderer.scene;
                 camera.position.copy(worldPos);
             } else {
-                console.log("r");
                 const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
                 const models = renderer.getOrDefault("Players", () => new Map());
                 const first = [...players.values()][Math.clamp(this.slot, 0, 3)];
