@@ -187,5 +187,8 @@ export class FileManager {
         ipc.handle("getBytes", async (_, index: number, numBytes: number, wait?: boolean) => {
             return await this.file?.getBytes(index, numBytes, wait);
         });
+        ipc.handle("getAllBytes", async () => {
+            return await this.file?.getAllBytes();
+        });
     }
 }

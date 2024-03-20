@@ -69,6 +69,17 @@ export class Parser {
                     }]
                 };
             });
+            ipc.resp("getAllBytes", async (...args: any[]) => {
+                const buffer: Uint8Array | undefined = await window.api.invoke("getAllBytes", ...args);
+                return {
+                    data: buffer,
+                    args: [{
+                        transfer: buffer === undefined ? undefined : [
+                            buffer.buffer
+                        ]
+                    }]
+                };
+            });
 
             // Events
             ipc.on("eoh", (typemap, types, header) => {

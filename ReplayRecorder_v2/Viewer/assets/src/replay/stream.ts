@@ -29,8 +29,29 @@ export class FileStream {
         this.ipc.send("close", this.file);
     }
 
+    private cache: Uint8Array;
+    private cacheStart: number;
+    private cacheEnd: number;
+    public async cacheBytes(numBytes: number): Promise<void> {
+        console.log(`cached: ${numBytes} bytes!`);
+        this.cache = await this.ipc.invoke("getBytes", this.index, numBytes, !this.finite);
+        this.cacheStart = this.index;
+        this.cacheEnd = this.index + numBytes;
+    }
+    public async cacheAllBytes(): Promise<void> {
+        this.cache = await this.ipc.invoke("getAllBytes");
+        console.log(`cached: ${this.cache.byteLength} bytes!`);
+        this.cacheStart = 0;
+        this.cacheEnd = 0 + this.cache.byteLength;
+    }
+
     public async getBytes(numBytes: number): Promise<ByteStream> {
-        const result = await this.peekBytes(numBytes);
+        let result: ByteStream; 
+        if (this.cache !== undefined && this.index > this.cacheStart && this.index + numBytes < this.cacheEnd) {
+            result = new ByteStream(new Uint8Array(this.cache.buffer, this.cache.byteOffset + this.index - this.cacheStart, numBytes));
+        } else {
+            result = await this.peekBytes(numBytes);
+        }
         this.index += numBytes;
         return result;
     }
