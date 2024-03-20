@@ -3,7 +3,6 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
-using SNetwork;
 
 namespace Vanilla.Player {
     internal static class PlayerReplayManager {
@@ -20,13 +19,12 @@ namespace Vanilla.Player {
         private static void Tick() {
             PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
             foreach (rPlayer player in players.ToArray()) {
-                SNet_Player owner = player.agent.Owner;
-                if (!agents.Any(p => p.Owner.Lookup == owner.Lookup)) {
+                if (!agents.Any(p => p.Owner.Lookup == player.lookup)) {
                     Despawn(player.agent);
                 }
             }
             foreach (PlayerAgent player in agents) {
-                if (!players.Any(p => p.agent.Owner.Lookup == player.Owner.Lookup)) {
+                if (!players.Any(p => p.lookup == player.Owner.Lookup)) {
                     Spawn(player);
                 }
             }
@@ -72,6 +70,7 @@ namespace Vanilla.Player {
     [ReplayData("Vanilla.Player", "0.0.1")]
     internal class rPlayer : DynamicTransform {
         public PlayerAgent agent;
+        public ulong lookup;
 
         private byte prevState = 0;
         private byte state {
@@ -90,6 +89,7 @@ namespace Vanilla.Player {
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
+            lookup = agent.Owner.Lookup;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -101,7 +101,7 @@ namespace Vanilla.Player {
 
         public override void Spawn(ByteBuffer buffer) {
             base.Spawn(buffer);
-            BitHelper.WriteBytes(agent.Owner.Lookup, buffer);
+            BitHelper.WriteBytes(lookup, buffer);
             BitHelper.WriteBytes((byte)agent.PlayerSlotIndex, buffer);
             BitHelper.WriteBytes(agent.Owner.NickName, buffer);
         }

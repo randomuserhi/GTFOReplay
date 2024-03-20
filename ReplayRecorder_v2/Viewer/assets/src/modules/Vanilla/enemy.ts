@@ -188,7 +188,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.LimbDestruction", "0.0.1", {
         const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
 
         const { id, limb } = data;
-        if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
+        if (!enemies.has(id)) return;
         switch(limb) {
         case "Head": enemies.get(id)!.head = false; break;
         }
