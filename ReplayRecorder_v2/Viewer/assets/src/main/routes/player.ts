@@ -35,9 +35,11 @@ export interface player extends HTMLDivElement {
 
     renderer: Renderer;
 
+    path?: string;
     parser?: Parser;
     replay?: Replay;
     pause: boolean;
+    live: boolean;
     time: number;
     lerp: number;
     prevTime: number;
@@ -45,6 +47,7 @@ export interface player extends HTMLDivElement {
     update(): void;
     close(): void;
     link(ip: string, port: number): Promise<void>;
+    goLive(): void;
     unlink(): void;
     open(path: string): Promise<void>;
 }
@@ -77,6 +80,7 @@ export const player = Macro((() => {
     } as Constructor<player>;
     
     player.prototype.open = async function(path: string) {
+        this.path = path;
         const file: FileHandle = {
             path, finite: false
         };
@@ -91,6 +95,7 @@ export const player = Macro((() => {
             this.renderer.init(this.replay);
 
             this.pause = false;
+            this.live = false;
             this.time = 0;
             this.lerp = 20; // TODO(randomuserhi): Should be adjustable for various tick rates
             this.prevTime = Date.now();
@@ -113,6 +118,12 @@ export const player = Macro((() => {
         }
     };
 
+    player.prototype.goLive = function() {
+        if (this.parser === undefined || this.path === undefined) return;
+        window.api.send("goLive", this.path);
+        this.live = true;
+    };
+
     player.prototype.unlink = async function() {
         window.api.send("unlink");
     };
@@ -125,10 +136,12 @@ export const player = Macro((() => {
         if (this.replay !== undefined) {
             this.prevTime = now;
 
-            if (!this.pause) this.time += dt;
             //this.time = 1000000;
             const length = this.replay.length();
-            //this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
+
+            if (this.live) this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
+            else if (!this.pause) this.time += dt;
+
             if (this.time > length) this.time = length;
 
             const snapshot = this.replay.getSnapshot(this.time);

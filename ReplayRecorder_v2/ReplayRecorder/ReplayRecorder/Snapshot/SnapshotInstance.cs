@@ -28,7 +28,7 @@ namespace ReplayRecorder.Snapshot {
 
             public void Write(ByteBuffer buffer) {
                 BitHelper.WriteBytes(id, buffer);
-                BitHelper.WriteBytes(eventBuffer.Array, buffer);
+                BitHelper.WriteBytes(eventBuffer.Array, buffer, false);
             }
         }
 

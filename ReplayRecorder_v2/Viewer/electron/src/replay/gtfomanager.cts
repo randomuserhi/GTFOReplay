@@ -1,4 +1,5 @@
 import { resolve } from "path";
+import Program from "../main.cjs";
 import * as BitHelper from "../net/bitHelper.cjs";
 import { ByteStream } from "../net/stream.cjs";
 import { TcpClient } from "../net/tcpClient.cjs";
@@ -14,18 +15,18 @@ export class GTFOManager {
         this.client = new TcpClient();
 
         this.client.addEventListener("close", () => {
-            console.log("connection closed");
+            Program.post("console.log", "connection closed");
             // TODO(randomuserhi)
         });
 
         this.client.addEventListener("startGame", (bytes) => {
             const path = BitHelper.readString(bytes);
-            console.log(`game started: ${path}`);
+            Program.post("console.log", `game started: ${path}`);
             // TODO(randomuserhi)
         });
 
         this.client.addEventListener("endGame", () => {
-            console.log("game ended");
+            Program.post("console.log", "game ended");
             // TODO(randomuserhi)
         });
 

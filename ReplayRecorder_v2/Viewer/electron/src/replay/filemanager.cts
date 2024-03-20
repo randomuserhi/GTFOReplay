@@ -33,7 +33,7 @@ class File {
 
     public receiveLiveBytes(data: { offset: number, bytes: Uint8Array }) {
         const { offset, bytes } = data;
-        console.log(`${offset} | ${bytes.byteLength}`);
+        //console.log(`${offset} | ${bytes.byteLength}`);
         if (this.cyclicStart === undefined) {
             this.cyclicStart = {
                 index: 0,
@@ -106,7 +106,7 @@ class File {
         return new Promise((resolve, reject) => {
             if (this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
                 start >= this.cyclicStart.offset && (end + 1) <= this.cyclicEnd.offset) {
-                console.log("get from link");
+                //console.log("get from link");
                 const bytes = new Uint8Array(numBytes);
                 const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
                 for (let i = 0; i < numBytes; ++i) {

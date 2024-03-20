@@ -266,8 +266,8 @@ namespace ReplayRecorder {
             buffer.count += temp.Length;
         }
 
-        public static unsafe void WriteBytes(ArraySegment<byte> bytes, ByteBuffer buffer) {
-            WriteBytes(bytes.Count, buffer);
+        public static unsafe void WriteBytes(ArraySegment<byte> bytes, ByteBuffer buffer, bool includeCount = true) {
+            if (includeCount) WriteBytes(bytes.Count, buffer);
             buffer.Reserve(bytes.Count);
             Array.Copy(bytes.Array!, bytes.Offset, buffer._array.Array!, buffer._array.Offset + buffer.count, bytes.Count);
             buffer.count += bytes.Count;
