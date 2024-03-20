@@ -77,5 +77,11 @@ namespace Vanilla.Mine.Patches {
         private static void Postfix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
             Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
         }
+
+        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
+        [HarmonyPostfix]
+        private static void Postfix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
+            Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
+        }
     }
 }

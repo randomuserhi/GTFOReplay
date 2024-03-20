@@ -13,20 +13,22 @@ namespace ReplayRecorder.Snapshot {
     internal class SnapshotInstance : MonoBehaviour {
         private class EventWrapper {
             private ushort id;
-            private ReplayEvent e;
+            private ReplayEvent eventObj;
+            private ByteBuffer eventBuffer = new ByteBuffer(); // Required to capture state at point of event
             internal long now;
 
-            public string? Debug => e.Debug;
+            public string? Debug => eventObj.Debug;
 
             public EventWrapper(long now, ReplayEvent e) {
                 this.now = now;
-                this.e = e;
+                eventObj = e;
+                e.Write(this.eventBuffer);
                 id = SnapshotManager.types[e.GetType()];
             }
 
             public void Write(ByteBuffer buffer) {
                 BitHelper.WriteBytes(id, buffer);
-                e.Write(buffer);
+                BitHelper.WriteBytes(eventBuffer.Array, buffer);
             }
         }
 

@@ -81,6 +81,7 @@ export const player = Macro((() => {
             path, finite: false
         };
         await window.api.invoke("open", file);
+        if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
         this.parser.addEventListener("eoh", () => {
             console.log("ready");
