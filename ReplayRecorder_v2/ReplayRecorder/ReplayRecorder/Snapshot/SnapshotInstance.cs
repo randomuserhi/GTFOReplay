@@ -236,6 +236,8 @@ namespace ReplayRecorder.Snapshot {
         internal void Init() {
             if (fs != null) throw new ReplaySnapshotAlreadyInitialized();
 
+            start = Raudy.Now;
+
             pActiveExpedition expedition = RundownManager.GetActiveExpeditionData();
             RundownDataBlock data = GameDataBlockBase<RundownDataBlock>.GetBlock(Global.RundownIdToLoad);
             string shortName = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex).GetShortName(expedition.expeditionIndex);
@@ -306,14 +308,12 @@ namespace ReplayRecorder.Snapshot {
             buffer.Flush(fs);
             buffer.Shrink();
 
-            start = Raudy.Now;
             Replay.OnHeaderCompletion?.Invoke();
         }
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
             if (ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
-            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
             EventWrapper ev = new EventWrapper(Now, e);
             state.events.Add(ev);
         }
@@ -359,7 +359,6 @@ namespace ReplayRecorder.Snapshot {
 
         private void Tick() {
             if (fs == null) throw new ReplaySnapshotNotInitialized();
-            if (!completedHeader) throw new ReplayNotAllHeadersWritten();
 
             // Invoke tick processes
             Replay.OnTick?.Invoke();

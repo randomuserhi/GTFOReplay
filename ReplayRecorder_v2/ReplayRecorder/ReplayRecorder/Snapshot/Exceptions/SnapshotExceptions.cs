@@ -11,10 +11,6 @@
         public ReplaySnapshotNotInitialized() : base("Snapshot has not been initialized yet.") { }
     }
 
-    public class ReplayNotAllHeadersWritten : Exception {
-        public ReplayNotAllHeadersWritten() : base("Not all headers were written.") { }
-    }
-
     public class ReplayAllHeadersAlreadyWritten : Exception {
         public ReplayAllHeadersAlreadyWritten(string message) : base(message) { }
     }
