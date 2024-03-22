@@ -2,6 +2,7 @@
 using HarmonyLib;
 using Player;
 using ReplayRecorder;
+using SNetwork;
 using Vanilla.Map;
 
 namespace Vanilla.Cfoam.Patches {
@@ -10,11 +11,15 @@ namespace Vanilla.Cfoam.Patches {
         [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.SpawnGlueGunProjectileIfNeeded))]
         [HarmonyPostfix]
         private static void SpawnGlueGunProjectile(ProjectileManager __instance, GlueGunProjectile __result) {
+            PlayerAgent player = PlayerManager.GetLocalPlayerAgent();
             byte dimension;
-            if (__result.m_owner != null) {
-                dimension = (byte)__result.m_owner.DimensionIndex;
+            if (SNet.Replication.TryGetLastSender(out SNet_Player sender)) {
+                dimension = (byte)sender.PlayerAgent.Cast<PlayerAgent>().DimensionIndex;
+            } else if (player != null) {
+                dimension = (byte)player.DimensionIndex;
             } else {
-                dimension = (byte)PlayerManager.GetLocalPlayerAgent().DimensionIndex;
+                dimension = 0;
+                APILogger.Error("Could not get dimension of cfoam blob.");
             }
 
             int id = __result.GetInstanceID();
@@ -27,6 +32,8 @@ namespace Vanilla.Cfoam.Patches {
         [HarmonyPatch(typeof(GlueGunProjectile), nameof(GlueGunProjectile.Update))]
         [HarmonyPostfix]
         private static void CheckGlueWithinBounds(GlueGunProjectile __instance) {
+            if (!Replay.Active) return;
+
             int id = __instance.GetInstanceID();
             if (!Replay.Has<rCfoam>(id)) return;
             rCfoam foam = Replay.Get<rCfoam>(__instance.GetInstanceID());

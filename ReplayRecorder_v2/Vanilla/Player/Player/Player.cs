@@ -19,12 +19,12 @@ namespace Vanilla.Player {
         private static void Tick() {
             PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
             foreach (rPlayer player in players.ToArray()) {
-                if (!agents.Any(p => p.Owner.Lookup == player.lookup)) {
+                if (!agents.Any(p => p.GlobalID == player.Id)) {
                     Despawn(player.agent);
                 }
             }
             foreach (PlayerAgent player in agents) {
-                if (!players.Any(p => p.lookup == player.Owner.Lookup)) {
+                if (!players.Any(p => p.Id == player.GlobalID)) {
                     Spawn(player);
                 }
             }
@@ -35,11 +35,12 @@ namespace Vanilla.Player {
         public static void Spawn(PlayerAgent agent) {
             if (!Replay.Active) return;
 
-            rPlayer? player = players.Find(p => p.agent.Owner.Lookup == agent.Owner.Lookup);
+            rPlayer? player = players.Find(p => p.Id == agent.GlobalID);
             if (player != null) {
                 // Replace old elevator agent with agent in level
                 APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} was replaced by spawned agent.");
                 player.agent = agent;
+                player.transform = new AgentTransform(agent);
                 return;
             }
 
@@ -54,7 +55,7 @@ namespace Vanilla.Player {
             if (!Replay.Active) return;
             if (!Replay.Has<rPlayer>(agent.GlobalID)) return;
 
-            rPlayer? player = players.Find(p => p.agent.Owner.Lookup == agent.Owner.Lookup);
+            rPlayer? player = players.Find(p => p.Id == agent.GlobalID);
             if (player == null) {
                 APILogger.Error($"(DespawnPlayer) Could not find player in managed list.");
                 return;
@@ -70,7 +71,6 @@ namespace Vanilla.Player {
     [ReplayData("Vanilla.Player", "0.0.1")]
     internal class rPlayer : DynamicTransform {
         public PlayerAgent agent;
-        public ulong lookup;
 
         private byte prevState = 0;
         private byte state {
@@ -89,7 +89,6 @@ namespace Vanilla.Player {
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
-            lookup = agent.Owner.Lookup;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -101,7 +100,7 @@ namespace Vanilla.Player {
 
         public override void Spawn(ByteBuffer buffer) {
             base.Spawn(buffer);
-            BitHelper.WriteBytes(lookup, buffer);
+            BitHelper.WriteBytes(agent.Owner.Lookup, buffer);
             BitHelper.WriteBytes((byte)agent.PlayerSlotIndex, buffer);
             BitHelper.WriteBytes(agent.Owner.NickName, buffer);
         }
