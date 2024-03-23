@@ -139,6 +139,8 @@ let replay: Replay | undefined = undefined;
                 return [dynamics, type];
             };
             for (;;) {
+                await fs.cacheNetworkBuffer();
+
                 const snapshotSize = await BitHelper.readInt(fs);
                 if (snapshotSize <= 0) {
                     throw new Error(`Invalid Snapshot size of ${snapshotSize}.`);

@@ -44,6 +44,18 @@ export class FileStream {
         this.cacheStart = 0;
         this.cacheEnd = 0 + this.cache.byteLength;
     }
+    public async cacheNetworkBuffer(): Promise<boolean> {
+        if (this.index >= this.cacheStart && this.index < this.cacheEnd) {
+            return false;
+        }
+        const result = await this.ipc.invoke("getNetBytes", this.index);
+        if (result === undefined) return false;
+        this.cache = result.cache;
+        //console.log(`net cached: ${this.cache.byteLength} bytes!`);
+        this.cacheStart = result.cacheStart;
+        this.cacheEnd = result.cacheEnd;
+        return true;
+    }
 
     public async getBytes(numBytes: number): Promise<ByteStream> {
         let result: ByteStream; 

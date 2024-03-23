@@ -80,6 +80,17 @@ export class Parser {
                     }]
                 };
             });
+            ipc.resp("getNetBytes", async (...args: any[]) => {
+                const result: { cache: Uint8Array, cacheStart: number, cacheEnd: number } | undefined = await window.api.invoke("getNetBytes", ...args);
+                return {
+                    data: result,
+                    args: [{
+                        transfer: result === undefined ? undefined : [
+                            result.cache.buffer
+                        ]
+                    }]
+                };
+            });
 
             // Events
             ipc.on("eoh", (typemap, types, header) => {

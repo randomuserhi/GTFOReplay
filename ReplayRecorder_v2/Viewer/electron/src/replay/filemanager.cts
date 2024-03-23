@@ -102,6 +102,24 @@ class File {
         });
     }
 
+    public async getNetBytes(start: number): Promise<{ cache: ArrayBufferLike, cacheStart: number, cacheEnd: number } | undefined> {
+        if (this.cyclicStart !== undefined && start >= this.cyclicStart.offset) {
+            const numBytes = this.cyclicEnd.offset - start;
+            const bytes = new Uint8Array(numBytes);
+            const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
+            for (let i = 0; i < numBytes; ++i) {
+                const index = (readHead + i) % this.cyclicBuffer.length;
+                bytes[i] = this.cyclicBuffer[index];
+            }
+            return {
+                cache: bytes,
+                cacheStart: start,
+                cacheEnd: this.cyclicEnd.offset
+            };
+        }
+        return undefined;
+    }
+
     private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
             if (this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
@@ -189,6 +207,9 @@ export class FileManager {
         });
         ipc.handle("getAllBytes", async () => {
             return await this.file?.getAllBytes();
+        });
+        ipc.handle("getNetBytes", async (_, index: number) => {
+            return await this.file?.getNetBytes(index);
         });
     }
 }

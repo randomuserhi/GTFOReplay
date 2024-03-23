@@ -354,6 +354,8 @@ class CameraControls {
                 const models = renderer.getOrDefault("Players", () => new Map());
                 const first = [...players.values()][Math.clamp(this.slot, 0, 3)];
                 if (first !== undefined) {
+                    renderer.set("Dimension", first.dimension);
+                    
                     const model = models.get(first.id)!;
                     if (camera.parent !== model.group) {
                         camera.parent = model.group;
