@@ -348,7 +348,7 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
     }, ...initPasses]);
 
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const t = snapshot.time();
 
@@ -365,5 +365,5 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
                 model.setVisible(door.dimension === renderer.get("Dimension"));
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

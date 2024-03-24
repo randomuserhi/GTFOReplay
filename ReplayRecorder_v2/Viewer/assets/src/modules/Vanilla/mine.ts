@@ -188,7 +188,7 @@ class MineModel {
 
 ModuleLoader.registerRender("Mine", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Mine", () => new Map());
             const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
@@ -216,5 +216,5 @@ ModuleLoader.registerRender("Mine", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

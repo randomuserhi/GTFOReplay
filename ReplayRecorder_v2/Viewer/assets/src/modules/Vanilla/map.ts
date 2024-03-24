@@ -121,7 +121,7 @@ function getBoundaryEdges(indices: number[]) {
 
 ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
     const init = api.getInitPasses();
-    api.setInitPasses([{ 
+    api.setInitPasses([...init, { 
         name, pass: (renderer: Renderer, header: HeaderApi) => {
             const geometry = header.getOrDefault("Vanilla.Map.Geometry", () => new Map());
             
@@ -152,7 +152,7 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                         edgeGeometry.setIndex(getBoundaryEdges(meshes[i].indices));
                         edgeGeometry.setAttribute("position", vertices);
 
-                        const line = new LineSegments(edgeGeometry, new LineBasicMaterial({ color: 0x63ade6 })); 
+                        const line = new LineSegments(edgeGeometry, new LineBasicMaterial({ color: 0x63ade6 }));
                         surface.add(line);
 
                         renderer.scene.add(surface);
@@ -164,10 +164,10 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
             renderer.set("Dimension", 0);
             renderer.set("MapDimension", -1);
         } 
-    }, ...init]);
+    }]);
 
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer) => {
             const maps = renderer.get("Maps")!;
             const currentDimension = renderer.getOrDefault("Dimension", () => 0);
@@ -181,5 +181,5 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                 renderer.set("MapDimension", currentDimension);
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

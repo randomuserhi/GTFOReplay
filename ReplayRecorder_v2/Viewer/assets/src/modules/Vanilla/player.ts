@@ -1,9 +1,10 @@
-import { Color, ColorRepresentation, Quaternion } from "three";
+import { Color, ColorRepresentation, Matrix4, Quaternion, Vector3 } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
+import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../replayrecorder.js";
-import { Skeleton, SkeletonModel } from "./model.js";
+import { Skeleton, SkeletonModel, upV, zeroQ, zeroS, zeroV } from "./model.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -247,24 +248,32 @@ declare module "../../replay/moduleloader.js" {
 
 class PlayerModel extends SkeletonModel {
     public update(skeleton: Skeleton): void {
+        if (!this.group.visible) return;
+
         super.update(skeleton);
-        
+
         const x = this.group.position.x;
         const y = this.group.position.y;
         const z = this.group.position.z;
 
         const bodyTop = Pod.Vec.mid(skeleton.LULeg, skeleton.RULeg);
-        const bodyBottom = { x: skeleton.head.x, y: skeleton.head.y, z: skeleton.head.z };
-        this.body.position.set(bodyTop.x, bodyTop.y, bodyTop.z);
-        this.body.lookAt(x + bodyBottom.x, y + bodyBottom.y, z + bodyBottom.z);
-        this.body.scale.z = Pod.Vec.dist(bodyTop, bodyBottom) * 0.7;
-        this.points[0].position.set(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7);
-        this.points[1].position.set(bodyTop.x, bodyTop.y, bodyTop.z);
+        bodyTop.x += x;
+        bodyTop.y += y;
+        bodyTop.z += z;
+        const bodyBottom = { x: skeleton.head.x + x, y: skeleton.head.y + y, z: skeleton.head.z + z };
+
+        const pM = new Matrix4();
+        const radius = 0.05;
+        pM.lookAt(new Vector3(bodyBottom.x, bodyBottom.y, bodyBottom.z).sub(bodyTop), zeroV, upV);
+        getInstance("Cylinder.MeshPhong").setMatrixAt(this.parts[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), new Quaternion().setFromRotationMatrix(pM), new Vector3(radius, radius, Pod.Vec.dist(bodyTop, bodyBottom) * 0.7)));
+
+        const spheres = getInstance("Sphere.MeshPhong");
+        spheres.setMatrixAt(this.points[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), zeroQ, zeroS));
+        spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, zeroS));
     }
 
     public morph(player: Player): void {
         this.group.position.set(player.position.x, player.position.y, player.position.z);
-        this.head.setRotationFromQuaternion(new Quaternion(player.rotation.x, player.rotation.y, player.rotation.z, player.rotation.w));
     }
 }
 
@@ -277,7 +286,7 @@ export const playerColors: ColorRepresentation[] = [
 
 ModuleLoader.registerRender("Players", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Players", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
@@ -292,8 +301,8 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 const model = models.get(id)!;
                 const skeleton = skeletons.get(id);
                 if (skeleton !== undefined) {
-                    model.update(skeleton);
                     model.morph(player);
+                    model.update(skeleton);
                 } else {
                     // TODO
                 }
@@ -307,5 +316,5 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

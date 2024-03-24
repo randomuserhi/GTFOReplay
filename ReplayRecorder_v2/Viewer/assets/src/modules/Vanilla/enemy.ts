@@ -1,4 +1,4 @@
-import { Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene, SphereGeometry } from "three";
+import { Color, Group, Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
@@ -305,17 +305,16 @@ export namespace AnimFlags {
 
 class EnemyModel extends SkeletonModel {
     public morph(enemy: Enemy): void {
-        this.head.visible = enemy.head;
+        this.showHead = enemy.head;
 
         let color = 0xaa0000;
         switch (enemy.state) {
         case "Stagger": color = 0xffffff; break;
         case "Glue": color = 0x0000ff; break;
         }     
-        this.material.color.setHex(color);
+        this.color.setHex(color);
         
         this.group.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
-        this.head.setRotationFromQuaternion(new Quaternion(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w));
     }
 }
 
@@ -358,7 +357,7 @@ class FlyerModel {
 // TODO(randomuserhi): Proper enemy models + enemy types
 ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const flyers = renderer.getOrDefault("Flyers", () => new Map());
@@ -378,8 +377,8 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
     
                     const model: EnemyModel = models.get(id)!;
 
-                    model.update(skeleton);
                     model.morph(enemy);
+                    model.update(skeleton);
                     model.setVisible(enemy.dimension === renderer.get("Dimension"));
                 } else if (!enemy.hasSkeleton) {
                     if (!flyers.has(id)) {
@@ -453,5 +452,5 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

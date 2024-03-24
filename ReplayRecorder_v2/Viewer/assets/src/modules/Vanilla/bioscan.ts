@@ -219,7 +219,7 @@ class BioscanModel {
 
 ModuleLoader.registerRender("Bioscan", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Bioscan", () => new Map());
             const scans = snapshot.getOrDefault("Vanilla.Bioscan", () => new Map());
@@ -247,5 +247,5 @@ ModuleLoader.registerRender("Bioscan", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

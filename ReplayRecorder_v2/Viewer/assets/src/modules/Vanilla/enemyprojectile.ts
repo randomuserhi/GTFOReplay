@@ -122,7 +122,7 @@ const trailGeometry = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0)
 
 ModuleLoader.registerRender("Enemy.Projectile", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemy.Projectile", () => new Map());
             const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", () => new Map());
@@ -198,6 +198,6 @@ ModuleLoader.registerRender("Enemy.Projectile", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });
 

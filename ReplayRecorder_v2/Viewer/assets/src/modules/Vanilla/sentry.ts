@@ -192,7 +192,7 @@ class SentryModel {
 
 ModuleLoader.registerRender("Sentry", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Sentry", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
@@ -220,5 +220,5 @@ ModuleLoader.registerRender("Sentry", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

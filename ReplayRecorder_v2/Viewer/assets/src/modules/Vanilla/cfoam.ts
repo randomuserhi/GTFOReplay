@@ -138,7 +138,7 @@ class CfoamModel {
 
 ModuleLoader.registerRender("Cfoam", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Cfoam", () => new Map());
             const collection = snapshot.getOrDefault("Vanilla.Cfoam", () => new Map());
@@ -161,5 +161,5 @@ ModuleLoader.registerRender("Cfoam", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });

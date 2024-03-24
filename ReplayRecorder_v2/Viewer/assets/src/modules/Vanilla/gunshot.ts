@@ -76,7 +76,7 @@ const gunshotGeometry = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 
 
 ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{
+    api.setRenderLoop([...renderLoop, {
         name, pass: (renderer, snapshot) => {
             const t = snapshot.time();
             const _models = [];
@@ -121,6 +121,6 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
             }
             renderer.set("Vanilla.Player.Gunshots", _models);
         } 
-    }, ...renderLoop]);
+    }]);
 });
 

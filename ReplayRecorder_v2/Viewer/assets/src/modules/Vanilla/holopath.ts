@@ -111,7 +111,7 @@ declare module "../../replay/moduleloader.js" {
 
 ModuleLoader.registerRender("Holopath", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Holopath", () => new Map());
             const holopaths = snapshot.getOrDefault("Vanilla.Holopath", () => new Map());
@@ -164,6 +164,6 @@ ModuleLoader.registerRender("Holopath", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });
 

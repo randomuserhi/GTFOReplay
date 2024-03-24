@@ -1,5 +1,6 @@
-import { Mesh, MeshPhongMaterial, Vector3 } from "three";
+import { Matrix4, Mesh, MeshPhongMaterial, Vector3 } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
+import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicSplineGeometry } from "../dynamicspline.js";
@@ -130,7 +131,7 @@ declare module "../../replay/moduleloader.js" {
 
 ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
     const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([{ 
+    api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemy.Tongue", () => new Map());
             const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
@@ -159,8 +160,14 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 
                 const originThree = new Vector3(0, 1, 0);
                 if (enemyModel !== undefined) {
-                    if (owner.head) enemyModel.head.getWorldPosition(originThree);
-                    else enemyModel.body.getWorldPosition(originThree);
+                    const matrix = new Matrix4();
+                    if (owner.head)  {
+                        getInstance("Sphere.MeshPhong").getMatrixAt(enemyModel.head, matrix);
+                        originThree.setFromMatrixPosition(matrix);
+                    } else {
+                        getInstance("Cylinder.MeshPhong").getMatrixAt(enemyModel.parts[0], matrix);
+                        originThree.setFromMatrixPosition(matrix);
+                    }
                 }
 
                 const origin: Pod.Vector = {
@@ -221,6 +228,6 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 }
             }
         } 
-    }, ...renderLoop]);
+    }]);
 });
 

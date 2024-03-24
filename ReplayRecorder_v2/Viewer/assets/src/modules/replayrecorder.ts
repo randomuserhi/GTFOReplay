@@ -1,7 +1,8 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, CameraHelper, Color, DirectionalLight, FogExp2, PerspectiveCamera, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, CameraHelper, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import * as BitHelper from "../replay/bithelper.js";
+import { createInstance } from "../replay/instancing.js";
 import { ModuleLoader, ReplayApi } from "../replay/moduleloader.js";
 import { Quat, Quaternion, Vec, Vector } from "../replay/pod.js";
 import { Renderer } from "../replay/renderer.js";
@@ -159,6 +160,27 @@ export namespace DynamicRotation {
 }
 
 // --------------------------- RENDERING ---------------------------
+
+declare module "../replay/instancing.js" {
+    interface InstanceTypes {
+        "Cylinder.MeshPhong": void;
+        "Sphere.MeshPhong": void;
+    } 
+}
+
+(() => {
+    const cylinders = createInstance("Cylinder.MeshPhong", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), new MeshPhongMaterial(), 10000);
+    cylinders.frustumCulled = false;
+    cylinders.instanceMatrix.setUsage( DynamicDrawUsage );
+    cylinders.castShadow = true;
+    cylinders.receiveShadow = true;
+
+    const spheres = createInstance("Sphere.MeshPhong", new SphereGeometry(1, 10, 10), new MeshPhongMaterial(), 10000);
+    spheres.frustumCulled = false;
+    spheres.instanceMatrix.setUsage( DynamicDrawUsage );
+    spheres.castShadow = true;
+    spheres.receiveShadow = true;
+})();
 
 declare module "../replay/moduleloader.js" {
     namespace Typemap {
