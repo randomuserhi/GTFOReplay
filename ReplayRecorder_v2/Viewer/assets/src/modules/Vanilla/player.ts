@@ -4,7 +4,7 @@ import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../replayrecorder.js";
-import { Skeleton, SkeletonModel, upV, zeroQ, zeroS, zeroV } from "./model.js";
+import { Skeleton, SkeletonModel, upV, zeroQ, zeroV } from "./model.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -252,6 +252,9 @@ class PlayerModel extends SkeletonModel {
 
         super.update(skeleton);
 
+        const radius = 0.05;
+        const sM = new Vector3(radius, radius, radius);
+
         const x = this.group.position.x;
         const y = this.group.position.y;
         const z = this.group.position.z;
@@ -263,13 +266,12 @@ class PlayerModel extends SkeletonModel {
         const bodyBottom = { x: skeleton.head.x + x, y: skeleton.head.y + y, z: skeleton.head.z + z };
 
         const pM = new Matrix4();
-        const radius = 0.05;
         pM.lookAt(new Vector3(bodyBottom.x, bodyBottom.y, bodyBottom.z).sub(bodyTop), zeroV, upV);
         getInstance("Cylinder.MeshPhong").setMatrixAt(this.parts[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), new Quaternion().setFromRotationMatrix(pM), new Vector3(radius, radius, Pod.Vec.dist(bodyTop, bodyBottom) * 0.7)));
 
         const spheres = getInstance("Sphere.MeshPhong");
-        spheres.setMatrixAt(this.points[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), zeroQ, zeroS));
-        spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, zeroS));
+        spheres.setMatrixAt(this.points[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), zeroQ, sM));
+        spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, sM));
     }
 
     public morph(player: Player): void {
