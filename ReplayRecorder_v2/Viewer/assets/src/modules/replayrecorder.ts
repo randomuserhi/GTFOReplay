@@ -379,14 +379,16 @@ class CameraControls {
                     renderer.set("Dimension", first.dimension);
                     
                     const model = models.get(first.id)!;
-                    if (camera.parent !== model.group) {
-                        camera.parent = model.group;
-                    }
+                    if (model !== undefined) {
+                        if (camera.parent !== model.group) {
+                            camera.parent = model.group;
+                        }
 
-                    const fake = renderer.get("FakeCamera")!;
-                    camera.position.copy(fake.position);
-                    camera.translateY(1);
-                    camera.quaternion.copy(fake.quaternion);
+                        const fake = renderer.get("FakeCamera")!;
+                        camera.position.copy(fake.position);
+                        camera.translateY(1);
+                        camera.quaternion.copy(fake.quaternion);
+                    }
                 }
             }
         } else {
