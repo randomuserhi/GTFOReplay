@@ -182,8 +182,9 @@ namespace ReplayRecorder.Snapshot {
                     EventWrapper e = events[i];
 
                     long delta = now - e.now;
-                    if (delta < 0 || delta > ushort.MaxValue) {
-                        throw new ReplayInvalidDeltaTime($"Delta time of {delta}ms is invalid. Max is {ushort.MaxValue}ms and minimum is 0ms.");
+                    if (delta < 0) delta = 0;
+                    if (delta > ushort.MaxValue) {
+                        throw new ReplayInvalidDeltaTime($"Delta time of {delta}ms is invalid. Max is {ushort.MaxValue}ms.");
                     }
 
                     // Event header

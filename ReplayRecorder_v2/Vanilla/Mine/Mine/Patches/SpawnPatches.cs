@@ -11,6 +11,7 @@ namespace Vanilla.Mine.Patches {
         [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.OnSpawn))]
         [HarmonyPostfix]
         private static void Spawn(MineDeployerInstance __instance, pItemSpawnData spawnData) {
+            // NOTE(randomuserhi): Fairly sure throws an exception with mine when owner leaves lobby :(
             SNet_Player player;
             if (spawnData.owner.TryGetPlayer(out player)) {
                 PlayerAgent owner = player.PlayerAgent.Cast<PlayerAgent>();
