@@ -89,8 +89,8 @@ export class SkeletonModel {
         pM.lookAt(new Vector3(bodyBottom.x, bodyBottom.y, bodyBottom.z).sub(bodyTop), zeroV, upV);
         pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), new Quaternion().setFromRotationMatrix(pM), new Vector3(radius, radius, Pod.Vec.dist(bodyTop, bodyBottom)));
         this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z).add(this.group.position), zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(new Vector3(bodyBottom.x, bodyBottom.y, bodyBottom.z).add(this.group.position), zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(new Vector3(bodyBottom.x, bodyBottom.y, bodyBottom.z), zeroQ, sM), this.color);
 
         pM.lookAt(new Vector3(skeleton.LLArm.x, skeleton.LLArm.y, skeleton.LLArm.z).sub(skeleton.LUArm), zeroV, upV);
         pM.compose(new Vector3(skeleton.LUArm.x, skeleton.LUArm.y, skeleton.LUArm.z).add(this.group.position), new Quaternion().setFromRotationMatrix(pM), new Vector3(radius, radius, Pod.Vec.dist(skeleton.LUArm, skeleton.LLArm)));
