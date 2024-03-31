@@ -20,7 +20,8 @@ namespace Vanilla.Player {
             PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
             foreach (rPlayer player in players.ToArray()) {
                 if (!agents.Any(p => p.GlobalID == player.Id)) {
-                    Despawn(player.agent);
+                    Replay.Despawn(Replay.Get<rPlayerModel>(player.Id));
+                    Replay.Despawn(player);
                 }
             }
             foreach (PlayerAgent player in agents) {

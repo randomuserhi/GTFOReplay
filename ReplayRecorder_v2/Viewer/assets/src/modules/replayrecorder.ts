@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, CameraHelper, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import * as BitHelper from "../replay/bithelper.js";
@@ -450,23 +450,22 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
 
             // TODO(randomuserhi): Scale light based on map size -> also position properly
             const light = new DirectionalLight(0xFFFFFF, 1);
-            light.position.y = 100;
             light.shadow.mapSize.x = 4096;
             light.shadow.mapSize.y = 4096;
             light.shadow.bias = -0.001;
             light.castShadow = true;
 
-            light.shadow.camera.left = -250;
-            light.shadow.camera.right = 250;
-            light.shadow.camera.top = 250;
-            light.shadow.camera.bottom = -250;
+            light.shadow.camera.left = -100;
+            light.shadow.camera.right = 100;
+            light.shadow.camera.top = 100;
+            light.shadow.camera.bottom = -100;
             light.shadow.camera.far = 200;
             light.shadow.camera.near = 0.1;
             light.target.translateX(0);
             light.target.translateY(-10);
 
-            const helper = new CameraHelper(light.shadow.camera);
-            r.scene.add(helper);
+            //const helper = new CameraHelper(light.shadow.camera);
+            //r.scene.add(helper);
 
             r.set("MainLight", light);
             r.scene.add(light);
@@ -493,6 +492,11 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([{ 
         name, pass: (renderer, snapshot, dt) => {
+            const light = renderer.get("MainLight")!;
+            const cameraPos = renderer.get("Camera")!.position;
+            light.position.set(cameraPos.x, cameraPos.y + 50, cameraPos.z); 
+            light.target.position.set(cameraPos.x, cameraPos.y - 10, cameraPos.z);
+
             renderer.get("CameraControls")!.update(renderer, snapshot, dt);
         } 
     }, ...renderLoop]);
