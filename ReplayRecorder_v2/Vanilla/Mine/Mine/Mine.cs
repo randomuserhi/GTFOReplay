@@ -32,6 +32,14 @@ namespace Vanilla.Mine {
         public PlayerAgent owner;
         private MineDeployerInstance_Detect_Laser? laser;
 
+        public override bool Active {
+            get {
+                if (!transform.active && Replay.Has<rMine>(Id)) {
+                    Replay.Despawn(Replay.Get<rMine>(Id));
+                }
+                return base.Active;
+            }
+        }
         public override bool IsDirty => base.IsDirty || length != oldLength;
 
         private float length => laser == null ? 0 : laser.DetectionRange;
