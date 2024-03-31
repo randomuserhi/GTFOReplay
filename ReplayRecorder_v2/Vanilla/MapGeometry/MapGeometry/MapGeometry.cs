@@ -147,8 +147,6 @@ namespace Vanilla.Map {
             /// - spawn / warp locations
             ///     - the nearest surface is most likely relevant to the level if enemies and players can spawn there
 
-            // TODO(randomuserhi): Get surfaces based on ladder
-
             Surface[] surfaces;
             if (meshes.Length > 1) { // Check we actually need to filter surfaces
                 APILogger.Debug("Getting relevant surfaces.");
