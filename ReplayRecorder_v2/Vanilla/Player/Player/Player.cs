@@ -41,6 +41,9 @@ namespace Vanilla.Player {
                 APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} was replaced by spawned agent.");
                 player.agent = agent;
                 player.transform = new AgentTransform(agent);
+                if (Replay.Has<rPlayerModel>(player.Id)) {
+                    Replay.Get<rPlayerModel>(player.Id).player = player.agent;
+                }
                 return;
             }
 

@@ -38,7 +38,7 @@ namespace Vanilla.Player {
             }
         }
 
-        private PlayerAgent player;
+        public PlayerAgent player;
 
         public override bool Active => player != null;
         public override int Id => player.GlobalID;
@@ -111,6 +111,7 @@ namespace Vanilla.Player {
 
             head = anim.GetBoneTransform(HumanBodyBones.Head).position;
 
+            Vector3 displacement = Vector3.zero;
             Vector3 offset = Vector3.zero;
             if (player.IsLocallyOwned && !player.Owner.IsBot) {
                 LUArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
@@ -123,6 +124,9 @@ namespace Vanilla.Player {
 
                 offset = (anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position + anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position) / 2 - (LUArm + RUArm) / 2;
                 offset += player.transform.forward * 0.2f;
+                if (player.Alive) {
+                    displacement += Vector3.down * 0.2f;
+                }
             } else {
                 LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
                 LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
@@ -141,23 +145,23 @@ namespace Vanilla.Player {
             RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
             RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
 
-            BitHelper.WriteHalf(head - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + head - pos, buffer);
 
-            BitHelper.WriteHalf(offset + LUArm - pos, buffer);
-            BitHelper.WriteHalf(offset + LLArm - pos, buffer);
-            BitHelper.WriteHalf(offset + LHand - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + LUArm - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + LLArm - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + LHand - pos, buffer);
 
-            BitHelper.WriteHalf(offset + RUArm - pos, buffer);
-            BitHelper.WriteHalf(offset + RLArm - pos, buffer);
-            BitHelper.WriteHalf(offset + RHand - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + RUArm - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + RLArm - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + RHand - pos, buffer);
 
-            BitHelper.WriteHalf(LULeg - pos, buffer);
-            BitHelper.WriteHalf(LLLeg - pos, buffer);
-            BitHelper.WriteHalf(LFoot - pos, buffer);
+            BitHelper.WriteHalf(displacement + LULeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + LLLeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + LFoot - pos, buffer);
 
-            BitHelper.WriteHalf(RULeg - pos, buffer);
-            BitHelper.WriteHalf(RLLeg - pos, buffer);
-            BitHelper.WriteHalf(RFoot - pos, buffer);
+            BitHelper.WriteHalf(displacement + RULeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + RLLeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + RFoot - pos, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {
