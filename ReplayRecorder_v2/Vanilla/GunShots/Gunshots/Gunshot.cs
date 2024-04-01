@@ -17,6 +17,9 @@ namespace Vanilla.Player.Gunshots {
             dimension = (byte)source.DimensionIndex;
             this.damage = damage;
             this.start = start;
+            if (source.IsLocallyOwned && !source.Owner.IsBot) {
+                this.start += Vector3.down * 0.2f;
+            }
             this.end = end;
             this.sentry = sentry;
         }

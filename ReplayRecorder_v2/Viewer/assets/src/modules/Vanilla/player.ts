@@ -1,4 +1,4 @@
-import { Color, ColorRepresentation, Matrix4, Quaternion, Vector3 } from "three";
+import { BoxGeometry, Color, ColorRepresentation, Group, Matrix4, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
@@ -29,8 +29,8 @@ declare module "../../replay/moduleloader.js" {
             };
 
             "Vanilla.Player.Model": {
-                parse: Skeleton;
-                spawn: Skeleton;
+                parse: PlayerSkeleton;
+                spawn: PlayerSkeleton;
                 despawn: void;
             };
         }
@@ -50,9 +50,14 @@ declare module "../../replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Player": Map<number, Player>
-            "Vanilla.Player.Model": Map<number, Skeleton>
+            "Vanilla.Player.Model": Map<number, PlayerSkeleton>
         }
     }
+}
+
+export interface PlayerSkeleton extends Skeleton {
+    wieldedPos: Pod.Vector;
+    wieldedRot: Pod.Quaternion;
 }
 
 export interface Player extends DynamicTransform {
@@ -139,20 +144,31 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
 ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await Skeleton.parse(data);
-            return result;
+            const skeleton = await Skeleton.parse(data);
+            return {
+                ...skeleton,
+                wieldedPos: await BitHelper.readHalfVector(data),
+                wieldedRot: await BitHelper.readHalfQuaternion(data)
+            };
         }, 
         exec: (id, data, snapshot, lerp) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
     
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
-            Skeleton.lerp(skeletons.get(id)!, data, lerp);
+            const skeleton = skeletons.get(id)!;
+            Skeleton.lerp(skeleton, data, lerp);
+            skeleton.wieldedPos = Pod.Vec.lerp(skeleton.wieldedPos, data.wieldedPos, lerp);
+            skeleton.wieldedRot = Pod.Quat.slerp(skeleton.wieldedRot, data.wieldedRot, lerp);
         }
     },
     spawn: {
         parse: async (data) => {
-            const result = await Skeleton.parse(data);
-            return result;
+            const skeleton = await Skeleton.parse(data);
+            return {
+                ...skeleton,
+                wieldedPos: await BitHelper.readHalfVector(data),
+                wieldedRot: await BitHelper.readHalfQuaternion(data)
+            };
         },
         exec: (id, data, snapshot) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
@@ -247,17 +263,36 @@ declare module "../../replay/moduleloader.js" {
 }
 
 class PlayerModel extends SkeletonModel {
-    public update(skeleton: Skeleton): void {
+    melee: Group;
+
+    constructor(color: Color) {
+        super(color);
+
+        this.melee = new Group();
+        const geometry = new BoxGeometry(0.1, 0.1, 0.5);
+        const material = new MeshPhongMaterial({
+            color: 0x00ff00
+        });
+
+        this.melee.add(new Mesh(geometry, material));
+        this.group.add(this.melee);
+    }
+
+    public update(skeleton: PlayerSkeleton): void {
         if (!this.group.visible) return;
 
         super.update(skeleton);
 
-        const radius = 0.05;
-        const sM = new Vector3(radius, radius, radius);
-
         const x = this.group.position.x;
         const y = this.group.position.y;
         const z = this.group.position.z;
+
+        this.melee.position.set(skeleton.wieldedPos.x, skeleton.wieldedPos.y, skeleton.wieldedPos.z);
+        console.log(this.melee.position);
+        this.melee.quaternion.set(skeleton.wieldedRot.x, skeleton.wieldedRot.y, skeleton.wieldedRot.z, skeleton.wieldedRot.w);
+
+        const radius = 0.05;
+        const sM = new Vector3(radius, radius, radius);
 
         const bodyTop = Pod.Vec.mid(skeleton.LULeg, skeleton.RULeg);
         bodyTop.x += x;

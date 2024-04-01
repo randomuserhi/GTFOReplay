@@ -3,7 +3,6 @@ import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicRotation, DynamicTransform } from "../replayrecorder.js";
-import { Skeleton } from "./model.js";
 import { playerColors } from "./player.js";
 
 declare module "../../replay/moduleloader.js" {
@@ -19,12 +18,6 @@ declare module "../../replay/moduleloader.js" {
                     rotation: Pod.Quaternion;
                     owner: number;
                 };
-                despawn: void;
-            };
-
-            "Vanilla.Player.Model": {
-                parse: Skeleton;
-                spawn: Skeleton;
                 despawn: void;
             };
         }

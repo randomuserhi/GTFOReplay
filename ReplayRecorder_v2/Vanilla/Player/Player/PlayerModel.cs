@@ -2,6 +2,7 @@
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using System.Text;
 using UnityEngine;
 
 namespace Vanilla.Player {
@@ -69,9 +70,14 @@ namespace Vanilla.Player {
                         RHand != anim.GetBoneTransform(HumanBodyBones.RightHand).position;
                 }
 
+                bool wielded = true;
+                ItemEquippable? wieldedItem = player.Inventory.WieldedItem;
+                Transform transform = GetWieldedTransform(wieldedItem);
+                wielded = wieldedItem != null && (wieldedPos != transform.position || wieldedRot != transform.rotation);
+
                 return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
 
-                arms ||
+                arms || wielded ||
 
                 LULeg != anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position ||
                 LLLeg != anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position ||
@@ -105,14 +111,40 @@ namespace Vanilla.Player {
         private Vector3 RLLeg;
         private Vector3 RFoot;
 
+        private Vector3 wieldedPos;
+        private Quaternion wieldedRot;
+
+        private static string DebugObject(GameObject go, StringBuilder? sb = null, int depth = 0) {
+            if (sb == null) sb = new StringBuilder();
+            sb.Append('\t', depth);
+            sb.Append(go.name + "\n");
+            for (int i = 0; i < go.transform.childCount; ++i) {
+                DebugObject(go.transform.GetChild(i).gameObject, sb, depth + 1);
+            }
+            return sb.ToString();
+        }
+
+        private static Transform GetWieldedTransform(ItemEquippable item) {
+            if (item.transform.childCount == 0) return item.transform;
+            Transform child = item.transform.GetChild(0);
+            Transform t = child.Find("weapon_ref");
+            if (t != null) return t;
+            if (child.childCount > 0) return child.GetChild(0);
+            return item.transform;
+        }
+
         public override void Write(ByteBuffer buffer) {
             Vector3 pos = player.transform.position;
             Animator anim = player.AnimatorBody;
+
+            ItemEquippable? wieldedItem = player.Inventory.WieldedItem;
 
             head = anim.GetBoneTransform(HumanBodyBones.Head).position;
 
             Vector3 displacement = Vector3.zero;
             Vector3 offset = Vector3.zero;
+            Vector3 handOffset = Vector3.zero;
+            Vector3 lowerOffset = Vector3.zero;
             if (player.IsLocallyOwned && !player.Owner.IsBot) {
                 LUArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
                 LLArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
@@ -123,7 +155,15 @@ namespace Vanilla.Player {
                 RHand = player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightHand).position;
 
                 offset = (anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position + anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position) / 2 - (LUArm + RUArm) / 2;
-                offset += player.transform.forward * 0.2f;
+                offset += player.transform.forward * 0.1f;
+
+                if (wieldedItem != null && !wieldedItem.IsWeapon && !wieldedItem.CanReload) {
+                } else {
+                    lowerOffset = Vector3.down * 0.1f;
+                    lowerOffset -= player.transform.forward * 0.15f;
+                    handOffset = Vector3.down * 0.2f;
+                }
+
                 if (player.Alive) {
                     displacement += Vector3.down * 0.2f;
                 }
@@ -148,12 +188,12 @@ namespace Vanilla.Player {
             BitHelper.WriteHalf(displacement * 2 + head - pos, buffer);
 
             BitHelper.WriteHalf(displacement * 2 + offset + LUArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + LLArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + LHand - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + lowerOffset + LLArm - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + handOffset + LHand - pos, buffer);
 
             BitHelper.WriteHalf(displacement * 2 + offset + RUArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + RLArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + RHand - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + lowerOffset + RLArm - pos, buffer);
+            BitHelper.WriteHalf(displacement * 2 + offset + handOffset + RHand - pos, buffer);
 
             BitHelper.WriteHalf(displacement + LULeg - pos, buffer);
             BitHelper.WriteHalf(displacement + LLLeg - pos, buffer);
@@ -162,6 +202,14 @@ namespace Vanilla.Player {
             BitHelper.WriteHalf(displacement + RULeg - pos, buffer);
             BitHelper.WriteHalf(displacement + RLLeg - pos, buffer);
             BitHelper.WriteHalf(displacement + RFoot - pos, buffer);
+
+            if (wieldedItem != null) {
+                Transform transform = GetWieldedTransform(wieldedItem);
+                wieldedPos = transform.position;
+                wieldedRot = transform.rotation;
+            }
+            BitHelper.WriteHalf(displacement * 2 + offset + handOffset + wieldedPos - pos, buffer);
+            BitHelper.WriteHalf(wieldedRot, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

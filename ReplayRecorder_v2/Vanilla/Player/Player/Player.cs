@@ -20,8 +20,7 @@ namespace Vanilla.Player {
             PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
             foreach (rPlayer player in players.ToArray()) {
                 if (!agents.Any(p => p.GlobalID == player.Id)) {
-                    Replay.Despawn(Replay.Get<rPlayerModel>(player.Id));
-                    Replay.Despawn(player);
+                    Despawn(player.agent);
                 }
             }
             foreach (PlayerAgent player in agents) {
@@ -67,7 +66,9 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
             Replay.Despawn(player);
-            Replay.Despawn(Replay.Get<rPlayerModel>(agent.GlobalID));
+            if (Replay.Has<rPlayerModel>(agent.GlobalID)) {
+                Replay.Despawn(Replay.Get<rPlayerModel>(agent.GlobalID));
+            }
             players.Remove(player);
         }
     }
