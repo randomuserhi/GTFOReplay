@@ -1,8 +1,8 @@
-import { BoxGeometry, Group, Mesh, MeshPhongMaterial } from "three";
+import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial } from "three";
 import { Model } from "../equippable.js";
 
 const box = new BoxGeometry(1, 1, 1);
-//const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
+const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5);
 
 export class Bat extends Model {
     constructor() {
@@ -11,18 +11,26 @@ export class Bat extends Model {
         const material = new MeshPhongMaterial({
             color: 0xcccccc
         });
-        const head = new Mesh(box, material);
-        head.scale.set(0.07, 0.5, 0.07);
+        
+        const gun = new Group();
 
-        //const handle = new Mesh(box, material);
-        //handle.scale.set(0.02, 0.02, 0.8);
+        const obj0 = new Mesh(box, material);
+        gun.add(obj0);
+        obj0.scale.set(0.05, 0.05, 0.3533964);
+        obj0.position.set(0, 0, 0.18198);
 
-        const bat = new Group();
-        bat.add(head);
-        head.position.set(0, 0.2, 0);
-        //bat.add(handle);
+        const obj1 = new Mesh(cylinder, material);
+        gun.add(obj1);
+        obj1.scale.set(0.03, 0.03, 0.0504137);
+        obj1.position.set(0, 0, -0.0424);
 
-        this.group.add(bat);
-        //bat.position.set(0, 0.1, -0.5);
+        const obj2 = new Mesh(cylinder, material);
+        gun.add(obj2);
+        obj2.scale.set(0.04, 0.04, 0.01010042);
+        obj2.position.set(0, 0, -0.10162);
+
+        this.group.add(gun);
+        gun.position.set(0, 0, -0.1);
+        gun.rotateX(-Math.PI/2);
     }
 }

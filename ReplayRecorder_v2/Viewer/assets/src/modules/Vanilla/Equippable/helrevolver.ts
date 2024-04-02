@@ -62,6 +62,7 @@ export class HelRevolver extends Model {
         this.fold.position.set(0, -0.054, 0.081);
 
         this.group.add(gun);
+        gun.scale.set(0.9, 0.9, 0.9);
     }
 
     public update(data: PlayerSkeleton): void {

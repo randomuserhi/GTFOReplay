@@ -239,7 +239,7 @@ export class Renderer {
     }
 }
 
-class HolographicMaterial extends ShaderMaterial {
+export class HolographicMaterial extends ShaderMaterial {
 
     /**
      * Create a HolographicMaterial.
@@ -485,7 +485,7 @@ class HolographicMaterial extends ShaderMaterial {
         this.setValues(parameters as any);
         this.depthTest = parameters.depthTest !== undefined ? parameters.depthTest : false;
         this.blending = parameters.blendMode !== undefined ? parameters.blendMode : AdditiveBlending;
-        this.transparent = true;
+        this.transparent = false;
         this.side = parameters.side !== undefined ? parameters.side : FrontSide;
   
     }

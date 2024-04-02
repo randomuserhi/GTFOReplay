@@ -82,6 +82,11 @@ export class HelRifle extends Model {
         obj12.scale.set(0.03, 0.03, 0.3316431);
         obj12.position.set(0, 0.015, 0.2181);
 
+        const obj13 = new Mesh(cylinder, material);
+        gun.add(obj13);
+        obj13.scale.set(0.03, 0.03, 0.02649803);
+        obj13.position.set(0, 0.1032748, -0.00799942);
+
         this.group.add(gun);
         gun.position.set(0, 0, 0);
     }

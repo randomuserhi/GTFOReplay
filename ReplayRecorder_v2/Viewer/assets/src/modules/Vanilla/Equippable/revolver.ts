@@ -63,6 +63,7 @@ export class Revolver extends Model {
 
         this.group.add(gun);
         gun.position.set(0, 0.05, -0.05);
+        gun.scale.set(0.9, 0.9, 0.9);
     }
 
     public update(data: PlayerSkeleton): void {

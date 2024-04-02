@@ -79,6 +79,7 @@ export class AssaultRifle extends Model {
         obj11.rotateX(5.62754);
 
         this.group.add(gun);
+        gun.scale.set(1.1, 1.1, 1.1);
         gun.position.set(0, 0, 0);
     }
 }

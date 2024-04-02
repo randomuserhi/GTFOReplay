@@ -48,6 +48,7 @@ export class SawedOff extends Model {
         obj4.position.set(-0.0125, 0.01790005, -0.02490155);
 
         this.group.add(gun);
+        gun.scale.set(1.1, 1.1, 1.1);
         gun.position.set(0, 0, 0);
     }
 
