@@ -7,18 +7,32 @@ import { BurstPistol } from "./Equippable/burstpistol.js";
 import { BurstRifle } from "./Equippable/burstrifle.js";
 import { Carbine } from "./Equippable/carbine.js";
 import { CfoamLauncher } from "./Equippable/cfoam.js";
+import { ChokeModShotgun } from "./Equippable/chokemodshotgun.js";
+import { CombatShotgun } from "./Equippable/combatshotgun.js";
 import { Dmr } from "./Equippable/dmr.js";
 import { DoubleTap } from "./Equippable/doubletap.js";
 import { Hammer } from "./Equippable/hammer.js";
+import { HeavyAssaultRifle } from "./Equippable/heavyassaultrifle.js";
+import { HeavySmg } from "./Equippable/heavysmg.js";
 import { HelRevolver } from "./Equippable/helrevolver.js";
+import { HelShotgun } from "./Equippable/helshotgun.js";
 import { Knife } from "./Equippable/knife.js";
+import { MachineGun0 } from "./Equippable/machinegun0.js";
+import { MachineGun1 } from "./Equippable/machinegun1.js";
 import { MachinePistol } from "./Equippable/machinepistol.js";
 import { MineDeployer } from "./Equippable/minedeployer.js";
 import { Pack } from "./Equippable/pack.js";
+import { PDW } from "./Equippable/pdw.js";
 import { Pistol } from "./Equippable/pistol.js";
 import { Revolver } from "./Equippable/revolver.js";
 import { Rifle } from "./Equippable/rifle.js";
+import { SawedOff } from "./Equippable/sawedoff.js";
+import { ScatterGun } from "./Equippable/scattergun.js";
 import { Sentry } from "./Equippable/sentry.js";
+import { ShortRifle } from "./Equippable/shortrifle.js";
+import { Shotgun } from "./Equippable/shotgun.js";
+import { SlugShotgun } from "./Equippable/slugshotgun.js";
+import { Smg } from "./Equippable/smg.js";
 import { Spear } from "./Equippable/spear.js";
 import { Model } from "./equippable.js";
 
@@ -111,11 +125,17 @@ const _equippable = [{
     id: 5,
     model: () => new AutoPistol()
 }, {
-    id: 5,
+    id: 6,
     model: () => new Bullpup()
 }, {
-    id: 25,
-    model: () => new Revolver()
+    id: 7,
+    model: () => new Smg()
+}, {
+    id: 8,
+    model: () => new PDW()
+}, {
+    id: 9,
+    model: () => new HeavySmg()
 }, {
     id: 10,
     model: () => new Carbine()
@@ -134,6 +154,42 @@ const _equippable = [{
 }, {
     id: 15,
     model: () => new Rifle()
+}, {
+    id: 16,
+    model: () => new SawedOff()
+}, {
+    id: 17,
+    model: () => new HelShotgun()
+}, {
+    id: 18,
+    model: () => new SlugShotgun()
+}, {
+    id: 19,
+    model: () => new HeavyAssaultRifle()
+}, {
+    id: 20,
+    model: () => new ShortRifle()
+}, {
+    id: 21,
+    model: () => new Shotgun()
+}, {
+    id: 22,
+    model: () => new CombatShotgun()
+}, {
+    id: 23,
+    model: () => new ScatterGun()
+}, {
+    id: 24,
+    model: () => new ChokeModShotgun()
+}, {
+    id: 25,
+    model: () => new Revolver()
+}, {
+    id: 26,
+    model: () => new MachineGun0()
+}, {
+    id: 27,
+    model: () => new MachineGun1()
 }];
 
 export const specification: Specification = {

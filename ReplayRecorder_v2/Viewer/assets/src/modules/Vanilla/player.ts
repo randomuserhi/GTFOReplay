@@ -114,7 +114,6 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             DynamicTransform.lerp(player, data, lerp);
             player.state = data.state;
             player.equippedId = data.equippedId;
-            //console.log(player.equippedId + ", " + snapshot.time());
         }
     },
     spawn: {

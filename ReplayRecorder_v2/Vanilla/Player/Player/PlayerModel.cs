@@ -159,10 +159,12 @@ namespace Vanilla.Player {
         }
         private static Transform? GetFoldTransform(ItemEquippable item) {
             if (item.GearPartHolder != null) {
-                return FindTransformByName(item.GearPartHolder.transform, "Fold");
-            } else {
-                return null;
+                Transform? revolver = FindTransformByName(item.GearPartHolder.transform, "Fold");
+                if (revolver != null) return revolver;
+                Transform? sawedOff = FindTransformByName(item.GearPartHolder.transform, "BreakPoint");
+                if (sawedOff != null) return sawedOff;
             }
+            return null;
         }
 
         public override void Write(ByteBuffer buffer) {
