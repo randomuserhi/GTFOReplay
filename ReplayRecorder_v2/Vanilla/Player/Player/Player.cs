@@ -106,6 +106,14 @@ namespace Vanilla.Player {
             }
         }
 
+        public override bool Active {
+            get {
+                if (agent == null && Replay.Has<rPlayer>(Id)) {
+                    Replay.Despawn(Replay.Get<rPlayer>(Id));
+                }
+                return agent != null;
+            }
+        }
         public override bool IsDirty => base.IsDirty || state != prevState || equipped != lastEquipped;
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {

@@ -41,7 +41,14 @@ namespace Vanilla.Player {
 
         public PlayerAgent player;
 
-        public override bool Active => player != null;
+        public override bool Active {
+            get {
+                if (player == null && Replay.Has<rPlayerModel>(Id)) {
+                    Replay.Despawn(Replay.Get<rPlayerModel>(Id));
+                }
+                return player != null;
+            }
+        }
         public override int Id => player.GlobalID;
         public override bool IsDirty {
             get {
@@ -128,7 +135,11 @@ namespace Vanilla.Player {
 
         private static Transform GetWieldedTransform(ItemEquippable item) {
             //APILogger.Debug(DebugObject(item.gameObject));
-            return item.GearPartHolder.transform;
+            if (item.GearPartHolder != null) {
+                return item.GearPartHolder.transform;
+            } else {
+                return item.transform;
+            }
         }
 
         public override void Write(ByteBuffer buffer) {
