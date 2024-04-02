@@ -3,6 +3,7 @@ import { AutoPistol } from "./Equippable/autopistol.js";
 import { Bat } from "./Equippable/bat.js";
 import { Biotracker } from "./Equippable/biotracker.js";
 import { Bullpup } from "./Equippable/bullpup.js";
+import { BurstCannon } from "./Equippable/burstcannon.js";
 import { BurstPistol } from "./Equippable/burstpistol.js";
 import { BurstRifle } from "./Equippable/burstrifle.js";
 import { Carbine } from "./Equippable/carbine.js";
@@ -14,8 +15,11 @@ import { DoubleTap } from "./Equippable/doubletap.js";
 import { Hammer } from "./Equippable/hammer.js";
 import { HeavyAssaultRifle } from "./Equippable/heavyassaultrifle.js";
 import { HeavySmg } from "./Equippable/heavysmg.js";
+import { HelGun } from "./Equippable/helgun.js";
 import { HelRevolver } from "./Equippable/helrevolver.js";
+import { HelRifle } from "./Equippable/helrifle.js";
 import { HelShotgun } from "./Equippable/helshotgun.js";
+import { HighCal } from "./Equippable/highcal.js";
 import { Knife } from "./Equippable/knife.js";
 import { MachineGun0 } from "./Equippable/machinegun0.js";
 import { MachineGun1 } from "./Equippable/machinegun1.js";
@@ -24,6 +28,7 @@ import { MineDeployer } from "./Equippable/minedeployer.js";
 import { Pack } from "./Equippable/pack.js";
 import { PDW } from "./Equippable/pdw.js";
 import { Pistol } from "./Equippable/pistol.js";
+import { PrecisionRifle } from "./Equippable/precisionrifle.js";
 import { Revolver } from "./Equippable/revolver.js";
 import { Rifle } from "./Equippable/rifle.js";
 import { SawedOff } from "./Equippable/sawedoff.js";
@@ -33,6 +38,7 @@ import { ShortRifle } from "./Equippable/shortrifle.js";
 import { Shotgun } from "./Equippable/shotgun.js";
 import { SlugShotgun } from "./Equippable/slugshotgun.js";
 import { Smg } from "./Equippable/smg.js";
+import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
 import { Model } from "./equippable.js";
 
@@ -190,6 +196,24 @@ const _equippable = [{
 }, {
     id: 27,
     model: () => new MachineGun1()
+}, {
+    id: 28,
+    model: () => new BurstCannon()
+}, {
+    id: 29,
+    model: () => new HelGun()
+}, {
+    id: 30,
+    model: () => new HighCal()
+}, {
+    id: 31,
+    model: () => new PrecisionRifle()
+}, {
+    id: 32,
+    model: () => new Sniper()
+}, {
+    id: 33,
+    model: () => new HelRifle()
 }];
 
 export const specification: Specification = {
