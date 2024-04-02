@@ -69,7 +69,8 @@ export class Knife extends Model {
         obj9.rotateX(-0.18465583);
 
         this.group.add(gun);
-        gun.position.set(0, 0, -0.1);
+        gun.scale.set(1.1, 1.1, 1.1);
+        gun.position.set(0, -0.07, -0.1);
         gun.rotateX(-Math.PI/2);
     }
 }
