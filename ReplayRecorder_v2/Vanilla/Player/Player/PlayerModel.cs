@@ -1,4 +1,5 @@
-﻿using Player;
+﻿using API;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -125,12 +126,8 @@ namespace Vanilla.Player {
         }
 
         private static Transform GetWieldedTransform(ItemEquippable item) {
-            if (item.transform.childCount == 0) return item.transform;
-            Transform child = item.transform.GetChild(0);
-            Transform t = child.Find("weapon_ref");
-            if (t != null) return t;
-            if (child.childCount > 0) return child.GetChild(0);
-            return item.transform;
+            APILogger.Debug(DebugObject(item.gameObject));
+            return item.GearPartHolder.transform;
         }
 
         public override void Write(ByteBuffer buffer) {

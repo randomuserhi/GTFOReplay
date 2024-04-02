@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mine", "Mine\Mine.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cfoam", "Cfoam\Cfoam.csproj", "{34A64FEA-B682-4860-85BC-BD866ED3882A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainedPuzzles", "ChainedPuzzles\ChainedPuzzles.csproj", "{07E7AFFD-492B-486C-8E21-9A18E019B06D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChainedPuzzles", "ChainedPuzzles\ChainedPuzzles.csproj", "{07E7AFFD-492B-486C-8E21-9A18E019B06D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Specification", "Specification\Specification.csproj", "{82C10C43-962C-4FEE-B795-6BFFDF452953}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07E7AFFD-492B-486C-8E21-9A18E019B06D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82C10C43-962C-4FEE-B795-6BFFDF452953}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82C10C43-962C-4FEE-B795-6BFFDF452953}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82C10C43-962C-4FEE-B795-6BFFDF452953}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82C10C43-962C-4FEE-B795-6BFFDF452953}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

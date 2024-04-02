@@ -3,6 +3,7 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using Vanilla.Specification;
 
 namespace Vanilla.Player {
     internal static class PlayerReplayManager {
@@ -90,7 +91,22 @@ namespace Vanilla.Player {
             }
         }
 
-        public override bool IsDirty => base.IsDirty || state != prevState;
+        private ushort lastEquipped = 0;
+        private ushort equipped {
+            get {
+                ItemEquippable? item = agent.Inventory.WieldedItem;
+                if (item != null) {
+                    if (item.GearIDRange != null) {
+                        return GTFOSpecification.GetGear(item.GearIDRange.PublicGearName);
+                    } else if (item.ItemDataBlock != null) {
+                        return GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
+                    }
+                }
+                return 0;
+            }
+        }
+
+        public override bool IsDirty => base.IsDirty || state != prevState || equipped != lastEquipped;
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
@@ -99,8 +115,10 @@ namespace Vanilla.Player {
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
             BitHelper.WriteBytes(state, buffer);
+            BitHelper.WriteBytes(equipped, buffer);
 
             prevState = state;
+            lastEquipped = equipped;
         }
 
         public override void Spawn(ByteBuffer buffer) {

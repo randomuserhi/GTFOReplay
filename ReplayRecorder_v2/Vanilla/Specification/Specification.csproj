@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -22,7 +22,6 @@
 
 	<ItemGroup>
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\ReplayRecorder.dll" Private="false" />
-		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\Vanilla\Specification.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\BepInEx.Core.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\BepInEx.Unity.IL2CPP.dll" Private="false" />

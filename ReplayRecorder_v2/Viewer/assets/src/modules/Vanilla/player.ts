@@ -1,10 +1,12 @@
-import { BoxGeometry, Color, ColorRepresentation, Group, Matrix4, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "three";
+import { Color, ColorRepresentation, Group, Matrix4, Quaternion, Vector3 } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../replayrecorder.js";
+import { Equippable } from "./equippable.js";
 import { Skeleton, SkeletonModel, upV, zeroQ, zeroV } from "./model.js";
+import { specification } from "./specification.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -16,6 +18,7 @@ declare module "../../replay/moduleloader.js" {
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
                     state: PlayerState;
+                    equippedId: number;
                 };
                 spawn: {
                     dimension: number;
@@ -65,6 +68,7 @@ export interface Player extends DynamicTransform {
     slot: number;
     nickname: string;
     state: PlayerState;
+    equippedId: number;
 
     melee: MeleeState;
     meleeShove?: number;
@@ -97,7 +101,8 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             const result = await DynamicTransform.parse(data);
             return {
                 ...result,
-                state: playerStateTypemap[await BitHelper.readByte(data)]
+                state: playerStateTypemap[await BitHelper.readByte(data)],
+                equippedId: await BitHelper.readUShort(data)
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -107,6 +112,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             const player = players.get(id)!;
             DynamicTransform.lerp(player, data, lerp);
             player.state = data.state;
+            player.equippedId = data.equippedId;
         }
     },
     spawn: {
@@ -126,7 +132,12 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             const { snet } = data;
         
             if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
-            players.set(id, { id, ...data, state: "Default", melee: "Idle" });
+            players.set(id, { 
+                id, ...data, 
+                state: "Default", 
+                melee: "Idle", 
+                equippedId: 0 
+            });
         }
     },
     despawn: {
@@ -263,19 +274,18 @@ declare module "../../replay/moduleloader.js" {
 }
 
 class PlayerModel extends SkeletonModel {
-    melee: Group;
+    equipped: Group;
+
+    equippedModel: Equippable;
 
     constructor(color: Color) {
         super(color);
 
-        this.melee = new Group();
-        const geometry = new BoxGeometry(0.1, 0.1, 0.5);
-        const material = new MeshPhongMaterial({
-            color: 0x00ff00
-        });
+        this.equipped = new Group();
 
-        this.melee.add(new Mesh(geometry, material));
-        this.group.add(this.melee);
+        this.group.add(this.equipped);
+
+        this.equippedModel = { id: 0 };
     }
 
     public update(skeleton: PlayerSkeleton): void {
@@ -287,9 +297,8 @@ class PlayerModel extends SkeletonModel {
         const y = this.group.position.y;
         const z = this.group.position.z;
 
-        this.melee.position.set(skeleton.wieldedPos.x, skeleton.wieldedPos.y, skeleton.wieldedPos.z);
-        console.log(this.melee.position);
-        this.melee.quaternion.set(skeleton.wieldedRot.x, skeleton.wieldedRot.y, skeleton.wieldedRot.z, skeleton.wieldedRot.w);
+        this.equipped.position.set(skeleton.wieldedPos.x, skeleton.wieldedPos.y, skeleton.wieldedPos.z);
+        this.equipped.quaternion.set(skeleton.wieldedRot.x, skeleton.wieldedRot.y, skeleton.wieldedRot.z, skeleton.wieldedRot.w);
 
         const radius = 0.05;
         const sM = new Vector3(radius, radius, radius);
@@ -311,6 +320,19 @@ class PlayerModel extends SkeletonModel {
 
     public morph(player: Player): void {
         this.group.position.set(player.position.x, player.position.y, player.position.z);
+
+        if (this.equippedModel.model != undefined) {
+            this.equipped.remove(this.equippedModel.model.group);
+        }
+
+        if (this.equippedModel.model == undefined || player.equippedId != this.equippedModel.id) {
+            this.equippedModel.id = player.equippedId;
+            this.equippedModel.model = specification.equippable.get(player.equippedId)?.model();
+        }
+
+        if (this.equippedModel.model != undefined) {
+            this.equipped.add(this.equippedModel.model.group);
+        }
     }
 }
 
