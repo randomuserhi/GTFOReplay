@@ -61,6 +61,7 @@ declare module "../../replay/moduleloader.js" {
 export interface PlayerSkeleton extends Skeleton {
     wieldedPos: Pod.Vector;
     wieldedRot: Pod.Quaternion;
+    foldRot: Pod.Quaternion;
 }
 
 export interface Player extends DynamicTransform {
@@ -113,6 +114,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             DynamicTransform.lerp(player, data, lerp);
             player.state = data.state;
             player.equippedId = data.equippedId;
+            //console.log(player.equippedId + ", " + snapshot.time());
         }
     },
     spawn: {
@@ -159,7 +161,8 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             return {
                 ...skeleton,
                 wieldedPos: await BitHelper.readHalfVector(data),
-                wieldedRot: await BitHelper.readHalfQuaternion(data)
+                wieldedRot: await BitHelper.readHalfQuaternion(data),
+                foldRot: await BitHelper.readHalfQuaternion(data)
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -170,6 +173,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             Skeleton.lerp(skeleton, data, lerp);
             skeleton.wieldedPos = Pod.Vec.lerp(skeleton.wieldedPos, data.wieldedPos, lerp);
             skeleton.wieldedRot = Pod.Quat.slerp(skeleton.wieldedRot, data.wieldedRot, lerp);
+            skeleton.foldRot = Pod.Quat.slerp(skeleton.foldRot, data.foldRot, lerp);
         }
     },
     spawn: {
@@ -178,7 +182,8 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             return {
                 ...skeleton,
                 wieldedPos: await BitHelper.readHalfVector(data),
-                wieldedRot: await BitHelper.readHalfQuaternion(data)
+                wieldedRot: await BitHelper.readHalfQuaternion(data),
+                foldRot: await BitHelper.readHalfQuaternion(data)
             };
         },
         exec: (id, data, snapshot) => {
@@ -299,6 +304,9 @@ class PlayerModel extends SkeletonModel {
 
         this.equipped.position.set(skeleton.wieldedPos.x, skeleton.wieldedPos.y, skeleton.wieldedPos.z);
         this.equipped.quaternion.set(skeleton.wieldedRot.x, skeleton.wieldedRot.y, skeleton.wieldedRot.z, skeleton.wieldedRot.w);
+        if (this.equippedModel.model != undefined) {
+            this.equippedModel.model.update(skeleton);
+        }
 
         const radius = 0.05;
         const sM = new Vector3(radius, radius, radius);

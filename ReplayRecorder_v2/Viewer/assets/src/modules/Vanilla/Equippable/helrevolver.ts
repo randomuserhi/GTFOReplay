@@ -5,7 +5,7 @@ import { PlayerSkeleton } from "../player.js";
 const box = new BoxGeometry(1, 1, 1);
 const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5);
 
-export class Revolver extends Model {
+export class HelRevolver extends Model {
     fold: Group;
 
     constructor() {
@@ -37,32 +37,31 @@ export class Revolver extends Model {
         const f = new Group();
         const box3  = new Mesh(box, material);
         f.add(box3);
-        box3.scale.set(0.07, 0.1350144, 0.23438);
-        box3.position.set(0, 0.03921996, 0.0754);
+        box3.scale.set(0.07, 0.1350144, 0.1049829);
+        box3.position.set(0, 0.03921996, 0.023599);
 
         const box4  = new Mesh(box, material);
         f.add(box4);
-        box4.scale.set(0.05, 0.01554308, 0.2897247);
-        box4.position.set(0, 0.093, -0.0124);
+        box4.scale.set(0.05, 0.027227, 0.2897247);
+        box4.position.set(0, 0.1023, -0.0632);
 
         const cylinder0  = new Mesh(cylinder, material);
         f.add(cylinder0);
-        cylinder0.scale.set(0.07, 0.07, 0.03834316);
-        cylinder0.position.set(0, 0.0635, -0.07926);
+        cylinder0.scale.set(0.1, 0.1, 0.05390498);
+        cylinder0.position.set(0, 0.05769978, -0.0637);
 
         const cylinder1  = new Mesh(cylinder, material);
         f.add(cylinder1);
         cylinder1.scale.set(0.05, 0.05, 0.02458714);
-        cylinder1.position.set(0, 0.066, 0.1768);
+        cylinder1.position.set(0, 0.05860005, 0.06860098);
 
         this.fold.add(f);
-        f.rotateY(Math.PI/2);
+        f.rotateX(-Math.PI/2);
         
         gun.add(this.fold);
         this.fold.position.set(0, -0.054, 0.081);
 
         this.group.add(gun);
-        gun.position.set(0, 0.05, -0.05);
     }
 
     public update(data: PlayerSkeleton): void {

@@ -78,15 +78,19 @@ namespace Vanilla.Player {
                 }
 
                 bool wielded = false;
+                bool fold = false;
                 ItemEquippable? wieldedItem = player.Inventory.WieldedItem;
                 if (wieldedItem != null) {
                     Transform transform = GetWieldedTransform(wieldedItem);
                     wielded = wieldedPos != transform.position || wieldedRot != transform.rotation;
+
+                    Transform? foldTransform = GetFoldTransform(wieldedItem);
+                    fold = foldTransform != null && foldRot != foldTransform.rotation;
                 }
 
                 return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
 
-                arms || wielded ||
+                arms || wielded || fold ||
 
                 LULeg != anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position ||
                 LLLeg != anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position ||
@@ -122,6 +126,7 @@ namespace Vanilla.Player {
 
         private Vector3 wieldedPos;
         private Quaternion wieldedRot;
+        private Quaternion foldRot; // for revolvers
 
         private static string DebugObject(GameObject go, StringBuilder? sb = null, int depth = 0) {
             if (sb == null) sb = new StringBuilder();
@@ -139,6 +144,24 @@ namespace Vanilla.Player {
                 return item.GearPartHolder.transform;
             } else {
                 return item.transform;
+            }
+        }
+        private static Transform? FindTransformByName(Transform parent, string target) {
+            for (int i = 0; i < parent.childCount; ++i) {
+                Transform child = parent.GetChild(i);
+                if (child.name.Contains(target)) return child;
+                else {
+                    Transform? nested = FindTransformByName(child, target);
+                    if (nested != null) return nested;
+                }
+            }
+            return null;
+        }
+        private static Transform? GetFoldTransform(ItemEquippable item) {
+            if (item.GearPartHolder != null) {
+                return FindTransformByName(item.GearPartHolder.transform, "Fold");
+            } else {
+                return null;
             }
         }
 
@@ -216,9 +239,17 @@ namespace Vanilla.Player {
                 Transform transform = GetWieldedTransform(wieldedItem);
                 wieldedPos = transform.position;
                 wieldedRot = transform.rotation;
+
+                Transform? fold = GetFoldTransform(wieldedItem);
+                if (fold != null) {
+                    foldRot = fold.localRotation;
+                } else {
+                    foldRot = Quaternion.identity;
+                }
             }
             BitHelper.WriteHalf(displacement * 2 + offset + handOffset + wieldedPos - pos, buffer);
             BitHelper.WriteHalf(wieldedRot, buffer);
+            BitHelper.WriteHalf(foldRot, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

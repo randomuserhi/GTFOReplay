@@ -1,12 +1,23 @@
+import { AssaultRifle } from "./Equippable/assaultrifle.js";
+import { AutoPistol } from "./Equippable/autopistol.js";
 import { Bat } from "./Equippable/bat.js";
 import { Biotracker } from "./Equippable/biotracker.js";
+import { Bullpup } from "./Equippable/bullpup.js";
+import { BurstPistol } from "./Equippable/burstpistol.js";
+import { BurstRifle } from "./Equippable/burstrifle.js";
+import { Carbine } from "./Equippable/carbine.js";
 import { CfoamLauncher } from "./Equippable/cfoam.js";
 import { Dmr } from "./Equippable/dmr.js";
+import { DoubleTap } from "./Equippable/doubletap.js";
 import { Hammer } from "./Equippable/hammer.js";
+import { HelRevolver } from "./Equippable/helrevolver.js";
 import { Knife } from "./Equippable/knife.js";
+import { MachinePistol } from "./Equippable/machinepistol.js";
 import { MineDeployer } from "./Equippable/minedeployer.js";
 import { Pack } from "./Equippable/pack.js";
+import { Pistol } from "./Equippable/pistol.js";
 import { Revolver } from "./Equippable/revolver.js";
+import { Rifle } from "./Equippable/rifle.js";
 import { Sentry } from "./Equippable/sentry.js";
 import { Spear } from "./Equippable/spear.js";
 import { Model } from "./equippable.js";
@@ -84,26 +95,46 @@ const _equippable = [{
 }, {
     id: 36,
     model: () => new MineDeployer()
+}, {
+    id: 1,
+    model: () => new Pistol()
+}, {
+    id: 2,
+    model: () => new BurstPistol()
+}, {
+    id: 3,
+    model: () => new HelRevolver()
+}, {
+    id: 4,
+    model: () => new MachinePistol()
+}, {
+    id: 5,
+    model: () => new AutoPistol()
+}, {
+    id: 5,
+    model: () => new Bullpup()
+}, {
+    id: 25,
+    model: () => new Revolver()
+}, {
+    id: 10,
+    model: () => new Carbine()
+}, {
+    id: 11,
+    model: () => new Dmr()
+}, {
+    id: 12,
+    model: () => new DoubleTap()
+}, {
+    id: 13,
+    model: () => new AssaultRifle()
+}, {
+    id: 14,
+    model: () => new BurstRifle()
+}, {
+    id: 15,
+    model: () => new Rifle()
 }];
-const pistols: number[] = [
-    1, 2, 3, 4, 5, 16, 25
-];
-for (const id of pistols) {
-    _equippable.push({
-        id,
-        model: () => new Revolver()
-    });
-}
-
-const not_pistol: number[] = [
-    6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33
-];
-for (const id of not_pistol) {
-    _equippable.push({
-        id,
-        model: () => new Dmr()
-    });
-}
 
 export const specification: Specification = {
     equippable: new Map(_equippable.map(g => [g.id, g]))
