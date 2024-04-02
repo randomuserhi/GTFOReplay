@@ -55,17 +55,13 @@ export class Spear extends Model {
         gun.add(obj7);
         obj7.scale.set(0.003388139, 0.02569299, 0.01574296);
         obj7.position.set(0, -0.005569712, 0.813422);
-        obj7.rotateX(5.092877);
-        obj7.rotateY(3.141593);
-        obj7.rotateZ(3.141593);
+        obj7.rotateX(-1.61619234);
 
         const obj8 = new Mesh(box, material);
         gun.add(obj8);
         obj8.scale.set(0.003388139, 0.02569299, 0.01574296);
         obj8.position.set(0, -0.01026971, 0.792922);
         obj8.rotateX(4.757777);
-        obj8.rotateY(3.141593);
-        obj8.rotateZ(3.141593);
 
         const obj9 = new Mesh(box, material);
         gun.add(obj9);
