@@ -1,5 +1,4 @@
-﻿using API;
-using Player;
+﻿using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -71,10 +70,12 @@ namespace Vanilla.Player {
                         RHand != anim.GetBoneTransform(HumanBodyBones.RightHand).position;
                 }
 
-                bool wielded = true;
+                bool wielded = false;
                 ItemEquippable? wieldedItem = player.Inventory.WieldedItem;
-                Transform transform = GetWieldedTransform(wieldedItem);
-                wielded = wieldedItem != null && (wieldedPos != transform.position || wieldedRot != transform.rotation);
+                if (wieldedItem != null) {
+                    Transform transform = GetWieldedTransform(wieldedItem);
+                    wielded = wieldedPos != transform.position || wieldedRot != transform.rotation;
+                }
 
                 return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
 
@@ -126,7 +127,7 @@ namespace Vanilla.Player {
         }
 
         private static Transform GetWieldedTransform(ItemEquippable item) {
-            APILogger.Debug(DebugObject(item.gameObject));
+            //APILogger.Debug(DebugObject(item.gameObject));
             return item.GearPartHolder.transform;
         }
 
