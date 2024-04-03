@@ -59,8 +59,10 @@ export class Sentry extends Model {
         this.sentry.add(this.gun);
 
         this.group.add(this.sentry);
-        this.sentry.position.set(0, -0.3, 0);
-        this.group.scale.set(0.5, 0.5, 0.5);
-        this.group.rotateX(90);
+        this.sentry.scale.set(0.5, 0.5, 0.5);
+        this.sentry.rotateX(Math.PI / 2);
+
+        this.offsetRot = { x: -0.7071081, y: 0, z: 0, w: 0.7071055 };
+        this.offsetPos = { x: 0, y: -0.3, z: 0 };
     }
 }

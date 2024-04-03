@@ -118,9 +118,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
         },
         exec: (id, data, snapshot) => {
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
-        
+
             if (backpacks.has(id)) throw new DuplicateBackpack(`Backpack of id '${id}' already exists.`);
-            backpacks.set(id, data);
+            backpacks.set(id, { ...data });
         }
     },
     despawn: {
@@ -396,6 +396,8 @@ class PlayerModel extends SkeletonModel {
             if (item.model !== undefined) {
                 if (item.id === player.equippedId) {
                     this.equipped.add(item.model.group);
+                    item.model.group.position.set(0, 0, 0);
+                    item.model.group.quaternion.set(0, 0, 0, 1);
                 } else {
                     this.backpackAligns[i].add(item.model.group);
                     item.model.group.position.copy(item.model.offsetPos);
