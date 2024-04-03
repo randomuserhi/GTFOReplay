@@ -62,6 +62,13 @@ export class HelRevolver extends Model {
 
         this.group.add(gun);
         gun.scale.set(0.9, 0.9, 0.9);
+
+        this.baseFoldRot = {
+            x: 0.7071,
+            y: 0,
+            z: 0,
+            w: 0.7071,
+        };
     }
 
     public update(foldRot: QuaternionLike): void {

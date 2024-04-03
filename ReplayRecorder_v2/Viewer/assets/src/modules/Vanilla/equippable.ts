@@ -3,6 +3,8 @@ import { Group, QuaternionLike, Vector3Like } from "three";
 export abstract class Model {
     group: Group;
 
+    baseFoldRot: QuaternionLike;
+
     offsetPos: Vector3Like;
     offsetRot: QuaternionLike;
 
@@ -12,6 +14,9 @@ export abstract class Model {
             x: 0, y: 0, z: 0
         };
         this.offsetRot = {
+            x: 0, y: 0, z: 0, w: 0
+        };
+        this.baseFoldRot = {
             x: 0, y: 0, z: 0, w: 0
         };
     }

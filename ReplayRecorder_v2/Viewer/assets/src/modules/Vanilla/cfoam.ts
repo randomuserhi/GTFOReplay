@@ -1,8 +1,10 @@
-import { Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
+import { Color, DynamicDrawUsage, Matrix4, MeshPhongMaterial, SphereGeometry, Vector3 } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
+import { consume, createInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicPosition } from "../replayrecorder.js";
+import { zeroQ } from "./model.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -93,6 +95,19 @@ export class DuplicateCfoam extends Error {
 
 // --------------------------- RENDERING ---------------------------
 
+declare module "../../replay/instancing.js" {
+    interface InstanceTypes {
+        "Cfoam.Sphere.MeshPhong": void;
+    } 
+}
+
+(() => {
+    const spheres = createInstance("Cfoam.Sphere.MeshPhong", new SphereGeometry(0.25, 10, 10), new MeshPhongMaterial(), 5000);
+    spheres.frustumCulled = false;
+    spheres.instanceMatrix.setUsage( DynamicDrawUsage );
+    spheres.castShadow = false;
+    spheres.receiveShadow = true;
+})();
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -106,33 +121,25 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
-const sphereGeometry = new SphereGeometry(0.5, 10, 10);
-
 class CfoamModel {
-    readonly sphere: Mesh;
+    sphere: number;
+    visible: boolean;
+    readonly color: Color; 
     
     constructor() {
-        const material = new MeshPhongMaterial({ color: 0xd8f0f2 });
-        
-        this.sphere = new Mesh(sphereGeometry, material);
+        this.color = new Color(0xd8f0f2);
     }
 
     public update(cfoam: Cfoam) {
-        this.sphere.position.set(cfoam.position.x, cfoam.position.y, cfoam.position.z);
+        if (!this.visible) return;
 
-        this.sphere.scale.set(cfoam.scale, cfoam.scale, cfoam.scale);
+        const mat = new Matrix4();
+        mat.compose(new Vector3(cfoam.position.x, cfoam.position.y, cfoam.position.z), zeroQ, new Vector3(cfoam.scale, cfoam.scale, cfoam.scale));
+        this.sphere = consume("Cfoam.Sphere.MeshPhong", mat, this.color);
     }
 
     public setVisible(visible: boolean) {
-        this.sphere.visible = visible;
-    }
-
-    public addToScene(scene: Scene) {
-        scene.add(this.sphere);
-    }
-
-    public removeFromScene(scene: Scene) {
-        scene.remove(this.sphere);
+        this.visible = visible;
     }
 }
 
@@ -146,7 +153,6 @@ ModuleLoader.registerRender("Cfoam", (name, api) => {
                 if (!models.has(id)) {
                     const model = new CfoamModel();
                     models.set(id, model);
-                    model.addToScene(renderer.scene);
                 }
 
                 const model = models.get(id)!;
@@ -156,7 +162,6 @@ ModuleLoader.registerRender("Cfoam", (name, api) => {
 
             for (const [id, model] of [...models.entries()]) {
                 if (!collection.has(id)) {
-                    model.removeFromScene(renderer.scene);
                     models.delete(id);
                 }
             }

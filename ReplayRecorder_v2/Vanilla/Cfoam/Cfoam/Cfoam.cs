@@ -26,8 +26,10 @@ namespace Vanilla.Cfoam {
 
         public override bool Active {
             get {
-                if (!transform.active && Replay.Has<rCfoam>(Id)) {
-                    Replay.Despawn(Replay.Get<rCfoam>(Id));
+                if (Replay.Has<rCfoam>(Id)) {
+                    if (!transform.active || (projectile.m_landed && scale < 0.2f)) {
+                        Replay.Despawn(Replay.Get<rCfoam>(Id));
+                    }
                 }
                 return base.Active;
             }

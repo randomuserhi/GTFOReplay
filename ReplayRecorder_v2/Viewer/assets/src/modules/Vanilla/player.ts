@@ -355,7 +355,7 @@ class PlayerModel extends SkeletonModel {
             const item = this.slots[i];
             if (item.model !== undefined) {
                 const isEquipped = item.model.group.parent !== null && item.model.group.parent.id == this.equipped.id;
-                item.model.update(isEquipped ? skeleton.foldRot : Pod.Quat.identity());
+                item.model.update(isEquipped ? skeleton.foldRot : item.model.baseFoldRot);
             }
         }
 
