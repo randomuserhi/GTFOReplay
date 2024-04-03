@@ -181,6 +181,14 @@ namespace Vanilla.Player {
 
             head = anim.GetBoneTransform(HumanBodyBones.Head).position;
 
+            LULeg = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position;
+            LLLeg = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position;
+            LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+
+            RULeg = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg).position;
+            RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
+            RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+
             Vector3 displacement = Vector3.zero;
             Vector3 offset = Vector3.zero;
             Vector3 handOffset = Vector3.zero;
@@ -207,6 +215,12 @@ namespace Vanilla.Player {
                 if (player.Alive) {
                     displacement += Vector3.down * 0.2f;
                 }
+
+                Vector3 footCenter = (LFoot + RFoot) / 2.0f;
+                footCenter.y = 0;
+                Vector3 posFlat = pos;
+                posFlat.y = 0;
+                displacement += (posFlat - footCenter);
             } else {
                 LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
                 LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
@@ -217,23 +231,16 @@ namespace Vanilla.Player {
                 RHand = anim.GetBoneTransform(HumanBodyBones.RightHand).position;
             }
 
-            LULeg = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position;
-            LLLeg = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position;
-            LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+            Vector3 height = Vector3.down * 0.2f;
+            BitHelper.WriteHalf(displacement + height + head - pos, buffer);
 
-            RULeg = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg).position;
-            RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
-            RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+            BitHelper.WriteHalf(displacement + height + offset + LUArm - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + offset + lowerOffset + LLArm - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + offset + handOffset + LHand - pos, buffer);
 
-            BitHelper.WriteHalf(displacement * 2 + head - pos, buffer);
-
-            BitHelper.WriteHalf(displacement * 2 + offset + LUArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + lowerOffset + LLArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + handOffset + LHand - pos, buffer);
-
-            BitHelper.WriteHalf(displacement * 2 + offset + RUArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + lowerOffset + RLArm - pos, buffer);
-            BitHelper.WriteHalf(displacement * 2 + offset + handOffset + RHand - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + offset + RUArm - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + offset + lowerOffset + RLArm - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + offset + handOffset + RHand - pos, buffer);
 
             BitHelper.WriteHalf(displacement + LULeg - pos, buffer);
             BitHelper.WriteHalf(displacement + LLLeg - pos, buffer);
@@ -247,7 +254,7 @@ namespace Vanilla.Player {
             backpackPos = back.position;
             backpackRot = back.rotation;
 
-            BitHelper.WriteHalf(displacement * 2 + backpackPos - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + backpackPos - pos, buffer);
             BitHelper.WriteHalf(backpackRot, buffer);
 
             if (wieldedItem != null) {
@@ -262,7 +269,7 @@ namespace Vanilla.Player {
                     foldRot = Quaternion.identity;
                 }
             }
-            BitHelper.WriteHalf(displacement * 2 + offset + handOffset + wieldedPos - pos, buffer);
+            BitHelper.WriteHalf(displacement + height + offset + handOffset + wieldedPos - pos, buffer);
             BitHelper.WriteHalf(wieldedRot, buffer);
             BitHelper.WriteHalf(foldRot, buffer);
         }

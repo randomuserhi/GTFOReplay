@@ -1,9 +1,10 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { Parser } from "../../replay/parser.js";
-import { Renderer } from "../../replay/renderer.js";
-import { Replay } from "../../replay/replay.js";
-import { FileHandle } from "../../replay/stream.js";
+import { Parser } from "../../../replay/parser.js";
+import { Renderer } from "../../../replay/renderer.js";
+import { Replay } from "../../../replay/replay.js";
+import { FileHandle } from "../../../replay/stream.js";
+import { seeker } from "./components/seeker.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -14,6 +15,7 @@ const style = Style(({ style }) => {
     `;
 
     const body = style.class`
+    position: relative;
     flex: 1;
     `;
 
@@ -23,10 +25,20 @@ const style = Style(({ style }) => {
     height: 100%;
     `;
 
+    const mount = style.class`
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 50px;
+    `;
+
     return {
         wrapper,
         body,
-        canvas
+        canvas,
+        mount
     };
 });
 
@@ -161,6 +173,9 @@ export const player = Macro((() => {
 `
     <div class="${style.body}">
         <canvas class="${style.canvas}" rhu-id="canvas"></canvas>
+        <div class="${style.mount}">
+            ${seeker}
+        </div>
     </div>
     `, {
     element: //html
