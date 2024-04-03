@@ -3,6 +3,7 @@ import * as BitHelper from "../../replay/bithelper.js";
 import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
+import { ByteStream } from "../../replay/stream.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../replayrecorder.js";
 import { Equippable } from "./equippable.js";
 import { Skeleton, SkeletonModel, upV, zeroQ, zeroV } from "./model.js";
@@ -17,7 +18,6 @@ declare module "../../replay/moduleloader.js" {
                     absolute: boolean;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
-                    state: PlayerState;
                     equippedId: number;
                 };
                 spawn: {
@@ -30,6 +30,16 @@ declare module "../../replay/moduleloader.js" {
                 };
                 despawn: void;
             };
+            
+            "Vanilla.Player.Backpack": {
+                parse: {
+                    slots: number[];
+                };
+                spawn: {
+                    slots: number[];
+                };
+                despawn: void;
+            };
 
             "Vanilla.Player.Model": {
                 parse: PlayerSkeleton;
@@ -37,64 +47,115 @@ declare module "../../replay/moduleloader.js" {
                 despawn: void;
             };
         }
-    
-        interface Events {
-            "Vanilla.Player.Melee": {
-                id: number;
-                melee: MeleeState;
-            }
-            "Vanilla.Player.MeleeShove": {
-                id: number;
-            }
-            "Vanilla.Player.MeleeSwing": {
-                id: number;
-            }
-        }
 
         interface Data {
-            "Vanilla.Player": Map<number, Player>
-            "Vanilla.Player.Model": Map<number, PlayerSkeleton>
+            "Vanilla.Player": Map<number, Player>;
+            "Vanilla.Player.Backpack": Map<number, PlayerBackpack>;
+            "Vanilla.Player.Model": Map<number, PlayerSkeleton>;
         }
     }
 }
 
 export interface PlayerSkeleton extends Skeleton {
+    backpackPos: Pod.Vector;
+    backpackRot: Pod.Quaternion;
+
     wieldedPos: Pod.Vector;
     wieldedRot: Pod.Quaternion;
     foldRot: Pod.Quaternion;
+}
+
+export type InventorySlot = 
+    "melee" |
+    "main"  |
+    "special" |
+    "tool" |
+    "pack";
+export const inventorySlots: InventorySlot[] = [
+    "melee",
+    "main",
+    "special",
+    "tool",
+    "pack"
+];
+export const inventorySlotMap: Map<InventorySlot, number> = new Map([...inventorySlots.entries()].map(e => [e[1], e[0]]));
+export class PlayerBackpack {
+    slots: number[];
+
+    constructor() {
+        this.slots = new Array(inventorySlots.length);
+    }
+
+    public static async parse(data: ByteStream): Promise<number[]> {
+        const slots = new Array(inventorySlots.length);
+        for (let i = 0; i < slots.length; ++i) {
+            slots[i] = await BitHelper.readUShort(data);
+        }
+        return slots;
+    }
+}
+
+ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
+    main: {
+        parse: async (data) => {
+            return {
+                slots: await PlayerBackpack.parse(data)
+            };
+        }, 
+        exec: (id, data, snapshot) => {
+            const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
+    
+            if (!backpacks.has(id)) throw new BackpackNotFound(`Dynamic of id '${id}' was not found.`);
+            const backpack = backpacks.get(id)!;
+            backpack.slots = data.slots;
+        }
+    },
+    spawn: {
+        parse: async (data) => {
+            return {
+                slots: await PlayerBackpack.parse(data)
+            };
+        },
+        exec: (id, data, snapshot) => {
+            const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
+        
+            if (backpacks.has(id)) throw new DuplicateBackpack(`Backpack of id '${id}' already exists.`);
+            backpacks.set(id, data);
+        }
+    },
+    despawn: {
+        parse: async () => {
+        }, 
+        exec: (id, data, snapshot) => {
+            const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
+
+            if (!backpacks.has(id)) throw new BackpackNotFound(`Player of id '${id}' did not exist.`);
+            backpacks.delete(id);
+        }
+    }
+});
+
+export class BackpackNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+export class DuplicateBackpack extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
 }
 
 export interface Player extends DynamicTransform {
     snet: bigint;
     slot: number;
     nickname: string;
-    state: PlayerState;
     equippedId: number;
 
-    melee: MeleeState;
     meleeShove?: number;
     meleeSwing?: number; 
 }
-
-type PlayerState = 
-    "Default" |
-    "Crouch" |
-    "Downed" |
-    "Jump/Fall"; 
-const playerStateTypemap: PlayerState[] = [
-    "Default",
-    "Crouch",
-    "Downed",
-    "Jump/Fall"
-];
-
-type MeleeState = 
-    "Idle" |
-    "Charge";
-const meleeStateTypemap: MeleeState[] = [
-    "Idle",
-    "Charge"
-];
 
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     main: {
@@ -102,8 +163,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             const result = await DynamicTransform.parse(data);
             return {
                 ...result,
-                state: playerStateTypemap[await BitHelper.readByte(data)],
-                equippedId: await BitHelper.readUShort(data)
+                equippedId: await BitHelper.readUShort(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -112,7 +172,6 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
             const player = players.get(id)!;
             DynamicTransform.lerp(player, data, lerp);
-            player.state = data.state;
             player.equippedId = data.equippedId;
         }
     },
@@ -134,10 +193,8 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
         
             if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
             players.set(id, { 
-                id, ...data, 
-                state: "Default", 
-                melee: "Idle", 
-                equippedId: 0 
+                id, ...data,
+                equippedId: 0,
             });
         }
     },
@@ -159,6 +216,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             const skeleton = await Skeleton.parse(data);
             return {
                 ...skeleton,
+                backpackPos: await BitHelper.readHalfVector(data),
+                backpackRot: await BitHelper.readHalfQuaternion(data),
+
                 wieldedPos: await BitHelper.readHalfVector(data),
                 wieldedRot: await BitHelper.readHalfQuaternion(data),
                 foldRot: await BitHelper.readHalfQuaternion(data)
@@ -170,6 +230,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
             const skeleton = skeletons.get(id)!;
             Skeleton.lerp(skeleton, data, lerp);
+            skeleton.backpackPos = Pod.Vec.lerp(skeleton.backpackPos, data.backpackPos, lerp);
+            skeleton.backpackRot = Pod.Quat.slerp(skeleton.backpackRot, data.backpackRot, lerp);
+
             skeleton.wieldedPos = Pod.Vec.lerp(skeleton.wieldedPos, data.wieldedPos, lerp);
             skeleton.wieldedRot = Pod.Quat.slerp(skeleton.wieldedRot, data.wieldedRot, lerp);
             skeleton.foldRot = Pod.Quat.slerp(skeleton.foldRot, data.foldRot, lerp);
@@ -180,6 +243,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             const skeleton = await Skeleton.parse(data);
             return {
                 ...skeleton,
+                backpackPos: await BitHelper.readHalfVector(data),
+                backpackRot: await BitHelper.readHalfQuaternion(data),
+                
                 wieldedPos: await BitHelper.readHalfVector(data),
                 wieldedRot: await BitHelper.readHalfQuaternion(data),
                 foldRot: await BitHelper.readHalfQuaternion(data)
@@ -201,52 +267,6 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' did not exist.`);
             skeletons.delete(id);
         }
-    }
-});
-
-ModuleLoader.registerEvent("Vanilla.Player.Melee", "0.0.1", {
-    parse: async (data) => {
-        return {
-            id: await BitHelper.readInt(data),
-            melee: meleeStateTypemap[await BitHelper.readByte(data)]
-        };
-    },
-    exec: (data, snapshot) => {
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-
-        const { id, melee } = data;
-        if (!players.has(id)) throw new PlayerNotFound(`Player of id '${id}' did not exist.`);
-        players.get(id)!.melee = melee;
-    }
-});
-
-ModuleLoader.registerEvent("Vanilla.Player.MeleeShove", "0.0.1", {
-    parse: async (data) => {
-        return {
-            id: await BitHelper.readInt(data)
-        };
-    },
-    exec: (data, snapshot) => {
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-
-        const { id } = data;
-        if (!players.has(id)) throw new PlayerNotFound(`Player of id '${id}' did not exist.`);
-        players.get(id)!.meleeShove = snapshot.time();
-    }
-});
-
-ModuleLoader.registerEvent("Vanilla.Player.MeleeSwing", "0.0.1", {
-    parse: async (data) => {
-        return {
-            id: await BitHelper.readInt(data)
-        };
-    },
-    exec: (data, snapshot) => {
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-
-        const { id } = data;
-        if (!players.has(id)) throw new PlayerNotFound(`Player of id '${id}' did not exist.`);
-        players.get(id)!.meleeSwing = snapshot.time();
     }
 });
 
@@ -280,16 +300,41 @@ declare module "../../replay/moduleloader.js" {
 class PlayerModel extends SkeletonModel {
     equipped: Group;
 
-    equippedModel: Equippable;
+    slots: Equippable[];
+    backpack: Group;
+    backpackAligns: Group[];
 
     constructor(color: Color) {
         super(color);
 
         this.equipped = new Group();
+        this.backpack = new Group();
+        this.group.add(this.equipped, this.backpack);
+        
+        this.slots = new Array(inventorySlots.length);
+        this.backpackAligns = new Array(inventorySlots.length);
+        for (let i = 0; i < inventorySlots.length; ++i) {
+            this.slots[i] = { id: 0 };
 
-        this.group.add(this.equipped);
+            this.backpackAligns[i] = new Group();
+            this.backpack.add(this.backpackAligns[i]);
+        }
 
-        this.equippedModel = { id: 0 };
+        this.backpackAligns[inventorySlotMap.get("melee")!].position.set(0.03, 0.01130009, -0.5089508);
+        this.backpackAligns[inventorySlotMap.get("melee")!].rotateX(Math.PI);
+
+        this.backpackAligns[inventorySlotMap.get("main")!].position.set(-0.15, 0.078, -0.395);
+        this.backpackAligns[inventorySlotMap.get("main")!].quaternion.set(0.5, -0.5, 0.5, 0.5);
+
+        this.backpackAligns[inventorySlotMap.get("special")!].position.set(0.159, 0.07800007, -0.223);
+        this.backpackAligns[inventorySlotMap.get("special")!].quaternion.set(0.704416037, 0.0616284497, -0.0616284497, 0.704416037);
+
+        this.backpackAligns[inventorySlotMap.get("tool")!].position.set(-0.295, 0.07800007, -0.318);
+        this.backpackAligns[inventorySlotMap.get("tool")!].quaternion.set(0.0979499891, 0.700289905, -0.700289726, 0.0979499221);
+
+        this.backpackAligns[inventorySlotMap.get("pack")!].position.set(-0.003, -0.2, -0.24);
+        this.backpackAligns[inventorySlotMap.get("pack")!].quaternion.set(0, -0.263914526, 0, 0.964546144);
+        this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
     }
 
     public update(skeleton: PlayerSkeleton): void {
@@ -301,10 +346,17 @@ class PlayerModel extends SkeletonModel {
         const y = this.group.position.y;
         const z = this.group.position.z;
 
+        this.backpack.position.set(skeleton.backpackPos.x, skeleton.backpackPos.y, skeleton.backpackPos.z);
+        this.backpack.quaternion.set(skeleton.backpackRot.x, skeleton.backpackRot.y, skeleton.backpackRot.z, skeleton.backpackRot.w);
+
         this.equipped.position.set(skeleton.wieldedPos.x, skeleton.wieldedPos.y, skeleton.wieldedPos.z);
         this.equipped.quaternion.set(skeleton.wieldedRot.x, skeleton.wieldedRot.y, skeleton.wieldedRot.z, skeleton.wieldedRot.w);
-        if (this.equippedModel.model != undefined) {
-            this.equippedModel.model.update(skeleton);
+        for (let i = 0; i < this.slots.length; ++i) {
+            const item = this.slots[i];
+            if (item.model !== undefined) {
+                const isEquipped = item.model.group.parent !== null && item.model.group.parent.id == this.equipped.id;
+                item.model.update(isEquipped ? skeleton.foldRot : Pod.Quat.identity());
+            }
         }
 
         const radius = 0.05;
@@ -325,20 +377,31 @@ class PlayerModel extends SkeletonModel {
         spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, sM));
     }
 
-    public morph(player: Player): void {
+    public morph(player: Player, backpack?: PlayerBackpack): void {
         this.group.position.set(player.position.x, player.position.y, player.position.z);
 
-        if (this.equippedModel.model != undefined) {
-            this.equipped.remove(this.equippedModel.model.group);
-        }
+        if (backpack === undefined) return;
 
-        if (this.equippedModel.model == undefined || player.equippedId != this.equippedModel.id) {
-            this.equippedModel.id = player.equippedId;
-            this.equippedModel.model = specification.equippable.get(player.equippedId)?.model();
-        }
+        for (let i = 0; i < this.slots.length; ++i) {
+            const item = this.slots[i];
+            if (item.model !== undefined) {
+                item.model.group.removeFromParent();
+            }
 
-        if (this.equippedModel.model != undefined) {
-            this.equipped.add(this.equippedModel.model.group);
+            if (item.model === undefined || backpack.slots[i] !== item.id) {
+                item.id = backpack.slots[i];
+                item.model = specification.equippable.get(backpack.slots[i])?.model();
+            }
+
+            if (item.model !== undefined) {
+                if (item.id === player.equippedId) {
+                    this.equipped.add(item.model.group);
+                } else {
+                    this.backpackAligns[i].add(item.model.group);
+                    item.model.group.position.copy(item.model.offsetPos);
+                    item.model.group.quaternion.copy(item.model.offsetRot);
+                }
+            }
         }
     }
 }
@@ -356,6 +419,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Players", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
             for (const [id, player] of players) {
                 if (!models.has(id)) {
@@ -367,7 +431,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 const model = models.get(id)!;
                 const skeleton = skeletons.get(id);
                 if (skeleton !== undefined) {
-                    model.morph(player);
+                    model.morph(player, backpacks.get(id));
                     model.update(skeleton);
                 } else {
                     // TODO

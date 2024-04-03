@@ -122,6 +122,7 @@ namespace Vanilla.Specification {
 
                 // Consumables
                 { 114, 57 }, // Glowsticks
+                { 174, 57 }, // Glowsticks
                 { 30, 58 }, // Long range flashlight
                 { 140, 59 }, // I2-LP Syringe
                 { 142, 60 }, // IIX Syringe

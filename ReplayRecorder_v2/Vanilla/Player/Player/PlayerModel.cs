@@ -77,6 +77,9 @@ namespace Vanilla.Player {
                         RHand != anim.GetBoneTransform(HumanBodyBones.RightHand).position;
                 }
 
+                Transform backTransform = anim.GetBoneTransform(HumanBodyBones.Chest);
+                bool back = backpackPos != backTransform.position || backpackRot != backTransform.rotation;
+
                 bool wielded = false;
                 bool fold = false;
                 ItemEquippable? wieldedItem = player.Inventory.WieldedItem;
@@ -90,7 +93,7 @@ namespace Vanilla.Player {
 
                 return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
 
-                arms || wielded || fold ||
+                arms || back || wielded || fold ||
 
                 LULeg != anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position ||
                 LLLeg != anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position ||
@@ -123,6 +126,9 @@ namespace Vanilla.Player {
         private Vector3 RULeg;
         private Vector3 RLLeg;
         private Vector3 RFoot;
+
+        private Vector3 backpackPos;
+        private Quaternion backpackRot;
 
         private Vector3 wieldedPos;
         private Quaternion wieldedRot;
@@ -236,6 +242,13 @@ namespace Vanilla.Player {
             BitHelper.WriteHalf(displacement + RULeg - pos, buffer);
             BitHelper.WriteHalf(displacement + RLLeg - pos, buffer);
             BitHelper.WriteHalf(displacement + RFoot - pos, buffer);
+
+            Transform back = anim.GetBoneTransform(HumanBodyBones.Chest);
+            backpackPos = back.position;
+            backpackRot = back.rotation;
+
+            BitHelper.WriteHalf(displacement * 2 + backpackPos - pos, buffer);
+            BitHelper.WriteHalf(backpackRot, buffer);
 
             if (wieldedItem != null) {
                 Transform transform = GetWieldedTransform(wieldedItem);

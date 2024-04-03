@@ -60,7 +60,7 @@ export class Sentry extends Model {
 
         this.group.add(this.sentry);
         this.sentry.position.set(0, -0.3, 0);
-        this.group.scale.set(0.7, 0.7, 0.7);
+        this.group.scale.set(0.5, 0.5, 0.5);
         this.group.rotateX(90);
     }
 }

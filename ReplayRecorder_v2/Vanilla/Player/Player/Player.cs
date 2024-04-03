@@ -45,6 +45,9 @@ namespace Vanilla.Player {
                 if (Replay.Has<rPlayerModel>(player.Id)) {
                     Replay.Get<rPlayerModel>(player.Id).player = player.agent;
                 }
+                if (Replay.Has<rPlayerBackpack>(player.Id)) {
+                    Replay.Get<rPlayerBackpack>(player.Id).agent = player.agent;
+                }
                 return;
             }
 
@@ -52,6 +55,7 @@ namespace Vanilla.Player {
             player = new rPlayer(agent);
             Replay.Spawn(player);
             Replay.Spawn(new rPlayerModel(agent));
+            Replay.Spawn(new rPlayerBackpack(agent));
             players.Add(player);
         }
 
@@ -70,6 +74,9 @@ namespace Vanilla.Player {
             if (Replay.Has<rPlayerModel>(agent.GlobalID)) {
                 Replay.Despawn(Replay.Get<rPlayerModel>(agent.GlobalID));
             }
+            if (Replay.Has<rPlayerBackpack>(agent.GlobalID)) {
+                Replay.Despawn(Replay.Get<rPlayerBackpack>(agent.GlobalID));
+            }
             players.Remove(player);
         }
     }
@@ -77,19 +84,6 @@ namespace Vanilla.Player {
     [ReplayData("Vanilla.Player", "0.0.1")]
     internal class rPlayer : DynamicTransform {
         public PlayerAgent agent;
-
-        private byte prevState = 0;
-        private byte state {
-            get {
-                switch (agent.Locomotion.m_currentStateEnum) {
-                case PlayerLocomotion.PLOC_State.Crouch: return 1;
-                case PlayerLocomotion.PLOC_State.Downed: return 2;
-                case PlayerLocomotion.PLOC_State.Jump: return 3;
-                case PlayerLocomotion.PLOC_State.Fall: return 3;
-                default: return 0;
-                }
-            }
-        }
 
         private ushort lastEquipped = 0;
         private ushort equipped {
@@ -114,7 +108,7 @@ namespace Vanilla.Player {
                 return agent != null;
             }
         }
-        public override bool IsDirty => base.IsDirty || state != prevState || equipped != lastEquipped;
+        public override bool IsDirty => base.IsDirty || equipped != lastEquipped;
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
@@ -122,10 +116,8 @@ namespace Vanilla.Player {
 
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
-            BitHelper.WriteBytes(state, buffer);
             BitHelper.WriteBytes(equipped, buffer);
 
-            prevState = state;
             lastEquipped = equipped;
         }
 

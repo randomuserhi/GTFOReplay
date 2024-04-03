@@ -1,6 +1,5 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial } from "three";
+import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial, QuaternionLike } from "three";
 import { Model } from "../equippable.js";
-import { PlayerSkeleton } from "../player.js";
 
 const box = new BoxGeometry(1, 1, 1);
 const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5);
@@ -65,7 +64,7 @@ export class HelRevolver extends Model {
         gun.scale.set(0.9, 0.9, 0.9);
     }
 
-    public update(data: PlayerSkeleton): void {
-        this.fold.quaternion.set(data.foldRot.x, data.foldRot.y, data.foldRot.z, data.foldRot.w);
+    public update(foldRot: QuaternionLike): void {
+        this.fold.quaternion.set(foldRot.x, foldRot.y, foldRot.z, foldRot.w);
     }
 }
