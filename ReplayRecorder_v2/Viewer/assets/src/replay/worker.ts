@@ -147,7 +147,7 @@ let replay: Replay | undefined = undefined;
                 }
                 const bytes = await fs.getBytes(snapshotSize);
 
-                if ((state.tick % 500) === 0) ipc.send("state", state);
+                if ((state.tick % 2000) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
                 state.time = now;
