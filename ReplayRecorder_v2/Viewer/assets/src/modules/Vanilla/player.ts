@@ -1,4 +1,5 @@
-import { Color, ColorRepresentation, Group, Matrix4, Quaternion, Vector3 } from "three";
+import { Camera, Color, ColorRepresentation, Group, Matrix4, Quaternion, Vector3 } from "three";
+import { Text } from "troika-three-text";
 import * as BitHelper from "../../replay/bithelper.js";
 import { getInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
@@ -304,13 +305,24 @@ class PlayerModel extends SkeletonModel {
     backpack: Group;
     backpackAligns: Group[];
 
+    tmp?: Text;
+
     constructor(color: Color) {
         super(color);
 
+        this.tmp = new Text();
+        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.tmp.fontSize = 0.3;
+        this.tmp.position.y = 3;
+        this.tmp.textAlign = "center";
+        this.tmp.anchorX = "center";
+        this.tmp.color = 0xffffff;
+        this.tmp.visible = false;
+
         this.equipped = new Group();
         this.backpack = new Group();
-        this.group.add(this.equipped, this.backpack);
-        
+        this.group.add(this.equipped, this.backpack, this.tmp);
+
         this.slots = new Array(inventorySlots.length);
         this.backpackAligns = new Array(inventorySlots.length);
         for (let i = 0; i < inventorySlots.length; ++i) {
@@ -377,8 +389,24 @@ class PlayerModel extends SkeletonModel {
         spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, sM));
     }
 
-    public morph(player: Player, backpack?: PlayerBackpack): void {
+    public morph(player: Player, camera: Camera, backpack?: PlayerBackpack): void {
         this.group.position.set(player.position.x, player.position.y, player.position.z);
+
+        if (this.tmp !== undefined) {
+            this.tmp.text = `${player.nickname}`;
+            this.tmp.visible = true;
+
+            const tmpPos = new Vector3();
+            this.tmp.getWorldPosition(tmpPos);
+
+            const camPos = new Vector3();
+            camera.getWorldPosition(camPos);
+
+            const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 15);
+            this.tmp.fontSize = lerp * 0.3 + 0.1;
+            this.tmp.position.y = lerp * 1.3 + 1.9;
+            this.tmp.lookAt(camPos);
+        }
 
         if (backpack === undefined) return;
 
@@ -408,7 +436,8 @@ class PlayerModel extends SkeletonModel {
     }
 
     public dispose() {
-        console.log("dispose");
+        this.tmp?.dispose();
+        this.tmp = undefined;
     }
 }
 
@@ -423,6 +452,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
+            const camera = renderer.get("Camera")!;
             const models = renderer.getOrDefault("Players", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
@@ -437,7 +467,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 const model = models.get(id)!;
                 const skeleton = skeletons.get(id);
                 if (skeleton !== undefined) {
-                    model.morph(player, backpacks.get(id));
+                    model.morph(player, camera, backpacks.get(id));
                     model.update(skeleton);
                 } else {
                     // TODO
