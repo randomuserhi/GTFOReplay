@@ -1,4 +1,4 @@
-﻿/*using Enemies;
+﻿using Enemies;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -19,7 +19,10 @@ namespace Vanilla.Enemy {
                 return agent != null;
             }
         }
-        public override bool IsDirty => false;
+        public override bool IsDirty => lastTagged != tagged;
+
+        bool lastTagged = false;
+        bool tagged => agent.IsTagged;
 
         public rEnemyStats(EnemyAgent enemy) {
             id = enemy.GlobalID;
@@ -27,6 +30,9 @@ namespace Vanilla.Enemy {
         }
 
         public override void Write(ByteBuffer buffer) {
+            BitHelper.WriteBytes(tagged, buffer);
+
+            lastTagged = tagged;
         }
 
         public override void Spawn(ByteBuffer buffer) {
@@ -34,4 +40,3 @@ namespace Vanilla.Enemy {
         }
     }
 }
-*/

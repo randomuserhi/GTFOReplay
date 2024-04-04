@@ -26,14 +26,6 @@ declare module "../../../replay/moduleloader.js" {
                 despawn: void;
             };
 
-            "Vanilla.Player.Stats": {
-                parse: {
-                };
-                spawn: {
-                };
-                despawn: void;
-            };
-
             "Vanilla.Player.Model": {
                 parse: PlayerSkeleton;
                 spawn: PlayerSkeleton;

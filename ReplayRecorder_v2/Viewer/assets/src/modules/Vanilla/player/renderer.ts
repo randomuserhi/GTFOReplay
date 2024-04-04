@@ -8,6 +8,7 @@ import { SkeletonModel, upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
 import { Player, PlayerSkeleton } from "./player.js";
 import { PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
+import { PlayerStats } from "./playerstats.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -35,10 +36,11 @@ class PlayerModel extends SkeletonModel {
 
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
-        this.tmp.fontSize = 0.3;
-        this.tmp.position.y = 3;
+        this.tmp.fontSize = 0.2;
+        this.tmp.position.y = 2;
         this.tmp.textAlign = "center";
         this.tmp.anchorX = "center";
+        this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
 
@@ -112,11 +114,42 @@ class PlayerModel extends SkeletonModel {
         spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, sM));
     }
 
-    public morph(player: Player, camera: Camera, backpack?: PlayerBackpack): void {
+    public morph(player: Player) {
         this.group.position.set(player.position.x, player.position.y, player.position.z);
+    }
 
+    public updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {
         if (this.tmp !== undefined) {
-            this.tmp.text = `${player.nickname.replace(/<\/?[^>]+(>|$)/g, "")}`;
+            if (stats === undefined) {
+                this.tmp.visible = false;   
+                return;
+            }
+            
+            const nickname = player.nickname.replace(/<\/?[^>]+(>|$)/g, "");
+            if (backpack === undefined) {
+                this.tmp.text = `${nickname}
+Health: ${Math.round(stats.health * 100).toString().padStart(3)}%
+Main: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
+Special: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
+Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+                this.tmp.colorRanges = {
+                    0: playerColors[player.slot],
+                    [nickname.length]: 0xffffff,
+                };
+            } else {
+                const main = specification.equippable.get(backpack.slots[inventorySlotMap.get("main")!]);
+                const special = specification.equippable.get(backpack.slots[inventorySlotMap.get("special")!]);
+                const tool = specification.equippable.get(backpack.slots[inventorySlotMap.get("tool")!]);
+                this.tmp.text = `${nickname}
+Health: ${Math.round(stats.health * 100).toString().padStart(3)}%
+${(main !== undefined && main.name !== undefined ? main.name : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
+${(special !== undefined && special.name !== undefined ? special.name : "Special")}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
+${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+                this.tmp.colorRanges = {
+                    0: playerColors[player.slot],
+                    [nickname.length]: 0xffffff,
+                };
+            }
             this.tmp.visible = true;
 
             const tmpPos = new Vector3();
@@ -125,12 +158,13 @@ class PlayerModel extends SkeletonModel {
             const camPos = new Vector3();
             camera.getWorldPosition(camPos);
 
-            const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 15);
-            this.tmp.fontSize = lerp * 0.3 + 0.1;
-            this.tmp.position.y = lerp * 1.3 + 1.9;
+            const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
+            this.tmp.fontSize = lerp * 0.3 + 0.05;
             this.tmp.lookAt(camPos);
         }
+    }
 
+    public updateBackpack(player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
         for (let i = 0; i < this.slots.length; ++i) {
@@ -179,6 +213,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const models = renderer.getOrDefault("Players", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
+            const stats = snapshot.getOrDefault("Vanilla.Player.Stats", () => new Map());
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
             for (const [id, player] of players) {
                 if (!models.has(id)) {
@@ -190,8 +225,11 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 const model = models.get(id)!;
                 const skeleton = skeletons.get(id);
                 if (skeleton !== undefined) {
-                    model.morph(player, camera, backpacks.get(id));
+                    model.morph(player);
                     model.update(skeleton);
+                    const backpack = backpacks.get(id);
+                    model.updateBackpack(player, backpack);
+                    model.updateTmp(player, camera, stats.get(id), backpack);
                 } else {
                     // TODO
                 }

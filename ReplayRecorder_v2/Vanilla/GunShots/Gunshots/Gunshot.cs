@@ -19,13 +19,11 @@ namespace Vanilla.Player.Gunshots {
             this.damage = damage;
             this.start = start;
             if (!sentry && source.IsLocallyOwned && !source.Owner.IsBot) {
-                ItemEquippable? wieldedItem = source.Inventory?.WieldedItem;
+                ItemEquippable? wieldedItem = source.Inventory.WieldedItem;
                 Animator anim = source.AnimatorBody;
-                Transform? LFootTransform = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
-                Transform? RFootTransform = anim.GetBoneTransform(HumanBodyBones.RightFoot);
-                if (wieldedItem != null && LFootTransform != null && RFootTransform != null) {
-                    Vector3 LFoot = LFootTransform.position;
-                    Vector3 RFoot = RFootTransform.position;
+                if (wieldedItem != null) {
+                    Vector3 LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+                    Vector3 RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
                     Vector3 footCenter = (LFoot + RFoot) / 2.0f;
                     footCenter.y = 0;
                     Vector3 posFlat = source.transform.position;

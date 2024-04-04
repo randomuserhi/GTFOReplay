@@ -53,6 +53,8 @@ export class DuplicateDynamic extends Error {
     }
 }
 
+export type Id<T> = T & { id: number }; 
+
 export interface DynamicParse {
     dimension: number;
     absolute: boolean;

@@ -45,45 +45,58 @@ import { Spear } from "./Equippable/spear.js";
 export interface Specification {
     equippable: Map<number, {
         id: number;
+        name?: string;
         model(): Model;
     }>;
 }
 
 const _equippable = [{
     id: 43,
+    name: "knife",
     model: () => new Knife()
 }, {
     id: 44,
+    name: "knife",
     model: () => new Knife()
 }, {
     id: 45,
+    name: "Bat",
     model: () => new Bat()
 }, {
     id: 46,
+    name: "Bat",
     model: () => new Bat()
 }, {
     id: 48,
+    name: "Spear",
     model: () => new Spear()
 }, {
     id: 47,
+    name: "Spear",
     model: () => new Spear()
 }, {
     id: 41,
+    name: "Hammer",
     model: () => new Hammer()
 }, {
     id: 74,
+    name: "Hammer",
     model: () => new Hammer()
 }, {
     id: 42,
+    name: "Hammer",
     model: () => new Hammer()
 }, {
     id: 49,
+    name: "Hammer",
     model: () => new Hammer()
 }, {
     id: 50,
+    name: "Hammer",
     model: () => new Hammer()
 }, {
     id: 51,
+    name: "Hammer",
     model: () => new Hammer()
 }, {
     id: 53,
@@ -99,123 +112,163 @@ const _equippable = [{
     model: () => new Pack(0xffffff)
 }, {
     id: 37,
+    name: "Burst Sentry",
     model: () => new Sentry()
 }, {
     id: 38,
+    name: "Shotgun Sentry",
     model: () => new Sentry()
 }, {
     id: 39,
+    name: "Auto Sentry",
     model: () => new Sentry()
 }, {
     id: 40,
+    name: "Sniper Sentry",
     model: () => new Sentry()
 }, {
     id: 34,
+    name: "Bio Tracker",
     model: () => new Biotracker()
 }, {
     id: 35,
+    name: "C-Foam Launcher",
     model: () => new CfoamLauncher()
 }, {
     id: 36,
+    name: "Mine Deployer",
     model: () => new MineDeployer()
 }, {
     id: 1,
+    name: "Pistol",
     model: () => new Pistol()
 }, {
     id: 2,
+    name: "Burst Pistol",
     model: () => new BurstPistol()
 }, {
     id: 3,
+    name: "Hel Revolver",
     model: () => new HelRevolver()
 }, {
     id: 4,
+    name: "Machine Pistol",
     model: () => new MachinePistol()
 }, {
     id: 5,
+    name: "Auto Pistol",
     model: () => new AutoPistol()
 }, {
     id: 6,
+    name: "Bullpup",
     model: () => new Bullpup()
 }, {
     id: 7,
+    name: "Smg",
     model: () => new Smg()
 }, {
     id: 8,
+    name: "PDW",
     model: () => new PDW()
 }, {
     id: 9,
+    name: "Heavy Smg",
     model: () => new HeavySmg()
 }, {
     id: 10,
+    name: "Carbine",
     model: () => new Carbine()
 }, {
     id: 11,
+    name: "Dmr",
     model: () => new Dmr()
 }, {
     id: 12,
+    name: "Double Tap",
     model: () => new DoubleTap()
 }, {
     id: 13,
+    name: "Assault Rifle",
     model: () => new AssaultRifle()
 }, {
     id: 14,
+    name: "Burst Rifle",
     model: () => new BurstRifle()
 }, {
     id: 15,
+    name: "Rifle",
     model: () => new Rifle()
 }, {
     id: 16,
+    name: "Sawed Off",
     model: () => new SawedOff()
 }, {
     id: 17,
+    name: "Hel Shotgun",
     model: () => new HelShotgun()
 }, {
     id: 18,
+    name: "Slug Shotgun",
     model: () => new SlugShotgun()
 }, {
     id: 19,
+    name: "Heavy Assault Rifle",
     model: () => new HeavyAssaultRifle()
 }, {
     id: 20,
+    name: "Short Rifle",
     model: () => new ShortRifle()
 }, {
     id: 21,
+    name: "Shotgun",
     model: () => new Shotgun()
 }, {
     id: 22,
+    name: "Combat Shotgun",
     model: () => new CombatShotgun()
 }, {
     id: 23,
+    name: "Scatter Gun",
     model: () => new ScatterGun()
 }, {
     id: 24,
+    name: "Choke Mod Shotgun",
     model: () => new ChokeModShotgun()
 }, {
     id: 25,
+    name: "Revolver",
     model: () => new Revolver()
 }, {
     id: 26,
+    name: "Machine Gun",
     model: () => new MachineGun0()
 }, {
     id: 27,
+    name: "Machine Gun",
     model: () => new MachineGun1()
 }, {
     id: 28,
+    name: "Burst Cannon",
     model: () => new BurstCannon()
 }, {
     id: 29,
+    name: "Hel Gun",
     model: () => new HelGun()
 }, {
     id: 30,
+    name: "High Cal",
     model: () => new HighCal()
 }, {
     id: 31,
+    name: "Precision Rifle",
     model: () => new PrecisionRifle()
 }, {
     id: 32,
+    name: "Sniper",
     model: () => new Sniper()
 }, {
     id: 33,
+    name: "Hel Rifle",
     model: () => new HelRifle()
 }];
 

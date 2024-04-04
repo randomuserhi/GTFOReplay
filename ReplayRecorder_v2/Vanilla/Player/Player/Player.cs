@@ -49,7 +49,7 @@ namespace Vanilla.Player {
                     Replay.Get<rPlayerBackpack>(player.Id).agent = player.agent;
                 }
                 if (Replay.Has<rPlayerStats>(player.Id)) {
-                    Replay.Get<rPlayerStats>(player.Id).agent = player.agent;
+                    Replay.Get<rPlayerStats>(player.Id).player = player.agent;
                 }
                 return;
             }

@@ -10,16 +10,16 @@ namespace Vanilla.Enemy {
 
             bool isValidModel = rEnemyModel.isValid(enemy);
             Replay.Spawn(new rEnemy(enemy, isValidModel));
-            //Replay.Spawn(new rEnemyStats(enemy));
+            Replay.Spawn(new rEnemyStats(enemy));
             if (isValidModel) Replay.Spawn(new rEnemyModel(enemy));
         }
 
         public static void Despawn(EnemyAgent enemy) {
             if (!Replay.Active) return;
 
-            if (Replay.Has<rEnemy>(enemy.GlobalID)) Replay.Despawn(Replay.Get<rEnemy>(enemy.GlobalID));
-            //if (Replay.Has<rEnemyStats>(enemy.GlobalID)) Replay.Despawn(Replay.Get<rEnemyStats>(enemy.GlobalID));
-            if (Replay.Has<rEnemyModel>(enemy.GlobalID)) Replay.Despawn(Replay.Get<rEnemyModel>(enemy.GlobalID));
+            Replay.TryDespawn<rEnemy>(enemy.GlobalID);
+            Replay.TryDespawn<rEnemyStats>(enemy.GlobalID);
+            Replay.TryDespawn<rEnemyModel>(enemy.GlobalID);
         }
     }
 
