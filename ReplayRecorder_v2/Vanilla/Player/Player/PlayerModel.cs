@@ -193,6 +193,9 @@ namespace Vanilla.Player {
             Vector3 offset = Vector3.zero;
             Vector3 handOffset = Vector3.zero;
             Vector3 lowerOffset = Vector3.zero;
+            Vector3 lowerLegOffset = Vector3.zero;
+            Vector3 upperLegOffset = Vector3.zero;
+            Vector3 footOffset = Vector3.zero;
             if (player.IsLocallyOwned && !player.Owner.IsBot) {
                 LUArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
                 LLArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
@@ -213,7 +216,15 @@ namespace Vanilla.Player {
                 }
 
                 if (player.Alive) {
-                    displacement += Vector3.down * 0.45f;
+                    if (player.Locomotion.m_currentStateEnum == PlayerLocomotion.PLOC_State.Crouch) {
+                        displacement += Vector3.down * 0.2f;
+
+                        upperLegOffset = Vector3.up * 0.1f;
+                    } else {
+                        displacement += Vector3.down * 0.45f;
+                    }
+                    lowerLegOffset = Vector3.up * 0.1f;
+                    footOffset = Vector3.up * 0.2f;
                 }
 
                 Vector3 footCenter = (LFoot + RFoot) / 2.0f;
@@ -242,13 +253,13 @@ namespace Vanilla.Player {
             BitHelper.WriteHalf(displacement + height + offset + lowerOffset + RLArm - pos, buffer);
             BitHelper.WriteHalf(displacement + height + offset + handOffset + RHand - pos, buffer);
 
-            BitHelper.WriteHalf(displacement + LULeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + Vector3.up * 0.1f + LLLeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + Vector3.up * 0.2f + LFoot - pos, buffer);
+            BitHelper.WriteHalf(displacement + upperLegOffset + LULeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + lowerLegOffset + LLLeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + footOffset + LFoot - pos, buffer);
 
-            BitHelper.WriteHalf(displacement + RULeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + Vector3.up * 0.1f + RLLeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + Vector3.up * 0.2f + RFoot - pos, buffer);
+            BitHelper.WriteHalf(displacement + upperLegOffset + RULeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + lowerLegOffset + RLLeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + footOffset + RFoot - pos, buffer);
 
             Transform back = anim.GetBoneTransform(HumanBodyBones.Chest);
             backpackPos = back.position;

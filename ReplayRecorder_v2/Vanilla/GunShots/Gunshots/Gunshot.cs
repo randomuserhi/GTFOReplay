@@ -27,7 +27,13 @@ namespace Vanilla.Player.Gunshots {
                     footCenter.y = 0;
                     Vector3 posFlat = source.transform.position;
                     posFlat.y = 0;
-                    this.start = wieldedItem.GearPartHolder.transform.position + Vector3.down * 0.45f + (posFlat - footCenter);
+                    Vector3 displacement;
+                    if (source.Locomotion.m_currentStateEnum == PlayerLocomotion.PLOC_State.Crouch) {
+                        displacement = Vector3.down * 0.2f;
+                    } else {
+                        displacement = Vector3.down * 0.45f;
+                    }
+                    this.start = wieldedItem.GearPartHolder.transform.position + displacement + (posFlat - footCenter);
                 } else {
                     this.start += Vector3.down * 0.2f;
                 }
