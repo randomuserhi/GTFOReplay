@@ -1,4 +1,4 @@
-import { RendererApi } from "./renderer.js";
+import { Renderer, RendererApi } from "./renderer.js";
 import { ByteStream } from "./stream.js";
 
 export declare namespace Typemap {
@@ -92,12 +92,14 @@ export namespace ModuleLoader {
         dynamic: ModuleLibrary<DynamicModule>
         render: Map<string, RenderModule>
         tick: Set<(snapshot: ReplayApi) => void>
+        dispose: Set<(renderer: Renderer) => void>
     } = {
         header: new Map(),
         event: new Map(),
         dynamic: new Map(),
         render: new Map(),
-        tick: new Set()
+        tick: new Set(),
+        dispose: new Set(),
     };
 
     export function getHeader<T extends Typemap.HeaderNames>({ typename, version }: ModuleDesc<T>): HeaderModule {
@@ -141,6 +143,10 @@ export namespace ModuleLoader {
 
     export function registerTick(func: (snapshot: ReplayApi) => void) {
         library.tick.add(func);
+    }
+
+    export function registerDispose(func: (renderer: Renderer) => void) {
+        library.dispose.add(func);
     }
 
     export function loadModule(path: string) {

@@ -131,6 +131,8 @@ export class Renderer {
     }
 
     public init(replay: Replay) {
+        this.dispose();
+
         this.renderLoop = [];
         this.initPasses = [];
         this.loadModules();
@@ -170,5 +172,11 @@ export class Renderer {
         this.dispatchEvent(CreateEvent("resize", { width, height }));
         this.renderer.setSize(width, height);
         this.composer.setSize(width, height);
+    }
+
+    public dispose() {
+        for (const dispose of ModuleLoader.library.dispose) {
+            dispose(this);
+        }
     }
 }

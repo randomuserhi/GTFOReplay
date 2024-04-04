@@ -406,6 +406,10 @@ class PlayerModel extends SkeletonModel {
             }
         }
     }
+
+    public dispose() {
+        console.log("dispose");
+    }
 }
 
 export const playerColors: ColorRepresentation[] = [
@@ -444,9 +448,17 @@ ModuleLoader.registerRender("Players", (name, api) => {
             for (const [id, model] of [...models.entries()]) {
                 if (!players.has(id)) {
                     model.removeFromScene(renderer.scene);
+                    model.dispose();
                     models.delete(id);
                 }
             }
         } 
     }]);
+});
+
+ModuleLoader.registerDispose((renderer) => {
+    const models = renderer.getOrDefault("Players", () => new Map());
+    for (const model of models.values()) {
+        model.dispose();
+    }
 });
