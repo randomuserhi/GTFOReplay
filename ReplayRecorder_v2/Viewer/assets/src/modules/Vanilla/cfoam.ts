@@ -4,7 +4,7 @@ import { consume, createInstance } from "../../replay/instancing.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicPosition } from "../replayrecorder.js";
-import { zeroQ } from "./model.js";
+import { zeroQ } from "./humanmodel.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {

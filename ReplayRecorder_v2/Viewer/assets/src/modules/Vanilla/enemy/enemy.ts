@@ -1,12 +1,12 @@
 import { Color, Group, Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import * as Pod from "../../replay/pod.js";
-import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../replayrecorder.js";
-import { createDeathCross } from "./deathcross.js";
-import { Skeleton, SkeletonModel } from "./model.js";
+import * as BitHelper from "../../../replay/bithelper.js";
+import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as Pod from "../../../replay/pod.js";
+import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
+import { createDeathCross } from "../deathcross.js";
+import { Skeleton, SkeletonModel } from "../humanmodel.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy": {
@@ -277,7 +277,7 @@ export class DuplicateEnemy extends Error {
 
 // --------------------------- RENDERING ---------------------------
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Enemies": void;

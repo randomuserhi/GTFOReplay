@@ -12,6 +12,7 @@ import { ChokeModShotgun } from "./Equippable/chokemodshotgun.js";
 import { CombatShotgun } from "./Equippable/combatshotgun.js";
 import { Dmr } from "./Equippable/dmr.js";
 import { DoubleTap } from "./Equippable/doubletap.js";
+import { Model } from "./Equippable/equippable.js";
 import { Hammer } from "./Equippable/hammer.js";
 import { HeavyAssaultRifle } from "./Equippable/heavyassaultrifle.js";
 import { HeavySmg } from "./Equippable/heavysmg.js";
@@ -40,7 +41,6 @@ import { SlugShotgun } from "./Equippable/slugshotgun.js";
 import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
-import { Model } from "./equippable.js";
 
 export interface Specification {
     equippable: Map<number, {

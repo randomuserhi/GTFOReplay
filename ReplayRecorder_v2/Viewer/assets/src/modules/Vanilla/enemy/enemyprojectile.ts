@@ -1,9 +1,9 @@
 import { CylinderGeometry, LineBasicMaterial, Mesh, MeshStandardMaterial, Quaternion, SphereGeometry } from "three";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import * as Pod from "../../replay/pod.js";
-import { DynamicParse, DynamicSpawn, DynamicTransform } from "../replayrecorder.js";
+import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as Pod from "../../../replay/pod.js";
+import { DynamicParse, DynamicSpawn, DynamicTransform } from "../../replayrecorder.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy.Projectile": {
@@ -104,7 +104,7 @@ class DuplicateProjectile extends Error {
 // --------------------------- RENDERING ---------------------------
 
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Enemy.Projectile": void;

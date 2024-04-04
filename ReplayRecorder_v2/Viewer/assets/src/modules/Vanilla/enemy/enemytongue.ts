@@ -1,12 +1,12 @@
 import { Matrix4, Mesh, MeshPhongMaterial, Vector3 } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
-import { getInstance } from "../../replay/instancing.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import * as Pod from "../../replay/pod.js";
-import { DynamicSplineGeometry } from "../dynamicspline.js";
-import { Dynamic } from "../replayrecorder.js";
+import * as BitHelper from "../../../replay/bithelper.js";
+import { getInstance } from "../../../replay/instancing.js";
+import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as Pod from "../../../replay/pod.js";
+import { DynamicSplineGeometry } from "../../dynamicspline.js";
+import { Dynamic } from "../../replayrecorder.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy.Tongue": {
@@ -151,7 +151,7 @@ class DuplicateTongue extends Error {
 // --------------------------- RENDERING ---------------------------
 
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Enemy.Tongue": void;

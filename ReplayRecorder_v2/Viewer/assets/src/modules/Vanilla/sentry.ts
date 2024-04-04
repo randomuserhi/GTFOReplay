@@ -3,7 +3,7 @@ import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicRotation, DynamicTransform } from "../replayrecorder.js";
-import { playerColors } from "./player.js";
+import { playerColors } from "./player/renderer.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {

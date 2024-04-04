@@ -1,5 +1,5 @@
 import { BoxGeometry, Group, Mesh, MeshPhongMaterial } from "three";
-import { Model } from "../equippable.js";
+import { Model } from "./equippable.js";
 
 const box = new BoxGeometry(1, 1, 1);
 

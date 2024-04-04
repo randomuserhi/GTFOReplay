@@ -1,10 +1,10 @@
 import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import * as Pod from "../../replay/pod.js";
-import { DynamicPosition } from "../replayrecorder.js";
+import * as BitHelper from "../../../replay/bithelper.js";
+import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as Pod from "../../../replay/pod.js";
+import { DynamicPosition } from "../../replayrecorder.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Bioscan": {
@@ -162,7 +162,7 @@ export class DuplicateBioscan extends Error {
 // --------------------------- RENDERING ---------------------------
 
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Bioscan": void;

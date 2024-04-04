@@ -1,5 +1,5 @@
 import { BoxGeometry, ColorRepresentation, Mesh, MeshPhongMaterial } from "three";
-import { Model } from "../equippable.js";
+import { Model } from "./equippable.js";
 
 export class Pack extends Model {
     constructor(color: ColorRepresentation) {

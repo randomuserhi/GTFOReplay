@@ -1,5 +1,5 @@
 import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial } from "three";
-import { Model } from "../equippable.js";
+import { Model } from "./equippable.js";
 
 const box = new BoxGeometry(1, 1, 1);
 const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5);

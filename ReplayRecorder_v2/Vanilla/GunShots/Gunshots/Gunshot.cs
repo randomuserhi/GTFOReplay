@@ -13,7 +13,7 @@ namespace Vanilla.Player.Gunshots {
         private Vector3 end;
         private bool sentry;
 
-        // NOTE(randomuserhi): For some reason this crashes on client for some lobbies???
+        // NOTE(randomuserhi): For some reason this creates an exception on client for some lobbies - object null reference???
         public rGunshot(PlayerAgent source, float damage, Vector3 start, Vector3 end, bool sentry) : base(source.GlobalID) {
             dimension = (byte)source.DimensionIndex;
             this.damage = damage;
