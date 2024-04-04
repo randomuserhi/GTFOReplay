@@ -106,6 +106,7 @@ namespace Vanilla.Specification {
                 { "kovac sledgehammer", 49 },
                 { "santonian mallet", 50 },
                 { "maco gavel", 51 },
+                { "axe", 74 },
 
                 // Hacking Tool
                 { "hacking tool", 52 },

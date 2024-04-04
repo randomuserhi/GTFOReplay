@@ -71,6 +71,9 @@ const _equippable = [{
     id: 41,
     model: () => new Hammer()
 }, {
+    id: 74,
+    model: () => new Hammer()
+}, {
     id: 42,
     model: () => new Hammer()
 }, {

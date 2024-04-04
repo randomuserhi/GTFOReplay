@@ -48,14 +48,15 @@ const style = Style(({ style }) => {
 
     color: white;
     background-color: rgba(0, 0, 0, 0.5);
+    
+    user-select: none;
+    user-drag: none;
     `;
 
     const time = style.class`
     align-items: center;
     display: flex;
     padding: 0 10px;
-    user-select: none;
-    user-drag: none;
     `;
 
     const button = style.class`

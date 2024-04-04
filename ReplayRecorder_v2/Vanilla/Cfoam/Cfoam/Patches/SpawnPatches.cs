@@ -11,9 +11,11 @@ namespace Vanilla.Cfoam.Patches {
         [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.SpawnGlueGunProjectileIfNeeded))]
         [HarmonyPostfix]
         private static void SpawnGlueGunProjectile(ProjectileManager __instance, GlueGunProjectile __result) {
+            if (__result == null) return;
+
             PlayerAgent player = PlayerManager.GetLocalPlayerAgent();
             byte dimension;
-            if (SNet.Replication.TryGetLastSender(out SNet_Player sender)) {
+            if (SNet.Replication.TryGetLastSender(out SNet_Player sender) && sender != null && sender.PlayerAgent != null) {
                 dimension = (byte)sender.PlayerAgent.Cast<PlayerAgent>().DimensionIndex;
             } else if (player != null) {
                 dimension = (byte)player.DimensionIndex;

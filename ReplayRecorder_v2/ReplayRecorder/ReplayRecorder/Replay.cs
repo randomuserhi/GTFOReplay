@@ -82,6 +82,14 @@ namespace ReplayRecorder {
         public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate);
         [HideFromIl2Cpp]
         public static void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) => SnapshotManager.GetInstance().Despawn(dynamic, errorOnNotFound);
+        [HideFromIl2Cpp]
+        public static bool TryDespawn<T>(int id) where T : ReplayDynamic {
+            if (Has<T>(id)) {
+                Despawn(Get<T>(id));
+                return true;
+            }
+            return false;
+        }
 
         public static bool Ready => SnapshotManager.Ready;
         public static bool Active => SnapshotManager.Active;

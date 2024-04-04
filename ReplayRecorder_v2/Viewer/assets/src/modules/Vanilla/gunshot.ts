@@ -86,11 +86,7 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
             let i = 0;
             for (; i < gunshots.length; ++i) {
                 if (models[i] === undefined) {
-                    let color: ColorRepresentation = 0xffffff;
-                    if (players.has(gunshots[i].owner)) {
-                        color = playerColors[players.get(gunshots[i].owner)!.slot];
-                    }
-                    const material = new MeshStandardMaterial({ color });
+                    const material = new MeshStandardMaterial({ color: 0xffffff });
                     material.transparent = true;
                     material.opacity = 1;
 
@@ -100,6 +96,13 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
                     renderer.scene.add(mesh);
                 }
                 const mesh = models[i];
+                
+                let color: ColorRepresentation = 0xffffff;
+                if (players.has(gunshots[i].owner)) {
+                    color = playerColors[players.get(gunshots[i].owner)!.slot];
+                }
+                (mesh.material as MeshStandardMaterial).color.set(color);
+
                 const a = gunshots[i].start;
                 const b = gunshots[i].end;
                 mesh.position.set(a.x, a.y, a.z);

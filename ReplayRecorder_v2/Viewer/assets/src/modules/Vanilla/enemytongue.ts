@@ -57,7 +57,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.TongueEvent", "0.0.1", {
         const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
 
         const { id } = data;
-        if (!tongues.has(id)) throw new TongueNotFound(`Tongue of id '${id}' was not found.`);
+        if (!tongues.has(id)) return; // enemy died
         
         const tongue = tongues.get(id)!;
         tongue.spline = data.spline;
@@ -185,7 +185,7 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                     renderer.scene.add(mesh);
                 }
                 const model = models.get(id)!;
-                if (owner === undefined) {
+                if (owner === undefined || tongue.spline.length < 2) {
                     model.mesh.visible = false;
                     continue;
                 }
@@ -195,7 +195,7 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 const originThree = new Vector3(0, 1, 0);
                 if (enemyModel !== undefined) {
                     const matrix = new Matrix4();
-                    if (owner.head)  {
+                    if (owner.head && enemyModel.head !== -1)  {
                         getInstance("Sphere.MeshPhong").getMatrixAt(enemyModel.head, matrix);
                         originThree.setFromMatrixPosition(matrix);
                     } else {

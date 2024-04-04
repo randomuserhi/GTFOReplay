@@ -13,16 +13,19 @@ namespace Vanilla.Player.Gunshots {
         private Vector3 end;
         private bool sentry;
 
+        // NOTE(randomuserhi): For some reason this crashes on client for some lobbies???
         public rGunshot(PlayerAgent source, float damage, Vector3 start, Vector3 end, bool sentry) : base(source.GlobalID) {
             dimension = (byte)source.DimensionIndex;
             this.damage = damage;
             this.start = start;
-            if (source.IsLocallyOwned && !source.Owner.IsBot) {
-                ItemEquippable? wieldedItem = source.Inventory.WieldedItem;
-                if (wieldedItem != null && wieldedItem) {
-                    Animator anim = source.AnimatorBody;
-                    Vector3 LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
-                    Vector3 RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+            if (!sentry && source.IsLocallyOwned && !source.Owner.IsBot) {
+                ItemEquippable? wieldedItem = source.Inventory?.WieldedItem;
+                Animator anim = source.AnimatorBody;
+                Transform? LFootTransform = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
+                Transform? RFootTransform = anim.GetBoneTransform(HumanBodyBones.RightFoot);
+                if (wieldedItem != null && LFootTransform != null && RFootTransform != null) {
+                    Vector3 LFoot = LFootTransform.position;
+                    Vector3 RFoot = RFootTransform.position;
                     Vector3 footCenter = (LFoot + RFoot) / 2.0f;
                     footCenter.y = 0;
                     Vector3 posFlat = source.transform.position;
@@ -35,7 +38,7 @@ namespace Vanilla.Player.Gunshots {
                     }
                     this.start = wieldedItem.GearPartHolder.transform.position + displacement + (posFlat - footCenter);
                 } else {
-                    this.start += Vector3.down * 0.2f;
+                    this.start += Vector3.down * 0.4f;
                 }
             }
             this.end = end;

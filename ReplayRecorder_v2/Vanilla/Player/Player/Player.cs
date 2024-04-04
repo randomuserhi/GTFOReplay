@@ -48,6 +48,9 @@ namespace Vanilla.Player {
                 if (Replay.Has<rPlayerBackpack>(player.Id)) {
                     Replay.Get<rPlayerBackpack>(player.Id).agent = player.agent;
                 }
+                if (Replay.Has<rPlayerStats>(player.Id)) {
+                    Replay.Get<rPlayerStats>(player.Id).agent = player.agent;
+                }
                 return;
             }
 
@@ -56,6 +59,7 @@ namespace Vanilla.Player {
             Replay.Spawn(player);
             Replay.Spawn(new rPlayerModel(agent));
             Replay.Spawn(new rPlayerBackpack(agent));
+            Replay.Spawn(new rPlayerStats(agent));
             players.Add(player);
         }
 
@@ -71,12 +75,9 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
             Replay.Despawn(player);
-            if (Replay.Has<rPlayerModel>(agent.GlobalID)) {
-                Replay.Despawn(Replay.Get<rPlayerModel>(agent.GlobalID));
-            }
-            if (Replay.Has<rPlayerBackpack>(agent.GlobalID)) {
-                Replay.Despawn(Replay.Get<rPlayerBackpack>(agent.GlobalID));
-            }
+            Replay.TryDespawn<rPlayerModel>(agent.GlobalID);
+            Replay.TryDespawn<rPlayerBackpack>(agent.GlobalID);
+            Replay.TryDespawn<rPlayerStats>(agent.GlobalID);
             players.Remove(player);
         }
     }

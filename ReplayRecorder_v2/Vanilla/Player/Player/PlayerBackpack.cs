@@ -43,8 +43,8 @@ namespace Vanilla.Player {
 
         public override bool Active {
             get {
-                if (agent == null && Replay.Has<rPlayer>(Id)) {
-                    Replay.Despawn(Replay.Get<rPlayer>(Id));
+                if (agent == null && Replay.Has<rPlayerBackpack>(Id)) {
+                    Replay.Despawn(Replay.Get<rPlayerBackpack>(Id));
                 }
                 return agent != null;
             }
