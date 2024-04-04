@@ -43,6 +43,8 @@ const style = Style(({ style }) => {
 });
 
 export interface app extends HTMLElement {
+    player: player;
+
     body: HTMLDivElement;
     load(node: Node): void;
 }
@@ -56,7 +58,8 @@ declare module "@/rhu/macro.js" {
 Macro((() => {
     const app = function(this: app) {
         __main__();
-        this.load(document.createMacro(player));
+        this.player = document.createMacro(player);
+        this.load(this.player);
     } as any as Constructor<app>;
 
     app.prototype.load = function(node) {

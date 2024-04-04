@@ -3,6 +3,7 @@ import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../replayrecorder.js";
+import { createDeathCross } from "./deathcross.js";
 import { Skeleton, SkeletonModel } from "./model.js";
 
 declare module "../../replay/moduleloader.js" {
@@ -135,6 +136,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
 
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
+            const enemy = enemies.get(id)!;
+            createDeathCross(snapshot, id, enemy.dimension, enemy.position);
             enemies.delete(id);
         }
     }

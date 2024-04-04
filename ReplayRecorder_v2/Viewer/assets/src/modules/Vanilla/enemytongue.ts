@@ -24,12 +24,46 @@ declare module "../../replay/moduleloader.js" {
                 despawn: void;
             };
         }
+
+        interface Events {
+            "Vanilla.Enemy.TongueEvent": {
+                id: number;
+                spline: Pod.Vector[];
+            }
+        }
     
         interface Data {
             "Vanilla.Enemy.Tongue": Map<number, Tongue>
         }
     }
 }
+
+ModuleLoader.registerEvent("Vanilla.Enemy.TongueEvent", "0.0.1", {
+    parse: async (data) => {
+        const header = {
+            id: await BitHelper.readInt(data),
+        };
+        const length = await BitHelper.readByte(data);
+        const spline: Pod.Vector[] = new Array(length);
+        spline[0] = await BitHelper.readVector(data);
+        for (let i = 1; i < length; ++i) {
+            spline[i] = Pod.Vec.add(spline[i - 1], await BitHelper.readHalfVector(data));
+        }
+        return {
+            ...header, spline
+        };
+    }, 
+    exec: (data, snapshot) => {
+        const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
+
+        const { id } = data;
+        if (!tongues.has(id)) throw new TongueNotFound(`Tongue of id '${id}' was not found.`);
+        
+        const tongue = tongues.get(id)!;
+        tongue.spline = data.spline;
+        tongue.progress = 1;
+    }
+});
 
 export interface Tongue extends Dynamic {
     owner: number;

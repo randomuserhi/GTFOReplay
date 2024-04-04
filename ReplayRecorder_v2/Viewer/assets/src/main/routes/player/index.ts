@@ -44,9 +44,11 @@ const style = Style(({ style }) => {
 
 export interface player extends HTMLDivElement {
     canvas: HTMLCanvasElement;
-
+    mount: HTMLDivElement;
+    seeker: seeker;
+    
     renderer: Renderer;
-
+    
     path?: string;
     parser?: Parser;
     replay?: Replay;
@@ -56,6 +58,8 @@ export interface player extends HTMLDivElement {
     lerp: number;
     prevTime: number;
     frameRate: number;
+    seekLength: number;
+
     update(): void;
     close(): void;
     link(ip: string, port: number): Promise<void>;
@@ -73,6 +77,22 @@ declare module "@/rhu/macro.js" {
 export const player = Macro((() => {
     const player = function(this: player) {
         this.renderer = new Renderer(this.canvas);
+
+        this.seeker.trigger = (value) => {
+            if (this.replay === undefined) return;
+            this.time = value * this.seekLength;
+        };
+        this.seeker.live.onclick = () => {
+            if (this.live) {
+                this.live = false;
+            } else {
+                this.goLive();
+            }
+        };
+        this.seeker.pause.onclick = () => {
+            this.pause = !this.pause;
+            this.seeker.setPause(this.pause);
+        };
 
         const resize = () => {
             const computed = getComputedStyle(this);
@@ -92,6 +112,8 @@ export const player = Macro((() => {
     } as Constructor<player>;
     
     player.prototype.open = async function(path: string) {
+        // TODO(randomuserhi): Loading screen prior map loads
+
         this.path = path;
         const file: FileHandle = {
             path, finite: false
@@ -110,7 +132,9 @@ export const player = Macro((() => {
             this.live = false;
             this.time = 0;
             this.lerp = 20; // TODO(randomuserhi): Should be adjustable for various tick rates
+            this.seekLength = 1;
             this.prevTime = Date.now();
+            this.mount.style.display = "block";
         });
         this.parser.addEventListener("end", () => {
             window.api.send("close", file);
@@ -140,6 +164,19 @@ export const player = Macro((() => {
         window.api.send("unlink");
     };
 
+    function msToTime(duration: number) {
+        const milliseconds: string | number = Math.floor((duration % 1000) / 100);
+        let seconds: string | number = Math.floor((duration / 1000) % 60),
+            minutes: string | number = Math.floor((duration / (1000 * 60)) % 60),
+            hours: string | number = Math.floor((duration / (1000 * 60 * 60)) % 24);
+        
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        
+        return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+    }
+
     player.prototype.update = function() {
         if (this.time < 0) this.time = 0;
 
@@ -151,9 +188,16 @@ export const player = Macro((() => {
             //this.time = 1000000;
             const length = this.replay.length();
 
-            if (this.live) this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
-            else if (!this.pause) this.time += dt;
+            if (!this.seeker.seeking) {
+                if (this.live) this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
+                else if (!this.pause) this.time += dt;
 
+                this.seekLength = length;
+            } else {
+                this.live = false;
+                this.seeker.setPause(this.live);
+            }
+            
             if (this.time > length) this.time = length;
 
             const snapshot = this.replay.getSnapshot(this.time);
@@ -161,8 +205,14 @@ export const player = Macro((() => {
                 const api = this.replay.api(snapshot);
                 this.renderer.render(dt / 1000, api);
             }
+
+            this.seeker.setValue(this.time / this.seekLength);
+            this.seeker.time.innerText = `${msToTime(this.time)} / ${msToTime(this.seekLength)}`; //${(this.seeker.seeking ? `(${msToTime(this.replay.length())})` : "")}
+
+            this.seeker.dot.style.backgroundColor = this.live ? "red" : "#eee";
         }
         this.frameRate = 1000 / dt;
+
 
         // TODO(randomuserhi): Method to dispose of loop when player is removed etc... 
         requestAnimationFrame(() => this.update());
@@ -173,8 +223,8 @@ export const player = Macro((() => {
 `
     <div class="${style.body}">
         <canvas class="${style.canvas}" rhu-id="canvas"></canvas>
-        <div class="${style.mount}">
-            ${seeker}
+        <div rhu-id="mount" class="${style.mount}" style="display: none">
+            ${seeker`rhu-id="seeker"`}
         </div>
     </div>
     `, {

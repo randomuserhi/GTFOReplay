@@ -31,6 +31,9 @@ const style = Style(({ style }) => {
     pointer-events: auto;
     `;
     style`
+    ${button}:focus {
+        outline:0;
+    }
     ${button}:hover {
         background-color: #272733; /*TODO: Theme-ColorScheme*/
     }

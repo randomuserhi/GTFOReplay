@@ -1,5 +1,8 @@
 ﻿using Enemies;
 using HarmonyLib;
+using Player;
+using ReplayRecorder;
+using UnityEngine;
 
 namespace Vanilla.EnemyTongue.Patches {
     [HarmonyPatch]
@@ -29,6 +32,35 @@ namespace Vanilla.EnemyTongue.Patches {
         [HarmonyPostfix]
         private static void Deallocate(MovingEnemyTentacleBase __instance) {
             EnemyTongueReplayManager.Despawn(__instance);
+        }
+
+        private static MovingEnemyTentacleBase? tongue; // Tongue currently in use => used to work out which tongue hits the player
+        [HarmonyPatch(typeof(MovingEnemyTentacleBase), nameof(MovingEnemyTentacleBase.OnAttackIsOut))]
+        [HarmonyPrefix]
+        private static void OnAttackIsOut(MovingEnemyTentacleBase __instance) {
+            tongue = __instance;
+
+            PlayerAgent? target = __instance.PlayerTarget;
+
+            bool flag = __instance.CheckTargetInAttackTunnel();
+            if (target != null && target.Damage.IsSetup) {
+                bool flag2;
+                if (__instance.m_owner.EnemyBalancingData.UseTentacleTunnelCheck) {
+                    flag2 = flag;
+                } else {
+                    Vector3 tipPos = __instance.GetTipPos();
+                    flag2 = (target.TentacleTarget.position - tipPos).magnitude < __instance.m_owner.EnemyBalancingData.TentacleAttackDamageRadiusIfNoTunnelCheck;
+                }
+                if (!flag2) {
+                    Replay.Trigger(new rEnemyTongueEvent(__instance));
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveTentacleAttackDamage))]
+        [HarmonyPrefix]
+        private static void Prefix_ReceiveTentacleAttackDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
+            if (tongue != null) Replay.Trigger(new rEnemyTongueEvent(tongue));
         }
     }
 }

@@ -235,6 +235,7 @@ class CameraControls {
             case 70:
                 e.preventDefault();
                 (window as any).player.pause = !(window as any).player.pause;
+                (window as any).palyer.seeker.setPause((window as any).player.pause);
                 break;
             case 32:
                 e.preventDefault();

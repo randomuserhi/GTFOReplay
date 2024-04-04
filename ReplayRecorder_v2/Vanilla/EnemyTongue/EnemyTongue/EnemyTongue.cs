@@ -2,6 +2,7 @@
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using ReplayRecorder.Core;
 using UnityEngine;
 
 namespace Vanilla.EnemyTongue {
@@ -49,6 +50,29 @@ namespace Vanilla.EnemyTongue {
 
     public class TongueTooLong : Exception {
         public TongueTooLong(string message) : base(message) { }
+    }
+
+    [ReplayData("Vanilla.Enemy.TongueEvent", "0.0.1")]
+    internal class rEnemyTongueEvent : Id {
+        private MovingEnemyTentacleBase tongue;
+        public rEnemyTongueEvent(MovingEnemyTentacleBase tongue) : base(tongue.GetInstanceID()) {
+            this.tongue = tongue;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+
+            if (tongue.m_GPUSplineSegments.Length > byte.MaxValue) {
+                throw new TongueTooLong($"Tongue has too many segments: {tongue.m_GPUSplineSegments.Length}.");
+            }
+
+            BitHelper.WriteBytes((byte)tongue.m_GPUSplineSegments.Length, buffer);
+            BitHelper.WriteBytes(tongue.m_GPUSplineSegments[0].pos, buffer);
+            for (int i = 1; i < tongue.m_GPUSplineSegments.Length; ++i) {
+                Vector3 diff = tongue.m_GPUSplineSegments[i].pos - tongue.m_GPUSplineSegments[i - 1].pos;
+                BitHelper.WriteHalf(diff, buffer);
+            }
+        }
     }
 
     [ReplayData("Vanilla.Enemy.Tongue", "0.0.1")]
