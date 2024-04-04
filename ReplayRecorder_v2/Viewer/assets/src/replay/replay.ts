@@ -106,8 +106,8 @@ export class Replay {
         return module;
     }
 
-    private exec(time: number, api: ReplayApi, state: Snapshot, snapshot: Timeline.Snapshot) {
-        const exists = new Map<number, Map<number, boolean>>();
+    private exec(time: number, api: ReplayApi, state: Snapshot, snapshot: Timeline.Snapshot, exists?: Map<number, Map<number, boolean>>) {
+        if (exists === undefined) exists = new Map<number, Map<number, boolean>>();
 
         // perform events
         for (const { type, data, delta } of snapshot.events) {
@@ -196,7 +196,9 @@ export class Replay {
         // Lerp state time
         const diff = snapshot.time - state.time;
         const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
-        if (lerp < 0 || lerp > 1) throw new Error(`Lerp should be between 0 and 1.`);
+        if (lerp <= 0) return;
+
+        if (lerp > 1) throw new Error(`Lerp should be less than 1.`);
         state.tick = lerp === 1 ? snapshot.tick : state.tick;
         state.time = lerp === 1 ? snapshot.time : (state.time + lerp * diff);
     }
@@ -226,11 +228,21 @@ export class Replay {
         const api = this.api(state);
 
         // extrapolate snapshot until time
-        for (let tick = state.tick; tick < this.timeline.length; ++tick) {
+        let tick = state.tick; 
+        for (; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
+            if (snapshot.time > state.time) break;
             this.exec(time, api, state, snapshot);
-            // NOTE(randomuserhi): Process extra snapshots to account for largestTickRate that can be encountered to smoothen
-            //                     animations which occure every other tick etc...
+        }
+        
+        // NOTE(randomuserhi): Process extra snapshots to account for largestTickRate that can be encountered to smoothen
+        //                     animations which occure every other tick etc...
+
+        // Persistent exist map needs to be used to prevent error from dynamics not yet being spawned
+        const exists = new Map<number, Map<number, boolean>>();
+        for (; tick < this.timeline.length; ++tick) {
+            const snapshot = this.timeline[tick];
+            this.exec(time, api, state, snapshot, exists);
             if (snapshot.time > state.time + largestTickRate) break;
         }
 
