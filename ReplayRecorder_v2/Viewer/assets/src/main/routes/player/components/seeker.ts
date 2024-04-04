@@ -55,6 +55,7 @@ const style = Style(({ style }) => {
     display: flex;
     padding: 0 10px;
     user-select: none;
+    user-drag: none;
     `;
 
     const button = style.class`
@@ -167,7 +168,7 @@ export const seeker = Macro((() => {
             ${icons.pause}
         </button>
         <div rhu-id="time" class="${style.time}">1:00 / 2:00</div>
-        <div style="flex: 1"></div>
+        <div style="flex: 1; user-drag: none; user-select: none;"></div>
         <button rhu-id="live" class="${style.button}">
             <span rhu-id="dot" style="
                 width: 8px;

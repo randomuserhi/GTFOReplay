@@ -213,7 +213,7 @@ namespace Vanilla.Player {
                 }
 
                 if (player.Alive) {
-                    displacement += Vector3.down * 0.2f;
+                    displacement += Vector3.down * 0.45f;
                 }
 
                 Vector3 footCenter = (LFoot + RFoot) / 2.0f;
@@ -243,12 +243,12 @@ namespace Vanilla.Player {
             BitHelper.WriteHalf(displacement + height + offset + handOffset + RHand - pos, buffer);
 
             BitHelper.WriteHalf(displacement + LULeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + LLLeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + LFoot - pos, buffer);
+            BitHelper.WriteHalf(displacement + Vector3.up * 0.1f + LLLeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + Vector3.up * 0.2f + LFoot - pos, buffer);
 
             BitHelper.WriteHalf(displacement + RULeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + RLLeg - pos, buffer);
-            BitHelper.WriteHalf(displacement + RFoot - pos, buffer);
+            BitHelper.WriteHalf(displacement + Vector3.up * 0.1f + RLLeg - pos, buffer);
+            BitHelper.WriteHalf(displacement + Vector3.up * 0.2f + RFoot - pos, buffer);
 
             Transform back = anim.GetBoneTransform(HumanBodyBones.Chest);
             backpackPos = back.position;

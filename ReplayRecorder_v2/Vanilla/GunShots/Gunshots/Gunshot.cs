@@ -27,7 +27,7 @@ namespace Vanilla.Player.Gunshots {
                     footCenter.y = 0;
                     Vector3 posFlat = source.transform.position;
                     posFlat.y = 0;
-                    this.start = wieldedItem.GearPartHolder.transform.position + Vector3.down * 0.2f + (posFlat - footCenter);
+                    this.start = wieldedItem.GearPartHolder.transform.position + Vector3.down * 0.45f + (posFlat - footCenter);
                 } else {
                     this.start += Vector3.down * 0.2f;
                 }
