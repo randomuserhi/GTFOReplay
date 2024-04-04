@@ -172,8 +172,8 @@ export class Replay {
                 const start = snapshot.time - Math.min(largestTickRate, snapshot.time - typedTime);
                 const diff = snapshot.time - start;
                 const lerp = time < snapshot.time ? (time - start) / diff : 1;
-                if (lerp < 0 || lerp > 1) throw new Error(`Lerp should be between 0 and 1.`);
-                if (lerp === 0) continue;
+                if (lerp > 1) throw new Error(`Lerp should be between 0 and 1. ${lerp}`);
+                if (lerp <= 0) continue;
 
                 const exec = ModuleLoader.getDynamic(module as any).main.exec;
                 let updateTime = false;
