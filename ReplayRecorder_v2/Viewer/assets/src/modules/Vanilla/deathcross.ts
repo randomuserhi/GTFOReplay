@@ -25,7 +25,7 @@ export function createDeathCross(snapshot: ReplayApi, seed: number, dimension: n
     const deathCrosses = snapshot.getOrDefault("Vanilla.DeathCross", () => []);
     const r = xor(time + seed ^ 0x190104029);
     const deviation = r() * 300;
-    const shakeAmount = 5;
+    const shakeAmount = 1;
     const shake = new Array(10);
     for (let i = 0; i < 10; ++i) {
         shake[i] = [-(shakeAmount/2) + r() * shakeAmount, -(shakeAmount/2) + r() * shakeAmount];
@@ -47,26 +47,39 @@ class Model {
     constructor() {
         this.group = new Group();
 
-        const material = new MeshPhongMaterial({
+        const main = new MeshPhongMaterial({
             color: 0xff0000
+        });
+        const border = new MeshPhongMaterial({
+            color: 0xffffff
         });
 
         const gun = new Group();
 
-        const obj0 = new Mesh(box, material);
+        const obj0 = new Mesh(box, main);
         gun.add(obj0);
         obj0.scale.set(1.68736, 0.2, 0.41788);
         obj0.position.set(0, 0, 0);
 
-        const obj1 = new Mesh(box, material);
+        const obj1 = new Mesh(box, main);
         gun.add(obj1);
         obj1.scale.set(0.41788, 0.2, 1.68736);
         obj1.position.set(0, 0, 0);
 
+        const obj2 = new Mesh(box, border);
+        gun.add(obj2);
+        obj2.scale.set(1.996835, 0.1053439, 0.7320759);
+        obj2.position.set(0, -0.054, 0);
+
+        const obj3 = new Mesh(box, border);
+        gun.add(obj3);
+        obj3.scale.set(0.7320759, 0.1053439, 1.996835);
+        obj3.position.set(0, -0.0539999, 0);
+
         this.group.add(gun);
         gun.rotateY(Math.PI/4);
         gun.position.set(0, 0.2, 0);
-        gun.scale.set(0.6, 0.6, 0.6);
+        gun.scale.set(0.3, 0.6, 0.3);
     }
 }
 
@@ -130,7 +143,7 @@ ModuleLoader.registerRender("Vanilla.DeathCross", (name, api) => {
 
                 const mesh = models[i].group;
                 mesh.position.set(cross.position.x + dx, cross.position.y, cross.position.z + dy);
-                mesh.scale.set(scale, scale, scale);
+                mesh.scale.set(scale, 1, scale);
                 
                 mesh.visible = deathCrosses[i].dimension === renderer.get("Dimension") && visible;
 

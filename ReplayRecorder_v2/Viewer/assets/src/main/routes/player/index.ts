@@ -55,6 +55,7 @@ export interface player extends HTMLDivElement {
     pause: boolean;
     live: boolean;
     time: number;
+    timescale: number;
     lerp: number;
     prevTime: number;
     frameRate: number;
@@ -131,6 +132,7 @@ export const player = Macro((() => {
             this.pause = false;
             this.live = false;
             this.time = 0;
+            this.timescale = 1;
             this.lerp = 20; // TODO(randomuserhi): Should be adjustable for various tick rates
             this.seekLength = 1;
             this.prevTime = Date.now();
@@ -190,7 +192,7 @@ export const player = Macro((() => {
 
             if (!this.seeker.seeking) {
                 if (this.live) this.time += (length - this.time) * dt / 1000 * this.lerp; // For live replay -> lerp to latest time stamp
-                else if (!this.pause) this.time += dt;
+                else if (!this.pause) this.time += dt * this.timescale;
 
                 this.seekLength = length;
             } else {
