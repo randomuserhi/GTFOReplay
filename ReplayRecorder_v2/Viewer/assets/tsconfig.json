@@ -13,7 +13,8 @@
     "removeComments": true,
     "sourceMap": false,
     "paths": {
-      "@/*": ["./@types/*"]
+      "@/*": ["./@types/*"],
+      "troika-three-text": ["./@types/troika-three-text"]
     }
   },
   "include": ["./src/**/*"]

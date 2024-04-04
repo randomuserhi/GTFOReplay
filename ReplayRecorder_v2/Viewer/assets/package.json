@@ -8,7 +8,7 @@
     "transpile": "tsc",
     "copy-files": "copyfiles -u 1 -e src/**/*.ts src/**/* build/",
     "copy-assets": "copyfiles -u 1 assets/**/*.* build/",
-    "copy-js3party": "del-cli build/js3party/**/* && copyfiles -u 1 js3party/**/*.* build/js3party/ && copyfiles -u 2 node_modules/three/**/* build/js3party/three",
+    "copy-js3party": "del-cli build/js3party/**/* && copyfiles -u 1 js3party/**/*.* build/js3party/ && copyfiles -u 2 node_modules/three/**/* build/js3party/three && copyfiles -u 2 node_modules/troika-three-text/**/* build/js3party/troika-three-text && copyfiles -u 3 node_modules/troika-three-utils/src/**/* build/js3party/troika-three-utils && copyfiles -u 3 node_modules/troika-worker-utils/src/**/* build/js3party/troika-worker-utils && copyfiles -u 3 node_modules/webgl-sdf-generator/dist/**/* build/js3party/webgl-sdf-generator && copyfiles -u 3 node_modules/bidi-js/dist/**/* build/js3party/bidi-js",
     "build": "del-cli build/**/* !build/js3party && npm run transpile && npm run copy-files && npm run copy-assets",
     "offload": "del-cli -f ../electron/build/assets/**/* !../electron/build/assets/js3party && copyfiles -u 1 -e build/js3party/**/* build/**/*.* ../electron/build/assets/",
     "offload-js3party": "del-cli -f ../electron/build/assets/js3party/**/* && copyfiles -u 2 build/js3party/**/*.* ../electron/build/assets/js3party/"
@@ -20,7 +20,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/mathjax": "^0.0.39",
     "@types/three": "^0.161.2",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
@@ -31,6 +30,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "three": "^0.161.0"
+    "three": "^0.161.0",
+    "troika-three-text": "^0.49.0"
   }
 }

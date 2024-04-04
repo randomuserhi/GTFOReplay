@@ -19,7 +19,7 @@
 	 'unsafe-eval' is needed for RHU to work, shouldn't be a security issue since we don't eval any js
 	  externally from a server / user input. 
 	-->
-	<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';">
+	<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:;">
 
 	<title>GTFO Replay Viewer</title>
 
@@ -29,7 +29,12 @@
 			"three": "../js3party/three/build/three.module.js",
 			"three/examples/": "../js3party/three/examples/",
 			"@/rhu": "../js3party/rhu/rhu.js",
-			"@/rhu/": "../js3party/rhu/"
+			"@/rhu/": "../js3party/rhu/",
+			"troika-three-text": "../js3party/troika-three-text/src/index.js",
+			"troika-three-utils": "../js3party/troika-three-utils/index.js",
+			"troika-worker-utils": "../js3party/troika-worker-utils/index.js",
+			"bidi-js": "../js3party/bidi-js/bidi.min.mjs",
+			"webgl-sdf-generator": "../js3party/webgl-sdf-generator/webgl-sdf-generator.min.mjs"
 		}
 	}
 	</script>
