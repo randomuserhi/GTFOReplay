@@ -24,7 +24,7 @@ export declare namespace Timeline {
 
 export interface Snapshot {
     time: number;
-    typedTime: Map<string, number>;
+    typedTime: Map<string, Map<number, number>>;
     tick: number;
     data: Map<string, unknown>;
 }
@@ -165,27 +165,28 @@ export class Replay {
             for (const [type, collection] of snapshot.dynamics) {
                 const module = this.getModule(type);
 
-                // Get the last time we processed a tick of this type => This handles varied tick rates (E.g Animations happen every other tick)
-                const typedTime = state.typedTime.has(module.typename) ? state.typedTime.get(module.typename)! : state.time;
-
-                // Lerp dynamics -> pushing "start" to largestTickRate in the event of large breaks due to non-written snapshots for changes of 0.
-                const start = snapshot.time - Math.min(largestTickRate, snapshot.time - typedTime);
-                const diff = snapshot.time - start;
-                const lerp = time < snapshot.time ? (time - start) / diff : 1;
-                if (lerp > 1) throw new Error(`Lerp should be between 0 and 1. ${lerp}`);
-                if (lerp <= 0) continue;
+                
+                if (!state.typedTime.has(module.typename)) state.typedTime.set(module.typename, new Map());
+                const typedTime = state.typedTime.get(module.typename)!;
 
                 const exec = ModuleLoader.getDynamic(module as any).main.exec;
-                let updateTime = false;
                 for (const { id, data } of collection) {
+                    // Get the last time we processed a tick of this type => This handles varied tick rates (E.g Animations happen every other tick)
+                    const instanceTime = typedTime.has(id) ? typedTime.get(id)! : state.time;
+
+                    // Lerp dynamics -> pushing "start" to largestTickRate in the event of large breaks due to non-written snapshots for changes of 0.
+                    const start = snapshot.time - Math.min(largestTickRate, snapshot.time - instanceTime);
+                    const diff = snapshot.time - start;
+                    const lerp = time < snapshot.time ? (time - start) / diff : 1;
+                    if (lerp > 1) throw new Error(`Lerp should be between 0 and 1. ${lerp}`);
+                    if (lerp <= 0) continue;
+
                     const exist = exists.get(type)?.get(id);
                     if (exist === undefined || exist === true) {
                         exec(id, data as never, api, lerp);
-                        updateTime = true;
+                        typedTime.set(id, lerp === 1 ? snapshot.time : (instanceTime + lerp * diff));
                     }
                 }
-
-                if (updateTime) state.typedTime.set(module.typename, lerp === 1 ? snapshot.time : (typedTime + lerp * diff));
             }
         } 
         

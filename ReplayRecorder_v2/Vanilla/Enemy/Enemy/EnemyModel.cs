@@ -13,17 +13,12 @@ namespace Vanilla.Enemy {
         [ReplayInit]
         private static void Init() {
             leeway.Clear();
+            Replay.Configure<rEnemyModel>(ConfigManager.AnimationTickRate, ConfigManager.MaxWritesPerTick);
         }
 
         public override void Despawn(ByteBuffer buffer) {
             base.Despawn(buffer);
             leeway.Remove(enemy.GlobalID);
-        }
-
-        public static int tick = 0;
-        [ReplayTick]
-        private static void Update() {
-            tick = (tick + 1) % Mathf.Clamp(ConfigManager.AnimationTickRate, 1, int.MaxValue);
         }
 
         public static bool isValid(EnemyAgent enemy) {
@@ -76,7 +71,6 @@ namespace Vanilla.Enemy {
 
         public override bool IsDirty {
             get {
-                if (tick != 0) return false;
                 bool hasLeeway = leeway.ContainsKey(enemy.GlobalID);
 
                 bool isScreaming = false;

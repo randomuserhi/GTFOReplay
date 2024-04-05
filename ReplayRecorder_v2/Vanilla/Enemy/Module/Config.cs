@@ -17,6 +17,12 @@ namespace Vanilla.Enemy.BepInEx {
                 true,
                 "Disables animation recording for enemies simply moving. (Maintains stagger, attack animations, screams etc...). Helps to reduce replay file size.");
 
+            maxWritesPerTick = configFile.Bind(
+                $"{Module.Name}",
+                "maxWritesPerTick",
+                60,
+                "How many enemy models can be updated per tick. This is spread across animationTickRate, aka 30 enemies at 3 tick rate with cap of 10 will write 10 per tick. If enemies exceed cap, they are skipped but get priority next write.");
+
             animationTickRate = configFile.Bind(
                 $"{Module.Name}",
                 "animationTickRate",
@@ -53,6 +59,12 @@ namespace Vanilla.Enemy.BepInEx {
             set { noLocomotionAnimation.Value = value; }
         }
         private static ConfigEntry<bool> noLocomotionAnimation;
+
+        public static int MaxWritesPerTick {
+            get { return maxWritesPerTick.Value; }
+            set { maxWritesPerTick.Value = value; }
+        }
+        private static ConfigEntry<int> maxWritesPerTick;
 
         public static int AnimationTickRate {
             get { return animationTickRate.Value; }

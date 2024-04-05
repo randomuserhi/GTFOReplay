@@ -2,6 +2,7 @@
 using HarmonyLib;
 using ReplayRecorder.Snapshot;
 using SNetwork;
+using UnityEngine;
 
 namespace ReplayRecorder {
     [HarmonyPatch]
@@ -26,6 +27,13 @@ namespace ReplayRecorder {
         private static void LeaveHub() {
             APILogger.Debug($"Level ended!");
             SnapshotManager.OnExpeditionEnd();
+        }
+
+        [HarmonyPatch(typeof(PUI_LocalPlayerStatus), nameof(PUI_LocalPlayerStatus.UpdateBPM))]
+        [HarmonyWrapSafe]
+        [HarmonyPostfix]
+        public static void Initialize_Postfix(PUI_LocalPlayerStatus __instance) {
+            __instance.m_pulseText.text += $" | {Mathf.RoundToInt(SnapshotManager.GetInstance().tickTime)}ms";
         }
     }
 }

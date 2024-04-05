@@ -8,10 +8,9 @@ using UnityEngine;
 namespace Vanilla.Player {
     [ReplayData("Vanilla.Player.Model", "0.0.1")]
     internal class rPlayerModel : ReplayDynamic {
-        public static int tick = 0;
-        [ReplayTick]
-        private static void Update() {
-            tick = (tick + 1) % 2;
+        [ReplayInit]
+        private static void Init() {
+            Replay.Configure<rPlayerModel>(2);
         }
 
         public static bool isValid(PlayerAgent player) {
@@ -39,7 +38,64 @@ namespace Vanilla.Player {
             }
         }
 
-        public PlayerAgent player;
+        private PlayerAgent _player = default!;
+        public PlayerAgent player {
+            get => _player;
+            set {
+                _player = value;
+                Animator anim = _player.AnimatorBody;
+
+                T_head = anim.GetBoneTransform(HumanBodyBones.Head);
+                T_back = anim.GetBoneTransform(HumanBodyBones.Chest);
+
+                if (_player.IsLocallyOwned && !_player.Owner.IsBot) {
+                    T_LUArm = _player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+                    T_LLArm = _player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+                    T_LHand = _player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftHand);
+
+                    T_RUArm = _player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightUpperArm);
+                    T_RLArm = _player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightLowerArm);
+                    T_RHand = _player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightHand);
+                } else {
+                    T_LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+                    T_LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+                    T_LHand = anim.GetBoneTransform(HumanBodyBones.LeftHand);
+
+                    T_RUArm = anim.GetBoneTransform(HumanBodyBones.RightUpperArm);
+                    T_RLArm = anim.GetBoneTransform(HumanBodyBones.RightLowerArm);
+                    T_RHand = anim.GetBoneTransform(HumanBodyBones.RightHand);
+                }
+
+                T_LULeg = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+                T_LLLeg = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+                T_LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
+
+                T_RULeg = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+                T_RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+                T_RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot);
+            }
+        }
+
+        // https://stackoverflow.com/questions/60701187/avoid-cs8618-warning-when-initializing-mutable-non-nullable-property-with-argume
+        private Transform T_head = default!;
+
+        private Transform T_back = default!;
+
+        private Transform T_LUArm = default!;
+        private Transform T_LLArm = default!;
+        private Transform T_LHand = default!;
+
+        private Transform T_RUArm = default!;
+        private Transform T_RLArm = default!;
+        private Transform T_RHand = default!;
+
+        private Transform T_LULeg = default!;
+        private Transform T_LLLeg = default!;
+        private Transform T_LFoot = default!;
+
+        private Transform T_RULeg = default!;
+        private Transform T_RLLeg = default!;
+        private Transform T_RFoot = default!;
 
         public override bool Active {
             get {
@@ -52,33 +108,16 @@ namespace Vanilla.Player {
         public override int Id => player.GlobalID;
         public override bool IsDirty {
             get {
-                if (tick != 0) return false;
+                bool arms =
+                        LUArm != T_LUArm.position ||
+                        LLArm != T_LLArm.position ||
+                        LHand != T_LHand.position ||
 
-                Animator anim = player.AnimatorBody;
+                        RUArm != T_RUArm.position ||
+                        RLArm != T_RLArm.position ||
+                        RHand != T_RHand.position;
 
-                bool arms;
-                if (player.IsLocallyOwned && !player.Owner.IsBot) {
-                    arms =
-                        LUArm != player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftUpperArm).position ||
-                        LLArm != player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftLowerArm).position ||
-                        LHand != player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftHand).position ||
-
-                        RUArm != player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightUpperArm).position ||
-                        RLArm != player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightLowerArm).position ||
-                        RHand != player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightHand).position;
-                } else {
-                    arms =
-                        LUArm != anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position ||
-                        LLArm != anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position ||
-                        LHand != anim.GetBoneTransform(HumanBodyBones.LeftHand).position ||
-
-                        RUArm != anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position ||
-                        RLArm != anim.GetBoneTransform(HumanBodyBones.RightLowerArm).position ||
-                        RHand != anim.GetBoneTransform(HumanBodyBones.RightHand).position;
-                }
-
-                Transform backTransform = anim.GetBoneTransform(HumanBodyBones.Chest);
-                bool back = backpackPos != backTransform.position || backpackRot != backTransform.rotation;
+                bool back = backpackPos != T_back.position || backpackRot != T_back.rotation;
 
                 bool wielded = false;
                 bool fold = false;
@@ -91,17 +130,17 @@ namespace Vanilla.Player {
                     fold = foldTransform != null && foldRot != foldTransform.rotation;
                 }
 
-                return head != anim.GetBoneTransform(HumanBodyBones.Head).position ||
+                return head != T_head.position ||
 
                 arms || back || wielded || fold ||
 
-                LULeg != anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position ||
-                LLLeg != anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position ||
-                LFoot != anim.GetBoneTransform(HumanBodyBones.LeftFoot).position ||
+                LULeg != T_LULeg.position ||
+                LLLeg != T_LLLeg.position ||
+                LFoot != T_LFoot.position ||
 
-                RULeg != anim.GetBoneTransform(HumanBodyBones.RightUpperLeg).position ||
-                RLLeg != anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position ||
-                RFoot != anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                RULeg != T_RULeg.position ||
+                RLLeg != T_RLLeg.position ||
+                RFoot != T_RFoot.position;
             }
         }
 
@@ -179,15 +218,23 @@ namespace Vanilla.Player {
 
             ItemEquippable? wieldedItem = player.Inventory.WieldedItem;
 
-            head = anim.GetBoneTransform(HumanBodyBones.Head).position;
+            head = T_head.position;
 
-            LULeg = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position;
-            LLLeg = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position;
-            LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+            LULeg = T_LULeg.position;
+            LLLeg = T_LLLeg.position;
+            LFoot = T_LFoot.position;
 
-            RULeg = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg).position;
-            RLLeg = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
-            RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+            RULeg = T_RULeg.position;
+            RLLeg = T_RLLeg.position;
+            RFoot = T_RFoot.position;
+
+            LUArm = T_LUArm.position;
+            LLArm = T_LLArm.position;
+            LHand = T_LHand.position;
+
+            RUArm = T_RUArm.position;
+            RLArm = T_RLArm.position;
+            RHand = T_RHand.position;
 
             Vector3 displacement = Vector3.zero;
             Vector3 offset = Vector3.zero;
@@ -197,14 +244,6 @@ namespace Vanilla.Player {
             Vector3 upperLegOffset = Vector3.zero;
             Vector3 footOffset = Vector3.zero;
             if (player.IsLocallyOwned && !player.Owner.IsBot) {
-                LUArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
-                LLArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
-                LHand = player.AnimatorArms.GetBoneTransform(HumanBodyBones.LeftHand).position;
-
-                RUArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightUpperArm).position;
-                RLArm = player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightLowerArm).position;
-                RHand = player.AnimatorArms.GetBoneTransform(HumanBodyBones.RightHand).position;
-
                 offset = (anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position + anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position) / 2 - (LUArm + RUArm) / 2;
                 offset += player.transform.forward * 0.1f;
 
@@ -232,14 +271,6 @@ namespace Vanilla.Player {
                 Vector3 posFlat = pos;
                 posFlat.y = 0;
                 displacement += (posFlat - footCenter);
-            } else {
-                LUArm = anim.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
-                LLArm = anim.GetBoneTransform(HumanBodyBones.LeftLowerArm).position;
-                LHand = anim.GetBoneTransform(HumanBodyBones.LeftHand).position;
-
-                RUArm = anim.GetBoneTransform(HumanBodyBones.RightUpperArm).position;
-                RLArm = anim.GetBoneTransform(HumanBodyBones.RightLowerArm).position;
-                RHand = anim.GetBoneTransform(HumanBodyBones.RightHand).position;
             }
 
             Vector3 height = Vector3.down * 0.2f;
@@ -261,9 +292,8 @@ namespace Vanilla.Player {
             BitHelper.WriteHalf(displacement + lowerLegOffset + RLLeg - pos, buffer);
             BitHelper.WriteHalf(displacement + footOffset + RFoot - pos, buffer);
 
-            Transform back = anim.GetBoneTransform(HumanBodyBones.Chest);
-            backpackPos = back.position;
-            backpackRot = back.rotation;
+            backpackPos = T_back.position;
+            backpackRot = T_back.rotation;
 
             BitHelper.WriteHalf(displacement + height + backpackPos - pos, buffer);
             BitHelper.WriteHalf(backpackRot, buffer);

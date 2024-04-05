@@ -69,6 +69,8 @@ namespace ReplayRecorder {
         }
 
         [HideFromIl2Cpp]
+        public static void Configure<T>(int tickRate = 1, int max = int.MaxValue) where T : ReplayDynamic => SnapshotManager.GetInstance().Configure<T>(tickRate, max);
+        [HideFromIl2Cpp]
         public static void Trigger(ReplayEvent e) => SnapshotManager.GetInstance().Trigger(e);
         [HideFromIl2Cpp]
         public static void Trigger(ReplayHeader header) => SnapshotManager.GetInstance().Trigger(header);

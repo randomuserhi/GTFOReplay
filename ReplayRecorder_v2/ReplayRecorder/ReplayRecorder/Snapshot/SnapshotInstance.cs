@@ -6,6 +6,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
+using System.Diagnostics;
 using System.Net;
 using UnityEngine;
 
@@ -37,6 +38,18 @@ namespace ReplayRecorder.Snapshot {
         private class DynamicCollection {
             public Type Type { get; private set; }
             public ushort Id { get; private set; }
+
+            public int max = int.MaxValue;
+            private int cycle = 0;
+
+            public int tickRate = 1;
+            private int tick = 0;
+            public bool Tick {
+                get {
+                    tick = (tick + 1) % Mathf.Clamp(tickRate, 1, int.MaxValue);
+                    return tick == 0;
+                }
+            }
 
             internal bool isDirty = false;
             private int _nDirtyDynamics = 0;
@@ -98,6 +111,7 @@ namespace ReplayRecorder.Snapshot {
                     return;
                 }
                 isDirty = true;
+                handleRemoval = true;
                 mapOfDynamics[id].remove = true;
                 mapOfDynamics.Remove(id);
             }
@@ -109,8 +123,13 @@ namespace ReplayRecorder.Snapshot {
                 Remove(dynamic.Id);
             }
 
+            private bool handleRemoval = false;
             public void CheckRemoval() {
+                if (tick != 0) return;
                 if (NDirtyDynamics != 0) return;
+                if (!handleRemoval) return;
+                handleRemoval = false;
+
                 _dynamics.Clear();
                 for (int i = 0; i < dynamics.Count; i++) {
                     ReplayDynamic dynamic = dynamics[i];
@@ -124,32 +143,45 @@ namespace ReplayRecorder.Snapshot {
             }
 
             public bool Write(ByteBuffer buffer) {
+                if (tick != 0) return false;
                 if (NDirtyDynamics == 0) return false;
 
+                int target = Mathf.Min(NDirtyDynamics, max);
                 int numWritten = 0;
                 BitHelper.WriteBytes(Id, buffer);
-                BitHelper.WriteBytes(NDirtyDynamics, buffer);
-                _dynamics.Clear();
+                BitHelper.WriteBytes(target, buffer);
+                if (handleRemoval) _dynamics.Clear();
                 for (int i = 0; i < dynamics.Count; i++) {
-                    ReplayDynamic dynamic = dynamics[i];
+                    cycle = cycle % dynamics.Count;
+                    ReplayDynamic dynamic = dynamics[cycle++];
 
-                    if (dynamic.Active && (dynamic.IsDirty/* || !dynamic.init*/)) {
-                        if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
-                        ++numWritten;
-                        //dynamic.init = true;
-                        dynamic._Write(buffer);
-                        dynamic.Write(buffer);
+                    if (numWritten < target) {
+                        if (dynamic.Active && (dynamic.IsDirty/* || !dynamic.init*/)) {
+                            if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
+                            ++numWritten;
+                            //dynamic.init = true;
+                            dynamic._Write(buffer);
+                            dynamic.Write(buffer);
+                        }
                     }
-                    if (!dynamic.remove) {
+
+                    if (handleRemoval && !dynamic.remove) {
                         _dynamics.Add(dynamic);
                     }
                 }
-                List<ReplayDynamic> temp = dynamics;
-                dynamics = _dynamics;
-                _dynamics = temp;
+                if (handleRemoval) {
+                    List<ReplayDynamic> temp = dynamics;
+                    dynamics = _dynamics;
+                    _dynamics = temp;
+                }
+                handleRemoval = false;
 
-                if (numWritten != NDirtyDynamics) {
-                    throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection: {Type.FullName}({SnapshotManager.types[Type]})]: Number of written dynamics ({numWritten}) does not match dirty dynamics ({NDirtyDynamics}).");
+                if (numWritten != target) {
+                    throw new ReplayNumWrittenDoesntMatch($"[DynamicCollection: {Type.FullName}({SnapshotManager.types[Type]})]: Number of written dynamics ({numWritten}) does not match dirty dynamics ({target}).");
+                }
+
+                if (ConfigManager.Debug) {
+                    APILogger.Debug($"[DynamicCollection: {Type.FullName}({SnapshotManager.types[Type]})]: {numWritten} dynamics serialized.");
                 }
 
                 return true;
@@ -195,17 +227,17 @@ namespace ReplayRecorder.Snapshot {
                 // Serialize dynamic properties
                 int numWritten = 0;
                 IEnumerable<DynamicCollection> dirtyCollections = dynamics.Values.Where(collection => {
-                    collection.isDirty = true;
-                    return collection.NDirtyDynamics > 0;
+                    if (collection.Tick) {
+                        collection.isDirty = true;
+                        return collection.NDirtyDynamics > 0;
+                    }
+                    return false;
                 });
                 int nDirtyCollections = dirtyCollections.Count();
                 BitHelper.WriteBytes((ushort)nDirtyCollections, bs);
                 foreach (DynamicCollection collection in dynamics.Values) {
                     if (collection.Write(bs)) {
                         ++numWritten;
-                        if (ConfigManager.Debug) {
-                            APILogger.Debug($"[DynamicCollection: {collection.Type.FullName}({SnapshotManager.types[collection.Type]})]: {collection.NDirtyDynamics} dynamics serialized.");
-                        }
                     } else collection.CheckRemoval();
                 }
                 if (numWritten != nDirtyCollections) {
@@ -315,8 +347,16 @@ namespace ReplayRecorder.Snapshot {
         }
 
         [HideFromIl2Cpp]
+        internal void Configure<T>(int tickRate, int max) where T : ReplayDynamic {
+            Type dynType = typeof(T);
+            if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
+            state.dynamics[dynType].max = max;
+            state.dynamics[dynType].tickRate = tickRate;
+        }
+
+        [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
-            if (ConfigManager.Debug) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
+            if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             EventWrapper ev = new EventWrapper(Now, e);
             state.events.Add(ev);
         }
@@ -360,7 +400,10 @@ namespace ReplayRecorder.Snapshot {
             state.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
         }
 
+        private Stopwatch stopwatch = new Stopwatch();
+
         private void Tick() {
+            stopwatch.Restart();
             if (fs == null) throw new ReplaySnapshotNotInitialized();
 
             // Invoke tick processes
@@ -399,7 +442,12 @@ namespace ReplayRecorder.Snapshot {
                 _buffer = buffer;
                 buffer = temp;
             }
+            stopwatch.Stop();
+
+            const float alpha = 0.9f;
+            tickTime = alpha * tickTime + (1.0f - alpha) * stopwatch.ElapsedMilliseconds;
         }
+        internal float tickTime = 1.0f;
 
         internal void Dispose() {
             APILogger.Debug("Ending Replay...");

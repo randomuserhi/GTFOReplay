@@ -137,11 +137,12 @@ Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
                     [nickname.length]: 0xffffff,
                 };
             } else {
+                const infection = Math.round(stats.infection * 100);
                 const main = specification.equippable.get(backpack.slots[inventorySlotMap.get("main")!]);
                 const special = specification.equippable.get(backpack.slots[inventorySlotMap.get("special")!]);
                 const tool = specification.equippable.get(backpack.slots[inventorySlotMap.get("tool")!]);
                 this.tmp.text = `${nickname}
-Health: ${Math.round(stats.health * 100).toString().padStart(3)}%
+Health: ${Math.round(stats.health * 100).toString().padStart(3)}% ${(infection >= 10 ? `(${infection.toString().padStart(3)}%)` : "")}
 ${(main !== undefined && main.name !== undefined ? main.name : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
 ${(special !== undefined && special.name !== undefined ? special.name : "Special")}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
 ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
