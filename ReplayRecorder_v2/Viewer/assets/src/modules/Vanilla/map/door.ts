@@ -1,8 +1,8 @@
 import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import { Bezier } from "../bezier.js";
-import { DuplicateHeaderData, Dynamic, DynamicTransform } from "../replayrecorder.js";
+import * as BitHelper from "../../../replay/bithelper.js";
+import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { Bezier } from "../../bezier.js";
+import { DuplicateHeaderData, Dynamic, DynamicTransform } from "../../replayrecorder.js";
 
 export type DoorType = 
     "WeakDoor" |
@@ -62,7 +62,7 @@ export interface DoorStatusChange {
     status: DoorStatus;
 }
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Map.Doors": Map<number, Door>;
@@ -199,7 +199,7 @@ class DuplicateDoor extends Error {
 
 // --------------------------- RENDERING ---------------------------
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Doors": void;

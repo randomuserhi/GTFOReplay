@@ -135,7 +135,7 @@ namespace Vanilla.Map {
                 meshes[i] = surfaceBuffer[i].ToMesh();
                 meshes[i].RecalculateBounds();
             }
-            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 15).ToArray(); // Cull meshes that are too small
+            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 5).ToArray(); // Cull meshes that are too small
 
             /// This works since each dimension has Layer information containing:
             /// - spawn locations
@@ -308,6 +308,11 @@ namespace Vanilla.Map {
 
     [ReplayData("Vanilla.Map.Geometry.EOH", "0.0.1")]
     internal class rMapGeometryEOH : ReplayHeader {
+        [ReplayOnElevatorStop]
+        private static void Trigger() {
+            Replay.Trigger(new rMapGeometryEOH());
+        }
+
         public override void Write(ByteBuffer buffer) {
         }
     }

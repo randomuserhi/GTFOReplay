@@ -1,4 +1,5 @@
 ﻿using ChainedPuzzles;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -44,7 +45,15 @@ namespace Vanilla.Bioscan {
         private int id;
         public override int Id => id;
         public override bool Active => bioscan != null;
-        public override bool IsDirty => progress != oldProgress || r != oldR || g != oldG || b != oldB;
+        public override bool IsDirty {
+            get {
+                UpdatePlayersInScan();
+
+                return progress != oldProgress ||
+                    r != oldR || g != oldG || b != oldB ||
+                    slots[0] != oldSlots[0] || slots[1] != oldSlots[1] || slots[2] != oldSlots[2] || slots[3] != oldSlots[3];
+            }
+        }
 
         private byte progress => (byte)(bioscan.m_sync.GetCurrentState().progress * byte.MaxValue);
         private byte oldProgress = 0;
@@ -55,6 +64,19 @@ namespace Vanilla.Bioscan {
         private byte oldR = 0;
         private byte oldG = 0;
         private byte oldB = 0;
+
+        private bool[] slots = new bool[4] { false, false, false, false };
+        private bool[] oldSlots = new bool[4] { false, false, false, false };
+
+        private void UpdatePlayersInScan() {
+            slots[0] = false;
+            slots[1] = false;
+            slots[2] = false;
+            slots[3] = false;
+            foreach (PlayerAgent player in bioscan.PlayersOnScan) {
+                slots[player.PlayerSlotIndex] = true;
+            }
+        }
 
         public rBioscanStatus(CP_Bioscan_Core bioscan) {
             this.bioscan = bioscan;
@@ -68,10 +90,20 @@ namespace Vanilla.Bioscan {
             BitHelper.WriteBytes(g, buffer);
             BitHelper.WriteBytes(b, buffer);
 
+            BitHelper.WriteBytes(slots[0], buffer);
+            BitHelper.WriteBytes(slots[1], buffer);
+            BitHelper.WriteBytes(slots[2], buffer);
+            BitHelper.WriteBytes(slots[3], buffer);
+
             oldProgress = progress;
             oldR = r;
             oldG = g;
             oldB = b;
+
+            oldSlots[0] = slots[0];
+            oldSlots[1] = slots[1];
+            oldSlots[2] = slots[2];
+            oldSlots[3] = slots[3];
         }
 
         public override void Spawn(ByteBuffer buffer) {

@@ -14,7 +14,8 @@ namespace ReplayRecorder {
                 m.GetCustomAttribute<ReplayInit>() != null ||
                 m.GetCustomAttribute<ReplayTick>() != null ||
                 m.GetCustomAttribute<ReplayOnHeaderCompletion>() != null ||
-                m.GetCustomAttribute<ReplayOnGameplayStart>() != null)
+                m.GetCustomAttribute<ReplayOnGameplayStart>() != null ||
+                m.GetCustomAttribute<ReplayOnElevatorStop>() != null)
             ) {
                 if (method.IsStatic) {
                     string type = nameof(ReplayReset);
@@ -30,6 +31,9 @@ namespace ReplayRecorder {
                     } else if (method.GetCustomAttribute<ReplayTick>() != null) {
                         type = nameof(ReplayTick);
                         OnTick += (Action)method.CreateDelegate(typeof(Action));
+                    } else if (method.GetCustomAttribute<ReplayOnElevatorStop>() != null) {
+                        type = nameof(ReplayOnElevatorStop);
+                        OnElevatorStop += (Action)method.CreateDelegate(typeof(Action));
                     } else {
                         OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
                     }
@@ -98,6 +102,7 @@ namespace ReplayRecorder {
 
         public static Action? OnExpeditionEnd;
         public static Action? OnExpeditionStart;
+        public static Action? OnElevatorStop;
         public static Action? OnGameplayStart;
         public static Action? OnHeaderCompletion;
         public static Action? OnTick;

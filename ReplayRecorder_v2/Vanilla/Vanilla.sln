@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapGeometry", "MapGeometry\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enemy", "Enemy\Enemy.csproj", "{2CCA78E7-4D94-4B8D-8694-B52E311B3A30}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Doors", "Door\Doors.csproj", "{A4DEE5AF-2DB8-4B46-AC07-ADDB6B5822BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaticItems", "Door\StaticItems.csproj", "{A4DEE5AF-2DB8-4B46-AC07-ADDB6B5822BE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnemyTongue", "EnemyTongue\EnemyTongue.csproj", "{BF56EC43-F921-45B9-A446-D806F4921DC3}"
 EndProject

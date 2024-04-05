@@ -1,14 +1,14 @@
 import { BufferAttribute, BufferGeometry, DoubleSide, LineBasicMaterial, LineSegments, Mesh, MeshPhongMaterial } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
-import { HeaderApi, ModuleLoader } from "../../replay/moduleloader.js";
-import { Renderer } from "../../replay/renderer.js";
+import * as BitHelper from "../../../replay/bithelper.js";
+import { HeaderApi, ModuleLoader } from "../../../replay/moduleloader.js";
+import { Renderer } from "../../../replay/renderer.js";
 
 export interface MapGeometry {
     vertices: Float32Array;
     indices: number[];
 }
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Map.Geometry": Map<number, MapGeometry[]>;
@@ -45,7 +45,7 @@ ModuleLoader.registerHeader("Vanilla.Map.Geometry.EOH", "0.0.1", {
 
 // --------------------------- RENDERING ---------------------------
 
-declare module "../../replay/moduleloader.js" {
+declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Map": void;

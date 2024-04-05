@@ -1,6 +1,6 @@
 ﻿using BepInEx.Configuration;
 
-namespace Vanilla.Map.Doors.BepInEx {
+namespace Vanilla.Map.StaticItems.BepInEx {
     internal static partial class ConfigManager {
         static ConfigManager() {
             ConfigFile configFile = ReplayRecorder.BepInEx.ConfigManager.configFile;

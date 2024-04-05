@@ -3,7 +3,7 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using ReplayRecorder;
 
-namespace Vanilla.Map.Doors.BepInEx;
+namespace Vanilla.Map.StaticItems.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 [BepInDependency(ReplayRecorder.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]

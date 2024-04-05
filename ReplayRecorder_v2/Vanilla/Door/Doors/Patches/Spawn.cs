@@ -4,7 +4,7 @@ using ReplayRecorder;
 
 namespace Vanilla.Map.Doors.Patches {
     [HarmonyPatch]
-    internal class DoorMapPatches {
+    internal class Spawn {
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.Setup))]
         [HarmonyPostfix]
         private static void WeakDoor_Setup(LG_WeakDoor __instance, LG_Gate gate) {

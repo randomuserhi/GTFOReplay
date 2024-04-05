@@ -1,7 +1,6 @@
 ﻿using API;
 using HarmonyLib;
 using LevelGeneration;
-using ReplayRecorder;
 
 namespace Vanilla.Map.Patches {
     [HarmonyPatch]
@@ -34,13 +33,6 @@ namespace Vanilla.Map.Patches {
                     MapGeometryReplayManager.GenerateMapInfo(dimensions);
                 }
             }
-        }
-
-        // Write map data once all loaded (elevator ride stops when level is finished loading)
-        [HarmonyPatch(typeof(GS_ReadyToStopElevatorRide), nameof(GS_ReadyToStopElevatorRide.Enter))]
-        [HarmonyPostfix]
-        private static void StopElevatorRide() {
-            Replay.Trigger(new rMapGeometryEOH());
         }
     }
 }

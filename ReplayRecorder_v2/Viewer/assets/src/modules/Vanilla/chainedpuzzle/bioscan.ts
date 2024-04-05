@@ -27,6 +27,10 @@ declare module "../../../replay/moduleloader.js" {
                     r: number;
                     g: number;
                     b: number;
+                    slot0: boolean;
+                    slot1: boolean;
+                    slot2: boolean;
+                    slot3: boolean;
                 };
                 spawn: {
                     progress: number;
@@ -53,6 +57,10 @@ export interface BioscanStatus {
     id: number;
     color: number;
     progress: number;
+    slot0: boolean;
+    slot1: boolean;
+    slot2: boolean;
+    slot3: boolean;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Bioscan", "0.0.1", {
@@ -104,7 +112,11 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
                 progress: await BitHelper.readByte(data) / 255,
                 r: await BitHelper.readByte(data),
                 g: await BitHelper.readByte(data),
-                b: await BitHelper.readByte(data)
+                b: await BitHelper.readByte(data),
+                slot0: await BitHelper.readBool(data),
+                slot1: await BitHelper.readBool(data),
+                slot2: await BitHelper.readBool(data),
+                slot3: await BitHelper.readBool(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -115,6 +127,10 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
             const scan = scans.get(id)!;
             scan.color = (r << 16) | (g << 8) | b;
             scan.progress += (progress - scan.progress) * lerp;
+            scan.slot0 = data.slot0;
+            scan.slot1 = data.slot1;
+            scan.slot2 = data.slot2;
+            scan.slot3 = data.slot3;
         }
     },
     spawn: {
@@ -132,7 +148,10 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
             const { progress, r, g, b } = data;
             const color = (r << 16) | (g << 8) | b;
             if (scans.has(id)) throw new DuplicateBioscan(`Bioscan status of id '${id}' already exists.`);
-            scans.set(id, { id, progress, color });
+            scans.set(id, { 
+                id, progress, color, 
+                slot0: false, slot1: false, slot2: false, slot3: false 
+            });
         }
     },
     despawn: {

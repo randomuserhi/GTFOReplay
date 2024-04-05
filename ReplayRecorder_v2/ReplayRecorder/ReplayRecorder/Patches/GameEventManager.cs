@@ -29,6 +29,13 @@ namespace ReplayRecorder {
             SnapshotManager.OnExpeditionEnd();
         }
 
+        [HarmonyPatch(typeof(GS_ReadyToStopElevatorRide), nameof(GS_ReadyToStopElevatorRide.Enter))]
+        [HarmonyPostfix]
+        private static void StopElevatorRide() {
+            APILogger.Debug($"Stop elevator!");
+            Replay.OnElevatorStop?.Invoke();
+        }
+
         [HarmonyPatch(typeof(PUI_LocalPlayerStatus), nameof(PUI_LocalPlayerStatus.UpdateBPM))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]

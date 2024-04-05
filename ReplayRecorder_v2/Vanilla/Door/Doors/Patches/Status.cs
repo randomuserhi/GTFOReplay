@@ -4,7 +4,7 @@ using ReplayRecorder;
 
 namespace Vanilla.Map.Doors.Patches {
     [HarmonyPatch]
-    internal class DoorStatusPatches {
+    internal class Status {
         [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorStateChange))]
         [HarmonyPrefix]
         private static void Weak_DoorStateChange(LG_WeakDoor __instance, pDoorState state) {
