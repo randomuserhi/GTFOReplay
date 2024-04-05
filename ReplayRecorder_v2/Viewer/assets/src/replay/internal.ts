@@ -1,5 +1,5 @@
 import * as BitHelper from "./bithelper.js";
-import { ReplayApi, ModuleLoader, ModuleNotFound, NoExecFunc } from "./moduleloader.js";
+import { ModuleLoader, ModuleNotFound, NoExecFunc, ReplayApi } from "./moduleloader.js";
 import { Replay } from "./replay.js";
 import { ByteStream } from "./stream.js";
 

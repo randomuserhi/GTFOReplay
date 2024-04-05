@@ -126,9 +126,12 @@ class PlayerModel extends SkeletonModel {
             }
             
             const nickname = player.nickname.replace(/<\/?[^>]+(>|$)/g, "");
+            const health = `Health: ${Math.round(stats.health * 100).toString().padStart(3)}%`;
+            const infectionValue = Math.round(stats.infection * 100);
+            const infection = `${(infectionValue >= 10 ? ` (${infectionValue.toString().padStart(3)}%)` : "")}`;
             if (backpack === undefined) {
                 this.tmp.text = `${nickname}
-Health: ${Math.round(stats.health * 100).toString().padStart(3)}%
+${health}${infection}
 Main: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
 Special: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
 Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
@@ -137,18 +140,19 @@ Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
                     [nickname.length]: 0xffffff,
                 };
             } else {
-                const infection = Math.round(stats.infection * 100);
                 const main = specification.equippable.get(backpack.slots[inventorySlotMap.get("main")!]);
                 const special = specification.equippable.get(backpack.slots[inventorySlotMap.get("special")!]);
                 const tool = specification.equippable.get(backpack.slots[inventorySlotMap.get("tool")!]);
                 this.tmp.text = `${nickname}
-Health: ${Math.round(stats.health * 100).toString().padStart(3)}% ${(infection >= 10 ? `(${infection.toString().padStart(3)}%)` : "")}
+${health}${infection}
 ${(main !== undefined && main.name !== undefined ? main.name : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
 ${(special !== undefined && special.name !== undefined ? special.name : "Special")}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
 ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
                 this.tmp.colorRanges = {
                     0: playerColors[player.slot],
                     [nickname.length]: 0xffffff,
+                    [nickname.length + health.length + 1]: 0x03e8fc, 
+                    [nickname.length + health.length + 1 + infection.length]: 0xffffff
                 };
             }
             this.tmp.visible = true;

@@ -173,7 +173,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Model", "0.0.1", {
         }, 
         exec: (id, data, snapshot) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
-
+            
             if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' did not exist.`);
             skeletons.delete(id);
         }
