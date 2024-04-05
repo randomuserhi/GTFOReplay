@@ -135,7 +135,7 @@ namespace Vanilla.Map {
                 meshes[i] = surfaceBuffer[i].ToMesh();
                 meshes[i].RecalculateBounds();
             }
-            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 5).ToArray(); // Cull meshes that are too small
+            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 15).ToArray(); // Cull meshes that are too small
 
             /// This works since each dimension has Layer information containing:
             /// - spawn locations
@@ -177,13 +177,14 @@ namespace Vanilla.Map {
 
                             // For each ladder get the closest 2 surfaces to top and bottom and add them to the relevant list
                             for (int l = 0; l < area.m_courseNode.m_laddersInNode.Count; ++l) {
+                                // TODO(randomuserhi): Check ladder is climable by players not just enemies
                                 LG_Ladder ladder = area.m_courseNode.m_laddersInNode[l];
                                 Vector3 forward = ladder.transform.forward * 0.1f;
                                 Vector3 bottom = ladder.transform.position + forward;
                                 Vector3 top = bottom + ladder.transform.up * ladder.m_topFloor.transform.localPosition.y;
                                 int count = 0;
                                 foreach (Mesh mesh in meshes.OrderBy(m => (top - m.bounds.ClosestPoint(top)).sqrMagnitude)) {
-                                    if (++count > 1) break;
+                                    if (++count > 2) break;
                                     if (!relevantSurfaces.ContainsKey(mesh)) {
                                         relevantSurfaces.Add(mesh, new Surface(mesh));
                                     }
@@ -191,7 +192,7 @@ namespace Vanilla.Map {
 
                                 count = 0;
                                 foreach (Mesh mesh in meshes.OrderBy(m => (bottom - m.bounds.ClosestPoint(bottom)).sqrMagnitude)) {
-                                    if (++count > 1) break;
+                                    if (++count > 2) break;
                                     if (!relevantSurfaces.ContainsKey(mesh)) {
                                         relevantSurfaces.Add(mesh, new Surface(mesh));
                                     }

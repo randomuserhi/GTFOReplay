@@ -56,7 +56,11 @@ namespace ReplayRecorder.Snapshot {
             public int NDirtyDynamics {
                 get {
                     if (isDirty) {
-                        _nDirtyDynamics = dynamics.Count(d => d.Active && (d.IsDirty/* || !d.init*/));
+                        _nDirtyDynamics = dynamics.Count(d => {
+                            bool isDirty = d.Active && (d.IsDirty/* || !d.init*/);
+                            bool safeWrite = !d.remove || tickRate == 1;
+                            return safeWrite && isDirty;
+                        });
                         isDirty = false;
                     }
                     return _nDirtyDynamics;
