@@ -49,7 +49,7 @@ declare module "../../../replay/moduleloader.js" {
 
 const box = new BoxGeometry(1, 1, 1);
 const material = new MeshPhongMaterial({
-    color: 0x00ff00
+    color: 0x97aa94
 });
 
 class LadderModel {

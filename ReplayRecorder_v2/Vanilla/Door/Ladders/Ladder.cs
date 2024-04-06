@@ -49,6 +49,7 @@ namespace Vanilla.Map.Ladders {
                 BitHelper.WriteHalf(ladder.rotation, buffer);
                 BitHelper.WriteHalf(ladder.height, buffer);
             }
+            ladders.Clear();
         }
     }
 }

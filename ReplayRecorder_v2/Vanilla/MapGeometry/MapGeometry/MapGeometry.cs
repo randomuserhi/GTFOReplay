@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.AI;
 using Vanilla.Map.Patches;
 
+// NOTE(randomuserhi): change TO FROM to LowerIndex
+
 namespace Vanilla.Map {
     internal class Surface {
         public Mesh? mesh;
@@ -135,7 +137,7 @@ namespace Vanilla.Map {
                 meshes[i] = surfaceBuffer[i].ToMesh();
                 meshes[i].RecalculateBounds();
             }
-            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 15).ToArray(); // Cull meshes that are too small
+            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 10).ToArray(); // Cull meshes that are too small
 
             /// This works since each dimension has Layer information containing:
             /// - spawn locations
@@ -177,8 +179,9 @@ namespace Vanilla.Map {
 
                             // For each ladder get the closest 2 surfaces to top and bottom and add them to the relevant list
                             for (int l = 0; l < area.m_courseNode.m_laddersInNode.Count; ++l) {
-                                // TODO(randomuserhi): Check ladder is climable by players not just enemies
                                 LG_Ladder ladder = area.m_courseNode.m_laddersInNode[l];
+                                if (ladder.m_enemyClimbingOnly) continue;
+
                                 Vector3 forward = ladder.transform.forward * 0.1f;
                                 Vector3 bottom = ladder.transform.position + forward;
                                 Vector3 top = bottom + ladder.transform.up * ladder.m_topFloor.transform.localPosition.y;
