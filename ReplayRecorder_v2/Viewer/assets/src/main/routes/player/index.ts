@@ -4,6 +4,7 @@ import { Parser } from "../../../replay/parser.js";
 import { Renderer } from "../../../replay/renderer.js";
 import { Replay } from "../../../replay/replay.js";
 import { FileHandle } from "../../../replay/stream.js";
+import { scoreboard } from "./components/scoreboard.js";
 import { seeker } from "./components/seeker.js";
 
 const style = Style(({ style }) => {
@@ -34,11 +35,23 @@ const style = Style(({ style }) => {
     height: 50px;
     `;
 
+    const scoreboardMount = style.class`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    width: 80%;
+    max-width: 900px;
+    max-height: 500px;
+    transform: translate(-50%, -50%);
+    `;
+
     return {
         wrapper,
         body,
         canvas,
-        mount
+        mount,
+        scoreboardMount
     };
 });
 
@@ -46,6 +59,8 @@ export interface player extends HTMLDivElement {
     canvas: HTMLCanvasElement;
     mount: HTMLDivElement;
     seeker: seeker;
+    scoreboardMount: HTMLDivElement;
+    scoreboard: scoreboard;
     
     renderer: Renderer;
     
@@ -206,6 +221,8 @@ export const player = Macro((() => {
             if (snapshot !== undefined) {
                 const api = this.replay.api(snapshot);
                 this.renderer.render(dt / 1000, api);
+
+                this.scoreboard.update(api);
             }
 
             this.seeker.setValue(this.time / this.seekLength);
@@ -227,6 +244,9 @@ export const player = Macro((() => {
         <canvas class="${style.canvas}" rhu-id="canvas"></canvas>
         <div rhu-id="mount" class="${style.mount}" style="display: none">
             ${seeker`rhu-id="seeker"`}
+        </div>
+        <div rhu-id="scoreboardMount" class="${style.scoreboardMount}" style="display: none">
+            ${scoreboard`rhu-id="scoreboard"`}
         </div>
     </div>
     `, {

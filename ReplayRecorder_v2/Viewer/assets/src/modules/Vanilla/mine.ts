@@ -48,6 +48,7 @@ const mineTypemap: MineType[] = [
 export interface Mine extends DynamicTransform {
     type: MineType;
     owner: number;
+    snet: bigint;
     length: number;
 }
 
@@ -87,9 +88,12 @@ ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
         },
         exec: (id, data, snapshot) => {
             const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
+            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
         
             if (mines.has(id)) throw new DuplicateMine(`Mine of id '${id}' already exists.`);
-            mines.set(id, { id, ...data, length: 0 });
+            if (!players.has(data.owner)) throw new Error(`Mine owner, '${data.owner}', does not exist.`);
+            const player = players.get(data.owner)!;
+            mines.set(id, { id, ...data, snet: player.snet, length: 0 });
         }
     },
     despawn: {

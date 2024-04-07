@@ -2,6 +2,7 @@ import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { ByteStream } from "../../../replay/stream.js";
 import { Id } from "../../replayrecorder.js";
+import { StatTracker, getPlayerStats } from "../stattracker/stats.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -47,22 +48,36 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
     main: {
         parse, exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", () => new Map());
-    
+            
             if (!stats.has(id)) throw new PlayerStatsNotFound(`PlayerStats of id '${id}' was not found.`);
-            const player = stats.get(id)!;
-            player.health = data.health;
-            player.infection = data.infection;
-            player.primaryAmmo = data.primaryAmmo;
-            player.secondaryAmmo = data.secondaryAmmo;
-            player.toolAmmo = data.toolAmmo;
-            player.consumableAmmo = data.consumableAmmo;
-            player.resourceAmmo = data.resourceAmmo;
+            const status = stats.get(id)!;
+            status.health = data.health;
+            status.infection = data.infection;
+            status.primaryAmmo = data.primaryAmmo;
+            status.secondaryAmmo = data.secondaryAmmo;
+            status.toolAmmo = data.toolAmmo;
+            status.consumableAmmo = data.consumableAmmo;
+            status.resourceAmmo = data.resourceAmmo;
+
+            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            if (players.has(id)) {
+                const player = players.get(id)!;
+                const statTracker = snapshot.getOrDefault("Vanilla.StatTracker", StatTracker);
+
+                const playerStats = getPlayerStats(player.snet, statTracker);
+                if (playerStats._downedTimeStamp === undefined && status.health <= 0) {
+                    playerStats._downedTimeStamp = snapshot.time();
+                } else if (playerStats._downedTimeStamp !== undefined && status.health > 0) {
+                    playerStats.timeSpentDowned += snapshot.time() - playerStats._downedTimeStamp;
+                    playerStats._downedTimeStamp = undefined;
+                }
+            }
         }
     },
     spawn: {
         parse, exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", () => new Map());
-        
+
             if (stats.has(id)) throw new DuplicatePlayerStats(`PlayerStats of id '${id}' already exists.`);
             stats.set(id, { 
                 id, ...data

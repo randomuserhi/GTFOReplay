@@ -60,6 +60,7 @@ declare module "../../../replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Enemy": Map<number, Enemy>;
+            "Vanilla.Enemy.Cache": Map<number, Enemy>;
             "Vanilla.Enemy.Model": Map<number, Skeleton>;
             "Vanilla.Enemy.LimbCustom": Map<number, LimbCustom>;
         }
@@ -95,6 +96,7 @@ export interface Enemy extends DynamicTransform {
     head: boolean;
     hasSkeleton: boolean;
     type: number;
+    players: Set<bigint>;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -131,7 +133,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 id, ...data,
                 health: datablock.maxHealth,
                 state: "Default",
-                head: true
+                head: true,
+                players: new Set(),
             });
         }
     },
@@ -140,14 +143,25 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
         }, 
         exec: (id, data, snapshot) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            const cache = snapshot.getOrDefault("Vanilla.Enemy.Cache", () => new Map());
 
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
             const enemy = enemies.get(id)!;
             createDeathCross(snapshot, id, enemy.dimension, enemy.position);
             enemies.delete(id);
+
+            if (!cache.has(id)) {
+                cache.set(id, enemy);
+            }
         }
     }
 });
+
+ModuleLoader.registerTick((snapshot) => {
+    const cache = snapshot.getOrDefault("Vanilla.Enemy.Cache", () => new Map());
+    cache.clear();
+});
+
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Model", "0.0.1", {
     main: {

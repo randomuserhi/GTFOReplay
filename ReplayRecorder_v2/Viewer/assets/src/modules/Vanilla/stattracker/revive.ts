@@ -1,5 +1,6 @@
 import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { StatTracker, getPlayerStats, isPlayer } from "./stats.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -22,6 +23,17 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Revive", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        // TODO
+        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+        const statTracker = snapshot.getOrDefault("Vanilla.StatTracker", StatTracker);
+
+        const { source } = data;
+        if (isPlayer(source, players)) {
+            const player = players.get(source)!;
+            const sourceStats = getPlayerStats(player.snet, statTracker)!;
+
+            sourceStats.revives += 1;
+        } else {
+            throw new Error(`source ${source} was not a player.`);
+        }
     }
 });

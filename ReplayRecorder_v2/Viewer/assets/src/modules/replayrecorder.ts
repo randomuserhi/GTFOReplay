@@ -297,6 +297,11 @@ class CameraControls {
                 e.preventDefault();
                 (window as any).player.time += 5000;
                 break;
+
+            case 9:
+                e.preventDefault();
+                (window as any).player.scoreboardMount.style.display = "block";
+                break;
             }
         });
         window.addEventListener("keyup", (e) => {
@@ -324,6 +329,11 @@ class CameraControls {
             case 83:
                 e.preventDefault();
                 this.backward = false;
+                break;
+
+            case 9:
+                e.preventDefault();
+                (window as any).player.scoreboardMount.style.display = "none";
                 break;
             }
         });

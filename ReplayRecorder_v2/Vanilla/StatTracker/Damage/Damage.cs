@@ -5,6 +5,7 @@ using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using SNetwork;
+using UnityEngine;
 using Vanilla.Mine;
 using Vanilla.Specification;
 
@@ -34,15 +35,16 @@ namespace Vanilla.StatTracker.Damage {
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveFallDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_PlayerReceiveFallDamage(Dam_PlayerDamageBase __instance, pMiniDamageData data) {
             if (!SNet.IsMaster) return;
 
-            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Fall, data.damage.Get(__instance.HealthMax)));
+            float damage = data.damage.Get(__instance.HealthMax);
+            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Fall, Mathf.Min(__instance.Health, damage)));
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveTentacleAttackDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_PlayerReceiveTentacleAttackDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
             if (!SNet.IsMaster) return;
 
@@ -51,11 +53,11 @@ namespace Vanilla.StatTracker.Damage {
                 damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, damage);
             }
             damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.MeleeResistance, damage);
-            Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Tongue, damage));
+            Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Tongue, Mathf.Min(__instance.Health, damage)));
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveShooterProjectileDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_PlayerReceiveShooterProjectileDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
             if (!SNet.IsMaster) return;
 
@@ -64,29 +66,31 @@ namespace Vanilla.StatTracker.Damage {
                 damage = AgentModifierManager.ApplyModifier(source, AgentModifier.StandardWeaponDamage, damage);
             }
             damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.ProjectileResistance, damage);
-            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Projectile, damage));
+            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Projectile, Mathf.Min(__instance.Health, damage)));
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveExplosionDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_PlayerReceiveExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
 
-            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Explosive, data.damage.Get(__instance.HealthMax)));
+            float damage = data.damage.Get(__instance.HealthMax);
+            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveMeleeDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_PlayerReceiveMeleeDamage(Dam_PlayerDamageBase __instance, pFullDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent source)) {
-                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax))));
+                float damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax));
+                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage)));
             }
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveBulletDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_PlayerReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
 
@@ -94,39 +98,39 @@ namespace Vanilla.StatTracker.Damage {
                 ushort gear = 0;
                 PlayerAgent? player = source.TryCast<PlayerAgent>();
                 if (player != null) {
-                    // Get weapon used
-                    ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                    if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                        gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                    if (!sentry) {
+                        // Get weapon used
+                        ItemEquippable currentEquipped = player.Inventory.WieldedItem;
+                        if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                            gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                        }
+                    } else {
+                        // Get sentry used
+                        gear = GTFOSpecification.GetGear(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass).GearIDRange.PublicGearName);
                     }
                 }
-                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, data.damage.Get(__instance.HealthMax), gear, sentry));
+                float damage = data.damage.Get(__instance.HealthMax);
+                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
             }
         }
 
         [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveExplosionDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_EnemyReceiveExplosionDamage(Dam_EnemyDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (MineManager.currentDetonateEvent != null) {
-                Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, data.damage.Get(__instance.HealthMax)));
+                float damage = data.damage.Get(__instance.HealthMax);
+                float stagger = damage;
+                float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
+                if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
+                Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage), 0, false, Mathf.Min(remainingStaggerDamage, stagger)));
             }
         }
 
         [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveMeleeDamage))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void Postfix_EnemyReceiveMeleeDamage(Dam_EnemyDamageBase __instance, pFullDamageData data) {
-            if (!SNet.IsMaster) return;
-
-            if (data.source.TryGet(out Agent source)) {
-                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax))));
-            }
-        }
-
-        [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveBulletDamage))]
-        [HarmonyPostfix]
-        public static void Postfix_EnemyReceiveBulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent source)) {
@@ -139,8 +143,40 @@ namespace Vanilla.StatTracker.Damage {
                         gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
                     }
                 }
+
+                float damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax));
+                float stagger = damage * data.staggerMulti.Get(10f);
+                float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
+                if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
+                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage), gear, false, Mathf.Min(remainingStaggerDamage, stagger)));
+            }
+        }
+
+        [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveBulletDamage))]
+        [HarmonyPrefix]
+        public static void Postfix_EnemyReceiveBulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data) {
+            if (!SNet.IsMaster) return;
+
+            if (data.source.TryGet(out Agent source)) {
+                ushort gear = 0;
+                PlayerAgent? player = source.TryCast<PlayerAgent>();
+                if (player != null) {
+                    if (!sentry) {
+                        // Get weapon used
+                        ItemEquippable currentEquipped = player.Inventory.WieldedItem;
+                        if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                            gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                        }
+                    } else {
+                        // Get sentry used
+                        gear = GTFOSpecification.GetGear(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass).GearIDRange.PublicGearName);
+                    }
+                }
                 float damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.ProjectileResistance, data.damage.Get(__instance.HealthMax));
-                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, damage, gear, sentry, data.staggerMulti.Get(10f)));
+                float stagger = damage * data.staggerMulti.Get(10f);
+                float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
+                if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
+                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry, Mathf.Min(remainingStaggerDamage, stagger)));
             }
         }
     }
@@ -165,7 +201,7 @@ namespace Vanilla.StatTracker.Damage {
         private bool sentry;
 
         private float damage;
-        private float staggerMulti;
+        private float staggerDamage;
 
         public rDamage(Agent target, Agent source, Type type, float damage, ushort gear = 0, bool sentry = false, float staggerMulti = 0) {
             this.type = type;
@@ -173,7 +209,7 @@ namespace Vanilla.StatTracker.Damage {
             this.target = target.GlobalID;
             this.gear = gear;
             this.damage = damage;
-            this.staggerMulti = staggerMulti;
+            this.staggerDamage = staggerMulti;
             this.sentry = sentry;
         }
 
@@ -183,7 +219,7 @@ namespace Vanilla.StatTracker.Damage {
             this.target = target.GlobalID;
             this.gear = gear;
             this.damage = damage;
-            this.staggerMulti = staggerMulti;
+            this.staggerDamage = staggerMulti;
             this.sentry = sentry;
         }
 
@@ -193,7 +229,7 @@ namespace Vanilla.StatTracker.Damage {
             this.target = target;
             this.gear = gear;
             this.damage = damage;
-            this.staggerMulti = staggerMulti;
+            this.staggerDamage = staggerMulti;
             this.sentry = sentry;
         }
 
@@ -204,7 +240,7 @@ namespace Vanilla.StatTracker.Damage {
             BitHelper.WriteHalf(damage, buffer);
             BitHelper.WriteBytes(gear, buffer);
             BitHelper.WriteBytes(sentry, buffer);
-            BitHelper.WriteHalf(staggerMulti, buffer);
+            BitHelper.WriteHalf(staggerDamage, buffer);
         }
     }
 }
