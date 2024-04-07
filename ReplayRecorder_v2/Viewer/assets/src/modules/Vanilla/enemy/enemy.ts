@@ -5,6 +5,7 @@ import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
 import { createDeathCross } from "../deathcross.js";
 import { Skeleton, SkeletonModel } from "../humanmodel.js";
+import { specification } from "../specification.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -17,6 +18,7 @@ declare module "../../../replay/moduleloader.js" {
                     rotation: Pod.Quaternion;
                     animFlags: number;
                     hasSkeleton: boolean;
+                    type: number;
                 };
                 despawn: void;
             };
@@ -92,6 +94,7 @@ export interface Enemy extends DynamicTransform {
     state: EnemyState;
     head: boolean;
     hasSkeleton: boolean;
+    type: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -114,6 +117,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 ...spawn,
                 animFlags: await BitHelper.readUShort(data),
                 hasSkeleton: await BitHelper.readBool(data),
+                type: await BitHelper.readUShort(data)
             };
             return result;
         },
@@ -121,9 +125,11 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
         
             if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
+            const datablock = specification.enemies.get(data.type);
+            if (datablock === undefined) throw new Error(`Could not find enemy datablock of type '${data.type}'.`);
             enemies.set(id, { 
                 id, ...data,
-                health: 0, // TODO(randomuserhi)
+                health: datablock.maxHealth,
                 state: "Default",
                 head: true
             });

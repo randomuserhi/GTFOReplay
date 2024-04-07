@@ -74,6 +74,9 @@ export class Replay {
             time(): number {
                 return state.time;
             },
+            tick(): number {
+                return state.tick;
+            },
             getOrDefault(typename: string, def: () => any): any {
                 if (typename === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
                 if (!state.data.has(typename)) state.data.set(typename, def());
@@ -113,7 +116,8 @@ export class Replay {
         for (const { type, data, delta } of snapshot.events) {
             const module = this.typemap.get(type);
             if (module === undefined) throw new UnknownModuleType(`Unknown module type '${type}'.`);
-            const runEvent = time >= snapshot.time - delta;
+            const timeOfEvent = snapshot.time - delta;
+            const runEvent = time >= timeOfEvent;
             if (module.typename === "ReplayRecorder.Spawn" || module.typename === "ReplayRecorder.Despawn") {
                 // Special case for spawn events
                 const isSpawn = module.typename === "ReplayRecorder.Spawn";
@@ -122,7 +126,7 @@ export class Replay {
                 if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
 
                 if (runEvent) {
-                    exec(data, this, api);
+                    exec(data, this, { ...api, time() { return timeOfEvent; }, tick() { return snapshot.tick; } });
                     if (isSpawn || isDespawn) {
                         const dynamicType: number = (data as any).type;
                         const id = (data as any).id;
@@ -158,6 +162,18 @@ export class Replay {
             }
         }
 
+        // Lerp state time
+        const diff = snapshot.time - state.time;
+        const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
+        let currentTime = state.time;
+        let currentTick = state.tick;
+        if (lerp > 0) {
+            if (lerp > 1) throw new Error(`Lerp should be less than 1.`);
+            currentTick = lerp === 1 ? snapshot.tick : state.tick;
+            currentTime = lerp === 1 ? snapshot.time : (state.time + lerp * diff);
+        }
+        const currentApi: ReplayApi = { ...api, time() { return currentTime; }, tick() { return currentTick; } };
+
         // NOTE(randomuserhi): If the difference in time between current state and snapshot we are lerping to
         //                     is greater than the longest possible time taken between ticks, then no dynamics
         //                     have moved as they are recorded on each tick.
@@ -165,7 +181,6 @@ export class Replay {
             for (const [type, collection] of snapshot.dynamics) {
                 const module = this.getModule(type);
 
-                
                 if (!state.typedTime.has(module.typename)) state.typedTime.set(module.typename, new Map());
                 const typedTime = state.typedTime.get(module.typename)!;
 
@@ -183,25 +198,19 @@ export class Replay {
 
                     const exist = exists.get(type)?.get(id);
                     if (exist === undefined || exist === true) {
-                        exec(id, data as never, api, lerp);
+                        exec(id, data as never, currentApi, lerp);
                         typedTime.set(id, lerp === 1 ? snapshot.time : (instanceTime + lerp * diff));
                     }
                 }
             }
-        } 
-        
+        }
+
+        state.tick = currentTick;
+        state.time = currentTime;
+
         for (const tick of ModuleLoader.library.tick) {
             tick(api);
         }
-
-        // Lerp state time
-        const diff = snapshot.time - state.time;
-        const lerp = time < snapshot.time ? (time - state.time) / diff : 1;
-        if (lerp <= 0) return;
-
-        if (lerp > 1) throw new Error(`Lerp should be less than 1.`);
-        state.tick = lerp === 1 ? snapshot.tick : state.tick;
-        state.time = lerp === 1 ? snapshot.time : (state.time + lerp * diff);
     }
 
     private getNearestSnapshot(time: number): Snapshot {

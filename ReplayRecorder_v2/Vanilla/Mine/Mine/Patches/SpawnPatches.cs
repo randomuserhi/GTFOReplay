@@ -48,40 +48,46 @@ namespace Vanilla.Mine.Patches {
             player = null;
         }
 
+        // TODO(randomuserhi): Test if this is accurate on client
         [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedTrigger))]
         [HarmonyPrefix]
         private static void Prefix_SyncedTrigger(MineDeployerInstance __instance) {
+            rMine mine = Replay.Get<rMine>(__instance.gameObject.GetInstanceID());
+
             if (player != null) {
                 APILogger.Debug($"Player triggered mine: {player.PlayerName}");
-                Replay.Trigger(new rMineDetonate(__instance, player.GlobalID, true));
+                MineManager.currentDetonateEvent = new rMineDetonate(__instance, mine.owner.GlobalID);
+                Replay.Trigger(MineManager.currentDetonateEvent);
                 return;
             }
-
-            rMine mine = Replay.Get<rMine>(__instance.gameObject.GetInstanceID());
 
             // Attempt to get player from packet
             if (SNet.Replication.TryGetLastSender(out SNet_Player sender)) {
                 APILogger.Debug($"Player triggered mine: {sender.NickName}");
-                Replay.Trigger(new rMineDetonate(__instance, sender.PlayerAgent.Cast<PlayerAgent>().GlobalID, true));
+                MineManager.currentDetonateEvent = new rMineDetonate(__instance, sender.PlayerAgent.Cast<PlayerAgent>().GlobalID, true);
+                Replay.Trigger(MineManager.currentDetonateEvent);
                 return;
             } else {
                 APILogger.Warn($"Failed to get the last packet sender for synced mine trigger.");
             }
 
             APILogger.Debug($"Mine triggered without player.");
-            Replay.Trigger(new rMineDetonate(__instance, mine.owner.GlobalID));
+            MineManager.currentDetonateEvent = new rMineDetonate(__instance, mine.owner.GlobalID);
+            Replay.Trigger(MineManager.currentDetonateEvent);
             return;
         }
 
         [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
         [HarmonyPostfix]
         private static void Postfix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
+            MineManager.currentDetonateEvent = null;
             Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
         }
 
         [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
         [HarmonyPostfix]
         private static void Postfix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
+            MineManager.currentDetonateEvent = null;
             Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
         }
     }

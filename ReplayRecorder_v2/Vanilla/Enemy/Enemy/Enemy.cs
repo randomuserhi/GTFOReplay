@@ -2,6 +2,7 @@
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using Vanilla.Specification;
 
 namespace Vanilla.Enemy {
     internal static class EnemyReplayManager {
@@ -37,7 +38,7 @@ namespace Vanilla.Enemy {
             base.Spawn(buffer);
             BitHelper.WriteBytes((ushort)agent.Locomotion.AnimHandleName, buffer);
             BitHelper.WriteBytes(hasSkeleton, buffer);
-            // TODO(randomuserhi): Enemy Type (agent.EnemyData.persistentID)
+            BitHelper.WriteBytes(GTFOSpecification.GetEnemyType(agent.EnemyData.persistentID), buffer);
         }
     }
 }

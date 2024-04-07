@@ -27,15 +27,12 @@ declare module "../../replay/moduleloader.js" {
         }
 
         interface Events {
-            "Vanilla.Mine.Detonate": {
-                id: number,
-                trigger: number,
-                shot: boolean
-            };
+            "Vanilla.Mine.Detonate": MineDetonate;
         }
 
         interface Data {
             "Vanilla.Mine": Map<number, Mine>
+            "Vanilla.Mine.Detonate": Map<number, MineDetonate>
         }
     }
 }
@@ -52,6 +49,12 @@ export interface Mine extends DynamicTransform {
     type: MineType;
     owner: number;
     length: number;
+}
+
+export interface MineDetonate {
+    id: number;
+    trigger: number;
+    shot: boolean;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
@@ -109,8 +112,12 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
             shot: await BitHelper.readBool(bytes)
         };
     },
-    exec: async () => {
-        // TODO(randomuserhi) -> explosion effect?
+    exec: async (data, snapshot) => {
+        const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
+        
+        const { id } = data;
+        if (detonations.has(id)) throw new DuplicateMine(`Mine Detonation of id '${id}' already exist.`);
+        detonations.set(id, { ...data });
     }
 });
 

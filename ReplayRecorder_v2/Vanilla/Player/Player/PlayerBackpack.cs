@@ -12,6 +12,7 @@ namespace Vanilla.Player {
         int id;
         public override int Id => id;
 
+        // NOTE(randomuserhi): Throws an error when a player joins -> I don't know how fatal this is...
         private ushort GetSlotId(InventorySlot slot) {
             if (PlayerBackpackManager.TryGetItem(agent.Owner, slot, out BackpackItem bpItem)) {
                 if (bpItem.Instance != null) {

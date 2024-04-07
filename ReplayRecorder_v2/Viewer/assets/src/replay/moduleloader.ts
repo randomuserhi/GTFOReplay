@@ -36,6 +36,7 @@ export interface ModuleDesc<T extends Typemap.AllNames | string & {} = string> {
 
 export interface ReplayApi {
     time(): number;
+    tick(): number;
     getOrDefault<T extends keyof Typemap.Data>(typename: T, def: () => Typemap.Data[T]): Typemap.Data[T];
     get<T extends keyof Typemap.Data>(typename: T): Typemap.Data[T] | undefined;
     set<T extends keyof Typemap.Data>(typename: T, value: Typemap.Data[T]): void;

@@ -6,6 +6,10 @@ using ReplayRecorder.Core;
 using UnityEngine;
 
 namespace Vanilla.Mine {
+    public class MineManager {
+        public static rMineDetonate? currentDetonateEvent = null;
+    }
+
     internal struct MineTransform : IReplayTransform {
         private MineDeployerInstance mine;
         private MineDeployerInstance_Detect_Laser? laser;
@@ -22,7 +26,7 @@ namespace Vanilla.Mine {
     }
 
     [ReplayData("Vanilla.Mine", "0.0.1")]
-    internal class rMine : DynamicTransform {
+    public class rMine : DynamicTransform {
         public enum Type {
             Explosive,
             Cfoam
@@ -66,7 +70,7 @@ namespace Vanilla.Mine {
     }
 
     [ReplayData("Vanilla.Mine.Detonate", "0.0.1")]
-    internal class rMineDetonate : Id {
+    public class rMineDetonate : Id {
         private ushort trigger;
         private bool shot;
         public rMineDetonate(MineDeployerInstance mine, ushort trigger, bool shot = false) : base(mine.gameObject.GetInstanceID()) {

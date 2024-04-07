@@ -48,6 +48,11 @@ export interface Specification {
         name?: string;
         model(): Model;
     }>;
+    enemies: Map<number, {
+        id: number;
+        name?: string;
+        maxHealth: number;
+    }>;
 }
 
 const _equippable = [{
@@ -272,6 +277,113 @@ const _equippable = [{
     model: () => new HelRifle()
 }];
 
+const _enemies = [{
+    id: 0,
+    name: "Unknown",
+    maxHealth: Infinity
+}, {
+    id: 1,
+    name: "Scout",
+    maxHealth: 42
+}, {
+    id: 2,
+    name: "Shadow Scout",
+    maxHealth: 42
+}, {
+    id: 3,
+    name: "Charger Scout",
+    maxHealth: 60
+}, {
+    id: 4,
+    name: "Shadow",
+    maxHealth: 20
+}, {
+    id: 5,
+    name: "Big Shadow",
+    maxHealth: 20
+}, {
+    id: 6,
+    name: "Baby",
+    maxHealth: 5
+}, {
+    id: 7,
+    name: "Striker",
+    maxHealth: 20
+}, {
+    id: 8,
+    name: "Big Striker",
+    maxHealth: 120
+}, {
+    id: 9,
+    name: "Shooter",
+    maxHealth: 30
+}, {
+    id: 10,
+    name: "Big Shooter",
+    maxHealth: 150
+}, {
+    id: 11,
+    name: "Hybrid",
+    maxHealth: 150
+}, {
+    id: 12,
+    name: "Charger",
+    maxHealth: 30
+}, {
+    id: 13,
+    name: "Big Charger",
+    maxHealth: 120
+}, {
+    id: 14,
+    name: "Tank",
+    maxHealth: 1000
+}, {
+    id: 15,
+    name: "Mother",
+    maxHealth: 1000
+}, {
+    id: 16,
+    name: "Big Mother",
+    maxHealth: 2500
+}, {
+    id: 17,
+    name: "Snatcher",
+    maxHealth: 225
+}, {
+    id: 18,
+    name: "Immortal Tank",
+    maxHealth: Infinity
+}, {
+    id: 19,
+    name: "Flyer",
+    maxHealth: 16.2
+}, {
+    id: 20,
+    name: "Big Flyer",
+    maxHealth: 150
+}, {
+    id: 21,
+    name: "Squid",
+    maxHealth: 6000
+}, {
+    id: 22,
+    name: "Squid Boss",
+    maxHealth: 6000
+}, {
+    id: 23,
+    name: "Nightmare Striker",
+    maxHealth: 37
+}, {
+    id: 24,
+    name: "Nightmare Shooter",
+    maxHealth: 18
+}, {
+    id: 25,
+    name: "Nightmare Scout",
+    maxHealth: 161
+}];
+
 export const specification: Specification = {
-    equippable: new Map(_equippable.map(g => [g.id, g]))
+    equippable: new Map(_equippable.map(g => [g.id, g])),
+    enemies: new Map(_enemies.map(e => [e.id, e]))
 };
