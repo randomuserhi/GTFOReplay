@@ -540,5 +540,5 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
 });
 
 ModuleLoader.registerDispose((renderer) => {
-    renderer.get("CameraControls")!.dispose();
+    renderer.get("CameraControls")?.dispose();
 });
