@@ -244,7 +244,7 @@ class CameraControls {
             this.speed = Math.clamp(this.speed, 1, 1000);
         };
         canvas.addEventListener("wheel", this.wheel);
-        this.keydown = (e) => {
+        this.keyup = (e) => {
             switch (e.keyCode) {
             case 32:
                 e.preventDefault();
@@ -277,8 +277,7 @@ class CameraControls {
                 break;
             }
         };
-        window.addEventListener("keydown", this.keydown);
-        this.keyup = (e: KeyboardEvent) => {
+        this.keydown = (e: KeyboardEvent) => {
             switch (e.keyCode) {
             case 70:
                 e.preventDefault();
@@ -350,6 +349,7 @@ class CameraControls {
                 break;
             }
         };
+        window.addEventListener("keydown", this.keydown);
         window.addEventListener("keyup", this.keyup);
         this.mousedown = (e: MouseEvent) => {
             e.preventDefault();
