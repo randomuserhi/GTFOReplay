@@ -43,6 +43,9 @@ import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
 
 export interface Specification {
+    player: {
+        maxHealth: number
+    }
     equippable: Map<number, {
         id: number;
         name?: string;
@@ -384,6 +387,9 @@ const _enemies = [{
 }];
 
 export const specification: Specification = {
+    player: {
+        maxHealth: 25
+    },
     equippable: new Map(_equippable.map(g => [g.id, g])),
     enemies: new Map(_enemies.map(e => [e.id, e]))
 };

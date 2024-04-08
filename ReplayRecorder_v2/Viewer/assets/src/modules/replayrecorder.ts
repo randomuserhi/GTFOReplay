@@ -235,6 +235,7 @@ class CameraControls {
         window.addEventListener("keydown", (e) => {
             switch (e.keyCode) {
             case 70:
+                console.log("pause?");
                 e.preventDefault();
                 (window as any).player.pause = !(window as any).player.pause;
                 (window as any).player.seeker.setPause((window as any).player.pause);

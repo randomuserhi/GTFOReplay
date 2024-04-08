@@ -1,5 +1,6 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
+import { specification } from "../../../../modules/Vanilla/specification.js";
 import { StatTracker, getPlayerStats } from "../../../../modules/Vanilla/stattracker/stats.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
 
@@ -81,7 +82,7 @@ const medalRequirements: MedalRequirement[] = [
                     title: "MVP",
                     icon: "./medals/MVP.png",
                     text: /*html*/`
-                        <div>Deal the most damage</div>
+                        <div>Deal the most damage<br/>(excluding sentry / mines)</div>
                         <div><span style="color: #e9bc29">${(maxDamage).toFixed(2)}</span> damage dealt</div>
                     `
                 });
@@ -134,8 +135,8 @@ const medalRequirements: MedalRequirement[] = [
                     title: "Imposter",
                     icon: "./medals/imposter.png",
                     text: /*html*/`
-                        <div>Most damage dealt to teammates (more than 50 damage)</div>
-                        <div><span style="color: #e9bc29">${(maxDamage).toFixed(2)}</span> damage dealt</div>
+                        <div>Most damage dealt to teammates (more than 50% damage)</div>
+                        <div><span style="color: #e9bc29">${(maxDamage/specification.player.maxHealth*100).toFixed(2)}%</span> damage dealt</div>
                     `
                 });
             }
