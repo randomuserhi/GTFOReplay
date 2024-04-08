@@ -84,6 +84,9 @@ const slot = Macro((() => {
         for (const kills of stats.kills.values()) {
             totalKills += kills;
         }
+        for (const kills of stats.mineKills.values()) {
+            totalKills += kills;
+        }
         let text = `${totalKills}`;
         if (this.kills.innerText !== text) {
             this.kills.innerText = text;
