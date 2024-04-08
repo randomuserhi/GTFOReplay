@@ -212,7 +212,6 @@ export const player = Macro((() => {
                 this.seekLength = length;
             } else {
                 this.live = false;
-                this.seeker.setPause(this.live);
             }
             
             if (this.time > length) this.time = length;
