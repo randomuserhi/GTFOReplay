@@ -215,120 +215,10 @@ class CameraControls {
 
     speed: number;
 
-    private wheel(e: WheelEvent) {
-        if (this.slot !== undefined) return;
+    private wheel: (e: WheelEvent) => void;
 
-        e.preventDefault();
-        this.speed -= e.deltaY * 0.1;
-        this.speed = Math.clamp(this.speed, 1, 1000);
-    }
-
-    private keydown(e: KeyboardEvent) {
-        switch (e.keyCode) {
-        case 70:
-            e.preventDefault();
-            (window as any).player.pause = !(window as any).player.pause;
-            (window as any).player.seeker.setPause((window as any).player.pause);
-            break;
-        case 32:
-            e.preventDefault();
-            this.up = true;
-            break;
-        case 17:
-            e.preventDefault();
-            this.down = true;
-            break;
-        case 68:
-            e.preventDefault();
-            this.right = true;
-            break;
-        case 65:
-            e.preventDefault();
-            this.left = true;
-            break;
-        case 87:
-            e.preventDefault();
-            this.forward = true;
-            break;
-        case 83:
-            e.preventDefault();
-            this.backward = true;
-            break;
-
-        case 49:
-            e.preventDefault();
-            this.slot = 0;
-            break;
-        case 50:
-            e.preventDefault();
-            this.slot = 1;
-            break;
-        case 51:
-            e.preventDefault();
-            this.slot = 2;
-            break;
-        case 52:
-            e.preventDefault();
-            this.slot = 3;
-            break;
-
-        case 38:
-            e.preventDefault();
-            (window as any).player.time += 10000;
-            break;
-        case 40:
-            e.preventDefault();
-            (window as any).player.time -= 10000;
-            break;
-        case 37:
-            e.preventDefault();
-            (window as any).player.time -= 5000;
-            break;
-        case 39:
-            e.preventDefault();
-            (window as any).player.time += 5000;
-            break;
-
-        case 9:
-            e.preventDefault();
-            (window as any).player.scoreboardMount.style.display = "block";
-            break;
-        }
-    }
-
-    private keyup(e: KeyboardEvent) {
-        switch (e.keyCode) {
-        case 32:
-            e.preventDefault();
-            this.up = false;
-            break;
-        case 17:
-            e.preventDefault();
-            this.down = false;
-            break;
-        case 68:
-            e.preventDefault();
-            this.right = false;
-            break;
-        case 65:
-            e.preventDefault();
-            this.left = false;
-            break;
-        case 87:
-            e.preventDefault();
-            this.forward = false;
-            break;
-        case 83:
-            e.preventDefault();
-            this.backward = false;
-            break;
-
-        case 9:
-            e.preventDefault();
-            (window as any).player.scoreboardMount.style.display = "none";
-            break;
-        }
-    }
+    private keydown: (e: KeyboardEvent) => void;
+    private keyup: (e: KeyboardEvent) => void;
 
     private mousedown: (e: MouseEvent) => void;
     private mousemove: (e: MouseEvent) => void;
@@ -346,8 +236,120 @@ class CameraControls {
         };
         const origin = { x: 0, y: 0 };
         const old = { x: 0, y: 0 };
+        this.wheel = (e: WheelEvent) => {
+            if (this.slot !== undefined) return;
+    
+            e.preventDefault();
+            this.speed -= e.deltaY * 0.1;
+            this.speed = Math.clamp(this.speed, 1, 1000);
+        };
         canvas.addEventListener("wheel", this.wheel);
+        this.keydown = (e) => {
+            switch (e.keyCode) {
+            case 32:
+                e.preventDefault();
+                this.up = false;
+                break;
+            case 17:
+                e.preventDefault();
+                this.down = false;
+                break;
+            case 68:
+                e.preventDefault();
+                this.right = false;
+                break;
+            case 65:
+                e.preventDefault();
+                this.left = false;
+                break;
+            case 87:
+                e.preventDefault();
+                this.forward = false;
+                break;
+            case 83:
+                e.preventDefault();
+                this.backward = false;
+                break;
+    
+            case 9:
+                e.preventDefault();
+                (window as any).player.scoreboardMount.style.display = "none";
+                break;
+            }
+        };
         window.addEventListener("keydown", this.keydown);
+        this.keyup = (e: KeyboardEvent) => {
+            switch (e.keyCode) {
+            case 70:
+                e.preventDefault();
+                (window as any).player.pause = !(window as any).player.pause;
+                (window as any).player.seeker.setPause((window as any).player.pause);
+                break;
+            case 32:
+                e.preventDefault();
+                this.up = true;
+                break;
+            case 17:
+                e.preventDefault();
+                this.down = true;
+                break;
+            case 68:
+                e.preventDefault();
+                this.right = true;
+                break;
+            case 65:
+                e.preventDefault();
+                this.left = true;
+                break;
+            case 87:
+                e.preventDefault();
+                this.forward = true;
+                break;
+            case 83:
+                e.preventDefault();
+                this.backward = true;
+                break;
+    
+            case 49:
+                e.preventDefault();
+                this.slot = 0;
+                break;
+            case 50:
+                e.preventDefault();
+                this.slot = 1;
+                break;
+            case 51:
+                e.preventDefault();
+                this.slot = 2;
+                break;
+            case 52:
+                e.preventDefault();
+                this.slot = 3;
+                break;
+    
+            case 38:
+                e.preventDefault();
+                (window as any).player.time += 10000;
+                break;
+            case 40:
+                e.preventDefault();
+                (window as any).player.time -= 10000;
+                break;
+            case 37:
+                e.preventDefault();
+                (window as any).player.time -= 5000;
+                break;
+            case 39:
+                e.preventDefault();
+                (window as any).player.time += 5000;
+                break;
+    
+            case 9:
+                e.preventDefault();
+                (window as any).player.scoreboardMount.style.display = "block";
+                break;
+            }
+        };
         window.addEventListener("keyup", this.keyup);
         this.mousedown = (e: MouseEvent) => {
             e.preventDefault();
