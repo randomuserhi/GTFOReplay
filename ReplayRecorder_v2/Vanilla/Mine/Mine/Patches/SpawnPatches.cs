@@ -61,7 +61,7 @@ namespace Vanilla.Mine.Patches {
                 return;
             }
 
-            // Attempt to get player from packet
+            // Attempt to get player from packet -> NOTE(randomuserhi): This shit doesnt work lol
             if (SNet.Replication.TryGetLastSender(out SNet_Player sender)) {
                 APILogger.Debug($"Player triggered mine: {sender.NickName}");
                 MineManager.currentDetonateEvent = new rMineDetonate(__instance, sender.PlayerAgent.Cast<PlayerAgent>().GlobalID, true);

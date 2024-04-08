@@ -70,11 +70,12 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
                 const mine = mines.get(source);
                 if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
 
-                if (detonation.shot === true) {
+                // NOTE(randomuserhi): Backend code to get player shot mine just doesn't work -> so trigger is incorrect
+                /*if (detonation.shot === true) {
                     const player = players.get(detonation.trigger);
                     if (player === undefined) throw new Error(`Could not get player that shot mine '${detonation.trigger}'.`);
                     enemy.players.add(player.snet);
-                }
+                }*/
 
                 sourceSnet = mine.snet;
             }
@@ -85,6 +86,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             enemy.players.add(sourceSnet);
             if (enemy.health > 0) {
                 enemy.health -= damage;
+                enemy.lastHit = data;
+                enemy.lastHitTime = snapshot.time();
                 if (enemy.health <= 0) {
                     enemy.health = 0;
 

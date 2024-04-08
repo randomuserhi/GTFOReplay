@@ -1,4 +1,5 @@
 ﻿using Agents;
+using API;
 using HarmonyLib;
 using Player;
 using ReplayRecorder;
@@ -36,7 +37,7 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveFallDamage))]
         [HarmonyPrefix]
-        public static void Postfix_PlayerReceiveFallDamage(Dam_PlayerDamageBase __instance, pMiniDamageData data) {
+        public static void Prefix_PlayerReceiveFallDamage(Dam_PlayerDamageBase __instance, pMiniDamageData data) {
             if (!SNet.IsMaster) return;
 
             float damage = data.damage.Get(__instance.HealthMax);
@@ -45,7 +46,7 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveTentacleAttackDamage))]
         [HarmonyPrefix]
-        public static void Postfix_PlayerReceiveTentacleAttackDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
+        public static void Prefix_PlayerReceiveTentacleAttackDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
             if (!SNet.IsMaster) return;
 
             float damage = data.damage.Get(__instance.HealthMax);
@@ -58,7 +59,7 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveShooterProjectileDamage))]
         [HarmonyPrefix]
-        public static void Postfix_PlayerReceiveShooterProjectileDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
+        public static void Prefix_PlayerReceiveShooterProjectileDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
             if (!SNet.IsMaster) return;
 
             float damage = data.damage.Get(__instance.HealthMax);
@@ -71,18 +72,22 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveExplosionDamage))]
         [HarmonyPrefix]
-        public static void Postfix_PlayerReceiveExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
+        public static void Prefix_PlayerReceiveExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
 
-            float damage = data.damage.Get(__instance.HealthMax);
-            Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
+            APILogger.Debug($"remote explosive");
+            if (MineManager.currentDetonateEvent != null) {
+                float damage = data.damage.Get(__instance.HealthMax);
+                Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
+            }
         }
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveMeleeDamage))]
         [HarmonyPrefix]
-        public static void Postfix_PlayerReceiveMeleeDamage(Dam_PlayerDamageBase __instance, pFullDamageData data) {
+        public static void Prefix_PlayerReceiveMeleeDamage(Dam_PlayerDamageBase __instance, pFullDamageData data) {
             if (!SNet.IsMaster) return;
 
+            APILogger.Debug($"remote melee");
             if (data.source.TryGet(out Agent source)) {
                 float damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax));
                 Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage)));
@@ -91,7 +96,7 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveBulletDamage))]
         [HarmonyPrefix]
-        public static void Postfix_PlayerReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
+        public static void Prefix_PlayerReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent source)) {
@@ -110,13 +115,52 @@ namespace Vanilla.StatTracker.Damage {
                     }
                 }
                 float damage = data.damage.Get(__instance.HealthMax);
+                APILogger.Debug($"{__instance.Owner.Owner.NickName} was hit by {source.Cast<PlayerAgent>().Owner.NickName} -> {damage}");
                 Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
+            }
+        }
+
+        [HarmonyPatch(typeof(Dam_PlayerDamageLocal), nameof(Dam_PlayerDamageLocal.ReceiveBulletDamage))]
+        [HarmonyPrefix]
+        public static void Prefix_PlayerLocalReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
+            if (!SNet.IsMaster) return;
+
+            if (data.source.TryGet(out Agent source)) {
+                ushort gear = 0;
+                PlayerAgent? player = source.TryCast<PlayerAgent>();
+                if (player != null) {
+                    if (!sentry) {
+                        // Get weapon used
+                        ItemEquippable currentEquipped = player.Inventory.WieldedItem;
+                        if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                            gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                        }
+                    } else {
+                        // Get sentry used
+                        gear = GTFOSpecification.GetGear(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass).GearIDRange.PublicGearName);
+                    }
+                }
+                float damage = data.damage.Get(__instance.HealthMax);
+                APILogger.Debug($"{__instance.Owner.Owner.NickName} was hit by {source.Cast<PlayerAgent>().Owner.NickName} -> {damage}");
+                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
+            }
+        }
+
+        [HarmonyPatch(typeof(Dam_PlayerDamageLocal), nameof(Dam_PlayerDamageLocal.ReceiveExplosionDamage))]
+        [HarmonyPrefix]
+        public static void Prefix_PlayerLocalReceiveExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
+            if (!SNet.IsMaster) return;
+
+            APILogger.Debug($"local explosive");
+            if (MineManager.currentDetonateEvent != null) {
+                float damage = data.damage.Get(__instance.HealthMax);
+                Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
             }
         }
 
         [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveExplosionDamage))]
         [HarmonyPrefix]
-        public static void Postfix_EnemyReceiveExplosionDamage(Dam_EnemyDamageBase __instance, pExplosionDamageData data) {
+        public static void Prefix_EnemyReceiveExplosionDamage(Dam_EnemyDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (MineManager.currentDetonateEvent != null) {
@@ -130,7 +174,7 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveMeleeDamage))]
         [HarmonyPrefix]
-        public static void Postfix_EnemyReceiveMeleeDamage(Dam_EnemyDamageBase __instance, pFullDamageData data) {
+        public static void Prefix_EnemyReceiveMeleeDamage(Dam_EnemyDamageBase __instance, pFullDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent source)) {
@@ -154,7 +198,7 @@ namespace Vanilla.StatTracker.Damage {
 
         [HarmonyPatch(typeof(Dam_EnemyDamageBase), nameof(Dam_EnemyDamageBase.ReceiveBulletDamage))]
         [HarmonyPrefix]
-        public static void Postfix_EnemyReceiveBulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data) {
+        public static void Prefix_EnemyReceiveBulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
 
             if (data.source.TryGet(out Agent source)) {

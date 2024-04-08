@@ -1,4 +1,4 @@
-import { Enemy } from "../enemy/enemy";
+import { Enemy, EnemyCache } from "../enemy/enemy";
 import { Player } from "../player/player";
 import { PackType } from "./pack";
 
@@ -6,15 +6,15 @@ export function isPlayer(id: number, players: Map<number, Player>) {
     return players.has(id);
 }
 
-export function isEnemy(id: number, enemies: Map<number, Enemy>, cache: Map<number, Enemy>) {
+export function isEnemy(id: number, enemies: Map<number, Enemy>, cache: Map<number, EnemyCache>) {
     return enemies.has(id) || cache.has(id);
 }
 
-export function getEnemy(id: number, enemies: Map<number, Enemy>, cache: Map<number, Enemy>): Enemy | undefined {
+export function getEnemy(id: number, enemies: Map<number, Enemy>, cache: Map<number, EnemyCache>): Enemy | undefined {
     if (enemies.has(id)) {
         return enemies.get(id)!;
     }
-    return cache.get(id);
+    return cache.get(id)?.enemy;
 }
 
 declare module "../../../replay/moduleloader.js" {

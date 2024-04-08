@@ -98,7 +98,15 @@ const slot = Macro((() => {
             this.assists.innerText = text;
         }
 
-        if (medals === undefined) return;
+        if (medals === undefined) {
+            this.medalList.replaceChildren();
+            this.medals.clear();
+            return;
+        }
+
+        /*if (player.nickname.toLowerCase() === "kingofjungle27") {
+            console.log(medals);
+        }*/
 
         for (const medal of medals) {
             if (!this.medals.has(medal.id)) {

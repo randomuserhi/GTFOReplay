@@ -59,12 +59,7 @@ const medalRequirements: MedalRequirement[] = [
                     meleeDamage += damage;
                 }
 
-                let explosiveDamage = 0;
-                for (const damage of stats.enemyDamage.explosiveDamage.values()) {
-                    explosiveDamage += damage;
-                }
-
-                const total = bulletDamage + meleeDamage + explosiveDamage;
+                const total = bulletDamage + meleeDamage;
                 if (total > maxDamage) {
                     chosen = [];
                     maxDamage = total;
@@ -127,7 +122,7 @@ const medalRequirements: MedalRequirement[] = [
                 }
             } 
 
-            if (maxDamage < 50) return;
+            if (maxDamage < 10) return;
 
             if (chosen.length === 1) {
                 const snet = chosen[0];
@@ -330,12 +325,7 @@ const medalRequirements: MedalRequirement[] = [
                     meleeDamage += damage;
                 }
 
-                let explosiveDamage = 0;
-                for (const damage of stats.enemyDamage.explosiveDamage.values()) {
-                    explosiveDamage += damage;
-                }
-
-                const total = bulletDamage + meleeDamage + explosiveDamage;
+                const total = bulletDamage + meleeDamage;
                 if (total > maxDamage) {
                     chosenDamageMax = [];
                     maxDamage = total;
@@ -591,13 +581,13 @@ export const medal = Macro((() => {
     return medal;
 })(), "routes/player.scoreboard.medal", //html
 `
-    <img rhu-id="icon" src="./medals/MVP.png"/>
+    <img rhu-id="icon"/>
     <div class="${style.mount}">
         <span rhu-id="name" style="
             font-size: 20px;
             margin-bottom: 0.4rem;
-        ">MVP</span>
-        <span rhu-id="desc" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">Most damage.</span>
+        "></span>
+        <span rhu-id="desc" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;"></span>
     </div>
     `, {
     element: //html

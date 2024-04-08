@@ -6,6 +6,8 @@ import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, Dynam
 import { createDeathCross } from "../deathcross.js";
 import { Skeleton, SkeletonModel } from "../humanmodel.js";
 import { specification } from "../specification.js";
+import { Damage } from "../stattracker/damage.js";
+import { StatTracker, getPlayerStats, isPlayer } from "../stattracker/stats.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -60,7 +62,7 @@ declare module "../../../replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Enemy": Map<number, Enemy>;
-            "Vanilla.Enemy.Cache": Map<number, Enemy>;
+            "Vanilla.Enemy.Cache": Map<number, EnemyCache>;
             "Vanilla.Enemy.Model": Map<number, Skeleton>;
             "Vanilla.Enemy.LimbCustom": Map<number, LimbCustom>;
         }
@@ -89,6 +91,11 @@ export interface LimbCustom extends DynamicPosition {
     active: boolean;
 }
 
+export interface EnemyCache {
+    time: number;
+    enemy: Enemy;
+}
+
 export interface Enemy extends DynamicTransform {
     animFlags: number;
     health: number;
@@ -97,6 +104,8 @@ export interface Enemy extends DynamicTransform {
     hasSkeleton: boolean;
     type: number;
     players: Set<bigint>;
+    lastHit?: Damage;
+    lastHitTime?: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -142,6 +151,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
+            // TODO(randomuserhi): Cleanup code
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
             const cache = snapshot.getOrDefault("Vanilla.Enemy.Cache", () => new Map());
 
@@ -150,16 +160,68 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             createDeathCross(snapshot, id, enemy.dimension, enemy.position);
             enemies.delete(id);
 
+            if (enemy.lastHit !== undefined && enemy.lastHitTime !== undefined && 
+                snapshot.time() - enemy.lastHitTime <= cacheClearTime) {
+                enemy.health = 0;
+                // Update kill to last player that hit enemy
+                const statTracker = snapshot.getOrDefault("Vanilla.StatTracker", StatTracker);
+                const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+                
+                let lastHit;
+                if (isPlayer(enemy.lastHit.source, players)) {
+                    lastHit = players.get(enemy.lastHit.source)!.snet;
+                } else if(enemy.lastHit.type === "Explosive") {
+                    const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
+                    const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
+
+                    const detonation = detonations.get(enemy.lastHit.source);
+                    if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
+
+                    const mine = mines.get(enemy.lastHit.source);
+                    if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
+
+                    lastHit = mine.snet;
+                }
+                if (lastHit === undefined) throw new Error(`Could not find player '${enemy.lastHit.source}'.`);
+                
+                for (const snet of enemy.players) {
+                    const sourceStats = getPlayerStats(snet, statTracker);
+
+                    if (snet === lastHit) {
+                        if (!sourceStats.kills.has(enemy.type)) {
+                            sourceStats.kills.set(enemy.type, 0);
+                        }
+                        sourceStats.kills.set(enemy.type, sourceStats.kills.get(enemy.type)! + 1);
+                    } else {
+                        if (!sourceStats.assists.has(enemy.type)) {
+                            sourceStats.assists.set(enemy.type, 0);
+                        }
+                        sourceStats.assists.set(enemy.type, sourceStats.assists.get(enemy.type)! + 1);
+                    }
+                }
+            }
+            
             if (!cache.has(id)) {
-                cache.set(id, enemy);
+                cache.set(id, {
+                    time: snapshot.time(),
+                    enemy
+                });
             }
         }
     }
 });
 
+const cacheClearTime = 1000;
 ModuleLoader.registerTick((snapshot) => {
     const cache = snapshot.getOrDefault("Vanilla.Enemy.Cache", () => new Map());
-    cache.clear();
+    for (const [id, item] of [...cache.entries()]) {
+        if (snapshot.time() - item.time > cacheClearTime) {
+            if (item.enemy.health > 0) {
+                console.warn(`Cache cleared enemy: ${id}[health: ${item.enemy.health}]`);
+            }
+            cache.delete(id);
+        }
+    }
 });
 
 
