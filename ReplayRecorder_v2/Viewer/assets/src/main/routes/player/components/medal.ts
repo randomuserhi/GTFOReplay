@@ -123,7 +123,7 @@ const medalRequirements: MedalRequirement[] = [
                 }
             } 
 
-            if (maxDamage < 10) return;
+            if (maxDamage < specification.player.maxHealth / 2) return;
 
             if (chosen.length === 1) {
                 const snet = chosen[0];
