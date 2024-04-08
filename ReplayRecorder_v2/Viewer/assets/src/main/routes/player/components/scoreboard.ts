@@ -84,13 +84,16 @@ const slot = Macro((() => {
         for (const kills of stats.kills.values()) {
             totalKills += kills;
         }
+        let mineKills = 0;
         for (const kills of stats.mineKills.values()) {
-            totalKills += kills;
+            mineKills += kills;
         }
+        let sentryKills = 0;
         for (const kills of stats.sentryKills.values()) {
-            totalKills += kills;
+            sentryKills += kills;
         }
-        let text = `${totalKills}`;
+        const nonPlayerKills = mineKills + sentryKills;
+        let text = `${totalKills}${(nonPlayerKills != 0 ? ` (${nonPlayerKills})` : "")}`;
         if (this.kills.innerText !== text) {
             this.kills.innerText = text;
         }
@@ -157,9 +160,9 @@ const style = Style(({ style }) => {
     min-width: 100%;
     grid-template-columns: 
         2fr
-        1fr
-        1fr
-        6fr;
+        2fr
+        2fr
+        4fr;
     grid-row-gap: 15px;
     `;
     style`

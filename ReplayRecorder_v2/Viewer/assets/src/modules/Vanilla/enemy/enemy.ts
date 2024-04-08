@@ -161,7 +161,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             enemies.delete(id);
 
             // Check kill stats in the event enemy health prediction fails
-            if (enemy.lastHit !== undefined && enemy.lastHitTime !== undefined && 
+            if (enemy.health > 0 && enemy.lastHit !== undefined && enemy.lastHitTime !== undefined && 
                 snapshot.time() - enemy.lastHitTime <= cacheClearTime) {
                 enemy.health = 0;
                 // Update kill to last player that hit enemy
