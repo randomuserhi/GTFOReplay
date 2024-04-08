@@ -293,6 +293,8 @@ const medalRequirements: MedalRequirement[] = [
                 const player = players[i];
                 const stats = getPlayerStats(player.snet, statTracker);
                 
+                // NOTE(randomuserhi): Only accounts for player-earned kills (no sentry / mine kills)
+
                 let kills = 0;
                 for (const count of stats.kills.values()) {
                     kills += count;
@@ -347,7 +349,7 @@ const medalRequirements: MedalRequirement[] = [
                     title: "Kill Stealer",
                     icon: "./medals/killstealer.png",
                     text: /*html*/`
-                        <div>Most kills, but not most damage</div>
+                        <div>Most kills (excluding sentry / mines), but not most damage</div>
                         <div><span style="color: #e9bc29">${maxKills}</span> kills</div>
                     `
                 });

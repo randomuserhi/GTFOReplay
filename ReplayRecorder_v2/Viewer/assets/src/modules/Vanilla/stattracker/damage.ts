@@ -55,7 +55,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
         const cache = snapshot.getOrDefault("Vanilla.Enemy.Cache", () => new Map()); // NOTE(randomuserhi): caches recently despawned enemies for referencing
         const statTracker = snapshot.getOrDefault("Vanilla.StatTracker", StatTracker);
 
-        const { type, source, target, damage, staggerDamage } = data;
+        const { type, source, target, damage, staggerDamage, sentry } = data;
         if (isEnemy(target, enemies, cache)) {
             const enemy = getEnemy(target, enemies, cache)!;
 
@@ -100,6 +100,11 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
                                     sourceStats.mineKills.set(enemy.type, 0);
                                 }
                                 sourceStats.mineKills.set(enemy.type, sourceStats.mineKills.get(enemy.type)! + 1);
+                            } else if (sentry)  {
+                                if (!sourceStats.sentryKills.has(enemy.type)) {
+                                    sourceStats.sentryKills.set(enemy.type, 0);
+                                }
+                                sourceStats.sentryKills.set(enemy.type, sourceStats.sentryKills.get(enemy.type)! + 1);
                             } else {
                                 if (!sourceStats.kills.has(enemy.type)) {
                                     sourceStats.kills.set(enemy.type, 0);

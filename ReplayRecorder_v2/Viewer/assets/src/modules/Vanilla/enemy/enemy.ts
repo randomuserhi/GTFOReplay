@@ -194,6 +194,11 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                                 sourceStats.mineKills.set(enemy.type, 0);
                             }
                             sourceStats.mineKills.set(enemy.type, sourceStats.mineKills.get(enemy.type)! + 1);
+                        } else if (enemy.lastHit.sentry) {
+                            if (!sourceStats.sentryKills.has(enemy.type)) {
+                                sourceStats.sentryKills.set(enemy.type, 0);
+                            }
+                            sourceStats.sentryKills.set(enemy.type, sourceStats.sentryKills.get(enemy.type)! + 1);
                         } else {
                             if (!sourceStats.kills.has(enemy.type)) {
                                 sourceStats.kills.set(enemy.type, 0);

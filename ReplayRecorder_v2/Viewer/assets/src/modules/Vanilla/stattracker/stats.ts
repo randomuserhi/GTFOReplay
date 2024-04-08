@@ -68,6 +68,7 @@ export interface PlayerStats {
     timeSpentDowned: number;
     kills: Map<number, number>;
     mineKills: Map<number, number>;
+    sentryKills: Map<number, number>;
     assists: Map<number, number>;
     fallDamage: number;
     tongueDodges: Map<number, number>;
@@ -84,6 +85,7 @@ export function PlayerStats(snet: bigint): PlayerStats {
         timeSpentDowned: 0,
         kills: new Map(),
         mineKills: new Map(),
+        sentryKills: new Map(),
         assists: new Map(),
         fallDamage: 0,
         tongueDodges: new Map(),
