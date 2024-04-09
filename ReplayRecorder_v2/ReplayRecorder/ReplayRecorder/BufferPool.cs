@@ -11,9 +11,9 @@
             lock (lockObj) {
                 if (pool.Count == 0) {
                     ++size;
-                    ++inUse;
                     return new ByteBuffer();
                 }
+                ++inUse;
                 return pool.Pop();
             }
         }
