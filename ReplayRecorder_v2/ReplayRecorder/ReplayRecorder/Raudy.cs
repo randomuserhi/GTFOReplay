@@ -16,8 +16,6 @@ namespace ReplayRecorder {
         internal ArraySegment<byte> _array = new byte[1024];
         internal ArraySegment<byte> Array => new ArraySegment<byte>(_array.Array!, _array.Offset, count);
 
-        internal bool inMemory = true;
-
         public ByteBuffer() {
             _array = new byte[1024];
         }
@@ -38,12 +36,13 @@ namespace ReplayRecorder {
             count = 0;
         }
 
-        internal void Reserve(int size) {
+        internal void Reserve(int size, bool increment = false) {
             if (_array.Count - count < size) {
                 byte[] newArray = new byte[Mathf.Max(_array.Count * 2, count + size)];
                 System.Array.Copy(_array.Array!, _array.Offset, newArray, 0, _array.Count);
                 _array = newArray;
             }
+            if (increment) count += size;
         }
 
         internal void Flush(FileStream fs) {

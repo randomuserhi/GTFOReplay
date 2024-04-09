@@ -164,13 +164,29 @@ namespace ReplayRecorder {
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        public async Task<int> SendTo(ArraySegment<byte> data, EndPoint remoteEP) {
+        public async Task RawSendTo(ArraySegment<byte> data, EndPoint remoteEP) {
+            if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
+                await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
+                try {
+                    int sent = await connection.socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
+                    while (sent < data.Count) {
+                        sent += await connection.socket.SendAsync(new ArraySegment<byte>(data.Array!, data.Offset + sent, data.Count - sent), SocketFlags.None).ConfigureAwait(false);
+                    }
+                } catch (SocketException) {
+                    return;
+                } finally {
+                    connection.semaphoreSend.Release();
+                }
+            }
+        }
+
+        public async Task SendTo(ArraySegment<byte> data, EndPoint remoteEP) {
             if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
                 await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
                 try {
 
                     if (data.Count > int.MaxValue) {
-                        return 0;
+                        return; // TODO(randomuserhi): Throw exception...
                     }
                     int size = sizeof(int) + data.Count;
                     int capacity = connection.sendBuffer.Length;
@@ -184,14 +200,16 @@ namespace ReplayRecorder {
                     BitHelper.WriteBytes(data.Count, connection.sendBuffer, ref index);
                     Array.Copy(data.Array!, data.Offset, connection.sendBuffer, index, data.Count);
 
-                    return await connection.socket.SendAsync(new ArraySegment<byte>(connection.sendBuffer, 0, size), SocketFlags.None).ConfigureAwait(false);
+                    int sent = await connection.socket.SendAsync(new ArraySegment<byte>(connection.sendBuffer, 0, size), SocketFlags.None).ConfigureAwait(false);
+                    while (sent < size) {
+                        sent += await connection.socket.SendAsync(new ArraySegment<byte>(connection.sendBuffer, sent, size - sent), SocketFlags.None).ConfigureAwait(false);
+                    }
                 } catch (SocketException) {
-                    return 0;
+                    return;
                 } finally {
                     connection.semaphoreSend.Release();
                 }
             }
-            return 0;
         }
 
         public void Disconnect() {

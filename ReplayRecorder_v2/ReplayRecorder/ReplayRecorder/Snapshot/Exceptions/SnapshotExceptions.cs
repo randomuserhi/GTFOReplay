@@ -1,8 +1,4 @@
 ﻿namespace ReplayRecorder.Snapshot.Exceptions {
-    public class ReplayNumWrittenDoesntMatch : Exception {
-        public ReplayNumWrittenDoesntMatch(string message) : base(message) { }
-    }
-
     public class ReplaySnapshotAlreadyInitialized : Exception {
         public ReplaySnapshotAlreadyInitialized() : base("Snapshot has already been initialized.") { }
     }
