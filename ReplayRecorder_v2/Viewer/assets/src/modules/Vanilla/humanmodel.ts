@@ -24,6 +24,7 @@ export interface Skeleton {
     RFoot: Pod.Vector;
 }
 
+// TODO(randomuserhi): move elsewhere
 export const zeroQ = new Quaternion();
 export const zeroS = new Vector3(1, 1, 1);
 export const zeroV = new Vector3(0, 0, 0);
