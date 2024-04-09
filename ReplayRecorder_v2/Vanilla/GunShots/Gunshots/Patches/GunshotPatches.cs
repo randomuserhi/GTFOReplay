@@ -89,8 +89,6 @@ namespace Vanilla.Player.Gunshots.Patches {
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
             owner = __instance.Owner;
 
-            byte dimensionIndex = (byte)__instance.Owner.m_dimensionIndex;
-
             Transform alignTransform = __instance.MuzzleAlign;
             Vector3 fireDir = __instance.Owner.TargetLookDir;
             Vector3 vector = alignTransform.position;
@@ -145,8 +143,6 @@ namespace Vanilla.Player.Gunshots.Patches {
             autoTrack = false;
             damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
             owner = __instance.Owner;
-
-            byte dimensionIndex = (byte)__instance.Owner.m_dimensionIndex;
 
             for (int i = 0; i < __instance.ArchetypeData.ShotgunBulletCount; i++) {
                 float f = __instance.m_segmentSize * (float)i;
