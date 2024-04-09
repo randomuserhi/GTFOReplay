@@ -34,7 +34,7 @@ namespace Vanilla.Player {
         private static List<rPlayer> players = new List<rPlayer>();
 
         public static void Spawn(PlayerAgent agent) {
-            if (!Replay.Active) return;
+            if (!Replay.Ready) return;
 
             rPlayer? player = players.Find(p => p.Id == agent.GlobalID);
             if (player != null) {
@@ -64,7 +64,7 @@ namespace Vanilla.Player {
         }
 
         public static void Despawn(PlayerAgent agent) {
-            if (!Replay.Active) return;
+            if (!Replay.Ready) return;
             if (!Replay.Has<rPlayer>(agent.GlobalID)) return;
 
             rPlayer? player = players.Find(p => p.Id == agent.GlobalID);
