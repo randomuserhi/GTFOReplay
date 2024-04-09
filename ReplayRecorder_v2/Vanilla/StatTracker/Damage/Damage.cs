@@ -78,7 +78,6 @@ namespace Vanilla.StatTracker.Damage {
             if (!SNet.IsMaster) return;
             if (!__instance.Owner.Alive) return;
 
-            APILogger.Debug($"remote explosive");
             if (MineManager.currentDetonateEvent != null) {
                 float damage = data.damage.Get(__instance.HealthMax);
                 Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
@@ -91,7 +90,6 @@ namespace Vanilla.StatTracker.Damage {
             if (!SNet.IsMaster) return;
             if (!__instance.Owner.Alive) return;
 
-            APILogger.Debug($"remote melee");
             if (data.source.TryGet(out Agent source)) {
                 float damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax));
                 Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage)));

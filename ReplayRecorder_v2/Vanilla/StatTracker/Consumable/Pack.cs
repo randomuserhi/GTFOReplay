@@ -46,13 +46,14 @@ namespace Vanilla.StatTracker.Consumable {
             }
         }
 
-        // TODO(randomuserhi): i2lp -> counts as medipack for some god forsaken reason
+        // NOTE(randomuserhi): Assume medipacks only give 20% hp => if a health value other than that is recieved, assume its not a medipack
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveAddHealth))]
         [HarmonyPrefix]
         public static void Postfix_ReceiveAddHealth(Dam_PlayerDamageBase __instance, pAddHealthData data) {
             if (!SNet.IsMaster) return;
 
-            float healing = Mathf.Min(__instance.Health + data.health.Get(__instance.HealthMax), __instance.HealthMax) - __instance.Health;
+            float gain = data.health.Get(__instance.HealthMax);
+            float healing = Mathf.Min(__instance.Health + gain, __instance.HealthMax) - __instance.Health;
             if (healing > 0) {
                 Agent? source;
                 if (sourcePackUser == null)
@@ -63,8 +64,13 @@ namespace Vanilla.StatTracker.Consumable {
                 if (source != null) {
                     PlayerAgent? player = source.TryCast<PlayerAgent>();
                     if (player != null) {
-                        APILogger.Debug($"Player {player.Owner.NickName} used medipack on {__instance.Owner.Owner.NickName}.");
-                        Replay.Trigger(new rPack(rPack.Type.Medi, source, __instance.Owner));
+                        float trueGain = AgentModifierManager.ApplyModifier(source, AgentModifier.HealSupport, 5.0f);
+                        float err = 1.0f / ushort.MaxValue * __instance.HealthMax / 2.0f;
+                        APILogger.Debug($"gain: {gain} trueGain: {trueGain} err: {err}");
+                        if (gain > trueGain - err && gain < trueGain + err) {
+                            APILogger.Debug($"Player {player.Owner.NickName} used medipack on {__instance.Owner.Owner.NickName}.");
+                            Replay.Trigger(new rPack(rPack.Type.Medi, source, __instance.Owner));
+                        }
                     }
                 }
             }
