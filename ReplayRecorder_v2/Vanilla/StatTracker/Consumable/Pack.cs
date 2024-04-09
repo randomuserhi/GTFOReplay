@@ -47,6 +47,7 @@ namespace Vanilla.StatTracker.Consumable {
         }
 
         // NOTE(randomuserhi): Assume medipacks only give 20% hp => if a health value other than that is recieved, assume its not a medipack
+        //                     A better algorithm would be to look at last item held, and if it was a medipack then it was probably that
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveAddHealth))]
         [HarmonyPrefix]
         public static void Postfix_ReceiveAddHealth(Dam_PlayerDamageBase __instance, pAddHealthData data) {
