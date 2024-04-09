@@ -380,6 +380,7 @@ namespace ReplayRecorder.Snapshot {
         private Stopwatch stopwatch = new Stopwatch();
 
         private async Task Send(ByteBuffer packet) {
+            // TODO(randomuserhi): List of tasks so each send is concurrent?
             foreach (EndPoint connection in Plugin.acknowledged) {
                 if (!Plugin.server.Connections.Contains(connection)) continue;
                 await Plugin.server.RawSendTo(packet.Array, connection);
