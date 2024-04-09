@@ -419,8 +419,8 @@ const medalRequirements: MedalRequirement[] = [
                 const stats = getPlayerStats(player.snet, statTracker);
                 
                 let mediUsed = 0;
-                if (stats.packsUsed.has("Medi")) {
-                    mediUsed = stats.packsUsed.get("Medi")!;
+                if (stats.packsUsed.has("Healing")) {
+                    mediUsed = stats.packsUsed.get("Healing")!;
                 }
 
                 if (mediUsed > maxMedi) {
@@ -444,8 +444,8 @@ const medalRequirements: MedalRequirement[] = [
                     title: "Fragile",
                     icon: "./medals/fragile.png",
                     text: /*html*/`
-                        <div>Most medipacks consumed</div>
-                        <div><span style="color: #e9bc29">${maxMedi}</span> packs used</div>
+                        <div>Most healing items consumed</div>
+                        <div><span style="color: #e9bc29">${maxMedi}</span> items used</div>
                     `
                 });
             }

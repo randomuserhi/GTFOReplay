@@ -13,12 +13,12 @@ declare module "../../../replay/moduleloader.js" {
 export type PackType = 
     "Ammo" |
     "Tool" |
-    "Medi" | 
+    "Healing" | // NOTE(randomuserhi): Medipack / I2HP syringe 
     "Disinfect";
 export const typemap: PackType[] = [
     "Ammo",
     "Tool",
-    "Medi",
+    "Healing",
     "Disinfect"
 ];
 

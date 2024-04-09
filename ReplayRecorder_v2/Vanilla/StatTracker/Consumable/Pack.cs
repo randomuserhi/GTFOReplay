@@ -46,8 +46,6 @@ namespace Vanilla.StatTracker.Consumable {
             }
         }
 
-        // NOTE(randomuserhi): Assume medipacks only give 20% hp => if a health value other than that is recieved, assume its not a medipack
-        //                     A better algorithm would be to look at last item held, and if it was a medipack then it was probably that
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveAddHealth))]
         [HarmonyPrefix]
         public static void Postfix_ReceiveAddHealth(Dam_PlayerDamageBase __instance, pAddHealthData data) {
@@ -65,13 +63,8 @@ namespace Vanilla.StatTracker.Consumable {
                 if (source != null) {
                     PlayerAgent? player = source.TryCast<PlayerAgent>();
                     if (player != null) {
-                        float trueGain = AgentModifierManager.ApplyModifier(source, AgentModifier.HealSupport, 5.0f);
-                        float err = 1.0f / ushort.MaxValue * __instance.HealthMax / 2.0f;
-                        APILogger.Debug($"gain: {gain} trueGain: {trueGain} err: {err}");
-                        if (gain > trueGain - err && gain < trueGain + err) {
-                            APILogger.Debug($"Player {player.Owner.NickName} used medipack on {__instance.Owner.Owner.NickName}.");
-                            Replay.Trigger(new rPack(rPack.Type.Medi, source, __instance.Owner));
-                        }
+                        APILogger.Debug($"Player {player.Owner.NickName} used healing item on {__instance.Owner.Owner.NickName}.");
+                        Replay.Trigger(new rPack(rPack.Type.HealingItem, source, __instance.Owner));
                     }
                 }
             }
@@ -143,7 +136,7 @@ namespace Vanilla.StatTracker.Consumable {
         public enum Type {
             Ammo,
             Tool,
-            Medi,
+            HealingItem,
             Disinfect
         }
 
