@@ -62,7 +62,7 @@ declare module "../../../replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Enemy": Map<number, Enemy>;
-            "Vanilla.Enemy.Cache": Map<number, EnemyCache>;
+            "Vanilla.Enemy.Cache": Map<number, EnemyCache>; // Stores enemies that have been despawned so they can be referenced by late events. E.g Damage Events recieved late due to ping.
             "Vanilla.Enemy.Model": Map<number, Skeleton>;
             "Vanilla.Enemy.LimbCustom": Map<number, LimbCustom>;
         }

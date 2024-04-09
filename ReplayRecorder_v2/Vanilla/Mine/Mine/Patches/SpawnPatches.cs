@@ -3,6 +3,7 @@ using API;
 using HarmonyLib;
 using Player;
 using ReplayRecorder;
+using ReplayRecorder.SNetUtils;
 using SNetwork;
 
 namespace Vanilla.Mine.Patches {
@@ -48,33 +49,35 @@ namespace Vanilla.Mine.Patches {
             player = null;
         }
 
-        // TODO(randomuserhi): Test if this is accurate on client
         [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedTrigger))]
         [HarmonyPrefix]
         private static void Prefix_SyncedTrigger(MineDeployerInstance __instance) {
+            if (!SNet.IsMaster) return;
+
             rMine mine = Replay.Get<rMine>(__instance.gameObject.GetInstanceID());
 
             if (player != null) {
-                APILogger.Debug($"Player triggered mine: {player.PlayerName}");
-                MineManager.currentDetonateEvent = new rMineDetonate(__instance, mine.owner.GlobalID);
-                Replay.Trigger(MineManager.currentDetonateEvent);
-                return;
+                mine.shot = true;
+                mine.trigger = player;
+            } else if (SNetUtils.TryGetSender(__instance.m_itemActionPacket, out SNet_Player sender)) {
+                mine.shot = true;
+                mine.trigger = sender.PlayerAgent.Cast<PlayerAgent>();
             }
+        }
 
-            // Attempt to get player from packet -> NOTE(randomuserhi): This shit doesnt work lol
-            if (SNet.Replication.TryGetLastSender(out SNet_Player sender)) {
-                APILogger.Debug($"Player triggered mine: {sender.NickName}");
-                MineManager.currentDetonateEvent = new rMineDetonate(__instance, sender.PlayerAgent.Cast<PlayerAgent>().GlobalID, true);
-                Replay.Trigger(MineManager.currentDetonateEvent);
-                return;
-            } else {
-                APILogger.Warn($"Failed to get the last packet sender for synced mine trigger.");
-            }
+        private static void DetonateMine(int mineId) {
+            rMine mine = Replay.Get<rMine>(mineId);
 
-            APILogger.Debug($"Mine triggered without player.");
-            MineManager.currentDetonateEvent = new rMineDetonate(__instance, mine.owner.GlobalID);
+            APILogger.Debug($"shot: {mine.shot}");
+            APILogger.Debug($"trigger: {mine.trigger.Owner.NickName}");
+            MineManager.currentDetonateEvent = new rMineDetonate(mineId, mine.trigger.GlobalID, mine.shot);
             Replay.Trigger(MineManager.currentDetonateEvent);
-            return;
+        }
+
+        [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
+        [HarmonyPrefix]
+        private static void Prefix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
+            DetonateMine(__instance.gameObject.GetInstanceID());
         }
 
         [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
@@ -83,7 +86,6 @@ namespace Vanilla.Mine.Patches {
             MineManager.currentDetonateEvent = null;
             Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
         }
-
         [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
         [HarmonyPostfix]
         private static void Postfix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {

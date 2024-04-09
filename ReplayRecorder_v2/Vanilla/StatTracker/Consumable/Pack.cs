@@ -7,6 +7,7 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using ReplayRecorder.SNetUtils;
 using SNetwork;
 using UnityEngine;
 
@@ -45,6 +46,7 @@ namespace Vanilla.StatTracker.Consumable {
             }
         }
 
+        // TODO(randomuserhi): i2lp -> counts as medipack for some god forsaken reason
         [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveAddHealth))]
         [HarmonyPrefix]
         public static void Postfix_ReceiveAddHealth(Dam_PlayerDamageBase __instance, pAddHealthData data) {
@@ -70,11 +72,9 @@ namespace Vanilla.StatTracker.Consumable {
             sourcePackUser = null;
         }
 
-        // TODO(randomuserhi): Test if TryGetLastSender solution actually works
-        // NOTE(randomuserhi): It doesnt fucking work :(
         [HarmonyPatch(typeof(PlayerBackpackManager), nameof(PlayerBackpackManager.ReceiveAmmoGive))]
         [HarmonyPostfix]
-        public static void ReceiveAmmoGive(pAmmoGive data) {
+        public static void ReceiveAmmoGive(PlayerBackpackManager __instance, pAmmoGive data) {
             if (!SNet.IsMaster) return;
 
             SNet_Player player;
@@ -94,7 +94,7 @@ namespace Vanilla.StatTracker.Consumable {
                 if (sourcePackUser != null) {
                     APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used {type} on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(type, sourcePackUser, target));
-                } else if (SNet.Replication.TryGetLastSender(out SNet_Player sender) && sender != null && sender.PlayerAgent != null) {
+                } else if (SNetUtils.TryGetSender(__instance.m_giveAmmoPacket.m_packet, out SNet_Player sender)) {
                     APILogger.Debug($"Player {sender.NickName} used {type} on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(type, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                 } else {
@@ -118,7 +118,7 @@ namespace Vanilla.StatTracker.Consumable {
                 if (sourcePackUser != null) {
                     APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used disinfect pack on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(rPack.Type.Disinfect, sourcePackUser, target));
-                } else if (SNet.Replication.TryGetLastSender(out SNet_Player sender) && sender != null && sender.PlayerAgent != null) {
+                } else if (SNetUtils.TryGetSender(__instance.m_receiveModifyInfectionPacket, out SNet_Player sender)) {
                     APILogger.Debug($"Player {sender.NickName} used disinfect pack on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(rPack.Type.Disinfect, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                 } else {

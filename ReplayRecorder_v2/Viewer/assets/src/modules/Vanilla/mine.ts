@@ -27,7 +27,11 @@ declare module "../../replay/moduleloader.js" {
         }
 
         interface Events {
-            "Vanilla.Mine.Detonate": MineDetonate;
+            "Vanilla.Mine.Detonate": {
+                id: number;
+                trigger: number;
+                shot: boolean;
+            };
         }
 
         interface Data {
@@ -54,6 +58,7 @@ export interface Mine extends DynamicTransform {
 
 export interface MineDetonate {
     id: number;
+    time: number;
     trigger: number;
     shot: boolean;
 }
@@ -121,7 +126,18 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
         
         const { id } = data;
         if (detonations.has(id)) throw new DuplicateMine(`Mine Detonation of id '${id}' already exist.`);
-        detonations.set(id, { ...data });
+        detonations.set(id, { ...data, time: snapshot.time() });
+    }
+});
+
+// NOTE(randomuserhi): Keep detonation events around for 1 second to watch for explosion damage events that may reference it
+const detonateClearTime = 1000;
+ModuleLoader.registerTick((snapshot) => {
+    const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
+    for (const [id, item] of [...detonations.entries()]) {
+        if (snapshot.time() - item.time > detonateClearTime) {
+            detonations.delete(id);
+        }
     }
 });
 

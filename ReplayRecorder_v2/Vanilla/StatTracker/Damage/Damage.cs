@@ -48,6 +48,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerReceiveTentacleAttackDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             float damage = data.damage.Get(__instance.HealthMax);
             if (data.source.TryGet(out Agent source)) {
@@ -61,6 +62,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerReceiveShooterProjectileDamage(Dam_PlayerDamageBase __instance, pMediumDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             float damage = data.damage.Get(__instance.HealthMax);
             if (data.source.TryGet(out Agent source)) {
@@ -74,6 +76,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerReceiveExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             APILogger.Debug($"remote explosive");
             if (MineManager.currentDetonateEvent != null) {
@@ -86,6 +89,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerReceiveMeleeDamage(Dam_PlayerDamageBase __instance, pFullDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             APILogger.Debug($"remote melee");
             if (data.source.TryGet(out Agent source)) {
@@ -98,6 +102,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             if (data.source.TryGet(out Agent source)) {
                 ushort gear = 0;
@@ -124,6 +129,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerLocalReceiveBulletDamage(Dam_PlayerDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             if (data.source.TryGet(out Agent source)) {
                 ushort gear = 0;
@@ -150,6 +156,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_PlayerLocalReceiveExplosionDamage(Dam_PlayerDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             APILogger.Debug($"local explosive");
             if (MineManager.currentDetonateEvent != null) {
@@ -162,6 +169,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_EnemyReceiveExplosionDamage(Dam_EnemyDamageBase __instance, pExplosionDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             if (MineManager.currentDetonateEvent != null) {
                 float damage = data.damage.Get(__instance.HealthMax);
@@ -169,6 +177,8 @@ namespace Vanilla.StatTracker.Damage {
                 float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
                 if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
                 Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage), 0, false, Mathf.Min(remainingStaggerDamage, stagger)));
+            } else {
+                APILogger.Error("Unable to find detonation event. This should not happen.");
             }
         }
 
@@ -176,6 +186,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_EnemyReceiveMeleeDamage(Dam_EnemyDamageBase __instance, pFullDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             if (data.source.TryGet(out Agent source)) {
                 ushort gear = 0;
@@ -200,6 +211,7 @@ namespace Vanilla.StatTracker.Damage {
         [HarmonyPrefix]
         public static void Prefix_EnemyReceiveBulletDamage(Dam_EnemyDamageBase __instance, pBulletDamageData data) {
             if (!SNet.IsMaster) return;
+            if (!__instance.Owner.Alive) return;
 
             if (data.source.TryGet(out Agent source)) {
                 ushort gear = 0;

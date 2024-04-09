@@ -64,7 +64,8 @@ export interface PlayerStats {
     enemyDamage: EnemyDamage;
     playerDamage: PlayerDamage;
     revives: number;
-    packsUsed: Map<PackType, number>; // TODO(randomuserhi): who gave the packs to who...
+    packsUsed: Map<PackType, number>;
+    packsGiven: Map<PackType, number>;
     timeSpentDowned: number;
     kills: Map<number, number>;
     mineKills: Map<number, number>;
@@ -82,6 +83,7 @@ export function PlayerStats(snet: bigint): PlayerStats {
         playerDamage: PlayerDamage(),
         revives: 0,
         packsUsed: new Map(),
+        packsGiven: new Map(),
         timeSpentDowned: 0,
         kills: new Map(),
         mineKills: new Map(),

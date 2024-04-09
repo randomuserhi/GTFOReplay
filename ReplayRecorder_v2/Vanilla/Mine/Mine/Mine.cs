@@ -33,8 +33,11 @@ namespace Vanilla.Mine {
         }
         private Type type;
 
+        public bool shot = false;
+        public PlayerAgent trigger;
         public PlayerAgent owner;
         private MineDeployerInstance_Detect_Laser? laser;
+        public MineDeployerInstance instance;
 
         public override bool Active {
             get {
@@ -50,9 +53,11 @@ namespace Vanilla.Mine {
         private float oldLength = 0;
 
         public rMine(PlayerAgent player, MineDeployerInstance mine, Type type) : base(mine.gameObject.GetInstanceID(), new MineTransform(mine)) {
+            this.instance = mine;
             laser = mine.m_detection.TryCast<MineDeployerInstance_Detect_Laser>();
             this.type = type;
             this.owner = player;
+            this.trigger = player;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -73,7 +78,7 @@ namespace Vanilla.Mine {
     public class rMineDetonate : Id {
         private ushort trigger;
         private bool shot;
-        public rMineDetonate(MineDeployerInstance mine, ushort trigger, bool shot = false) : base(mine.gameObject.GetInstanceID()) {
+        public rMineDetonate(int mineId, ushort trigger, bool shot = false) : base(mineId) {
             this.trigger = trigger;
             this.shot = shot;
         }
