@@ -9,11 +9,11 @@
 
         public ByteBuffer Checkout() {
             lock (lockObj) {
+                ++inUse;
                 if (pool.Count == 0) {
                     ++size;
                     return new ByteBuffer();
                 }
-                ++inUse;
                 return pool.Pop();
             }
         }
