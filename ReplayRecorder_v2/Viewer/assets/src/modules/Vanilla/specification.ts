@@ -55,6 +55,7 @@ export interface Specification {
         id: number;
         name?: string;
         maxHealth: number;
+        height?: number;
     }>;
 }
 

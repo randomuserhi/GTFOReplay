@@ -111,17 +111,16 @@ ModuleLoader.registerRender("Vanilla.DeathCross", (name, api) => {
     api.setRenderLoop([...renderLoop, {
         name, pass: (renderer, snapshot) => {
             const time = snapshot.time();
-            const _models = [];
+            const _models: Model[] = [];
             const models = renderer.getOrDefault("Vanilla.DeathCross", () => []);
             const deathCrosses = snapshot.getOrDefault("Vanilla.DeathCross", () => []);
-            let i = 0;
-            for (; i < deathCrosses.length; ++i) {
+            for (const cross of deathCrosses) {
+                const i = _models.length;
                 if (models[i] === undefined) {
                     models[i] = new Model();
                     renderer.scene.add(models[i].group);
                 }
 
-                const cross = deathCrosses[i];
                 let t = (time - cross.time) / (duration + cross.deviation);
                 let dx = 0;
                 let dy = 0;
@@ -145,11 +144,11 @@ ModuleLoader.registerRender("Vanilla.DeathCross", (name, api) => {
                 mesh.position.set(cross.position.x + dx, cross.position.y, cross.position.z + dy);
                 mesh.scale.set(scale, 1, scale);
                 
-                mesh.visible = deathCrosses[i].dimension === renderer.get("Dimension") && visible;
+                mesh.visible = cross.dimension === renderer.get("Dimension") && visible;
 
                 _models.push(models[i]);
             }
-            for (; i < models.length; ++i) {
+            for (let i = _models.length; i < models.length; ++i) {
                 renderer.scene.remove(models[i].group);
             }
             renderer.set("Vanilla.DeathCross", _models);

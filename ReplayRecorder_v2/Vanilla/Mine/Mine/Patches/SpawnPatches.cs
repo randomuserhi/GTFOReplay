@@ -5,6 +5,7 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.SNetUtils;
 using SNetwork;
+using Vanilla.Enemy.Detection;
 
 namespace Vanilla.Mine.Patches {
     [HarmonyPatch]
@@ -70,6 +71,9 @@ namespace Vanilla.Mine.Patches {
 
             APILogger.Debug($"shot: {mine.shot}");
             APILogger.Debug($"trigger: {mine.trigger.Owner.NickName}");
+
+            NoiseTracker.TrackNextNoise(new NoiseInfo(mine.trigger));
+
             MineManager.currentDetonateEvent = new rMineDetonate(mineId, mine.trigger.GlobalID, mine.shot);
             Replay.Trigger(MineManager.currentDetonateEvent);
         }

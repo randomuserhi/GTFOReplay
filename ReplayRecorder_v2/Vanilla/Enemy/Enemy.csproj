@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 		<DebugType>None</DebugType>
 		<AssemblyName>$(ProjectName)</AssemblyName>
-		<RootNamespace>$(ProjectName)</RootNamespace>
+		<RootNamespace>Vanilla.Enemy</RootNamespace>
 		<!-- Bepinex file location -->
 		<BepInEx>E:\GTFO mods\BepInExPack_GTFO\BepInEx</BepInEx>
 		<AdditionalIncludes>E:\GTFO mods\BepInEx\Plugins</AdditionalIncludes>

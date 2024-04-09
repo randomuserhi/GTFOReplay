@@ -79,12 +79,12 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
     api.setRenderLoop([...renderLoop, {
         name, pass: (renderer, snapshot) => {
             const t = snapshot.time();
-            const _models = [];
+            const _models: Mesh[] = [];
             const models = renderer.getOrDefault("Vanilla.Player.Gunshots", () => []);
             const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", () => []);
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-            let i = 0;
-            for (; i < gunshots.length; ++i) {
+            for (const gunshot of gunshots) {
+                const i = _models.length;
                 if (models[i] === undefined) {
                     const material = new MeshStandardMaterial({ color: 0xffffff });
                     material.transparent = true;
@@ -98,28 +98,28 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
                 const mesh = models[i];
                 
                 let color: ColorRepresentation = 0xffffff;
-                if (players.has(gunshots[i].owner)) {
-                    color = playerColors[players.get(gunshots[i].owner)!.slot];
+                if (players.has(gunshot.owner)) {
+                    color = playerColors[players.get(gunshot.owner)!.slot];
                 }
                 (mesh.material as MeshStandardMaterial).color.set(color);
 
-                const a = gunshots[i].start;
-                const b = gunshots[i].end;
+                const a = gunshot.start;
+                const b = gunshot.end;
                 mesh.position.set(a.x, a.y, a.z);
                 mesh.lookAt(b.x, b.y, b.z);
                 mesh.scale.z = Pod.Vec.dist(a, b);
 
-                const opacity = 1 - Math.clamp01((t - gunshots[i].time) / duration);
+                const opacity = 1 - Math.clamp01((t - gunshot.time) / duration);
                 if (opacity === 0) {
                     mesh.visible = false;
                     continue;
                 }
                 (mesh.material as LineBasicMaterial).opacity = opacity;
-                mesh.visible = gunshots[i].dimension === renderer.get("Dimension");
+                mesh.visible = gunshot.dimension === renderer.get("Dimension");
 
                 _models.push(models[i]);
             }
-            for (; i < models.length; ++i) {
+            for (let i = _models.length; i < models.length; ++i) {
                 renderer.scene.remove(models[i]);
             }
             renderer.set("Vanilla.Player.Gunshots", _models);
