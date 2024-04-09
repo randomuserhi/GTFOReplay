@@ -230,7 +230,7 @@ namespace ReplayRecorder.Snapshot {
         private DeltaState state = new DeltaState();
         private ByteBuffer buffer = new ByteBuffer();
         private ByteBuffer _buffer = new ByteBuffer();
-        internal BufferPool pool = new BufferPool();
+        internal BufferPool pool = new BufferPool(); // TODO(randomuserhi): Consider creating a new pool to shrink it every so often to keep memory usage low
         private Task? writeTask;
 
         public bool Ready => Active && completedHeader;
