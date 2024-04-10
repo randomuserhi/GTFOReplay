@@ -67,7 +67,6 @@ namespace Vanilla.Enemy {
         private Transform T_RFoot;
 
         public override bool Active => enemy != null;
-        public override int Id => enemy.GlobalID;
 
         public override bool IsDirty {
             get {
@@ -116,7 +115,7 @@ namespace Vanilla.Enemy {
             }
         }
 
-        public rEnemyModel(EnemyAgent enemy) {
+        public rEnemyModel(EnemyAgent enemy) : base(enemy.GlobalID) {
             this.enemy = enemy;
             Animator anim = enemy.Anim;
 

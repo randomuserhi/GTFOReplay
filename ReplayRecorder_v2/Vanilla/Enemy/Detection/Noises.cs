@@ -14,9 +14,11 @@ namespace Vanilla.Enemy.Detection {
         private static void RemoteNoise(pNM_NoiseData data) {
             if (!SNet.IsMaster) return;
 
+            PlayerAgent? agent = null;
             if (SNetUtils.TryGetSender(NoiseManager.s_noisePacket, out SNet_Player player)) {
-                NoiseTracker.TrackNextNoise(new NoiseInfo(player.PlayerAgent.TryCast<PlayerAgent>()));
+                agent = player.PlayerAgent.TryCast<PlayerAgent>();
             }
+            NoiseTracker.TrackNextNoise(new NoiseInfo(agent));
         }
 
         // Sentry gun noises

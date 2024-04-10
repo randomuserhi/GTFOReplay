@@ -109,7 +109,6 @@ const slot = Macro((() => {
 
         if (medals === undefined) {
             this.medalList.replaceChildren();
-            this.medals.clear();
             return;
         }
 
@@ -129,7 +128,6 @@ const slot = Macro((() => {
         for (const [id, medal] of [...this.medals.entries()]) {
             if (!medals.some(m => m.id === id)) {
                 medal.replaceWith();
-                this.medals.delete(id);
             }
         }
     };

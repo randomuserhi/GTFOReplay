@@ -7,7 +7,7 @@ namespace ReplayRecorder.API {
         private ReplayDynamic dynamic;
         private ushort type;
 
-        public override string? Debug => $"{dynamic.GetType().FullName}({type}) {dynamic.Id}";
+        public override string? Debug => $"{dynamic.GetType().FullName}({type}) {dynamic.id}";
 
         public ReplaySpawn(ReplayDynamic dynamic) {
             this.dynamic = dynamic;
@@ -16,7 +16,7 @@ namespace ReplayRecorder.API {
 
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(type, buffer);
-            BitHelper.WriteBytes(dynamic.Id, buffer);
+            BitHelper.WriteBytes(dynamic.id, buffer);
             dynamic.Spawn(buffer);
         }
     }
@@ -26,7 +26,7 @@ namespace ReplayRecorder.API {
         private ReplayDynamic dynamic;
         private ushort type;
 
-        public override string? Debug => $"{dynamic.GetType().FullName}({type}) {dynamic.Id}";
+        public override string? Debug => $"{dynamic.GetType().FullName}({type}) {dynamic.id}";
 
         public ReplayDespawn(ReplayDynamic dynamic) {
             this.dynamic = dynamic;
@@ -35,7 +35,7 @@ namespace ReplayRecorder.API {
 
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(type, buffer);
-            BitHelper.WriteBytes(dynamic.Id, buffer);
+            BitHelper.WriteBytes(dynamic.id, buffer);
             dynamic.Despawn(buffer);
         }
     }
@@ -46,12 +46,16 @@ namespace ReplayRecorder.API {
 
         public virtual string? Debug => null;
 
-        public abstract int Id { get; }
+        public readonly int id;
         public abstract bool IsDirty { get; }
         public abstract bool Active { get; }
 
+        public ReplayDynamic(int id) {
+            this.id = id;
+        }
+
         internal virtual void _Write(ByteBuffer buffer) {
-            BitHelper.WriteBytes(Id, buffer);
+            BitHelper.WriteBytes(id, buffer);
         }
         public virtual void Write(ByteBuffer buffer) { }
 
@@ -84,11 +88,11 @@ namespace ReplayRecorder.API {
                 return false;
             }
 
-            return Id == other.Id;
+            return id == other.id;
         }
 
         public override int GetHashCode() {
-            return GetType().GetHashCode() ^ Id.GetHashCode();
+            return GetType().GetHashCode() ^ id.GetHashCode();
         }
     }
 }

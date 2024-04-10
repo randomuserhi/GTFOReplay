@@ -9,9 +9,7 @@ namespace Vanilla.Map.Doors {
         private LG_WeakDoor door;
         private LG_WeakDoor_Destruction destruction;
 
-        private int id;
-        public override int Id => id;
-        public override string? Debug => $"{Id} - {destruction.m_health}/{door.m_healthMax}";
+        public override string? Debug => $"{id} - {destruction.m_health}/{door.m_healthMax}";
 
         public override bool Active => door != null;
         public override bool IsDirty => health != prevHealth;
@@ -19,8 +17,7 @@ namespace Vanilla.Map.Doors {
         private byte health => (byte)(byte.MaxValue * destruction.m_health / door.m_healthMax);
         private byte prevHealth = byte.MaxValue;
 
-        public rWeakDoor(LG_WeakDoor door) {
-            id = door.GetInstanceID();
+        public rWeakDoor(LG_WeakDoor door) : base(door.GetInstanceID()) {
             this.door = door;
 
             LG_WeakDoor_Destruction? _d = door.m_destruction.TryCast<LG_WeakDoor_Destruction>();

@@ -129,7 +129,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
         exec: (id, data, snapshot, lerp) => {
             const skeletons = snapshot.getOrDefault("Vanilla.Player.Model", () => new Map());
     
-            if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
+            if (!skeletons.has(id)) return;//throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
             const skeleton = skeletons.get(id)!;
             Skeleton.lerp(skeleton, data, lerp);
             skeleton.backpackPos = Pod.Vec.lerp(skeleton.backpackPos, data.backpackPos, lerp);

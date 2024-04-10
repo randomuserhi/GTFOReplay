@@ -42,8 +42,6 @@ namespace Vanilla.Bioscan {
         private CP_Bioscan_Core bioscan;
         private CP_Bioscan_Graphics graphics;
 
-        private int id;
-        public override int Id => id;
         public override bool Active => bioscan != null;
         public override bool IsDirty {
             get {
@@ -78,9 +76,8 @@ namespace Vanilla.Bioscan {
             }
         }
 
-        public rBioscanStatus(CP_Bioscan_Core bioscan) {
+        public rBioscanStatus(CP_Bioscan_Core bioscan) : base(bioscan.GetInstanceID()) {
             this.bioscan = bioscan;
-            id = bioscan.GetInstanceID();
             graphics = bioscan.m_graphics.TryCast<CP_Bioscan_Graphics>()!;
         }
 

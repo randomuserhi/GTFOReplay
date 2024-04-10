@@ -12,9 +12,6 @@ namespace Vanilla.Holopath {
     [ReplayData("Vanilla.Holopath", "0.0.1")]
     internal class rHolopath : ReplayDynamic {
         private CP_Holopath_Spline holopath;
-
-        private int id;
-        public override int Id => id;
         public override bool Active => holopath != null;
         public override bool IsDirty => progress != oldProgress;
 
@@ -23,8 +20,7 @@ namespace Vanilla.Holopath {
 
         private byte dimension;
 
-        public rHolopath(CP_Holopath_Spline holopath, byte dimension) {
-            id = holopath.GetInstanceID();
+        public rHolopath(CP_Holopath_Spline holopath, byte dimension) : base(holopath.GetInstanceID()) {
             this.holopath = holopath;
             this.dimension = dimension;
         }

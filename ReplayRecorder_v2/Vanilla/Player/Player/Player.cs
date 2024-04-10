@@ -19,40 +19,58 @@ namespace Vanilla.Player {
         [ReplayTick]
         private static void Tick() {
             PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
-            foreach (rPlayer player in players.ToArray()) {
-                if (!agents.Any(p => p.GlobalID == player.Id)) {
-                    Despawn(player.agent);
+
+            _players.Clear();
+            foreach (rPlayer player in players) {
+                if (!agents.Any(p => p.GlobalID == player.id)) {
+                    Despawn(player);
+                } else {
+                    _players.Add(player);
                 }
             }
+            List<rPlayer> temp = players;
+            players = _players;
+            _players = temp;
+
             foreach (PlayerAgent player in agents) {
-                if (!players.Any(p => p.Id == player.GlobalID)) {
+                if (!players.Any(p => p.id == player.GlobalID)) {
                     Spawn(player);
                 }
             }
         }
 
         private static List<rPlayer> players = new List<rPlayer>();
+        private static List<rPlayer> _players = new List<rPlayer>();
 
         public static void Spawn(PlayerAgent agent) {
             if (!Replay.Ready) return;
 
-            rPlayer? player = players.Find(p => p.Id == agent.GlobalID);
+            rPlayer? player = players.Find(p => p.id == agent.GlobalID);
             if (player != null) {
                 // Replace old elevator agent with agent in level
                 APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} was replaced by spawned agent.");
                 player.agent = agent;
                 player.transform = new AgentTransform(agent);
-                if (Replay.Has<rPlayerModel>(player.Id)) {
-                    Replay.Get<rPlayerModel>(player.Id).player = player.agent;
+                if (Replay.TryGet<rPlayerModel>(player.id, out rPlayerModel? model)) {
+                    model.player = player.agent;
                 }
-                if (Replay.Has<rPlayerBackpack>(player.Id)) {
-                    Replay.Get<rPlayerBackpack>(player.Id).agent = player.agent;
+                if (Replay.TryGet<rPlayerBackpack>(player.id, out rPlayerBackpack? backpack)) {
+                    backpack.agent = player.agent;
                 }
-                if (Replay.Has<rPlayerStats>(player.Id)) {
-                    Replay.Get<rPlayerStats>(player.Id).player = player.agent;
+                if (Replay.TryGet<rPlayerStats>(player.id, out rPlayerStats? stats)) {
+                    stats.player = player.agent;
                 }
                 return;
             }
+
+            // Remove any player of same SNET
+            players.RemoveAll((player) => {
+                bool match = player.agent == null || player.agent.Owner == null || player.agent.Owner.Lookup == agent.Owner.Lookup;
+                if (match) {
+                    Despawn(player);
+                }
+                return match;
+            });
 
             APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
             player = new rPlayer(agent);
@@ -67,18 +85,24 @@ namespace Vanilla.Player {
             if (!Replay.Ready) return;
             if (!Replay.Has<rPlayer>(agent.GlobalID)) return;
 
-            rPlayer? player = players.Find(p => p.Id == agent.GlobalID);
-            if (player == null) {
-                APILogger.Error($"(DespawnPlayer) Could not find player in managed list.");
-                return;
-            }
-
             APILogger.Debug($"{agent.Owner.NickName} has left.");
-            Replay.Despawn(player);
-            Replay.TryDespawn<rPlayerModel>(agent.GlobalID);
-            Replay.TryDespawn<rPlayerBackpack>(agent.GlobalID);
-            Replay.TryDespawn<rPlayerStats>(agent.GlobalID);
-            players.Remove(player);
+
+            // Remove any player of same SNET
+            players.RemoveAll((player) => {
+                bool match = player.agent == null || player.agent.Owner == null || player.agent.Owner.Lookup == agent.Owner.Lookup;
+                if (match) {
+                    Despawn(player);
+                }
+                return match;
+            });
+        }
+
+        private static void Despawn(rPlayer player) {
+            APILogger.Error(player.id);
+            Replay.TryDespawn<rPlayerModel>(player.id);
+            Replay.TryDespawn<rPlayerBackpack>(player.id);
+            Replay.TryDespawn<rPlayerStats>(player.id);
+            Replay.TryDespawn<rPlayer>(player.id);
         }
     }
 
@@ -103,8 +127,8 @@ namespace Vanilla.Player {
 
         public override bool Active {
             get {
-                if (agent == null && Replay.Has<rPlayer>(Id)) {
-                    Replay.Despawn(Replay.Get<rPlayer>(Id));
+                if (agent == null && Replay.Has<rPlayer>(id)) {
+                    Replay.Despawn(Replay.Get<rPlayer>(id));
                 }
                 return agent != null;
             }

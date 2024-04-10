@@ -41,8 +41,8 @@ namespace Vanilla.Mine {
 
         public override bool Active {
             get {
-                if (!transform.active && Replay.Has<rMine>(Id)) {
-                    Replay.Despawn(Replay.Get<rMine>(Id));
+                if (!transform.active && Replay.Has<rMine>(id)) {
+                    Replay.Despawn(Replay.Get<rMine>(id));
                 }
                 return base.Active;
             }

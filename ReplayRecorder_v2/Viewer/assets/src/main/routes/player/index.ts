@@ -221,7 +221,7 @@ export const player = Macro((() => {
                 const api = this.replay.api(snapshot);
                 this.renderer.render(dt / 1000, api);
 
-                this.scoreboard.update(api);
+                //this.scoreboard.update(api);
             }
 
             this.seeker.setValue(this.time / this.seekLength);
@@ -244,9 +244,9 @@ export const player = Macro((() => {
         <div rhu-id="mount" class="${style.mount}" style="display: none">
             ${seeker`rhu-id="seeker"`}
         </div>
-        <div rhu-id="scoreboardMount" class="${style.scoreboardMount}" style="display: none">
+        <!--<div rhu-id="scoreboardMount" class="${style.scoreboardMount}" style="display: none">
             ${scoreboard`rhu-id="scoreboard"`}
-        </div>
+        </div>-->
     </div>
     `, {
     element: //html

@@ -31,7 +31,6 @@ namespace ReplayRecorder.Core {
     }
 
     public abstract class DynamicPosition : ReplayDynamic {
-        private int id;
         public IReplayTransform transform;
         private Vector3 oldPosition;
         private byte oldDimensionIndex;
@@ -40,7 +39,6 @@ namespace ReplayRecorder.Core {
 
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z})";
 
-        public override int Id => id;
         public override bool Active => transform.active;
         public override bool IsDirty => transform.dimensionIndex != oldDimensionIndex ||
                                         transform.position != oldPosition;
@@ -48,8 +46,7 @@ namespace ReplayRecorder.Core {
         private Vector3 spawnPosition;
         private byte spawnDimensionIndex;
 
-        public DynamicPosition(int id, IReplayTransform transform) {
-            this.id = id;
+        public DynamicPosition(int id, IReplayTransform transform) : base(id) {
             this.transform = transform;
 
             spawnPosition = transform.position;
@@ -90,20 +87,17 @@ namespace ReplayRecorder.Core {
     }
 
     public abstract class DynamicRotation : ReplayDynamic {
-        private int id;
         public IReplayTransform transform;
         private Quaternion oldRotation;
 
         public override string? Debug => $"{id} - ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
-        public override int Id => id;
         public override bool Active => transform.active;
         public override bool IsDirty => (transform.rotation != oldRotation);
 
         private Quaternion spawnRotation;
 
-        public DynamicRotation(int id, IReplayTransform transform) {
-            this.id = id;
+        public DynamicRotation(int id, IReplayTransform transform) : base(id) {
             this.transform = transform;
 
             spawnRotation = transform.rotation;
@@ -137,7 +131,6 @@ namespace ReplayRecorder.Core {
     }
 
     public abstract class DynamicTransform : ReplayDynamic {
-        private int id;
         public IReplayTransform transform;
         private Vector3 oldPosition;
         private Quaternion oldRotation;
@@ -147,7 +140,6 @@ namespace ReplayRecorder.Core {
 
         public override string? Debug => $"{id} - [{transform.dimensionIndex}] ({transform.position.x}, {transform.position.y}, {transform.position.z}) ({transform.rotation.x}, {transform.rotation.y}, {transform.rotation.z}, {transform.rotation.w})";
 
-        public override int Id => id;
         public override bool Active => transform.active;
         public override bool IsDirty => transform.dimensionIndex != oldDimensionIndex ||
                                         transform.position != oldPosition ||
@@ -157,8 +149,7 @@ namespace ReplayRecorder.Core {
         private Quaternion spawnRotation;
         private byte spawnDimensionIndex;
 
-        public DynamicTransform(int id, IReplayTransform transform) {
-            this.id = id;
+        public DynamicTransform(int id, IReplayTransform transform) : base(id) {
             this.transform = transform;
 
             spawnPosition = transform.position;

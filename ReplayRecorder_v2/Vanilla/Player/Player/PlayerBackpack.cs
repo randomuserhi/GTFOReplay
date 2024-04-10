@@ -9,8 +9,6 @@ namespace Vanilla.Player {
     internal class rPlayerBackpack : ReplayDynamic {
         public PlayerAgent agent;
 
-        int id;
-        public override int Id => id;
 
         // NOTE(randomuserhi): Throws an error when a player joins -> I don't know how fatal this is...
         private ushort GetSlotId(InventorySlot slot) {
@@ -44,8 +42,8 @@ namespace Vanilla.Player {
 
         public override bool Active {
             get {
-                if (agent == null && Replay.Has<rPlayerBackpack>(Id)) {
-                    Replay.Despawn(Replay.Get<rPlayerBackpack>(Id));
+                if (agent == null && Replay.Has<rPlayerBackpack>(id)) {
+                    Replay.Despawn(Replay.Get<rPlayerBackpack>(id));
                 }
                 return agent != null;
             }
@@ -56,8 +54,7 @@ namespace Vanilla.Player {
             tool != lastTool ||
             pack != lastPack;
 
-        public rPlayerBackpack(PlayerAgent player) {
-            id = player.GlobalID;
+        public rPlayerBackpack(PlayerAgent player) : base(player.GlobalID) {
             this.agent = player;
         }
 

@@ -99,13 +99,12 @@ namespace Vanilla.Player {
 
         public override bool Active {
             get {
-                if (player == null && Replay.Has<rPlayerModel>(Id)) {
-                    Replay.Despawn(Replay.Get<rPlayerModel>(Id));
+                if (player == null && Replay.Has<rPlayerModel>(id)) {
+                    Replay.Despawn(Replay.Get<rPlayerModel>(id));
                 }
                 return player != null;
             }
         }
-        public override int Id => player.GlobalID;
         public override bool IsDirty {
             get {
                 bool arms =
@@ -144,7 +143,7 @@ namespace Vanilla.Player {
             }
         }
 
-        public rPlayerModel(PlayerAgent player) {
+        public rPlayerModel(PlayerAgent player) : base(player.GlobalID) {
             this.player = player;
         }
 

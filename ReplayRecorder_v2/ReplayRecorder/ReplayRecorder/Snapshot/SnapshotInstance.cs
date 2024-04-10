@@ -7,7 +7,6 @@ using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using UnityEngine;
 
@@ -67,7 +66,7 @@ namespace ReplayRecorder.Snapshot {
             public bool Has(ReplayDynamic dynamic) {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot add '{dynType.FullName}' to DynamicCollection of type '{Type.FullName}'.");
-                return mapOfDynamics.ContainsKey(dynamic.Id);
+                return mapOfDynamics.ContainsKey(dynamic.id);
             }
 
             [HideFromIl2Cpp]
@@ -85,12 +84,12 @@ namespace ReplayRecorder.Snapshot {
             public void Add(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot add '{dynType.FullName}' to DynamicCollection of type '{Type.FullName}'.");
-                if (mapOfDynamics.ContainsKey(dynamic.Id)) {
-                    if (errorOnDuplicate) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.Id}] already exists in DynamicCollection of type '{Type.FullName}'.");
+                if (mapOfDynamics.ContainsKey(dynamic.id)) {
+                    if (errorOnDuplicate) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.id}] already exists in DynamicCollection of type '{Type.FullName}'.");
                     return;
                 }
                 dynamics.Add(dynamic);
-                mapOfDynamics.Add(dynamic.Id, dynamic);
+                mapOfDynamics.Add(dynamic.id, dynamic);
             }
 
             [HideFromIl2Cpp]
@@ -108,7 +107,7 @@ namespace ReplayRecorder.Snapshot {
             public void Remove(ReplayDynamic dynamic) {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot remove dynamic of type '{dynType.FullName}' from DynamicCollection of type '{Type.FullName}'.");
-                Remove(dynamic.Id);
+                Remove(dynamic.id);
             }
 
             private bool handleRemoval = false;
@@ -349,6 +348,7 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal bool Has(Type type, int id) {
+            APILogger.Error($"Has {id}");
             if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
 
             return state.dynamics[type].Has(id);
@@ -356,19 +356,9 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal ReplayDynamic Get(Type type, int id) {
+            APILogger.Error($"Get {id}");
             if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
             return state.dynamics[type].Get(id);
-        }
-
-        [HideFromIl2Cpp]
-        internal bool TryGet(Type type, int id, [MaybeNullWhen(false)] out ReplayDynamic? dynamic) {
-            if (!state.dynamics.ContainsKey(type)) {
-                dynamic = null;
-                return false;
-            }
-
-            dynamic = state.dynamics[type].Get(id);
-            return true;
         }
 
         [HideFromIl2Cpp]
@@ -385,7 +375,7 @@ namespace ReplayRecorder.Snapshot {
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
             Trigger(new ReplayDespawn(dynamic));
-            state.dynamics[dynType].Remove(dynamic.Id, errorOnNotFound);
+            state.dynamics[dynType].Remove(dynamic.id, errorOnNotFound);
         }
 
         private Stopwatch stopwatch = new Stopwatch();

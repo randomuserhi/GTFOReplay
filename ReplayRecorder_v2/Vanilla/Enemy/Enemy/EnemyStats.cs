@@ -12,13 +12,10 @@ namespace Vanilla.Enemy {
     public class rEnemyStats : ReplayDynamic {
         public EnemyAgent agent;
 
-        private int id;
-        public override int Id => id;
-
         public override bool Active {
             get {
-                if (agent == null && Replay.Has<rEnemyStats>(Id)) {
-                    Replay.Despawn(Replay.Get<rEnemyStats>(Id));
+                if (agent == null && Replay.Has<rEnemyStats>(id)) {
+                    Replay.Despawn(Replay.Get<rEnemyStats>(id));
                 }
                 return agent != null;
             }
@@ -28,8 +25,7 @@ namespace Vanilla.Enemy {
         private bool lastTagged = false;
         private bool tagged => agent.IsTagged;
 
-        public rEnemyStats(EnemyAgent enemy) {
-            id = enemy.GlobalID;
+        public rEnemyStats(EnemyAgent enemy) : base(enemy.GlobalID) {
             this.agent = enemy;
         }
 

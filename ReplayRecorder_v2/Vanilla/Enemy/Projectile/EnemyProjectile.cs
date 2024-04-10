@@ -30,8 +30,8 @@ namespace Vanilla.EnemyProjectile {
 
         public override bool Active {
             get {
-                if (!transform.active && Replay.Has<rEnemyProjectile>(Id)) {
-                    Replay.Despawn(Replay.Get<rEnemyProjectile>(Id));
+                if (!transform.active && Replay.Has<rEnemyProjectile>(id)) {
+                    Replay.Despawn(Replay.Get<rEnemyProjectile>(id));
                 }
                 return base.Active;
             }

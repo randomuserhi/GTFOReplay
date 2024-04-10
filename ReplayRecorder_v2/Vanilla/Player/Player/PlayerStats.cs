@@ -8,13 +8,10 @@ namespace Vanilla.Player {
     internal class rPlayerStats : ReplayDynamic {
         public PlayerAgent player;
 
-        int id;
-        public override int Id => id;
-
         public override bool Active {
             get {
-                if (player == null && Replay.Has<rPlayerStats>(Id)) {
-                    Replay.Despawn(Replay.Get<rPlayerStats>(Id));
+                if (player == null && Replay.Has<rPlayerStats>(id)) {
+                    Replay.Despawn(Replay.Get<rPlayerStats>(id));
                 }
                 return player != null;
             }
@@ -91,8 +88,7 @@ namespace Vanilla.Player {
         private byte oldConsumableAmmo = 255;
         private byte oldResourceAmmo = 255;
 
-        public rPlayerStats(PlayerAgent player) {
-            id = player.GlobalID;
+        public rPlayerStats(PlayerAgent player) : base(player.GlobalID) {
             this.player = player;
             backpack = PlayerBackpackManager.GetBackpack(player.Owner);
         }

@@ -22,7 +22,7 @@ declare module "../../../replay/moduleloader.js" {
 
 export interface EnemyAlert {
     enemy: number;
-    player: number;
+    player?: number;
     time: number;
 }
 
@@ -35,7 +35,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Alert", "0.0.1", {
     },
     exec: async (data, snapshot) => {
         const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-        if (players.size > 4) throw new Error("There shouldn't be more than 4 players");
+        //if (players.size > 4) throw new Error("There shouldn't be more than 4 players");
         const { enemy, slot } = data;
         let player: number | undefined = undefined;
         for (const p of players.values()) {
@@ -44,7 +44,6 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Alert", "0.0.1", {
                 break;
             }
         }
-        if (player === undefined) throw new Error(`Couldn't find player slotted in position '${slot}'`);
         const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", () => []);
         alerts.push({ time: snapshot.time(), enemy, player });
     }
@@ -144,8 +143,8 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
                 const model = models[i];
                 
                 let color: ColorRepresentation = 0xffffff;
-                if (players.has(alert.player)) {
-                    color = playerColors[players.get(alerts[i].player)!.slot];
+                if (alert.player !== undefined && players.has(alert.player)) {
+                    color = playerColors[players.get(alert.player)!.slot];
                 }
                 model.material.color.set(color);
 

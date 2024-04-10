@@ -84,14 +84,10 @@ namespace Vanilla.EnemyTongue {
         public bool attackOut = false; // NOTE(randomuserhi): Purely for stat tracker
                                        // TODO(randomuserhi): Refactor so whole code base uses dynamics like this to
                                        //                     store additional information
-
-        private int id;
-        public override int Id => id;
         public override bool Active => tongue != null && tongue.m_owner != null;
         public override bool IsDirty => tongue.m_GPUSplineSegments.Length > 0;
 
-        public rEnemyTongue(MovingEnemyTentacleBase tongue) {
-            id = tongue.GetInstanceID();
+        public rEnemyTongue(MovingEnemyTentacleBase tongue) : base(tongue.GetInstanceID()) {
             this.tongue = tongue;
 
             // Set target tongue is after => if unobtainable, steal last valid target from rEnemyStats
