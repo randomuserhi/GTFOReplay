@@ -379,6 +379,7 @@ namespace ReplayRecorder.Snapshot {
 
         private Stopwatch stopwatch = new Stopwatch();
 
+        [HideFromIl2Cpp]
         private async Task Send(ByteBuffer packet) {
             // TODO(randomuserhi): List of tasks so each send is concurrent?
             foreach (EndPoint connection in Plugin.acknowledged) {

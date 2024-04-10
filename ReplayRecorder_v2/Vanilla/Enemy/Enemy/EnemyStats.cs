@@ -1,14 +1,18 @@
-﻿using Enemies;
+﻿using Agents;
+using Enemies;
+using HarmonyLib;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Stats", "0.0.1")]
-    internal class rEnemyStats : ReplayDynamic {
+    [HarmonyPatch]
+    public class rEnemyStats : ReplayDynamic {
         public EnemyAgent agent;
 
-        int id;
+        private int id;
         public override int Id => id;
 
         public override bool Active {
@@ -21,8 +25,8 @@ namespace Vanilla.Enemy {
         }
         public override bool IsDirty => lastTagged != tagged;
 
-        bool lastTagged = false;
-        bool tagged => agent.IsTagged;
+        private bool lastTagged = false;
+        private bool tagged => agent.IsTagged;
 
         public rEnemyStats(EnemyAgent enemy) {
             id = enemy.GlobalID;
@@ -37,6 +41,27 @@ namespace Vanilla.Enemy {
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
+        }
+
+        public PlayerAgent? target;
+
+        [HarmonyPatch]
+        internal class Patches {
+
+            [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.Target), MethodType.Setter)]
+            [HarmonyPrefix]
+            private static void SetTarget(EnemyAI __instance, AgentTarget value) {
+                //if (__instance.m_mode != AgentMode.Agressive) return;
+                if (value == null) return;
+                if (__instance.m_target != null && value.m_agent.GlobalID == __instance.m_target.m_agent.GlobalID) return;
+
+                PlayerAgent? player = value.m_agent.TryCast<PlayerAgent>();
+                if (player != null) {
+                    if (Replay.Has<rEnemyStats>(__instance.m_enemyAgent.GlobalID)) {
+                        Replay.Get<rEnemyStats>(__instance.m_enemyAgent.GlobalID).target = player;
+                    }
+                }
+            }
         }
     }
 }

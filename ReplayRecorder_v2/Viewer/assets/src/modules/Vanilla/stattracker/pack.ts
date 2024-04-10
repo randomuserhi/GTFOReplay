@@ -47,16 +47,18 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Pack", "0.0.1", {
         const target = players.get(data.target);
         if (target === undefined) throw new Error(`${data.source} does not exist.`);
 
-        const sourceStats = getPlayerStats(source.snet, statTracker)!;
-        const packsGiven = sourceStats.packsGiven;
-        if (packsGiven.has(data.type)) {
-            packsGiven.set(data.type, 0);
+        if (source !== target) {
+            const sourceStats = getPlayerStats(source.snet, statTracker)!;
+            const packsGiven = sourceStats.packsGiven;
+            if (!packsGiven.has(data.type)) {
+                packsGiven.set(data.type, 0);
+            }
+            packsGiven.set(data.type, packsGiven.get(data.type)! + 1);
         }
-        packsGiven.set(data.type, packsGiven.get(data.type)! + 1);
 
         const targetStats = getPlayerStats(target.snet, statTracker)!;
         const packsUsed = targetStats.packsUsed;
-        if (packsUsed.has(data.type)) {
+        if (!packsUsed.has(data.type)) {
             packsUsed.set(data.type, 0);
         }
         packsUsed.set(data.type, packsUsed.get(data.type)! + 1);

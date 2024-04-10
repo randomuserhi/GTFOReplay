@@ -8,7 +8,8 @@ namespace Vanilla.EnemyTongue.Patches {
     [HarmonyPatch]
     internal class TonguePatches {
         [HarmonyPatch(typeof(MovingEnemyTentacleBase), nameof(MovingEnemyTentacleBase.DoAttack))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
+        [HarmonyWrapSafe]
         private static void DoAttack(MovingEnemyTentacleBase __instance) {
             EnemyTongueReplayManager.Spawn(__instance);
         }

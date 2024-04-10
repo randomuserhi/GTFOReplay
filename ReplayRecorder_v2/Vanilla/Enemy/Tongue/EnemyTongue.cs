@@ -1,9 +1,11 @@
 ﻿using Enemies;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using UnityEngine;
+using Vanilla.Enemy;
 
 namespace Vanilla.EnemyTongue {
     internal static class EnemyTongueReplayManager {
@@ -76,8 +78,12 @@ namespace Vanilla.EnemyTongue {
     }
 
     [ReplayData("Vanilla.Enemy.Tongue", "0.0.1")]
-    internal class rEnemyTongue : ReplayDynamic {
+    public class rEnemyTongue : ReplayDynamic {
         private MovingEnemyTentacleBase tongue;
+        public PlayerAgent? target;
+        public bool attackOut = false; // NOTE(randomuserhi): Purely for stat tracker
+                                       // TODO(randomuserhi): Refactor so whole code base uses dynamics like this to
+                                       //                     store additional information
 
         private int id;
         public override int Id => id;
@@ -87,6 +93,16 @@ namespace Vanilla.EnemyTongue {
         public rEnemyTongue(MovingEnemyTentacleBase tongue) {
             id = tongue.GetInstanceID();
             this.tongue = tongue;
+
+            // Set target tongue is after => if unobtainable, steal last valid target from rEnemyStats
+            if (tongue.PlayerTarget != null) {
+                target = tongue.PlayerTarget;
+            } else if (Replay.Has<rEnemyStats>(tongue.m_owner.GlobalID)) {
+                rEnemyStats enemy = Replay.Get<rEnemyStats>(tongue.m_owner.GlobalID);
+                if (enemy.target != null) {
+                    target = enemy.target;
+                }
+            }
         }
 
         public override void Write(ByteBuffer buffer) {
