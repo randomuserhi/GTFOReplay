@@ -4,6 +4,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Exceptions;
 using ReplayRecorder.Snapshot;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace ReplayRecorder {
@@ -84,6 +85,16 @@ namespace ReplayRecorder {
         public static bool Has<T>(int id) where T : ReplayDynamic => SnapshotManager.GetInstance().Has(typeof(T), id);
         [HideFromIl2Cpp]
         public static T Get<T>(int id) where T : ReplayDynamic => (T)SnapshotManager.GetInstance().Get(typeof(T), id);
+        [HideFromIl2Cpp]
+        public static bool TryGet<T>(int id, [MaybeNullWhen(false)] out T? dynamic) where T : ReplayDynamic {
+            if (SnapshotManager.GetInstance().TryGet(typeof(T), id, out ReplayDynamic? generic)) {
+                dynamic = (T?)generic;
+                return true;
+            } else {
+                dynamic = null;
+                return false;
+            }
+        }
         [HideFromIl2Cpp]
         public static void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) => SnapshotManager.GetInstance().Spawn(dynamic, errorOnDuplicate);
         [HideFromIl2Cpp]

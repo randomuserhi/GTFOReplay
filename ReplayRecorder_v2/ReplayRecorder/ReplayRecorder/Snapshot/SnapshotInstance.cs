@@ -7,6 +7,7 @@ using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using UnityEngine;
 
@@ -356,8 +357,18 @@ namespace ReplayRecorder.Snapshot {
         [HideFromIl2Cpp]
         internal ReplayDynamic Get(Type type, int id) {
             if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
-
             return state.dynamics[type].Get(id);
+        }
+
+        [HideFromIl2Cpp]
+        internal bool TryGet(Type type, int id, [MaybeNullWhen(false)] out ReplayDynamic? dynamic) {
+            if (!state.dynamics.ContainsKey(type)) {
+                dynamic = null;
+                return false;
+            }
+
+            dynamic = state.dynamics[type].Get(id);
+            return true;
         }
 
         [HideFromIl2Cpp]
