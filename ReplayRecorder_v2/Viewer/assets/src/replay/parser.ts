@@ -100,12 +100,10 @@ export class Parser {
                 this.dispatchEvent(CreateEvent("eoh", undefined));
             });
             ipc.on("snapshot", (snapshot: Timeline.Snapshot) => {
-                if (snapshot.time > 1800000) return;
                 replay.timeline.push(snapshot);
                 this.dispatchEvent(CreateEvent("snapshot", undefined));
             });
             ipc.on("state", (state: Snapshot) => {
-                if (state.time > 1800000) return;
                 replay.snapshots.push(state);
             });
             ipc.on("end", () => {
