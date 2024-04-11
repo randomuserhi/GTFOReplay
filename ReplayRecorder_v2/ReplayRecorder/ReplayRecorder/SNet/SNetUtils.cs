@@ -16,6 +16,7 @@ namespace ReplayRecorder.SNetUtils {
                 return true;
             }
             player = null!;
+            APILogger.Error($"Player: {player != null}");
             return false;
         }
     }

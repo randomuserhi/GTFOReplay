@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3, Vector3Like } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import * as BitHelper from "../replay/bithelper.js";
@@ -7,6 +7,12 @@ import { ModuleLoader, ReplayApi } from "../replay/moduleloader.js";
 import { Quat, Quaternion, Vec, Vector } from "../replay/pod.js";
 import { Renderer } from "../replay/renderer.js";
 import { ByteStream } from "../replay/stream.js";
+
+declare module "three" {
+    interface Matrix4 {
+        compose(translation: Vector3Like, rotation: Quaternion, scale: Vector3): this;
+    }
+}
 
 declare module "../replay/moduleloader.js" {
     namespace Typemap {
@@ -78,6 +84,8 @@ export interface DynamicTransform extends Dynamic {
     dimension: number;
 }
 
+const temp: Vector = { x: 0, y: 0, z: 0 };
+
 export namespace DynamicTransform {
     export function create({ id, position, rotation, dimension }: { id: number, position?: Vector, rotation?: Quaternion, dimension?: number }): { id: number, position: Vector, rotation: Quaternion, dimension: number } {
         return {
@@ -105,9 +113,9 @@ export namespace DynamicTransform {
     }
     export function lerp(dyn: DynamicTransform, data: { dimension: number; absolute: boolean; position: Vector; rotation: Quaternion; }, lerp: number): void {
         const { absolute, position, rotation, dimension } = data;
-        const fpos = absolute ? position : Vec.add(dyn.position, position);
-        dyn.position = Vec.lerp(dyn.position, fpos, lerp);
-        dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);
+        const fpos = absolute ? position : Vec.add(temp, dyn.position, position);
+        Vec.lerp(dyn.position, dyn.position, fpos, lerp);
+        Quat.slerp(dyn.rotation, dyn.rotation, rotation, lerp);
         dyn.dimension = dimension;
     }
 }
@@ -134,8 +142,8 @@ export namespace DynamicPosition {
     }
     export function lerp(dyn: DynamicPosition, data: { dimension: number; absolute: boolean; position: Vector; }, lerp: number): void {
         const { absolute, position, dimension } = data;
-        const fpos = absolute ? position : Vec.add(dyn.position, position);
-        dyn.position = Vec.lerp(dyn.position, fpos, lerp);
+        const fpos = absolute ? position : Vec.add(temp, dyn.position, position);
+        Vec.lerp(dyn.position, dyn.position, fpos, lerp);
         dyn.dimension = dimension;
     }
 }
@@ -157,7 +165,7 @@ export namespace DynamicRotation {
     }
     export function lerp(dyn: DynamicRotation, data: { rotation: Quaternion; }, lerp: number): void {
         const { rotation } = data;
-        dyn.rotation = Quat.slerp(dyn.rotation, rotation, lerp);
+        Quat.slerp(dyn.rotation, dyn.rotation, rotation, lerp);
     }
 }
 
@@ -171,13 +179,13 @@ declare module "../replay/instancing.js" {
 }
 
 (() => {
-    const cylinders = createInstance("Cylinder.MeshPhong", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), new MeshPhongMaterial(), 10000);
+    const cylinders = createInstance("Cylinder.MeshPhong", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), new MeshPhongMaterial(), 100);
     cylinders.frustumCulled = false;
     cylinders.instanceMatrix.setUsage( DynamicDrawUsage );
     cylinders.castShadow = true;
     cylinders.receiveShadow = true;
 
-    const spheres = createInstance("Sphere.MeshPhong", new SphereGeometry(1, 10, 10), new MeshPhongMaterial(), 10000);
+    const spheres = createInstance("Sphere.MeshPhong", new SphereGeometry(1, 10, 10), new MeshPhongMaterial(), 100);
     spheres.frustumCulled = false;
     spheres.instanceMatrix.setUsage( DynamicDrawUsage );
     spheres.castShadow = true;
@@ -202,6 +210,7 @@ declare module "../replay/moduleloader.js" {
 
 // TODO(randomuserhi): make better
 // TODO(randomuserhi): fix bug related to event listeners stacking up
+const move: Vector3 = new Vector3();
 
 class CameraControls {
     slot?: number;
@@ -424,33 +433,33 @@ class CameraControls {
         } else {
             const speed = this.speed * dt;
             if (this.forward) {
-                const fwd = new Vector3(0, 0, 1).multiplyScalar(speed);
+                const fwd = move.set(0, 0, 1).multiplyScalar(speed);
                 fwd.applyQuaternion(camera.quaternion);
                 camera.position.sub(fwd);
             }
             if (this.backward) {
-                const bwd = new Vector3(0, 0, -1).multiplyScalar(speed);
+                const bwd = move.set(0, 0, -1).multiplyScalar(speed);
                 bwd.applyQuaternion(camera.quaternion);
                 camera.position.sub(bwd);
             }
 
             if (this.left) {
-                const left = new Vector3(-1, 0, 0).multiplyScalar(speed);
+                const left = move.set(-1, 0, 0).multiplyScalar(speed);
                 left.applyQuaternion(camera.quaternion);
                 camera.position.add(left);
             }
             if (this.right) {
-                const right = new Vector3(1, 0, 0).multiplyScalar(speed);
+                const right = move.set(1, 0, 0).multiplyScalar(speed);
                 right.applyQuaternion(camera.quaternion);
                 camera.position.add(right);
             }
 
             if (this.up) {
-                const up = new Vector3(0, 1, 0).multiplyScalar(speed);
+                const up = move.set(0, 1, 0).multiplyScalar(speed);
                 camera.position.add(up);
             }
             if (this.down) {
-                const down = new Vector3(0, -1, 0).multiplyScalar(speed);
+                const down = move.set(0, -1, 0).multiplyScalar(speed);
                 camera.position.add(down);
             }
         }

@@ -57,7 +57,8 @@ ModuleLoader.registerDynamic("Vanilla.Holopath", "0.0.1", {
             const spline: Pod.Vector[] = new Array(length);
             spline[0] = await BitHelper.readVector(data);
             for (let i = 1; i < length; ++i) {
-                spline[i] = Pod.Vec.add(spline[i - 1], await BitHelper.readHalfVector(data));
+                const point = { x: 0, y: 0, z: 0 };
+                spline[i] = Pod.Vec.add(point, spline[i - 1], await BitHelper.readHalfVector(data));
             }
             return {
                 ...header, spline
@@ -109,6 +110,8 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
+const temp = Pod.Vec.zero();
+
 ModuleLoader.registerRender("Holopath", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
@@ -131,12 +134,12 @@ ModuleLoader.registerRender("Holopath", (name, api) => {
 
                 let totalLength = 0;
                 for (let i = 1; i < holopath.spline.length; ++i) {
-                    totalLength += Pod.Vec.length(Pod.Vec.sub(holopath.spline[i], holopath.spline[i - 1]));
+                    totalLength += Pod.Vec.length(Pod.Vec.sub(temp, holopath.spline[i], holopath.spline[i - 1]));
                 }
                 const distance = holopath.progress * totalLength;
                 const points: Vector3[] = [new Vector3(holopath.spline[0].x, holopath.spline[0].y, holopath.spline[0].z)];
                 for (let i = 1, d = 0; d <= distance && i < holopath.spline.length; ++i) {
-                    const diff = Pod.Vec.sub(holopath.spline[i], holopath.spline[i - 1]);
+                    const diff = Pod.Vec.sub(temp, holopath.spline[i], holopath.spline[i - 1]);
                     const dist = Pod.Vec.length(diff);
                     
                     let lerp = 1;

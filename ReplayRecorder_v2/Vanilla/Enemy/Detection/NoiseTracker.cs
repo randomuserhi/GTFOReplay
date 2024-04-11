@@ -25,6 +25,7 @@ namespace Vanilla.Enemy.Detection {
 
         // NOTE(randomuserhi): Must be called in the call stack prior to NoiseManager.MakeNoise otherwise they will fail to track
         public static void TrackNextNoise(NoiseInfo? info) {
+            Patches.noises.Enqueue(info);
             Patches.currentNoiseInfo = info;
         }
 
@@ -98,7 +99,7 @@ namespace Vanilla.Enemy.Detection {
             internal static List<NoiseEvent> delayedNoiseEvents = new List<NoiseEvent>();
             private static List<NoiseEvent> _delayedNoiseEvents = new List<NoiseEvent>();
 
-            private static Queue<NoiseInfo?> noises = new Queue<NoiseInfo?>();
+            internal static Queue<NoiseInfo?> noises = new Queue<NoiseInfo?>();
             internal static NoiseInfo? currentNoiseInfo = null;
 
             [ReplayInit]
@@ -164,9 +165,9 @@ namespace Vanilla.Enemy.Detection {
                 if (delayedNoiseEvent != null) {
                     APILogger.Debug($"Matched sound to a delayed sec door event. {_delayedNoiseEvents.Count} -> {delayedNoiseEvents.Count}");
                     noises.Enqueue(delayedNoiseEvent.info);
-                } else {
-                    noises.Enqueue(currentNoiseInfo);
-                    currentNoiseInfo = null;
+                } else if (currentNoiseInfo == null) {
+                    // If no noise was tracked -> push an untracked noise to stack
+                    noises.Enqueue(null);
                 }
             }
         }

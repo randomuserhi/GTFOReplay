@@ -22,6 +22,16 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
+const bodyTop: Pod.Vector = Pod.Vec.zero();
+const bodyBottom: Pod.Vector = Pod.Vec.zero();
+const lookAt = new Vector3();
+const scale = new Vector3();
+const rot = new Quaternion();
+const pM = new Matrix4();
+
+const tmpPos = new Vector3();
+const camPos = new Vector3();
+
 class PlayerModel extends SkeletonModel {
     equipped: Group;
 
@@ -43,10 +53,11 @@ class PlayerModel extends SkeletonModel {
         this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
+        this.group.add(this.tmp);
 
         this.equipped = new Group();
         this.backpack = new Group();
-        this.group.add(this.equipped, this.backpack, this.tmp);
+        this.group.add(this.equipped, this.backpack);
 
         this.slots = new Array(inventorySlots.length);
         this.backpackAligns = new Array(inventorySlots.length);
@@ -99,19 +110,28 @@ class PlayerModel extends SkeletonModel {
         const radius = 0.05;
         const sM = new Vector3(radius, radius, radius);
 
-        const bodyTop = Pod.Vec.mid(skeleton.LULeg, skeleton.RULeg);
+        Pod.Vec.mid(bodyTop, skeleton.LULeg, skeleton.RULeg);
         bodyTop.x += x;
         bodyTop.y += y;
         bodyTop.z += z;
-        const bodyBottom = { x: skeleton.head.x + x, y: skeleton.head.y + y, z: skeleton.head.z + z };
 
-        const pM = new Matrix4();
-        pM.lookAt(new Vector3(bodyBottom.x, bodyBottom.y, bodyBottom.z).sub(bodyTop), zeroV, upV);
-        getInstance("Cylinder.MeshPhong").setMatrixAt(this.parts[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), new Quaternion().setFromRotationMatrix(pM), new Vector3(radius, radius, Pod.Vec.dist(bodyTop, bodyBottom) * 0.7)));
+        bodyBottom.x = skeleton.head.x + x;
+        bodyBottom.y = skeleton.head.y + y;
+        bodyBottom.z = skeleton.head.z + z;
+
+        pM.lookAt(lookAt.copy(bodyBottom).sub(bodyTop), zeroV, upV);
+        scale.x = radius;
+        scale.y = radius;
+        scale.z = Pod.Vec.dist(bodyTop, bodyBottom) * 0.7;
+        getInstance("Cylinder.MeshPhong").setMatrixAt(this.parts[0], pM.compose(bodyTop, rot.setFromRotationMatrix(pM), scale));
 
         const spheres = getInstance("Sphere.MeshPhong");
-        spheres.setMatrixAt(this.points[0], pM.compose(new Vector3(bodyTop.x, bodyTop.y, bodyTop.z), zeroQ, sM));
-        spheres.setMatrixAt(this.points[1], pM.compose(new Vector3(bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7, bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7, bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7), zeroQ, sM));
+        spheres.setMatrixAt(this.points[0], pM.compose(bodyTop, zeroQ, sM));
+
+        bodyTop.x = bodyTop.x + (bodyBottom.x - bodyTop.x) * 0.7;
+        bodyTop.y = bodyTop.y + (bodyBottom.y - bodyTop.y) * 0.7;
+        bodyTop.z = bodyTop.z + (bodyBottom.z - bodyTop.z) * 0.7;
+        spheres.setMatrixAt(this.points[1], pM.compose(bodyTop, zeroQ, sM));
     }
 
     public morph(player: Player) {
@@ -125,7 +145,7 @@ class PlayerModel extends SkeletonModel {
                 return;
             }
             
-            const nickname = player.nickname.replace(/<\/?[^>]+(>|$)/g, "");
+            const nickname = player.nickname;
             const health = `Health: ${Math.round(stats.health * 100).toString().padStart(3)}%`;
             const infectionValue = Math.round(stats.infection * 100);
             const infection = `${(infectionValue >= 10 ? ` (${infectionValue.toString().padStart(3)}%)` : "")}`;
@@ -157,10 +177,7 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
             }
             this.tmp.visible = true;
 
-            const tmpPos = new Vector3();
             this.tmp.getWorldPosition(tmpPos);
-
-            const camPos = new Vector3();
             camera.getWorldPosition(camPos);
 
             const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);

@@ -84,7 +84,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
                 ...spawn,
                 snet: await BitHelper.readULong(data),
                 slot: await BitHelper.readByte(data),
-                nickname: await BitHelper.readString(data)
+                nickname: (await BitHelper.readString(data)).replace(/<\/?[^>]+(>|$)/g, "")
             };
             return result;
         },
@@ -132,12 +132,12 @@ ModuleLoader.registerDynamic("Vanilla.Player.Model", "0.0.1", {
             if (!skeletons.has(id)) return;//throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
             const skeleton = skeletons.get(id)!;
             Skeleton.lerp(skeleton, data, lerp);
-            skeleton.backpackPos = Pod.Vec.lerp(skeleton.backpackPos, data.backpackPos, lerp);
-            skeleton.backpackRot = Pod.Quat.slerp(skeleton.backpackRot, data.backpackRot, lerp);
+            Pod.Vec.lerp(skeleton.backpackPos, skeleton.backpackPos, data.backpackPos, lerp);
+            Pod.Quat.slerp(skeleton.backpackRot, skeleton.backpackRot, data.backpackRot, lerp);
 
-            skeleton.wieldedPos = Pod.Vec.lerp(skeleton.wieldedPos, data.wieldedPos, lerp);
-            skeleton.wieldedRot = Pod.Quat.slerp(skeleton.wieldedRot, data.wieldedRot, lerp);
-            skeleton.foldRot = Pod.Quat.slerp(skeleton.foldRot, data.foldRot, lerp);
+            Pod.Vec.lerp(skeleton.wieldedPos, skeleton.wieldedPos, data.wieldedPos, lerp);
+            Pod.Quat.slerp(skeleton.wieldedRot, skeleton.wieldedRot, data.wieldedRot, lerp);
+            Pod.Quat.slerp(skeleton.foldRot, skeleton.foldRot, data.foldRot, lerp);
         }
     },
     spawn: {

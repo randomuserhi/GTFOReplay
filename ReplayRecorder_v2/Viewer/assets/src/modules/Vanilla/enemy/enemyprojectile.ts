@@ -49,7 +49,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
                 duration: 500
             });
             trails.get(id)!.points.push({
-                position: projectile.position,
+                position: { ...projectile.position },
                 time: snapshot.time()
             });
         }

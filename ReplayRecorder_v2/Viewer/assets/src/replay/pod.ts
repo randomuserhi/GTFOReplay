@@ -21,51 +21,45 @@ export namespace Vec {
         const z = a.z - b.z;
         return Math.sqrt(x * x + y * y + z * z);
     }
-    export function lerp(a: Vector, b: Vector, lerp: number): Vector {
+    export function lerp(result: Vector, a: Vector, b: Vector, lerp: number): Vector {
         lerp = Math.clamp01(lerp);
-        return {
-            x: a.x + (b.x - a.x) * lerp,
-            y: a.y + (b.y - a.y) * lerp,
-            z: a.z + (b.z - a.z) * lerp
-        };
+        result.x = a.x + (b.x - a.x) * lerp;
+        result.y = a.y + (b.y - a.y) * lerp;
+        result.z = a.z + (b.z - a.z) * lerp;
+        return result;
     }
-    export function mid(a: Vector, b: Vector): Vector {
-        return {
-            x: (a.x + b.x) / 2,
-            y: (a.y + b.y) / 2,
-            z: (a.z + b.z) / 2
-        };
+    export function mid(result: Vector, a: Vector, b: Vector): Vector {
+        result.x = (a.x + b.x) / 2;
+        result.y = (a.y + b.y) / 2;
+        result.z = (a.z + b.z) / 2;
+        return result;
     }
-    export function add(a: Vector, b: Vector): Vector {
-        return {
-            x: a.x + b.x,
-            y: a.y + b.y,
-            z: a.z + b.z
-        };
+    export function add(result: Vector, a: Vector, b: Vector): Vector {
+        result.x = a.x + b.x;
+        result.y = a.y + b.y;
+        result.z = a.z + b.z;
+        return result;
     }
-    export function sub(a: Vector, b: Vector): Vector {
-        return {
-            x: a.x - b.x,
-            y: a.y - b.y,
-            z: a.z - b.z
-        };
+    export function sub(result: Vector, a: Vector, b: Vector): Vector {
+        result.x = a.x - b.x;
+        result.y = a.y - b.y;
+        result.z = a.z - b.z;
+        return result;
     }
     export function dot(a: Vector, b: Vector): number {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
-    export function cmul(a: Vector, b: Vector): Vector {
-        return {
-            x: a.x * b.x,
-            y: a.y * b.y,
-            z: a.z * b.z
-        };
+    export function cmul(result: Vector, a: Vector, b: Vector): Vector {
+        result.x = a.x * b.x;
+        result.y = a.y * b.y;
+        result.z = a.z * b.z;
+        return result;
     }
-    export function scale(a: Vector, b: number): Vector {
-        return {
-            x: a.x * b,
-            y: a.y * b,
-            z: a.z * b
-        };
+    export function scale(result: Vector, a: Vector, b: number): Vector {
+        result.x = a.x * b;
+        result.y = a.y * b;
+        result.z = a.z * b;
+        return result;
     }
 }
 
@@ -85,14 +79,13 @@ export namespace Quat {
             z: 0
         };
     }
-    export function normalize(a: Quaternion): Quaternion {
+    export function normalize(result: Quaternion, a: Quaternion): Quaternion {
         const length = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w);
-        return {
-            x: a.x / length,
-            y: a.y / length,
-            z: a.z / length,
-            w: a.w / length
-        };
+        result.x = a.x / length;
+        result.y = a.y / length;
+        result.z = a.z / length;
+        result.w = a.w / length;
+        return result;
     }
     export function euler(a: Quaternion): Vector {
         const euler: Vector = {x: 0, y: 0, z: 0};
@@ -117,7 +110,7 @@ export namespace Quat {
         }
         return euler;
     }
-    export function slerp(a: Quaternion, b: Quaternion, lerp: number) {
+    export function slerp(result: Quaternion, a: Quaternion, b: Quaternion, lerp: number) {
         lerp = Math.clamp01(lerp);
         
         const cosHalfTheta = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
@@ -139,21 +132,18 @@ export namespace Quat {
         const halfTheta = Math.acos(cosHalfTheta);
         const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
         if (Math.abs(sinHalfTheta) < 0.001) {
-            return {
-                w: (a.w * 0.5 + b.w * 0.5),
-                x: (a.x * 0.5 + b.x * 0.5),
-                y: (a.y * 0.5 + b.y * 0.5),
-                z: (a.z * 0.5 + b.z * 0.5)
-            };
+            result.w = (a.w * 0.5 + b.w * 0.5);
+            result.x = (a.x * 0.5 + b.x * 0.5);
+            result.y = (a.y * 0.5 + b.y * 0.5);
+            result.z = (a.z * 0.5 + b.z * 0.5);
+            return result;
         }
         const ratioA = Math.sin((1 - lerp) * halfTheta) / sinHalfTheta;
         const ratioB = Math.sin(lerp * halfTheta) / sinHalfTheta;
-        const result = {
-            w: (a.w * ratioA + b.w * ratioB),
-            x: (a.x * ratioA + b.x * ratioB),
-            y: (a.y * ratioA + b.y * ratioB),
-            z: (a.z * ratioA + b.z * ratioB)
-        };
+        result.w = (a.w * ratioA + b.w * ratioB);
+        result.x = (a.x * ratioA + b.x * ratioB);
+        result.y = (a.y * ratioA + b.y * ratioB);
+        result.z = (a.z * ratioA + b.z * ratioB);
         const length = Math.sqrt(result.x * result.x + result.y * result.y + result.z * result.z + result.w * result.w);
         result.x /= length;
         result.y /= length;

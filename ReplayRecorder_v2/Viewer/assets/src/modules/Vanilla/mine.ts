@@ -194,8 +194,8 @@ class MineModel {
     }
 
     public update(mine: Mine) {
-        this.group.quaternion.set(mine.rotation.x, mine.rotation.y, mine.rotation.z, mine.rotation.w);
-        this.group.position.set(mine.position.x, mine.position.y, mine.position.z);
+        this.group.quaternion.copy(mine.rotation);
+        this.group.position.copy(mine.position);
 
         this.laser.scale.set(0.03, 0.03, mine.length);
     }

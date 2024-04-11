@@ -59,7 +59,7 @@ export namespace Internal {
                 if (module === undefined) throw new ModuleNotFound(`Could not find module of type '${type}'.`);
                 const exec = ModuleLoader.getDynamic(module as any)?.spawn?.exec;
                 if (exec === undefined) throw new NoExecFunc(`Could not find spawn exec function of type '${module.typename}(${module.version})'.`); 
-                exec(id, detail as never, snapshot);
+                exec(id, structuredClone(detail) as never, snapshot);
             }
         },
         "ReplayRecorder.Despawn": {
@@ -69,7 +69,7 @@ export namespace Internal {
                 if (module === undefined) throw new ModuleNotFound(`Could not find module of type '${type}'.`);
                 const exec = ModuleLoader.getDynamic(module as any)?.despawn?.exec;
                 if (exec === undefined) throw new NoExecFunc(`Could not find spawn exec function of type '${module.typename}(${module.version})'.`); 
-                exec(id, detail as never, snapshot);
+                exec(id, structuredClone(detail) as never, snapshot);
             }
         }
     };

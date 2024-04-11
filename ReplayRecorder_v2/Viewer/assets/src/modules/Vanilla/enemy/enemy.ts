@@ -231,6 +231,7 @@ ModuleLoader.registerTick((snapshot) => {
         if (snapshot.time() - item.time > cacheClearTime) {
             if (item.enemy.health > 0) {
                 console.warn(`Cache cleared enemy: ${id}[health: ${item.enemy.health}]`);
+                console.log(item.enemy);
             }
             cache.delete(id);
         }
@@ -435,8 +436,8 @@ class FlyerModel {
     }
 
     public update(enemy: Enemy) {
-        this.group.quaternion.set(enemy.rotation.x, enemy.rotation.y, enemy.rotation.z, enemy.rotation.w);
-        this.group.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
+        this.group.quaternion.copy(enemy.rotation);
+        this.group.position.copy(enemy.position);
     }
 
     public setVisible(visible: boolean) {

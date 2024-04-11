@@ -154,16 +154,16 @@ export class Renderer {
     }
 
     public render(dt: number, snapshot: ReplayApi) {
-        for (const mesh of _instances.values()) {
-            mesh.count = 0;
-            this.scene.add(mesh);
+        for (const manager of _instances.values()) {
+            manager.mesh.count = 0;
+            this.scene.add(manager.mesh);
         }
         for (const func of this.renderLoop.values()) {
             func.pass(this, snapshot, dt);
         }
-        for (const mesh of _instances.values()) {
-            mesh.instanceMatrix.needsUpdate = true;
-            if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
+        for (const manager of _instances.values()) {
+            manager. mesh.instanceMatrix.needsUpdate = true;
+            if (manager.mesh.instanceColor !== null) manager.mesh.instanceColor.needsUpdate = true;
         }
         this.composer.render();
     }

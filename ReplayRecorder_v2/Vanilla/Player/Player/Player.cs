@@ -45,35 +45,11 @@ namespace Vanilla.Player {
         public static void Spawn(PlayerAgent agent) {
             if (!Replay.Ready) return;
 
-            rPlayer? player = players.Find(p => p.id == agent.GlobalID);
-            if (player != null) {
-                // Replace old elevator agent with agent in level
-                APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} was replaced by spawned agent.");
-                player.agent = agent;
-                player.transform = new AgentTransform(agent);
-                if (Replay.TryGet<rPlayerModel>(player.id, out rPlayerModel? model)) {
-                    model.player = player.agent;
-                }
-                if (Replay.TryGet<rPlayerBackpack>(player.id, out rPlayerBackpack? backpack)) {
-                    backpack.agent = player.agent;
-                }
-                if (Replay.TryGet<rPlayerStats>(player.id, out rPlayerStats? stats)) {
-                    stats.player = player.agent;
-                }
-                return;
-            }
-
             // Remove any player of same SNET
-            players.RemoveAll((player) => {
-                bool match = player.agent == null || player.agent.Owner == null || player.agent.Owner.Lookup == agent.Owner.Lookup;
-                if (match) {
-                    Despawn(player);
-                }
-                return match;
-            });
+            RemoveAll(agent);
 
             APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
-            player = new rPlayer(agent);
+            rPlayer player = new rPlayer(agent);
             Replay.Spawn(player);
             Replay.Spawn(new rPlayerModel(agent));
             Replay.Spawn(new rPlayerBackpack(agent));
@@ -87,7 +63,10 @@ namespace Vanilla.Player {
 
             APILogger.Debug($"{agent.Owner.NickName} has left.");
 
-            // Remove any player of same SNET
+            RemoveAll(agent);
+        }
+
+        private static void RemoveAll(PlayerAgent agent) {
             players.RemoveAll((player) => {
                 bool match = player.agent == null || player.agent.Owner == null || player.agent.Owner.Lookup == agent.Owner.Lookup;
                 if (match) {
@@ -98,7 +77,6 @@ namespace Vanilla.Player {
         }
 
         private static void Despawn(rPlayer player) {
-            APILogger.Error(player.id);
             Replay.TryDespawn<rPlayerModel>(player.id);
             Replay.TryDespawn<rPlayerBackpack>(player.id);
             Replay.TryDespawn<rPlayerStats>(player.id);

@@ -348,7 +348,6 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal bool Has(Type type, int id) {
-            APILogger.Error($"Has {id}");
             if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
 
             return state.dynamics[type].Has(id);
@@ -356,7 +355,6 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal ReplayDynamic Get(Type type, int id) {
-            APILogger.Error($"Get {id}");
             if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
             return state.dynamics[type].Get(id);
         }

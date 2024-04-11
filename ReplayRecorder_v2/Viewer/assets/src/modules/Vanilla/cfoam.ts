@@ -102,7 +102,7 @@ declare module "../../replay/instancing.js" {
 }
 
 (() => {
-    const spheres = createInstance("Cfoam.Sphere.MeshPhong", new SphereGeometry(0.25, 10, 10), new MeshPhongMaterial(), 5000);
+    const spheres = createInstance("Cfoam.Sphere.MeshPhong", new SphereGeometry(0.25, 10, 10), new MeshPhongMaterial(), 100);
     spheres.frustumCulled = false;
     spheres.instanceMatrix.setUsage( DynamicDrawUsage );
     spheres.castShadow = false;
@@ -121,6 +121,8 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
+const scale = new Vector3();
+const mat = new Matrix4();
 class CfoamModel {
     sphere: number;
     visible: boolean;
@@ -133,8 +135,8 @@ class CfoamModel {
     public update(cfoam: Cfoam) {
         if (!this.visible) return;
 
-        const mat = new Matrix4();
-        mat.compose(new Vector3(cfoam.position.x, cfoam.position.y, cfoam.position.z), zeroQ, new Vector3(cfoam.scale, cfoam.scale, cfoam.scale));
+        scale.set(cfoam.scale, cfoam.scale, cfoam.scale);
+        mat.compose(cfoam.position, zeroQ, scale);
         this.sphere = consume("Cfoam.Sphere.MeshPhong", mat, this.color);
     }
 

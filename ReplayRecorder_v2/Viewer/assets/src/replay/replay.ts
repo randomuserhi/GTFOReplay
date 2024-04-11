@@ -41,6 +41,7 @@ export class Replay {
     header: Map<string, unknown>;
     timeline: Timeline.Snapshot[];
     snapshots: Snapshot[];
+    private cache: Snapshot | undefined;
     
     constructor() {
         this.typemap = new Map();
@@ -234,7 +235,10 @@ export class Replay {
         if (this.snapshots.length === 0) return undefined;
 
         // Get nearest snapshot from cache
-        const state = structuredClone(this.getNearestSnapshot(time));
+        if (this.cache === undefined || time < this.cache.time || time - this.cache.time >= 24000) {
+            this.cache = this.getNearestSnapshot(time);
+        }
+        const state = structuredClone(this.cache);
         const api = this.api(state);
 
         // extrapolate snapshot until time

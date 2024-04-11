@@ -577,7 +577,7 @@ export const medal = Macro((() => {
     medal.prototype.update = function(descriptor: MedalDescriptor) {
         this.medalId = descriptor.id;
         this.icon.src = descriptor.icon;
-        this.name.innerHTML = descriptor.title;
+        this.name.childNodes.item(0).textContent = descriptor.title;
         this.desc.innerHTML = descriptor.text;
     };
 
@@ -589,7 +589,7 @@ export const medal = Macro((() => {
         <span rhu-id="name" style="
             font-size: 20px;
             margin-bottom: 0.4rem;
-        "></span>
+        ">Surprise!</span>
         <span rhu-id="desc" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;"></span>
     </div>
     `, {

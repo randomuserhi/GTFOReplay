@@ -47,7 +47,8 @@ ModuleLoader.registerEvent("Vanilla.Enemy.TongueEvent", "0.0.1", {
         const spline: Pod.Vector[] = new Array(length);
         spline[0] = await BitHelper.readVector(data);
         for (let i = 1; i < length; ++i) {
-            spline[i] = Pod.Vec.add(spline[i - 1], await BitHelper.readHalfVector(data));
+            const point = { x: 0, y: 0, z: 0 };
+            spline[i] = Pod.Vec.add(point, spline[i - 1], await BitHelper.readHalfVector(data));
         }
         return {
             ...header, spline
@@ -83,7 +84,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Tongue", "0.0.1", {
             const spline: Pod.Vector[] = new Array(length);
             spline[0] = await BitHelper.readVector(data);
             for (let i = 1; i < length; ++i) {
-                spline[i] = Pod.Vec.add(spline[i - 1], await BitHelper.readHalfVector(data));
+                const point = { x: 0, y: 0, z: 0 };
+                spline[i] = Pod.Vec.add(point, spline[i - 1], await BitHelper.readHalfVector(data));
             }
             return {
                 ...header, spline
@@ -111,7 +113,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Tongue", "0.0.1", {
             const spline: Pod.Vector[] = new Array(length);
             spline[0] = await BitHelper.readVector(data);
             for (let i = 1; i < length; ++i) {
-                spline[i] = Pod.Vec.add(spline[i - 1], await BitHelper.readHalfVector(data));
+                const point = { x: 0, y: 0, z: 0 };
+                spline[i] = Pod.Vec.add(point, spline[i - 1], await BitHelper.readHalfVector(data));
             }
             return {
                 ...header, spline
@@ -163,6 +166,8 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
+const temp = Pod.Vec.zero();
+
 ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
@@ -213,9 +218,9 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 let totalLength = 0;
                 for (let i = 0; i < tongue.spline.length; ++i) {
                     if (i === 0) {
-                        totalLength += Pod.Vec.length(Pod.Vec.sub(tongue.spline[i], origin));
+                        totalLength += Pod.Vec.length(Pod.Vec.sub(temp, tongue.spline[i], origin));
                     } else {
-                        totalLength += Pod.Vec.length(Pod.Vec.sub(tongue.spline[i], tongue.spline[i - 1]));
+                        totalLength += Pod.Vec.length(Pod.Vec.sub(temp, tongue.spline[i], tongue.spline[i - 1]));
                     }
                 }
                 const distance = tongue.progress * totalLength;
@@ -223,9 +228,9 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 for (let i = 0, d = 0; d <= distance && i < tongue.spline.length; ++i) {
                     let diff: Pod.Vector;
                     if (i === 0) {
-                        diff = Pod.Vec.sub(tongue.spline[i], origin);
+                        diff = Pod.Vec.sub(temp, tongue.spline[i], origin);
                     } else {
-                        diff = Pod.Vec.sub(tongue.spline[i], tongue.spline[i - 1]);
+                        diff = Pod.Vec.sub(temp, tongue.spline[i], tongue.spline[i - 1]);
                     }
                     const dist = Pod.Vec.length(diff);
                     

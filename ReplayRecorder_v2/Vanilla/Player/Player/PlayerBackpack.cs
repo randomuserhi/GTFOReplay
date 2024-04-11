@@ -9,19 +9,19 @@ namespace Vanilla.Player {
     internal class rPlayerBackpack : ReplayDynamic {
         public PlayerAgent agent;
 
-
-        // NOTE(randomuserhi): Throws an error when a player joins -> I don't know how fatal this is...
         private ushort GetSlotId(InventorySlot slot) {
-            if (PlayerBackpackManager.TryGetItem(agent.Owner, slot, out BackpackItem bpItem)) {
-                if (bpItem.Instance != null) {
-                    ItemEquippable item = bpItem.Instance.Cast<ItemEquippable>();
-                    if (item.GearIDRange != null) {
-                        return GTFOSpecification.GetGear(item.GearIDRange.PublicGearName);
-                    } else if (item.ItemDataBlock != null) {
-                        return GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
+            try {
+                if (PlayerBackpackManager.TryGetItem(agent.Owner, slot, out BackpackItem bpItem)) {
+                    if (bpItem.Instance != null) {
+                        ItemEquippable item = bpItem.Instance.Cast<ItemEquippable>();
+                        if (item.GearIDRange != null) {
+                            return GTFOSpecification.GetGear(item.GearIDRange.PublicGearName);
+                        } else if (item.ItemDataBlock != null) {
+                            return GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
+                        }
                     }
                 }
-            }
+            } catch { }
             return 0;
         }
 
