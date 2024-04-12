@@ -114,11 +114,11 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const result = await DynamicTransform.parse(data);
             return result;
         }, 
-        exec: (id, data, snapshot, lerp) => {
+        exec: (id, data, snapshot, lerp, duration) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
     
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
-            DynamicTransform.lerp(enemies.get(id)!, data, lerp);
+            DynamicTransform.lerp(enemies.get(id)!, data, lerp, duration);
         }
     },
     spawn: {
@@ -143,6 +143,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 health: datablock.maxHealth,
                 state: "Default",
                 head: true,
+                velocity: Pod.Vec.zero(),
                 players: new Set(),
             });
         }
@@ -303,12 +304,12 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
                 active: await BitHelper.readBool(data)
             };
         }, 
-        exec: (id, data, snapshot, lerp) => {
+        exec: (id, data, snapshot, lerp, duration) => {
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
     
             if (!limbs.has(id)) throw new DynamicNotFound(`Limb of id '${id}' was not found.`);
             const limb = limbs.get(id)!;
-            DynamicPosition.lerp(limb, data, lerp);
+            DynamicPosition.lerp(limb, data, lerp, duration);
             limb.active = data.active;
         }
     },
@@ -327,7 +328,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
         
             if (limbs.has(id)) throw new DuplicateDynamic(`Limb of id '${id}' already exists.`);
             limbs.set(id, { 
-                id, ...data, active: true
+                id, ...data, active: true, velocity: Pod.Vec.zero()
             });
         }
     },

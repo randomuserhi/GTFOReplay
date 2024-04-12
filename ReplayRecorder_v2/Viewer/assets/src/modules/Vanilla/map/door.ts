@@ -1,8 +1,9 @@
 import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
 import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as Pod from "../../../replay/pod.js";
 import { Bezier } from "../../bezier.js";
-import { DuplicateHeaderData, Dynamic, DynamicTransform } from "../../replayrecorder.js";
+import { DuplicateHeaderData, Dynamic } from "../../replayrecorder.js";
 
 export type DoorType = 
     "WeakDoor" |
@@ -40,7 +41,11 @@ const doorSizeTypemap: DoorSize[] = [
     "Large"
 ];
 
-export interface Door extends DynamicTransform {
+export interface Door {
+    id: number;
+    position: Pod.Vector;
+    rotation: Pod.Quaternion;
+    dimension: number;
     serialNumber: number;
     isCheckpoint: boolean;
     type: DoorType;

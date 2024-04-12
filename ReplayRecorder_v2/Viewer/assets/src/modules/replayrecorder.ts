@@ -79,6 +79,7 @@ export interface Dynamic {
 }
 
 export interface DynamicTransform extends Dynamic {
+    velocity: Vector;
     position: Vector;
     rotation: Quaternion;
     dimension: number;
@@ -111,9 +112,12 @@ export namespace DynamicTransform {
             rotation: await BitHelper.readHalfQuaternion(data)
         };
     }
-    export function lerp(dyn: DynamicTransform, data: { dimension: number; absolute: boolean; position: Vector; rotation: Quaternion; }, lerp: number): void {
+    export function lerp(dyn: DynamicTransform, data: { dimension: number; absolute: boolean; position: Vector; rotation: Quaternion; }, lerp: number, duration: number): void {
         const { absolute, position, rotation, dimension } = data;
         const fpos = absolute ? position : Vec.add(temp, dyn.position, position);
+        dyn.velocity.x = (fpos.x - dyn.position.x) / duration;
+        dyn.velocity.y = (fpos.y - dyn.position.y) / duration;
+        dyn.velocity.z = (fpos.z - dyn.position.z) / duration;
         Vec.lerp(dyn.position, dyn.position, fpos, lerp);
         Quat.slerp(dyn.rotation, dyn.rotation, rotation, lerp);
         dyn.dimension = dimension;
@@ -121,6 +125,7 @@ export namespace DynamicTransform {
 }
 
 export interface DynamicPosition extends Dynamic {
+    velocity: Vector;
     position: Vector;
     dimension: number;
 }
@@ -140,9 +145,12 @@ export namespace DynamicPosition {
             position: absolute ? await BitHelper.readVector(data) : await BitHelper.readHalfVector(data)
         };
     }
-    export function lerp(dyn: DynamicPosition, data: { dimension: number; absolute: boolean; position: Vector; }, lerp: number): void {
+    export function lerp(dyn: DynamicPosition, data: { dimension: number; absolute: boolean; position: Vector; }, lerp: number, duration: number): void {
         const { absolute, position, dimension } = data;
         const fpos = absolute ? position : Vec.add(temp, dyn.position, position);
+        dyn.velocity.x = (fpos.x - dyn.position.x) / duration;
+        dyn.velocity.y = (fpos.y - dyn.position.y) / duration;
+        dyn.velocity.z = (fpos.z - dyn.position.z) / duration;
         Vec.lerp(dyn.position, dyn.position, fpos, lerp);
         dyn.dimension = dimension;
     }

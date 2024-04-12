@@ -68,12 +68,12 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
                 equippedId: await BitHelper.readUShort(data),
             };
         }, 
-        exec: (id, data, snapshot, lerp) => {
+        exec: (id, data, snapshot, lerp, duration) => {
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
     
             if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
             const player = players.get(id)!;
-            DynamicTransform.lerp(player, data, lerp);
+            DynamicTransform.lerp(player, data, lerp, duration);
             player.equippedId = data.equippedId;
         }
     },
@@ -95,7 +95,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
         
             if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
             players.set(id, { 
-                id, ...data,
+                id, ...data, velocity: Pod.Vec.zero(),
                 equippedId: 0,
             });
         }

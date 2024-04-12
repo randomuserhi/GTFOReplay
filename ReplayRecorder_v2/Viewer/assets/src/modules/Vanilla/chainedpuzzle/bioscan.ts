@@ -69,12 +69,12 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan", "0.0.1", {
             const result = await DynamicPosition.parse(data);
             return result;
         }, 
-        exec: (id, data, snapshot, lerp) => {
+        exec: (id, data, snapshot, lerp, duration) => {
             const scans = snapshot.getOrDefault("Vanilla.Bioscan", () => new Map());
     
             if (!scans.has(id)) throw new BioscanNotFound(`Bioscan of id '${id}' was not found.`);
             const scan = scans.get(id)!;
-            DynamicPosition.lerp(scan, data, lerp);
+            DynamicPosition.lerp(scan, data, lerp, duration);
         }
     },
     spawn: {
@@ -90,7 +90,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan", "0.0.1", {
             const scans = snapshot.getOrDefault("Vanilla.Bioscan", () => new Map());
         
             if (scans.has(id)) throw new DuplicateBioscan(`Bioscan of id '${id}' already exists.`);
-            scans.set(id, { id, ...data });
+            scans.set(id, { id, ...data, velocity: Pod.Vec.zero() });
         }
     },
     despawn: {

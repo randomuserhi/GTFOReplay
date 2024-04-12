@@ -67,6 +67,7 @@ let replay: Replay | undefined = undefined;
                 typedTime: new Map(),
                 data: new Map()
             };
+            let duration = 0;
             const api = replay.api(state);
             const exists = new Map<number, Map<number, boolean>>();
             const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
@@ -133,7 +134,7 @@ let replay: Replay | undefined = undefined;
 
                     if (!exists.has(type)) exists.set(type, new Map());
                     if (exists.get(type)!.get(id) !== false) {
-                        func.main.exec(id, data, api, 1);
+                        func.main.exec(id, data, api, 1, duration);
                     }
                 }
                 return [dynamics, type];
@@ -150,6 +151,8 @@ let replay: Replay | undefined = undefined;
                 if ((state.tick % 500) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
+                duration = state.time - now;
+                if (duration === 0) duration = 1;
                 state.time = now;
                 const snapshot: Timeline.Snapshot = {
                     tick: ++state.tick,

@@ -24,7 +24,7 @@ export declare namespace Timeline {
 
 export interface Snapshot {
     time: number;
-    typedTime: Map<string, Map<number, number>>;
+    typedTime: Map<string, number>;
     tick: number;
     data: Map<string, unknown>;
 }
@@ -33,7 +33,7 @@ export interface Snapshot {
 //                     Have the data split up across Storage and RAM much like how mp4 or streaming videos work with m3u8 to minimise RAM usage. 
 
 // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
-const largestTickRate = 400; //ms -> tick rate of 50ms with anim tick rate of 200ms so longest possible time is 200ms. We add lee-way of an extra tick for variance.
+export const largestTickRate = 400; //ms -> tick rate of 50ms with anim tick rate of 200ms so longest possible time is 200ms. We add lee-way of an extra tick for variance.
 
 export class Replay {
     typemap: Map<number, ModuleDesc>;
@@ -182,27 +182,25 @@ export class Replay {
             for (const [type, collection] of snapshot.dynamics) {
                 const module = this.getModule(type);
 
-                if (!state.typedTime.has(module.typename)) state.typedTime.set(module.typename, new Map());
-                const typedTime = state.typedTime.get(module.typename)!;
+                if (!state.typedTime.has(module.typename)) state.typedTime.set(module.typename, state.time);
+                const typedTime = state.typedTime.has(module.typename) ? state.typedTime.get(module.typename)! : state.time;
+
+                // Lerp dynamics -> pushing "start" to largestTickRate in the event of large breaks due to non-written snapshots for changes of 0.
+                const start = snapshot.time - Math.min(largestTickRate, snapshot.time - typedTime);
+                const diff = snapshot.time - start;
+                const lerp = time < snapshot.time ? (time - start) / diff : 1;
+                if (lerp > 1) throw new Error(`Lerp should be between 0 and 1. ${lerp}`);
+                if (lerp <= 0) continue;
 
                 const exec = ModuleLoader.getDynamic(module as any).main.exec;
                 for (const { id, data } of collection) {
-                    // Get the last time we processed a tick of this type => This handles varied tick rates (E.g Animations happen every other tick)
-                    const instanceTime = typedTime.has(id) ? typedTime.get(id)! : state.time;
-
-                    // Lerp dynamics -> pushing "start" to largestTickRate in the event of large breaks due to non-written snapshots for changes of 0.
-                    const start = snapshot.time - Math.min(largestTickRate, snapshot.time - instanceTime);
-                    const diff = snapshot.time - start;
-                    const lerp = time < snapshot.time ? (time - start) / diff : 1;
-                    if (lerp > 1) throw new Error(`Lerp should be between 0 and 1. ${lerp}`);
-                    if (lerp <= 0) continue;
-
                     const exist = exists.get(type)?.get(id);
                     if (exist === undefined || exist === true) {
-                        exec(id, data as never, currentApi, lerp);
-                        typedTime.set(id, lerp === 1 ? snapshot.time : (instanceTime + lerp * diff));
+                        exec(id, data as never, currentApi, lerp, diff);
                     }
                 }
+                
+                state.typedTime.set(module.typename, lerp === 1 ? snapshot.time : (typedTime + lerp * diff));
             }
         }
 

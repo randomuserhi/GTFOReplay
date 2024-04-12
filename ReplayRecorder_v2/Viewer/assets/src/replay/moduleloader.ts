@@ -53,7 +53,7 @@ export interface HeaderApi {
 
 interface DynamicParser<T extends Typemap.DynamicNames> {
     parse(bytes: ByteStream): Promise<Typemap.Dynamics[T]["parse"]>;
-    exec(id: number, data: Typemap.Dynamics[T]["parse"], snapshot: ReplayApi, lerp: number): void;
+    exec(id: number, data: Typemap.Dynamics[T]["parse"], snapshot: ReplayApi, lerp: number, duration: number): void;
 }
 interface DynamicSpawner<T extends Typemap.DynamicNames> {
     parse(bytes: ByteStream): Promise<Typemap.Dynamics[T]["spawn"]>;

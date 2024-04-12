@@ -44,12 +44,12 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
                 scale: await BitHelper.readHalf(data)
             };
         }, 
-        exec: (id, data, snapshot, lerp) => {
+        exec: (id, data, snapshot, lerp, duration) => {
             const collection = snapshot.getOrDefault("Vanilla.Cfoam", () => new Map());
     
             if (!collection.has(id)) throw new CfoamNotFound(`Cfoam of id '${id}' was not found.`);
             const cfoam = collection.get(id)!;
-            DynamicPosition.lerp(cfoam, data, lerp);
+            DynamicPosition.lerp(cfoam, data, lerp, duration);
             cfoam.scale = data.scale;
         }
     },
@@ -66,7 +66,7 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
             const collection = snapshot.getOrDefault("Vanilla.Cfoam", () => new Map());
         
             if (collection.has(id)) throw new DuplicateCfoam(`Cfoam of id '${id}' already exists.`);
-            collection.set(id, { id, ...data });
+            collection.set(id, { id, ...data, velocity: Pod.Vec.zero() });
         }
     },
     despawn: {
