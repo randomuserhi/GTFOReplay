@@ -2,7 +2,7 @@ import * as BitHelper from "./bithelper.js";
 import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleDesc, ModuleLoader, ModuleNotFound, NoExecFunc, UnknownModuleType } from "./moduleloader.js";
-import { Replay, Snapshot, Timeline } from "./replay.js";
+import { Replay, Snapshot, Timeline, largestTickRate } from "./replay.js";
 import { ByteStream, FileHandle, FileStream } from "./stream.js";
 
 let replay: Replay | undefined = undefined;
@@ -151,7 +151,7 @@ let replay: Replay | undefined = undefined;
                 if ((state.tick % 500) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
-                duration = state.time - now;
+                duration = Math.min(state.time - now, largestTickRate);
                 if (duration === 0) duration = 1;
                 state.time = now;
                 const snapshot: Timeline.Snapshot = {
