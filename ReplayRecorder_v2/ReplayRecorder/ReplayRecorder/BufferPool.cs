@@ -27,7 +27,11 @@
 
         public void Release(ByteBuffer buffer) {
             lock (lockObj) {
-                --inUse;
+                if (inUse != 0) {
+                    --inUse;
+                } else {
+                    ++size;
+                }
                 buffer.Clear();
                 pool.Push(buffer);
             }
