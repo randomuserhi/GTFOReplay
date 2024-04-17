@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SNetwork;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ReplayRecorder.SNetUtils {
     public class SNetUtils {
@@ -8,7 +9,7 @@ namespace ReplayRecorder.SNetUtils {
         internal static int currentPacketIndex;
         internal static SNet_Player? currentSender;
 
-        public static bool TryGetSender(SNet_Packet packet, out SNet_Player player) {
+        public static bool TryGetSender(SNet_Packet packet, [MaybeNullWhen(false)] out SNet_Player player) {
             if (currentSender != null && packet.Replicator.Key == currentRepKey && packet.Index == currentPacketIndex) {
                 player = currentSender;
                 return true;

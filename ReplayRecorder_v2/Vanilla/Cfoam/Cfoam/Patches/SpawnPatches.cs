@@ -2,6 +2,7 @@
 using HarmonyLib;
 using Player;
 using ReplayRecorder;
+using ReplayRecorder.SNetUtils;
 using SNetwork;
 using Vanilla.Map;
 
@@ -15,7 +16,7 @@ namespace Vanilla.Cfoam.Patches {
 
             PlayerAgent player = PlayerManager.GetLocalPlayerAgent();
             byte dimension;
-            if (SNet.Replication.TryGetLastSender(out SNet_Player sender) && sender != null && sender.PlayerAgent != null) {
+            if (SNetUtils.TryGetSender(__instance.m_fireGlue.m_packet, out SNet_Player? sender) && sender.PlayerAgent != null) {
                 dimension = (byte)sender.PlayerAgent.Cast<PlayerAgent>().DimensionIndex;
             } else if (player != null) {
                 dimension = (byte)player.DimensionIndex;
@@ -35,6 +36,7 @@ namespace Vanilla.Cfoam.Patches {
         [HarmonyPostfix]
         private static void CheckGlueWithinBounds(GlueGunProjectile __instance) {
             if (!Replay.Active) return;
+            if (__instance.m_landed || __instance.m_landedOnEnemy) return;
 
             int id = __instance.GetInstanceID();
             if (!Replay.Has<rCfoam>(id)) return;
