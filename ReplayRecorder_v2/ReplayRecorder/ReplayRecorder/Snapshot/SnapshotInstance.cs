@@ -17,7 +17,7 @@ namespace ReplayRecorder.Snapshot {
         private class EventWrapper {
             private ushort id;
             private ReplayEvent eventObj;
-            internal ByteBuffer eventBuffer; // Required to capture state at point of event
+            internal ByteBuffer? eventBuffer; // Required to capture state at point of event
             internal long now;
 
             public string? Debug => eventObj.Debug;
@@ -30,7 +30,22 @@ namespace ReplayRecorder.Snapshot {
                 id = SnapshotManager.types[e.GetType()];
             }
 
+            ~EventWrapper() {
+                Dispose();
+            }
+
+            public void Dispose() {
+                if (eventBuffer == null) return;
+
+                if (SnapshotManager.instance != null) {
+                    SnapshotManager.instance.pool.Release(eventBuffer);
+                }
+                eventBuffer = null;
+            }
+
             public void Write(ByteBuffer buffer) {
+                if (eventBuffer == null) throw new Exception("Memory Buffer was disposed too early..."); // TODO(randomuserhi): Custom exception...
+
                 BitHelper.WriteBytes(id, buffer);
                 BitHelper.WriteBytes(eventBuffer.Array, buffer, false);
             }
@@ -176,7 +191,7 @@ namespace ReplayRecorder.Snapshot {
                 dynamics.Clear();
             }
 
-            internal bool Write(long now, ByteBuffer bs, BufferPool pool) {
+            internal bool Write(long now, ByteBuffer bs) {
                 // Tick header
                 BitHelper.WriteBytes((uint)now, bs);
 
@@ -196,7 +211,7 @@ namespace ReplayRecorder.Snapshot {
                     e.Write(bs);
 
                     // release buffer back to pool
-                    pool.Release(e.eventBuffer);
+                    e.Dispose();
                 }
 
                 // Serialize dynamic properties
@@ -404,7 +419,16 @@ namespace ReplayRecorder.Snapshot {
 
             // Clear write buffer
             buffer.Clear();
-            if (state.Write(now, buffer, pool)) {
+
+            bool success;
+            try {
+                success = state.Write(now, buffer);
+            } catch (Exception ex) {
+                success = false;
+                APILogger.Error($"Unexpected error occured whilst trying to write tick at [{now}ms]:\n{ex}\n{ex.StackTrace}");
+            }
+
+            if (success) {
                 if (Plugin.acknowledged.Count > 0) {
                     ByteBuffer packet = pool.Checkout();
                     // Header
@@ -419,9 +443,13 @@ namespace ReplayRecorder.Snapshot {
                     _ = Send(packet);
                 }
                 byteOffset += sizeof(int) + buffer.count;
+
+                float startWait = stopwatch.ElapsedMilliseconds;
                 if (writeTask != null) {
                     writeTask.Wait();
                 }
+                waitForWrite = stopwatch.ElapsedMilliseconds - startWait;
+
                 writeTask = buffer.AsyncFlush(fs);
                 ByteBuffer temp = _buffer;
                 _buffer = buffer;
@@ -433,6 +461,7 @@ namespace ReplayRecorder.Snapshot {
             tickTime = alpha * tickTime + (1.0f - alpha) * stopwatch.ElapsedMilliseconds;
         }
         internal float tickTime = 1.0f;
+        internal float waitForWrite = 1.0f;
 
         internal void Dispose() {
             APILogger.Debug("Ending Replay...");

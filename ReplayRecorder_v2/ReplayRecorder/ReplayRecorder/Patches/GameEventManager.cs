@@ -40,7 +40,8 @@ namespace ReplayRecorder {
         [HarmonyWrapSafe]
         [HarmonyPostfix]
         public static void Initialize_Postfix(PUI_LocalPlayerStatus __instance) {
-            __instance.m_pulseText.text += $" | ({SnapshotManager.GetInstance().pool.InUse}/{SnapshotManager.GetInstance().pool.Size}) {Mathf.RoundToInt(SnapshotManager.GetInstance().tickTime)}ms";
+            SnapshotInstance instance = SnapshotManager.GetInstance();
+            __instance.m_pulseText.text += $" | ({instance.pool.InUse}/{instance.pool.Size}) {Mathf.RoundToInt(instance.tickTime)}({Mathf.RoundToInt(instance.waitForWrite)})ms";
         }
     }
 }
