@@ -403,7 +403,16 @@ namespace ReplayRecorder.Snapshot {
             pool.Release(packet);
         }
 
+        private int bufferShrinkTick = 0; // tick count to check when to clear buffers
+        private int peakInUse = 0;
         private void Tick() {
+            if (pool.InUse > peakInUse) peakInUse = pool.InUse;
+            if (++bufferShrinkTick > 100) {
+                bufferShrinkTick = 0;
+                pool.Shrink(Mathf.Max(50, peakInUse));
+                peakInUse = 0;
+            }
+
             stopwatch.Restart();
             if (fs == null) throw new ReplaySnapshotNotInitialized();
 

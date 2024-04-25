@@ -7,6 +7,13 @@
         public int Size => size;
         public int InUse => inUse;
 
+        public void Shrink(int count) {
+            while (pool.Count > count) {
+                pool.Pop();
+                --size;
+            }
+        }
+
         public ByteBuffer Checkout() {
             lock (lockObj) {
                 ++inUse;
