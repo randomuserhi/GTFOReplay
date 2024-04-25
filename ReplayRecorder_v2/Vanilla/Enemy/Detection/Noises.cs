@@ -15,7 +15,7 @@ namespace Vanilla.Enemy.Detection {
             if (!SNet.IsMaster) return;
 
             PlayerAgent? agent = null;
-            if (SNetUtils.TryGetSender(NoiseManager.s_noisePacket, out SNet_Player player)) {
+            if (SNetUtils.TryGetSender(NoiseManager.s_noisePacket, out SNet_Player? player)) {
                 agent = player.PlayerAgent.TryCast<PlayerAgent>();
             }
             NoiseTracker.TrackNextNoise(new NoiseInfo(agent));

@@ -24,16 +24,6 @@ namespace Vanilla.Cfoam {
     internal class rCfoam : DynamicPosition {
         private GlueGunProjectile projectile;
 
-        public override bool Active {
-            get {
-                if (Replay.Has<rCfoam>(id)) {
-                    if (!transform.active || (projectile.m_landed && scale < 0.2f)) {
-                        Replay.Despawn(Replay.Get<rCfoam>(id));
-                    }
-                }
-                return base.Active;
-            }
-        }
         public override bool IsDirty => base.IsDirty || oldScale != scale;
 
         private float scale => projectile.transform.localScale.x;

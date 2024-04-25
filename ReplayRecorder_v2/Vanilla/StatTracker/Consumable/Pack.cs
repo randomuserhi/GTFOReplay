@@ -94,7 +94,7 @@ namespace Vanilla.StatTracker.Consumable {
                 if (sourcePackUser != null) {
                     APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used {type} on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(type, sourcePackUser, target));
-                } else if (SNetUtils.TryGetSender(__instance.m_giveAmmoPacket.m_packet, out SNet_Player sender)) {
+                } else if (SNetUtils.TryGetSender(__instance.m_giveAmmoPacket.m_packet, out SNet_Player? sender)) {
                     APILogger.Debug($"Player {sender.NickName} used {type} on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(type, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                 } else {
@@ -118,7 +118,7 @@ namespace Vanilla.StatTracker.Consumable {
                 if (sourcePackUser != null) {
                     APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used disinfect pack on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(rPack.Type.Disinfect, sourcePackUser, target));
-                } else if (SNetUtils.TryGetSender(__instance.m_receiveModifyInfectionPacket, out SNet_Player sender)) {
+                } else if (SNetUtils.TryGetSender(__instance.m_receiveModifyInfectionPacket, out SNet_Player? sender)) {
                     APILogger.Debug($"Player {sender.NickName} used disinfect pack on {target.Owner.NickName}.");
                     Replay.Trigger(new rPack(rPack.Type.Disinfect, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                 } else {

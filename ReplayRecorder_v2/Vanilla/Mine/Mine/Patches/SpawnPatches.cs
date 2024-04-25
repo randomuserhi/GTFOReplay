@@ -60,7 +60,7 @@ namespace Vanilla.Mine.Patches {
             if (player != null) {
                 mine.shot = true;
                 mine.trigger = player;
-            } else if (SNetUtils.TryGetSender(__instance.m_itemActionPacket, out SNet_Player sender)) {
+            } else if (SNetUtils.TryGetSender(__instance.m_itemActionPacket, out SNet_Player? sender)) {
                 mine.shot = true;
                 mine.trigger = sender.PlayerAgent.Cast<PlayerAgent>();
             }

@@ -53,8 +53,7 @@ namespace Vanilla.Cfoam.Patches {
             if (ProjectileManager.Current.m_glueGunProjectiles.ContainsKey(data.syncID)) {
                 GlueGunProjectile p = ProjectileManager.Current.m_glueGunProjectiles[data.syncID];
                 int id = p.GetInstanceID();
-                if (!Replay.Has<rCfoam>(id)) return;
-                Replay.Despawn(Replay.Get<rCfoam>(id));
+                Replay.TryDespawn<rCfoam>(id);
             }
         }
     }
