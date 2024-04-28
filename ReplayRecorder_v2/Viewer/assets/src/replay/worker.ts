@@ -2,7 +2,7 @@ import * as BitHelper from "./bithelper.js";
 import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleDesc, ModuleLoader, ModuleNotFound, NoExecFunc, UnknownModuleType } from "./moduleloader.js";
-import { Replay, Snapshot, Timeline, largestTickRate } from "./replay.js";
+import { Replay, Snapshot, Timeline } from "./replay.js";
 import { ByteStream, FileHandle, FileStream } from "./stream.js";
 
 let replay: Replay | undefined = undefined;
@@ -67,7 +67,6 @@ let replay: Replay | undefined = undefined;
                 typedTime: new Map(),
                 data: new Map()
             };
-            let duration = 0;
             const api = replay.api(state);
             const exists = new Map<number, Map<number, boolean>>();
             const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
@@ -134,7 +133,7 @@ let replay: Replay | undefined = undefined;
 
                     if (!exists.has(type)) exists.set(type, new Map());
                     if (exists.get(type)!.get(id) !== false) {
-                        func.main.exec(id, data, api, 1, duration);
+                        func.main.exec(id, data, api, 1);
                     }
                 }
                 return [dynamics, type];
@@ -151,8 +150,6 @@ let replay: Replay | undefined = undefined;
                 if ((state.tick % 500) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
-                duration = Math.min(state.time - now, largestTickRate);
-                if (duration === 0) duration = 1;
                 state.time = now;
                 const snapshot: Timeline.Snapshot = {
                     tick: ++state.tick,

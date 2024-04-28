@@ -72,12 +72,12 @@ ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
                 length: await BitHelper.readHalf(data)
             };
         }, 
-        exec: (id, data, snapshot, lerp, duration) => {
+        exec: (id, data, snapshot, lerp) => {
             const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
     
             if (!mines.has(id)) throw new MineNotFound(`Dynamic of id '${id}' was not found.`);
             const mine = mines.get(id)!;
-            DynamicTransform.lerp(mine, data, lerp, duration);
+            DynamicTransform.lerp(mine, data, lerp);
             mine.length = data.length;
         }
     },
@@ -98,7 +98,7 @@ ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
             if (mines.has(id)) throw new DuplicateMine(`Mine of id '${id}' already exists.`);
             if (!players.has(data.owner)) throw new Error(`Mine owner, '${data.owner}', does not exist.`);
             const player = players.get(data.owner)!;
-            mines.set(id, { id, ...data, snet: player.snet, length: 0, velocity: Pod.Vec.zero() });
+            mines.set(id, { id, ...data, snet: player.snet, length: 0 });
         }
     },
     despawn: {

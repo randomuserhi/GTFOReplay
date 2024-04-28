@@ -213,6 +213,7 @@ namespace ReplayRecorder.Snapshot {
                     // release buffer back to pool
                     e.Dispose();
                 }
+                APILogger.Debug($"[Events] {events.Count} events written.");
 
                 // Serialize dynamic properties
                 int numWritten = 0;
@@ -233,9 +234,10 @@ namespace ReplayRecorder.Snapshot {
                     APILogger.Debug($"Flushed {numWritten} dynamic collections.");
                 }
 
+                bool eventsWritten = events.Count != 0;
                 events.Clear();
 
-                return events.Count != 0 || numWritten != 0;
+                return eventsWritten || numWritten != 0;
             }
         }
 

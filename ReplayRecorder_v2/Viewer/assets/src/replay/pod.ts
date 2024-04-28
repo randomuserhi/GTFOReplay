@@ -5,6 +5,18 @@ export interface Vector {
 }
 
 export namespace Vec {
+    export function copy(a: Vector, b: Vector) {
+        a.x = b.x;
+        a.y = b.y;
+        a.z = b.z;
+    }
+    export function clone(a: Vector) {
+        return {
+            x: a.x,
+            y: a.y,
+            z: a.z
+        };
+    }
     export function zero(): Vector {
         return {
             x: 0,
@@ -71,6 +83,12 @@ export interface Quaternion {
 }
 
 export namespace Quat {
+    export function copy(a: Quaternion, b: Quaternion) {
+        a.x = b.x;
+        a.y = b.y;
+        a.z = b.z;
+        a.w = b.w;
+    }
     export function identity(): Quaternion {
         return {
             w: 1,
@@ -111,6 +129,14 @@ export namespace Quat {
         return euler;
     }
     export function slerp(result: Quaternion, a: Quaternion, b: Quaternion, lerp: number) {
+        if (a.x === b.x && a.y === b.y && a.z === b.z && a.w === b.w) {
+            result.x = a.x;
+            result.y = a.y;
+            result.z = a.z;
+            result.w = a.w;
+            return;
+        }
+
         lerp = Math.clamp01(lerp);
         
         const cosHalfTheta = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
@@ -122,12 +148,11 @@ export namespace Quat {
             a.w = -a.w;
         }
         if (Math.abs(cosHalfTheta) >= 1.0) {
-            return {
-                w: a.w,
-                x: a.x,
-                y: a.y,
-                z: a.z
-            };
+            result.x = a.x;
+            result.y = a.y;
+            result.z = a.z;
+            result.w = a.w;
+            return result;
         }
         const halfTheta = Math.acos(cosHalfTheta);
         const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);

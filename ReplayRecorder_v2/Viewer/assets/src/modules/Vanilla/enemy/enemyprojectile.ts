@@ -35,12 +35,12 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
             const result = await DynamicTransform.parse(data);
             return result;
         }, 
-        exec: (id, data, snapshot, lerp, duration) => {
+        exec: (id, data, snapshot, lerp) => {
             const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", () => new Map());
     
             if (!projectiles.has(id)) throw new ProjectileNotFound(`Dynamic of id '${id}' was not found.`);
             const projectile = projectiles.get(id)!;
-            DynamicTransform.lerp(projectile, data, lerp, duration);
+            DynamicTransform.lerp(projectile, data, lerp);
 
             const trails = snapshot.getOrDefault("Vanilla.Enemy.Projectile.Trails", () => new Map());
             if (!trails.has(id)) trails.set(id, {
@@ -63,7 +63,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
             const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", () => new Map());
         
             if (projectiles.has(id)) throw new DuplicateProjectile(`Dynamic of id '${id}' already exists.`);
-            projectiles.set(id, { id, ...data, velocity: Pod.Vec.zero() });
+            projectiles.set(id, { id, ...data });
         }
     },
     despawn: {

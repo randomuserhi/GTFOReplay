@@ -196,7 +196,7 @@ export class Replay {
                 for (const { id, data } of collection) {
                     const exist = exists.get(type)?.get(id);
                     if (exist === undefined || exist === true) {
-                        exec(id, data as never, currentApi, lerp, diff);
+                        exec(id, data as never, currentApi, lerp);
                     }
                 }
                 
