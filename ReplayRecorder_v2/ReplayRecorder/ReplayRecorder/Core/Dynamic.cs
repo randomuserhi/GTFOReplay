@@ -23,7 +23,13 @@ namespace ReplayRecorder.Core {
         public bool active => agent != null;
         public byte dimensionIndex => (byte)agent.m_dimensionIndex;
         public Vector3 position => agent.transform.position;
-        public Quaternion rotation => Quaternion.LookRotation(agent.TargetLookDir);
+        public Quaternion rotation {
+            get {
+                Vector3 forward = agent.transform.rotation * Vector3.forward;
+                forward.y = 0;
+                return Quaternion.LookRotation(forward);
+            }
+        }
 
         public AgentTransform(Agent agent) {
             this.agent = agent;

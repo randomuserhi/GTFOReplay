@@ -6,6 +6,15 @@ import * as Pod from "../../../replay/pod.js";
 import { Equippable } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer } from "../animations/animation.js";
 import { Human, HumanFrame, apply, blend, defaultHumanStructure } from "../animations/human.js";
+import { Rifle_AO_C } from "../animations/player/Rifle_AO_C.js";
+import { Rifle_AO_D } from "../animations/player/Rifle_AO_D.js";
+import { Rifle_AO_L } from "../animations/player/Rifle_AO_L.js";
+import { Rifle_AO_LD } from "../animations/player/Rifle_AO_LD.js";
+import { Rifle_AO_LU } from "../animations/player/Rifle_AO_LU.js";
+import { Rifle_AO_R } from "../animations/player/Rifle_AO_R.js";
+import { Rifle_AO_RD } from "../animations/player/Rifle_AO_RD.js";
+import { Rifle_AO_RU } from "../animations/player/Rifle_AO_RU.js";
+import { Rifle_AO_U } from "../animations/player/Rifle_AO_U.js";
 import { Rifle_CrouchLoop } from "../animations/player/Rifle_CrouchLoop.js";
 import { Rifle_Crouch_WalkBwd } from "../animations/player/Rifle_Crouch_WalkBwd.js";
 import { Rifle_Crouch_WalkFwd } from "../animations/player/Rifle_Crouch_WalkFwd.js";
@@ -131,6 +140,56 @@ const scale = new Vector3(radius, radius, radius);
 const tmpPos = new Vector3();
 const camPos = new Vector3();
 
+const upperBodyMask: Human<boolean> = {
+    hip: false,
+
+    leftUpperLeg: false,
+    leftLowerLeg: false,
+
+    rightUpperLeg: false,
+    rightLowerLeg: false,
+
+    spine0: true,
+    spine1: true,
+    spine2: true,
+
+    leftShoulder: true,
+    leftUpperArm: true,
+    leftLowerArm: true,
+
+    rightShoulder: true,
+    rightUpperArm: true,
+    rightLowerArm: true,
+
+    neck: true,
+    head: true,
+};
+
+const lowerBodyMask: Human<boolean> = {
+    hip: true,
+
+    leftUpperLeg: true,
+    leftLowerLeg: true,
+
+    rightUpperLeg: true,
+    rightLowerLeg: true,
+
+    spine0: false,
+    spine1: false,
+    spine2: false,
+
+    leftShoulder: false,
+    leftUpperArm: false,
+    leftLowerArm: false,
+
+    rightShoulder: false,
+    rightUpperArm: false,
+    rightLowerArm: false,
+
+    neck: false,
+    head: false,
+};
+
 const rifleStandMovement = new AnimBlend<HumanFrame>([
     { anim: Rifle_Jog_Forward, x: 0, y: 3.5 },
     { anim: Rifle_Jog_Backward, x: 0, y: -3.5 },
@@ -172,6 +231,18 @@ const rifleCrouchMovement = new AnimBlend<HumanFrame>([
 const rifleMovement = new AnimBlend<HumanFrame>([
     { anim: rifleStandMovement, x: 0, y: 0 },
     { anim: rifleCrouchMovement, x: 1, y: 0 }
+]);
+
+const rifleAimOffset = new AnimBlend<HumanFrame>([
+    { anim: Rifle_AO_U, x: 0, y: 1 },
+    { anim: Rifle_AO_D, x: 0, y: -1 },
+    { anim: Rifle_AO_L, x: -1, y: 1 },
+    { anim: Rifle_AO_R, x: 1, y: 0 },
+    { anim: Rifle_AO_LD, x: -1, y: -1 },
+    { anim: Rifle_AO_LU, x: -1, y: 1 },
+    { anim: Rifle_AO_RD, x: 1, y: -1 },
+    { anim: Rifle_AO_RU, x: 1, y: 1 },
+    { anim: Rifle_AO_C, x: 0, y: 0 },
 ]);
 
 class PlayerModel  {
@@ -343,7 +414,49 @@ class PlayerModel  {
 
         rifleMovement.point.x = anim.crouch;
 
-        apply(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement));
+        apply(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement), lowerBodyMask);
+
+        {
+            const forward = new Vector3(0, 0, 1).applyQuaternion(player.rotation);
+            const targetLookDir = new Vector3().copy(anim.targetLookDir);
+            targetLookDir.normalize();
+            const num = -70.0;
+            const num2 = 70.0;
+            const vector2 = new Vector3(forward.x, forward.z);
+            const to = new Vector3(targetLookDir.x, targetLookDir.z);
+            const num3 = Pod.Vec.signedAngle(vector2, to);
+            if (num3 < num) {
+                const f = Math.PI / 180.0 * num;
+                const _num = Math.cos(f);
+                const _num2 = Math.sin(f);
+                to.x = vector2.x * _num - vector2.y * _num2;
+                to.y = vector2.x * _num2 + vector2.y * _num;
+            } else if (num3 > num2) {
+                const f = Math.PI / 180.0 * num2;
+                const _num = Math.cos(f);
+                const _num2 = Math.sin(f);
+                to.x = vector2.x * _num - vector2.y * _num2;
+                to.y = vector2.x * _num2 + vector2.y * _num;
+            }
+            const vector3 = new Vector3(to.x, to.y);
+            vector3.normalize();
+            const right = new Vector3(1, 0, 0).applyQuaternion(player.rotation);
+            const rhs = new Vector3(right.x, right.z);
+            rhs.normalize();
+            const vector4 = new Vector3(forward.x, forward.z);
+            vector4.normalize();
+            const num4 = 1.2217305;
+            let num5 = Math.asin(targetLookDir.y);
+            num5 /= num4;
+            const num6 = Pod.Vec.dot(vector3, rhs);
+            const num7 = Pod.Vec.dot(vector3, vector4);
+            const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
+
+            rifleAimOffset.point.y = num5;
+            rifleAimOffset.point.x = value;
+
+            apply(this.skeleton, blend(this.movementAnimTimer.time, rifleAimOffset), upperBodyMask);
+        }
 
         this.render(player);
     }

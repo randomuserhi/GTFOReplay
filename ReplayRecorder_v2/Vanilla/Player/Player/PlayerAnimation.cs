@@ -17,6 +17,13 @@ namespace Vanilla.Player {
             return value;
         }
 
+        private static byte compress(float value, float max) {
+            value /= max;
+            value = Mathf.Clamp(value, -1f, 1f);
+            value = Mathf.Clamp01((value + 1.0f) / 2.0f);
+            return (byte)(value * byte.MaxValue);
+        }
+
         public override bool Active {
             get {
                 if (player == null && Replay.Has<rPlayerAnimation>(id)) {
@@ -28,21 +35,26 @@ namespace Vanilla.Player {
         public override bool IsDirty {
             get {
                 bool vel =
-                    velFwdLocal != zero(locomotion.VelFwdLocal) ||
-                    velRightLocal != zero(locomotion.VelRightLocal);
+                    velFwdLocal != compress(locomotion.VelFwdLocal, 10f) ||
+                    velRightLocal != compress(locomotion.VelRightLocal, 10f);
 
-                bool crouch = this.crouch != zero(locomotion.m_crouch);
+                bool crouch = this.crouch != (byte)(locomotion.m_crouch * byte.MaxValue);
+
+                bool aim = targetLookDir != player.TargetLookDir;
 
                 return
                     vel ||
-                    crouch;
+                    crouch ||
+                    aim;
             }
         }
 
-        public float velFwdLocal;
-        public float velRightLocal;
+        public byte velFwdLocal;
+        public byte velRightLocal;
 
-        public float crouch;
+        public byte crouch;
+
+        public Vector3 targetLookDir;
 
         public rPlayerAnimation(PlayerAgent player) : base(player.GlobalID) {
             this.player = player;
@@ -50,15 +62,19 @@ namespace Vanilla.Player {
         }
 
         public override void Write(ByteBuffer buffer) {
-            velRightLocal = zero(locomotion.VelRightLocal);
-            velFwdLocal = zero(locomotion.VelFwdLocal);
+            velRightLocal = compress(locomotion.VelRightLocal, 10f);
+            velFwdLocal = compress(locomotion.VelFwdLocal, 10f);
 
-            BitHelper.WriteHalf(velRightLocal, buffer);
-            BitHelper.WriteHalf(velFwdLocal, buffer);
+            BitHelper.WriteBytes(velRightLocal, buffer);
+            BitHelper.WriteBytes(velFwdLocal, buffer);
 
-            crouch = zero(locomotion.m_crouch);
+            crouch = (byte)(locomotion.m_crouch * byte.MaxValue);
 
-            BitHelper.WriteHalf(crouch, buffer);
+            BitHelper.WriteBytes(crouch, buffer);
+
+            targetLookDir = player.TargetLookDir;
+
+            BitHelper.WriteHalf(targetLookDir, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

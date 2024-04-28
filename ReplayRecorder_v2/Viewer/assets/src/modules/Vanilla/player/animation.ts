@@ -21,14 +21,16 @@ declare module "../../../replay/moduleloader.js" {
 export interface PlayerAnimState {
     velocity: Pod.Vector;
     crouch: number;
+    targetLookDir: Pod.Vector;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
     main: {
         parse: async (data) => {
             return {
-                velocity: { x: await BitHelper.readHalf(data), y: 0, z: await BitHelper.readHalf(data) },
-                crouch: await BitHelper.readHalf(data)
+                velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
+                crouch: await BitHelper.readByte(data) / 255,
+                targetLookDir: await BitHelper.readHalfVector(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -38,13 +40,15 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             const anim = anims.get(id)!;
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
             anim.crouch = anim.crouch + (data.crouch - anim.crouch) * lerp;
+            Pod.Vec.lerp(anim.targetLookDir, anim.targetLookDir, data.targetLookDir, lerp);
         }
     },
     spawn: {
         parse: async (data) => {
             return {
-                velocity: { x: await BitHelper.readHalf(data), y: 0, z: await BitHelper.readHalf(data) },
-                crouch: await BitHelper.readHalf(data)
+                velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
+                crouch: await BitHelper.readByte(data) / 255,
+                targetLookDir: await BitHelper.readHalfVector(data),
             };
         },
         exec: (id, data, snapshot) => {

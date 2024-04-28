@@ -5,6 +5,20 @@ export interface Vector {
 }
 
 export namespace Vec {
+    export function angle(from: Vector, to: Vector) {
+        const num = Math.sqrt(Vec.sqrLength(from) * Vec.sqrLength(to));
+        if (num < 1e-15) {
+            return 0.0;
+        }
+
+        const num2 = Math.clamp(Vec.dot(from, to) / num, -1, 1);
+        return Math.acos(num2) * 57.29578;
+    }
+    export function signedAngle(from: Vector, to: Vector) {
+        const num = Vec.angle(from, to);
+        const num2 = Math.sign(from.x * to.y - from.y * to.x);
+        return num * num2;
+    }
     export function copy(a: Vector, b: Vector) {
         a.x = b.x;
         a.y = b.y;
@@ -26,6 +40,9 @@ export namespace Vec {
     }
     export function length(v: Vector): number {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    }
+    export function sqrLength(v: Vector): number {
+        return v.x * v.x + v.y * v.y + v.z * v.z;
     }
     export function dist(a: Vector, b: Vector): number {
         const x = a.x - b.x;
