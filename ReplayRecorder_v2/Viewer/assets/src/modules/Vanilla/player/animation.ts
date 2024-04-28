@@ -18,10 +18,50 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
+export type State = 
+    "stand" |
+    "crouch" |
+    "run" |
+    "jump" |
+    "fall" |
+    "land" |
+    "stunned" |
+    "downed" |
+    "climbLadder" |
+    "melee" |
+    "empty" |
+    "grabbedByTrap" |
+    "grabbedByTank" |
+    "testing" |
+    "inElevator" |
+    "cinematicCamera" |
+    "freeCam";
+export const states: State[] = [
+    "stand",
+    "crouch",
+    "run",
+    "jump",
+    "fall",
+    "land",
+    "stunned",
+    "downed",
+    "climbLadder",
+    "melee",
+    "empty",
+    "grabbedByTrap",
+    "grabbedByTank",
+    "testing",
+    "inElevator",
+    "cinematicCamera",
+    "freeCam"
+];
+export const stateMap: Map<State, number> = new Map([...states.entries()].map(e => [e[1], e[0]]));
+
 export interface PlayerAnimState {
     velocity: Pod.Vector;
     crouch: number;
     targetLookDir: Pod.Vector;
+    state: State;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
@@ -31,6 +71,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 crouch: await BitHelper.readByte(data) / 255,
                 targetLookDir: await BitHelper.readHalfVector(data),
+                state: states[await BitHelper.readByte(data)]
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -41,6 +82,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
             anim.crouch = anim.crouch + (data.crouch - anim.crouch) * lerp;
             Pod.Vec.lerp(anim.targetLookDir, anim.targetLookDir, data.targetLookDir, lerp);
+            anim.state = data.state;
         }
     },
     spawn: {
@@ -49,6 +91,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 crouch: await BitHelper.readByte(data) / 255,
                 targetLookDir: await BitHelper.readHalfVector(data),
+                state: states[await BitHelper.readByte(data)]
             };
         },
         exec: (id, data, snapshot) => {

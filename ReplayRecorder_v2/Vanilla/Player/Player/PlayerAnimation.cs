@@ -56,6 +56,8 @@ namespace Vanilla.Player {
 
         public Vector3 targetLookDir;
 
+        public byte state;
+
         public rPlayerAnimation(PlayerAgent player) : base(player.GlobalID) {
             this.player = player;
             locomotion = player.Locomotion;
@@ -75,6 +77,10 @@ namespace Vanilla.Player {
             targetLookDir = player.TargetLookDir;
 
             BitHelper.WriteHalf(targetLookDir, buffer);
+
+            state = (byte)player.Locomotion.m_currentStateEnum;
+
+            BitHelper.WriteBytes(state, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

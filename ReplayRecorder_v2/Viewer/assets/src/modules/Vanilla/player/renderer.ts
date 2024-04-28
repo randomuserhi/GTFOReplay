@@ -165,31 +165,6 @@ const upperBodyMask: Human<boolean> = {
     head: true,
 };
 
-const lowerBodyMask: Human<boolean> = {
-    hip: true,
-
-    leftUpperLeg: true,
-    leftLowerLeg: true,
-
-    rightUpperLeg: true,
-    rightLowerLeg: true,
-
-    spine0: false,
-    spine1: false,
-    spine2: false,
-
-    leftShoulder: false,
-    leftUpperArm: false,
-    leftLowerArm: false,
-
-    rightShoulder: false,
-    rightUpperArm: false,
-    rightLowerArm: false,
-
-    neck: false,
-    head: false,
-};
-
 const rifleStandMovement = new AnimBlend<HumanFrame>([
     { anim: Rifle_Jog_Forward, x: 0, y: 3.5 },
     { anim: Rifle_Jog_Backward, x: 0, y: -3.5 },
@@ -414,9 +389,15 @@ class PlayerModel  {
 
         rifleMovement.point.x = anim.crouch;
 
-        apply(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement), lowerBodyMask);
+        apply(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement));
 
-        {
+        switch(anim.state) {
+        case "crouch":
+        case "jump":
+        case "fall":
+        case "land":
+        case "stunned":
+        case "stand": {
             const forward = new Vector3(0, 0, 1).applyQuaternion(player.rotation);
             const targetLookDir = new Vector3().copy(anim.targetLookDir);
             targetLookDir.normalize();
@@ -451,11 +432,12 @@ class PlayerModel  {
             const num6 = Pod.Vec.dot(vector3, rhs);
             const num7 = Pod.Vec.dot(vector3, vector4);
             const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
-
+    
             rifleAimOffset.point.y = num5;
             rifleAimOffset.point.x = value;
-
+    
             apply(this.skeleton, blend(this.movementAnimTimer.time, rifleAimOffset), upperBodyMask);
+        } break;
         }
 
         this.render(player);
