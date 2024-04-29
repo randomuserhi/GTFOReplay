@@ -436,6 +436,10 @@ class PlayerModel  {
             rifleAimOffset.point.y = num5;
             rifleAimOffset.point.x = value;
     
+            // TODO(randomuserhi): Apply it weighted so that when crouched rifle aim offset doesnt look shit...
+            //                     Weighted just means lerp the current state to the target state by the weight (value between 0 & 1)
+            //                     Either that or dont make it masked?? not sure really
+            // TODO(randomuserhi): Additive apply -> requries a reference pose (difference between target and reference is taken, that diff is added to the current transform)
             apply(this.skeleton, blend(this.movementAnimTimer.time, rifleAimOffset), upperBodyMask);
         } break;
         }
