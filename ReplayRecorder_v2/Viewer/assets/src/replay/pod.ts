@@ -151,7 +151,7 @@ export namespace Quat {
             result.y = a.y;
             result.z = a.z;
             result.w = a.w;
-            return;
+            return result;
         }
 
         lerp = Math.clamp01(lerp);
