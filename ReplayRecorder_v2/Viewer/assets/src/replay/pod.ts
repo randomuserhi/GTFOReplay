@@ -100,6 +100,13 @@ export interface Quaternion {
 }
 
 export namespace Quat {
+    export function inverse(result: Quaternion, a: Quaternion): Quaternion {
+        result.x = -a.x;
+        result.y = -a.y;
+        result.z = -a.z;
+        result.w = a.w;
+        return result;
+    }
     export function copy(a: Quaternion, b: Quaternion) {
         a.x = b.x;
         a.y = b.y;
@@ -144,6 +151,23 @@ export namespace Quat {
             euler.z = Math.atan2(2*a.x*a.w-2*a.y*a.z , -sqx + sqy - sqz + sqw);
         }
         return euler;
+    }
+    export function mul(result: Quaternion, a: Quaternion, b: Quaternion): Quaternion {
+        const ax = a.x;
+        const ay = a.y;
+        const az = a.z;
+        const aw = a.w;
+
+        const bx = b.x;
+        const by = b.y;
+        const bz = b.z;
+        const bw = b.w;
+        
+        result.x = ax * bw + aw * bx + ay * bz - az * by;
+        result.y = ay * bw + aw * by + az * bx - ax * bz;
+        result.z = az * bw + aw * bz + ax * by - ay * bx;
+        result.w = aw * bw - ax * bx - ay * by - az * bz;
+        return result;
     }
     export function slerp(result: Quaternion, a: Quaternion, b: Quaternion, lerp: number) {
         if (a.x === b.x && a.y === b.y && a.z === b.z && a.w === b.w) {

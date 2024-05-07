@@ -8,7 +8,7 @@ namespace Vanilla.Player {
     [ReplayData("Vanilla.Player.Animation", "0.0.1")]
     internal class rPlayerAnimation : ReplayDynamic {
         public PlayerAgent player;
-        private PlayerLocomotion locomotion;
+        private Animator animator;
 
         private static float zero(float value) {
             if (Mathf.Abs(value) < 0.01f) {
@@ -35,10 +35,10 @@ namespace Vanilla.Player {
         public override bool IsDirty {
             get {
                 bool vel =
-                    velFwdLocal != compress(locomotion.VelFwdLocal, 10f) ||
-                    velRightLocal != compress(locomotion.VelRightLocal, 10f);
+                    velFwd != compress(_velFwd, 10f) ||
+                    velRight != compress(_velRight, 10f);
 
-                bool crouch = this.crouch != (byte)(locomotion.m_crouch * byte.MaxValue);
+                bool crouch = this.crouch != (byte)(_crouch * byte.MaxValue);
 
                 bool aim = targetLookDir != player.TargetLookDir;
 
@@ -49,9 +49,13 @@ namespace Vanilla.Player {
             }
         }
 
-        public byte velFwdLocal;
-        public byte velRightLocal;
+        public float _velFwd => animator.GetFloat("MoveBackwardForward");
+        public byte velFwd;
 
+        public float _velRight => animator.GetFloat("MoveLeftRight");
+        public byte velRight;
+
+        public float _crouch => animator.GetFloat("Crouch");
         public byte crouch;
 
         public Vector3 targetLookDir;
@@ -60,17 +64,17 @@ namespace Vanilla.Player {
 
         public rPlayerAnimation(PlayerAgent player) : base(player.GlobalID) {
             this.player = player;
-            locomotion = player.Locomotion;
+            animator = player.AnimatorBody;
         }
 
         public override void Write(ByteBuffer buffer) {
-            velRightLocal = compress(locomotion.VelRightLocal, 10f);
-            velFwdLocal = compress(locomotion.VelFwdLocal, 10f);
+            velRight = compress(_velRight, 10f);
+            velFwd = compress(_velFwd, 10f);
 
-            BitHelper.WriteBytes(velRightLocal, buffer);
-            BitHelper.WriteBytes(velFwdLocal, buffer);
+            BitHelper.WriteBytes(velRight, buffer);
+            BitHelper.WriteBytes(velFwd, buffer);
 
-            crouch = (byte)(locomotion.m_crouch * byte.MaxValue);
+            crouch = (byte)(_crouch * byte.MaxValue);
 
             BitHelper.WriteBytes(crouch, buffer);
 

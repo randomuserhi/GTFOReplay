@@ -114,7 +114,7 @@ function blendLimb(model: HumanFrame, states: {anim: HumanFrame, weight: number}
     Pod.Quat.copy(quaternion, buffer[0].value);
 }
 
-function human(): HumanFrame {
+export function human(): HumanFrame {
     return {
         root: Pod.Vec.clone(defaultHumanStructure.hip),
         hip: Pod.Quat.identity(),
@@ -264,7 +264,141 @@ export function blend(t: number, animBlend: AnimBlend<HumanFrame>): HumanFrame {
     return model;
 }
 
-export function apply(skeleton: Human<Object3D>, frame: HumanFrame, mask?: Human<boolean>) {
+const temp: QuaternionLike =  {
+    x: 0,
+    y: 0,
+    z: 0,
+    w: 1
+};
+
+export function difference(result: HumanFrame, reference: HumanFrame, frame: HumanFrame) {
+    Pod.Quat.mul(result.leftUpperLeg, reference.leftUpperLeg, Pod.Quat.inverse(temp, frame.leftUpperLeg));
+    Pod.Quat.mul(result.leftLowerLeg, reference.leftLowerLeg, Pod.Quat.inverse(temp, frame.leftLowerLeg));
+
+    Pod.Quat.mul(result.rightUpperLeg, reference.rightUpperLeg, Pod.Quat.inverse(temp, frame.rightUpperLeg));
+    Pod.Quat.mul(result.rightLowerLeg, reference.rightLowerLeg, Pod.Quat.inverse(temp, frame.rightLowerLeg));
+
+    Pod.Quat.mul(result.spine0, reference.spine0, Pod.Quat.inverse(temp, frame.spine0));
+    Pod.Quat.mul(result.spine1, reference.spine1, Pod.Quat.inverse(temp, frame.spine1));
+    Pod.Quat.mul(result.spine2, reference.spine2, Pod.Quat.inverse(temp, frame.spine2));
+
+    Pod.Quat.mul(result.leftShoulder, reference.leftShoulder, Pod.Quat.inverse(temp, frame.leftShoulder));
+    Pod.Quat.mul(result.leftUpperArm, reference.leftUpperArm, Pod.Quat.inverse(temp, frame.leftUpperArm));
+    Pod.Quat.mul(result.leftLowerArm, reference.leftLowerArm, Pod.Quat.inverse(temp, frame.leftLowerArm));
+
+    Pod.Quat.mul(result.rightShoulder, reference.rightShoulder, Pod.Quat.inverse(temp, frame.rightShoulder));
+    Pod.Quat.mul(result.rightUpperArm, reference.rightUpperArm, Pod.Quat.inverse(temp, frame.rightUpperArm));
+    Pod.Quat.mul(result.rightLowerArm, reference.rightLowerArm, Pod.Quat.inverse(temp, frame.rightLowerArm));
+    
+    Pod.Quat.mul(result.neck, reference.neck, Pod.Quat.inverse(temp, frame.neck));
+    Pod.Quat.mul(result.head, reference.head, Pod.Quat.inverse(temp, frame.head));
+
+    return result;
+}
+
+export function toAnim(rate: number, duration: number, ...frames: HumanFrame[]): Anim<HumanFrame> {
+    return { rate, duration, frames};
+}
+
+export function additive(skeleton: Human<Object3D>, diff: HumanFrame, weight: number, mask?: Human<boolean>) {
+    if (mask === undefined || (mask !== undefined && mask.leftUpperLeg)) 
+        Pod.Quat.slerp(skeleton.leftUpperLeg.quaternion, 
+            skeleton.leftUpperLeg.quaternion, 
+            Pod.Quat.mul(skeleton.leftUpperLeg.quaternion, skeleton.leftUpperLeg.quaternion, diff.leftUpperLeg), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.leftLowerLeg))
+        Pod.Quat.slerp(skeleton.leftLowerLeg.quaternion, 
+            skeleton.leftLowerLeg.quaternion, 
+            Pod.Quat.mul(skeleton.leftLowerLeg.quaternion, skeleton.leftLowerLeg.quaternion, diff.leftLowerLeg), 
+            weight
+        );
+
+    if (mask === undefined || (mask !== undefined && mask.rightUpperLeg))
+        Pod.Quat.slerp(skeleton.rightUpperLeg.quaternion, 
+            skeleton.rightUpperLeg.quaternion, 
+            Pod.Quat.mul(skeleton.rightUpperLeg.quaternion, skeleton.rightUpperLeg.quaternion, diff.rightUpperLeg), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.rightLowerLeg))
+        Pod.Quat.slerp(skeleton.rightLowerLeg.quaternion, 
+            skeleton.rightLowerLeg.quaternion, 
+            Pod.Quat.mul(skeleton.rightLowerLeg.quaternion, skeleton.rightLowerLeg.quaternion, diff.rightLowerLeg), 
+            weight
+        );
+
+    if (mask === undefined || (mask !== undefined && mask.spine0))
+        Pod.Quat.slerp(skeleton.spine0.quaternion, 
+            skeleton.spine0.quaternion, 
+            Pod.Quat.mul(skeleton.spine0.quaternion, skeleton.spine0.quaternion, diff.spine0), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.spine1))
+        Pod.Quat.slerp(skeleton.spine1.quaternion, 
+            skeleton.spine1.quaternion, 
+            Pod.Quat.mul(skeleton.spine1.quaternion, skeleton.spine1.quaternion, diff.spine1), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.spine2))
+        Pod.Quat.slerp(skeleton.spine2.quaternion, 
+            skeleton.spine2.quaternion, 
+            Pod.Quat.mul(skeleton.spine2.quaternion, skeleton.spine2.quaternion, diff.spine2), 
+            weight
+        );
+
+    if (mask === undefined || (mask !== undefined && mask.leftShoulder))
+        Pod.Quat.slerp(skeleton.leftShoulder.quaternion, 
+            skeleton.leftShoulder.quaternion, 
+            Pod.Quat.mul(skeleton.leftShoulder.quaternion, skeleton.leftShoulder.quaternion, diff.leftShoulder), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.leftUpperArm))
+        Pod.Quat.slerp(skeleton.leftUpperArm.quaternion, 
+            skeleton.leftUpperArm.quaternion, 
+            Pod.Quat.mul(skeleton.leftUpperArm.quaternion, skeleton.leftUpperArm.quaternion, diff.leftUpperArm), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.leftLowerArm))
+        Pod.Quat.slerp(skeleton.leftLowerArm.quaternion, 
+            skeleton.leftLowerArm.quaternion, 
+            Pod.Quat.mul(skeleton.leftLowerArm.quaternion, skeleton.leftLowerArm.quaternion, diff.leftLowerArm), 
+            weight
+        );
+
+    if (mask === undefined || (mask !== undefined && mask.rightShoulder))
+        Pod.Quat.slerp(skeleton.rightShoulder.quaternion, 
+            skeleton.rightShoulder.quaternion, 
+            Pod.Quat.mul(skeleton.rightShoulder.quaternion, skeleton.rightShoulder.quaternion, diff.rightShoulder), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.rightUpperArm))
+        Pod.Quat.slerp(skeleton.rightUpperArm.quaternion, 
+            skeleton.rightUpperArm.quaternion, 
+            Pod.Quat.mul(skeleton.rightUpperArm.quaternion, skeleton.rightUpperArm.quaternion, diff.rightUpperArm), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.rightLowerArm))
+        Pod.Quat.slerp(skeleton.rightLowerArm.quaternion, 
+            skeleton.rightLowerArm.quaternion, 
+            Pod.Quat.mul(skeleton.rightLowerArm.quaternion, skeleton.rightLowerArm.quaternion, diff.rightLowerArm), 
+            weight
+        );
+
+    if (mask === undefined || (mask !== undefined && mask.neck))
+        Pod.Quat.slerp(skeleton.neck.quaternion, 
+            skeleton.neck.quaternion, 
+            Pod.Quat.mul(skeleton.neck.quaternion, skeleton.neck.quaternion, diff.neck), 
+            weight
+        );
+    if (mask === undefined || (mask !== undefined && mask.head))
+        Pod.Quat.slerp(skeleton.head.quaternion, 
+            skeleton.head.quaternion, 
+            Pod.Quat.mul(skeleton.head.quaternion, skeleton.head.quaternion, diff.head), 
+            weight
+        );
+}
+
+export function override(skeleton: Human<Object3D>, frame: HumanFrame, mask?: Human<boolean>) {
     if (mask === undefined || (mask !== undefined && mask.hip)) {
         if (frame.root !== undefined) skeleton.hip.position.copy(frame.root);
         else skeleton.hip.position.copy(defaultHumanStructure.hip);

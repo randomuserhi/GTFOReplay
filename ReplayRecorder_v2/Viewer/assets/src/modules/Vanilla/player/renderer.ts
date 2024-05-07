@@ -5,7 +5,7 @@ import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { Equippable } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer } from "../animations/animation.js";
-import { Human, HumanFrame, apply, blend, defaultHumanStructure } from "../animations/human.js";
+import { Human, HumanFrame, additive, blend, defaultHumanStructure, difference, human, override, toAnim } from "../animations/human.js";
 import { Rifle_AO_C } from "../animations/player/Rifle_AO_C.js";
 import { Rifle_AO_D } from "../animations/player/Rifle_AO_D.js";
 import { Rifle_AO_L } from "../animations/player/Rifle_AO_L.js";
@@ -209,19 +209,21 @@ const rifleMovement = new AnimBlend<HumanFrame>([
 ]);
 
 const rifleAimOffset = new AnimBlend<HumanFrame>([
-    { anim: Rifle_AO_U, x: 0, y: 1 },
-    { anim: Rifle_AO_D, x: 0, y: -1 },
-    { anim: Rifle_AO_L, x: -1, y: 1 },
-    { anim: Rifle_AO_R, x: 1, y: 0 },
-    { anim: Rifle_AO_LD, x: -1, y: -1 },
-    { anim: Rifle_AO_LU, x: -1, y: 1 },
-    { anim: Rifle_AO_RD, x: 1, y: -1 },
-    { anim: Rifle_AO_RU, x: 1, y: 1 },
-    { anim: Rifle_AO_C, x: 0, y: 0 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_U.frames[0])), x: 0, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_D.frames[0])), x: 0, y: -1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_L.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_R.frames[0])), x: 1, y: 0 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_LD.frames[0])), x: -1, y: -1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_LU.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_RD.frames[0])), x: 1, y: -1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_RU.frames[0])), x: 1, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_C.frames[0])), x: 0, y: 0 },
 ]);
+console.log(rifleAimOffset);
 
 class PlayerModel  {
     root: Group;
+    anchor: Group;
     skeleton: Human<Group>;
     color: Color;
 
@@ -241,6 +243,9 @@ class PlayerModel  {
 
     constructor(color: Color) {
         this.root = new Group();
+        this.anchor = new Group();
+        this.root.add(this.anchor);
+
         this.skeleton = {
             hip: new Group(),
 
@@ -269,7 +274,7 @@ class PlayerModel  {
             neck: new Group(),
             head: new Group()
         };
-        this.root.add(this.skeleton.hip);
+        this.anchor.add(this.skeleton.hip);
         this.skeleton.hip.add(
             this.skeleton.spine0,
             this.skeleton.leftUpperLeg,
@@ -332,10 +337,10 @@ class PlayerModel  {
         this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
-        this.root.add(this.tmp);
+        this.anchor.add(this.tmp);
 
         this.equipped = new Group();
-        this.root.add(this.equipped);
+        this.anchor.add(this.equipped);
 
         this.backpack = new Group();
         this.skeleton.spine1.add(this.backpack);
@@ -389,7 +394,7 @@ class PlayerModel  {
 
         rifleMovement.point.x = anim.crouch;
 
-        apply(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement));
+        override(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement));
 
         switch(anim.state) {
         case "crouch":
@@ -440,7 +445,7 @@ class PlayerModel  {
             //                     Weighted just means lerp the current state to the target state by the weight (value between 0 & 1)
             //                     Either that or dont make it masked?? not sure really
             // TODO(randomuserhi): Additive apply -> requries a reference pose (difference between target and reference is taken, that diff is added to the current transform)
-            apply(this.skeleton, blend(this.movementAnimTimer.time, rifleAimOffset), upperBodyMask);
+            additive(this.skeleton, blend(this.movementAnimTimer.time, rifleAimOffset), 1, upperBodyMask);
         } break;
         }
 
@@ -449,7 +454,7 @@ class PlayerModel  {
 
     public render(player: Player): void {
         this.root.position.copy(player.position);
-        this.root.quaternion.copy(player.rotation);
+        this.anchor.quaternion.copy(player.rotation);
 
         getWorldPos(worldPos, this.skeleton);
 
@@ -525,10 +530,6 @@ class PlayerModel  {
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot!, zeroQ, sM), this.color);
-    }
-
-    public morph(player: Player) {
-        this.root.position.set(player.position.x, player.position.y, player.position.z);
     }
 
     public updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {
@@ -641,7 +642,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 const model = models.get(id)!;
                 model.setVisible(player.dimension === renderer.get("Dimension"));
                 
-                if (model.root.visible) {
+                if (model.anchor.visible) {
                     const backpack = backpacks.get(id);
                     model.updateBackpack(player, backpack);
                     model.updateTmp(player, camera, stats.get(id), backpack);
