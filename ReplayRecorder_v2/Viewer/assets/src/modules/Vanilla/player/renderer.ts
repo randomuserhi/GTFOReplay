@@ -5,48 +5,8 @@ import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { Equippable } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer } from "../animations/animation.js";
+import { playerAnimations } from "../animations/assets.js";
 import { Human, HumanFrame, additive, blend, defaultHumanStructure, difference, human, override, toAnim } from "../animations/human.js";
-import { Rifle_AO_C } from "../animations/player/Rifle_AO_C.js";
-import { Rifle_AO_D } from "../animations/player/Rifle_AO_D.js";
-import { Rifle_AO_L } from "../animations/player/Rifle_AO_L.js";
-import { Rifle_AO_LD } from "../animations/player/Rifle_AO_LD.js";
-import { Rifle_AO_LU } from "../animations/player/Rifle_AO_LU.js";
-import { Rifle_AO_R } from "../animations/player/Rifle_AO_R.js";
-import { Rifle_AO_RD } from "../animations/player/Rifle_AO_RD.js";
-import { Rifle_AO_RU } from "../animations/player/Rifle_AO_RU.js";
-import { Rifle_AO_U } from "../animations/player/Rifle_AO_U.js";
-import { Rifle_CrouchLoop } from "../animations/player/Rifle_CrouchLoop.js";
-import { Rifle_Crouch_WalkBwd } from "../animations/player/Rifle_Crouch_WalkBwd.js";
-import { Rifle_Crouch_WalkFwd } from "../animations/player/Rifle_Crouch_WalkFwd.js";
-import { Rifle_Crouch_WalkLt } from "../animations/player/Rifle_Crouch_WalkLt.js";
-import { Rifle_Crouch_WalkRt } from "../animations/player/Rifle_Crouch_WalkRt.js";
-import { Rifle_Idle } from "../animations/player/Rifle_Idle.js";
-import { Rifle_Jog_Backward } from "../animations/player/Rifle_Jog_Backward.js";
-import { Rifle_Jog_BackwardLeft } from "../animations/player/Rifle_Jog_BackwardLeft.js";
-import { Rifle_Jog_BackwardRight } from "../animations/player/Rifle_Jog_BackwardRight.js";
-import { Rifle_Jog_Forward } from "../animations/player/Rifle_Jog_Forward.js";
-import { Rifle_Jog_ForwardLeft } from "../animations/player/Rifle_Jog_ForwardLeft.js";
-import { Rifle_Jog_ForwardRight } from "../animations/player/Rifle_Jog_ForwardRight.js";
-import { Rifle_Jog_Left } from "../animations/player/Rifle_Jog_Left.js";
-import { Rifle_Jog_Right } from "../animations/player/Rifle_Jog_Right.js";
-import { Rifle_RunBwdLoop } from "../animations/player/Rifle_RunBwdLoop.js";
-import { Rifle_SprintFwdLoop } from "../animations/player/Rifle_SprintFwdLoop.js";
-import { Rifle_SprintFwdLoop_Left } from "../animations/player/Rifle_SprintFwdLoop_Left.js";
-import { Rifle_SprintFwdLoop_Right } from "../animations/player/Rifle_SprintFwdLoop_Right.js";
-import { Rifle_StrafeLeft135Loop } from "../animations/player/Rifle_StrafeLeft135Loop.js";
-import { Rifle_StrafeLeft45Loop } from "../animations/player/Rifle_StrafeLeft45Loop.js";
-import { Rifle_StrafeLeftLoop } from "../animations/player/Rifle_StrafeLeftLoop.js";
-import { Rifle_StrafeRight135Loop } from "../animations/player/Rifle_StrafeRight135Loop.js";
-import { Rifle_StrafeRight45Loop } from "../animations/player/Rifle_StrafeRight45Loop.js";
-import { Rifle_StrafeRightLoop } from "../animations/player/Rifle_StrafeRightLoop.js";
-import { Rifle_StrafeRun135LeftLoop } from "../animations/player/Rifle_StrafeRun135LeftLoop.js";
-import { Rifle_StrafeRun135LeftLoop_0 } from "../animations/player/Rifle_StrafeRun135LeftLoop_0.js";
-import { Rifle_StrafeRun45LeftLoop } from "../animations/player/Rifle_StrafeRun45LeftLoop.js";
-import { Rifle_StrafeRun45RightLoop } from "../animations/player/Rifle_StrafeRun45RightLoop.js";
-import { Rifle_StrafeRunLeftLoop } from "../animations/player/Rifle_StrafeRunLeftLoop.js";
-import { Rifle_StrafeRunRightLoop } from "../animations/player/Rifle_StrafeRunRightLoop.js";
-import { Rifle_WalkBwdLoop } from "../animations/player/Rifle_WalkBwdLoop.js";
-import { Rifle_WalkFwdLoop } from "../animations/player/Rifle_WalkFwdLoop.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
 import { PlayerAnimState } from "./animation.js";
@@ -166,41 +126,41 @@ const upperBodyMask: Human<boolean> = {
 };
 
 const rifleStandMovement = new AnimBlend<HumanFrame>([
-    { anim: Rifle_Jog_Forward, x: 0, y: 3.5 },
-    { anim: Rifle_Jog_Backward, x: 0, y: -3.5 },
-    { anim: Rifle_Jog_Right, x: 3.5, y: 0 },
-    { anim: Rifle_Jog_Left, x: -3.5, y: 0 },
-    { anim: Rifle_Jog_ForwardLeft, x: -2.56, y: 2.56 },
-    { anim: Rifle_Jog_ForwardRight, x: 2.56, y: 2.56 },
-    { anim: Rifle_Jog_BackwardRight, x: 2.56, y: -2.56 },
-    { anim: Rifle_Jog_BackwardLeft, x: -2.56, y: -2.56 },
-    { anim: Rifle_WalkFwdLoop, x: 0, y: 1.9 },
-    { anim: Rifle_WalkBwdLoop, x: 0, y: -1.8 },
-    { anim: Rifle_StrafeLeftLoop, x: -1.6, y: 0 },
-    { anim: Rifle_StrafeLeft45Loop, x: -1.16, y: 1.16 },
-    { anim: Rifle_StrafeLeft135Loop, x: -1.13, y: -1.13 },
-    { anim: Rifle_StrafeRightLoop, x: 2, y: 0 },
-    { anim: Rifle_StrafeRight45Loop, x: 1.37, y: 1.37 },
-    { anim: Rifle_StrafeRight135Loop, x: 1.16, y: -1.16 },
-    { anim: Rifle_Idle, x: 0, y: 0 },
-    { anim: Rifle_SprintFwdLoop, x: 0, y: 6 },
-    { anim: Rifle_RunBwdLoop, x: 0, y: -5 },
-    { anim: Rifle_StrafeRunRightLoop, x: 6.8, y: 0 },
-    { anim: Rifle_StrafeRunLeftLoop, x: -6.8, y: 0 },
-    { anim: Rifle_StrafeRun45LeftLoop, x: -4.8, y: 4.8 },
-    { anim: Rifle_StrafeRun135LeftLoop_0, x: 4.34, y: -4.34 },
-    { anim: Rifle_StrafeRun45RightLoop, x: 4.8, y: 4.8 },
-    { anim: Rifle_StrafeRun135LeftLoop, x: -4.9, y: -4.9 },
-    { anim: Rifle_SprintFwdLoop_Left, x: -1.25, y: 5.85 },
-    { anim: Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
+    { anim: playerAnimations.Rifle_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimations.Rifle_Jog_Backward, x: 0, y: -3.5 },
+    { anim: playerAnimations.Rifle_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimations.Rifle_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimations.Rifle_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimations.Rifle_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimations.Rifle_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimations.Rifle_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimations.Rifle_WalkFwdLoop, x: 0, y: 1.9 },
+    { anim: playerAnimations.Rifle_WalkBwdLoop, x: 0, y: -1.8 },
+    { anim: playerAnimations.Rifle_StrafeLeftLoop, x: -1.6, y: 0 },
+    { anim: playerAnimations.Rifle_StrafeLeft45Loop, x: -1.16, y: 1.16 },
+    { anim: playerAnimations.Rifle_StrafeLeft135Loop, x: -1.13, y: -1.13 },
+    { anim: playerAnimations.Rifle_StrafeRightLoop, x: 2, y: 0 },
+    { anim: playerAnimations.Rifle_StrafeRight45Loop, x: 1.37, y: 1.37 },
+    { anim: playerAnimations.Rifle_StrafeRight135Loop, x: 1.16, y: -1.16 },
+    { anim: playerAnimations.Rifle_Idle, x: 0, y: 0 },
+    { anim: playerAnimations.Rifle_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimations.Rifle_RunBwdLoop, x: 0, y: -5 },
+    { anim: playerAnimations.Rifle_StrafeRunRightLoop, x: 6.8, y: 0 },
+    { anim: playerAnimations.Rifle_StrafeRunLeftLoop, x: -6.8, y: 0 },
+    { anim: playerAnimations.Rifle_StrafeRun45LeftLoop, x: -4.8, y: 4.8 },
+    { anim: playerAnimations.Rifle_StrafeRun135LeftLoop_0, x: 4.34, y: -4.34 },
+    { anim: playerAnimations.Rifle_StrafeRun45RightLoop, x: 4.8, y: 4.8 },
+    { anim: playerAnimations.Rifle_StrafeRun135LeftLoop, x: -4.9, y: -4.9 },
+    { anim: playerAnimations.Rifle_SprintFwdLoop_Left, x: -1.25, y: 5.85 },
+    { anim: playerAnimations.Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
 ]);
 
 const rifleCrouchMovement = new AnimBlend<HumanFrame>([
-    { anim: Rifle_Crouch_WalkBwd, x: 0, y: -2 },
-    { anim: Rifle_Crouch_WalkFwd, x: 0, y: 2 },
-    { anim: Rifle_Crouch_WalkLt, x: -2, y: 0 },
-    { anim: Rifle_Crouch_WalkRt, x: 2, y: 0 },
-    { anim: Rifle_CrouchLoop, x: 0, y: 0 },
+    { anim: playerAnimations.Rifle_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimations.Rifle_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimations.Rifle_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimations.Rifle_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimations.Rifle_CrouchLoop, x: 0, y: 0 },
 ]);
 
 const rifleMovement = new AnimBlend<HumanFrame>([
@@ -209,17 +169,16 @@ const rifleMovement = new AnimBlend<HumanFrame>([
 ]);
 
 const rifleAimOffset = new AnimBlend<HumanFrame>([
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_U.frames[0])), x: 0, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_D.frames[0])), x: 0, y: -1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_L.frames[0])), x: -1, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_R.frames[0])), x: 1, y: 0 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_LD.frames[0])), x: -1, y: -1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_LU.frames[0])), x: -1, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_RD.frames[0])), x: 1, y: -1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_RU.frames[0])), x: 1, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), Rifle_AO_C.frames[0], Rifle_AO_C.frames[0])), x: 0, y: 0 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_U.frames[0])), x: 0, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_D.frames[0])), x: 0, y: -1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_L.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_R.frames[0])), x: 1, y: 0 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LD.frames[0])), x: -1, y: -1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LU.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RD.frames[0])), x: 1, y: -1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RU.frames[0])), x: 1, y: 1 },
+    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_C.frames[0])), x: 0, y: 0 },
 ]);
-console.log(rifleAimOffset);
 
 class PlayerModel  {
     root: Group;
