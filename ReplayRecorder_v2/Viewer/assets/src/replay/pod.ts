@@ -113,6 +113,14 @@ export namespace Quat {
         a.z = b.z;
         a.w = b.w;
     }
+    export function clone(a: Quaternion) {
+        return {
+            x: a.x,
+            y: a.y,
+            z: a.z,
+            w: a.w
+        };
+    }
     export function identity(): Quaternion {
         return {
             w: 1,

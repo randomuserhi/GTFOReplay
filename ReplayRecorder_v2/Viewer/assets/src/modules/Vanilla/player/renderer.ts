@@ -1,12 +1,12 @@
-import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3 } from "three";
+import { Camera, Color, ColorRepresentation, Group, Matrix4, Quaternion, Scene, Vector3 } from "three";
 import { Text } from "troika-three-text";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { Equippable } from "../Equippable/equippable.js";
-import { AnimBlend, AnimTimer } from "../animations/animation.js";
+import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
 import { playerAnimations } from "../animations/assets.js";
-import { Human, HumanFrame, additive, blend, defaultHumanStructure, difference, human, override, toAnim } from "../animations/human.js";
+import { HumanJoints, HumanMask, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
 import { PlayerAnimState } from "./animation.js";
@@ -26,62 +26,12 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
-const worldPos: Human<Vector3> = {
-    hip: new Vector3(),
+const worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
+function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: HumanSkeleton): AvatarStructure<HumanJoints, Vector3> {
+    for (const key of skeleton.keys) {
+        skeleton.joints[key].getWorldPosition(worldPos[key]);
+    }
 
-    leftUpperLeg: new Vector3(),
-    leftLowerLeg: new Vector3(),
-    leftFoot: new Vector3(),
-    
-    rightUpperLeg: new Vector3(),
-    rightLowerLeg: new Vector3(),
-    rightFoot: new Vector3(),
-    
-    spine0: new Vector3(),
-    spine1: new Vector3(),
-    spine2: new Vector3(),
-    
-    leftShoulder: new Vector3(),
-    leftUpperArm: new Vector3(),
-    leftLowerArm: new Vector3(),
-    leftHand: new Vector3(),
-    
-    rightShoulder: new Vector3(),
-    rightUpperArm: new Vector3(),
-    rightLowerArm: new Vector3(),
-    rightHand: new Vector3(),
-
-    neck: new Vector3(),
-    head: new Vector3()
-};
-function getWorldPos(worldPos: Human<Vector3>, skeleton: Human<Object3D>): Human<Vector3> {
-    skeleton.hip.getWorldPosition(worldPos.hip);
-
-    skeleton.leftUpperLeg.getWorldPosition(worldPos.leftUpperLeg);
-    skeleton.leftLowerLeg.getWorldPosition(worldPos.leftLowerLeg);
-    skeleton.leftFoot!.getWorldPosition(worldPos.leftFoot!);
-
-    skeleton.rightUpperLeg.getWorldPosition(worldPos.rightUpperLeg);
-    skeleton.rightLowerLeg.getWorldPosition(worldPos.rightLowerLeg);
-    skeleton.rightFoot!.getWorldPosition(worldPos.rightFoot!);
-
-    skeleton.spine0.getWorldPosition(worldPos.spine0);
-    skeleton.spine1.getWorldPosition(worldPos.spine1);
-    skeleton.spine2.getWorldPosition(worldPos.spine2);
-
-    skeleton.leftShoulder.getWorldPosition(worldPos.leftShoulder);
-    skeleton.leftUpperArm.getWorldPosition(worldPos.leftUpperArm);
-    skeleton.leftLowerArm.getWorldPosition(worldPos.leftLowerArm);
-    skeleton.leftHand!.getWorldPosition(worldPos.leftHand!);
-
-    skeleton.rightShoulder.getWorldPosition(worldPos.rightShoulder);
-    skeleton.rightUpperArm.getWorldPosition(worldPos.rightUpperArm);
-    skeleton.rightLowerArm.getWorldPosition(worldPos.rightLowerArm);
-    skeleton.rightHand!.getWorldPosition(worldPos.rightHand!);
-    
-    skeleton.neck.getWorldPosition(worldPos.neck);
-    skeleton.head.getWorldPosition(worldPos.head);
-    
     return worldPos;
 }
 
@@ -100,32 +50,29 @@ const scale = new Vector3(radius, radius, radius);
 const tmpPos = new Vector3();
 const camPos = new Vector3();
 
-const upperBodyMask: Human<boolean> = {
-    hip: false,
+const upperBodyMask: HumanMask = {
+    root: false,
+    joints: { 
+        spine0: true,
+        spine1: true,
+        spine2: true,
 
-    leftUpperLeg: false,
-    leftLowerLeg: false,
+        leftShoulder: true,
+        leftUpperArm: true,
+        leftLowerArm: true,
+        leftHand: true,
 
-    rightUpperLeg: false,
-    rightLowerLeg: false,
+        rightShoulder: true,
+        rightUpperArm: true,
+        rightLowerArm: true,
+        rightHand: true,
 
-    spine0: true,
-    spine1: true,
-    spine2: true,
-
-    leftShoulder: true,
-    leftUpperArm: true,
-    leftLowerArm: true,
-
-    rightShoulder: true,
-    rightUpperArm: true,
-    rightLowerArm: true,
-
-    neck: true,
-    head: true,
+        neck: true,
+        head: true
+    }
 };
 
-const rifleStandMovement = new AnimBlend<HumanFrame>([
+const rifleStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimations.Rifle_Jog_Forward, x: 0, y: 3.5 },
     { anim: playerAnimations.Rifle_Jog_Backward, x: 0, y: -3.5 },
     { anim: playerAnimations.Rifle_Jog_Right, x: 3.5, y: 0 },
@@ -155,7 +102,7 @@ const rifleStandMovement = new AnimBlend<HumanFrame>([
     { anim: playerAnimations.Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
 ]);
 
-const rifleCrouchMovement = new AnimBlend<HumanFrame>([
+const rifleCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimations.Rifle_Crouch_WalkBwd, x: 0, y: -2 },
     { anim: playerAnimations.Rifle_Crouch_WalkFwd, x: 0, y: 2 },
     { anim: playerAnimations.Rifle_Crouch_WalkLt, x: -2, y: 0 },
@@ -163,27 +110,27 @@ const rifleCrouchMovement = new AnimBlend<HumanFrame>([
     { anim: playerAnimations.Rifle_CrouchLoop, x: 0, y: 0 },
 ]);
 
-const rifleMovement = new AnimBlend<HumanFrame>([
+const rifleMovement = new AnimBlend(HumanJoints, [
     { anim: rifleStandMovement, x: 0, y: 0 },
     { anim: rifleCrouchMovement, x: 1, y: 0 }
 ]);
 
-const rifleAimOffset = new AnimBlend<HumanFrame>([
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_U.frames[0])), x: 0, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_D.frames[0])), x: 0, y: -1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_L.frames[0])), x: -1, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_R.frames[0])), x: 1, y: 0 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LD.frames[0])), x: -1, y: -1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LU.frames[0])), x: -1, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RD.frames[0])), x: 1, y: -1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RU.frames[0])), x: 1, y: 1 },
-    { anim: toAnim(0.05, 0.1, difference(human(), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_C.frames[0])), x: 0, y: 0 },
+const rifleAimOffset = new AnimBlend(HumanJoints, [
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_U.frames[0])), x: 0, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_D.frames[0])), x: 0, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_L.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_R.frames[0])), x: 1, y: 0 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LD.frames[0])), x: -1, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LU.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RD.frames[0])), x: 1, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RU.frames[0])), x: 1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_C.frames[0])), x: 0, y: 0 },
 ]);
 
 class PlayerModel  {
     root: Group;
     anchor: Group;
-    skeleton: Human<Group>;
+    skeleton: HumanSkeleton;
     color: Color;
 
     head: number;
@@ -205,79 +152,33 @@ class PlayerModel  {
         this.anchor = new Group();
         this.root.add(this.anchor);
 
-        this.skeleton = {
-            hip: new Group(),
-
-            leftUpperLeg: new Group(),
-            leftLowerLeg: new Group(),
-            leftFoot: new Group(),
-            
-            rightUpperLeg: new Group(),
-            rightLowerLeg: new Group(),
-            rightFoot: new Group(),
-            
-            spine0: new Group(),
-            spine1: new Group(),
-            spine2: new Group(),
-            
-            leftShoulder: new Group(),
-            leftUpperArm: new Group(),
-            leftLowerArm: new Group(),
-            leftHand: new Group(),
-            
-            rightShoulder: new Group(),
-            rightUpperArm: new Group(),
-            rightLowerArm: new Group(),
-            rightHand: new Group(),
-
-            neck: new Group(),
-            head: new Group()
-        };
-        this.anchor.add(this.skeleton.hip);
-        this.skeleton.hip.add(
-            this.skeleton.spine0,
-            this.skeleton.leftUpperLeg,
-            this.skeleton.rightUpperLeg
+        this.skeleton = new AvatarSkeleton(HumanJoints, "hip");
+        this.anchor.add(this.skeleton.joints.hip);
+        this.skeleton.joints.hip.add(
+            this.skeleton.joints.spine0,
+            this.skeleton.joints.leftUpperLeg,
+            this.skeleton.joints.rightUpperLeg
         );
-        this.skeleton.leftUpperLeg.add(this.skeleton.leftLowerLeg);
-        this.skeleton.leftLowerLeg.add(this.skeleton.leftFoot!);
-        this.skeleton.rightUpperLeg.add(this.skeleton.rightLowerLeg);
-        this.skeleton.rightLowerLeg.add(this.skeleton.rightFoot!);
-        this.skeleton.spine0.add(this.skeleton.spine1);
-        this.skeleton.spine1.add(this.skeleton.spine2);
-        this.skeleton.spine2.add(
-            this.skeleton.neck,
-            this.skeleton.leftShoulder,
-            this.skeleton.rightShoulder
+        this.skeleton.joints.leftUpperLeg.add(this.skeleton.joints.leftLowerLeg);
+        this.skeleton.joints.leftLowerLeg.add(this.skeleton.joints.leftFoot!);
+        this.skeleton.joints.rightUpperLeg.add(this.skeleton.joints.rightLowerLeg);
+        this.skeleton.joints.rightLowerLeg.add(this.skeleton.joints.rightFoot!);
+        this.skeleton.joints.spine0.add(this.skeleton.joints.spine1);
+        this.skeleton.joints.spine1.add(this.skeleton.joints.spine2);
+        this.skeleton.joints.spine2.add(
+            this.skeleton.joints.neck,
+            this.skeleton.joints.leftShoulder,
+            this.skeleton.joints.rightShoulder
         );
-        this.skeleton.leftShoulder.add(this.skeleton.leftUpperArm);
-        this.skeleton.leftUpperArm.add(this.skeleton.leftLowerArm);
-        this.skeleton.leftLowerArm.add(this.skeleton.leftHand!);
-        this.skeleton.rightShoulder.add(this.skeleton.rightUpperArm);
-        this.skeleton.rightUpperArm.add(this.skeleton.rightLowerArm);
-        this.skeleton.rightLowerArm.add(this.skeleton.rightHand!);
-        this.skeleton.neck.add(this.skeleton.head);
+        this.skeleton.joints.leftShoulder.add(this.skeleton.joints.leftUpperArm);
+        this.skeleton.joints.leftUpperArm.add(this.skeleton.joints.leftLowerArm);
+        this.skeleton.joints.leftLowerArm.add(this.skeleton.joints.leftHand!);
+        this.skeleton.joints.rightShoulder.add(this.skeleton.joints.rightUpperArm);
+        this.skeleton.joints.rightUpperArm.add(this.skeleton.joints.rightLowerArm);
+        this.skeleton.joints.rightLowerArm.add(this.skeleton.joints.rightHand!);
+        this.skeleton.joints.neck.add(this.skeleton.joints.head);
 
-        this.skeleton.hip.position.copy(defaultHumanStructure.hip);
-        this.skeleton.leftUpperLeg.position.copy(defaultHumanStructure.leftUpperLeg);
-        this.skeleton.leftLowerLeg.position.copy(defaultHumanStructure.leftLowerLeg);
-        this.skeleton.leftFoot!.position.copy(defaultHumanStructure.leftFoot!);
-        this.skeleton.rightUpperLeg.position.copy(defaultHumanStructure.rightUpperLeg);
-        this.skeleton.rightLowerLeg.position.copy(defaultHumanStructure.rightLowerLeg);
-        this.skeleton.rightFoot!.position.copy(defaultHumanStructure.rightFoot!);
-        this.skeleton.spine0.position.copy(defaultHumanStructure.spine0);
-        this.skeleton.spine1.position.copy(defaultHumanStructure.spine1);
-        this.skeleton.spine2.position.copy(defaultHumanStructure.spine2);
-        this.skeleton.leftShoulder.position.copy(defaultHumanStructure.leftShoulder);
-        this.skeleton.leftUpperArm.position.copy(defaultHumanStructure.leftUpperArm);
-        this.skeleton.leftLowerArm.position.copy(defaultHumanStructure.leftLowerArm);
-        this.skeleton.leftHand!.position.copy(defaultHumanStructure.leftHand!);
-        this.skeleton.rightShoulder.position.copy(defaultHumanStructure.rightShoulder);
-        this.skeleton.rightUpperArm.position.copy(defaultHumanStructure.rightUpperArm);
-        this.skeleton.rightLowerArm.position.copy(defaultHumanStructure.rightLowerArm);
-        this.skeleton.rightHand!.position.copy(defaultHumanStructure.rightHand!);
-        this.skeleton.neck.position.copy(defaultHumanStructure.neck);
-        this.skeleton.head.position.copy(defaultHumanStructure.head);
+        this.skeleton.set(defaultHumanStructure);
 
         this.movementAnimTimer = new AnimTimer(true); 
         this.movementAnimTimer.play(0);
@@ -302,7 +203,7 @@ class PlayerModel  {
         this.anchor.add(this.equipped);
 
         this.backpack = new Group();
-        this.skeleton.spine1.add(this.backpack);
+        this.skeleton.joints.spine1.add(this.backpack);
 
         this.slots = new Array(inventorySlots.length);
         this.backpackAligns = new Array(inventorySlots.length);
@@ -353,7 +254,7 @@ class PlayerModel  {
 
         rifleMovement.point.x = anim.crouch;
 
-        override(this.skeleton, blend(this.movementAnimTimer.time, rifleMovement));
+        this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time));
 
         switch(anim.state) {
         case "crouch":
@@ -404,7 +305,7 @@ class PlayerModel  {
             //                     Weighted just means lerp the current state to the target state by the weight (value between 0 & 1)
             //                     Either that or dont make it masked?? not sure really
             // TODO(randomuserhi): Additive apply -> requries a reference pose (difference between target and reference is taken, that diff is added to the current transform)
-            additive(this.skeleton, blend(this.movementAnimTimer.time, rifleAimOffset), 1, upperBodyMask);
+            this.skeleton.additive(rifleAimOffset.sample(this.movementAnimTimer.time), 1, upperBodyMask);
         } break;
         }
 

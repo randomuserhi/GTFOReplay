@@ -19,26 +19,30 @@ namespace ReplayRecorder {
                 m.GetCustomAttribute<ReplayOnElevatorStop>() != null)
             ) {
                 if (method.IsStatic) {
-                    string type = nameof(ReplayReset);
-                    if (method.GetCustomAttribute<ReplayInit>() != null) {
-                        type = nameof(ReplayInit);
-                        OnExpeditionStart += (Action)method.CreateDelegate(typeof(Action));
-                    } else if (method.GetCustomAttribute<ReplayOnHeaderCompletion>() != null) {
-                        type = nameof(ReplayOnHeaderCompletion);
-                        OnHeaderCompletion += (Action)method.CreateDelegate(typeof(Action));
-                    } else if (method.GetCustomAttribute<ReplayOnGameplayStart>() != null) {
-                        type = nameof(ReplayOnGameplayStart);
-                        OnGameplayStart += (Action)method.CreateDelegate(typeof(Action));
-                    } else if (method.GetCustomAttribute<ReplayTick>() != null) {
-                        type = nameof(ReplayTick);
-                        OnTick += (Action)method.CreateDelegate(typeof(Action));
-                    } else if (method.GetCustomAttribute<ReplayOnElevatorStop>() != null) {
-                        type = nameof(ReplayOnElevatorStop);
-                        OnElevatorStop += (Action)method.CreateDelegate(typeof(Action));
-                    } else {
-                        OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
+                    try {
+                        string type = nameof(ReplayReset);
+                        if (method.GetCustomAttribute<ReplayInit>() != null) {
+                            type = nameof(ReplayInit);
+                            OnExpeditionStart += (Action)method.CreateDelegate(typeof(Action));
+                        } else if (method.GetCustomAttribute<ReplayOnHeaderCompletion>() != null) {
+                            type = nameof(ReplayOnHeaderCompletion);
+                            OnHeaderCompletion += (Action)method.CreateDelegate(typeof(Action));
+                        } else if (method.GetCustomAttribute<ReplayOnGameplayStart>() != null) {
+                            type = nameof(ReplayOnGameplayStart);
+                            OnGameplayStart += (Action)method.CreateDelegate(typeof(Action));
+                        } else if (method.GetCustomAttribute<ReplayTick>() != null) {
+                            type = nameof(ReplayTick);
+                            OnTick += (Action)method.CreateDelegate(typeof(Action));
+                        } else if (method.GetCustomAttribute<ReplayOnElevatorStop>() != null) {
+                            type = nameof(ReplayOnElevatorStop);
+                            OnElevatorStop += (Action)method.CreateDelegate(typeof(Action));
+                        } else {
+                            OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
+                        }
+                        APILogger.Debug($"Registered {type}: '{t.FullName}.{method.Name}'");
+                    } catch (Exception ex) {
+                        APILogger.Error($"Failed to register method: {ex}");
                     }
-                    APILogger.Debug($"Registered {type}: '{t.FullName}.{method.Name}'");
                 } else {
                     APILogger.Error($"Replay attributes can only be applied to static methods. '{method}' is not static.");
                 }
