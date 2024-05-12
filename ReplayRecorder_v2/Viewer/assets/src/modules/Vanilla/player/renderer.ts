@@ -1,4 +1,4 @@
-import { Camera, Color, ColorRepresentation, Group, Matrix4, Quaternion, Scene, Vector3 } from "three";
+import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3 } from "three";
 import { Text } from "troika-three-text";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
@@ -7,6 +7,8 @@ import { Equippable } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
 import { playerAnimations } from "../animations/assets.js";
 import { HumanJoints, HumanMask, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
+import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
+import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
 import { PlayerAnimState } from "./animation.js";
@@ -130,9 +132,15 @@ const rifleAimOffset = new AnimBlend(HumanJoints, [
 class PlayerModel  {
     root: Group;
     anchor: Group;
-    skeleton: HumanSkeleton;
     color: Color;
-
+    
+    skeleton: HumanSkeleton;
+    gun: Group;
+    rightHandAttachment: Group;
+    
+    aimIK: IKSolverAim;
+    aimTarget: Object3D;
+    
     head: number;
     parts: number[];
     points: number[];
@@ -177,6 +185,16 @@ class PlayerModel  {
         this.skeleton.joints.rightUpperArm.add(this.skeleton.joints.rightLowerArm);
         this.skeleton.joints.rightLowerArm.add(this.skeleton.joints.rightHand!);
         this.skeleton.joints.neck.add(this.skeleton.joints.head);
+
+        this.rightHandAttachment = new Group();
+        this.skeleton.joints.rightHand.add(this.rightHandAttachment);
+        /*this.rightHandAttachment.quaternion.set(0.5, 0.5, 0.5,0.5);
+        this.rightHandAttachment.position.set(-0.1, 0.045, 0);*/
+        this.rightHandAttachment.quaternion.set(0.5, -0.5, -0.5, 0.5);
+        this.rightHandAttachment.position.set(0.1, 0.045, 0);
+        this.gun = new Group();
+        this.rightHandAttachment.add(this.gun);
+        this.gun.position.set(0, 0, 0.5);
 
         this.skeleton.set(defaultHumanStructure);
 
@@ -229,6 +247,21 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].position.set(-0.003, -0.2, -0.24);
         this.backpackAligns[inventorySlotMap.get("pack")!].quaternion.set(0, -0.263914526, 0, 0.964546144);
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
+
+        this.aimIK = new IKSolverAim();
+        this.aimIK.transform = this.gun;
+        this.aimIK.target = this.aimTarget = new Object3D();
+        this.aimIK.tolerance = 0.1;
+        this.aimIK.maxIterations = 3;
+        this.aimIK.bones = [
+            new Bone(this.skeleton.joints.spine1, 1),
+            new Bone(this.skeleton.joints.spine2, 0.8),
+            new Bone(this.skeleton.joints.rightShoulder, 0),
+            new Bone(this.skeleton.joints.rightUpperArm, 0.1),
+            new Bone(this.skeleton.joints.rightHand, 1),
+        ];
+
+        this.aimTarget.position.set(0, 0, 0);
     }
 
     public addToScene(scene: Scene) {
@@ -246,15 +279,16 @@ class PlayerModel  {
     public update(time: number, player: Player, anim: PlayerAnimState): void {
         this.movementAnimTimer.update(time);
 
-        rifleStandMovement.point.x = anim.velocity.x;
-        rifleStandMovement.point.y = anim.velocity.z;
+        //rifleStandMovement.point.x = anim.velocity.x;
+        //rifleStandMovement.point.y = anim.velocity.z;
 
-        rifleCrouchMovement.point.x = anim.velocity.x;
-        rifleCrouchMovement.point.y = anim.velocity.z;
+        //rifleCrouchMovement.point.x = anim.velocity.x;
+        //rifleCrouchMovement.point.y = anim.velocity.z;
 
-        rifleMovement.point.x = anim.crouch;
+        //rifleMovement.point.x = anim.crouch;
 
-        this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time));
+        //this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time));
+        this.skeleton.override(rifleMovement.sample(0));
 
         switch(anim.state) {
         case "crouch":
@@ -298,23 +332,41 @@ class PlayerModel  {
             const num7 = Pod.Vec.dot(vector3, vector4);
             const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
     
-            rifleAimOffset.point.y = num5;
+            rifleAimOffset.point.y = -num5;
             rifleAimOffset.point.x = value;
     
             // TODO(randomuserhi): Apply it weighted so that when crouched rifle aim offset doesnt look shit...
             //                     Weighted just means lerp the current state to the target state by the weight (value between 0 & 1)
             //                     Either that or dont make it masked?? not sure really
             // TODO(randomuserhi): Additive apply -> requries a reference pose (difference between target and reference is taken, that diff is added to the current transform)
-            this.skeleton.additive(rifleAimOffset.sample(this.movementAnimTimer.time), 1, upperBodyMask);
+            //this.skeleton.additive(rifleAimOffset.sample(this.movementAnimTimer.time), 1, upperBodyMask);
         } break;
         }
 
+        this.skeleton.root.position.copy(defaultHumanStructure.hip);
+        for (const key of this.skeleton.keys) {
+            this.skeleton.joints[key].quaternion.set(0, 0, 0, 1);
+        }
+        this.skeleton.joints["rightLowerArm"].rotation.set(0, 90 * Math.deg2rad, 0);
+
+        const dist = 10;
+        /*this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
+        this.aimTarget.position.x += anim.targetLookDir.x * dist;
+        this.aimTarget.position.y += anim.targetLookDir.y * dist;
+        this.aimTarget.position.z += anim.targetLookDir.z * dist;*/
+        this.aimTarget.position.set(0, 0, 0);
+        this.aimTarget.position.x += 0;
+        this.aimTarget.position.y += 0;
+        this.aimTarget.position.z += 1;
+        this.aimIK.update();
         this.render(player);
     }
 
     public render(player: Player): void {
-        this.root.position.copy(player.position);
-        this.anchor.quaternion.copy(player.rotation);
+        //this.root.position.copy(player.position);
+        //this.anchor.quaternion.copy(player.rotation);
+        this.root.position.set(0, 0, 0);
+        this.anchor.quaternion.set(0, 0, 0, 1);
 
         getWorldPos(worldPos, this.skeleton);
 
@@ -390,6 +442,10 @@ class PlayerModel  {
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot!, zeroQ, sM), this.color);
+
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.aimTarget.position, zeroQ, sM), new Color(0xffffff));
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.gun.getWorldPosition(new Vector3()), zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.gun.getWorldPosition(new Vector3()).add(this.aimIK.transformAxis()), zeroQ, sM), new Color(0xffff00));
     }
 
     public updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {
