@@ -3,6 +3,8 @@ import { Object3D, Quaternion, Vector3 } from "three";
 export class Point {
     transform: Object3D;
     private _worldPosition: Vector3;
+    private _worldRotation: Quaternion;
+    private _worldScale: Vector3;
 
     weight: number;
 
@@ -20,7 +22,9 @@ export class Point {
         this.defaultLocalPosition = new Vector3();
         this.defaultLocalRotation = new Quaternion();
 
+        this._worldScale = new Vector3();
         this._worldPosition = new Vector3();
+        this._worldRotation = new Quaternion();
     }
 
     public storeDefaultLocalState() {
@@ -30,6 +34,23 @@ export class Point {
 
     public worldPosition(): Vector3 {
         return this.transform.getWorldPosition(this._worldPosition);
+    }
+
+    // NOTE(randomuserhi): Remove whilst maintaining world position
+    public detach(): Object3D | undefined | null {
+        const parent = this.transform.parent;
+        this.transform.updateWorldMatrix(true, false);
+        this.transform.matrixWorld.decompose(this._worldPosition, this._worldRotation, this._worldScale);
+        this.transform.removeFromParent();
+        this.transform.position.copy(this._worldPosition);
+        this.transform.quaternion.copy(this._worldRotation);
+        this.transform.scale.copy(this._worldScale);
+        return parent;
+    }
+
+    // NOTE(randomuserhi): Attach whilst maintaining world position -> As per three.js does not support non-uniformly scaled nodes
+    public attach(parent?: Object3D | null) {
+        parent?.attach(this.transform);
     }
 }
 

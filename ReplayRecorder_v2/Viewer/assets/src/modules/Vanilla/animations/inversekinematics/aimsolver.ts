@@ -95,18 +95,17 @@ export class IKSolverAim extends IKSolverHeuristic {
         this.rotateToTarget(this.clampedIKPosition, this.bones[this.bones.length - 1], this.IKPositionWeight * this.bones[this.bones.length - 1].weight);
     }
 
-    // FOR SOME REASON DOESNT WORK
     private rotateToTarget(targetPosition: Vector3, bone: Bone, weight: number) {
         if (weight >= 0) {
-            //const quaternion = _rotateToTarget_temp.setFromUnitVectors(this.transformAxis().normalize(), _rotateToTarget_vector2.copy(targetPosition).sub(this.worldPosition()).normalize());
             const quaternion = _rotateToTarget_temp.setFromUnitVectors(this.transformAxis().normalize(), _rotateToTarget_vector2.copy(targetPosition).sub(this.worldPosition()).normalize());
-            bone.transform.quaternion.multiply(quaternion);
-            /*if (weight >= 1) {
-                bone.transform.quaternion.multiply(quaternion);
+            const parent = bone.detach();
+            if (weight >= 1) {
+                bone.transform.quaternion.copy(quaternion.multiply(bone.transform.quaternion));
             } else {
                 _rotateToTarget_identity.set(0, 0, 0, 1);
-                bone.transform.quaternion.multiply(_rotateToTarget_identity.slerp(quaternion, weight));
-            }*/
+                bone.transform.quaternion.copy(_rotateToTarget_identity.slerp(quaternion, weight).multiply(bone.transform.quaternion));
+            }
+            bone.attach(parent);
         }
     }
 
