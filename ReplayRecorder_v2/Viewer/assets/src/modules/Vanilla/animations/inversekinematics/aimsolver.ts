@@ -87,7 +87,6 @@ export class IKSolverAim extends IKSolverHeuristic {
     }
 
     private solve() {
-        console.log("solve");
         for (let i = 0; i < this.bones.length - 1; i++) {
             this.rotateToTarget(this.clampedIKPosition, this.bones[i], this.step * (i + 1) * this.IKPositionWeight * this.bones[i].weight);
         }
