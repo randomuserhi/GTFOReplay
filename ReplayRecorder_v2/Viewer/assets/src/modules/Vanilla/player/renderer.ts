@@ -6,7 +6,7 @@ import * as Pod from "../../../replay/pod.js";
 import { Equippable } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
 import { playerAnimations } from "../animations/assets.js";
-import { HumanJoints, HumanMask, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
+import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
@@ -52,7 +52,7 @@ const scale = new Vector3(radius, radius, radius);
 const tmpPos = new Vector3();
 const camPos = new Vector3();
 
-const upperBodyMask: HumanMask = {
+/*const upperBodyMask: HumanMask = {
     root: false,
     joints: { 
         spine0: true,
@@ -72,7 +72,7 @@ const upperBodyMask: HumanMask = {
         neck: true,
         head: true
     }
-};
+};*/
 
 const rifleStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimations.Rifle_Jog_Forward, x: 0, y: 3.5 },
@@ -190,19 +190,14 @@ class PlayerModel  {
         // Attachment transforms for guns
         this.leftHandAttachment = new Group();
         this.skeleton.joints.leftHand.add(this.leftHandAttachment);
-        this.leftHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
-        this.leftHandAttachment.position.set(0.1, -0.045, 0);
 
         this.rightHandAttachment = new Group();
         this.skeleton.joints.rightHand.add(this.rightHandAttachment);
-        this.rightHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
-        this.rightHandAttachment.position.set(0.1, 0.045, 0);
 
         this.gun = new Group();
         this.rightHandAttachment.add(this.gun);
-        this.gun.position.set(0, 0, 0.5);
-
-        this.skeleton.set(defaultHumanStructure);
+        
+        this.setBonePositions();
 
         this.movementAnimTimer = new AnimTimer(true); 
         this.movementAnimTimer.play(0);
@@ -280,6 +275,15 @@ class PlayerModel  {
 
     public setVisible(visible: boolean) {
         this.root.visible = visible;
+    }
+
+    private setBonePositions() {
+        this.skeleton.set(defaultHumanStructure);
+        this.leftHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
+        this.leftHandAttachment.position.set(0.1, -0.045, 0);
+        this.rightHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
+        this.rightHandAttachment.position.set(0.1, 0.045, 0);
+        this.gun.position.set(0, 0, 0.5);
     }
 
     public update(time: number, player: Player, anim: PlayerAnimState): void {
@@ -432,6 +436,7 @@ class PlayerModel  {
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot!, zeroQ, sM), this.color);
 
+        // DEBUG POINTS FOR AIM DIRECTION
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.aimTarget.position, zeroQ, sM), new Color(0xffffff));
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.rightHandAttachment.getWorldPosition(new Vector3()), zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.gun.getWorldPosition(new Vector3()), zeroQ, sM), this.color);

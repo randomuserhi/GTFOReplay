@@ -1,50 +1,42 @@
 import { Object3D, Quaternion, Vector3 } from "three";
 
+const _Point_ones = new Vector3(1, 1, 1);
 export class Point {
     transform: Object3D;
     private _worldPosition: Vector3;
     private _worldRotation: Quaternion;
-    private _worldScale: Vector3;
 
     weight: number;
 
     solverPosition: Vector3;
     solverRotation: Quaternion;
 
-    defaultLocalPosition: Vector3;
-    defaultLocalRotation: Quaternion;
-
     constructor() {
         this.weight = 1.0;
         this.solverPosition = new Vector3();
         this.solverRotation = new Quaternion();
 
-        this.defaultLocalPosition = new Vector3();
-        this.defaultLocalRotation = new Quaternion();
-
-        this._worldScale = new Vector3();
         this._worldPosition = new Vector3();
         this._worldRotation = new Quaternion();
-    }
-
-    public storeDefaultLocalState() {
-        this.defaultLocalPosition.copy(this.transform.position);
-        this.defaultLocalRotation.copy(this.transform.quaternion);
     }
 
     public worldPosition(): Vector3 {
         return this.transform.getWorldPosition(this._worldPosition);
     }
 
-    // NOTE(randomuserhi): Remove whilst maintaining world position
+    public worldRotation(): Quaternion {
+        return this.transform.getWorldQuaternion(this._worldRotation);
+    }
+
+    // NOTE(randomuserhi): Remove whilst maintaining world position and rotation
     public detach(): Object3D | undefined | null {
         const parent = this.transform.parent;
         this.transform.updateWorldMatrix(true, false);
-        this.transform.matrixWorld.decompose(this._worldPosition, this._worldRotation, this._worldScale);
+        this.worldPosition(); this.worldRotation();
         this.transform.removeFromParent();
         this.transform.position.copy(this._worldPosition);
         this.transform.quaternion.copy(this._worldRotation);
-        this.transform.scale.copy(this._worldScale);
+        this.transform.scale.copy(_Point_ones);
         return parent;
     }
 
@@ -69,8 +61,6 @@ export class Bone extends Point {
         this.sqrMag = 0;
 
         this.axis = new Vector3(-1, 0 ,0);
-
-        this.storeDefaultLocalState();
     }
 }
 
@@ -143,12 +133,6 @@ export class IKSolverHeuristic extends IKSolver {
         this.bones = [];
 
         this.chainLength = 0;
-    }
-
-    public storeDefaultLocalState(): void {
-        for (const bone of this.bones) {
-            bone.storeDefaultLocalState();
-        }
     }
 }
 
