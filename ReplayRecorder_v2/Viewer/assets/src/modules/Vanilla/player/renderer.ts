@@ -265,6 +265,15 @@ class PlayerModel  {
         this.aimTarget.position.set(0, 0, 0);
     }
 
+    private setBonePositions() {
+        this.skeleton.set(defaultHumanStructure);
+        this.leftHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
+        this.leftHandAttachment.position.set(0.1, -0.045, 0);
+        this.rightHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
+        this.rightHandAttachment.position.set(0.1, 0.045, 0);
+        this.gun.position.set(0, 0, 0.5);
+    }
+
     public addToScene(scene: Scene) {
         scene.add(this.root);
     }
@@ -275,15 +284,6 @@ class PlayerModel  {
 
     public setVisible(visible: boolean) {
         this.root.visible = visible;
-    }
-
-    private setBonePositions() {
-        this.skeleton.set(defaultHumanStructure);
-        this.leftHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
-        this.leftHandAttachment.position.set(0.1, -0.045, 0);
-        this.rightHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
-        this.rightHandAttachment.position.set(0.1, 0.045, 0);
-        this.gun.position.set(0, 0, 0.5);
     }
 
     public update(time: number, player: Player, anim: PlayerAnimState): void {
