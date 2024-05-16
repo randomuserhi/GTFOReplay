@@ -5,6 +5,7 @@ export class Point {
     transform: Object3D;
     private _worldPosition: Vector3;
     private _worldRotation: Quaternion;
+    private _worldScale: Vector3;
 
     weight: number;
 
@@ -18,12 +19,12 @@ export class Point {
 
         this._worldPosition = new Vector3();
         this._worldRotation = new Quaternion();
+        this._worldScale = new Vector3();
     }
 
     public worldPosition(): Vector3 {
         return this.transform.getWorldPosition(this._worldPosition);
     }
-
     public worldRotation(): Quaternion {
         return this.transform.getWorldQuaternion(this._worldRotation);
     }
@@ -32,11 +33,11 @@ export class Point {
     public detach(): Object3D | undefined | null {
         const parent = this.transform.parent;
         this.transform.updateWorldMatrix(true, false);
-        this.worldPosition(); this.worldRotation();
+        this.transform.matrixWorld.decompose(this._worldPosition, this._worldRotation, this._worldScale);
         this.transform.removeFromParent();
         this.transform.position.copy(this._worldPosition);
         this.transform.quaternion.copy(this._worldRotation);
-        this.transform.scale.copy(_Point_ones);
+        this.transform.scale.copy(_Point_ones); // NOTE(randomuserhi): Don't support non-uniformly scaled nodes -> also scale has floating point innaccuracy which causes drift
         return parent;
     }
 
@@ -71,7 +72,17 @@ export class IKSolver {
     protected initiated: boolean; 
     protected firstInitiation: boolean;
 
+    private _rootWorldPosition: Vector3;
+    private _rootWorldRotation: Quaternion;
+
     root: Object3D;
+    public rootWorldPosition(): Vector3 {
+        return this.root.getWorldPosition(this._rootWorldPosition);
+    }
+
+    public rootWorldRotation(): Quaternion {
+        return this.root.getWorldQuaternion(this._rootWorldRotation);
+    }
 
     constructor() {
         this.IKPosition = new Vector3();
@@ -79,6 +90,9 @@ export class IKSolver {
 
         this.initiated = false;
         this.firstInitiation = true;
+
+        this._rootWorldPosition = new Vector3();
+        this._rootWorldRotation = new Quaternion();
     }
 
     public initiate(root: Object3D) {
@@ -151,4 +165,16 @@ export function vectorSlerp(result: Vector3, a: Vector3, b: Vector3, lerp: numbe
     result.z = _vectorSlerp_a.z + _vectorSlerp_b.z;
 
     return result;
+}
+
+const _lookRotation_obj = new Object3D();
+_lookRotation_obj.position.set(0, 0, 0);
+export function lookRotation(quaternion: Quaternion, forward: Vector3, up: Vector3): Quaternion {
+    _lookRotation_obj.up.copy(up);
+    _lookRotation_obj.lookAt(forward);
+    return quaternion.copy(_lookRotation_obj.quaternion);
+}
+
+export function rotationToLocalSpace(result: Quaternion, space: Quaternion, rotation: Quaternion): Quaternion {    
+    return result.copy(space).invert().multiply(rotation).invert();
 }

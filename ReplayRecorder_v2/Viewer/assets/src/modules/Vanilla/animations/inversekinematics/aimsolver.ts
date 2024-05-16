@@ -1,5 +1,8 @@
+import { exists } from "@/rhu/rhu.js";
 import { Object3D, Quaternion, Vector3 } from "three";
 import { Bone, IKSolverHeuristic, vectorSlerp } from "./rootmotion.js";
+
+// TODO(randomuserhi): Calculate worldPosition and worldRotation once, and reuse
 
 const _transformAxis = new Vector3();
 const _getAngle_Vec = new Vector3();
@@ -56,15 +59,13 @@ export class IKSolverAim extends IKSolverHeuristic {
     }
 
     protected onInitiate() {
-        if (this.firstInitiation) {
-            this.IKPosition.copy(this.transformAxis()).multiplyScalar(3).add(this.worldPosition());
-        }
-        
         this.step = 1.0 / this.bones.length;
         this.axis.normalize();
     }
 
     protected onUpdate(): void {
+        if (!exists(this.target) || !exists(this.transform)) return;
+
         if (this.axis.x === 0 && this.axis.y === 0 && this.axis.z === 0) {
             return;
         }

@@ -8,6 +8,7 @@ import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAv
 import { playerAnimations } from "../animations/assets.js";
 import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
+import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
@@ -135,13 +136,13 @@ class PlayerModel  {
     color: Color;
     
     skeleton: HumanSkeleton;
-    gun: Group;
-    rightHandAttachment: Group;
-    leftHandAttachment: Group;
     
     aimIK: IKSolverAim;
     aimTarget: Object3D;
     
+    leftIK: IKSolverArm;
+    leftTarget: Object3D;
+
     head: number;
     parts: number[];
     points: number[];
@@ -186,18 +187,8 @@ class PlayerModel  {
         this.skeleton.joints.rightUpperArm.add(this.skeleton.joints.rightLowerArm);
         this.skeleton.joints.rightLowerArm.add(this.skeleton.joints.rightHand!);
         this.skeleton.joints.neck.add(this.skeleton.joints.head);
-
-        // Attachment transforms for guns
-        this.leftHandAttachment = new Group();
-        this.skeleton.joints.leftHand.add(this.leftHandAttachment);
-
-        this.rightHandAttachment = new Group();
-        this.skeleton.joints.rightHand.add(this.rightHandAttachment);
-
-        this.gun = new Group();
-        this.rightHandAttachment.add(this.gun);
         
-        this.setBonePositions();
+        this.skeleton.set(defaultHumanStructure);
 
         this.movementAnimTimer = new AnimTimer(true); 
         this.movementAnimTimer.play(0);
@@ -219,7 +210,7 @@ class PlayerModel  {
         this.anchor.add(this.tmp);
 
         this.equipped = new Group();
-        this.anchor.add(this.equipped);
+        this.skeleton.joints.rightHand.add(this.equipped);
 
         this.backpack = new Group();
         this.skeleton.joints.spine1.add(this.backpack);
@@ -250,7 +241,6 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
 
         this.aimIK = new IKSolverAim();
-        this.aimIK.transform = this.gun;
         this.aimIK.target = this.aimTarget = new Object3D();
         this.aimIK.tolerance = 0.1;
         this.aimIK.maxIterations = 3;
@@ -262,16 +252,15 @@ class PlayerModel  {
             new Bone(this.skeleton.joints.rightHand, 1),
         ];
 
-        this.aimTarget.position.set(0, 0, 0);
-    }
-
-    private setBonePositions() {
-        this.skeleton.set(defaultHumanStructure);
-        this.leftHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
-        this.leftHandAttachment.position.set(0.1, -0.045, 0);
-        this.rightHandAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
-        this.rightHandAttachment.position.set(0.1, 0.045, 0);
-        this.gun.position.set(0, 0, 0.5);
+        this.leftIK = new IKSolverArm();
+        this.leftIK.root = this.skeleton.root;
+        this.leftIK.rightArm = false;
+        this.leftIK.IKPositionWeight = 1;
+        this.leftIK.target = this.leftTarget = new Object3D();
+        this.leftIK.IKRotationWeight = 1;
+        this.leftIK.bone1 = new TrigonometricBone(this.skeleton.joints.leftUpperArm, 1);
+        this.leftIK.bone2 = new TrigonometricBone(this.skeleton.joints.leftLowerArm, 1);
+        this.leftIK.bone3 = new TrigonometricBone(this.skeleton.joints.leftHand, 1);
     }
 
     public addToScene(scene: Scene) {
@@ -354,6 +343,10 @@ class PlayerModel  {
         this.aimTarget.position.y += anim.targetLookDir.y * dist;
         this.aimTarget.position.z += anim.targetLookDir.z * dist;
         this.aimIK.update();
+
+        this.skeleton.joints.rightHand.getWorldPosition(this.leftTarget.position);
+        this.leftIK.update();
+
         this.render(player);
     }
 
@@ -435,12 +428,6 @@ class PlayerModel  {
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot!, zeroQ, sM), this.color);
-
-        // DEBUG POINTS FOR AIM DIRECTION
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.aimTarget.position, zeroQ, sM), new Color(0xffffff));
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.rightHandAttachment.getWorldPosition(new Vector3()), zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.gun.getWorldPosition(new Vector3()), zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(this.gun.getWorldPosition(new Vector3()).add(this.aimIK.transformAxis()), zeroQ, sM), new Color(0xffff00));
     }
 
     public updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {
