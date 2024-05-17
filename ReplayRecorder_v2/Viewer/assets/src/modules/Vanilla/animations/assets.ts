@@ -1,3 +1,13 @@
+import { Crouch_Idle } from "./assets/player/Crouch_Idle.js";
+import { Crouch_WalkBwd_new } from "./assets/player/Crouch_WalkBwd_new.js";
+import { Crouch_WalkFwd_new } from "./assets/player/Crouch_WalkFwd_new.js";
+import { Crouch_WalkLt135_new } from "./assets/player/Crouch_WalkLt135_new.js";
+import { Crouch_WalkLt45_new } from "./assets/player/Crouch_WalkLt45_new.js";
+import { Crouch_WalkLt_new } from "./assets/player/Crouch_WalkLt_new.js";
+import { Crouch_WalkRt135_new } from "./assets/player/Crouch_WalkRt135_new.js";
+import { Crouch_WalkRt45_new } from "./assets/player/Crouch_WalkRt45_new.js";
+import { Crouch_WalkRt_new } from "./assets/player/Crouch_WalkRt_new.js";
+import { Idle_1 } from "./assets/player/Idle_1.js";
 import { Pistol_AO_C } from "./assets/player/Pistol_AO_C.js";
 import { Pistol_AO_D } from "./assets/player/Pistol_AO_D.js";
 import { Pistol_AO_L } from "./assets/player/Pistol_AO_L.js";
@@ -8,6 +18,8 @@ import { Pistol_AO_RD } from "./assets/player/Pistol_AO_RD.js";
 import { Pistol_AO_RU } from "./assets/player/Pistol_AO_RU.js";
 import { Pistol_AO_U } from "./assets/player/Pistol_AO_U.js";
 import { Pistol_CrouchLoop } from "./assets/player/Pistol_CrouchLoop.js";
+import { Pistol_Crouch_Turn90L } from "./assets/player/Pistol_Crouch_Turn90L.js";
+import { Pistol_Crouch_Turn90R } from "./assets/player/Pistol_Crouch_Turn90R.js";
 import { Pistol_Crouch_WalkBwd } from "./assets/player/Pistol_Crouch_WalkBwd.js";
 import { Pistol_Crouch_WalkFwd } from "./assets/player/Pistol_Crouch_WalkFwd.js";
 import { Pistol_Crouch_WalkLt } from "./assets/player/Pistol_Crouch_WalkLt.js";
@@ -35,6 +47,8 @@ import { Pistol_StrafeRun45LeftLoop } from "./assets/player/Pistol_StrafeRun45Le
 import { Pistol_StrafeRun45RightLoop } from "./assets/player/Pistol_StrafeRun45RightLoop.js";
 import { Pistol_StrafeRunLeftLoop } from "./assets/player/Pistol_StrafeRunLeftLoop.js";
 import { Pistol_StrafeRunRightLoop } from "./assets/player/Pistol_StrafeRunRightLoop.js";
+import { Pistol_TurnL_90 } from "./assets/player/Pistol_TurnL_90.js";
+import { Pistol_TurnR_90 } from "./assets/player/Pistol_TurnR_90.js";
 import { Pistol_WalkBwdLoop } from "./assets/player/Pistol_WalkBwdLoop.js";
 import { Pistol_WalkFwdLoop } from "./assets/player/Pistol_WalkFwdLoop.js";
 import { Rifle_AO_C } from "./assets/player/Rifle_AO_C.js";
@@ -47,6 +61,8 @@ import { Rifle_AO_RD } from "./assets/player/Rifle_AO_RD.js";
 import { Rifle_AO_RU } from "./assets/player/Rifle_AO_RU.js";
 import { Rifle_AO_U } from "./assets/player/Rifle_AO_U.js";
 import { Rifle_CrouchLoop } from "./assets/player/Rifle_CrouchLoop.js";
+import { Rifle_Crouch_Turn90L } from "./assets/player/Rifle_Crouch_Turn90L.js";
+import { Rifle_Crouch_Turn90R } from "./assets/player/Rifle_Crouch_Turn90R.js";
 import { Rifle_Crouch_WalkBwd } from "./assets/player/Rifle_Crouch_WalkBwd.js";
 import { Rifle_Crouch_WalkFwd } from "./assets/player/Rifle_Crouch_WalkFwd.js";
 import { Rifle_Crouch_WalkLt } from "./assets/player/Rifle_Crouch_WalkLt.js";
@@ -76,8 +92,26 @@ import { Rifle_StrafeRun45LeftLoop } from "./assets/player/Rifle_StrafeRun45Left
 import { Rifle_StrafeRun45RightLoop } from "./assets/player/Rifle_StrafeRun45RightLoop.js";
 import { Rifle_StrafeRunLeftLoop } from "./assets/player/Rifle_StrafeRunLeftLoop.js";
 import { Rifle_StrafeRunRightLoop } from "./assets/player/Rifle_StrafeRunRightLoop.js";
+import { Rifle_TurnL_90 } from "./assets/player/Rifle_TurnL_90.js";
+import { Rifle_TurnR_90 } from "./assets/player/Rifle_TurnR_90.js";
 import { Rifle_WalkBwdLoop } from "./assets/player/Rifle_WalkBwdLoop.js";
 import { Rifle_WalkFwdLoop } from "./assets/player/Rifle_WalkFwdLoop.js";
+import { RunBwdLoop } from "./assets/player/RunBwdLoop.js";
+import { RunFwdLoop } from "./assets/player/RunFwdLoop.js";
+import { RunLtLoop } from "./assets/player/RunLtLoop.js";
+import { RunRtLoop } from "./assets/player/RunRtLoop.js";
+import { RunStrafeLeft135Loop } from "./assets/player/RunStrafeLeft135Loop.js";
+import { RunStrafeLeft45Loop } from "./assets/player/RunStrafeLeft45Loop.js";
+import { RunStrafeRight135Loop } from "./assets/player/RunStrafeRight135Loop.js";
+import { RunStrafeRight45Loop } from "./assets/player/RunStrafeRight45Loop.js";
+import { StrafeLeft135Loop } from "./assets/player/StrafeLeft135Loop.js";
+import { StrafeLeft45Loop } from "./assets/player/StrafeLeft45Loop.js";
+import { StrafeLeftLoop } from "./assets/player/StrafeLeftLoop.js";
+import { StrafeRight135Loop } from "./assets/player/StrafeRight135Loop.js";
+import { StrafeRight45Loop } from "./assets/player/StrafeRight45Loop.js";
+import { StrafeRightLoop } from "./assets/player/StrafeRightLoop.js";
+import { WalkBwdLoop } from "./assets/player/WalkBwdLoop.js";
+import { WalkFwdLoop } from "./assets/player/WalkFwdLoop.js";
 
 export const playerAnimations = {
     Rifle_AO_C, 
@@ -160,4 +194,38 @@ export const playerAnimations = {
     Pistol_StrafeRunRightLoop,
     Pistol_WalkBwdLoop,
     Pistol_WalkFwdLoop,
+    Pistol_TurnL_90,
+    Pistol_TurnR_90,
+    Pistol_Crouch_Turn90L,
+    Pistol_Crouch_Turn90R,
+    Rifle_TurnL_90,
+    Rifle_TurnR_90,
+    Rifle_Crouch_Turn90L,
+    Rifle_Crouch_Turn90R,
+    Idle_1,
+    RunFwdLoop,
+    RunBwdLoop,
+    RunRtLoop,
+    RunLtLoop,
+    RunStrafeRight45Loop,
+    RunStrafeRight135Loop,
+    RunStrafeLeft45Loop,
+    RunStrafeLeft135Loop,
+    WalkFwdLoop,
+    WalkBwdLoop,
+    StrafeRightLoop,
+    StrafeRight45Loop,
+    StrafeRight135Loop,
+    StrafeLeftLoop,
+    StrafeLeft45Loop,
+    StrafeLeft135Loop,
+    Crouch_Idle,
+    Crouch_WalkFwd_new,
+    Crouch_WalkBwd_new,
+    Crouch_WalkLt_new,
+    Crouch_WalkRt_new,
+    Crouch_WalkLt45_new,
+    Crouch_WalkLt135_new,
+    Crouch_WalkRt45_new,
+    Crouch_WalkRt135_new,
 };

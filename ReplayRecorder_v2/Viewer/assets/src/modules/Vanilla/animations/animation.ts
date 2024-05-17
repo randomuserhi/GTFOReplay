@@ -362,11 +362,13 @@ export class AnimTimer {
     time: number;
     lastUpdate: number;
     loop: boolean;
+    duration: number;
 
     isPlaying: boolean;
 
-    constructor(loop: boolean) {
+    constructor(duration: number, loop: boolean) {
         this.time = 0;
+        this.duration = duration;
         this.lastUpdate = 0;
         this.loop = loop;
         this.isPlaying = false;
@@ -379,11 +381,15 @@ export class AnimTimer {
 
     public update(time: number) {
         if (this.isPlaying) {
-            this.time = time - this.lastUpdate;
-        } else {
-            this.time = this.lastUpdate;
+            this.time += (time - this.lastUpdate) / 1000;
         }
-        this.time /= 1000;
+        if (this.loop) {
+            this.time = this.time % this.duration; 
+        } else if (this.time > this.duration) {
+            this.time = this.duration;
+            this.isPlaying = false;
+        }
+        this.lastUpdate = time;
     }
 
     public pause(time: number) {

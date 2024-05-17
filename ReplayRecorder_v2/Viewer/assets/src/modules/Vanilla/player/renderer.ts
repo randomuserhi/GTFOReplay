@@ -171,6 +171,43 @@ const aimOffset = new AnimBlend(HumanJoints, [
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_C.frames[0])), x: 0, y: 0 },
 ]);
 
+const defaultStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimations.RunFwdLoop, x: 0, y: 3.4 },
+    { anim: playerAnimations.RunBwdLoop, x: 0, y: -2.1 },
+    { anim: playerAnimations.RunRtLoop, x: 2.1, y: 0 },
+    { anim: playerAnimations.RunLtLoop, x: -2.1, y: 0 },
+    { anim: playerAnimations.RunStrafeRight45Loop, x: 2.4, y: 2.4 },
+    { anim: playerAnimations.RunStrafeRight135Loop, x: 1.5, y: -1.5 },
+    { anim: playerAnimations.RunStrafeLeft45Loop, x: -2.4, y: 2.4 },
+    { anim: playerAnimations.RunStrafeLeft135Loop, x: -1.5, y: -1.5 },
+    { anim: playerAnimations.WalkFwdLoop, x: 0, y: 1.5 },
+    { anim: playerAnimations.WalkBwdLoop, x: 0, y: -1.5 },
+    { anim: playerAnimations.StrafeRightLoop, x: -1.5, y: 0 },
+    { anim: playerAnimations.StrafeRight45Loop, x: 1.12, y: 1.12 },
+    { anim: playerAnimations.StrafeRight135Loop, x: 1.12, y: -1.12 },
+    { anim: playerAnimations.StrafeLeftLoop, x: -1.56, y: 0 },
+    { anim: playerAnimations.StrafeLeft45Loop, x: -1.12, y: 1.12 },
+    { anim: playerAnimations.StrafeLeft135Loop, x: -1.12, y: -1.12 },
+    { anim: playerAnimations.Idle_1, x: 0, y: 0 },
+]);
+
+const defaultCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimations.Crouch_WalkFwd_new, x: 0, y: 1.54 },
+    { anim: playerAnimations.Crouch_WalkBwd_new, x: 0, y: -1.74 },
+    { anim: playerAnimations.Crouch_WalkLt45_new, x: -1, y: 1 },
+    { anim: playerAnimations.Crouch_WalkLt135_new, x: -1.2, y: -1.2 },
+    { anim: playerAnimations.Crouch_WalkRt45_new, x: 1, y: 1 },
+    { anim: playerAnimations.Crouch_WalkRt135_new, x: 1, y: -1 },
+    { anim: playerAnimations.Crouch_WalkRt_new, x: 2, y: 0 },
+    { anim: playerAnimations.Crouch_WalkLt_new, x: -2, y: 0 },
+    { anim: playerAnimations.Crouch_Idle, x: 0, y: 0 },
+]);
+
+const defaultMovement = new AnimBlend(HumanJoints, [
+    { anim: defaultStandMovement, x: 0, y: 0 },
+    { anim: defaultCrouchMovement, x: 1, y: 0 }
+]);
+
 class PlayerModel  {
     root: Group;
     anchor: Group;
@@ -233,7 +270,11 @@ class PlayerModel  {
         
         this.skeleton.set(defaultHumanStructure);
 
-        this.movementAnimTimer = new AnimTimer(true); 
+        this.movementAnimTimer = new AnimTimer(Math.max(
+            rifleMovement.duration, 
+            pistolMovement.duration,
+            defaultMovement.duration,
+        ), true); 
         this.movementAnimTimer.play(0);
 
         this.color = color;
@@ -289,6 +330,7 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
 
         this.aimIK = new IKSolverAim();
+        this.aimIK.root = this.skeleton.root;
         this.aimIK.transform = this.handAttachment;
         this.aimIK.target = this.aimTarget = new Object3D();
         this.aimIK.tolerance = 0.1;
@@ -300,6 +342,7 @@ class PlayerModel  {
             new Bone(this.skeleton.joints.rightUpperArm, 0.1),
             new Bone(this.skeleton.joints.rightHand, 1),
         ];
+        this.aimIK.initiate(this.aimIK.root);
 
         this.leftIK = new IKSolverArm();
         this.leftIK.root = this.skeleton.root;
@@ -310,6 +353,7 @@ class PlayerModel  {
         this.leftIK.bone1 = new TrigonometricBone(this.skeleton.joints.leftUpperArm, 1);
         this.leftIK.bone2 = new TrigonometricBone(this.skeleton.joints.leftLowerArm, 1);
         this.leftIK.bone3 = new TrigonometricBone(this.skeleton.joints.leftHand, 1);
+        this.leftIK.initiate(this.leftIK.root);
     }
 
     public addToScene(scene: Scene) {
@@ -334,89 +378,91 @@ class PlayerModel  {
 
         this.animVelocity(rifleStandMovement, anim.velocity);
         this.animVelocity(pistolStandMovement, anim.velocity);
+        this.animVelocity(defaultStandMovement, anim.velocity);
 
         this.animVelocity(rifleCrouchMovement, anim.velocity);
         this.animVelocity(pistolCrouchMovement, anim.velocity);
+        this.animVelocity(defaultCrouchMovement, anim.velocity);
 
         rifleMovement.point.x = anim.crouch;
         pistolMovement.point.x = anim.crouch;
+        defaultMovement.point.x = anim.crouch;
 
         switch (this.equippedModel?.archetype) {
         case "pistol": this.skeleton.override(pistolMovement.sample(this.movementAnimTimer.time)); break;
         case "rifle": this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time)); break;
-        default: break; // TODO(randomuserhi)
+        default: this.skeleton.override(defaultMovement.sample(this.movementAnimTimer.time)); break;
         }
 
-        switch(anim.state) {
-        case "crouch":
-        case "jump":
-        case "fall":
-        case "land":
-        case "stunned":
-        case "stand": {
-            const forward = new Vector3(0, 0, 1).applyQuaternion(player.rotation);
-            const targetLookDir = new Vector3().copy(anim.targetLookDir);
-            targetLookDir.normalize();
-            const num = -70.0;
-            const num2 = 70.0;
-            const vector2 = new Vector3(forward.x, forward.z);
-            const to = new Vector3(targetLookDir.x, targetLookDir.z);
-            const num3 = Pod.Vec.signedAngle(vector2, to);
-            if (num3 < num) {
-                const f = Math.PI / 180.0 * num;
-                const _num = Math.cos(f);
-                const _num2 = Math.sin(f);
-                to.x = vector2.x * _num - vector2.y * _num2;
-                to.y = vector2.x * _num2 + vector2.y * _num;
-            } else if (num3 > num2) {
-                const f = Math.PI / 180.0 * num2;
-                const _num = Math.cos(f);
-                const _num2 = Math.sin(f);
-                to.x = vector2.x * _num - vector2.y * _num2;
-                to.y = vector2.x * _num2 + vector2.y * _num;
-            }
-            const vector3 = new Vector3(to.x, to.y);
-            vector3.normalize();
-            const right = new Vector3(1, 0, 0).applyQuaternion(player.rotation);
-            const rhs = new Vector3(right.x, right.z);
-            rhs.normalize();
-            const vector4 = new Vector3(forward.x, forward.z);
-            vector4.normalize();
-            const num4 = 1.2217305;
-            let num5 = Math.asin(targetLookDir.y);
-            num5 /= num4;
-            const num6 = Pod.Vec.dot(vector3, rhs);
-            const num7 = Pod.Vec.dot(vector3, vector4);
-            const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
-    
-            aimOffset.point.y = -num5;
-            aimOffset.point.x = value;
-    
-            this.skeleton.additive(aimOffset.sample(this.movementAnimTimer.time), 1);
-        } break;
-        }
-
-        const dist = 10;
-        this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
-        this.aimTarget.position.x += anim.targetLookDir.x * dist;
-        this.aimTarget.position.y += anim.targetLookDir.y * dist;
-        this.aimTarget.position.z += anim.targetLookDir.z * dist;
-        
         if (this.equippedModel !== undefined) {
-            this.equippedModel.leftHand.getWorldPosition(this.leftTarget.position);
-        } else {
-            this.skeleton.joints.leftHand.getWorldPosition(this.leftTarget.position);
+            switch(anim.state) {
+            case "crouch":
+            case "jump":
+            case "fall":
+            case "land":
+            case "stunned":
+            case "stand": {
+                const forward = new Vector3(0, 0, 1).applyQuaternion(player.rotation);
+                const targetLookDir = new Vector3().copy(anim.targetLookDir);
+                targetLookDir.normalize();
+                const num = -70.0;
+                const num2 = 70.0;
+                const vector2 = new Vector3(forward.x, forward.z);
+                const to = new Vector3(targetLookDir.x, targetLookDir.z);
+                const num3 = Pod.Vec.signedAngle(vector2, to);
+                if (num3 < num) {
+                    const f = Math.PI / 180.0 * num;
+                    const _num = Math.cos(f);
+                    const _num2 = Math.sin(f);
+                    to.x = vector2.x * _num - vector2.y * _num2;
+                    to.y = vector2.x * _num2 + vector2.y * _num;
+                } else if (num3 > num2) {
+                    const f = Math.PI / 180.0 * num2;
+                    const _num = Math.cos(f);
+                    const _num2 = Math.sin(f);
+                    to.x = vector2.x * _num - vector2.y * _num2;
+                    to.y = vector2.x * _num2 + vector2.y * _num;
+                }
+                const vector3 = new Vector3(to.x, to.y);
+                vector3.normalize();
+                const right = new Vector3(1, 0, 0).applyQuaternion(player.rotation);
+                const rhs = new Vector3(right.x, right.z);
+                rhs.normalize();
+                const vector4 = new Vector3(forward.x, forward.z);
+                vector4.normalize();
+                const num4 = 1.2217305;
+                let num5 = Math.asin(targetLookDir.y);
+                num5 /= num4;
+                const num6 = Pod.Vec.dot(vector3, rhs);
+                const num7 = Pod.Vec.dot(vector3, vector4);
+                const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
+    
+                aimOffset.point.y = -num5;
+                aimOffset.point.x = value;
+    
+                this.skeleton.additive(aimOffset.sample(this.movementAnimTimer.time), 1);
+            } break;
+            }
+
+            const dist = 10;
+            this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
+            this.aimTarget.position.x += anim.targetLookDir.x * dist;
+            this.aimTarget.position.y += anim.targetLookDir.y * dist;
+            this.aimTarget.position.z += anim.targetLookDir.z * dist;
+
+            switch (this.equippedModel?.archetype) {
+            case "pistol":
+            case "rifle": {
+                this.aimIK.update();
+
+                if (this.equippedModel !== undefined) {
+                    this.equippedModel.leftHand.getWorldPosition(this.leftTarget.position);
+                    this.leftIK.update();
+                }
+            } break;
+            default: break;
+            }
         }
-        
-        switch (this.equippedModel?.archetype) {
-        case "pistol":
-        case "rifle": {
-            this.aimIK.update();
-            this.leftIK.update();
-        } break;
-        default: break;
-        }
-        
 
         this.render(player);
     }
@@ -456,7 +502,7 @@ class PlayerModel  {
 
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftUpperArm, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftLowerArm, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftHand!, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftHand, zeroQ, sM), this.color);
 
         pM.lookAt(temp.copy(worldPos.rightLowerArm).sub(worldPos.rightUpperArm), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.rightUpperArm, worldPos.rightLowerArm);
@@ -470,7 +516,7 @@ class PlayerModel  {
 
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperArm, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerArm, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightHand!, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightHand, zeroQ, sM), this.color);
 
         pM.lookAt(temp.copy(worldPos.leftLowerLeg).sub(worldPos.leftUpperLeg), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.leftUpperLeg, worldPos.leftLowerLeg);
@@ -478,13 +524,13 @@ class PlayerModel  {
         this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
 
         pM.lookAt(temp.copy(worldPos.leftFoot!).sub(worldPos.leftLowerLeg), zeroV, upV);
-        scale.z = Pod.Vec.dist(worldPos.leftLowerLeg, worldPos.leftFoot!);
+        scale.z = Pod.Vec.dist(worldPos.leftLowerLeg, worldPos.leftFoot);
         pM.compose(worldPos.leftLowerLeg, rot.setFromRotationMatrix(pM), scale);
         this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
 
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftUpperLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftLowerLeg, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftFoot!, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftFoot, zeroQ, sM), this.color);
 
         pM.lookAt(temp.copy(worldPos.rightLowerLeg).sub(worldPos.rightUpperLeg), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.rightUpperLeg, worldPos.rightLowerLeg);
@@ -498,7 +544,7 @@ class PlayerModel  {
 
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot!, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot, zeroQ, sM), this.color);
     }
 
     public updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {

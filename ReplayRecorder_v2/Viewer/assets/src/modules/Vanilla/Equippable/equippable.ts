@@ -1,4 +1,4 @@
-import { Group, Object3D, QuaternionLike, Vector3, Vector3Like } from "three";
+import { Group, Object3D, QuaternionLike, Vector3Like } from "three";
 
 export type Archetype = 
     "hammer" |
@@ -7,7 +7,6 @@ export type Archetype =
     "pistol" |
     "rifle";
 
-const _worldLeftHand = new Vector3();
 export abstract class Model {
     group: Group;
 
@@ -44,10 +43,6 @@ export abstract class Model {
         this.leftHand = new Object3D();
         this.group.add(this.leftHand);
     }
-
-    public worldLeftHand(): Vector3 {
-        return this.leftHand.getWorldPosition(_worldLeftHand);
-    } 
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars 
     public update(data: any): void {}
