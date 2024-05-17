@@ -1,3 +1,42 @@
+import { Pistol_AO_C } from "./assets/player/Pistol_AO_C.js";
+import { Pistol_AO_D } from "./assets/player/Pistol_AO_D.js";
+import { Pistol_AO_L } from "./assets/player/Pistol_AO_L.js";
+import { Pistol_AO_LD } from "./assets/player/Pistol_AO_LD.js";
+import { Pistol_AO_LU } from "./assets/player/Pistol_AO_LU.js";
+import { Pistol_AO_R } from "./assets/player/Pistol_AO_R.js";
+import { Pistol_AO_RD } from "./assets/player/Pistol_AO_RD.js";
+import { Pistol_AO_RU } from "./assets/player/Pistol_AO_RU.js";
+import { Pistol_AO_U } from "./assets/player/Pistol_AO_U.js";
+import { Pistol_CrouchLoop } from "./assets/player/Pistol_CrouchLoop.js";
+import { Pistol_Crouch_WalkBwd } from "./assets/player/Pistol_Crouch_WalkBwd.js";
+import { Pistol_Crouch_WalkFwd } from "./assets/player/Pistol_Crouch_WalkFwd.js";
+import { Pistol_Crouch_WalkLt } from "./assets/player/Pistol_Crouch_WalkLt.js";
+import { Pistol_Crouch_WalkRt } from "./assets/player/Pistol_Crouch_WalkRt.js";
+import { Pistol_Idle } from "./assets/player/Pistol_Idle.js";
+import { Pistol_Jog_Backward } from "./assets/player/Pistol_Jog_Backward.js";
+import { Pistol_Jog_BackwardLeft } from "./assets/player/Pistol_Jog_BackwardLeft.js";
+import { Pistol_Jog_BackwardRight } from "./assets/player/Pistol_Jog_BackwardRight.js";
+import { Pistol_Jog_Forward } from "./assets/player/Pistol_Jog_Forward.js";
+import { Pistol_Jog_ForwardLeft } from "./assets/player/Pistol_Jog_ForwardLeft.js";
+import { Pistol_Jog_ForwardRight } from "./assets/player/Pistol_Jog_ForwardRight.js";
+import { Pistol_Jog_Left } from "./assets/player/Pistol_Jog_Left.js";
+import { Pistol_Jog_Right } from "./assets/player/Pistol_Jog_Right.js";
+import { Pistol_RunBwdLoop } from "./assets/player/Pistol_RunBwdLoop.js";
+import { Pistol_SprintFwdLoop } from "./assets/player/Pistol_SprintFwdLoop.js";
+import { Pistol_StrafeLeft135Loop } from "./assets/player/Pistol_StrafeLeft135Loop.js";
+import { Pistol_StrafeLeft45Loop } from "./assets/player/Pistol_StrafeLeft45Loop.js";
+import { Pistol_StrafeLeftLoop } from "./assets/player/Pistol_StrafeLeftLoop.js";
+import { Pistol_StrafeRight135Loop } from "./assets/player/Pistol_StrafeRight135Loop.js";
+import { Pistol_StrafeRight45Loop } from "./assets/player/Pistol_StrafeRight45Loop.js";
+import { Pistol_StrafeRightLoop } from "./assets/player/Pistol_StrafeRightLoop.js";
+import { Pistol_StrafeRun135LeftLoop } from "./assets/player/Pistol_StrafeRun135LeftLoop.js";
+import { Pistol_StrafeRun135RightLoop } from "./assets/player/Pistol_StrafeRun135RightLoop.js";
+import { Pistol_StrafeRun45LeftLoop } from "./assets/player/Pistol_StrafeRun45LeftLoop.js";
+import { Pistol_StrafeRun45RightLoop } from "./assets/player/Pistol_StrafeRun45RightLoop.js";
+import { Pistol_StrafeRunLeftLoop } from "./assets/player/Pistol_StrafeRunLeftLoop.js";
+import { Pistol_StrafeRunRightLoop } from "./assets/player/Pistol_StrafeRunRightLoop.js";
+import { Pistol_WalkBwdLoop } from "./assets/player/Pistol_WalkBwdLoop.js";
+import { Pistol_WalkFwdLoop } from "./assets/player/Pistol_WalkFwdLoop.js";
 import { Rifle_AO_C } from "./assets/player/Rifle_AO_C.js";
 import { Rifle_AO_D } from "./assets/player/Rifle_AO_D.js";
 import { Rifle_AO_L } from "./assets/player/Rifle_AO_L.js";
@@ -82,4 +121,43 @@ export const playerAnimations = {
     Rifle_StrafeRunRightLoop,
     Rifle_WalkBwdLoop,
     Rifle_WalkFwdLoop,
+    Pistol_AO_C, 
+    Pistol_AO_D,
+    Pistol_AO_L,
+    Pistol_AO_LD,
+    Pistol_AO_LU,
+    Pistol_AO_R,
+    Pistol_AO_RD,
+    Pistol_AO_RU,
+    Pistol_AO_U,
+    Pistol_CrouchLoop,
+    Pistol_Crouch_WalkBwd,
+    Pistol_Crouch_WalkFwd,
+    Pistol_Crouch_WalkLt,
+    Pistol_Crouch_WalkRt,
+    Pistol_Idle,
+    Pistol_Jog_Backward,
+    Pistol_Jog_BackwardLeft,
+    Pistol_Jog_BackwardRight,
+    Pistol_Jog_Forward,
+    Pistol_Jog_ForwardLeft,
+    Pistol_Jog_ForwardRight,
+    Pistol_Jog_Left,
+    Pistol_Jog_Right,
+    Pistol_RunBwdLoop,
+    Pistol_SprintFwdLoop,
+    Pistol_StrafeLeft135Loop,
+    Pistol_StrafeLeft45Loop,
+    Pistol_StrafeLeftLoop,
+    Pistol_StrafeRight135Loop,
+    Pistol_StrafeRight45Loop,
+    Pistol_StrafeRightLoop,
+    Pistol_StrafeRun135LeftLoop,
+    Pistol_StrafeRun135RightLoop,
+    Pistol_StrafeRun45LeftLoop,
+    Pistol_StrafeRun45RightLoop,
+    Pistol_StrafeRunLeftLoop,
+    Pistol_StrafeRunRightLoop,
+    Pistol_WalkBwdLoop,
+    Pistol_WalkFwdLoop,
 };

@@ -1,9 +1,9 @@
-import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3 } from "three";
+import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3, Vector3Like } from "three";
 import { Text } from "troika-three-text";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
-import { Equippable } from "../Equippable/equippable.js";
+import { Equippable, Model } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
 import { playerAnimations } from "../animations/assets.js";
 import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
@@ -96,10 +96,10 @@ const rifleStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimations.Rifle_SprintFwdLoop, x: 0, y: 6 },
     { anim: playerAnimations.Rifle_RunBwdLoop, x: 0, y: -5 },
     { anim: playerAnimations.Rifle_StrafeRunRightLoop, x: 6.8, y: 0 },
+    { anim: playerAnimations.Rifle_StrafeRun45RightLoop, x: 4.8, y: 4.8 },
+    { anim: playerAnimations.Rifle_StrafeRun135LeftLoop_0, x: 4.34, y: -4.34 },
     { anim: playerAnimations.Rifle_StrafeRunLeftLoop, x: -6.8, y: 0 },
     { anim: playerAnimations.Rifle_StrafeRun45LeftLoop, x: -4.8, y: 4.8 },
-    { anim: playerAnimations.Rifle_StrafeRun135LeftLoop_0, x: 4.34, y: -4.34 },
-    { anim: playerAnimations.Rifle_StrafeRun45RightLoop, x: 4.8, y: 4.8 },
     { anim: playerAnimations.Rifle_StrafeRun135LeftLoop, x: -4.9, y: -4.9 },
     { anim: playerAnimations.Rifle_SprintFwdLoop_Left, x: -1.25, y: 5.85 },
     { anim: playerAnimations.Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
@@ -118,7 +118,48 @@ const rifleMovement = new AnimBlend(HumanJoints, [
     { anim: rifleCrouchMovement, x: 1, y: 0 }
 ]);
 
-const rifleAimOffset = new AnimBlend(HumanJoints, [
+const pistolStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimations.Pistol_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimations.Pistol_Jog_Backward, x: 0, y: -3.5 },
+    { anim: playerAnimations.Pistol_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimations.Pistol_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimations.Pistol_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimations.Pistol_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimations.Pistol_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimations.Pistol_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimations.Pistol_WalkFwdLoop, x: 0, y: 1.9 },
+    { anim: playerAnimations.Pistol_WalkBwdLoop, x: 0, y: -1.8 },
+    { anim: playerAnimations.Pistol_StrafeLeftLoop, x: -1.6, y: 0 },
+    { anim: playerAnimations.Pistol_StrafeLeft45Loop, x: -1.16, y: 1.16 },
+    { anim: playerAnimations.Pistol_StrafeLeft135Loop, x: -1.13, y: -1.13 },
+    { anim: playerAnimations.Pistol_StrafeRightLoop, x: 2, y: 0 },
+    { anim: playerAnimations.Pistol_StrafeRight45Loop, x: 1.37, y: 1.37 },
+    { anim: playerAnimations.Pistol_StrafeRight135Loop, x: 1.16, y: -1.16 },
+    { anim: playerAnimations.Pistol_Idle, x: 0, y: 0 },
+    { anim: playerAnimations.Pistol_RunBwdLoop, x: 0, y: -6.48 },
+    { anim: playerAnimations.Pistol_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimations.Pistol_StrafeRunRightLoop, x: 6.48, y: 0 },
+    { anim: playerAnimations.Pistol_StrafeRun45RightLoop, x: 4.64, y: 4.64 },
+    { anim: playerAnimations.Pistol_StrafeRun135LeftLoop, x: 4.14, y: -4.14 },
+    { anim: playerAnimations.Pistol_StrafeRunLeftLoop, x: -6.48, y: 0 },
+    { anim: playerAnimations.Pistol_StrafeRun45LeftLoop, x: -4.58, y: 4.58 },
+    { anim: playerAnimations.Pistol_StrafeRun135RightLoop, x: -4.34, y: -4.34 },
+]);
+
+const pistolCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimations.Pistol_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimations.Pistol_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimations.Pistol_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimations.Pistol_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimations.Pistol_CrouchLoop, x: 0, y: 0 },
+]);
+
+const pistolMovement = new AnimBlend(HumanJoints, [
+    { anim: pistolStandMovement, x: 0, y: 0 },
+    { anim: pistolCrouchMovement, x: 1, y: 0 }
+]);
+
+const aimOffset = new AnimBlend(HumanJoints, [
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_U.frames[0])), x: 0, y: 1 },
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_D.frames[0])), x: 0, y: -1 },
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_L.frames[0])), x: -1, y: 1 },
@@ -151,7 +192,9 @@ class PlayerModel  {
 
     tmp?: Text;
 
+    handAttachment: Group;
     equipped: Group;
+    equippedModel?: Model;
 
     slots: Equippable[];
     backpack: Group;
@@ -210,7 +253,12 @@ class PlayerModel  {
         this.anchor.add(this.tmp);
 
         this.equipped = new Group();
-        this.skeleton.joints.rightHand.add(this.equipped);
+        
+        this.handAttachment = new Group();
+        this.handAttachment.add(this.equipped);
+        this.handAttachment.position.set(0.1, 0.045, 0);
+        this.handAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
+        this.skeleton.joints.rightHand.add(this.handAttachment);
 
         this.backpack = new Group();
         this.skeleton.joints.spine1.add(this.backpack);
@@ -241,6 +289,7 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
 
         this.aimIK = new IKSolverAim();
+        this.aimIK.transform = this.handAttachment;
         this.aimIK.target = this.aimTarget = new Object3D();
         this.aimIK.tolerance = 0.1;
         this.aimIK.maxIterations = 3;
@@ -275,18 +324,28 @@ class PlayerModel  {
         this.root.visible = visible;
     }
 
+    private animVelocity<T extends string>(blend: AnimBlend<T>, vel: Vector3Like) {
+        blend.point.x = vel.x;
+        blend.point.y = vel.z;
+    }
+
     public update(time: number, player: Player, anim: PlayerAnimState): void {
         this.movementAnimTimer.update(time);
 
-        rifleStandMovement.point.x = anim.velocity.x;
-        rifleStandMovement.point.y = anim.velocity.z;
+        this.animVelocity(rifleStandMovement, anim.velocity);
+        this.animVelocity(pistolStandMovement, anim.velocity);
 
-        rifleCrouchMovement.point.x = anim.velocity.x;
-        rifleCrouchMovement.point.y = anim.velocity.z;
+        this.animVelocity(rifleCrouchMovement, anim.velocity);
+        this.animVelocity(pistolCrouchMovement, anim.velocity);
 
         rifleMovement.point.x = anim.crouch;
+        pistolMovement.point.x = anim.crouch;
 
-        this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time));
+        switch (this.equippedModel?.archetype) {
+        case "pistol": this.skeleton.override(pistolMovement.sample(this.movementAnimTimer.time)); break;
+        case "rifle": this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time)); break;
+        default: break; // TODO(randomuserhi)
+        }
 
         switch(anim.state) {
         case "crouch":
@@ -330,10 +389,10 @@ class PlayerModel  {
             const num7 = Pod.Vec.dot(vector3, vector4);
             const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
     
-            rifleAimOffset.point.y = -num5;
-            rifleAimOffset.point.x = value;
+            aimOffset.point.y = -num5;
+            aimOffset.point.x = value;
     
-            this.skeleton.additive(rifleAimOffset.sample(this.movementAnimTimer.time), 1);
+            this.skeleton.additive(aimOffset.sample(this.movementAnimTimer.time), 1);
         } break;
         }
 
@@ -342,10 +401,22 @@ class PlayerModel  {
         this.aimTarget.position.x += anim.targetLookDir.x * dist;
         this.aimTarget.position.y += anim.targetLookDir.y * dist;
         this.aimTarget.position.z += anim.targetLookDir.z * dist;
-        this.aimIK.update();
-
-        this.skeleton.joints.rightHand.getWorldPosition(this.leftTarget.position);
-        this.leftIK.update();
+        
+        if (this.equippedModel !== undefined) {
+            this.equippedModel.leftHand.getWorldPosition(this.leftTarget.position);
+        } else {
+            this.skeleton.joints.leftHand.getWorldPosition(this.leftTarget.position);
+        }
+        
+        switch (this.equippedModel?.archetype) {
+        case "pistol":
+        case "rifle": {
+            this.aimIK.update();
+            this.leftIK.update();
+        } break;
+        default: break;
+        }
+        
 
         this.render(player);
     }
@@ -481,6 +552,7 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
     public updateBackpack(player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
+        this.equippedModel = undefined;
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
             if (item.model !== undefined) {
@@ -495,8 +567,9 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
             if (item.model !== undefined) {
                 if (item.id === player.equippedId) {
                     this.equipped.add(item.model.group);
-                    item.model.group.position.set(0, 0, 0);
-                    item.model.group.quaternion.set(0, 0, 0, 1);
+                    this.equippedModel = item.model;
+                    item.model.group.position.copy(item.model.equipOffsetPos);
+                    item.model.group.quaternion.copy(item.model.equipOffsetRot);
                 } else {
                     this.backpackAligns[i].add(item.model.group);
                     item.model.group.position.copy(item.model.offsetPos);

@@ -9,6 +9,7 @@ export class Revolver extends Model {
 
     constructor() {
         super();
+
         this.fold = new Group();
 
         const material = new MeshPhongMaterial({

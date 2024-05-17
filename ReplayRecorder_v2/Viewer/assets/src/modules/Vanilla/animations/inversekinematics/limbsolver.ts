@@ -208,9 +208,6 @@ export class IKSolverArm extends IKSolver {
     }
 
     private updateBendNormal() {
-        console.log(`${this.IKPosition.x} ${this.IKPosition.y} ${this.IKPosition.z}`);
-        console.log(`${this.bone1.worldPosition().x} ${this.bone1.worldPosition().y} ${this.bone1.worldPosition().z}`);
-
         const axisDirections = this.rightArm ? this.axisDirectionLeft : this.axisDirectionRight;
 
         _updateBendNormal_normal.copy(this.IKPosition).sub(this.bone1.worldPosition()).normalize();
