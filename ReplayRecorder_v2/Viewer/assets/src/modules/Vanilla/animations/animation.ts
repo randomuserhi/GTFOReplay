@@ -389,6 +389,13 @@ export class AnimTimer {
             this.time = this.duration;
             this.isPlaying = false;
         }
+        if (this.time < 0) {
+            if (this.loop) {
+                this.time += this.duration;
+            } else {
+                this.time = 0;
+            }
+        }
         this.lastUpdate = time;
     }
 

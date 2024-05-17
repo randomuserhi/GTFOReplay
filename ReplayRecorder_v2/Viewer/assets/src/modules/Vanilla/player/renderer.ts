@@ -3,10 +3,10 @@ import { Text } from "troika-three-text";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
-import { Equippable, Model } from "../Equippable/equippable.js";
+import { Equippable } from "../Equippable/equippable.js";
 import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
 import { playerAnimations } from "../animations/assets.js";
-import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
+import { HumanJoints, HumanMask, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
@@ -14,7 +14,7 @@ import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
 import { PlayerAnimState } from "./animation.js";
 import { Player } from "./player.js";
-import { PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
+import { InventorySlot, PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
 import { PlayerStats } from "./playerstats.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -53,7 +53,7 @@ const scale = new Vector3(radius, radius, radius);
 const tmpPos = new Vector3();
 const camPos = new Vector3();
 
-/*const upperBodyMask: HumanMask = {
+const upperBodyMask: HumanMask = {
     root: false,
     joints: { 
         spine0: true,
@@ -73,7 +73,7 @@ const camPos = new Vector3();
         neck: true,
         head: true
     }
-};*/
+};
 
 const rifleStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimations.Rifle_Jog_Forward, x: 0, y: 3.5 },
@@ -208,6 +208,40 @@ const defaultMovement = new AnimBlend(HumanJoints, [
     { anim: defaultCrouchMovement, x: 1, y: 0 }
 ]);
 
+const hammerStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimations.SledgeHammer_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimations.SledgeHammer_Jog_Backward, x: 0, y: -3.5},
+    { anim: playerAnimations.SledgeHammer_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimations.SledgeHammer_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimations.SledgeHammer_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimations.SledgeHammer_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimations.SledgeHammer_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimations.SledgeHammer_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimations.SledgeHammer_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Fwd_Stand_A, x: 0, y: 1.8 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Bwd_Stand_A, x: 0, y: -1.8 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Right_Stand_A, x: 1.8, y: 0 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Left_Stand_A, x: -1.8, y: 0 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Fwd_Left_Stand_A, x: -1.2, y: 1.2 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Fwd_Right_Stand_A, x: 1.2, y: 1.2 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Bwd_Left_Stand_A, x: -1.2, y: -1.2 },
+    { anim: playerAnimations.Player_Melee_Movement_Walk_Bwd_Right_Stand_A, x: 1.2, y: -1.2 },
+    { anim: playerAnimations.Sledgehammer_Stand_Idle, x: 0, y: 0 },
+]);
+
+const hammerCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimations.SledgeHammer_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimations.SledgeHammer_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimations.SledgeHammer_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimations.SledgeHammer_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimations.Sledgehammer_Crouch_Idle, x: 0, y: 0 },
+]);
+
+const hammerMovement = new AnimBlend(HumanJoints, [
+    { anim: hammerStandMovement, x: 0, y: 0 },
+    { anim: hammerCrouchMovement, x: 1, y: 0 }
+]);
+
 class PlayerModel  {
     root: Group;
     anchor: Group;
@@ -226,12 +260,15 @@ class PlayerModel  {
     points: number[];
 
     movementAnimTimer: AnimTimer;
+    equipAnimTimer: AnimTimer;
 
     tmp?: Text;
 
     handAttachment: Group;
     equipped: Group;
-    equippedModel?: Model;
+    equippedItem?: Equippable;
+    equippedSlot?: InventorySlot;
+    lastEquipped: number;
 
     slots: Equippable[];
     backpack: Group;
@@ -276,6 +313,9 @@ class PlayerModel  {
             defaultMovement.duration,
         ), true); 
         this.movementAnimTimer.play(0);
+
+        this.equipAnimTimer = new AnimTimer(1.067, false);
+        this.equipAnimTimer.pause(0);
 
         this.color = color;
         this.parts = new Array(9);
@@ -329,6 +369,8 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].quaternion.set(0, -0.263914526, 0, 0.964546144);
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
 
+        this.lastEquipped = 0;
+
         this.aimIK = new IKSolverAim();
         this.aimIK.root = this.skeleton.root;
         this.aimIK.transform = this.handAttachment;
@@ -375,6 +417,7 @@ class PlayerModel  {
 
     public update(time: number, player: Player, anim: PlayerAnimState): void {
         this.movementAnimTimer.update(time);
+        this.equipAnimTimer.update(time);
 
         this.animVelocity(rifleStandMovement, anim.velocity);
         this.animVelocity(pistolStandMovement, anim.velocity);
@@ -388,13 +431,41 @@ class PlayerModel  {
         pistolMovement.point.x = anim.crouch;
         defaultMovement.point.x = anim.crouch;
 
-        switch (this.equippedModel?.archetype) {
+        switch (this.equippedItem?.model?.archetype) {
         case "pistol": this.skeleton.override(pistolMovement.sample(this.movementAnimTimer.time)); break;
         case "rifle": this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time)); break;
+        case "hammer": this.skeleton.override(hammerMovement.sample(this.movementAnimTimer.time)); break;
         default: this.skeleton.override(defaultMovement.sample(this.movementAnimTimer.time)); break;
         }
 
-        if (this.equippedModel !== undefined) {
+        if (this.equippedItem !== undefined) {
+            if (this.lastEquipped !== this.equippedItem.id) {
+                this.equipAnimTimer.reset(time);
+                this.equipAnimTimer.play(time);
+                this.lastEquipped = this.equippedItem.id;
+            }
+
+            if (this.equipAnimTimer.isPlaying) {
+                this.equipped.visible = this.equipAnimTimer.time > 0.5;
+
+                switch (this.equippedSlot) {
+                case "melee": {
+                    switch (this.equippedItem?.model?.archetype) {
+                    case "spear": this.skeleton.override(playerAnimations.Spear_Equip.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                    case "bat":
+                    case "knife": this.skeleton.override(playerAnimations.Bat_Equip.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                    default: this.skeleton.override(playerAnimations.Equip_Melee.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                    }
+                } break;
+                case "main": this.skeleton.override(playerAnimations.Equip_Primary.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                case "special": this.skeleton.override(playerAnimations.Equip_Secondary.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                case "pack": this.skeleton.override(playerAnimations.ConsumablePack_Equip.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                default: this.skeleton.override(playerAnimations.Equip_Generic.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                }
+            } else {
+                this.equipped.visible = true;
+            }
+            
             switch(anim.state) {
             case "crouch":
             case "jump":
@@ -444,24 +515,26 @@ class PlayerModel  {
             } break;
             }
 
-            const dist = 10;
-            this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
-            this.aimTarget.position.x += anim.targetLookDir.x * dist;
-            this.aimTarget.position.y += anim.targetLookDir.y * dist;
-            this.aimTarget.position.z += anim.targetLookDir.z * dist;
+            if (!this.equipAnimTimer.isPlaying) {
+                const dist = 10;
+                this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
+                this.aimTarget.position.x += anim.targetLookDir.x * dist;
+                this.aimTarget.position.y += anim.targetLookDir.y * dist;
+                this.aimTarget.position.z += anim.targetLookDir.z * dist;
 
-            switch (this.equippedModel?.archetype) {
-            case "pistol":
-            case "rifle": {
-                this.aimIK.update();
+                switch (this.equippedItem?.model?.archetype) {
+                case "pistol":
+                case "rifle": {
+                    this.aimIK.update();
 
-                if (this.equippedModel !== undefined) {
-                    this.equippedModel.leftHand.getWorldPosition(this.leftTarget.position);
-                    this.leftIK.update();
+                    if (this.equippedItem !== undefined) {
+                        this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
+                        this.leftIK.update();
+                    }
+                } break;
+                default: break;
                 }
-            } break;
-            default: break;
-            }
+            }   
         }
 
         this.render(player);
@@ -598,7 +671,8 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
     public updateBackpack(player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
-        this.equippedModel = undefined;
+        this.equippedItem = undefined;
+        this.equippedSlot = undefined;
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
             if (item.model !== undefined) {
@@ -613,7 +687,8 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
             if (item.model !== undefined) {
                 if (item.id === player.equippedId) {
                     this.equipped.add(item.model.group);
-                    this.equippedModel = item.model;
+                    this.equippedItem = item;
+                    this.equippedSlot = inventorySlots[i];
                     item.model.group.position.copy(item.model.equipOffsetPos);
                     item.model.group.quaternion.copy(item.model.equipOffsetRot);
                 } else {

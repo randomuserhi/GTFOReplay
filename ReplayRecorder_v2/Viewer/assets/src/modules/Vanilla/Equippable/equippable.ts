@@ -4,6 +4,7 @@ export type Archetype =
     "hammer" |
     "spear" |
     "knife" |
+    "bat" |
     "pistol" |
     "rifle";
 

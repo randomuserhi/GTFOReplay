@@ -1,3 +1,6 @@
+import { Bat_Equip } from "./assets/player/Bat_Equip.js";
+import { ConsumablePack_Equip } from "./assets/player/ConsumablePack_Equip.js";
+import { Consumable_Throw_Equip } from "./assets/player/Consumable_Throw_Equip.js";
 import { Crouch_Idle } from "./assets/player/Crouch_Idle.js";
 import { Crouch_WalkBwd_new } from "./assets/player/Crouch_WalkBwd_new.js";
 import { Crouch_WalkFwd_new } from "./assets/player/Crouch_WalkFwd_new.js";
@@ -7,6 +10,11 @@ import { Crouch_WalkLt_new } from "./assets/player/Crouch_WalkLt_new.js";
 import { Crouch_WalkRt135_new } from "./assets/player/Crouch_WalkRt135_new.js";
 import { Crouch_WalkRt45_new } from "./assets/player/Crouch_WalkRt45_new.js";
 import { Crouch_WalkRt_new } from "./assets/player/Crouch_WalkRt_new.js";
+import { Equip_Generic } from "./assets/player/Equip_Generic.js";
+import { Equip_Melee } from "./assets/player/Equip_Melee.js";
+import { Equip_Primary } from "./assets/player/Equip_Primary.js";
+import { Equip_Secondary } from "./assets/player/Equip_Secondary.js";
+import { Equip_Tool } from "./assets/player/Equip_Tool.js";
 import { Idle_1 } from "./assets/player/Idle_1.js";
 import { Pistol_AO_C } from "./assets/player/Pistol_AO_C.js";
 import { Pistol_AO_D } from "./assets/player/Pistol_AO_D.js";
@@ -51,6 +59,14 @@ import { Pistol_TurnL_90 } from "./assets/player/Pistol_TurnL_90.js";
 import { Pistol_TurnR_90 } from "./assets/player/Pistol_TurnR_90.js";
 import { Pistol_WalkBwdLoop } from "./assets/player/Pistol_WalkBwdLoop.js";
 import { Pistol_WalkFwdLoop } from "./assets/player/Pistol_WalkFwdLoop.js";
+import { Player_Melee_Movement_Walk_Bwd_Left_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Bwd_Left_Stand_A.js";
+import { Player_Melee_Movement_Walk_Bwd_Right_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Bwd_Right_Stand_A.js";
+import { Player_Melee_Movement_Walk_Bwd_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Bwd_Stand_A.js";
+import { Player_Melee_Movement_Walk_Fwd_Left_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Fwd_Left_Stand_A.js";
+import { Player_Melee_Movement_Walk_Fwd_Right_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Fwd_Right_Stand_A.js";
+import { Player_Melee_Movement_Walk_Fwd_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Fwd_Stand_A.js";
+import { Player_Melee_Movement_Walk_Left_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Left_Stand_A.js";
+import { Player_Melee_Movement_Walk_Right_Stand_A } from "./assets/player/Player_Melee_Movement_Walk_Right_Stand_A.js";
 import { Rifle_AO_C } from "./assets/player/Rifle_AO_C.js";
 import { Rifle_AO_D } from "./assets/player/Rifle_AO_D.js";
 import { Rifle_AO_L } from "./assets/player/Rifle_AO_L.js";
@@ -104,6 +120,22 @@ import { RunStrafeLeft135Loop } from "./assets/player/RunStrafeLeft135Loop.js";
 import { RunStrafeLeft45Loop } from "./assets/player/RunStrafeLeft45Loop.js";
 import { RunStrafeRight135Loop } from "./assets/player/RunStrafeRight135Loop.js";
 import { RunStrafeRight45Loop } from "./assets/player/RunStrafeRight45Loop.js";
+import { SledgeHammer_Crouch_WalkBwd } from "./assets/player/SledgeHammer_Crouch_WalkBwd.js";
+import { SledgeHammer_Crouch_WalkFwd } from "./assets/player/SledgeHammer_Crouch_WalkFwd.js";
+import { SledgeHammer_Crouch_WalkLt } from "./assets/player/SledgeHammer_Crouch_WalkLt.js";
+import { SledgeHammer_Crouch_WalkRt } from "./assets/player/SledgeHammer_Crouch_WalkRt.js";
+import { SledgeHammer_Jog_Backward } from "./assets/player/SledgeHammer_Jog_Backward.js";
+import { SledgeHammer_Jog_BackwardLeft } from "./assets/player/SledgeHammer_Jog_BackwardLeft.js";
+import { SledgeHammer_Jog_BackwardRight } from "./assets/player/SledgeHammer_Jog_BackwardRight.js";
+import { SledgeHammer_Jog_Forward } from "./assets/player/SledgeHammer_Jog_Forward.js";
+import { SledgeHammer_Jog_ForwardLeft } from "./assets/player/SledgeHammer_Jog_ForwardLeft.js";
+import { SledgeHammer_Jog_ForwardRight } from "./assets/player/SledgeHammer_Jog_ForwardRight.js";
+import { SledgeHammer_Jog_Left } from "./assets/player/SledgeHammer_Jog_Left.js";
+import { SledgeHammer_Jog_Right } from "./assets/player/SledgeHammer_Jog_Right.js";
+import { SledgeHammer_SprintFwdLoop } from "./assets/player/SledgeHammer_SprintFwdLoop.js";
+import { Sledgehammer_Crouch_Idle } from "./assets/player/Sledgehammer_Crouch_Idle.js";
+import { Sledgehammer_Stand_Idle } from "./assets/player/Sledgehammer_Stand_Idle.js";
+import { Spear_Equip } from "./assets/player/Spear_Equip.js";
 import { StrafeLeft135Loop } from "./assets/player/StrafeLeft135Loop.js";
 import { StrafeLeft45Loop } from "./assets/player/StrafeLeft45Loop.js";
 import { StrafeLeftLoop } from "./assets/player/StrafeLeftLoop.js";
@@ -228,4 +260,36 @@ export const playerAnimations = {
     Crouch_WalkLt135_new,
     Crouch_WalkRt45_new,
     Crouch_WalkRt135_new,
+    Equip_Generic,
+    Equip_Melee,
+    Equip_Primary,
+    Equip_Tool,
+    Equip_Secondary,
+    Bat_Equip,
+    Spear_Equip,
+    ConsumablePack_Equip,
+    Consumable_Throw_Equip,
+    Sledgehammer_Stand_Idle,
+    SledgeHammer_Jog_Backward,
+    SledgeHammer_Jog_BackwardLeft,
+    SledgeHammer_Jog_BackwardRight,
+    SledgeHammer_Jog_Forward,
+    SledgeHammer_Jog_ForwardLeft,
+    SledgeHammer_Jog_ForwardRight,
+    SledgeHammer_Jog_Left,
+    SledgeHammer_Jog_Right,
+    SledgeHammer_SprintFwdLoop,
+    Player_Melee_Movement_Walk_Bwd_Left_Stand_A,
+    Player_Melee_Movement_Walk_Bwd_Right_Stand_A,
+    Player_Melee_Movement_Walk_Bwd_Stand_A,
+    Player_Melee_Movement_Walk_Fwd_Left_Stand_A,
+    Player_Melee_Movement_Walk_Fwd_Right_Stand_A,
+    Player_Melee_Movement_Walk_Fwd_Stand_A,
+    Player_Melee_Movement_Walk_Left_Stand_A,
+    Player_Melee_Movement_Walk_Right_Stand_A,
+    Sledgehammer_Crouch_Idle,
+    SledgeHammer_Crouch_WalkBwd,
+    SledgeHammer_Crouch_WalkFwd,
+    SledgeHammer_Crouch_WalkLt,
+    SledgeHammer_Crouch_WalkRt,
 };
