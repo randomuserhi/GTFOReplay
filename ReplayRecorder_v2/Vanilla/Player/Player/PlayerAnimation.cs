@@ -45,7 +45,8 @@ namespace Vanilla.Player {
                 return
                     vel ||
                     crouch ||
-                    aim;
+                    aim ||
+                    state != (byte)player.Locomotion.m_currentStateEnum;
             }
         }
 
@@ -60,6 +61,10 @@ namespace Vanilla.Player {
 
         public Vector3 targetLookDir;
 
+        private const long landAnimDuration = 867;
+        private const long landAnimShortDuration = 150;
+        private long landTriggered;
+        private byte _state;
         public byte state;
 
         public rPlayerAnimation(PlayerAgent player) : base(player.GlobalID) {
@@ -82,7 +87,18 @@ namespace Vanilla.Player {
 
             BitHelper.WriteHalf(targetLookDir, buffer);
 
-            state = (byte)player.Locomotion.m_currentStateEnum;
+            if ((Raudy.Now - landTriggered > landAnimDuration) ||
+                state != (byte)PlayerLocomotion.PLOC_State.Land ||
+                player.Locomotion.m_currentStateEnum == PlayerLocomotion.PLOC_State.Jump ||
+                player.Locomotion.m_currentStateEnum == PlayerLocomotion.PLOC_State.Fall) {
+                state = (byte)player.Locomotion.m_currentStateEnum;
+                if ((_state == (byte)PlayerLocomotion.PLOC_State.Jump || _state == (byte)PlayerLocomotion.PLOC_State.Fall) &&
+                    state != (byte)PlayerLocomotion.PLOC_State.Jump && state != (byte)PlayerLocomotion.PLOC_State.Fall) {
+                    landTriggered = Raudy.Now;
+                    state = (byte)PlayerLocomotion.PLOC_State.Land;
+                }
+            }
+            _state = state;
 
             BitHelper.WriteBytes(state, buffer);
         }

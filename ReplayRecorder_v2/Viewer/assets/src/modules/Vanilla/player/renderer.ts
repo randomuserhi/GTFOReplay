@@ -4,7 +4,7 @@ import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { Equippable } from "../Equippable/equippable.js";
-import { AnimBlend, AnimTimer, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
+import { AnimBlend, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
 import { playerAnimations } from "../animations/assets.js";
 import { HumanJoints, HumanMask, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
@@ -12,7 +12,7 @@ import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
-import { PlayerAnimState } from "./animation.js";
+import { PlayerAnimState, State } from "./animation.js";
 import { Player } from "./player.js";
 import { InventorySlot, PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
 import { PlayerStats } from "./playerstats.js";
@@ -259,9 +259,6 @@ class PlayerModel  {
     parts: number[];
     points: number[];
 
-    movementAnimTimer: AnimTimer;
-    equipAnimTimer: AnimTimer;
-
     tmp?: Text;
 
     handAttachment: Group;
@@ -273,6 +270,8 @@ class PlayerModel  {
     slots: Equippable[];
     backpack: Group;
     backpackAligns: Group[];
+
+    lastState: State;
 
     constructor(color: Color) {
         this.root = new Group();
@@ -306,16 +305,6 @@ class PlayerModel  {
         this.skeleton.joints.neck.add(this.skeleton.joints.head);
         
         this.skeleton.set(defaultHumanStructure);
-
-        this.movementAnimTimer = new AnimTimer(Math.max(
-            rifleMovement.duration, 
-            pistolMovement.duration,
-            defaultMovement.duration,
-        ), true); 
-        this.movementAnimTimer.play(0);
-
-        this.equipAnimTimer = new AnimTimer(1.067, false);
-        this.equipAnimTimer.pause(0);
 
         this.color = color;
         this.parts = new Array(9);
@@ -370,6 +359,7 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
 
         this.lastEquipped = 0;
+        this.lastState = "stand";
 
         this.aimIK = new IKSolverAim();
         this.aimIK.root = this.skeleton.root;
@@ -416,15 +406,16 @@ class PlayerModel  {
     }
 
     public update(time: number, player: Player, anim: PlayerAnimState): void {
-        this.movementAnimTimer.update(time);
-        this.equipAnimTimer.update(time);
+        time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
 
         this.animVelocity(rifleStandMovement, anim.velocity);
         this.animVelocity(pistolStandMovement, anim.velocity);
+        this.animVelocity(hammerStandMovement, anim.velocity);
         this.animVelocity(defaultStandMovement, anim.velocity);
 
         this.animVelocity(rifleCrouchMovement, anim.velocity);
         this.animVelocity(pistolCrouchMovement, anim.velocity);
+        this.animVelocity(hammerCrouchMovement, anim.velocity);
         this.animVelocity(defaultCrouchMovement, anim.velocity);
 
         rifleMovement.point.x = anim.crouch;
@@ -432,45 +423,71 @@ class PlayerModel  {
         defaultMovement.point.x = anim.crouch;
 
         switch (this.equippedItem?.model?.archetype) {
-        case "pistol": this.skeleton.override(pistolMovement.sample(this.movementAnimTimer.time)); break;
-        case "rifle": this.skeleton.override(rifleMovement.sample(this.movementAnimTimer.time)); break;
-        case "hammer": this.skeleton.override(hammerMovement.sample(this.movementAnimTimer.time)); break;
-        default: this.skeleton.override(defaultMovement.sample(this.movementAnimTimer.time)); break;
+        case "pistol": this.skeleton.override(pistolMovement.sample(time)); break;
+        case "rifle": this.skeleton.override(rifleMovement.sample(time)); break;
+        case "hammer": this.skeleton.override(hammerMovement.sample(time)); break;
+        default: this.skeleton.override(defaultMovement.sample(time)); break;
+        }
+        
+        const stateTime = time - (anim.lastStateTransition / 1000);
+        switch(anim.state) {
+        case "jump": {
+            switch (this.equippedItem?.model?.archetype) {
+            case "pistol": this.skeleton.override(playerAnimations.Pistol_Jump.sample(stateTime)); break;
+            case "rifle": this.skeleton.override(playerAnimations.Rifle_Jump.sample(stateTime)); break;
+            case "hammer": this.skeleton.override(playerAnimations.SledgeHammer_Jump.sample(stateTime)); break;
+            default: this.skeleton.override(playerAnimations.SledgeHammer_Jump.sample(stateTime)); break; // TODO(randomuserhi): change to knife
+            }
+        } break;
+        case "fall": {
+            switch (this.equippedItem?.model?.archetype) {
+            case "pistol": this.skeleton.override(playerAnimations.Pistol_Fall.sample(stateTime)); break;
+            case "rifle": this.skeleton.override(playerAnimations.Rifle_Fall.sample(stateTime)); break;
+            case "hammer": this.skeleton.override(playerAnimations.SledgeHammer_Fall.sample(stateTime)); break;
+            default: this.skeleton.override(playerAnimations.SledgeHammer_Fall.sample(stateTime)); break; // TODO(randomuserhi): change to knife
+            }
+        } break;
+        case "land": {
+            const isSlow = (Math.abs(anim.velocity.x) < 0.08 && Math.abs(anim.velocity.z) < 0.08);
+            const blendWeight = 1 - Math.clamp01(stateTime / (isSlow ? 1 : 0.5));
+            switch (this.equippedItem?.model?.archetype) {
+            case "pistol": this.skeleton.blend(playerAnimations.Pistol_Land.sample(stateTime), blendWeight); break;
+            case "rifle": this.skeleton.blend(playerAnimations.Rifle_Land.sample(stateTime), blendWeight); break;
+            case "hammer": this.skeleton.blend(playerAnimations.SledgeHammer_Land.sample(stateTime), blendWeight); break;
+            default: this.skeleton.blend(playerAnimations.SledgeHammer_Land.sample(stateTime), blendWeight); break; // TODO(randomuserhi): change to knife
+            }
+        } break;
         }
 
         if (this.equippedItem !== undefined) {
-            if (this.lastEquipped !== this.equippedItem.id) {
-                this.equipAnimTimer.reset(time);
-                this.equipAnimTimer.play(time);
-                this.lastEquipped = this.equippedItem.id;
-            }
-
-            if (this.equipAnimTimer.isPlaying) {
-                this.equipped.visible = this.equipAnimTimer.time > 0.5;
+            const equipTime = time - (player.lastEquippedTime / 1000);
+            const isEquipping = equipTime < 1.067;
+            if (isEquipping) {
+                this.equipped.visible = equipTime > 0.5;
 
                 switch (this.equippedSlot) {
                 case "melee": {
                     switch (this.equippedItem?.model?.archetype) {
-                    case "spear": this.skeleton.override(playerAnimations.Spear_Equip.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                    case "spear": this.skeleton.override(playerAnimations.Spear_Equip.sample(equipTime), upperBodyMask); break;
                     case "bat":
-                    case "knife": this.skeleton.override(playerAnimations.Bat_Equip.sample(this.equipAnimTimer.time), upperBodyMask); break;
-                    default: this.skeleton.override(playerAnimations.Equip_Melee.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                    case "knife": this.skeleton.override(playerAnimations.Bat_Equip.sample(equipTime), upperBodyMask); break;
+                    default: this.skeleton.override(playerAnimations.Equip_Melee.sample(equipTime), upperBodyMask); break;
                     }
                 } break;
-                case "main": this.skeleton.override(playerAnimations.Equip_Primary.sample(this.equipAnimTimer.time), upperBodyMask); break;
-                case "special": this.skeleton.override(playerAnimations.Equip_Secondary.sample(this.equipAnimTimer.time), upperBodyMask); break;
-                case "pack": this.skeleton.override(playerAnimations.ConsumablePack_Equip.sample(this.equipAnimTimer.time), upperBodyMask); break;
-                default: this.skeleton.override(playerAnimations.Equip_Generic.sample(this.equipAnimTimer.time), upperBodyMask); break;
+                case "main": this.skeleton.override(playerAnimations.Equip_Primary.sample(equipTime), upperBodyMask); break;
+                case "special": this.skeleton.override(playerAnimations.Equip_Secondary.sample(equipTime), upperBodyMask); break;
+                case "pack": this.skeleton.override(playerAnimations.ConsumablePack_Equip.sample(equipTime), upperBodyMask); break;
+                default: this.skeleton.override(playerAnimations.Equip_Generic.sample(equipTime), upperBodyMask); break;
                 }
             } else {
                 this.equipped.visible = true;
             }
-            
+
             switch(anim.state) {
-            case "crouch":
             case "jump":
             case "fall":
             case "land":
+            case "crouch":
             case "stunned":
             case "stand": {
                 const forward = new Vector3(0, 0, 1).applyQuaternion(player.rotation);
@@ -511,11 +528,11 @@ class PlayerModel  {
                 aimOffset.point.y = -num5;
                 aimOffset.point.x = value;
     
-                this.skeleton.additive(aimOffset.sample(this.movementAnimTimer.time), 1);
+                this.skeleton.additive(aimOffset.sample(time), 1);
             } break;
             }
 
-            if (!this.equipAnimTimer.isPlaying) {
+            if (!isEquipping) {
                 const dist = 10;
                 this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
                 this.aimTarget.position.x += anim.targetLookDir.x * dist;

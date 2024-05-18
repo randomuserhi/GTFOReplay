@@ -47,6 +47,7 @@ export interface Player extends DynamicTransform {
     slot: number;
     nickname: string;
     equippedId: number;
+    lastEquippedTime: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
@@ -64,7 +65,10 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
             const player = players.get(id)!;
             DynamicTransform.lerp(player, data, lerp);
-            player.equippedId = data.equippedId;
+            if (player.equippedId !== data.equippedId) {
+                player.equippedId = data.equippedId;
+                player.lastEquippedTime = snapshot.time();
+            }
         }
     },
     spawn: {
@@ -87,6 +91,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             players.set(id, { 
                 id, ...data,
                 equippedId: 0,
+                lastEquippedTime: 0
             });
         }
     },

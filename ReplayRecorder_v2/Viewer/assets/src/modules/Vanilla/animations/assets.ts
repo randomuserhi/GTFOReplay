@@ -32,6 +32,7 @@ import { Pistol_Crouch_WalkBwd } from "./assets/player/Pistol_Crouch_WalkBwd.js"
 import { Pistol_Crouch_WalkFwd } from "./assets/player/Pistol_Crouch_WalkFwd.js";
 import { Pistol_Crouch_WalkLt } from "./assets/player/Pistol_Crouch_WalkLt.js";
 import { Pistol_Crouch_WalkRt } from "./assets/player/Pistol_Crouch_WalkRt.js";
+import { Pistol_Fall } from "./assets/player/Pistol_Fall.js";
 import { Pistol_Idle } from "./assets/player/Pistol_Idle.js";
 import { Pistol_Jog_Backward } from "./assets/player/Pistol_Jog_Backward.js";
 import { Pistol_Jog_BackwardLeft } from "./assets/player/Pistol_Jog_BackwardLeft.js";
@@ -41,6 +42,8 @@ import { Pistol_Jog_ForwardLeft } from "./assets/player/Pistol_Jog_ForwardLeft.j
 import { Pistol_Jog_ForwardRight } from "./assets/player/Pistol_Jog_ForwardRight.js";
 import { Pistol_Jog_Left } from "./assets/player/Pistol_Jog_Left.js";
 import { Pistol_Jog_Right } from "./assets/player/Pistol_Jog_Right.js";
+import { Pistol_Jump } from "./assets/player/Pistol_Jump.js";
+import { Pistol_Land } from "./assets/player/Pistol_Land.js";
 import { Pistol_RunBwdLoop } from "./assets/player/Pistol_RunBwdLoop.js";
 import { Pistol_SprintFwdLoop } from "./assets/player/Pistol_SprintFwdLoop.js";
 import { Pistol_StrafeLeft135Loop } from "./assets/player/Pistol_StrafeLeft135Loop.js";
@@ -83,6 +86,7 @@ import { Rifle_Crouch_WalkBwd } from "./assets/player/Rifle_Crouch_WalkBwd.js";
 import { Rifle_Crouch_WalkFwd } from "./assets/player/Rifle_Crouch_WalkFwd.js";
 import { Rifle_Crouch_WalkLt } from "./assets/player/Rifle_Crouch_WalkLt.js";
 import { Rifle_Crouch_WalkRt } from "./assets/player/Rifle_Crouch_WalkRt.js";
+import { Rifle_Fall } from "./assets/player/Rifle_Fall.js";
 import { Rifle_Idle } from "./assets/player/Rifle_Idle.js";
 import { Rifle_Jog_Backward } from "./assets/player/Rifle_Jog_Backward.js";
 import { Rifle_Jog_BackwardLeft } from "./assets/player/Rifle_Jog_BackwardLeft.js";
@@ -92,6 +96,8 @@ import { Rifle_Jog_ForwardLeft } from "./assets/player/Rifle_Jog_ForwardLeft.js"
 import { Rifle_Jog_ForwardRight } from "./assets/player/Rifle_Jog_ForwardRight.js";
 import { Rifle_Jog_Left } from "./assets/player/Rifle_Jog_Left.js";
 import { Rifle_Jog_Right } from "./assets/player/Rifle_Jog_Right.js";
+import { Rifle_Jump } from "./assets/player/Rifle_Jump.js";
+import { Rifle_Land } from "./assets/player/Rifle_Land.js";
 import { Rifle_RunBwdLoop } from "./assets/player/Rifle_RunBwdLoop.js";
 import { Rifle_SprintFwdLoop } from "./assets/player/Rifle_SprintFwdLoop.js";
 import { Rifle_SprintFwdLoop_Left } from "./assets/player/Rifle_SprintFwdLoop_Left.js";
@@ -124,6 +130,7 @@ import { SledgeHammer_Crouch_WalkBwd } from "./assets/player/SledgeHammer_Crouch
 import { SledgeHammer_Crouch_WalkFwd } from "./assets/player/SledgeHammer_Crouch_WalkFwd.js";
 import { SledgeHammer_Crouch_WalkLt } from "./assets/player/SledgeHammer_Crouch_WalkLt.js";
 import { SledgeHammer_Crouch_WalkRt } from "./assets/player/SledgeHammer_Crouch_WalkRt.js";
+import { SledgeHammer_Fall } from "./assets/player/SledgeHammer_Fall.js";
 import { SledgeHammer_Jog_Backward } from "./assets/player/SledgeHammer_Jog_Backward.js";
 import { SledgeHammer_Jog_BackwardLeft } from "./assets/player/SledgeHammer_Jog_BackwardLeft.js";
 import { SledgeHammer_Jog_BackwardRight } from "./assets/player/SledgeHammer_Jog_BackwardRight.js";
@@ -132,6 +139,8 @@ import { SledgeHammer_Jog_ForwardLeft } from "./assets/player/SledgeHammer_Jog_F
 import { SledgeHammer_Jog_ForwardRight } from "./assets/player/SledgeHammer_Jog_ForwardRight.js";
 import { SledgeHammer_Jog_Left } from "./assets/player/SledgeHammer_Jog_Left.js";
 import { SledgeHammer_Jog_Right } from "./assets/player/SledgeHammer_Jog_Right.js";
+import { SledgeHammer_Jump } from "./assets/player/SledgeHammer_Jump.js";
+import { SledgeHammer_Land } from "./assets/player/SledgeHammer_Land.js";
 import { SledgeHammer_SprintFwdLoop } from "./assets/player/SledgeHammer_SprintFwdLoop.js";
 import { Sledgehammer_Crouch_Idle } from "./assets/player/Sledgehammer_Crouch_Idle.js";
 import { Sledgehammer_Stand_Idle } from "./assets/player/Sledgehammer_Stand_Idle.js";
@@ -292,4 +301,13 @@ export const playerAnimations = {
     SledgeHammer_Crouch_WalkFwd,
     SledgeHammer_Crouch_WalkLt,
     SledgeHammer_Crouch_WalkRt,
+    Pistol_Jump,
+    Pistol_Fall,
+    Pistol_Land,
+    Rifle_Jump,
+    Rifle_Fall,
+    Rifle_Land,
+    SledgeHammer_Jump,
+    SledgeHammer_Fall,
+    SledgeHammer_Land
 };

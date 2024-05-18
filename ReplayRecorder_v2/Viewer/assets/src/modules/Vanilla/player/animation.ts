@@ -6,8 +6,18 @@ declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Player.Animation": {
-                parse: PlayerAnimState;
-                spawn: PlayerAnimState;
+                parse: {
+                    velocity: Pod.Vector;
+                    crouch: number;
+                    targetLookDir: Pod.Vector;
+                    state: State;
+                };
+                spawn: {
+                    velocity: Pod.Vector;
+                    crouch: number;
+                    targetLookDir: Pod.Vector;
+                    state: State;
+                };
                 despawn: void;
             };
         }
@@ -28,14 +38,15 @@ export type State =
     "stunned" |
     "downed" |
     "climbLadder" |
+    "onTerminal" |
     "melee" |
     "empty" |
     "grabbedByTrap" |
     "grabbedByTank" |
     "testing" |
     "inElevator" |
-    "cinematicCamera" |
-    "freeCam";
+    "grabbedByPouncer" |
+    "standStill";
 export const states: State[] = [
     "stand",
     "crouch",
@@ -46,14 +57,15 @@ export const states: State[] = [
     "stunned",
     "downed",
     "climbLadder",
+    "onTerminal",
     "melee",
     "empty",
     "grabbedByTrap",
     "grabbedByTank",
     "testing",
     "inElevator",
-    "cinematicCamera",
-    "freeCam"
+    "grabbedByPouncer",
+    "standStill"
 ];
 export const stateMap: Map<State, number> = new Map([...states.entries()].map(e => [e[1], e[0]]));
 
@@ -62,6 +74,7 @@ export interface PlayerAnimState {
     crouch: number;
     targetLookDir: Pod.Vector;
     state: State;
+    lastStateTransition: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
@@ -82,7 +95,10 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
             anim.crouch = anim.crouch + (data.crouch - anim.crouch) * lerp;
             Pod.Vec.lerp(anim.targetLookDir, anim.targetLookDir, data.targetLookDir, lerp);
-            anim.state = data.state;
+            if (anim.state !== data.state) {
+                anim.state = data.state;
+                anim.lastStateTransition = snapshot.time();
+            }
         }
     },
     spawn: {
@@ -98,7 +114,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
         
             if (anims.has(id)) throw new DuplicateAnim(`PlayerAnim of id '${id}' already exists.`);
-            anims.set(id, { ...data });
+            anims.set(id, { ...data, lastStateTransition: 0 });
         }
     },
     despawn: {

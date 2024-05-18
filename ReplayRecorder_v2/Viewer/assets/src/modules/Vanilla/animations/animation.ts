@@ -86,6 +86,21 @@ export class AvatarSkeleton<T extends string = string> {
         }
         return this;
     }
+
+    public blend(frame: AvatarLike<T>, weight:number, mask?: AvatarMask<T>) {
+        if (mask === undefined || mask.root === true) {
+            const position = this.root.position;
+            position.lerp(frame.root, weight);
+        }
+    
+        for (const key of this.keys) {
+            if (mask === undefined || mask.joints[key] === true) {
+                const quaternion = this.joints[key].quaternion;
+                quaternion.copy(Pod.Quat.slerp(_qtempPod, quaternion, frame.joints[key], weight));
+            }
+        }
+        return this;
+    }
 }
 
 export interface AvatarMask<T extends string = string> {
@@ -355,59 +370,5 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
         }
 
         return this.cache;
-    }
-}
-
-export class AnimTimer {
-    time: number;
-    lastUpdate: number;
-    loop: boolean;
-    duration: number;
-
-    isPlaying: boolean;
-
-    constructor(duration: number, loop: boolean) {
-        this.time = 0;
-        this.duration = duration;
-        this.lastUpdate = 0;
-        this.loop = loop;
-        this.isPlaying = false;
-    }
-
-    public reset(time: number) {
-        this.lastUpdate = time;
-        this.time = 0;
-    }
-
-    public update(time: number) {
-        if (this.isPlaying) {
-            this.time += (time - this.lastUpdate) / 1000;
-        }
-        if (this.loop) {
-            this.time = this.time % this.duration; 
-        } else if (this.time > this.duration) {
-            this.time = this.duration;
-            this.isPlaying = false;
-        }
-        if (this.time < 0) {
-            if (this.loop) {
-                this.time += this.duration;
-            } else {
-                this.time = 0;
-            }
-        }
-        this.lastUpdate = time;
-    }
-
-    public pause(time: number) {
-        this.lastUpdate = time;
-        this.isPlaying = false;
-    }
-
-    public play(time: number) {
-        if (this.isPlaying) return;
-        
-        this.lastUpdate = time;
-        this.isPlaying = true;
     }
 }
