@@ -154,7 +154,10 @@ import { StrafeRightLoop } from "./assets/player/StrafeRightLoop.js";
 import { WalkBwdLoop } from "./assets/player/WalkBwdLoop.js";
 import { WalkFwdLoop } from "./assets/player/WalkFwdLoop.js";
 
-export const playerAnimations = {
+import { AnimBlend } from "./animation.js";
+import { HumanJoints } from "./human.js";
+
+export const playerAnimationClips = {
     Rifle_AO_C, 
     Rifle_AO_D,
     Rifle_AO_L,
@@ -310,4 +313,186 @@ export const playerAnimations = {
     SledgeHammer_Jump,
     SledgeHammer_Fall,
     SledgeHammer_Land
+} as const;
+export type PlayerAnimationClip = keyof typeof playerAnimationClips;
+
+export const animVelocity = {
+    x: 0,
+    y: 0
 };
+
+export const animCrouch = {
+    x: 0,
+    y: 0
+};
+
+export const rifleStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Rifle_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimationClips.Rifle_Jog_Backward, x: 0, y: -3.5 },
+    { anim: playerAnimationClips.Rifle_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimationClips.Rifle_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimationClips.Rifle_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimationClips.Rifle_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimationClips.Rifle_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimationClips.Rifle_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimationClips.Rifle_WalkFwdLoop, x: 0, y: 1.9 },
+    { anim: playerAnimationClips.Rifle_WalkBwdLoop, x: 0, y: -1.8 },
+    { anim: playerAnimationClips.Rifle_StrafeLeftLoop, x: -1.6, y: 0 },
+    { anim: playerAnimationClips.Rifle_StrafeLeft45Loop, x: -1.16, y: 1.16 },
+    { anim: playerAnimationClips.Rifle_StrafeLeft135Loop, x: -1.13, y: -1.13 },
+    { anim: playerAnimationClips.Rifle_StrafeRightLoop, x: 2, y: 0 },
+    { anim: playerAnimationClips.Rifle_StrafeRight45Loop, x: 1.37, y: 1.37 },
+    { anim: playerAnimationClips.Rifle_StrafeRight135Loop, x: 1.16, y: -1.16 },
+    { anim: playerAnimationClips.Rifle_Idle, x: 0, y: 0 },
+    { anim: playerAnimationClips.Rifle_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimationClips.Rifle_RunBwdLoop, x: 0, y: -5 },
+    { anim: playerAnimationClips.Rifle_StrafeRunRightLoop, x: 6.8, y: 0 },
+    { anim: playerAnimationClips.Rifle_StrafeRun45RightLoop, x: 4.8, y: 4.8 },
+    { anim: playerAnimationClips.Rifle_StrafeRun135LeftLoop_0, x: 4.34, y: -4.34 },
+    { anim: playerAnimationClips.Rifle_StrafeRunLeftLoop, x: -6.8, y: 0 },
+    { anim: playerAnimationClips.Rifle_StrafeRun45LeftLoop, x: -4.8, y: 4.8 },
+    { anim: playerAnimationClips.Rifle_StrafeRun135LeftLoop, x: -4.9, y: -4.9 },
+    { anim: playerAnimationClips.Rifle_SprintFwdLoop_Left, x: -1.25, y: 5.85 },
+    { anim: playerAnimationClips.Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
+], animVelocity);
+
+export const rifleCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Rifle_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimationClips.Rifle_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimationClips.Rifle_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimationClips.Rifle_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimationClips.Rifle_CrouchLoop, x: 0, y: 0 },
+], animVelocity);
+
+export const rifleMovement = new AnimBlend(HumanJoints, [
+    { anim: rifleStandMovement, x: 0, y: 0 },
+    { anim: rifleCrouchMovement, x: 1, y: 0 }
+], animCrouch);
+
+export const pistolStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Pistol_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimationClips.Pistol_Jog_Backward, x: 0, y: -3.5 },
+    { anim: playerAnimationClips.Pistol_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimationClips.Pistol_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimationClips.Pistol_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimationClips.Pistol_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimationClips.Pistol_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimationClips.Pistol_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimationClips.Pistol_WalkFwdLoop, x: 0, y: 1.9 },
+    { anim: playerAnimationClips.Pistol_WalkBwdLoop, x: 0, y: -1.8 },
+    { anim: playerAnimationClips.Pistol_StrafeLeftLoop, x: -1.6, y: 0 },
+    { anim: playerAnimationClips.Pistol_StrafeLeft45Loop, x: -1.16, y: 1.16 },
+    { anim: playerAnimationClips.Pistol_StrafeLeft135Loop, x: -1.13, y: -1.13 },
+    { anim: playerAnimationClips.Pistol_StrafeRightLoop, x: 2, y: 0 },
+    { anim: playerAnimationClips.Pistol_StrafeRight45Loop, x: 1.37, y: 1.37 },
+    { anim: playerAnimationClips.Pistol_StrafeRight135Loop, x: 1.16, y: -1.16 },
+    { anim: playerAnimationClips.Pistol_Idle, x: 0, y: 0 },
+    { anim: playerAnimationClips.Pistol_RunBwdLoop, x: 0, y: -6.48 },
+    { anim: playerAnimationClips.Pistol_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimationClips.Pistol_StrafeRunRightLoop, x: 6.48, y: 0 },
+    { anim: playerAnimationClips.Pistol_StrafeRun45RightLoop, x: 4.64, y: 4.64 },
+    { anim: playerAnimationClips.Pistol_StrafeRun135LeftLoop, x: 4.14, y: -4.14 },
+    { anim: playerAnimationClips.Pistol_StrafeRunLeftLoop, x: -6.48, y: 0 },
+    { anim: playerAnimationClips.Pistol_StrafeRun45LeftLoop, x: -4.58, y: 4.58 },
+    { anim: playerAnimationClips.Pistol_StrafeRun135RightLoop, x: -4.34, y: -4.34 },
+], animVelocity);
+
+export const pistolCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Pistol_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimationClips.Pistol_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimationClips.Pistol_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimationClips.Pistol_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimationClips.Pistol_CrouchLoop, x: 0, y: 0 },
+], animVelocity);
+
+export const pistolMovement = new AnimBlend(HumanJoints, [
+    { anim: pistolStandMovement, x: 0, y: 0 },
+    { anim: pistolCrouchMovement, x: 1, y: 0 }
+], animCrouch);
+
+export const defaultStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.RunFwdLoop, x: 0, y: 3.4 },
+    { anim: playerAnimationClips.RunBwdLoop, x: 0, y: -2.1 },
+    { anim: playerAnimationClips.RunRtLoop, x: 2.1, y: 0 },
+    { anim: playerAnimationClips.RunLtLoop, x: -2.1, y: 0 },
+    { anim: playerAnimationClips.RunStrafeRight45Loop, x: 2.4, y: 2.4 },
+    { anim: playerAnimationClips.RunStrafeRight135Loop, x: 1.5, y: -1.5 },
+    { anim: playerAnimationClips.RunStrafeLeft45Loop, x: -2.4, y: 2.4 },
+    { anim: playerAnimationClips.RunStrafeLeft135Loop, x: -1.5, y: -1.5 },
+    { anim: playerAnimationClips.WalkFwdLoop, x: 0, y: 1.5 },
+    { anim: playerAnimationClips.WalkBwdLoop, x: 0, y: -1.5 },
+    { anim: playerAnimationClips.StrafeRightLoop, x: -1.5, y: 0 },
+    { anim: playerAnimationClips.StrafeRight45Loop, x: 1.12, y: 1.12 },
+    { anim: playerAnimationClips.StrafeRight135Loop, x: 1.12, y: -1.12 },
+    { anim: playerAnimationClips.StrafeLeftLoop, x: -1.56, y: 0 },
+    { anim: playerAnimationClips.StrafeLeft45Loop, x: -1.12, y: 1.12 },
+    { anim: playerAnimationClips.StrafeLeft135Loop, x: -1.12, y: -1.12 },
+    { anim: playerAnimationClips.Idle_1, x: 0, y: 0 },
+], animVelocity);
+
+export const defaultCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Crouch_WalkFwd_new, x: 0, y: 1.54 },
+    { anim: playerAnimationClips.Crouch_WalkBwd_new, x: 0, y: -1.74 },
+    { anim: playerAnimationClips.Crouch_WalkLt45_new, x: -1, y: 1 },
+    { anim: playerAnimationClips.Crouch_WalkLt135_new, x: -1.2, y: -1.2 },
+    { anim: playerAnimationClips.Crouch_WalkRt45_new, x: 1, y: 1 },
+    { anim: playerAnimationClips.Crouch_WalkRt135_new, x: 1, y: -1 },
+    { anim: playerAnimationClips.Crouch_WalkRt_new, x: 2, y: 0 },
+    { anim: playerAnimationClips.Crouch_WalkLt_new, x: -2, y: 0 },
+    { anim: playerAnimationClips.Crouch_Idle, x: 0, y: 0 },
+], animVelocity);
+
+export const defaultMovement = new AnimBlend(HumanJoints, [
+    { anim: defaultStandMovement, x: 0, y: 0 },
+    { anim: defaultCrouchMovement, x: 1, y: 0 }
+], animCrouch);
+
+export const hammerStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.SledgeHammer_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimationClips.SledgeHammer_Jog_Backward, x: 0, y: -3.5},
+    { anim: playerAnimationClips.SledgeHammer_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimationClips.SledgeHammer_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimationClips.SledgeHammer_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimationClips.SledgeHammer_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimationClips.SledgeHammer_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimationClips.SledgeHammer_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimationClips.SledgeHammer_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Fwd_Stand_A, x: 0, y: 1.8 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Bwd_Stand_A, x: 0, y: -1.8 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Right_Stand_A, x: 1.8, y: 0 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Left_Stand_A, x: -1.8, y: 0 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Fwd_Left_Stand_A, x: -1.2, y: 1.2 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Fwd_Right_Stand_A, x: 1.2, y: 1.2 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Bwd_Left_Stand_A, x: -1.2, y: -1.2 },
+    { anim: playerAnimationClips.Player_Melee_Movement_Walk_Bwd_Right_Stand_A, x: 1.2, y: -1.2 },
+    { anim: playerAnimationClips.Sledgehammer_Stand_Idle, x: 0, y: 0 },
+], animVelocity);
+
+export const hammerCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.SledgeHammer_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimationClips.SledgeHammer_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimationClips.SledgeHammer_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimationClips.SledgeHammer_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimationClips.Sledgehammer_Crouch_Idle, x: 0, y: 0 },
+], animVelocity);
+
+export const hammerMovement = new AnimBlend(HumanJoints, [
+    { anim: hammerStandMovement, x: 0, y: 0 },
+    { anim: hammerCrouchMovement, x: 1, y: 0 }
+], animCrouch);
+
+export const playerAnimations = {
+    rifleStandMovement,
+    rifleCrouchMovement,
+    rifleMovement,
+    pistolStandMovement,
+    pistolCrouchMovement,
+    pistolMovement,
+    hammerStandMovement,
+    hammerCrouchMovement,
+    hammerMovement,
+    defaultStandMovement,
+    defaultCrouchMovement,
+    defaultMovement,
+} as const;
+export type PlayerAnimation = keyof typeof playerAnimations;

@@ -34,6 +34,7 @@ export type HumanAvatar = Avatar<HumanJoints>;
 export type HumanAvatarLike = AvatarLike<HumanJoints>;
 export type HumanAnim = Anim<HumanJoints>;
 export type HumanAnimBlend = AnimBlend<HumanJoints>;
+export type HumanAnimation = HumanAnim | HumanAnimBlend;
 export type HumanSkeleton = AvatarSkeleton<HumanJoints>;
 export type HumanMask = AvatarMask<HumanJoints>;
 

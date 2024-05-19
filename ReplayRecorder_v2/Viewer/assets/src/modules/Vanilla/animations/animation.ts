@@ -1,4 +1,4 @@
-import { Object3D, Quaternion, QuaternionLike, Vector3, Vector3Like } from "three";
+import { Object3D, Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "three";
 import * as Pod from "../../../replay/pod.js";
 
 // TODO(randomuserhi): Split the file up into multiple files
@@ -215,11 +215,15 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
         anim: AnimFunc<T>,
         x: number,
         y: number
-    }[]) {
-        this.point = {
-            x: 0,
-            y: 0
-        };
+    }[], point?: Vector2Like) {
+        if (point === undefined) {
+            this.point = {
+                x: 0,
+                y: 0
+            };
+        } else {
+            this.point = point;
+        }
         this.points = points;
         this.duration = Math.max(...points.map(p => p.anim.duration));
 

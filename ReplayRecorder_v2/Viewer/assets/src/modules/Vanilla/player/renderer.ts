@@ -1,17 +1,17 @@
-import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3, Vector3Like } from "three";
+import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3 } from "three";
 import { Text } from "troika-three-text";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
-import { Equippable } from "../Equippable/equippable.js";
+import { Model } from "../Equippable/equippable.js";
 import { AnimBlend, Avatar, AvatarSkeleton, AvatarStructure, createAvatarStruct, difference, toAnim } from "../animations/animation.js";
-import { playerAnimations } from "../animations/assets.js";
+import { animCrouch, animVelocity, playerAnimationClips, playerAnimations } from "../animations/assets.js";
 import { HumanJoints, HumanMask, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
-import { specification } from "../specification.js";
+import { Equippable, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 import { PlayerAnimState, State } from "./animation.js";
 import { Player } from "./player.js";
 import { InventorySlot, PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
@@ -75,171 +75,16 @@ const upperBodyMask: HumanMask = {
     }
 };
 
-const rifleStandMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.Rifle_Jog_Forward, x: 0, y: 3.5 },
-    { anim: playerAnimations.Rifle_Jog_Backward, x: 0, y: -3.5 },
-    { anim: playerAnimations.Rifle_Jog_Right, x: 3.5, y: 0 },
-    { anim: playerAnimations.Rifle_Jog_Left, x: -3.5, y: 0 },
-    { anim: playerAnimations.Rifle_Jog_ForwardLeft, x: -2.56, y: 2.56 },
-    { anim: playerAnimations.Rifle_Jog_ForwardRight, x: 2.56, y: 2.56 },
-    { anim: playerAnimations.Rifle_Jog_BackwardRight, x: 2.56, y: -2.56 },
-    { anim: playerAnimations.Rifle_Jog_BackwardLeft, x: -2.56, y: -2.56 },
-    { anim: playerAnimations.Rifle_WalkFwdLoop, x: 0, y: 1.9 },
-    { anim: playerAnimations.Rifle_WalkBwdLoop, x: 0, y: -1.8 },
-    { anim: playerAnimations.Rifle_StrafeLeftLoop, x: -1.6, y: 0 },
-    { anim: playerAnimations.Rifle_StrafeLeft45Loop, x: -1.16, y: 1.16 },
-    { anim: playerAnimations.Rifle_StrafeLeft135Loop, x: -1.13, y: -1.13 },
-    { anim: playerAnimations.Rifle_StrafeRightLoop, x: 2, y: 0 },
-    { anim: playerAnimations.Rifle_StrafeRight45Loop, x: 1.37, y: 1.37 },
-    { anim: playerAnimations.Rifle_StrafeRight135Loop, x: 1.16, y: -1.16 },
-    { anim: playerAnimations.Rifle_Idle, x: 0, y: 0 },
-    { anim: playerAnimations.Rifle_SprintFwdLoop, x: 0, y: 6 },
-    { anim: playerAnimations.Rifle_RunBwdLoop, x: 0, y: -5 },
-    { anim: playerAnimations.Rifle_StrafeRunRightLoop, x: 6.8, y: 0 },
-    { anim: playerAnimations.Rifle_StrafeRun45RightLoop, x: 4.8, y: 4.8 },
-    { anim: playerAnimations.Rifle_StrafeRun135LeftLoop_0, x: 4.34, y: -4.34 },
-    { anim: playerAnimations.Rifle_StrafeRunLeftLoop, x: -6.8, y: 0 },
-    { anim: playerAnimations.Rifle_StrafeRun45LeftLoop, x: -4.8, y: 4.8 },
-    { anim: playerAnimations.Rifle_StrafeRun135LeftLoop, x: -4.9, y: -4.9 },
-    { anim: playerAnimations.Rifle_SprintFwdLoop_Left, x: -1.25, y: 5.85 },
-    { anim: playerAnimations.Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
-]);
-
-const rifleCrouchMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.Rifle_Crouch_WalkBwd, x: 0, y: -2 },
-    { anim: playerAnimations.Rifle_Crouch_WalkFwd, x: 0, y: 2 },
-    { anim: playerAnimations.Rifle_Crouch_WalkLt, x: -2, y: 0 },
-    { anim: playerAnimations.Rifle_Crouch_WalkRt, x: 2, y: 0 },
-    { anim: playerAnimations.Rifle_CrouchLoop, x: 0, y: 0 },
-]);
-
-const rifleMovement = new AnimBlend(HumanJoints, [
-    { anim: rifleStandMovement, x: 0, y: 0 },
-    { anim: rifleCrouchMovement, x: 1, y: 0 }
-]);
-
-const pistolStandMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.Pistol_Jog_Forward, x: 0, y: 3.5 },
-    { anim: playerAnimations.Pistol_Jog_Backward, x: 0, y: -3.5 },
-    { anim: playerAnimations.Pistol_Jog_Right, x: 3.5, y: 0 },
-    { anim: playerAnimations.Pistol_Jog_Left, x: -3.5, y: 0 },
-    { anim: playerAnimations.Pistol_Jog_ForwardLeft, x: -2.56, y: 2.56 },
-    { anim: playerAnimations.Pistol_Jog_ForwardRight, x: 2.56, y: 2.56 },
-    { anim: playerAnimations.Pistol_Jog_BackwardRight, x: 2.56, y: -2.56 },
-    { anim: playerAnimations.Pistol_Jog_BackwardLeft, x: -2.56, y: -2.56 },
-    { anim: playerAnimations.Pistol_WalkFwdLoop, x: 0, y: 1.9 },
-    { anim: playerAnimations.Pistol_WalkBwdLoop, x: 0, y: -1.8 },
-    { anim: playerAnimations.Pistol_StrafeLeftLoop, x: -1.6, y: 0 },
-    { anim: playerAnimations.Pistol_StrafeLeft45Loop, x: -1.16, y: 1.16 },
-    { anim: playerAnimations.Pistol_StrafeLeft135Loop, x: -1.13, y: -1.13 },
-    { anim: playerAnimations.Pistol_StrafeRightLoop, x: 2, y: 0 },
-    { anim: playerAnimations.Pistol_StrafeRight45Loop, x: 1.37, y: 1.37 },
-    { anim: playerAnimations.Pistol_StrafeRight135Loop, x: 1.16, y: -1.16 },
-    { anim: playerAnimations.Pistol_Idle, x: 0, y: 0 },
-    { anim: playerAnimations.Pistol_RunBwdLoop, x: 0, y: -6.48 },
-    { anim: playerAnimations.Pistol_SprintFwdLoop, x: 0, y: 6 },
-    { anim: playerAnimations.Pistol_StrafeRunRightLoop, x: 6.48, y: 0 },
-    { anim: playerAnimations.Pistol_StrafeRun45RightLoop, x: 4.64, y: 4.64 },
-    { anim: playerAnimations.Pistol_StrafeRun135LeftLoop, x: 4.14, y: -4.14 },
-    { anim: playerAnimations.Pistol_StrafeRunLeftLoop, x: -6.48, y: 0 },
-    { anim: playerAnimations.Pistol_StrafeRun45LeftLoop, x: -4.58, y: 4.58 },
-    { anim: playerAnimations.Pistol_StrafeRun135RightLoop, x: -4.34, y: -4.34 },
-]);
-
-const pistolCrouchMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.Pistol_Crouch_WalkBwd, x: 0, y: -2 },
-    { anim: playerAnimations.Pistol_Crouch_WalkFwd, x: 0, y: 2 },
-    { anim: playerAnimations.Pistol_Crouch_WalkLt, x: -2, y: 0 },
-    { anim: playerAnimations.Pistol_Crouch_WalkRt, x: 2, y: 0 },
-    { anim: playerAnimations.Pistol_CrouchLoop, x: 0, y: 0 },
-]);
-
-const pistolMovement = new AnimBlend(HumanJoints, [
-    { anim: pistolStandMovement, x: 0, y: 0 },
-    { anim: pistolCrouchMovement, x: 1, y: 0 }
-]);
-
 const aimOffset = new AnimBlend(HumanJoints, [
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_U.frames[0])), x: 0, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_D.frames[0])), x: 0, y: -1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_L.frames[0])), x: -1, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_R.frames[0])), x: 1, y: 0 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LD.frames[0])), x: -1, y: -1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_LU.frames[0])), x: -1, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RD.frames[0])), x: 1, y: -1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_RU.frames[0])), x: 1, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimations.Rifle_AO_C.frames[0], playerAnimations.Rifle_AO_C.frames[0])), x: 0, y: 0 },
-]);
-
-const defaultStandMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.RunFwdLoop, x: 0, y: 3.4 },
-    { anim: playerAnimations.RunBwdLoop, x: 0, y: -2.1 },
-    { anim: playerAnimations.RunRtLoop, x: 2.1, y: 0 },
-    { anim: playerAnimations.RunLtLoop, x: -2.1, y: 0 },
-    { anim: playerAnimations.RunStrafeRight45Loop, x: 2.4, y: 2.4 },
-    { anim: playerAnimations.RunStrafeRight135Loop, x: 1.5, y: -1.5 },
-    { anim: playerAnimations.RunStrafeLeft45Loop, x: -2.4, y: 2.4 },
-    { anim: playerAnimations.RunStrafeLeft135Loop, x: -1.5, y: -1.5 },
-    { anim: playerAnimations.WalkFwdLoop, x: 0, y: 1.5 },
-    { anim: playerAnimations.WalkBwdLoop, x: 0, y: -1.5 },
-    { anim: playerAnimations.StrafeRightLoop, x: -1.5, y: 0 },
-    { anim: playerAnimations.StrafeRight45Loop, x: 1.12, y: 1.12 },
-    { anim: playerAnimations.StrafeRight135Loop, x: 1.12, y: -1.12 },
-    { anim: playerAnimations.StrafeLeftLoop, x: -1.56, y: 0 },
-    { anim: playerAnimations.StrafeLeft45Loop, x: -1.12, y: 1.12 },
-    { anim: playerAnimations.StrafeLeft135Loop, x: -1.12, y: -1.12 },
-    { anim: playerAnimations.Idle_1, x: 0, y: 0 },
-]);
-
-const defaultCrouchMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.Crouch_WalkFwd_new, x: 0, y: 1.54 },
-    { anim: playerAnimations.Crouch_WalkBwd_new, x: 0, y: -1.74 },
-    { anim: playerAnimations.Crouch_WalkLt45_new, x: -1, y: 1 },
-    { anim: playerAnimations.Crouch_WalkLt135_new, x: -1.2, y: -1.2 },
-    { anim: playerAnimations.Crouch_WalkRt45_new, x: 1, y: 1 },
-    { anim: playerAnimations.Crouch_WalkRt135_new, x: 1, y: -1 },
-    { anim: playerAnimations.Crouch_WalkRt_new, x: 2, y: 0 },
-    { anim: playerAnimations.Crouch_WalkLt_new, x: -2, y: 0 },
-    { anim: playerAnimations.Crouch_Idle, x: 0, y: 0 },
-]);
-
-const defaultMovement = new AnimBlend(HumanJoints, [
-    { anim: defaultStandMovement, x: 0, y: 0 },
-    { anim: defaultCrouchMovement, x: 1, y: 0 }
-]);
-
-const hammerStandMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.SledgeHammer_Jog_Forward, x: 0, y: 3.5 },
-    { anim: playerAnimations.SledgeHammer_Jog_Backward, x: 0, y: -3.5},
-    { anim: playerAnimations.SledgeHammer_Jog_Right, x: 3.5, y: 0 },
-    { anim: playerAnimations.SledgeHammer_Jog_Left, x: -3.5, y: 0 },
-    { anim: playerAnimations.SledgeHammer_Jog_ForwardLeft, x: -2.56, y: 2.56 },
-    { anim: playerAnimations.SledgeHammer_Jog_ForwardRight, x: 2.56, y: 2.56 },
-    { anim: playerAnimations.SledgeHammer_Jog_BackwardLeft, x: -2.56, y: -2.56 },
-    { anim: playerAnimations.SledgeHammer_Jog_BackwardRight, x: 2.56, y: -2.56 },
-    { anim: playerAnimations.SledgeHammer_SprintFwdLoop, x: 0, y: 6 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Fwd_Stand_A, x: 0, y: 1.8 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Bwd_Stand_A, x: 0, y: -1.8 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Right_Stand_A, x: 1.8, y: 0 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Left_Stand_A, x: -1.8, y: 0 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Fwd_Left_Stand_A, x: -1.2, y: 1.2 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Fwd_Right_Stand_A, x: 1.2, y: 1.2 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Bwd_Left_Stand_A, x: -1.2, y: -1.2 },
-    { anim: playerAnimations.Player_Melee_Movement_Walk_Bwd_Right_Stand_A, x: 1.2, y: -1.2 },
-    { anim: playerAnimations.Sledgehammer_Stand_Idle, x: 0, y: 0 },
-]);
-
-const hammerCrouchMovement = new AnimBlend(HumanJoints, [
-    { anim: playerAnimations.SledgeHammer_Crouch_WalkBwd, x: 0, y: -2 },
-    { anim: playerAnimations.SledgeHammer_Crouch_WalkFwd, x: 0, y: 2 },
-    { anim: playerAnimations.SledgeHammer_Crouch_WalkLt, x: -2, y: 0 },
-    { anim: playerAnimations.SledgeHammer_Crouch_WalkRt, x: 2, y: 0 },
-    { anim: playerAnimations.Sledgehammer_Crouch_Idle, x: 0, y: 0 },
-]);
-
-const hammerMovement = new AnimBlend(HumanJoints, [
-    { anim: hammerStandMovement, x: 0, y: 0 },
-    { anim: hammerCrouchMovement, x: 1, y: 0 }
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_U.frames[0])), x: 0, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_D.frames[0])), x: 0, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_L.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_R.frames[0])), x: 1, y: 0 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_LD.frames[0])), x: -1, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_LU.frames[0])), x: -1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_RD.frames[0])), x: 1, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_RU.frames[0])), x: 1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_C.frames[0])), x: 0, y: 0 },
 ]);
 
 class PlayerModel  {
@@ -263,15 +108,17 @@ class PlayerModel  {
 
     handAttachment: Group;
     equipped: Group;
-    equippedItem?: Equippable;
+    equippedItem: { spec?: Equippable, model?: Model };
     equippedSlot?: InventorySlot;
     lastEquipped: number;
 
-    slots: Equippable[];
+    slots: { spec?: Equippable, model?: Model }[];
     backpack: Group;
     backpackAligns: Group[];
 
     lastState: State;
+
+    meleeArchetype: MeleeArchetype;
 
     constructor(color: Color) {
         this.root = new Group();
@@ -335,8 +182,9 @@ class PlayerModel  {
 
         this.slots = new Array(inventorySlots.length);
         this.backpackAligns = new Array(inventorySlots.length);
+        this.equippedItem = { spec: undefined, model: undefined };
         for (let i = 0; i < inventorySlots.length; ++i) {
-            this.slots[i] = { id: 0 };
+            this.slots[i] = { spec: undefined, model: undefined };
 
             this.backpackAligns[i] = new Group();
             this.backpack.add(this.backpackAligns[i]);
@@ -386,6 +234,8 @@ class PlayerModel  {
         this.leftIK.bone2 = new TrigonometricBone(this.skeleton.joints.leftLowerArm, 1);
         this.leftIK.bone3 = new TrigonometricBone(this.skeleton.joints.leftHand, 1);
         this.leftIK.initiate(this.leftIK.root);
+    
+        this.meleeArchetype = hammerArchetype;
     }
 
     public addToScene(scene: Scene) {
@@ -400,61 +250,42 @@ class PlayerModel  {
         this.root.visible = visible;
     }
 
-    private animVelocity<T extends string>(blend: AnimBlend<T>, vel: Vector3Like) {
-        blend.point.x = vel.x;
-        blend.point.y = vel.z;
-    }
-
     public update(time: number, player: Player, anim: PlayerAnimState): void {
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
 
-        this.animVelocity(rifleStandMovement, anim.velocity);
-        this.animVelocity(pistolStandMovement, anim.velocity);
-        this.animVelocity(hammerStandMovement, anim.velocity);
-        this.animVelocity(defaultStandMovement, anim.velocity);
+        animVelocity.x = anim.velocity.x;
+        animVelocity.y = anim.velocity.z;
+        animCrouch.x = anim.crouch;
 
-        this.animVelocity(rifleCrouchMovement, anim.velocity);
-        this.animVelocity(pistolCrouchMovement, anim.velocity);
-        this.animVelocity(hammerCrouchMovement, anim.velocity);
-        this.animVelocity(defaultCrouchMovement, anim.velocity);
-
-        rifleMovement.point.x = anim.crouch;
-        pistolMovement.point.x = anim.crouch;
-        defaultMovement.point.x = anim.crouch;
-
-        switch (this.equippedItem?.model?.archetype) {
-        case "pistol": this.skeleton.override(pistolMovement.sample(time)); break;
-        case "rifle": this.skeleton.override(rifleMovement.sample(time)); break;
-        case "hammer": this.skeleton.override(hammerMovement.sample(time)); break;
-        default: this.skeleton.override(defaultMovement.sample(time)); break;
+        switch (this.equippedItem.spec?.archetype) {
+        case "pistol": this.skeleton.override(playerAnimations.pistolMovement.sample(time)); break;
+        case "rifle": this.skeleton.override(playerAnimations.rifleMovement.sample(time)); break;
+        default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(time)); break;
         }
         
         const stateTime = time - (anim.lastStateTransition / 1000);
         switch(anim.state) {
         case "jump": {
-            switch (this.equippedItem?.model?.archetype) {
-            case "pistol": this.skeleton.override(playerAnimations.Pistol_Jump.sample(stateTime)); break;
-            case "rifle": this.skeleton.override(playerAnimations.Rifle_Jump.sample(stateTime)); break;
-            case "hammer": this.skeleton.override(playerAnimations.SledgeHammer_Jump.sample(stateTime)); break;
-            default: this.skeleton.override(playerAnimations.SledgeHammer_Jump.sample(stateTime)); break; // TODO(randomuserhi): change to knife
+            switch (this.equippedItem.spec?.archetype) {
+            case "pistol": this.skeleton.override(playerAnimationClips.Pistol_Jump.sample(stateTime)); break;
+            case "rifle": this.skeleton.override(playerAnimationClips.Rifle_Jump.sample(stateTime)); break;
+            default: this.skeleton.override(this.meleeArchetype.jumpAnim.sample(stateTime)); break;
             }
         } break;
         case "fall": {
-            switch (this.equippedItem?.model?.archetype) {
-            case "pistol": this.skeleton.override(playerAnimations.Pistol_Fall.sample(stateTime)); break;
-            case "rifle": this.skeleton.override(playerAnimations.Rifle_Fall.sample(stateTime)); break;
-            case "hammer": this.skeleton.override(playerAnimations.SledgeHammer_Fall.sample(stateTime)); break;
-            default: this.skeleton.override(playerAnimations.SledgeHammer_Fall.sample(stateTime)); break; // TODO(randomuserhi): change to knife
+            switch (this.equippedItem.spec?.archetype) {
+            case "pistol": this.skeleton.override(playerAnimationClips.Pistol_Fall.sample(stateTime)); break;
+            case "rifle": this.skeleton.override(playerAnimationClips.Rifle_Fall.sample(stateTime)); break;
+            default: this.skeleton.override(this.meleeArchetype.fallAnim.sample(stateTime)); break;
             }
         } break;
         case "land": {
             const isSlow = (Math.abs(anim.velocity.x) < 0.08 && Math.abs(anim.velocity.z) < 0.08);
             const blendWeight = 1 - Math.clamp01(stateTime / (isSlow ? 1 : 0.5));
-            switch (this.equippedItem?.model?.archetype) {
-            case "pistol": this.skeleton.blend(playerAnimations.Pistol_Land.sample(stateTime), blendWeight); break;
-            case "rifle": this.skeleton.blend(playerAnimations.Rifle_Land.sample(stateTime), blendWeight); break;
-            case "hammer": this.skeleton.blend(playerAnimations.SledgeHammer_Land.sample(stateTime), blendWeight); break;
-            default: this.skeleton.blend(playerAnimations.SledgeHammer_Land.sample(stateTime), blendWeight); break; // TODO(randomuserhi): change to knife
+            switch (this.equippedItem.spec?.archetype) {
+            case "pistol": this.skeleton.blend(playerAnimationClips.Pistol_Land.sample(stateTime), blendWeight); break;
+            case "rifle": this.skeleton.blend(playerAnimationClips.Rifle_Land.sample(stateTime), blendWeight); break;
+            default: this.skeleton.blend(this.meleeArchetype.landAnim.sample(stateTime), blendWeight); break;
             }
         } break;
         }
@@ -466,18 +297,11 @@ class PlayerModel  {
                 this.equipped.visible = equipTime > 0.5;
 
                 switch (this.equippedSlot) {
-                case "melee": {
-                    switch (this.equippedItem?.model?.archetype) {
-                    case "spear": this.skeleton.override(playerAnimations.Spear_Equip.sample(equipTime), upperBodyMask); break;
-                    case "bat":
-                    case "knife": this.skeleton.override(playerAnimations.Bat_Equip.sample(equipTime), upperBodyMask); break;
-                    default: this.skeleton.override(playerAnimations.Equip_Melee.sample(equipTime), upperBodyMask); break;
-                    }
-                } break;
-                case "main": this.skeleton.override(playerAnimations.Equip_Primary.sample(equipTime), upperBodyMask); break;
-                case "special": this.skeleton.override(playerAnimations.Equip_Secondary.sample(equipTime), upperBodyMask); break;
-                case "pack": this.skeleton.override(playerAnimations.ConsumablePack_Equip.sample(equipTime), upperBodyMask); break;
-                default: this.skeleton.override(playerAnimations.Equip_Generic.sample(equipTime), upperBodyMask); break;
+                case "melee": this.skeleton.override(this.meleeArchetype.equipAnim.sample(equipTime), upperBodyMask); break;
+                case "main": this.skeleton.override(playerAnimationClips.Equip_Primary.sample(equipTime), upperBodyMask); break;
+                case "special": this.skeleton.override(playerAnimationClips.Equip_Secondary.sample(equipTime), upperBodyMask); break;
+                case "pack": this.skeleton.override(playerAnimationClips.ConsumablePack_Equip.sample(equipTime), upperBodyMask); break;
+                default: this.skeleton.override(playerAnimationClips.Equip_Generic.sample(equipTime), upperBodyMask); break;
                 }
             } else {
                 this.equipped.visible = true;
@@ -539,12 +363,12 @@ class PlayerModel  {
                 this.aimTarget.position.y += anim.targetLookDir.y * dist;
                 this.aimTarget.position.z += anim.targetLookDir.z * dist;
 
-                switch (this.equippedItem?.model?.archetype) {
+                switch (this.equippedItem.spec?.archetype) {
                 case "pistol":
                 case "rifle": {
                     this.aimIK.update();
 
-                    if (this.equippedItem !== undefined) {
+                    if (this.equippedItem !== undefined && this.equippedItem.model !== undefined) {
                         this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
                         this.leftIK.update();
                     }
@@ -688,7 +512,7 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
     public updateBackpack(player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
-        this.equippedItem = undefined;
+        this.equippedItem.spec = undefined;
         this.equippedSlot = undefined;
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
@@ -696,13 +520,24 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
                 item.model.group.removeFromParent();
             }
 
-            if (item.model === undefined || backpack.slots[i] !== item.id) {
-                item.id = backpack.slots[i];
-                item.model = specification.equippable.get(backpack.slots[i])?.model();
+            if (item.model === undefined || backpack.slots[i] !== item.spec?.id) {
+                item.spec = specification.equippable.get(backpack.slots[i]);
+                if (item.spec !== undefined) {
+                    switch (item.spec.archetype) {
+                    case "melee": {
+                        if (specification.meleeArchetype.has(item.spec.id)) {
+                            const archetype = specification.meleeArchetype.get(item.spec.id)!;
+                            this.meleeArchetype = archetype;
+                        }
+                    } break;
+                    }
+                }
+
+                item.model = item.spec?.model();
             }
 
             if (item.model !== undefined) {
-                if (item.id === player.equippedId) {
+                if (item.spec?.id === player.equippedId) {
                     this.equipped.add(item.model.group);
                     this.equippedItem = item;
                     this.equippedSlot = inventorySlots[i];

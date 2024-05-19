@@ -1,13 +1,5 @@
 import { Group, Object3D, QuaternionLike, Vector3Like } from "three";
 
-export type Archetype = 
-    "hammer" |
-    "spear" |
-    "knife" |
-    "bat" |
-    "pistol" |
-    "rifle";
-
 export abstract class Model {
     group: Group;
 
@@ -19,7 +11,6 @@ export abstract class Model {
     equipOffsetPos: Vector3Like;
     equipOffsetRot: QuaternionLike;
 
-    archetype: Archetype;
     leftHand: Object3D;
 
     constructor() {
@@ -40,16 +31,10 @@ export abstract class Model {
             x: 0, y: 0, z: 0, w: 1
         };
 
-        this.archetype = "rifle";
         this.leftHand = new Object3D();
         this.group.add(this.leftHand);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars 
     public update(data: any): void {}
-}
-
-export interface Equippable {
-    id: number;
-    model?: Model;
 }
