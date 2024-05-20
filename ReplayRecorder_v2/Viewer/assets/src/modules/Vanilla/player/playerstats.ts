@@ -59,6 +59,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             status.consumableAmmo = data.consumableAmmo;
             status.resourceAmmo = data.resourceAmmo;
 
+            const time = snapshot.time();
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
             if (players.has(id)) {
                 const player = players.get(id)!;
@@ -66,9 +67,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
 
                 const playerStats = getPlayerStats(player.snet, statTracker);
                 if (playerStats._downedTimeStamp === undefined && status.health <= 0) {
-                    playerStats._downedTimeStamp = snapshot.time();
+                    playerStats._downedTimeStamp = time;
                 } else if (playerStats._downedTimeStamp !== undefined && status.health > 0) {
-                    playerStats.timeSpentDowned += snapshot.time() - playerStats._downedTimeStamp;
+                    playerStats.timeSpentDowned += time - playerStats._downedTimeStamp;
                     playerStats._downedTimeStamp = undefined;
                 }
             }

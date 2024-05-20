@@ -12,7 +12,7 @@ import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
-import { PlayerAnimState, State } from "./animation.js";
+import { PlayerAnimState } from "./animation.js";
 import { Player } from "./player.js";
 import { InventorySlot, PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
 import { PlayerStats } from "./playerstats.js";
@@ -139,8 +139,6 @@ class PlayerModel  {
     backpack: Group;
     backpackAligns: Group[];
 
-    lastState: State;
-
     lastArchetype: Archetype;
     meleeArchetype: MeleeArchetype;
     consumableArchetype?: ConsumableArchetype;
@@ -238,7 +236,6 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("consumable")!].scale.set(0.7, 0.7, 0.7);
 
         this.lastEquipped = 0;
-        this.lastState = "stand";
 
         this.aimIK = new IKSolverAim();
         this.aimIK.root = this.skeleton.root;
@@ -283,7 +280,13 @@ class PlayerModel  {
     }
 
     public update(time: number, player: Player, anim: PlayerAnimState): void {
+        this.animate(time, player, anim);
+        this.render(player);
+    }
+    
+    public animate(time: number, player: Player, anim: PlayerAnimState): void {
         this.equippedItem.model?.reset();
+        this.equipped.visible = true;
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
 
@@ -310,6 +313,24 @@ class PlayerModel  {
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(time), blend); break;
             }
         }
+
+        const downedTime = time - (anim.lastDowned / 1000);
+        const reviveTime = time - (anim.lastRevive / 1000);
+        if (reviveTime < playerAnimationClips.Revive.duration) {
+            this.equipped.visible = false;
+            
+            this.skeleton.override(playerAnimationClips.Revive.sample(reviveTime));
+            return;
+        } else if (anim.isDowned) {
+            this.equipped.visible = false;
+            
+            if (downedTime < playerAnimationClips.Die.duration) {
+                this.skeleton.override(playerAnimationClips.Die.sample(downedTime));
+            } else {
+                this.skeleton.override(playerAnimationClips.Dead.sample(downedTime));
+            }
+            return;
+        } 
         
         const stateTime = time - (anim.lastStateTransition / 1000);
         switch(anim.state) {
@@ -337,6 +358,15 @@ class PlayerModel  {
             default: this.skeleton.blend(this.meleeArchetype.landAnim.sample(stateTime), blendWeight); break;
             }
         } break;
+        case "climbLadder": {
+            const blendWeight = Math.clamp01(stateTime / 0.2);
+            this.skeleton.blend(playerAnimations.ladderMovement.sample(stateTime), blendWeight);
+        } break;
+        }
+
+        if (anim.state === "climbLadder") {
+            this.equipped.visible = false;
+            return;
         }
 
         const shoveTime = time - (anim.lastShoveTime / 1000);
@@ -411,10 +441,10 @@ class PlayerModel  {
                 const num6 = Pod.Vec.dot(vector3, rhs);
                 const num7 = Pod.Vec.dot(vector3, vector4);
                 const value = ((num6 < 0) ? ((!(num7 < 0)) ? ((0 - Math.asin(0 - num6)) / num4) : (-1)) : ((!(num7 < 0)) ? (Math.asin(num6) / num4) : 1));
-    
+
                 aimOffset.point.y = -num5;
                 aimOffset.point.x = value;
-    
+
                 this.skeleton.additive(aimOffset.sample(time), 1);
             } break;
             }
@@ -540,9 +570,8 @@ class PlayerModel  {
             const t = time - (anim.lastStateTransition / 1000);
             const blend = Math.clamp01(t / 0.2);
             this.skeleton.blend(playerAnimationClips.TerminalConsole_Idle.sample(t), blend);
+            return;
         }
-
-        this.render(player);
     }
 
     public render(player: Player): void {

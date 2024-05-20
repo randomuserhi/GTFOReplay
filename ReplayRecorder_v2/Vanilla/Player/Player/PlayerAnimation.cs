@@ -35,11 +35,35 @@ namespace Vanilla.Player {
         }
     }
 
+    [ReplayData("Vanilla.Player.Animation.Revive", "0.0.1")]
+    internal class rRevive : Id {
+        public rRevive(PlayerAgent player) : base(player.GlobalID) {
+        }
+    }
+
+    [ReplayData("Vanilla.Player.Animation.Downed", "0.0.1")]
+    internal class rDowned : Id {
+        public rDowned(PlayerAgent player) : base(player.GlobalID) {
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Player.Animation", "0.0.1")]
     internal class rPlayerAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(PLOC_Downed), nameof(PLOC_Downed.OnPlayerRevived))]
+            [HarmonyPrefix]
+            private static void Prefix_OnPlayerRevived(PLOC_Downed __instance) {
+                Replay.Trigger(new rRevive(__instance.m_owner));
+            }
+
+            [HarmonyPatch(typeof(PLOC_Downed), nameof(PLOC_Downed.CommonEnter))]
+            [HarmonyPrefix]
+            private static void Prefix_CommonEnter(PLOC_Downed __instance) {
+                Replay.Trigger(new rDowned(__instance.m_owner));
+            }
+
             [HarmonyPatch(typeof(PlayerSync), nameof(PlayerSync.SendThrowStatus))]
             [HarmonyPrefix]
             private static void Prefix_SendThrowStatus(PlayerSync __instance, pPlayerThrowStatus.StatusEnum status, bool applyLocally) {

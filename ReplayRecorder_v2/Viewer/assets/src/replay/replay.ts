@@ -119,6 +119,7 @@ export class Replay {
             if (module === undefined) throw new UnknownModuleType(`Unknown module type '${type}'.`);
             const timeOfEvent = snapshot.time - delta;
             const runEvent = time >= timeOfEvent;
+            const adjustedAPI = { ...api, time() { return timeOfEvent; }, tick() { return snapshot.tick; } };
             if (module.typename === "ReplayRecorder.Spawn" || module.typename === "ReplayRecorder.Despawn") {
                 // Special case for spawn events
                 const isSpawn = module.typename === "ReplayRecorder.Spawn";
@@ -127,7 +128,7 @@ export class Replay {
                 if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
 
                 if (runEvent) {
-                    exec(data, this, { ...api, time() { return timeOfEvent; }, tick() { return snapshot.tick; } });
+                    exec(data, this, adjustedAPI);
                     if (isSpawn || isDespawn) {
                         const dynamicType: number = (data as any).type;
                         const id = (data as any).id;
@@ -159,7 +160,7 @@ export class Replay {
             } else if (runEvent) {
                 const exec = ModuleLoader.getEvent(module as any)?.exec;
                 if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
-                exec(data as never, api);
+                exec(data as never, adjustedAPI);
             }
         }
 

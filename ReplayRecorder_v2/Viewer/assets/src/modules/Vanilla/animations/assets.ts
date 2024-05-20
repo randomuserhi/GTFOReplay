@@ -158,6 +158,8 @@ import { AnimBlend } from "./animation.js";
 import { Consumable_Throw } from "./assets/Consumable_Throw.js";
 import { Consumable_Throw_Charge } from "./assets/Consumable_Throw_Charge.js";
 import { Consumable_Throw_Charge_Idle } from "./assets/Consumable_Throw_Charge_Idle.js";
+import { Dead } from "./assets/Dead.js";
+import { Die } from "./assets/Die.js";
 import { Fogrepeller_Throw } from "./assets/Fogrepeller_Throw.js";
 import { Fogrepeller_Throw_Charge } from "./assets/Fogrepeller_Throw_Charge.js";
 import { Fogrepeller_Throw_Charge_Idle } from "./assets/Fogrepeller_Throw_Charge_Idle.js";
@@ -166,6 +168,11 @@ import { Front_Revolver_1_reload } from "./assets/Front_Revolver_1_reload.js";
 import { Front_Revolver_2_Reload } from "./assets/Front_Revolver_2_Reload.js";
 import { Front_Revolver_2_Reload_0 } from "./assets/Front_Revolver_2_Reload_0.js";
 import { Pistol_Recoil } from "./assets/Pistol_Recoil.js";
+import { Player_Climb_Ladder_Down_A } from "./assets/Player_Climb_Ladder_Down_A.js";
+import { Player_Climb_Ladder_Idle_A } from "./assets/Player_Climb_Ladder_Idle_A.js";
+import { Player_Climb_Ladder_Up_A } from "./assets/Player_Climb_Ladder_Up_A.js";
+import { Player_Reviving_Upperbody_Loop } from "./assets/Player_Reviving_Upperbody_Loop.js";
+import { Revive } from "./assets/Revive.js";
 import { Revolver_Front_1_Reload_1 } from "./assets/Revolver_Front_1_Reload_1.js";
 import { Rifle_Recoil } from "./assets/Rifle_Recoil.js";
 import { Sledgehammer_Crouch_Shove } from "./assets/Sledgehammer_Crouch_Shove.js";
@@ -354,7 +361,14 @@ export const playerAnimationClips = {
     Stock_Pistol_1_reload,
     Front_Revolver_1_reload,
     Front_Revolver_2_Reload,
-    TerminalConsole_Idle
+    TerminalConsole_Idle,
+    Player_Climb_Ladder_Idle_A,
+    Player_Climb_Ladder_Down_A,
+    Player_Climb_Ladder_Up_A,
+    Revive,
+    Die,
+    Dead,
+    Player_Reviving_Upperbody_Loop
 } as const;
 export type PlayerAnimationClip = keyof typeof playerAnimationClips;
 
@@ -489,6 +503,12 @@ export const defaultMovement = new AnimBlend(HumanJoints, [
     { anim: defaultCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
+export const ladderMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Player_Climb_Ladder_Up_A, x: 0, y: 0.5 },
+    { anim: playerAnimationClips.Player_Climb_Ladder_Idle_A, x: 0, y: 0 },
+    { anim: playerAnimationClips.Player_Climb_Ladder_Down_A, x: 0, y: -0.5 },
+], animVelocity);
+
 export const hammerStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.SledgeHammer_Jog_Forward, x: 0, y: 3.5 },
     { anim: playerAnimationClips.SledgeHammer_Jog_Backward, x: 0, y: -3.5},
@@ -565,7 +585,8 @@ export const playerAnimations = {
     hammerChargeIdle,
     hammerRelease,
     hammerSwing,
-    hammerShove
+    hammerShove,
+    ladderMovement
 } as const;
 export type PlayerAnimation = keyof typeof playerAnimations;
 

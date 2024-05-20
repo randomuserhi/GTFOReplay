@@ -41,6 +41,14 @@ declare module "../../../replay/moduleloader.js" {
             "Vanilla.Player.Animation.ConsumableThrow": {
                 owner: number;
             }
+
+            "Vanilla.Player.Animation.Revive": {
+                owner: number;
+            }
+
+            "Vanilla.Player.Animation.Downed": {
+                owner: number;
+            }
         }
 
         interface Data {
@@ -107,6 +115,9 @@ export interface PlayerAnimState {
     lastReloadTransition: number;
     lastShot: number;
     lastShoveTime: number;
+    lastRevive: number;
+    isDowned: boolean;
+    lastDowned: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
@@ -176,7 +187,10 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 lastMeleeChargingTransition: -Infinity,
                 lastThrowChargingTransition: -Infinity,
                 lastReloadTransition: -Infinity,
-                lastShot: -Infinity
+                lastShot: -Infinity,
+                lastRevive: -Infinity,
+                lastDowned: -Infinity,
+                isDowned: false
             });
         }
     },
@@ -239,6 +253,40 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.ConsumableThrow", "0.0.1", 
         if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
         anim.lastThrowTime = snapshot.time();
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Player.Animation.Revive", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            owner: await BitHelper.readInt(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        
+        const id = data.owner;
+        if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastRevive = snapshot.time();
+        anim.isDowned = false;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Player.Animation.Downed", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            owner: await BitHelper.readInt(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        
+        const id = data.owner;
+        if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastDowned = snapshot.time();
+        anim.isDowned = true;
     }
 });
 
