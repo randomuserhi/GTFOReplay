@@ -106,6 +106,7 @@ export interface PlayerAnimState {
     isReloading: boolean;
     lastReloadTransition: number;
     lastShot: number;
+    lastShoveTime: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
@@ -170,6 +171,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 lastStateTransition: -Infinity,
                 lastSwingTime: -Infinity,
                 lastThrowTime: -Infinity,
+                lastShoveTime: -Infinity,
                 chargedSwing: false,
                 lastMeleeChargingTransition: -Infinity,
                 lastThrowChargingTransition: -Infinity,
@@ -220,7 +222,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.MeleeShove", "0.0.1", {
         const id = data.owner;
         if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
-        anim.lastThrowTime = snapshot.time();
+        anim.lastShoveTime = snapshot.time();
     }
 });
 

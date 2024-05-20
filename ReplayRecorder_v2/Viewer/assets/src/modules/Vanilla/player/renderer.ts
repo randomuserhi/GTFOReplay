@@ -11,7 +11,7 @@ import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
-import { ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
+import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 import { PlayerAnimState, State } from "./animation.js";
 import { Player } from "./player.js";
 import { InventorySlot, PlayerBackpack, inventorySlotMap, inventorySlots } from "./playerbackpack.js";
@@ -141,6 +141,7 @@ class PlayerModel  {
 
     lastState: State;
 
+    lastArchetype: Archetype;
     meleeArchetype: MeleeArchetype;
     consumableArchetype?: ConsumableArchetype;
     gearArchetype?: GearArchetype;
@@ -265,6 +266,7 @@ class PlayerModel  {
         this.leftIK.bone3 = new TrigonometricBone(this.skeleton.joints.leftHand, 1);
         this.leftIK.initiate(this.leftIK.root);
     
+        this.lastArchetype = "rifle";
         this.meleeArchetype = hammerArchetype;
     }
 
@@ -289,10 +291,24 @@ class PlayerModel  {
         animVelocity.y = anim.velocity.z;
         animCrouch.x = anim.crouch;
 
-        switch (this.equippedItem.spec?.archetype) {
+        const equipTime = time - (player.lastEquippedTime / 1000);
+        switch (this.lastArchetype) {
         case "pistol": this.skeleton.override(playerAnimations.pistolMovement.sample(time)); break;
         case "rifle": this.skeleton.override(playerAnimations.rifleMovement.sample(time)); break;
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(time)); break;
+        }
+        
+        if (this.lastArchetype !== this.equippedItem.spec?.archetype) {
+            const blend = Math.clamp01(equipTime / 0.2);
+            if (blend === 1 && this.equippedItem.spec !== undefined) {
+                this.lastArchetype = this.equippedItem.spec?.archetype;
+            }
+
+            switch (this.equippedItem.spec?.archetype) {
+            case "pistol": this.skeleton.blend(playerAnimations.pistolMovement.sample(time), blend); break;
+            case "rifle": this.skeleton.blend(playerAnimations.rifleMovement.sample(time), blend); break;
+            default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(time), blend); break;
+            }
         }
         
         const stateTime = time - (anim.lastStateTransition / 1000);
@@ -323,10 +339,18 @@ class PlayerModel  {
         } break;
         }
 
+        const shoveTime = time - (anim.lastShoveTime / 1000);
+        const shoveDuration = this.equippedItem.spec?.archetype === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
+        const isShoving = shoveTime < shoveDuration;
+        if (isShoving) {
+            this.equipped.visible = true;
+            this.skeleton.blend(
+                this.meleeArchetype.shoveAnim.sample(shoveTime), Math.clamp01(shoveTime / 0.2), upperBodyMask);
+        }
+
         if (this.equippedItem !== undefined) {
-            const equipTime = time - (player.lastEquippedTime / 1000);
             const equipDuration = 0.5;
-            const isEquipping = equipTime < equipDuration;
+            const isEquipping = equipTime < equipDuration && !isShoving;
             if (isEquipping) {
                 this.equipped.visible = equipTime > equipDuration / 2.0;
                 const blend = Math.clamp01(equipTime / 0.2);
@@ -447,10 +471,7 @@ class PlayerModel  {
                     }
                 } break;
                 case "melee": {
-                    const shoveTime = time - (anim.lastThrowTime / 1000);
-                    if (shoveTime < this.meleeArchetype.shoveAnim.duration) {
-                        this.skeleton.blend(this.meleeArchetype.shoveAnim.sample(shoveTime), Math.clamp01(shoveTime / 0.2), upperBodyMask);
-                    } else {
+                    if (!isShoving) {
                         const swingTime = time - (anim.lastSwingTime / 1000);
                         let swingAnim: HumanAnimation | undefined = undefined;
                         if (anim.chargedSwing && swingTime < this.meleeArchetype.releaseAnim.duration) {
@@ -513,6 +534,12 @@ class PlayerModel  {
                 } break;
                 }
             }   
+        }
+
+        if (anim.state === "onTerminal") {
+            const t = time - (anim.lastStateTransition / 1000);
+            const blend = Math.clamp01(t / 0.2);
+            this.skeleton.blend(playerAnimationClips.TerminalConsole_Idle.sample(t), blend);
         }
 
         this.render(player);

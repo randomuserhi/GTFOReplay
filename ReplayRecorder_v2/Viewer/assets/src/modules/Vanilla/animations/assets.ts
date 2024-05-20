@@ -176,6 +176,7 @@ import { Sledgehammer_Stand_SwingLeft_Charge } from "./assets/Sledgehammer_Stand
 import { Sledgehammer_Stand_SwingLeft_Charge_Idle } from "./assets/Sledgehammer_Stand_SwingLeft_Charge_Idle.js";
 import { Sledgehammer_Stand_SwingLeft_Charge_Release } from "./assets/Sledgehammer_Stand_SwingLeft_Charge_Release.js";
 import { Stock_Pistol_1_reload } from "./assets/Stock_Pistol_1_reload.js";
+import { TerminalConsole_Idle } from "./assets/TerminalConsole_Idle.js";
 import { HumanJoints } from "./human.js";
 
 export const playerAnimationClips = {
@@ -352,7 +353,8 @@ export const playerAnimationClips = {
     Rifle_Recoil,
     Stock_Pistol_1_reload,
     Front_Revolver_1_reload,
-    Front_Revolver_2_Reload
+    Front_Revolver_2_Reload,
+    TerminalConsole_Idle
 } as const;
 export type PlayerAnimationClip = keyof typeof playerAnimationClips;
 
