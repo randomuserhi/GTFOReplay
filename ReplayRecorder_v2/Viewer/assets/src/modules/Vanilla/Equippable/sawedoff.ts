@@ -1,12 +1,10 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial, QuaternionLike } from "three";
+import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial } from "three";
 import { Model } from "./equippable.js";
 
 const box = new BoxGeometry(1, 1, 1);
 const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5);
 
 export class SawedOff extends Model {
-    fold: Group;
-
     constructor() {
         super();
         this.fold = new Group();
@@ -49,9 +47,5 @@ export class SawedOff extends Model {
         this.group.add(gun);
         gun.scale.set(1.1, 1.1, 1.1);
         gun.position.set(0, 0, 0);
-    }
-
-    public update(foldRot: QuaternionLike): void {
-        this.fold.quaternion.set(foldRot.x, foldRot.y, foldRot.z, foldRot.w);
     }
 }

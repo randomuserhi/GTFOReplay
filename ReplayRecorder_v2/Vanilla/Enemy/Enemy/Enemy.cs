@@ -9,10 +9,9 @@ namespace Vanilla.Enemy {
         public static void Spawn(EnemyAgent enemy) {
             if (!Replay.Active) return;
 
-            bool isValidModel = rEnemyModel.isValid(enemy);
-            Replay.Spawn(new rEnemy(enemy, isValidModel));
+            Replay.Spawn(new rEnemy(enemy));
             Replay.Spawn(new rEnemyStats(enemy));
-            if (isValidModel) Replay.Spawn(new rEnemyModel(enemy));
+            Replay.Spawn(new rEnemyAnimation(enemy));
         }
 
         public static void Despawn(EnemyAgent enemy) {
@@ -20,24 +19,20 @@ namespace Vanilla.Enemy {
 
             Replay.TryDespawn<rEnemy>(enemy.GlobalID);
             Replay.TryDespawn<rEnemyStats>(enemy.GlobalID);
-            Replay.TryDespawn<rEnemyModel>(enemy.GlobalID);
+            Replay.TryDespawn<rEnemyAnimation>(enemy.GlobalID);
         }
     }
 
     [ReplayData("Vanilla.Enemy", "0.0.1")]
     internal class rEnemy : DynamicTransform {
         public EnemyAgent agent;
-        bool hasSkeleton;
 
-        public rEnemy(EnemyAgent enemy, bool hasSkeleton) : base(enemy.GlobalID, new AgentTransform(enemy)) {
+        public rEnemy(EnemyAgent enemy) : base(enemy.GlobalID, new AgentTransform(enemy)) {
             agent = enemy;
-            this.hasSkeleton = hasSkeleton;
         }
 
         public override void Spawn(ByteBuffer buffer) {
             base.Spawn(buffer);
-            BitHelper.WriteBytes((ushort)agent.Locomotion.AnimHandleName, buffer);
-            BitHelper.WriteBytes(hasSkeleton, buffer);
             BitHelper.WriteBytes(GTFOSpecification.GetEnemyType(agent.EnemyData.persistentID), buffer);
         }
     }

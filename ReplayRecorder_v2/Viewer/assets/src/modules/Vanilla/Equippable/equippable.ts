@@ -1,7 +1,9 @@
 import { Group, Object3D, QuaternionLike, Vector3Like } from "three";
+import { GearFoldAvatar } from "../animations/gearfold";
 
 export abstract class Model {
     group: Group;
+    fold?: Group;
 
     baseFoldRot: QuaternionLike;
 
@@ -11,10 +13,12 @@ export abstract class Model {
     equipOffsetPos: Vector3Like;
     equipOffsetRot: QuaternionLike;
 
+    leftHandGrip: Vector3Like;
     leftHand: Object3D;
 
     constructor() {
         this.group = new Group;
+        this.group.add(this.leftHand = new Object3D());
         this.offsetPos = {
             x: 0, y: 0, z: 0
         };
@@ -30,11 +34,18 @@ export abstract class Model {
         this.equipOffsetRot = {
             x: 0, y: 0, z: 0, w: 1
         };
-
-        this.leftHand = new Object3D();
-        this.group.add(this.leftHand);
+        this.leftHandGrip = {
+            x: 0, y: 0, z: 0
+        };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars 
-    public update(data: any): void {}
+    public update(gearfold: GearFoldAvatar): void {
+        this.fold?.quaternion.copy(gearfold.joints.fold);
+        this.leftHand?.position.copy(gearfold.root);
+    }
+
+    public reset() {
+        this.fold?.quaternion.copy(this.baseFoldRot);
+        this.leftHand?.position.copy(this.leftHandGrip);
+    }
 }

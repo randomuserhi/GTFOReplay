@@ -27,13 +27,15 @@ export type InventorySlot =
     "main"  |
     "special" |
     "tool" |
-    "pack";
+    "pack" |
+    "consumable";
 export const inventorySlots: InventorySlot[] = [
     "melee",
     "main",
     "special",
     "tool",
-    "pack"
+    "pack",
+    "consumable"
 ];
 export const inventorySlotMap: Map<InventorySlot, number> = new Map([...inventorySlots.entries()].map(e => [e[1], e[0]]));
 export class PlayerBackpack {

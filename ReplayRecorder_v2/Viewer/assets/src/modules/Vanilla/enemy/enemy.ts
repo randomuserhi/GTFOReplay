@@ -1,10 +1,14 @@
-import { Color, Group, Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
+import { Color, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, SphereGeometry, Vector3 } from "three";
 import * as BitHelper from "../../../replay/bithelper.js";
+import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
+import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
+import { animCrouch, animVelocity, playerAnimations } from "../animations/assets.js";
+import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { createDeathCross } from "../deathcross.js";
-import { Skeleton, SkeletonModel } from "../humanmodel.js";
+import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { specification } from "../specification.js";
 import { Damage } from "../stattracker/damage.js";
 import { StatTracker, getPlayerStats, isPlayer } from "../stattracker/stats.js";
@@ -18,16 +22,8 @@ declare module "../../../replay/moduleloader.js" {
                     dimension: number;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
-                    animFlags: number;
-                    hasSkeleton: boolean;
                     type: number;
                 };
-                despawn: void;
-            };
-
-            "Vanilla.Enemy.Model": {
-                parse: Skeleton;
-                spawn: Skeleton;
                 despawn: void;
             };
 
@@ -46,6 +42,17 @@ declare module "../../../replay/moduleloader.js" {
                 };
                 despawn: void;
             };
+
+            "Vanilla.Enemy.Animation": {
+                parse: {
+                    velocity: Pod.Vector;
+                };
+                spawn: {
+                    velocity: Pod.Vector;
+                    scale: number;
+                };
+                despawn: void;
+            }
         }
     
         interface Events {
@@ -63,7 +70,7 @@ declare module "../../../replay/moduleloader.js" {
         interface Data {
             "Vanilla.Enemy": Map<number, Enemy>;
             "Vanilla.Enemy.Cache": Map<number, EnemyCache>; // Stores enemies that have been despawned so they can be referenced by late events. E.g Damage Events recieved late due to ping.
-            "Vanilla.Enemy.Model": Map<number, Skeleton>;
+            "Vanilla.Enemy.Animation": Map<number, EnemyAnimState>;
             "Vanilla.Enemy.LimbCustom": Map<number, LimbCustom>;
         }
     }
@@ -97,11 +104,9 @@ export interface EnemyCache {
 }
 
 export interface Enemy extends DynamicTransform {
-    animFlags: number;
     health: number;
     state: EnemyState;
     head: boolean;
-    hasSkeleton: boolean;
     type: number;
     players: Set<bigint>;
     lastHit?: Damage;
@@ -126,8 +131,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
-                animFlags: await BitHelper.readUShort(data),
-                hasSkeleton: await BitHelper.readBool(data),
                 type: await BitHelper.readUShort(data)
             };
             return result;
@@ -238,44 +241,6 @@ ModuleLoader.registerTick((snapshot) => {
     }
 });
 
-
-ModuleLoader.registerDynamic("Vanilla.Enemy.Model", "0.0.1", {
-    main: {
-        parse: async (data) => {
-            const result = await Skeleton.parse(data);
-            return result;
-        }, 
-        exec: (id, data, snapshot, lerp) => {
-            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
-    
-            if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' was not found.`);
-            Skeleton.lerp(skeletons.get(id)!, data, lerp);
-        }
-    },
-    spawn: {
-        parse: async (data) => {
-            const result = await Skeleton.parse(data);
-            return result;
-        },
-        exec: (id, data, snapshot) => {
-            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
-        
-            if (skeletons.has(id)) throw new DuplicateDynamic(`Skeleton of id '${id}' already exists.`);
-            skeletons.set(id, data);
-        }
-    },
-    despawn: {
-        parse: async () => {
-        }, 
-        exec: (id, data, snapshot) => {
-            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
-            
-            if (!skeletons.has(id)) throw new DynamicNotFound(`Skeleton of id '${id}' did not exist.`);
-            skeletons.delete(id);
-        }
-    }
-});
-
 ModuleLoader.registerEvent("Vanilla.Enemy.LimbDestruction", "0.0.1", {
     parse: async (data) => {
         return {
@@ -371,6 +336,66 @@ export class DuplicateEnemy extends Error {
     }
 }
 
+export interface EnemyAnimState {
+    velocity: Pod.Vector;
+    scale: number;
+}
+
+ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
+    main: {
+        parse: async (data) => {
+            return {
+                velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
+            };
+        }, 
+        exec: (id, data, snapshot, lerp) => {
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+    
+            if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+            const anim = anims.get(id)!;
+            Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
+        }
+    },
+    spawn: {
+        parse: async (data) => {
+            return {
+                velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
+                scale: await BitHelper.readHalf(data)
+            };
+        },
+        exec: (id, data, snapshot) => {
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+            if (anims.has(id)) throw new DuplicateAnim(`EnemyAnim of id '${id}' already exists.`);
+            anims.set(id, { 
+                ...data
+            });
+        }
+    },
+    despawn: {
+        parse: async () => {
+        }, 
+        exec: (id, data, snapshot) => {
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+
+            if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' did not exist.`);
+            anims.delete(id);
+        }
+    }
+});
+
+export class AnimNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+export class DuplicateAnim extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
 // --------------------------- RENDERING ---------------------------
 
 declare module "../../../replay/moduleloader.js" {
@@ -381,75 +406,189 @@ declare module "../../../replay/moduleloader.js" {
 
         interface RenderData {
             "Enemies": Map<number, EnemyModel>;
-            "Flyers": Map<number, FlyerModel>;
             "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
     }
 }
 
-export namespace AnimFlags {
-    export const Unspecified = 1;
-    export const EnemyCripple = 2;
-    export const EnemyRunner = 4;
-    export const EnemyFiddler = 8;
-    export const EnemyLow = 0x10;
-    export const EnemyCrawlFlip = 0x20;
-    export const EnemyCrawl = 0x40;
-    export const EnemyGiant = 0x80;
-    export const EnemyBig = 0x100;
-    export const EnemyExploder = 0x200;
-    export const EnemyBirtherCrawlFlip = 0x400;
-    export const EnemyPouncer = 0x800;
-}
-
-class EnemyModel extends SkeletonModel {
-    public morph(enemy: Enemy): void {
-        this.showHead = enemy.head;
-
-        let color = 0xaa0000;
-        switch (enemy.state) {
-        case "Stagger": color = 0xffffff; break;
-        case "Glue": color = 0x0000ff; break;
-        }     
-        this.color.setHex(color);
-        
-        this.group.position.set(enemy.position.x, enemy.position.y, enemy.position.z);
+const worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
+function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: HumanSkeleton): AvatarStructure<HumanJoints, Vector3> {
+    for (const key of skeleton.keys) {
+        skeleton.joints[key].getWorldPosition(worldPos[key]);
     }
+
+    return worldPos;
 }
 
-const sphereGeometry = new SphereGeometry(1, 10, 10);
+const bodyTop = Pod.Vec.zero();
+const bodyBottom = Pod.Vec.zero();
+const temp = new Vector3();
 
-// TODO(randomuserhi)
-class FlyerModel {
-    readonly group: Group;
+const headScale = new Vector3(0.15, 0.15, 0.15);
 
-    readonly body: Mesh;
-    
+const rot = new Quaternion();
+
+const radius = 0.05;
+const sM = new Vector3(radius, radius, radius);
+const scale = new Vector3(radius, radius, radius);
+
+class EnemyModel {
+    anchor: Object3D;
+    root: Object3D;
+
+    skeleton: HumanSkeleton;
+    color: Color;
+
+    head: number;
+    parts: number[];
+    points: number[];
+
     constructor(color: Color) {
-        this.group = new Group();
+        this.color = color;
 
-        const material = new MeshPhongMaterial({ color });
+        this.root = new Group();
+        this.anchor = new Group();
+        this.root.add(this.anchor);
+
+        this.skeleton = new AvatarSkeleton(HumanJoints, "hip");
+        this.anchor.add(this.skeleton.joints.hip);
+        this.skeleton.joints.hip.add(
+            this.skeleton.joints.spine0,
+            this.skeleton.joints.leftUpperLeg,
+            this.skeleton.joints.rightUpperLeg
+        );
+        this.skeleton.joints.leftUpperLeg.add(this.skeleton.joints.leftLowerLeg);
+        this.skeleton.joints.leftLowerLeg.add(this.skeleton.joints.leftFoot!);
+        this.skeleton.joints.rightUpperLeg.add(this.skeleton.joints.rightLowerLeg);
+        this.skeleton.joints.rightLowerLeg.add(this.skeleton.joints.rightFoot!);
+        this.skeleton.joints.spine0.add(this.skeleton.joints.spine1);
+        this.skeleton.joints.spine1.add(this.skeleton.joints.spine2);
+        this.skeleton.joints.spine2.add(
+            this.skeleton.joints.neck,
+            this.skeleton.joints.leftShoulder,
+            this.skeleton.joints.rightShoulder
+        );
+        this.skeleton.joints.leftShoulder.add(this.skeleton.joints.leftUpperArm);
+        this.skeleton.joints.leftUpperArm.add(this.skeleton.joints.leftLowerArm);
+        this.skeleton.joints.leftLowerArm.add(this.skeleton.joints.leftHand!);
+        this.skeleton.joints.rightShoulder.add(this.skeleton.joints.rightUpperArm);
+        this.skeleton.joints.rightUpperArm.add(this.skeleton.joints.rightLowerArm);
+        this.skeleton.joints.rightLowerArm.add(this.skeleton.joints.rightHand!);
+        this.skeleton.joints.neck.add(this.skeleton.joints.head);
         
-        this.body = new Mesh(sphereGeometry, material);
-        this.group.add(this.body);
-        this.body.scale.set(0.5, 0.5, 0.5);
+        this.skeleton.set(defaultHumanStructure);
+
+        this.parts = new Array(9);
+        this.points = new Array(14);
+        this.head = -1;
     }
 
-    public update(enemy: Enemy) {
-        this.group.quaternion.copy(enemy.rotation);
-        this.group.position.copy(enemy.position);
-    }
+    public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
+        time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
 
-    public setVisible(visible: boolean) {
-        this.group.visible = visible;
+        animVelocity.x = anim.velocity.x;
+        animVelocity.y = anim.velocity.z;
+        animCrouch.x = 0;
+
+        this.skeleton.override(playerAnimations.defaultMovement.sample(time));
+
+        this.render(enemy);
     }
 
     public addToScene(scene: Scene) {
-        scene.add(this.group);
+        scene.add(this.root);
     }
 
     public removeFromScene(scene: Scene) {
-        scene.remove(this.group);
+        scene.remove(this.root);
+    }
+
+    public setVisible(visible: boolean) {
+        this.root.visible = visible;
+    }
+
+    public render(enemy: Enemy): void {
+        this.root.position.copy(enemy.position);
+        this.anchor.quaternion.copy(enemy.rotation);
+
+        getWorldPos(worldPos, this.skeleton);
+
+        const pM = new Matrix4();
+        this.head = consume("Sphere.MeshPhong", pM.compose(worldPos.head, zeroQ, headScale), this.color);
+
+        let i = 0;
+        let j = 0;
+
+        Pod.Vec.copy(bodyTop, worldPos.neck);
+
+        Pod.Vec.mid(bodyBottom, worldPos.leftUpperLeg, worldPos.rightUpperLeg);
+
+        pM.lookAt(temp.copy(bodyBottom).sub(bodyTop), zeroV, upV);
+        scale.z = Pod.Vec.dist(bodyTop, bodyBottom);
+        pM.compose(temp.copy(bodyTop), rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(bodyTop, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(bodyBottom, zeroQ, sM), this.color);
+
+        pM.lookAt(temp.copy(worldPos.leftLowerArm).sub(worldPos.leftUpperArm), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.leftUpperArm, worldPos.leftLowerArm);
+        pM.compose(worldPos.leftUpperArm, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        pM.lookAt(temp.copy(worldPos.leftHand!).sub(worldPos.leftLowerArm), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.leftLowerArm, worldPos.leftHand!);
+        pM.compose(worldPos.leftLowerArm, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftUpperArm, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftLowerArm, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftHand, zeroQ, sM), this.color);
+
+        pM.lookAt(temp.copy(worldPos.rightLowerArm).sub(worldPos.rightUpperArm), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.rightUpperArm, worldPos.rightLowerArm);
+        pM.compose(worldPos.rightUpperArm, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        pM.lookAt(temp.copy(worldPos.rightHand!).sub(worldPos.rightLowerArm), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.rightLowerArm, worldPos.rightHand!);
+        pM.compose(worldPos.rightLowerArm, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperArm, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerArm, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightHand, zeroQ, sM), this.color);
+
+        pM.lookAt(temp.copy(worldPos.leftLowerLeg).sub(worldPos.leftUpperLeg), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.leftUpperLeg, worldPos.leftLowerLeg);
+        pM.compose(worldPos.leftUpperLeg, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        pM.lookAt(temp.copy(worldPos.leftFoot!).sub(worldPos.leftLowerLeg), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.leftLowerLeg, worldPos.leftFoot);
+        pM.compose(worldPos.leftLowerLeg, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftUpperLeg, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftLowerLeg, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftFoot, zeroQ, sM), this.color);
+
+        pM.lookAt(temp.copy(worldPos.rightLowerLeg).sub(worldPos.rightUpperLeg), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.rightUpperLeg, worldPos.rightLowerLeg);
+        pM.compose(worldPos.rightUpperLeg, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        pM.lookAt(temp.copy(worldPos.rightFoot!).sub(worldPos.rightLowerLeg), zeroV, upV);
+        scale.z = Pod.Vec.dist(worldPos.rightLowerLeg, worldPos.rightFoot!);
+        pM.compose(worldPos.rightLowerLeg, rot.setFromRotationMatrix(pM), scale);
+        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperLeg, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
+        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot, zeroQ, sM), this.color);
+    }
+
+    public dispose() {
+
     }
 }
 
@@ -458,53 +597,33 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
+            const time = snapshot.time();
             const models = renderer.getOrDefault("Enemies", () => new Map());
-            const flyers = renderer.getOrDefault("Flyers", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-            const skeletons = snapshot.getOrDefault("Vanilla.Enemy.Model", () => new Map());
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
             for (const [id, enemy] of enemies) {
-                const skeleton = skeletons.get(id);
-                // TODO(randomuserhi): Sometimes skeleton is created late
-                //                     => I need to check enemy type rather than just checking instance of skeleton
-                //                     => Or store when spawning an enemy whether it has a valid skeleton
-                if (skeleton !== undefined && enemy.hasSkeleton) {
-                    if (!models.has(id)) {
-                        const model = new EnemyModel(new Color(0xff0000));
-                        models.set(id, model);
-                        model.addToScene(renderer.scene);
-                    }
-    
-                    const model: EnemyModel = models.get(id)!;
+                if (!models.has(id)) {
+                    const model = new EnemyModel(new Color(0xff0000));
+                    models.set(id, model);
+                    model.addToScene(renderer.scene);
+                }
 
-                    model.morph(enemy);
-                    model.update(skeleton);
-                    model.setVisible(enemy.dimension === renderer.get("Dimension"));
-                } else if (!enemy.hasSkeleton) {
-                    if (!flyers.has(id)) {
-                        const flyer = new FlyerModel(new Color(0xff0000));
-                        flyers.set(id, flyer);
-                        flyer.addToScene(renderer.scene);
+                const model = models.get(id)!;
+                model.setVisible(enemy.dimension === renderer.get("Dimension"));
+                
+                if (model.anchor.visible) {
+                    if (anims.has(id)) {
+                        const anim = anims.get(id)!;
+                        model.update(time, enemy, anim);
                     }
-    
-                    const flyer: FlyerModel = flyers.get(id)!;
-
-                    flyer.update(enemy);
-                    flyer.setVisible(enemy.dimension === renderer.get("Dimension"));
                 }
             }
 
             for (const [id, model] of [...models.entries()]) {
                 if (!enemies.has(id)) {
                     model.removeFromScene(renderer.scene);
+                    model.dispose();
                     models.delete(id);
-                    skeletons.delete(id);
-                }
-            }
-
-            for (const [id, flyer] of [...flyers.entries()]) {
-                if (!enemies.has(id)) {
-                    flyer.removeFromScene(renderer.scene);
-                    flyers.delete(id);
                 }
             }
         } 
@@ -534,12 +653,6 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     continue;
                 }
 
-                let color = 0xff0000;
-                switch (owner.state) {
-                case "Stagger": color = 0xffffff; break;
-                case "Glue": color = 0x0000ff; break;
-                }     
-                model.material.color.setHex(color);
                 model.mesh.position.set(limb.position.x, limb.position.y, limb.position.z);
                 model.mesh.visible = limb.active && limb.dimension === renderer.get("Dimension");
             }

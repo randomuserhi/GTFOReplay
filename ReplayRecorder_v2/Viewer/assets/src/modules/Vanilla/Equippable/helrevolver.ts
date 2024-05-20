@@ -1,15 +1,15 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial, QuaternionLike } from "three";
+import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshPhongMaterial } from "three";
 import { Model } from "./equippable.js";
 
 const box = new BoxGeometry(1, 1, 1);
 const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5);
 
 export class HelRevolver extends Model {
-    fold: Group;
-
     constructor() {
         super();
         this.fold = new Group();
+        this.leftHand = new Group();
+        this.group.add(this.leftHand);
 
         const material = new MeshPhongMaterial({
             color: 0xcccccc
@@ -69,9 +69,5 @@ export class HelRevolver extends Model {
             z: 0,
             w: 0.7071,
         };
-    }
-
-    public update(foldRot: QuaternionLike): void {
-        this.fold.quaternion.set(foldRot.x, foldRot.y, foldRot.z, foldRot.w);
     }
 }

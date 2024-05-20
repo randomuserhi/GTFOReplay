@@ -90,7 +90,7 @@ namespace ReplayRecorder {
         [HideFromIl2Cpp]
         public static T Get<T>(int id) where T : ReplayDynamic => (T)SnapshotManager.GetInstance().Get(typeof(T), id);
         [HideFromIl2Cpp]
-        public static bool TryGet<T>(int id, [MaybeNullWhen(false)] out T dynamic) where T : ReplayDynamic {
+        public static bool TryGet<T>(int id, [MaybeNullWhen(false)] out T? dynamic) where T : ReplayDynamic {
             if (Has<T>(id)) {
                 dynamic = Get<T>(id);
                 return true;

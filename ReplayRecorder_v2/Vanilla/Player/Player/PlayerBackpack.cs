@@ -40,6 +40,9 @@ namespace Vanilla.Player {
         private ushort lastPack = 0;
         private ushort pack => GetSlotId(InventorySlot.ResourcePack);
 
+        private ushort lastConsumable = 0;
+        private ushort consumable => GetSlotId(InventorySlot.Consumable);
+
         public override bool Active {
             get {
                 if (agent == null && Replay.Has<rPlayerBackpack>(id)) {
@@ -49,10 +52,12 @@ namespace Vanilla.Player {
             }
         }
         public override bool IsDirty =>
+            melee != lastMelee ||
             primary != lastPrimary ||
             special != lastSpecial ||
             tool != lastTool ||
-            pack != lastPack;
+            pack != lastPack ||
+            consumable != lastConsumable;
 
         public rPlayerBackpack(PlayerAgent player) : base(player.GlobalID) {
             this.agent = player;
@@ -64,12 +69,14 @@ namespace Vanilla.Player {
             BitHelper.WriteBytes(special, buffer);
             BitHelper.WriteBytes(tool, buffer);
             BitHelper.WriteBytes(pack, buffer);
+            BitHelper.WriteBytes(consumable, buffer);
 
             lastMelee = melee;
             lastPrimary = primary;
             lastSpecial = special;
             lastTool = tool;
             lastPack = pack;
+            lastConsumable = consumable;
         }
 
         public override void Spawn(ByteBuffer buffer) {

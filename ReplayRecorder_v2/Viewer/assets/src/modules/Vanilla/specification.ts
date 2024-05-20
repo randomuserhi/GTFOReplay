@@ -1,3 +1,4 @@
+import { Vector3Like } from "three";
 import { AssaultRifle } from "./Equippable/assaultrifle.js";
 import { AutoPistol } from "./Equippable/autopistol.js";
 import { Bat } from "./Equippable/bat.js";
@@ -41,7 +42,8 @@ import { SlugShotgun } from "./Equippable/slugshotgun.js";
 import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
-import { playerAnimationClips, playerAnimations } from "./animations/assets.js";
+import { gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
+import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation } from "./animations/human.js";
 
 export type Archetype = 
@@ -65,12 +67,21 @@ export interface Specification {
     }
     equippable: Map<number, Equippable>;
     meleeArchetype: Map<number, Id<MeleeArchetype>>; 
-    enemies: Map<number, {
-        id: number;
-        name?: string;
-        maxHealth: number;
-        height?: number;
-    }>;
+    consumableArchetype: Map<number, Id<ConsumableArchetype>>;
+    gearArchetype: Map<number, Id<GearArchetype>>;
+    enemies: Map<number, EnemySpecification>;
+}
+
+export interface EnemySpecification {
+    id: number;
+    name?: string;
+    maxHealth: number;
+    height?: number;
+    neckScale?: Vector3Like;
+    headScale?: Vector3Like;
+    chestScale?: Vector3Like;
+    armScale?: Vector3Like;
+    legScale?: Vector3Like;
 }
 
 export interface MeleeArchetype {
@@ -79,12 +90,24 @@ export interface MeleeArchetype {
     jumpAnim: HumanAnimation,
     fallAnim: HumanAnimation,
     landAnim: HumanAnimation,
-    /*attackAnim: HumanAnimation,
-    attackCrouchAnim: HumanAnimation,
+    attackAnim: HumanAnimation,
     chargeAnim: HumanAnimation,
-    chargeCrouchAnim: HumanAnimation,
+    chargeIdleAnim: HumanAnimation,
     releaseAnim: HumanAnimation,
-    releaseCrouchAnim: HumanAnimation,*/
+    shoveAnim: HumanAnimation,
+}
+
+export interface ConsumableArchetype {
+    equipAnim?: HumanAnimation;
+    throwAnim?: HumanAnimation;
+    chargeAnim?: HumanAnimation;
+    chargeIdleAnim?: HumanAnimation;
+}
+
+export interface GearArchetype {
+    reloadDuration: number; // NOTE(randomuserhi): in seconds
+    leftHandAnim?: HumanAnimation;
+    gunFoldAnim?: GearFoldAnimation;
 }
 
 export const hammerArchetype: MeleeArchetype = {
@@ -93,11 +116,11 @@ export const hammerArchetype: MeleeArchetype = {
     jumpAnim: playerAnimationClips.SledgeHammer_Jump,
     fallAnim:  playerAnimationClips.SledgeHammer_Fall,
     landAnim:  playerAnimationClips.SledgeHammer_Land,
-    /*attackAnim: ,
-    attackCrouchAnim: ,
-    chargeAnim: ,
-    releaseAnim: ,
-    releaseCrouchAnim: ,*/
+    attackAnim: playerAnimations.hammerSwing,
+    chargeAnim: playerAnimations.hammerCharge,
+    chargeIdleAnim: playerAnimations.hammerChargeIdle,
+    releaseAnim: playerAnimations.hammerRelease,
+    shoveAnim: playerAnimations.hammerShove,
 };
 
 const _melee: Id<MeleeArchetype>[] = [{
@@ -118,6 +141,31 @@ const _melee: Id<MeleeArchetype>[] = [{
 }, {
     id: 51,
     ...hammerArchetype
+}];
+
+const _consumable: Id<ConsumableArchetype>[] = [{
+    id: 63,
+    equipAnim: playerAnimationClips.Fogrepeller_Throw_Equip,
+    throwAnim: playerAnimationClips.Fogrepeller_Throw,
+    chargeAnim: playerAnimationClips.Fogrepeller_Throw_Charge,
+    chargeIdleAnim: playerAnimationClips.Fogrepeller_Throw_Charge_Idle
+}];
+
+const _gearArchetype: Id<GearArchetype>[] = [{
+    id: 1,
+    gunFoldAnim: undefined,
+    leftHandAnim: playerAnimationClips.Stock_Pistol_1_reload,
+    reloadDuration: 1.3
+}, {
+    id: 3,
+    gunFoldAnim: gearFoldAnimations.Front_Revolver_2_Reload_0,
+    leftHandAnim: playerAnimationClips.Front_Revolver_2_Reload,
+    reloadDuration: 2.3
+}, {
+    id: 25,
+    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
+    leftHandAnim: playerAnimationClips.Front_Revolver_1_reload,
+    reloadDuration: 1.75
 }];
 
 const _equippable: Equippable[] = [{
@@ -396,9 +444,55 @@ const _equippable: Equippable[] = [{
     name: "Hel Rifle",
     archetype: "rifle",
     model: () => new HelRifle()
+}, { 
+    id: 57,
+    name: "Glow Sticks",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO 
+}, { 
+    id: 58,
+    name: "Long Range Flashlight",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO 
+}, { 
+    id: 59,
+    name: "I2-LP Syringe",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO 
+}, { 
+    id: 60,
+    name: "IIX Syringe",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO  
+}, { 
+    id: 61,
+    name: "Cfoam Grenade",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO  
+}, { 
+    id: 62,
+    name: "Lock Melter",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO  
+
+}, { 
+    id: 63,
+    name: "Fog Repeller",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO   
+}, { 
+    id: 64,
+    name: "Explosive Tripmine",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO   
+}, { 
+    id: 65,
+    name: "Cfoam Tripmine",
+    archetype: "consumable",
+    model: () => new Pistol() // TODO   
 }];
 
-const _enemies = [{
+const _enemies: EnemySpecification[] = [{
     id: 0,
     name: "Unknown",
     maxHealth: Infinity
@@ -510,5 +604,7 @@ export const specification: Specification = {
     },
     equippable: new Map(_equippable.map(g => [g.id, g])),
     meleeArchetype: new Map(_melee.map(g => [g.id, g])),
+    consumableArchetype: new Map(_consumable.map(g => [g.id, g])),
+    gearArchetype: new Map(_gearArchetype.map(g => [g.id, g])),
     enemies: new Map(_enemies.map(e => [e.id, e]))
 };

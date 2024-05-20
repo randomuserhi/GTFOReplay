@@ -47,6 +47,11 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
     exec: async (data, snapshot) => {
         const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", () => []);
         gunshots.push({ time: snapshot.time(), ...data });
+
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        if (anims.has(data.owner)) { 
+            anims.get(data.owner)!.lastShot = snapshot.time();
+        }
     }
 });
 

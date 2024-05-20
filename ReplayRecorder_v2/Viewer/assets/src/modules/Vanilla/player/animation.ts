@@ -11,15 +11,36 @@ declare module "../../../replay/moduleloader.js" {
                     crouch: number;
                     targetLookDir: Pod.Vector;
                     state: State;
+                    meleeCharging: boolean;
+                    throwCharging: boolean;
+                    isReloading: boolean;
                 };
                 spawn: {
                     velocity: Pod.Vector;
                     crouch: number;
                     targetLookDir: Pod.Vector;
                     state: State;
+                    meleeCharging: boolean;
+                    throwCharging: boolean;
+                    isReloading: boolean;
                 };
                 despawn: void;
             };
+        }
+
+        interface Events {
+            "Vanilla.Player.Animation.MeleeSwing": {
+                owner: number;
+                charged: boolean;
+            }
+
+            "Vanilla.Player.Animation.MeleeShove": {
+                owner: number;
+            }
+
+            "Vanilla.Player.Animation.ConsumableThrow": {
+                owner: number;
+            }
         }
 
         interface Data {
@@ -75,6 +96,16 @@ export interface PlayerAnimState {
     targetLookDir: Pod.Vector;
     state: State;
     lastStateTransition: number;
+    meleeCharging: boolean;
+    lastMeleeChargingTransition: number;
+    lastSwingTime: number;
+    chargedSwing: boolean;
+    throwCharging: boolean;
+    lastThrowChargingTransition: number;
+    lastThrowTime: number;
+    isReloading: boolean;
+    lastReloadTransition: number;
+    lastShot: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
@@ -84,7 +115,10 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 crouch: await BitHelper.readByte(data) / 255,
                 targetLookDir: await BitHelper.readHalfVector(data),
-                state: states[await BitHelper.readByte(data)]
+                state: states[await BitHelper.readByte(data)],
+                meleeCharging: await BitHelper.readBool(data),
+                throwCharging: await BitHelper.readBool(data),
+                isReloading: await BitHelper.readBool(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -95,9 +129,23 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
             anim.crouch = anim.crouch + (data.crouch - anim.crouch) * lerp;
             Pod.Vec.lerp(anim.targetLookDir, anim.targetLookDir, data.targetLookDir, lerp);
+            
+            const t = snapshot.time();
             if (anim.state !== data.state) {
                 anim.state = data.state;
-                anim.lastStateTransition = snapshot.time();
+                anim.lastStateTransition = t;
+            }
+            if (anim.meleeCharging !== data.meleeCharging) {
+                anim.meleeCharging = data.meleeCharging;
+                anim.lastMeleeChargingTransition = t;
+            }
+            if (anim.throwCharging !== data.throwCharging) {
+                anim.throwCharging = data.throwCharging;
+                anim.lastThrowChargingTransition = t;
+            }
+            if (anim.isReloading !== data.isReloading) {
+                anim.isReloading = data.isReloading;
+                anim.lastReloadTransition = t;
             }
         }
     },
@@ -107,14 +155,27 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 crouch: await BitHelper.readByte(data) / 255,
                 targetLookDir: await BitHelper.readHalfVector(data),
-                state: states[await BitHelper.readByte(data)]
+                state: states[await BitHelper.readByte(data)],
+                meleeCharging: await BitHelper.readBool(data),
+                throwCharging: await BitHelper.readBool(data),
+                isReloading: await BitHelper.readBool(data),
             };
         },
         exec: (id, data, snapshot) => {
             const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
         
             if (anims.has(id)) throw new DuplicateAnim(`PlayerAnim of id '${id}' already exists.`);
-            anims.set(id, { ...data, lastStateTransition: 0 });
+            anims.set(id, { 
+                ...data, 
+                lastStateTransition: -Infinity,
+                lastSwingTime: -Infinity,
+                lastThrowTime: -Infinity,
+                chargedSwing: false,
+                lastMeleeChargingTransition: -Infinity,
+                lastThrowChargingTransition: -Infinity,
+                lastReloadTransition: -Infinity,
+                lastShot: -Infinity
+            });
         }
     },
     despawn: {
@@ -126,6 +187,56 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' did not exist.`);
             anims.delete(id);
         }
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Player.Animation.MeleeSwing", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            owner: await BitHelper.readInt(bytes),
+            charged: await BitHelper.readBool(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        
+        const id = data.owner;
+        if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastSwingTime = snapshot.time();
+        anim.chargedSwing = data.charged;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Player.Animation.MeleeShove", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            owner: await BitHelper.readInt(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        
+        const id = data.owner;
+        if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastThrowTime = snapshot.time();
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Player.Animation.ConsumableThrow", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            owner: await BitHelper.readInt(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        
+        const id = data.owner;
+        if (!anims.has(id)) throw new AnimNotFound(`PlayerAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastThrowTime = snapshot.time();
     }
 });
 
