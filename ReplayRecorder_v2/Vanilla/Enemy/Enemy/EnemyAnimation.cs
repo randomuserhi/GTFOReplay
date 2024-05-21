@@ -50,7 +50,7 @@ namespace Vanilla.Enemy {
         private float _velRight => enemy.Locomotion.PathMove.m_animRight;
         private byte velRight;
 
-        private byte _state => (byte)enemy.Locomotion.CurrentStateEnum;
+        private byte _state => (byte)enemy.Locomotion.m_currentState.m_stateEnum;
         private byte state;
 
         public rEnemyAnimation(EnemyAgent enemy) : base(enemy.GlobalID) {

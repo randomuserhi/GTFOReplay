@@ -69,7 +69,6 @@ ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
             if (!backpacks.has(id)) throw new BackpackNotFound(`Dynamic of id '${id}' was not found.`);
             const backpack = backpacks.get(id)!;
             backpack.slots = data.slots;
-            console.log(snapshot.tick());
         }
     },
     spawn: {

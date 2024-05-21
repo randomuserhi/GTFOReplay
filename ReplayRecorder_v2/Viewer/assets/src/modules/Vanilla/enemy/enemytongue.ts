@@ -5,6 +5,7 @@ import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DynamicSplineGeometry } from "../../dynamicspline.js";
 import { Dynamic } from "../../replayrecorder.js";
+import { HumanoidEnemyModel } from "./enemy.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -197,14 +198,15 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
 
                 const enemyModel = enemyModels.get(owner.id);
                 
-                const originThree = new Vector3(0, 1, 0);
-                if (enemyModel !== undefined) {
-                    const matrix = new Matrix4();
-                    if (owner.head && enemyModel.head !== -1)  {
-                        getInstance("Sphere.MeshPhong").getMatrixAt(enemyModel.head, matrix);
+                const originThree = new Vector3(0, 0, 0).copy(owner.position);
+                if (enemyModel !== undefined && Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, enemyModel)) {
+                    const humanoidModel: HumanoidEnemyModel = enemyModel as HumanoidEnemyModel;
+                    const matrix = new Matrix4(); // TODO(randomuserhi): Move elsewhere to prevent GC
+                    if (owner.head && humanoidModel.head !== -1)  {
+                        getInstance("Sphere.MeshPhong").getMatrixAt(humanoidModel.head, matrix);
                         originThree.setFromMatrixPosition(matrix);
                     } else {
-                        getInstance("Cylinder.MeshPhong").getMatrixAt(enemyModel.parts[0], matrix);
+                        getInstance("Cylinder.MeshPhong").getMatrixAt(humanoidModel.parts[0], matrix);
                         originThree.setFromMatrixPosition(matrix);
                     }
                 }

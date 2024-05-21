@@ -58,7 +58,7 @@ import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
 import { Syringe } from "./Equippable/syringe.js";
-import { gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
+import { enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation } from "./animations/human.js";
 import { AnimHandles, EnemyModel } from "./enemy/enemy.js";
@@ -92,10 +92,18 @@ export interface Specification {
 
 export interface EnemyAnimHandle {
     name: AnimHandles.Flags;
+    movement: HumanAnimation;
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
-    name: "enemyRunner"
+    name: "enemyRunner",
+    movement: enemyAnimations.enemyRunnerMovement
+}, {
+    name: "enemyLow",
+    movement: enemyAnimations.enemyLowMovement
+}, {
+    name: "enemyFiddler",
+    movement: enemyAnimations.enemyFiddleMovement
 }];
 
 export interface EnemySpecification {

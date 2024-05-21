@@ -170,6 +170,15 @@ import { Consumable_Throw_Charge } from "./assets/Consumable_Throw_Charge.js";
 import { Consumable_Throw_Charge_Idle } from "./assets/Consumable_Throw_Charge_Idle.js";
 import { Dead } from "./assets/Dead.js";
 import { Die } from "./assets/Die.js";
+import { FD_Idle_A } from "./assets/FD_Idle_A.js";
+import { FD_Run_Bwd_A } from "./assets/FD_Run_Bwd_A.js";
+import { FD_Run_Fwd_A } from "./assets/FD_Run_Fwd_A.js";
+import { FD_Run_Lt_A } from "./assets/FD_Run_Lt_A.js";
+import { FD_Run_Rt_A } from "./assets/FD_Run_Rt_A.js";
+import { FD_Walk_Bwd_A } from "./assets/FD_Walk_Bwd_A.js";
+import { FD_Walk_Fwd_A } from "./assets/FD_Walk_Fwd_A.js";
+import { FD_Walk_Lt_B } from "./assets/FD_Walk_Lt_B.js";
+import { FD_Walk_Rt_A } from "./assets/FD_Walk_Rt_A.js";
 import { Fogrepeller_Throw } from "./assets/Fogrepeller_Throw.js";
 import { Fogrepeller_Throw_Charge } from "./assets/Fogrepeller_Throw_Charge.js";
 import { Fogrepeller_Throw_Charge_Idle } from "./assets/Fogrepeller_Throw_Charge_Idle.js";
@@ -211,6 +220,15 @@ import { Knife_Stand_ChargeRelease } from "./assets/Knife_Stand_ChargeRelease.js
 import { Knife_Stand_Chargeup } from "./assets/Knife_Stand_Chargeup.js";
 import { Knife_Stand_ChargeupIdle } from "./assets/Knife_Stand_ChargeupIdle.js";
 import { Knife_Stand_SwingRight } from "./assets/Knife_Stand_SwingRight.js";
+import { LO_Idle_A } from "./assets/LO_Idle_A.js";
+import { LO_Run_Bwd_A } from "./assets/LO_Run_Bwd_A.js";
+import { LO_Run_Fwd_A } from "./assets/LO_Run_Fwd_A.js";
+import { LO_Run_Lt_A } from "./assets/LO_Run_Lt_A.js";
+import { LO_Run_Rt_A } from "./assets/LO_Run_Rt_A.js";
+import { LO_Walk_Bwd_A } from "./assets/LO_Walk_Bwd_A.js";
+import { LO_Walk_Fwd_A } from "./assets/LO_Walk_Fwd_A.js";
+import { LO_Walk_Lt_A } from "./assets/LO_Walk_Lt_A.js";
+import { LO_Walk_Rt_A } from "./assets/LO_Walk_Rt_A.js";
 import { Pistol_Recoil } from "./assets/Pistol_Recoil.js";
 import { Player_Climb_Ladder_Down_A } from "./assets/Player_Climb_Ladder_Down_A.js";
 import { Player_Climb_Ladder_Idle_A } from "./assets/Player_Climb_Ladder_Idle_A.js";
@@ -913,6 +931,24 @@ export const enemyAnimationClips = {
     RU_Run_Lt,
     RU_Run_Rt,
     Idle_Active,
+    LO_Walk_Bwd_A,
+    LO_Walk_Fwd_A,
+    LO_Walk_Lt_A,
+    LO_Walk_Rt_A,
+    LO_Run_Bwd_A,
+    LO_Run_Fwd_A,
+    LO_Run_Lt_A,
+    LO_Run_Rt_A,
+    LO_Idle_A,
+    FD_Walk_Bwd_A,
+    FD_Walk_Fwd_A,
+    FD_Walk_Lt_B,
+    FD_Walk_Rt_A,
+    FD_Run_Bwd_A,
+    FD_Run_Fwd_A,
+    FD_Run_Lt_A,
+    FD_Run_Rt_A,
+    FD_Idle_A,
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
@@ -928,7 +964,33 @@ export const enemyRunnerMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.Idle_Active, x: 0, y: 0},
 ], animVelocity);
 
+export const enemyLowMovement = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.LO_Walk_Fwd_A, x: 0, y: 2.2 },
+    { anim: enemyAnimationClips.LO_Walk_Bwd_A, x: 0, y: -2.5},
+    { anim: enemyAnimationClips.LO_Walk_Lt_A, x: -2.5, y: 0 },
+    { anim: enemyAnimationClips.LO_Walk_Rt_A, x: 2.5, y: 0},
+    { anim: enemyAnimationClips.LO_Run_Fwd_A, x: 0, y: 7 },
+    { anim: enemyAnimationClips.LO_Run_Bwd_A, x: 0, y: -4.5},
+    { anim: enemyAnimationClips.LO_Run_Lt_A, x: -4.5, y: 0 },
+    { anim: enemyAnimationClips.LO_Run_Rt_A, x: 4.5, y: 0},
+    { anim: enemyAnimationClips.LO_Idle_A, x: 0, y: 0},
+], animVelocity);
+
+export const enemyFiddleMovement = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.FD_Walk_Fwd_A, x: 0, y: 1.35 },
+    { anim: enemyAnimationClips.FD_Walk_Bwd_A, x: 0, y: -1},
+    { anim: enemyAnimationClips.FD_Walk_Lt_B, x: -1, y: 0 },
+    { anim: enemyAnimationClips.FD_Walk_Rt_A, x: 1, y: 0},
+    { anim: enemyAnimationClips.FD_Run_Fwd_A, x: 0, y: 4 },
+    { anim: enemyAnimationClips.FD_Run_Bwd_A, x: 0, y: -2.6},
+    { anim: enemyAnimationClips.FD_Run_Lt_A, x: -2.6, y: 0 },
+    { anim: enemyAnimationClips.FD_Run_Rt_A, x: 2.6, y: 0},
+    { anim: enemyAnimationClips.FD_Idle_A, x: 0, y: 0},
+], animVelocity);
+
 export const enemyAnimations = {
-    enemyRunnerMovement
+    enemyRunnerMovement,
+    enemyLowMovement,
+    enemyFiddleMovement
 } as const;
 export type EnemyAnimations = keyof typeof enemyAnimations;

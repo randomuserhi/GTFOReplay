@@ -412,6 +412,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
             const anim = anims.get(id)!;
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
+            anim.state = data.state;
         }
     },
     spawn: {
@@ -616,7 +617,7 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         switch (anim.state) {
         case "PathMove": {
-            
+            this.skeleton.override(this.animHandle.movement.sample(time));
         } break;
         }
     }

@@ -2,7 +2,6 @@ import { ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, 
 import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { playerColors } from "../player/renderer.js";
-import { specification } from "../specification.js";
 import { Enemy } from "./enemy.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -98,13 +97,7 @@ class AlertModel {
 
     public update(enemy: Enemy) {
         this.group.position.copy(enemy.position);
-        let height = 2;
-        if (specification.enemies.has(enemy.type)) {
-            const spec = specification.enemies.get(enemy.type)!;
-            if (spec.height !== undefined) {
-                height = spec.height;
-            }
-        }
+        const height = 2;
         this.group.position.add({ x: 0, y: height, z: 0 });
     }
 
