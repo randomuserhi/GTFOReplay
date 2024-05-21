@@ -611,7 +611,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 const model = models.get(id)!;
                 model.setVisible(enemy.dimension === renderer.get("Dimension"));
                 
-                if (model.anchor.visible) {
+                if (model.root.visible) {
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
                         model.update(time, enemy, anim);

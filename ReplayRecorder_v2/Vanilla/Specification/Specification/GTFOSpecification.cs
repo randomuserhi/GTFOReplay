@@ -149,10 +149,10 @@ namespace Vanilla.Specification {
                 { 181, 70 },
                 { 138, 71 }, // Cargo crate
                 { 176, 71 },
-                { 154, 71 },
-                { 155, 71 },
-                { 148, 72 }, // Cryo
-                { 173, 73 }, // collection case
+                { 154, 72 }, // Hi sec cargo crate
+                { 155, 72 },
+                { 148, 73 }, // Cryo
+                { 173, 74 }, // collection case
             },
             enemies = new Dictionary<uint, ushort>() {
                 { uint.MaxValue, 0 }, // Not necessary for this application to know, but its here to remind that 0 is unavailable

@@ -4,6 +4,8 @@ import { Model } from "./equippable.js";
 export class Pack extends Model {
     constructor(color: ColorRepresentation) {
         super();
+        this.leftHandGrip = { x: 0.13, y: 0.15, z: -0.1 };
+        this.equipOffsetPos = { x: 0.13, y: -0.15, z: 0 };
 
         const geometry = new BoxGeometry(0.3, 0.3, 0.1);
         const material = new MeshPhongMaterial({

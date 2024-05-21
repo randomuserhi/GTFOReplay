@@ -39,6 +39,7 @@ namespace ReplayRecorder.Core {
     public abstract class DynamicPosition : ReplayDynamic {
         public IReplayTransform transform;
         private Vector3 oldPosition;
+        private Vector3 calculatedPosition;
         private byte oldDimensionIndex;
 
         private const float threshold = 50;
@@ -69,14 +70,17 @@ namespace ReplayRecorder.Core {
 
             BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             // If object has moved too far, write absolute position
-            if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
+            if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
                 BitHelper.WriteBytes((byte)(1), buffer);
                 BitHelper.WriteBytes(transform.position, buffer);
+                calculatedPosition = transform.position;
             }
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), buffer);
-                BitHelper.WriteHalf(transform.position - oldPosition, buffer);
+                Vector3 diff = transform.position - oldPosition;
+                BitHelper.WriteHalf(diff, buffer);
+                calculatedPosition += diff;
             }
 
             oldDimensionIndex = transform.dimensionIndex;
@@ -89,6 +93,7 @@ namespace ReplayRecorder.Core {
 
             oldDimensionIndex = spawnDimensionIndex;
             oldPosition = spawnPosition;
+            calculatedPosition = oldPosition;
         }
     }
 
@@ -139,6 +144,7 @@ namespace ReplayRecorder.Core {
     public abstract class DynamicTransform : ReplayDynamic {
         public IReplayTransform transform;
         private Vector3 oldPosition;
+        private Vector3 calculatedPosition;
         private Quaternion oldRotation;
         private byte oldDimensionIndex;
 
@@ -179,14 +185,17 @@ namespace ReplayRecorder.Core {
 
             BitHelper.WriteBytes(transform.dimensionIndex, buffer);
             // If object has moved too far, write absolute position
-            if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold) {
+            if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
                 BitHelper.WriteBytes((byte)(1), buffer);
                 BitHelper.WriteBytes(transform.position, buffer);
+                calculatedPosition = transform.position;
             }
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), buffer);
-                BitHelper.WriteHalf(transform.position - oldPosition, buffer);
+                Vector3 diff = transform.position - oldPosition;
+                BitHelper.WriteHalf(diff, buffer);
+                calculatedPosition += diff;
             }
             if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
                     float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
@@ -210,6 +219,7 @@ namespace ReplayRecorder.Core {
 
             oldDimensionIndex = spawnDimensionIndex;
             oldPosition = spawnPosition;
+            calculatedPosition = oldPosition;
             oldRotation = spawnRotation;
         }
     }

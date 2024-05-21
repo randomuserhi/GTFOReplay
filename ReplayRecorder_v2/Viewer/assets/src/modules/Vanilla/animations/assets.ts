@@ -155,6 +155,16 @@ import { WalkBwdLoop } from "./assets/WalkBwdLoop.js";
 import { WalkFwdLoop } from "./assets/WalkFwdLoop.js";
 
 import { AnimBlend } from "./animation.js";
+import { Bat_Crouch_ChargeRelease } from "./assets/Bat_Crouch_ChargeRelease.js";
+import { Bat_Crouch_Chargeup } from "./assets/Bat_Crouch_Chargeup.js";
+import { Bat_Crouch_Shove } from "./assets/Bat_Crouch_Shove.js";
+import { Bat_Crouch_SwingRight } from "./assets/Bat_Crouch_SwingRight.js";
+import { Bat_Stand_ChargeRelease } from "./assets/Bat_Stand_ChargeRelease.js";
+import { Bat_Stand_Chargeup } from "./assets/Bat_Stand_Chargeup.js";
+import { Bat_Stand_ChargeupIdle } from "./assets/Bat_Stand_ChargeupIdle.js";
+import { Bat_Stand_Shove } from "./assets/Bat_Stand_Shove.js";
+import { Bat_Stand_SwingRight } from "./assets/Bat_Stand_SwingRight.js";
+import { ConsumablePack_Idle } from "./assets/ConsumablePack_Idle.js";
 import { Consumable_Throw } from "./assets/Consumable_Throw.js";
 import { Consumable_Throw_Charge } from "./assets/Consumable_Throw_Charge.js";
 import { Consumable_Throw_Charge_Idle } from "./assets/Consumable_Throw_Charge_Idle.js";
@@ -164,9 +174,42 @@ import { Fogrepeller_Throw } from "./assets/Fogrepeller_Throw.js";
 import { Fogrepeller_Throw_Charge } from "./assets/Fogrepeller_Throw_Charge.js";
 import { Fogrepeller_Throw_Charge_Idle } from "./assets/Fogrepeller_Throw_Charge_Idle.js";
 import { Fogrepeller_Throw_Equip } from "./assets/Fogrepeller_Throw_Equip.js";
+import { Front_AutoShotgun_1_animation_reload_0 } from "./assets/Front_AutoShotgun_1_animation_reload_0.js";
+import { Front_AutoShotgun_2_Parts_Reload } from "./assets/Front_AutoShotgun_2_Parts_Reload.js";
+import { Front_AutoShotgun_3_reload_0 } from "./assets/Front_AutoShotgun_3_reload_0.js";
+import { Front_Precision_1_reload_1 } from "./assets/Front_Precision_1_reload_1.js";
+import { Front_Precision_2_reload_1 } from "./assets/Front_Precision_2_reload_1.js";
+import { Front_Precision_3_Parts_Reload } from "./assets/Front_Precision_3_Parts_Reload.js";
 import { Front_Revolver_1_reload } from "./assets/Front_Revolver_1_reload.js";
 import { Front_Revolver_2_Reload } from "./assets/Front_Revolver_2_Reload.js";
 import { Front_Revolver_2_Reload_0 } from "./assets/Front_Revolver_2_Reload_0.js";
+import { Front_Shotgun_1_animation_reload_1 } from "./assets/Front_Shotgun_1_animation_reload_1.js";
+import { Front_Shotgun_3_reload_0 } from "./assets/Front_Shotgun_3_reload_0.js";
+import { Knife_Crouch_ChargeRelease } from "./assets/Knife_Crouch_ChargeRelease.js";
+import { Knife_Crouch_Chargeup } from "./assets/Knife_Crouch_Chargeup.js";
+import { Knife_Crouch_Idle } from "./assets/Knife_Crouch_Idle.js";
+import { Knife_Crouch_SwingRight } from "./assets/Knife_Crouch_SwingRight.js";
+import { Knife_Crouch_WalkBwd } from "./assets/Knife_Crouch_WalkBwd.js";
+import { Knife_Crouch_WalkFwd } from "./assets/Knife_Crouch_WalkFwd.js";
+import { Knife_Crouch_WalkLt } from "./assets/Knife_Crouch_WalkLt.js";
+import { Knife_Crouch_WalkRt } from "./assets/Knife_Crouch_WalkRt.js";
+import { Knife_Fall } from "./assets/Knife_Fall.js";
+import { Knife_Idle_0 } from "./assets/Knife_Idle_0.js";
+import { Knife_Jog_Backward } from "./assets/Knife_Jog_Backward.js";
+import { Knife_Jog_BackwardLeft } from "./assets/Knife_Jog_BackwardLeft.js";
+import { Knife_Jog_BackwardRight } from "./assets/Knife_Jog_BackwardRight.js";
+import { Knife_Jog_Forward } from "./assets/Knife_Jog_Forward.js";
+import { Knife_Jog_ForwardLeft } from "./assets/Knife_Jog_ForwardLeft.js";
+import { Knife_Jog_ForwardRight } from "./assets/Knife_Jog_ForwardRight.js";
+import { Knife_Jog_Left } from "./assets/Knife_Jog_Left.js";
+import { Knife_Jog_Right } from "./assets/Knife_Jog_Right.js";
+import { Knife_Jump } from "./assets/Knife_Jump.js";
+import { Knife_Land } from "./assets/Knife_Land.js";
+import { Knife_SprintFwdLoop } from "./assets/Knife_SprintFwdLoop.js";
+import { Knife_Stand_ChargeRelease } from "./assets/Knife_Stand_ChargeRelease.js";
+import { Knife_Stand_Chargeup } from "./assets/Knife_Stand_Chargeup.js";
+import { Knife_Stand_ChargeupIdle } from "./assets/Knife_Stand_ChargeupIdle.js";
+import { Knife_Stand_SwingRight } from "./assets/Knife_Stand_SwingRight.js";
 import { Pistol_Recoil } from "./assets/Pistol_Recoil.js";
 import { Player_Climb_Ladder_Down_A } from "./assets/Player_Climb_Ladder_Down_A.js";
 import { Player_Climb_Ladder_Idle_A } from "./assets/Player_Climb_Ladder_Idle_A.js";
@@ -174,7 +217,9 @@ import { Player_Climb_Ladder_Up_A } from "./assets/Player_Climb_Ladder_Up_A.js";
 import { Player_Reviving_Upperbody_Loop } from "./assets/Player_Reviving_Upperbody_Loop.js";
 import { Revive } from "./assets/Revive.js";
 import { Revolver_Front_1_Reload_1 } from "./assets/Revolver_Front_1_Reload_1.js";
+import { Rifle1_Reload } from "./assets/Rifle1_Reload.js";
 import { Rifle_Recoil } from "./assets/Rifle_Recoil.js";
+import { SMG_Front_4_Reload_1 } from "./assets/SMG_Front_4_Reload_1.js";
 import { Sledgehammer_Crouch_Shove } from "./assets/Sledgehammer_Crouch_Shove.js";
 import { Sledgehammer_Crouch_SwingLeft_Charge } from "./assets/Sledgehammer_Crouch_SwingLeft_Charge.js";
 import { Sledgehammer_Crouch_SwingLeft_Charge_Release } from "./assets/Sledgehammer_Crouch_SwingLeft_Charge_Release.js";
@@ -182,7 +227,35 @@ import { Sledgehammer_Stand_Shove } from "./assets/Sledgehammer_Stand_Shove.js";
 import { Sledgehammer_Stand_SwingLeft_Charge } from "./assets/Sledgehammer_Stand_SwingLeft_Charge.js";
 import { Sledgehammer_Stand_SwingLeft_Charge_Idle } from "./assets/Sledgehammer_Stand_SwingLeft_Charge_Idle.js";
 import { Sledgehammer_Stand_SwingLeft_Charge_Release } from "./assets/Sledgehammer_Stand_SwingLeft_Charge_Release.js";
+import { Spear_Crouch_Charge } from "./assets/Spear_Crouch_Charge.js";
+import { Spear_Crouch_ChargeRelease } from "./assets/Spear_Crouch_ChargeRelease.js";
+import { Spear_Crouch_Idle } from "./assets/Spear_Crouch_Idle.js";
+import { Spear_Crouch_Shove } from "./assets/Spear_Crouch_Shove.js";
+import { Spear_Crouch_SwingRight } from "./assets/Spear_Crouch_SwingRight.js";
+import { Spear_Crouch_WalkBwd } from "./assets/Spear_Crouch_WalkBwd.js";
+import { Spear_Crouch_WalkFwd } from "./assets/Spear_Crouch_WalkFwd.js";
+import { Spear_Crouch_WalkLt } from "./assets/Spear_Crouch_WalkLt.js";
+import { Spear_Crouch_WalkRt } from "./assets/Spear_Crouch_WalkRt.js";
+import { Spear_Fall } from "./assets/Spear_Fall.js";
+import { Spear_Idle } from "./assets/Spear_Idle.js";
+import { Spear_Jog_Backward } from "./assets/Spear_Jog_Backward.js";
+import { Spear_Jog_BackwardLeft } from "./assets/Spear_Jog_BackwardLeft.js";
+import { Spear_Jog_BackwardRight } from "./assets/Spear_Jog_BackwardRight.js";
+import { Spear_Jog_Forward } from "./assets/Spear_Jog_Forward.js";
+import { Spear_Jog_ForwardLeft } from "./assets/Spear_Jog_ForwardLeft.js";
+import { Spear_Jog_ForwardRight } from "./assets/Spear_Jog_ForwardRight.js";
+import { Spear_Jog_Left } from "./assets/Spear_Jog_Left.js";
+import { Spear_Jog_Right } from "./assets/Spear_Jog_Right.js";
+import { Spear_Jump } from "./assets/Spear_Jump.js";
+import { Spear_Land } from "./assets/Spear_Land.js";
+import { Spear_SprintFwdLoop } from "./assets/Spear_SprintFwdLoop.js";
+import { Spear_Stand_Charge } from "./assets/Spear_Stand_Charge.js";
+import { Spear_Stand_ChargeIdle } from "./assets/Spear_Stand_ChargeIdle.js";
+import { Spear_Stand_ChargeRelease } from "./assets/Spear_Stand_ChargeRelease.js";
+import { Spear_Stand_Shove } from "./assets/Spear_Stand_Shove.js";
+import { Spear_Stand_SwingRight } from "./assets/Spear_Stand_SwingRight.js";
 import { Stock_Pistol_1_reload } from "./assets/Stock_Pistol_1_reload.js";
+import { Stock_Pistol_1_reload_1 } from "./assets/Stock_Pistol_1_reload_1.js";
 import { TerminalConsole_Idle } from "./assets/TerminalConsole_Idle.js";
 import { HumanJoints } from "./human.js";
 
@@ -368,7 +441,70 @@ export const playerAnimationClips = {
     Revive,
     Die,
     Dead,
-    Player_Reviving_Upperbody_Loop
+    Player_Reviving_Upperbody_Loop,
+    Rifle1_Reload,
+    ConsumablePack_Idle,
+    Knife_Idle_0,
+    Knife_Jog_Forward,
+    Knife_Jog_Backward,
+    Knife_Jog_Right,
+    Knife_Jog_Left,
+    Knife_Jog_ForwardLeft,
+    Knife_Jog_ForwardRight,
+    Knife_Jog_BackwardLeft,
+    Knife_Jog_BackwardRight,
+    Knife_SprintFwdLoop,
+    Knife_Crouch_Idle,
+    Knife_Crouch_WalkLt,
+    Knife_Crouch_WalkRt,
+    Knife_Crouch_WalkFwd,
+    Knife_Crouch_WalkBwd,
+    Spear_Idle,
+    Spear_Jog_Forward,
+    Spear_Jog_Backward,
+    Spear_Jog_Right,
+    Spear_Jog_Left,
+    Spear_Jog_ForwardLeft,
+    Spear_Jog_ForwardRight,
+    Spear_Jog_BackwardLeft,
+    Spear_Jog_BackwardRight,
+    Spear_SprintFwdLoop,
+    Spear_Crouch_Idle,
+    Spear_Crouch_WalkLt,
+    Spear_Crouch_WalkRt,
+    Spear_Crouch_WalkFwd,
+    Spear_Crouch_WalkBwd,
+    Spear_Crouch_ChargeRelease,
+    Spear_Crouch_Charge,
+    Spear_Crouch_Shove,
+    Spear_Crouch_SwingRight,
+    Spear_Stand_ChargeRelease,
+    Spear_Stand_Charge,
+    Spear_Stand_ChargeIdle,
+    Spear_Stand_Shove,
+    Spear_Stand_SwingRight,
+    Bat_Crouch_ChargeRelease,
+    Bat_Crouch_Chargeup,
+    Bat_Crouch_Shove,
+    Bat_Crouch_SwingRight,
+    Bat_Stand_ChargeRelease,
+    Bat_Stand_Chargeup,
+    Bat_Stand_ChargeupIdle,
+    Bat_Stand_Shove,
+    Bat_Stand_SwingRight,
+    Knife_Crouch_ChargeRelease,
+    Knife_Crouch_Chargeup,
+    Knife_Crouch_SwingRight,
+    Knife_Stand_ChargeRelease,
+    Knife_Stand_Chargeup,
+    Knife_Stand_ChargeupIdle,
+    Knife_Stand_SwingRight,
+    Spear_Jump,
+    Spear_Land,
+    Spear_Fall,
+    Knife_Jump,
+    Knife_Land,
+    Knife_Fall,
 } as const;
 export type PlayerAnimationClip = keyof typeof playerAnimationClips;
 
@@ -568,6 +704,134 @@ export const hammerShove = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Sledgehammer_Crouch_Shove, x: 1, y: 0 }
 ], animCrouch);
 
+export const knifeStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Knife_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimationClips.Knife_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimationClips.Knife_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimationClips.Knife_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimationClips.Knife_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimationClips.Knife_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimationClips.Knife_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimationClips.Knife_Jog_Backward, x: 0, y: -3.5 },
+    { anim: playerAnimationClips.Knife_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimationClips.Knife_Idle_0, x: 0, y: 0 },
+], animVelocity);
+
+export const knifeCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Knife_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimationClips.Knife_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimationClips.Knife_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimationClips.Knife_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimationClips.Knife_Crouch_Idle, x: 0, y: 0 },
+], animVelocity);
+
+export const knifeMovement = new AnimBlend(HumanJoints, [
+    { anim: knifeStandMovement, x: 0, y: 0 },
+    { anim: knifeCrouchMovement, x: 1, y: 0 }
+], animCrouch);
+
+export const knifeCharge = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Knife_Stand_Chargeup, x: 0, y: 0 },
+    { anim: playerAnimationClips.Knife_Crouch_Chargeup, x: 1, y: 0 }
+], animCrouch);
+
+export const knifeChargeIdle = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Knife_Stand_ChargeupIdle, x: 0, y: 0 },
+    { anim: playerAnimationClips.Knife_Stand_ChargeupIdle, x: 1, y: 0 }
+], animCrouch);
+
+export const knifeRelease = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Knife_Stand_ChargeRelease, x: 0, y: 0 },
+    { anim: playerAnimationClips.Knife_Crouch_ChargeRelease, x: 1, y: 0 }
+], animCrouch);
+
+export const knifeSwing = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Knife_Stand_SwingRight, x: 0, y: 0 },
+    { anim: playerAnimationClips.Knife_Crouch_SwingRight, x: 1, y: 0 }
+], animCrouch);
+
+export const knifeShove = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Bat_Stand_Shove, x: 0, y: 0 },
+    { anim: playerAnimationClips.Bat_Crouch_Shove, x: 1, y: 0 }
+], animCrouch);
+
+export const spearStandMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Spear_SprintFwdLoop, x: 0, y: 6 },
+    { anim: playerAnimationClips.Spear_Jog_BackwardLeft, x: -2.56, y: -2.56 },
+    { anim: playerAnimationClips.Spear_Jog_BackwardRight, x: 2.56, y: -2.56 },
+    { anim: playerAnimationClips.Spear_Jog_ForwardLeft, x: -2.56, y: 2.56 },
+    { anim: playerAnimationClips.Spear_Jog_ForwardRight, x: 2.56, y: 2.56 },
+    { anim: playerAnimationClips.Spear_Jog_Left, x: -3.5, y: 0 },
+    { anim: playerAnimationClips.Spear_Jog_Right, x: 3.5, y: 0 },
+    { anim: playerAnimationClips.Spear_Jog_Backward, x: 0, y: -3.5 },
+    { anim: playerAnimationClips.Spear_Jog_Forward, x: 0, y: 3.5 },
+    { anim: playerAnimationClips.Spear_Idle, x: 0, y: 0 },
+], animVelocity);
+
+export const spearCrouchMovement = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Spear_Crouch_WalkBwd, x: 0, y: -2 },
+    { anim: playerAnimationClips.Spear_Crouch_WalkFwd, x: 0, y: 2 },
+    { anim: playerAnimationClips.Spear_Crouch_WalkLt, x: -2, y: 0 },
+    { anim: playerAnimationClips.Spear_Crouch_WalkRt, x: 2, y: 0 },
+    { anim: playerAnimationClips.Spear_Crouch_Idle, x: 0, y: 0 },
+], animVelocity);
+
+export const spearMovement = new AnimBlend(HumanJoints, [
+    { anim: spearStandMovement, x: 0, y: 0 },
+    { anim: spearCrouchMovement, x: 1, y: 0 }
+], animCrouch);
+
+export const spearCharge = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Spear_Stand_Charge, x: 0, y: 0 },
+    { anim: playerAnimationClips.Spear_Crouch_Charge, x: 1, y: 0 }
+], animCrouch);
+
+export const spearChargeIdle = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Spear_Stand_ChargeIdle, x: 0, y: 0 },
+    { anim: playerAnimationClips.Spear_Stand_ChargeIdle, x: 1, y: 0 }
+], animCrouch);
+
+export const spearRelease = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Spear_Stand_ChargeRelease, x: 0, y: 0 },
+    { anim: playerAnimationClips.Spear_Crouch_ChargeRelease, x: 1, y: 0 }
+], animCrouch);
+
+export const spearSwing = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Spear_Stand_SwingRight, x: 0, y: 0 },
+    { anim: playerAnimationClips.Spear_Crouch_SwingRight, x: 1, y: 0 }
+], animCrouch);
+
+export const spearShove = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Bat_Stand_Shove, x: 0, y: 0 },
+    { anim: playerAnimationClips.Bat_Crouch_Shove, x: 1, y: 0 }
+], animCrouch);
+
+export const batStandMovement = knifeStandMovement;
+export const batCrouchMovement = knifeCrouchMovement;
+export const batMovement = knifeMovement;
+
+export const batCharge = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Bat_Stand_Chargeup, x: 0, y: 0 },
+    { anim: playerAnimationClips.Bat_Crouch_Chargeup, x: 1, y: 0 }
+], animCrouch);
+
+export const batChargeIdle = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Bat_Stand_ChargeupIdle, x: 0, y: 0 },
+    { anim: playerAnimationClips.Bat_Stand_ChargeupIdle, x: 1, y: 0 }
+], animCrouch);
+
+export const batRelease = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Bat_Stand_ChargeRelease, x: 0, y: 0 },
+    { anim: playerAnimationClips.Bat_Crouch_ChargeRelease, x: 1, y: 0 }
+], animCrouch);
+
+export const batSwing = new AnimBlend(HumanJoints, [
+    { anim: playerAnimationClips.Bat_Stand_SwingRight, x: 0, y: 0 },
+    { anim: playerAnimationClips.Bat_Crouch_SwingRight, x: 1, y: 0 }
+], animCrouch);
+
+export const batShove = knifeShove;
+
 export const playerAnimations = {
     rifleStandMovement,
     rifleCrouchMovement,
@@ -578,6 +842,30 @@ export const playerAnimations = {
     hammerStandMovement,
     hammerCrouchMovement,
     hammerMovement,
+    knifeStandMovement,
+    knifeCrouchMovement,
+    knifeMovement,
+    knifeCharge,
+    knifeChargeIdle,
+    knifeRelease,
+    knifeSwing,
+    knifeShove,
+    spearStandMovement,
+    spearCrouchMovement,
+    spearMovement,
+    spearCharge,
+    spearChargeIdle,
+    spearRelease,
+    spearSwing,
+    spearShove,
+    batStandMovement,
+    batCrouchMovement,
+    batMovement,
+    batCharge,
+    batChargeIdle,
+    batRelease,
+    batSwing,
+    batShove,
     defaultStandMovement,
     defaultCrouchMovement,
     defaultMovement,
@@ -592,6 +880,16 @@ export type PlayerAnimation = keyof typeof playerAnimations;
 
 export const gearFoldAnimations = {
     Revolver_Front_1_Reload_1,
-    Front_Revolver_2_Reload_0
+    Front_Revolver_2_Reload_0,
+    Stock_Pistol_1_reload_1,
+    SMG_Front_4_Reload_1,
+    Front_AutoShotgun_1_animation_reload_0,
+    Front_AutoShotgun_2_Parts_Reload,
+    Front_AutoShotgun_3_reload_0,
+    Front_Precision_1_reload_1,
+    Front_Precision_2_reload_1,
+    Front_Precision_3_Parts_Reload,
+    Front_Shotgun_1_animation_reload_1,
+    Front_Shotgun_3_reload_0,
 } as const;
 export type GearFoldAnimation = keyof typeof gearFoldAnimations;

@@ -7,6 +7,8 @@ const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5
 export class Shotgun extends Model {
     constructor() {
         super();
+        this.leftHandGrip = { x: 0.05, y: -0.07, z: 0.3 };
+        this.equipOffsetPos = { x: 0, y: 0.05, z: 0.05 };
 
         const material = new MeshPhongMaterial({
             color: 0xcccccc

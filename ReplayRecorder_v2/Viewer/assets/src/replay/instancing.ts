@@ -12,6 +12,7 @@ class DynamicInstanceManager {
 
     constructor(geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], capacity: number) {
         this.mesh = new InstancedMesh(geometry, material, capacity);
+        this.mesh.frustumCulled = false;
         this.capacity = capacity;
     }
 
@@ -19,6 +20,7 @@ class DynamicInstanceManager {
         if (this.mesh.count >= this.capacity) {
             const newCapacity = this.capacity * 2;
             const instance = new InstancedMesh(this.mesh.geometry, this.mesh.material, newCapacity);
+            instance.frustumCulled = false;
             
             for (let i = 0; i < this.capacity; ++i) {
                 this.mesh.getMatrixAt(i, mat);

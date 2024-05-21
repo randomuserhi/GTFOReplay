@@ -7,6 +7,8 @@ const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5
 export class SawedOff extends Model {
     constructor() {
         super();
+        this.leftHandGrip = { x: 0.1, y: -0.1, z: -0.2 };
+        this.equipOffsetPos = { x: 0, y: 0.05, z: 0.07 };
         this.fold = new Group();
 
         const material = new MeshPhongMaterial({

@@ -75,28 +75,6 @@ const upperBodyMask: HumanMask = {
     }
 };
 
-const leftArmMask: HumanMask = {
-    root: false,
-    joints: { 
-        spine0: false,
-        spine1: false,
-        spine2: false,
-
-        leftShoulder: true,
-        leftUpperArm: true,
-        leftLowerArm: true,
-        leftHand: true,
-
-        rightShoulder: false,
-        rightUpperArm: false,
-        rightLowerArm: false,
-        rightHand: false,
-
-        neck: false,
-        head: false
-    }
-};
-
 const aimOffset = new AnimBlend(HumanJoints, [
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_U.frames[0])), x: 0, y: 1 },
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), playerAnimationClips.Rifle_AO_C.frames[0], playerAnimationClips.Rifle_AO_D.frames[0])), x: 0, y: -1 },
@@ -230,10 +208,11 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("pack")!].quaternion.set(0, -0.263914526, 0, 0.964546144);
         this.backpackAligns[inventorySlotMap.get("pack")!].scale.set(0.7, 0.7, 0.7);
 
-        // TODO(randomuserhi): position this properly
-        this.backpackAligns[inventorySlotMap.get("consumable")!].position.set(0.003, -0.2, -0.24);
-        this.backpackAligns[inventorySlotMap.get("consumable")!].quaternion.set(0, 0.263914526, 0, -0.964546144);
+        this.backpackAligns[inventorySlotMap.get("consumable")!].position.set(-0.003, -0.2, 0.24);
+        this.backpackAligns[inventorySlotMap.get("consumable")!].quaternion.set(0, -0.263914526, 0, -0.964546144);
         this.backpackAligns[inventorySlotMap.get("consumable")!].scale.set(0.7, 0.7, 0.7);
+
+        this.backpackAligns[inventorySlotMap.get("heavyItem")!].visible = false;
 
         this.lastEquipped = 0;
 
@@ -462,27 +441,14 @@ class PlayerModel  {
                     this.aimIK.update();
 
                     const reloadTime = time - (anim.lastReloadTransition / 1000);
-                    if (this.gearArchetype !== undefined && anim.isReloading && reloadTime < this.gearArchetype.reloadDuration) {
-                        if (this.gearArchetype.leftHandAnim !== undefined) {
-                            let blend: number;
-                            const halfDuration = (this.gearArchetype.reloadDuration / 2);
-                            if (reloadTime < halfDuration) {
-                                blend = Math.clamp01(reloadTime / halfDuration);
-                            } else {
-                                blend = 1 - Math.clamp01((reloadTime - halfDuration) / halfDuration);
-                            }
-
-                            this.skeleton.blend(
-                                this.gearArchetype.leftHandAnim.sample(reloadTime / this.gearArchetype.reloadDuration * this.gearArchetype.leftHandAnim.duration), 
-                                blend, 
-                                leftArmMask
-                            );
-                        }
-
+                    if (this.gearArchetype !== undefined && anim.isReloading && reloadTime < anim.reloadDuration) {
                         if (this.gearArchetype.gunFoldAnim !== undefined && this.equippedItem.model !== undefined) {
-                            this.equippedItem.model.update(this.gearArchetype.gunFoldAnim.sample(reloadTime / this.gearArchetype.reloadDuration * this.gearArchetype.gunFoldAnim.duration));
+                            this.equippedItem.model.update(this.gearArchetype.gunFoldAnim.sample(reloadTime / anim.reloadDuration * this.gearArchetype.gunFoldAnim.duration));
 
                             if (this.equippedItem.model.leftHand !== undefined) {
+                                if (this.gearArchetype.offset !== undefined) {
+                                    this.equippedItem.model.leftHand.position.add(this.gearArchetype.offset);
+                                }
                                 this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
                                 this.leftIK.update();
                             }
@@ -528,6 +494,8 @@ class PlayerModel  {
                     }
                 } break;
                 case "consumable": {
+                    this.skeleton.override(playerAnimationClips.ConsumablePack_Idle.sample(time), upperBodyMask);
+
                     let throwAnim = this.consumableArchetype?.throwAnim;
                     if (throwAnim === undefined) throwAnim = playerAnimationClips.Consumable_Throw;
                     let chargeAnim = this.consumableArchetype?.chargeAnim;
@@ -536,15 +504,20 @@ class PlayerModel  {
                     if (chargeIdleAnim === undefined) chargeIdleAnim = playerAnimationClips.Consumable_Throw_Charge_Idle;
 
                     const throwTime = time - (anim.lastThrowTime / 1000);
+                    let isThrowing = false;
                     if (throwTime < throwAnim.duration) {
+                        isThrowing = true;
                         this.skeleton.blend(throwAnim.sample(throwTime), Math.clamp01(throwTime / 0.2), upperBodyMask);
                     } else if (throwTime < throwAnim.duration + 0.5) {
+                        isThrowing = true;
                         const blend = Math.clamp01((throwTime - throwAnim.duration) / 0.5);
                         this.skeleton.blend(throwAnim.sample(throwAnim.duration - 0.01), 1.0 - blend, upperBodyMask);
                     }
 
                     const chargeTime = time - (anim.lastThrowChargingTransition / 1000);
+                    let isCharging = false;
                     if (anim.throwCharging) { // not charging -> charging
+                        isCharging = true;
                         const blend = Math.clamp01(chargeTime / 0.2);
                         if (chargeTime < chargeAnim.duration) {
                             this.skeleton.blend(chargeAnim.sample(chargeTime), blend, upperBodyMask);
@@ -553,11 +526,12 @@ class PlayerModel  {
                         }
                     } else { // charging -> not charging
                         if (chargeTime < 0.2) {
+                            isCharging = true;
                             this.skeleton.blend(chargeIdleAnim.sample(chargeTime), 1.0 - (chargeTime / 0.2), upperBodyMask);
                         }
                     }
 
-                    if (this.equippedItem !== undefined && this.equippedItem.model !== undefined && this.equippedItem.model.leftHand !== undefined) {
+                    if (!isCharging && !isThrowing && this.equippedItem !== undefined && this.equippedItem.model !== undefined && this.equippedItem.model.leftHand !== undefined) {
                         this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
                         this.leftIK.update();
                     }
@@ -737,6 +711,8 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
             }
 
             if (item.model !== undefined) {
+                item.model.reset();
+                
                 if (item.spec?.id === player.equippedId) {
                     this.equipped.add(item.model.group);
                     this.equippedItem = item;
@@ -786,7 +762,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 const model = models.get(id)!;
                 model.setVisible(player.dimension === renderer.get("Dimension"));
                 
-                if (model.anchor.visible) {
+                if (model.root.visible) {
                     const backpack = backpacks.get(id);
                     model.updateBackpack(player, backpack);
                     model.updateTmp(player, camera, stats.get(id), backpack);

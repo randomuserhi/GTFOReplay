@@ -43,6 +43,9 @@ namespace Vanilla.Player {
         private ushort lastConsumable = 0;
         private ushort consumable => GetSlotId(InventorySlot.Consumable);
 
+        private ushort lastHeavyItem = 0;
+        private ushort heavyItem => GetSlotId(InventorySlot.InLevelCarry);
+
         public override bool Active {
             get {
                 if (agent == null && Replay.Has<rPlayerBackpack>(id)) {
@@ -57,26 +60,29 @@ namespace Vanilla.Player {
             special != lastSpecial ||
             tool != lastTool ||
             pack != lastPack ||
-            consumable != lastConsumable;
+            consumable != lastConsumable ||
+            heavyItem != lastHeavyItem;
 
         public rPlayerBackpack(PlayerAgent player) : base(player.GlobalID) {
             this.agent = player;
         }
 
         public override void Write(ByteBuffer buffer) {
-            BitHelper.WriteBytes(melee, buffer);
-            BitHelper.WriteBytes(primary, buffer);
-            BitHelper.WriteBytes(special, buffer);
-            BitHelper.WriteBytes(tool, buffer);
-            BitHelper.WriteBytes(pack, buffer);
-            BitHelper.WriteBytes(consumable, buffer);
-
             lastMelee = melee;
             lastPrimary = primary;
             lastSpecial = special;
             lastTool = tool;
             lastPack = pack;
             lastConsumable = consumable;
+            lastHeavyItem = heavyItem;
+
+            BitHelper.WriteBytes(lastMelee, buffer);
+            BitHelper.WriteBytes(lastPrimary, buffer);
+            BitHelper.WriteBytes(lastSpecial, buffer);
+            BitHelper.WriteBytes(lastTool, buffer);
+            BitHelper.WriteBytes(lastPack, buffer);
+            BitHelper.WriteBytes(lastConsumable, buffer);
+            BitHelper.WriteBytes(lastHeavyItem, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

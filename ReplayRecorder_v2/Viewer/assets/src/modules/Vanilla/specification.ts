@@ -1,4 +1,4 @@
-import { Vector3Like } from "three";
+import { Color, Vector3, Vector3Like } from "three";
 import { AssaultRifle } from "./Equippable/assaultrifle.js";
 import { AutoPistol } from "./Equippable/autopistol.js";
 import { Bat } from "./Equippable/bat.js";
@@ -8,28 +8,43 @@ import { BurstCannon } from "./Equippable/burstcannon.js";
 import { BurstPistol } from "./Equippable/burstpistol.js";
 import { BurstRifle } from "./Equippable/burstrifle.js";
 import { Carbine } from "./Equippable/carbine.js";
+import { CargoCrate } from "./Equippable/cargocrate.js";
 import { CfoamLauncher } from "./Equippable/cfoam.js";
+import { CfoamGrenade } from "./Equippable/cfoamgrenade.js";
+import { CfoamTripMine } from "./Equippable/cfoamtripmine.js";
 import { ChokeModShotgun } from "./Equippable/chokemodshotgun.js";
+import { CollectionCase } from "./Equippable/collectioncase.js";
 import { CombatShotgun } from "./Equippable/combatshotgun.js";
+import { ConsumableMine } from "./Equippable/consumablemine.js";
+import { Cryo } from "./Equippable/cryo.js";
 import { Dmr } from "./Equippable/dmr.js";
 import { DoubleTap } from "./Equippable/doubletap.js";
 import { Model } from "./Equippable/equippable.js";
+import { FogRepeller } from "./Equippable/fogrepeller.js";
+import { GlowStick } from "./Equippable/glowsticks.js";
 import { Hammer } from "./Equippable/hammer.js";
 import { HeavyAssaultRifle } from "./Equippable/heavyassaultrifle.js";
+import { HeavyFogRepeller } from "./Equippable/heavyfogturbine.js";
 import { HeavySmg } from "./Equippable/heavysmg.js";
 import { HelGun } from "./Equippable/helgun.js";
 import { HelRevolver } from "./Equippable/helrevolver.js";
 import { HelRifle } from "./Equippable/helrifle.js";
 import { HelShotgun } from "./Equippable/helshotgun.js";
 import { HighCal } from "./Equippable/highcal.js";
+import { HisecCargoCrate } from "./Equippable/hisec.js";
 import { Knife } from "./Equippable/knife.js";
+import { LockMelter } from "./Equippable/lockmelter.js";
+import { LongRangeFlashlight } from "./Equippable/longrangeflashlight.js";
 import { MachineGun0 } from "./Equippable/machinegun0.js";
 import { MachineGun1 } from "./Equippable/machinegun1.js";
 import { MachinePistol } from "./Equippable/machinepistol.js";
+import { MatterWaveProjector } from "./Equippable/matterwaveprojector.js";
 import { MineDeployer } from "./Equippable/minedeployer.js";
+import { Neonate } from "./Equippable/neonate.js";
 import { Pack } from "./Equippable/pack.js";
 import { PDW } from "./Equippable/pdw.js";
 import { Pistol } from "./Equippable/pistol.js";
+import { PowerCell } from "./Equippable/powercell.js";
 import { PrecisionRifle } from "./Equippable/precisionrifle.js";
 import { Revolver } from "./Equippable/revolver.js";
 import { Rifle } from "./Equippable/rifle.js";
@@ -42,6 +57,7 @@ import { SlugShotgun } from "./Equippable/slugshotgun.js";
 import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
+import { Syringe } from "./Equippable/syringe.js";
 import { gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation } from "./animations/human.js";
@@ -105,9 +121,8 @@ export interface ConsumableArchetype {
 }
 
 export interface GearArchetype {
-    reloadDuration: number; // NOTE(randomuserhi): in seconds
-    leftHandAnim?: HumanAnimation;
     gunFoldAnim?: GearFoldAnimation;
+    offset?: Vector3Like;
 }
 
 export const hammerArchetype: MeleeArchetype = {
@@ -121,6 +136,45 @@ export const hammerArchetype: MeleeArchetype = {
     chargeIdleAnim: playerAnimations.hammerChargeIdle,
     releaseAnim: playerAnimations.hammerRelease,
     shoveAnim: playerAnimations.hammerShove,
+};
+
+export const spearArchetype: MeleeArchetype = {
+    equipAnim: playerAnimationClips.Equip_Melee,
+    movementAnim: playerAnimations.spearMovement,
+    jumpAnim: playerAnimationClips.Spear_Jump,
+    fallAnim:  playerAnimationClips.Spear_Fall,
+    landAnim:  playerAnimationClips.Spear_Land,
+    attackAnim: playerAnimations.spearSwing,
+    chargeAnim: playerAnimations.spearCharge,
+    chargeIdleAnim: playerAnimations.spearChargeIdle,
+    releaseAnim: playerAnimations.spearRelease,
+    shoveAnim: playerAnimations.spearShove,
+};
+
+export const knifeArchetype: MeleeArchetype = {
+    equipAnim: playerAnimationClips.Equip_Melee,
+    movementAnim: playerAnimations.knifeMovement,
+    jumpAnim: playerAnimationClips.Knife_Jump,
+    fallAnim:  playerAnimationClips.Knife_Fall,
+    landAnim:  playerAnimationClips.Knife_Land,
+    attackAnim: playerAnimations.knifeSwing,
+    chargeAnim: playerAnimations.knifeCharge,
+    chargeIdleAnim: playerAnimations.knifeChargeIdle,
+    releaseAnim: playerAnimations.knifeRelease,
+    shoveAnim: playerAnimations.knifeShove,
+};
+
+export const batArchetype: MeleeArchetype = {
+    equipAnim: playerAnimationClips.Equip_Melee,
+    movementAnim: playerAnimations.batMovement,
+    jumpAnim: playerAnimationClips.Knife_Jump,
+    fallAnim:  playerAnimationClips.Knife_Fall,
+    landAnim:  playerAnimationClips.Knife_Land,
+    attackAnim: playerAnimations.batSwing,
+    chargeAnim: playerAnimations.batCharge,
+    chargeIdleAnim: playerAnimations.batChargeIdle,
+    releaseAnim: playerAnimations.batRelease,
+    shoveAnim: playerAnimations.batShove,
 };
 
 const _melee: Id<MeleeArchetype>[] = [{
@@ -141,6 +195,24 @@ const _melee: Id<MeleeArchetype>[] = [{
 }, {
     id: 51,
     ...hammerArchetype
+}, {
+    id: 43,
+    ...knifeArchetype
+}, {
+    id: 44,
+    ...knifeArchetype
+}, {
+    id: 45,
+    ...batArchetype
+}, {
+    id: 46,
+    ...batArchetype
+}, {
+    id: 47,
+    ...spearArchetype
+}, {
+    id: 48,
+    ...spearArchetype
 }];
 
 const _consumable: Id<ConsumableArchetype>[] = [{
@@ -153,19 +225,124 @@ const _consumable: Id<ConsumableArchetype>[] = [{
 
 const _gearArchetype: Id<GearArchetype>[] = [{
     id: 1,
-    gunFoldAnim: undefined,
-    leftHandAnim: playerAnimationClips.Stock_Pistol_1_reload,
-    reloadDuration: 1.3
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 2,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
 }, {
     id: 3,
     gunFoldAnim: gearFoldAnimations.Front_Revolver_2_Reload_0,
-    leftHandAnim: playerAnimationClips.Front_Revolver_2_Reload,
-    reloadDuration: 2.3
+}, {
+    id: 4,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 5,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.1)
+}, {
+    id: 6,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 7,
+    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+}, {
+    id: 8,
+    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+}, {
+    id: 9,
+    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+}, {
+    id: 10,
+    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+}, {
+    id: 11,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 12,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 13,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 14,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 15,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 16,
+    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
+}, {
+    id: 17,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 18,
+    gunFoldAnim: gearFoldAnimations.Front_AutoShotgun_2_Parts_Reload,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 19,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 20,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 21,
+    gunFoldAnim: gearFoldAnimations.Front_AutoShotgun_2_Parts_Reload,
+    offset: new Vector3(0, -0.05, 0.2)
+}, {
+    id: 22,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 23,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 24,
+    gunFoldAnim: gearFoldAnimations.Front_AutoShotgun_2_Parts_Reload,
+    offset: new Vector3(0, -0.05, 0.2)
 }, {
     id: 25,
     gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
-    leftHandAnim: playerAnimationClips.Front_Revolver_1_reload,
-    reloadDuration: 1.75
+}, {
+    id: 26,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 27,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 28,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 29,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 30,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 31,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 32,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 33,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
 }];
 
 const _equippable: Equippable[] = [{
@@ -427,7 +604,7 @@ const _equippable: Equippable[] = [{
 }, {
     id: 30,
     name: "High Cal",
-    archetype: "rifle",
+    archetype: "pistol",
     model: () => new HighCal()
 }, {
     id: 31,
@@ -448,48 +625,88 @@ const _equippable: Equippable[] = [{
     id: 57,
     name: "Glow Sticks",
     archetype: "consumable",
-    model: () => new Pistol() // TODO 
+    model: () => new GlowStick()
 }, { 
     id: 58,
     name: "Long Range Flashlight",
     archetype: "consumable",
-    model: () => new Pistol() // TODO 
+    model: () => new LongRangeFlashlight() 
 }, { 
     id: 59,
     name: "I2-LP Syringe",
     archetype: "consumable",
-    model: () => new Pistol() // TODO 
+    model: () => new Syringe(new Color(0xff4444)) 
 }, { 
     id: 60,
     name: "IIX Syringe",
     archetype: "consumable",
-    model: () => new Pistol() // TODO  
+    model: () => new Syringe(new Color(0xffff00))
 }, { 
     id: 61,
     name: "Cfoam Grenade",
     archetype: "consumable",
-    model: () => new Pistol() // TODO  
+    model: () => new CfoamGrenade()
 }, { 
     id: 62,
     name: "Lock Melter",
     archetype: "consumable",
-    model: () => new Pistol() // TODO  
+    model: () => new LockMelter()
 
 }, { 
     id: 63,
     name: "Fog Repeller",
     archetype: "consumable",
-    model: () => new Pistol() // TODO   
+    model: () => new FogRepeller()   
 }, { 
     id: 64,
     name: "Explosive Tripmine",
     archetype: "consumable",
-    model: () => new Pistol() // TODO   
+    model: () => new ConsumableMine()
 }, { 
     id: 65,
     name: "Cfoam Tripmine",
     archetype: "consumable",
-    model: () => new Pistol() // TODO   
+    model: () => new CfoamTripMine()
+}, { 
+    id: 66,
+    name: "Power Cell",
+    archetype: "rifle",
+    model: () => new PowerCell()
+}, { 
+    id: 67,
+    name: "Fog Repeller",
+    archetype: "rifle",
+    model: () => new HeavyFogRepeller()
+}, { 
+    id: 68,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 69,
+    name: "Matter Wave Projector",
+    archetype: "rifle",
+    model: () => new MatterWaveProjector()
+}, { 
+    id: 71,
+    name: "Cargo Crate",
+    archetype: "rifle",
+    model: () => new CargoCrate()
+}, { 
+    id: 72,
+    name: "Hisec Cargo Crate",
+    archetype: "rifle",
+    model: () => new HisecCargoCrate()
+}, { 
+    id: 73,
+    name: "Cryo",
+    archetype: "rifle",
+    model: () => new Cryo()
+}, { 
+    id: 74,
+    name: "Collection Case",
+    archetype: "rifle",
+    model: () => new CollectionCase()
 }];
 
 const _enemies: EnemySpecification[] = [{

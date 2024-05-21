@@ -14,7 +14,7 @@ export abstract class Model {
     equipOffsetRot: QuaternionLike;
 
     leftHandGrip: Vector3Like;
-    leftHand: Object3D;
+    leftHand?: Object3D;
 
     constructor() {
         this.group = new Group;

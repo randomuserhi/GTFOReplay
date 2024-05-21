@@ -7,6 +7,7 @@ const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5
 export class Bat extends Model {
     constructor() {
         super();
+        this.equipOffsetPos = { x: 0, y: 0.1, z: 0 };
 
         const material = new MeshPhongMaterial({
             color: 0xcccccc

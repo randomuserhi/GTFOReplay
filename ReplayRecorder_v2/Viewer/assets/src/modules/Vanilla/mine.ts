@@ -1,8 +1,9 @@
-import { Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "three";
+import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, Object3D, Scene } from "three";
 import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicTransform } from "../replayrecorder.js";
+import { loadGLTF } from "./modeloader.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -43,10 +44,12 @@ declare module "../../replay/moduleloader.js" {
 
 export type MineType = 
     "Explosive" |
-    "Cfoam";
+    "Cfoam" |
+    "ConsumableExplosive";
 const mineTypemap: MineType[] = [
     "Explosive",
-    "Cfoam"
+    "Cfoam",
+    "ConsumableExplosive"
 ];
 
 export interface Mine extends DynamicTransform {
@@ -170,13 +173,61 @@ declare module "../../replay/moduleloader.js" {
 
 const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
 
+let consumableMineAsset: BufferGeometry | undefined = undefined;
+loadGLTF("../js3party/models/Consumables/emine.glb").then((model) => {
+    consumableMineAsset = model;
+    for (const { parent, material } of waitingConsumable) {
+        parent.add(new Mesh(consumableMineAsset, material));
+    }
+});
+const waitingConsumable: { parent: Object3D, material: Material }[] = [];
+function getConsumableMineAsset(parent: Object3D, material: Material) {
+    if (consumableMineAsset === undefined) {
+        waitingConsumable.push({ parent, material });
+    } else {
+        parent.add(new Mesh(consumableMineAsset, material));
+    }
+}
+
+let deployableMineAsset: BufferGeometry | undefined = undefined;
+loadGLTF("../js3party/models/Consumables/emine.glb").then((model) => {
+    deployableMineAsset = model;
+    for (const { parent, material } of waitingDeployable) {
+        parent.add(new Mesh(deployableMineAsset, material));
+    }
+});
+const waitingDeployable: { parent: Object3D, material: Material }[] = [];
+function getDeployableMineAsset(parent: Object3D, material: Material) {
+    if (deployableMineAsset === undefined) {
+        waitingDeployable.push({ parent, material });
+    } else {
+        parent.add(new Mesh(deployableMineAsset, material));
+    }
+}
+
+let cfoamMineAsset: BufferGeometry | undefined = undefined;
+loadGLTF("../js3party/models/Consumables/ctrip.glb").then((model) => {
+    cfoamMineAsset = model;
+    for (const { parent, material } of waitingCfoam) {
+        parent.add(new Mesh(cfoamMineAsset, material));
+    }
+});
+const waitingCfoam: { parent: Object3D, material: Material }[] = [];
+function getCfoamMineAsset(parent: Object3D, material: Material) {
+    if (cfoamMineAsset === undefined) {
+        waitingCfoam.push({ parent, material });
+    } else {
+        parent.add(new Mesh(cfoamMineAsset, material));
+    }
+}
+
 class MineModel {
     readonly group: Group;
 
-    readonly base: Mesh;
+    readonly base: Group;
     readonly laser: Mesh;
     
-    constructor(color: Color) {
+    constructor(color: Color, type: MineType) {
         this.group = new Group();
 
         const material = new MeshPhongMaterial({ color });
@@ -185,9 +236,15 @@ class MineModel {
         laserMaterial.transparent = true;
         laserMaterial.opacity = 0.5;
         
-        this.base = new Mesh(cylinder, material);
+        this.base = new Group();
         this.group.add(this.base);
-        this.base.scale.set(0.1, 0.1, 0.05);
+        switch(type) {
+        case "Explosive": getDeployableMineAsset(this.base, material); break;
+        case "Cfoam": getCfoamMineAsset(this.base, material); break;
+        case "ConsumableExplosive": getConsumableMineAsset(this.base, material); break;
+        }
+        this.base.scale.set(0.05, 0.05, 0.05);
+        this.base.rotateX(90 * Math.deg2rad);
         
         this.laser = new Mesh(cylinder, laserMaterial);
         this.group.add(this.laser);
@@ -226,7 +283,7 @@ ModuleLoader.registerRender("Mine", (name, api) => {
                     case "Cfoam": color = 0x0000ff; break;
                     default: color = 0xff0000; break;
                     }
-                    const model = new MineModel(new Color(color));
+                    const model = new MineModel(new Color(color), mine.type);
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

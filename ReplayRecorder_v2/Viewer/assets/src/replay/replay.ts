@@ -33,7 +33,7 @@ export interface Snapshot {
 //                     Have the data split up across Storage and RAM much like how mp4 or streaming videos work with m3u8 to minimise RAM usage. 
 
 // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
-export const largestTickRate = 400; //ms -> tick rate of 50ms with anim tick rate of 200ms so longest possible time is 200ms. We add lee-way of an extra tick for variance.
+export const largestTickRate = 100; //ms -> tick rate of 50ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
 
 export class Replay {
     typemap: Map<number, ModuleDesc>;
@@ -179,7 +179,9 @@ export class Replay {
         // NOTE(randomuserhi): If the difference in time between current state and snapshot we are lerping to
         //                     is greater than the longest possible time taken between ticks, then no dynamics
         //                     have moved as they are recorded on each tick.
-        if (snapshot.time - state.time <= largestTickRate) {
+        //                     This is only relevant if we are lerping to this snapshot, otherwise dynamics are
+        //                     executed regardless.
+        if (lerp === 1 || diff <= largestTickRate) {
             for (const [type, collection] of snapshot.dynamics) {
                 const module = this.getModule(type);
 

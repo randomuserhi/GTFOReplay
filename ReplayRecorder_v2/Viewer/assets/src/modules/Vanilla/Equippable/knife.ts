@@ -6,6 +6,7 @@ const box = new BoxGeometry(1, 1, 1);
 export class Knife extends Model {
     constructor() {
         super();
+        this.equipOffsetPos = { x: 0, y: 0.1, z: 0 };
 
         const material = new MeshPhongMaterial({
             color: 0xcccccc
@@ -71,6 +72,6 @@ export class Knife extends Model {
         this.group.add(gun);
         gun.scale.set(1.1, 1.1, 1.1);
         gun.position.set(0, -0.07, -0.1);
-        gun.rotateX(-Math.PI/2);
+        gun.rotateX(-Math.PI/3);
     }
 }

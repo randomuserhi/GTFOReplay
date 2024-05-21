@@ -17,6 +17,9 @@ export class Sentry extends Model {
     
     constructor() {
         super();
+        this.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
+        this.equipOffsetPos = { x: 0, y: -0.3, z: 0.1 };
+        this.equipOffsetRot = { x: -0.7071081, y: 0, z: 0, w: 0.7071055 };
 
         this.sentry = new Group();
 

@@ -233,10 +233,21 @@ namespace Vanilla.Player {
             get {
                 if (player.Inventory == null) return false;
                 if (player.Inventory.m_wieldedItem == null) return false;
+                if (player.Inventory.m_wieldedItem.CanReload == false) return false;
                 return player.Inventory.m_wieldedItem.IsReloading;
             }
         }
         private bool isReloading = false;
+
+        private float _reloadTime {
+            get {
+                if (player.Inventory == null) return 0;
+                if (player.Inventory.m_wieldedItem == null) return 0;
+                if (player.Inventory.m_wieldedItem.CanReload == false) return 0;
+                return player.Inventory.m_wieldedItem.ReloadTime;
+            }
+        }
+        private float reloadTime;
 
         private ushort lastEquipped = 0;
         private ushort equipped {
@@ -308,6 +319,10 @@ namespace Vanilla.Player {
             isReloading = _isReloading;
 
             BitHelper.WriteBytes(isReloading, buffer);
+
+            reloadTime = _reloadTime;
+
+            BitHelper.WriteHalf(reloadTime, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

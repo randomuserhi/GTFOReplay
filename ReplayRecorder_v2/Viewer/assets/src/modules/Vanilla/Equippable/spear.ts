@@ -7,6 +7,7 @@ const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5
 export class Spear extends Model {
     constructor() {
         super();
+        this.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
 
         const material = new MeshPhongMaterial({
             color: 0xcccccc
@@ -69,6 +70,7 @@ export class Spear extends Model {
         obj9.position.set(0, -0.0004697121, 0.7881517);
 
         this.group.add(gun);
-        gun.rotateX(-80 + Math.PI);
+        gun.rotateX(-90 * Math.deg2rad);
+        gun.rotateY(30 * Math.deg2rad);
     }
 }

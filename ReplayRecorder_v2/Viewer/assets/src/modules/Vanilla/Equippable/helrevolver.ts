@@ -7,6 +7,9 @@ const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10).rotateX(Math.PI * 0.5
 export class HelRevolver extends Model {
     constructor() {
         super();
+        this.leftHandGrip = { x: 0.05, y: -0.1, z: -0.1 };
+        this.equipOffsetPos = { x: 0, y: 0.05, z: 0 };
+        
         this.fold = new Group();
         this.leftHand = new Group();
         this.group.add(this.leftHand);

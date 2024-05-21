@@ -14,6 +14,7 @@ declare module "../../../replay/moduleloader.js" {
                     meleeCharging: boolean;
                     throwCharging: boolean;
                     isReloading: boolean;
+                    reloadDuration: number;
                 };
                 spawn: {
                     velocity: Pod.Vector;
@@ -23,6 +24,7 @@ declare module "../../../replay/moduleloader.js" {
                     meleeCharging: boolean;
                     throwCharging: boolean;
                     isReloading: boolean;
+                    reloadDuration: number;
                 };
                 despawn: void;
             };
@@ -112,6 +114,7 @@ export interface PlayerAnimState {
     lastThrowChargingTransition: number;
     lastThrowTime: number;
     isReloading: boolean;
+    reloadDuration: number; // NOTE(randomuserhi): in seconds
     lastReloadTransition: number;
     lastShot: number;
     lastShoveTime: number;
@@ -131,6 +134,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 meleeCharging: await BitHelper.readBool(data),
                 throwCharging: await BitHelper.readBool(data),
                 isReloading: await BitHelper.readBool(data),
+                reloadDuration: await BitHelper.readHalf(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -142,6 +146,8 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
             anim.crouch = anim.crouch + (data.crouch - anim.crouch) * lerp;
             Pod.Vec.lerp(anim.targetLookDir, anim.targetLookDir, data.targetLookDir, lerp);
             
+            anim.reloadDuration = data.reloadDuration;
+
             const t = snapshot.time();
             if (anim.state !== data.state) {
                 anim.state = data.state;
@@ -171,6 +177,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 meleeCharging: await BitHelper.readBool(data),
                 throwCharging: await BitHelper.readBool(data),
                 isReloading: await BitHelper.readBool(data),
+                reloadDuration: await BitHelper.readHalf(data),
             };
         },
         exec: (id, data, snapshot) => {

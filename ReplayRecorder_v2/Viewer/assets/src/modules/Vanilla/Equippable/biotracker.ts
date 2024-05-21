@@ -6,6 +6,8 @@ const box = new BoxGeometry(1, 1, 1);
 export class Biotracker extends Model {
     constructor() {
         super();
+        this.leftHandGrip = { x: 0.1, y: -0.15, z: 0.12 };
+        this.equipOffsetPos = { x: 0, y: 0.1, z: 0.1 };
 
         const material = new MeshPhongMaterial({
             color: 0xcccccc
