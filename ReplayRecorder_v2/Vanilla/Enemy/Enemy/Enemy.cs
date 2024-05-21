@@ -33,6 +33,9 @@ namespace Vanilla.Enemy {
 
         public override void Spawn(ByteBuffer buffer) {
             base.Spawn(buffer);
+            BitHelper.WriteBytes((ushort)agent.Locomotion.AnimHandleName, buffer);
+            BitHelper.WriteBytes(agent.Locomotion.AnimHandle.TwitchHit && !agent.EnemyBalancingData.ForbidTwitchHit, buffer);
+            BitHelper.WriteHalf(agent.SizeMultiplier, buffer);
             BitHelper.WriteBytes(GTFOSpecification.GetEnemyType(agent.EnemyData.persistentID), buffer);
         }
     }

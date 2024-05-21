@@ -61,6 +61,7 @@ import { Syringe } from "./Equippable/syringe.js";
 import { gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation } from "./animations/human.js";
+import { AnimHandles, EnemyModel } from "./enemy/enemy.js";
 
 export type Archetype = 
     "melee" |
@@ -86,13 +87,22 @@ export interface Specification {
     consumableArchetype: Map<number, Id<ConsumableArchetype>>;
     gearArchetype: Map<number, Id<GearArchetype>>;
     enemies: Map<number, EnemySpecification>;
+    enemyAnimHandles: Map<AnimHandles.Flags, EnemyAnimHandle>;
 }
+
+export interface EnemyAnimHandle {
+    name: AnimHandles.Flags;
+}
+
+const _enemyAnimHandles: EnemyAnimHandle[] = [{
+    name: "enemyRunner"
+}];
 
 export interface EnemySpecification {
     id: number;
-    name?: string;
     maxHealth: number;
-    height?: number;
+    name?: string;
+    model?: () => EnemyModel;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;
     chestScale?: Vector3Like;
@@ -744,7 +754,17 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 8,
     name: "Big Striker",
-    maxHealth: 120
+    maxHealth: 120,
+    headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65
+    },
+    armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+    },
 }, {
     id: 9,
     name: "Shooter",
@@ -823,5 +843,6 @@ export const specification: Specification = {
     meleeArchetype: new Map(_melee.map(g => [g.id, g])),
     consumableArchetype: new Map(_consumable.map(g => [g.id, g])),
     gearArchetype: new Map(_gearArchetype.map(g => [g.id, g])),
-    enemies: new Map(_enemies.map(e => [e.id, e]))
+    enemies: new Map(_enemies.map(e => [e.id, e])),
+    enemyAnimHandles: new Map(_enemyAnimHandles.map(e => [e.name, e]))
 };

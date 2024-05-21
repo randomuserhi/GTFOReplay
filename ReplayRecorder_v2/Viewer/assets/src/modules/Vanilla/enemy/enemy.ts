@@ -9,7 +9,7 @@ import { animCrouch, animVelocity, playerAnimations } from "../animations/assets
 import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { createDeathCross } from "../deathcross.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
-import { specification } from "../specification.js";
+import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
 import { Damage } from "../stattracker/damage.js";
 import { StatTracker, getPlayerStats, isPlayer } from "../stattracker/stats.js";
 
@@ -22,6 +22,9 @@ declare module "../../../replay/moduleloader.js" {
                     dimension: number;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
+                    animHandle?: AnimHandles.Flags;
+                    twitchHit: boolean;
+                    scale: number;
                     type: number;
                 };
                 despawn: void;
@@ -46,21 +49,17 @@ declare module "../../../replay/moduleloader.js" {
             "Vanilla.Enemy.Animation": {
                 parse: {
                     velocity: Pod.Vector;
+                    state: State;
                 };
                 spawn: {
                     velocity: Pod.Vector;
-                    scale: number;
+                    state: State;
                 };
                 despawn: void;
             }
         }
     
         interface Events {
-            "Vanilla.Enemy.State": {
-                id: number;
-                state: EnemyState;
-            }
-
             "Vanilla.Enemy.LimbDestruction": {
                 id: number;
                 limb: Limb; 
@@ -82,15 +81,43 @@ const limbTypemap: Limb[] = [
     "Head"
 ];
 
-type EnemyState = 
-    "Default" |
-    "Stagger" |
-    "Glue"; 
-const enemyStateTypemap: EnemyState[] = [
-    "Default",
-    "Stagger",
-    "Glue"
-];
+export const states = [
+    "None",
+    "StandStill",
+    "PathMove",
+    "Knockdown",
+    "JumpDissolve",
+    "LiquidSnake",
+    "KnockdownRecover",
+    "Hitreact",
+    "ShortcutJump",
+    "FloaterFly",
+    "FloaterHitReact",
+    "Dead",
+    "ScoutDetection",
+    "ScoutScream",
+    "Hibernate",
+    "HibernateWakeUp",
+    "Scream",
+    "StuckInGlue",
+    "ShooterAttack",
+    "StrikerAttack",
+    "TankAttack",
+    "TankMultiTargetAttack",
+    "TentacleDragMove",
+    "StrikerMelee",
+    "ClimbLadder",
+    "Jump",
+    "BirtherGiveBirth",
+    "TriggerFogSphere",
+    "PathMoveFlyer",
+    "HitReactFlyer",
+    "ShooterAttackFlyer",
+    "DeadFlyer",
+    "DeadSquidBoss"
+] as const;
+export type State = typeof states[number];
+export const stateMap: Map<State, number> = new Map([...states.entries()].map(e => [e[1], e[0]]));
 
 export interface LimbCustom extends DynamicPosition {
     owner: number;
@@ -104,13 +131,57 @@ export interface EnemyCache {
 }
 
 export interface Enemy extends DynamicTransform {
+    animHandle?: AnimHandles.Flags;
+    twitchHit: boolean;
     health: number;
-    state: EnemyState;
     head: boolean;
+    scale: number;
     type: number;
     players: Set<bigint>;
     lastHit?: Damage;
     lastHitTime?: number;
+}
+
+export namespace AnimHandles {
+    export type Flags = 
+        "unspecified" |
+        "enemyCripple" |
+        "enemyRunner" |
+        "enemyFiddler" |
+        "enemyLow" |
+        "enemyCrawlFlip" |
+        "enemyCrawl" |
+        "enemyGiant" |
+        "enemyBig" |
+        "enemyExploder" |
+        "enemyBirtherCrawlFlip" |
+        "enemyPouncer";
+    export const FlagMap = new Map<number, Flags>([
+        [1, "unspecified"],
+        [2, "enemyCripple"],
+        [4, "enemyRunner"],
+        [8, "enemyFiddler"],
+        [0x10, "enemyLow"],
+        [0x20, "enemyCrawlFlip"],
+        [0x40, "enemyCrawl"],
+        [0x80, "enemyGiant"],
+        [0x100, "enemyBig"],
+        [0x200, "enemyExploder"],
+        [0x400, "enemyBirtherCrawlFlip"],
+        [0x800, "enemyPouncer"]
+    ]); 
+    export const Unspecified = 1;
+    export const EnemyCripple = 2;
+    export const EnemyRunner = 4;
+    export const EnemyFiddler = 8;
+    export const EnemyLow = 0x10;
+    export const EnemyCrawlFlip = 0x20;
+    export const EnemyCrawl = 0x40;
+    export const EnemyGiant = 0x80;
+    export const EnemyBig = 0x100;
+    export const EnemyExploder = 0x200;
+    export const EnemyBirtherCrawlFlip = 0x400;
+    export const EnemyPouncer = 0x800;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -131,6 +202,9 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
+                animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
+                twitchHit: await BitHelper.readBool(data),
+                scale: await BitHelper.readHalf(data),
                 type: await BitHelper.readUShort(data)
             };
             return result;
@@ -144,7 +218,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             enemies.set(id, { 
                 id, ...data,
                 health: datablock.maxHealth,
-                state: "Default",
                 head: true,
                 players: new Set(),
             });
@@ -308,22 +381,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
     }
 });
 
-ModuleLoader.registerEvent("Vanilla.Enemy.State", "0.0.1", {
-    parse: async (data) => {
-        return {
-            id: await BitHelper.readInt(data),
-            state: enemyStateTypemap[await BitHelper.readByte(data)]
-        };
-    },
-    exec: (data, snapshot) => {
-        const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-
-        const { id, state } = data;
-        if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' did not exist.`);
-        enemies.get(id)!.state = state;
-    }
-});
-
 export class EnemyNotFound extends Error {
     constructor(message?: string) {
         super(message);
@@ -338,7 +395,7 @@ export class DuplicateEnemy extends Error {
 
 export interface EnemyAnimState {
     velocity: Pod.Vector;
-    scale: number;
+    state: State;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -346,6 +403,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         parse: async (data) => {
             return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
+                state: states[await BitHelper.readByte(data)]
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -360,7 +418,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         parse: async (data) => {
             return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
-                scale: await BitHelper.readHalf(data)
+                state: states[await BitHelper.readByte(data)]
             };
         },
         exec: (id, data, snapshot) => {
@@ -432,10 +490,37 @@ const radius = 0.05;
 const sM = new Vector3(radius, radius, radius);
 const scale = new Vector3(radius, radius, radius);
 
-class EnemyModel {
-    anchor: Object3D;
+export class EnemyModel {
     root: Object3D;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    constructor(enemy: Enemy) {
+        this.root = new Group();
+    }
+
+    public addToScene(scene: Scene) {
+        scene.add(this.root);
+    }
+
+    public removeFromScene(scene: Scene) {
+        scene.remove(this.root);
+    }
+
+    public setVisible(visible: boolean) {
+        this.root.visible = visible;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
+    }
+
+    public dispose() {
+    }
+}
+
+export class HumanoidEnemyModel extends EnemyModel {
+    anchor: Object3D;
+    
     skeleton: HumanSkeleton;
     color: Color;
 
@@ -443,10 +528,19 @@ class EnemyModel {
     parts: number[];
     points: number[];
 
-    constructor(color: Color) {
-        this.color = color;
+    datablock?: EnemySpecification;
+    animHandle?: EnemyAnimHandle;
 
-        this.root = new Group();
+    constructor(enemy: Enemy) {
+        super(enemy);
+
+        this.datablock = specification.enemies.get(enemy.type);
+        if (enemy.animHandle !== undefined) {
+            this.animHandle = specification.enemyAnimHandles.get(enemy.animHandle);
+        }
+
+        this.color = new Color(0xff0000);
+
         this.anchor = new Group();
         this.root.add(this.anchor);
 
@@ -478,33 +572,53 @@ class EnemyModel {
         
         this.skeleton.set(defaultHumanStructure);
 
+        // Scale model - NOTE(randomuserhi): IK doesn't work with scaled models
+        if (this.datablock !== undefined) {
+            if (this.datablock.neckScale !== undefined) {
+                this.skeleton.joints.neck.scale.copy(this.datablock.neckScale);
+            }
+            if (this.datablock.armScale !== undefined) {
+                this.skeleton.joints.leftUpperArm.scale.copy(this.datablock.armScale);
+                this.skeleton.joints.rightUpperArm.scale.copy(this.datablock.armScale);
+            }
+            if (this.datablock.legScale !== undefined) {
+                this.skeleton.joints.leftUpperLeg.scale.copy(this.datablock.legScale);
+                this.skeleton.joints.rightUpperLeg.scale.copy(this.datablock.legScale);
+            }
+            if (this.datablock.chestScale !== undefined) {
+                this.skeleton.joints.spine2.scale.copy(this.datablock.chestScale);
+            }
+        }
+
+        this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
+
         this.parts = new Array(9);
         this.points = new Array(14);
         this.head = -1;
     }
 
     public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
+        this.animate(time, enemy, anim);
+        this.render(enemy);
+    }
+
+    private animate(time: number, enemy: Enemy, anim: EnemyAnimState) {
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
 
         animVelocity.x = anim.velocity.x;
         animVelocity.y = anim.velocity.z;
         animCrouch.x = 0;
 
-        this.skeleton.override(playerAnimations.defaultMovement.sample(time));
+        if (this.animHandle === undefined) {
+            this.skeleton.override(playerAnimations.defaultMovement.sample(time));
+            return;
+        }
 
-        this.render(enemy);
-    }
-
-    public addToScene(scene: Scene) {
-        scene.add(this.root);
-    }
-
-    public removeFromScene(scene: Scene) {
-        scene.remove(this.root);
-    }
-
-    public setVisible(visible: boolean) {
-        this.root.visible = visible;
+        switch (anim.state) {
+        case "PathMove": {
+            
+        } break;
+        }
     }
 
     public render(enemy: Enemy): void {
@@ -586,13 +700,8 @@ class EnemyModel {
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot, zeroQ, sM), this.color);
     }
-
-    public dispose() {
-
-    }
 }
 
-// TODO(randomuserhi): Proper enemy models + enemy types
 ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
@@ -603,7 +712,13 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
-                    const model = new EnemyModel(new Color(0xff0000));
+                    const modelFactory = specification.enemies.get(enemy.type)?.model;
+                    let model: EnemyModel;
+                    if (modelFactory !== undefined) {
+                        model = modelFactory();
+                    } else {
+                        model = new HumanoidEnemyModel(enemy);
+                    }
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

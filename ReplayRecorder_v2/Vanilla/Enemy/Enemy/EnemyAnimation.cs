@@ -39,7 +39,8 @@ namespace Vanilla.Enemy {
                     velRight != compress(_velRight, 10f);
 
                 return
-                    vel;
+                    vel ||
+                    state != _state;
             }
         }
 
@@ -48,6 +49,9 @@ namespace Vanilla.Enemy {
 
         private float _velRight => enemy.Locomotion.PathMove.m_animRight;
         private byte velRight;
+
+        private byte _state => (byte)enemy.Locomotion.CurrentStateEnum;
+        private byte state;
 
         public rEnemyAnimation(EnemyAgent enemy) : base(enemy.GlobalID) {
             this.enemy = enemy;
@@ -60,11 +64,14 @@ namespace Vanilla.Enemy {
 
             BitHelper.WriteBytes(velRight, buffer);
             BitHelper.WriteBytes(velFwd, buffer);
+
+            state = _state;
+
+            BitHelper.WriteBytes(state, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
-            BitHelper.WriteHalf(enemy.SizeMultiplier, buffer);
         }
     }
 }

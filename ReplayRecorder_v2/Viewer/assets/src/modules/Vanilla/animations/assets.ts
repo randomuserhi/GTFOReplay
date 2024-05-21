@@ -185,6 +185,7 @@ import { Front_Revolver_2_Reload } from "./assets/Front_Revolver_2_Reload.js";
 import { Front_Revolver_2_Reload_0 } from "./assets/Front_Revolver_2_Reload_0.js";
 import { Front_Shotgun_1_animation_reload_1 } from "./assets/Front_Shotgun_1_animation_reload_1.js";
 import { Front_Shotgun_3_reload_0 } from "./assets/Front_Shotgun_3_reload_0.js";
+import { Idle_Active } from "./assets/Idle_Active.js";
 import { Knife_Crouch_ChargeRelease } from "./assets/Knife_Crouch_ChargeRelease.js";
 import { Knife_Crouch_Chargeup } from "./assets/Knife_Crouch_Chargeup.js";
 import { Knife_Crouch_Idle } from "./assets/Knife_Crouch_Idle.js";
@@ -215,6 +216,14 @@ import { Player_Climb_Ladder_Down_A } from "./assets/Player_Climb_Ladder_Down_A.
 import { Player_Climb_Ladder_Idle_A } from "./assets/Player_Climb_Ladder_Idle_A.js";
 import { Player_Climb_Ladder_Up_A } from "./assets/Player_Climb_Ladder_Up_A.js";
 import { Player_Reviving_Upperbody_Loop } from "./assets/Player_Reviving_Upperbody_Loop.js";
+import { RU_Run_Bwd } from "./assets/RU_Run_Bwd.js";
+import { RU_Run_Fwd } from "./assets/RU_Run_Fwd.js";
+import { RU_Run_Lt } from "./assets/RU_Run_Lt.js";
+import { RU_Run_Rt } from "./assets/RU_Run_Rt.js";
+import { RU_Walk_Bwd } from "./assets/RU_Walk_Bwd.js";
+import { RU_Walk_Fwd } from "./assets/RU_Walk_Fwd.js";
+import { RU_Walk_Lt } from "./assets/RU_Walk_Lt.js";
+import { RU_Walk_Rt } from "./assets/RU_Walk_Rt.js";
 import { Revive } from "./assets/Revive.js";
 import { Revolver_Front_1_Reload_1 } from "./assets/Revolver_Front_1_Reload_1.js";
 import { Rifle1_Reload } from "./assets/Rifle1_Reload.js";
@@ -893,3 +902,33 @@ export const gearFoldAnimations = {
     Front_Shotgun_3_reload_0,
 } as const;
 export type GearFoldAnimation = keyof typeof gearFoldAnimations;
+
+export const enemyAnimationClips = {
+    RU_Walk_Bwd,
+    RU_Walk_Fwd,
+    RU_Walk_Lt,
+    RU_Walk_Rt,
+    RU_Run_Bwd,
+    RU_Run_Fwd,
+    RU_Run_Lt,
+    RU_Run_Rt,
+    Idle_Active,
+} as const;
+export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
+
+export const enemyRunnerMovement = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.RU_Walk_Fwd, x: 0, y: 2.2 },
+    { anim: enemyAnimationClips.RU_Walk_Bwd, x: 0, y: -2.5},
+    { anim: enemyAnimationClips.RU_Walk_Lt, x: -2.5, y: 0 },
+    { anim: enemyAnimationClips.RU_Walk_Rt, x: 2.5, y: 0},
+    { anim: enemyAnimationClips.RU_Run_Fwd, x: 0, y: 7 },
+    { anim: enemyAnimationClips.RU_Run_Bwd, x: 0, y: -4.5},
+    { anim: enemyAnimationClips.RU_Run_Lt, x: -4.5, y: 0 },
+    { anim: enemyAnimationClips.RU_Run_Rt, x: 4.5, y: 0},
+    { anim: enemyAnimationClips.Idle_Active, x: 0, y: 0},
+], animVelocity);
+
+export const enemyAnimations = {
+    enemyRunnerMovement
+} as const;
+export type EnemyAnimations = keyof typeof enemyAnimations;
