@@ -210,7 +210,7 @@ class PlayerModel  {
 
         this.backpackAligns[inventorySlotMap.get("consumable")!].position.set(-0.003, -0.2, 0.24);
         this.backpackAligns[inventorySlotMap.get("consumable")!].quaternion.set(0, -0.263914526, 0, -0.964546144);
-        this.backpackAligns[inventorySlotMap.get("consumable")!].scale.set(0.7, 0.7, 0.7);
+        this.backpackAligns[inventorySlotMap.get("consumable")!].scale.set(1, 1, 1);
 
         this.backpackAligns[inventorySlotMap.get("heavyItem")!].visible = false;
 
