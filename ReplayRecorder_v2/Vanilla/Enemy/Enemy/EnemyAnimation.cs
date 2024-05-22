@@ -39,13 +39,11 @@ namespace Vanilla.Enemy {
         private byte animIndex;
         private Direction direction;
         private Type type;
-        private Quaternion rot;
 
         public rHitreact(EnemyAgent enemy, byte animIndex, Type type, Direction direction) : base(enemy.GlobalID) {
             this.animIndex = animIndex;
             this.direction = direction;
             this.type = type;
-            rot = enemy.transform.rotation;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -53,7 +51,42 @@ namespace Vanilla.Enemy {
             BitHelper.WriteBytes(animIndex, buffer);
             BitHelper.WriteBytes((byte)direction, buffer);
             BitHelper.WriteBytes((byte)type, buffer);
-            BitHelper.WriteHalf(rot, buffer);
+        }
+    }
+
+    [ReplayData("Vanilla.Enemy.Animation.Melee", "0.0.1")]
+    internal class rMelee : Id {
+        private byte animIndex;
+        private Type type;
+
+        public enum Type {
+            foward,
+            backward,
+        }
+
+        public rMelee(EnemyAgent enemy, byte animIndex, Type type) : base(enemy.GlobalID) {
+            this.animIndex = animIndex;
+            this.type = type;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
+            BitHelper.WriteBytes((byte)type, buffer);
+        }
+    }
+
+    [ReplayData("Vanilla.Enemy.Animation.Jump", "0.0.1")]
+    internal class rJump : Id {
+        private byte animIndex;
+
+        public rJump(EnemyAgent enemy, byte animIndex) : base(enemy.GlobalID) {
+            this.animIndex = animIndex;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
         }
     }
 
@@ -62,6 +95,26 @@ namespace Vanilla.Enemy {
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.DoStartJump))]
+            [HarmonyPrefix]
+            private static void Prefix_DoStartJump(ES_Jump __instance) {
+                Replay.Trigger(new rJump(__instance.m_enemyAgent, 0));
+            }
+
+            [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.UpdateJump))]
+            [HarmonyPostfix]
+            private static void Postfix_UpdateJump(ES_Jump __instance) {
+                switch (__instance.m_state) {
+                case ESJumpState.InAir:
+                    if (__instance.m_jumpMoveTimeRel < 1f) {
+                        break;
+                    }
+                    Replay.Trigger(new rJump(__instance.m_enemyAgent, 1));
+                    break;
+                }
+            }
+
+
             [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.DoHitReact))]
             [HarmonyPrefix]
             private static void Prefix_DoHitReact(ES_Hitreact __instance, int index, ES_HitreactType hitreactType, ImpactDirection impactDirection, float deathDelay, bool propagated, Vector3 damagePos, Vector3 source) {
@@ -81,6 +134,12 @@ namespace Vanilla.Enemy {
                 default: return;
                 }
                 Replay.Trigger(new rHitreact(__instance.m_enemyAgent, (byte)index, type, direction));
+            }
+
+            [HarmonyPatch(typeof(ES_StrikerMelee), nameof(ES_StrikerMelee.DoStartMeleeAttack))]
+            [HarmonyPrefix]
+            private static void Prefix_DoStartMeleeAttack(ES_EnemyAttackBase __instance, int animIndex, bool fwdAttack) {
+                Replay.Trigger(new rMelee(__instance.m_enemyAgent, (byte)animIndex, fwdAttack ? rMelee.Type.foward : rMelee.Type.backward));
             }
 
             [HarmonyPatch(typeof(ES_EnemyAttackBase), nameof(ES_EnemyAttackBase.DoStartAttack))]
@@ -118,6 +177,7 @@ namespace Vanilla.Enemy {
 
                 return
                     vel ||
+                    up != _up ||
                     state != _state;
             }
         }
@@ -132,6 +192,7 @@ namespace Vanilla.Enemy {
 
             velocity.z = Vector3.Dot(enemy.transform.forward, v);
             velocity.x = Vector3.Dot(enemy.transform.right, v);
+            velocity.y = Vector3.Dot(enemy.transform.up, v);
         }
 
         private float _velFwd => velocity.z;
@@ -142,6 +203,9 @@ namespace Vanilla.Enemy {
 
         private byte _state => (byte)enemy.Locomotion.m_currentState.m_stateEnum;
         private byte state;
+
+        private bool _up => velocity.y >= 0;
+        private bool up;
 
         public rEnemyAnimation(EnemyAgent enemy) : base(enemy.GlobalID) {
             this.enemy = enemy;
@@ -158,6 +222,10 @@ namespace Vanilla.Enemy {
             state = _state;
 
             BitHelper.WriteBytes(state, buffer);
+
+            up = _up;
+
+            BitHelper.WriteBytes(up, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

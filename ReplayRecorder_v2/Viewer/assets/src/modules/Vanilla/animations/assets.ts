@@ -184,6 +184,9 @@ import { CA_Hit_Light_Lt_B } from "./assets/CA_Hit_Light_Lt_B.js";
 import { CA_Hit_Light_Rt_A } from "./assets/CA_Hit_Light_Rt_A.js";
 import { CA_Hit_Light_Rt_B } from "./assets/CA_Hit_Light_Rt_B.js";
 import { CA_Idle_A } from "./assets/CA_Idle_A.js";
+import { CA_Jump_Air } from "./assets/CA_Jump_Air.js";
+import { CA_Jump_Land } from "./assets/CA_Jump_Land.js";
+import { CA_Jump_Start } from "./assets/CA_Jump_Start.js";
 import { CA_Walk_Bwd_A } from "./assets/CA_Walk_Bwd_A.js";
 import { CA_Walk_Fwd_A } from "./assets/CA_Walk_Fwd_A.js";
 import { CA_Walk_Lt_A } from "./assets/CA_Walk_Lt_A.js";
@@ -193,6 +196,9 @@ import { CF_Ability_Fire_In_B } from "./assets/CF_Ability_Fire_In_B.js";
 import { CF_Hit_Light_A } from "./assets/CF_Hit_Light_A.js";
 import { CF_Hit_Light_B } from "./assets/CF_Hit_Light_B.js";
 import { CF_Idle_A } from "./assets/CF_Idle_A.js";
+import { CF_Jump_Air } from "./assets/CF_Jump_Air.js";
+import { CF_Jump_Land } from "./assets/CF_Jump_Land.js";
+import { CF_Jump_Start } from "./assets/CF_Jump_Start.js";
 import { CF_Walk_Bwd_A } from "./assets/CF_Walk_Bwd_A.js";
 import { CF_Walk_Fwd_A } from "./assets/CF_Walk_Fwd_A.js";
 import { CF_Walk_Lt_A } from "./assets/CF_Walk_Lt_A.js";
@@ -229,6 +235,9 @@ import { CR_Hit_Light_Rt_A } from "./assets/CR_Hit_Light_Rt_A.js";
 import { CR_Hit_Light_Rt_B } from "./assets/CR_Hit_Light_Rt_B.js";
 import { CR_Hit_Light_Rt_C } from "./assets/CR_Hit_Light_Rt_C.js";
 import { CR_Idle_A } from "./assets/CR_Idle_A.js";
+import { CR_Jump_Air } from "./assets/CR_Jump_Air.js";
+import { CR_Jump_Land } from "./assets/CR_Jump_Land.js";
+import { CR_Jump_Start } from "./assets/CR_Jump_Start.js";
 import { CR_Run_Bwd } from "./assets/CR_Run_Bwd.js";
 import { CR_Run_Fwd } from "./assets/CR_Run_Fwd.js";
 import { CR_Run_Lt } from "./assets/CR_Run_Lt.js";
@@ -254,6 +263,9 @@ import { Enemy_Big_Hit_Left_B } from "./assets/Enemy_Big_Hit_Left_B.js";
 import { Enemy_Big_Hit_Right_A } from "./assets/Enemy_Big_Hit_Right_A.js";
 import { Enemy_Big_Hit_Right_B } from "./assets/Enemy_Big_Hit_Right_B.js";
 import { Enemy_Big_Idle_A } from "./assets/Enemy_Big_Idle_A.js";
+import { Enemy_Big_Jump_Land_A } from "./assets/Enemy_Big_Jump_Land_A.js";
+import { Enemy_Big_Jump_Loop_A } from "./assets/Enemy_Big_Jump_Loop_A.js";
+import { Enemy_Big_Jump_Start_A } from "./assets/Enemy_Big_Jump_Start_A.js";
 import { Enemy_Big_Run_Bwd_A } from "./assets/Enemy_Big_Run_Bwd_A.js";
 import { Enemy_Big_Run_Bwd_Left_A } from "./assets/Enemy_Big_Run_Bwd_Left_A.js";
 import { Enemy_Big_Run_Bwd_Right_A } from "./assets/Enemy_Big_Run_Bwd_Right_A.js";
@@ -297,6 +309,9 @@ import { FD_Hit_Light_Rt_A } from "./assets/FD_Hit_Light_Rt_A.js";
 import { FD_Hit_Light_Rt_B } from "./assets/FD_Hit_Light_Rt_B.js";
 import { FD_Hit_Light_Rt_C } from "./assets/FD_Hit_Light_Rt_C.js";
 import { FD_Idle_A } from "./assets/FD_Idle_A.js";
+import { FD_Jump_Air } from "./assets/FD_Jump_Air.js";
+import { FD_Jump_Land } from "./assets/FD_Jump_Land.js";
+import { FD_Jump_Start } from "./assets/FD_Jump_Start.js";
 import { FD_Run_Bwd_A } from "./assets/FD_Run_Bwd_A.js";
 import { FD_Run_Fwd_A } from "./assets/FD_Run_Fwd_A.js";
 import { FD_Run_Lt_A } from "./assets/FD_Run_Lt_A.js";
@@ -320,6 +335,7 @@ import { Front_Revolver_2_Reload } from "./assets/Front_Revolver_2_Reload.js";
 import { Front_Revolver_2_Reload_0 } from "./assets/Front_Revolver_2_Reload_0.js";
 import { Front_Shotgun_1_animation_reload_1 } from "./assets/Front_Shotgun_1_animation_reload_1.js";
 import { Front_Shotgun_3_reload_0 } from "./assets/Front_Shotgun_3_reload_0.js";
+import { Giant_Jump_Start } from "./assets/Giant_Jump_Start.js";
 import { Idle_Active } from "./assets/Idle_Active.js";
 import { Knife_Crouch_ChargeRelease } from "./assets/Knife_Crouch_ChargeRelease.js";
 import { Knife_Crouch_Chargeup } from "./assets/Knife_Crouch_Chargeup.js";
@@ -374,6 +390,9 @@ import { LO_Hit_Light_Rt_B } from "./assets/LO_Hit_Light_Rt_B.js";
 import { LO_Hit_Light_Rt_C } from "./assets/LO_Hit_Light_Rt_C.js";
 import { LO_Hit_Light_Rt_D } from "./assets/LO_Hit_Light_Rt_D.js";
 import { LO_Idle_A } from "./assets/LO_Idle_A.js";
+import { LO_Jump_Air } from "./assets/LO_Jump_Air.js";
+import { LO_Jump_Land } from "./assets/LO_Jump_Land.js";
+import { LO_Jump_Start } from "./assets/LO_Jump_Start.js";
 import { LO_Run_Bwd_A } from "./assets/LO_Run_Bwd_A.js";
 import { LO_Run_Fwd_A } from "./assets/LO_Run_Fwd_A.js";
 import { LO_Run_Lt_A } from "./assets/LO_Run_Lt_A.js";
@@ -382,6 +401,10 @@ import { LO_Walk_Bwd_A } from "./assets/LO_Walk_Bwd_A.js";
 import { LO_Walk_Fwd_A } from "./assets/LO_Walk_Fwd_A.js";
 import { LO_Walk_Lt_A } from "./assets/LO_Walk_Lt_A.js";
 import { LO_Walk_Rt_A } from "./assets/LO_Walk_Rt_A.js";
+import { Melee_Sequence_Fwd } from "./assets/Melee_Sequence_Fwd.js";
+import { Monster_Attack_06_shortened } from "./assets/Monster_Attack_06_shortened.js";
+import { Monster_Attack_180_L } from "./assets/Monster_Attack_180_L.js";
+import { Monster_Fall_Landing_01 } from "./assets/Monster_Fall_Landing_01.js";
 import { Monster_Hit_Back_01 } from "./assets/Monster_Hit_Back_01.js";
 import { Monster_Hit_Back_02 } from "./assets/Monster_Hit_Back_02.js";
 import { Monster_Hit_Back_04 } from "./assets/Monster_Hit_Back_04.js";
@@ -443,6 +466,10 @@ import { RU_Hit_Light_Lt_C } from "./assets/RU_Hit_Light_Lt_C.js";
 import { RU_Hit_Light_Rt_A } from "./assets/RU_Hit_Light_Rt_A.js";
 import { RU_Hit_Light_Rt_B } from "./assets/RU_Hit_Light_Rt_B.js";
 import { RU_Hit_Light_Rt_C } from "./assets/RU_Hit_Light_Rt_C.js";
+import { RU_Jump_Air_TimeBlend } from "./assets/RU_Jump_Air_TimeBlend.js";
+import { RU_Jump_In } from "./assets/RU_Jump_In.js";
+import { RU_Jump_Out } from "./assets/RU_Jump_Out.js";
+import { RU_Melee_Sequence_A } from "./assets/RU_Melee_Sequence_A.js";
 import { RU_Run_Bwd } from "./assets/RU_Run_Bwd.js";
 import { RU_Run_Fwd } from "./assets/RU_Run_Fwd.js";
 import { RU_Run_Lt } from "./assets/RU_Run_Lt.js";
@@ -1387,7 +1414,34 @@ export const enemyAnimationClips = {
     Monster_Hit_Leg_01,
     Monster_Hit_Leg_02,
     Monster_Hit_Leg_03,
-    Monster_Hit_Right_01
+    Monster_Hit_Right_01,
+    Melee_Sequence_Fwd,
+    RU_Melee_Sequence_A,
+    Monster_Attack_06_shortened,
+    Monster_Attack_180_L,
+    RU_Jump_In,
+    RU_Jump_Air_TimeBlend,
+    RU_Jump_Out,
+    CA_Jump_Start,
+    CA_Jump_Air,
+    CA_Jump_Land,
+    CR_Jump_Start,
+    CR_Jump_Air,
+    CR_Jump_Land,
+    CF_Jump_Start,
+    CF_Jump_Air,
+    CF_Jump_Land,
+    FD_Jump_Start,
+    FD_Jump_Air,
+    FD_Jump_Land,
+    LO_Jump_Start,
+    LO_Jump_Air,
+    LO_Jump_Land,
+    Enemy_Big_Jump_Start_A,
+    Enemy_Big_Jump_Loop_A,
+    Enemy_Big_Jump_Land_A,
+    Giant_Jump_Start,
+    Monster_Fall_Landing_01
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 

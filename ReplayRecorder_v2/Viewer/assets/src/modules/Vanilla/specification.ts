@@ -58,10 +58,11 @@ import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
 import { Syringe } from "./Equippable/syringe.js";
+import { mergeAnims } from "./animations/animation.js";
 import { enemyAnimationClips, enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation } from "./animations/human.js";
-import { AnimHandles, EnemyModel } from "./enemy/enemy.js";
+import { AnimHandles, EnemyModel, MeleeType } from "./enemy/enemy.js";
 
 export type Archetype = 
     "melee" |
@@ -102,11 +103,23 @@ export interface EnemyAnimHandle {
     hitHeavyBwd: HumanAnimation[];
     hitHeavyLt: HumanAnimation[];
     hitHeavyRt: HumanAnimation[];
+    melee?: { [K in MeleeType]: HumanAnimation[] }
+    ladderClimb: HumanAnimation;
+    jump: [HumanAnimation, HumanAnimation]; // NOTE(randomuserhi): 0 - Jump start, 1 - Jump end
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
     movement: enemyAnimations.enemyRunnerMovement,
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
+    jump: [
+        mergeAnims(enemyAnimationClips.RU_Jump_In, enemyAnimationClips.RU_Jump_Air_TimeBlend),
+        enemyAnimationClips.RU_Jump_Out
+    ],
+    melee: {
+        "Forward": [enemyAnimationClips.RU_Melee_Sequence_A],
+        "Backward": [enemyAnimationClips.RU_Melee_Sequence_A],
+    },
     abilityFire: [
         enemyAnimationClips.Ability_Fire_0_Start,
         enemyAnimationClips.Ability_Fire_0_Start,
@@ -157,6 +170,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyLow",
     movement: enemyAnimations.enemyLowMovement,
+    jump: [
+        mergeAnims(enemyAnimationClips.LO_Jump_Start, enemyAnimationClips.LO_Jump_Air),
+        enemyAnimationClips.LO_Jump_Land
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
+    melee: {
+        "Forward": [enemyAnimationClips.Melee_Sequence_Fwd],
+        "Backward": [enemyAnimationClips.Melee_Sequence_Fwd],
+    },
     abilityFire: [
         enemyAnimationClips.LO_Ability_Fire_In_A, 
         enemyAnimationClips.LO_Ability_Fire_In_B,
@@ -206,7 +228,12 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyFiddler",
+    jump: [
+        mergeAnims(enemyAnimationClips.FD_Jump_Start, enemyAnimationClips.FD_Jump_Air),
+        enemyAnimationClips.FD_Jump_Land
+    ],
     movement: enemyAnimations.enemyFiddleMovement,
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     abilityFire: [
         enemyAnimationClips.FD_Ability_Fire_In_A, 
         enemyAnimationClips.FD_Ability_Fire_In_B,
@@ -257,6 +284,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyCrawl",
     movement: enemyAnimations.enemyCrawlMovement,
+    jump: [
+        mergeAnims(enemyAnimationClips.CA_Jump_Start, enemyAnimationClips.CA_Jump_Air),
+        enemyAnimationClips.CA_Jump_Land
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     abilityFire: [
         enemyAnimationClips.CA_Ability_Fire_In_A, 
         enemyAnimationClips.CA_Ability_Fire_In_B,
@@ -307,6 +339,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyCrawlFlip",
     movement: enemyAnimations.enemyCrawlFlipMovement,
+    jump: [
+        mergeAnims(enemyAnimationClips.CF_Jump_Start, enemyAnimationClips.CF_Jump_Air),
+        enemyAnimationClips.CF_Jump_Land
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     abilityFire: [
         enemyAnimationClips.CF_Ability_Fire_In_A, 
         enemyAnimationClips.CF_Ability_Fire_In_B,
@@ -357,6 +394,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyCripple",
     movement: enemyAnimations.enemyCrippleMovement,
+    jump: [
+        mergeAnims(enemyAnimationClips.CR_Jump_Start, enemyAnimationClips.CR_Jump_Air),
+        enemyAnimationClips.CR_Jump_Land
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     abilityFire: [
         enemyAnimationClips.CR_Ability_Fire_In_A, 
         enemyAnimationClips.CR_Ability_Fire_In_B,
@@ -407,6 +449,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyBig",
     movement: enemyAnimations.enemyBigMovement,
+    jump: [
+        mergeAnims(enemyAnimationClips.Enemy_Big_Jump_Start_A, enemyAnimationClips.Enemy_Big_Jump_Loop_A),
+        enemyAnimationClips.Enemy_Big_Jump_Land_A
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     abilityFire: [
         enemyAnimationClips.Enemy_Big_Fire_In_A,
         enemyAnimationClips.Enemy_Big_Fire_In_B,
@@ -456,7 +503,16 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyGiant",
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
+    melee: {
+        "Forward": [enemyAnimationClips.Monster_Attack_06_shortened],
+        "Backward": [enemyAnimationClips.Monster_Attack_180_L]
+    },
     movement: enemyAnimations.enemyGiantMovement,
+    jump: [
+        enemyAnimationClips.Giant_Jump_Start,
+        enemyAnimationClips.Monster_Fall_Landing_01
+    ],
     abilityFire: [
         enemyAnimationClips.Monster_TentacleStart,
         enemyAnimationClips.Monster_TentacleStart, 
@@ -506,6 +562,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyPouncer",
+    jump: [
+        mergeAnims(enemyAnimationClips.LO_Jump_Start, enemyAnimationClips.LO_Jump_Air),
+        enemyAnimationClips.LO_Jump_Land
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     movement: enemyAnimations.enemyPouncerMovement,
     abilityFire: [],
     hitLightBwd: [
@@ -553,6 +614,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyBirtherCrawlFlip",
     movement: enemyAnimations.enemyCrawlFlipMovement,
+    jump: [
+        mergeAnims(enemyAnimationClips.CF_Jump_Start, enemyAnimationClips.CF_Jump_Air),
+        enemyAnimationClips.CF_Jump_Land
+    ],
+    ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     abilityFire: [
         enemyAnimationClips.CF_Ability_Fire_In_A, 
         enemyAnimationClips.CF_Ability_Fire_In_B,

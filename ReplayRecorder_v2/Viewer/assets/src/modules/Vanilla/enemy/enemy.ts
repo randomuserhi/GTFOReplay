@@ -49,10 +49,12 @@ declare module "../../../replay/moduleloader.js" {
                 parse: {
                     velocity: Pod.Vector;
                     state: State;
+                    up: boolean;
                 };
                 spawn: {
                     velocity: Pod.Vector;
                     state: State;
+                    up: boolean;
                 };
                 despawn: void;
             }
@@ -74,7 +76,17 @@ declare module "../../../replay/moduleloader.js" {
                 animIndex: number;
                 direction: HitreactDirection;
                 type: HitreactType;
-                rotation: Pod.Quaternion;
+            };
+
+            "Vanilla.Enemy.Animation.Melee": {
+                id: number;
+                animIndex: number;
+                type: MeleeType;
+            };
+
+            "Vanilla.Enemy.Animation.Jump": {
+                id: number;
+                animIndex: number;
             };
         }
 
@@ -144,6 +156,12 @@ export const hitreactTypes = [
     "Heavy",
 ] as const;
 export type HitreactType = typeof hitreactTypes[number];
+
+export const meleeTypes = [
+    "Forward",
+    "Backward",
+] as const;
+export type MeleeType = typeof meleeTypes[number];
 
 export interface LimbCustom extends DynamicPosition {
     owner: number;
@@ -420,13 +438,18 @@ export class DuplicateEnemy extends Error {
 export interface EnemyAnimState {
     velocity: Pod.Vector;
     state: State;
+    up: boolean;
     lastWindupTime: number;
     windupAnimIndex: number;
     lastHitreactTime: number;
     hitreactAnimIndex: number;
     hitreactDirection: HitreactDirection;
     hitreactType: HitreactType;
-    hitreactRotation: Pod.Quaternion;
+    lastMeleeTime: number;
+    meleeType: MeleeType;
+    meleeAnimIndex: number;
+    lastJumpTime: number;
+    jumpAnimIndex: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -434,7 +457,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         parse: async (data) => {
             return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
-                state: states[await BitHelper.readByte(data)]
+                state: states[await BitHelper.readByte(data)],
+                up: await BitHelper.readBool(data)
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -450,7 +474,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         parse: async (data) => {
             return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
-                state: states[await BitHelper.readByte(data)]
+                state: states[await BitHelper.readByte(data)],
+                up: await BitHelper.readBool(data)
             };
         },
         exec: (id, data, snapshot) => {
@@ -465,7 +490,11 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 hitreactAnimIndex: 0,
                 hitreactDirection: "Forward",
                 hitreactType: "Light",
-                hitreactRotation: Pod.Quat.identity()
+                lastMeleeTime: -Infinity,
+                meleeAnimIndex: 0,
+                meleeType: "Forward",
+                lastJumpTime: -Infinity,
+                jumpAnimIndex: 0,
             });
         }
     },
@@ -506,7 +535,6 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
             animIndex: await BitHelper.readByte(bytes),
             direction: hitreactDirections[await BitHelper.readByte(bytes)],
             type: hitreactTypes[await BitHelper.readByte(bytes)],
-            rotation: await BitHelper.readHalfQuaternion(bytes),
         };
     },
     exec: async (data, snapshot) => {
@@ -519,7 +547,44 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         anim.hitreactAnimIndex = data.animIndex;
         anim.hitreactDirection = data.direction;
         anim.hitreactType = data.type;
-        anim.hitreactRotation = data.rotation;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Melee", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            animIndex: await BitHelper.readByte(bytes),
+            type: meleeTypes[await BitHelper.readByte(bytes)],
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastMeleeTime = snapshot.time();
+        anim.meleeAnimIndex = data.animIndex;
+        anim.meleeType = data.type;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Jump", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            animIndex: await BitHelper.readByte(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastJumpTime = snapshot.time();
+        anim.jumpAnimIndex = data.animIndex;
     }
 });
 
@@ -601,6 +666,7 @@ export class EnemyModel {
 
 export class HumanoidEnemyModel extends EnemyModel {
     anchor: Object3D;
+    pivot: Object3D;
     
     skeleton: HumanSkeleton;
     color: Color;
@@ -612,10 +678,11 @@ export class HumanoidEnemyModel extends EnemyModel {
     datablock?: EnemySpecification;
     animHandle?: EnemyAnimHandle;
 
-    setAnchor: boolean;
+    offset: number;
 
     constructor(enemy: Enemy) {
         super(enemy);
+        this.offset = Math.random() * 10;
 
         this.datablock = specification.enemies.get(enemy.type);
         if (enemy.animHandle !== undefined) {
@@ -625,10 +692,12 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.color = new Color(0xff0000);
 
         this.anchor = new Group();
+        this.pivot = new Group();
+        this.anchor.add(this.pivot);
         this.root.add(this.anchor);
 
         this.skeleton = new AvatarSkeleton(HumanJoints, "hip");
-        this.anchor.add(this.skeleton.joints.hip);
+        this.pivot.add(this.skeleton.joints.hip);
         this.skeleton.joints.hip.add(
             this.skeleton.joints.spine0,
             this.skeleton.joints.leftUpperLeg,
@@ -682,30 +751,57 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.parts = new Array(9);
         this.points = new Array(14);
         this.head = -1;
-
-        this.setAnchor = true;
     }
 
     public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
-        this.setAnchor = true;
         this.animate(time, enemy, anim);
         this.render(enemy);
     }
 
     private animate(time: number, enemy: Enemy, anim: EnemyAnimState) {
+        this.pivot.rotation.set(0, 0, 0);
+
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
+        const offsetTime = time + this.offset;
 
         animVelocity.x = anim.velocity.x;
         animVelocity.y = anim.velocity.z;
         animCrouch.x = 0;
 
         if (this.animHandle === undefined) {
-            this.skeleton.override(playerAnimations.defaultMovement.sample(time));
+            this.skeleton.override(playerAnimations.defaultMovement.sample(offsetTime));
             return;
         }
 
         switch (anim.state) {
-        default: this.skeleton.override(this.animHandle.movement.sample(time)); break;
+        case "ClimbLadder": 
+            if (anim.up) {
+                this.pivot.rotation.set(80, 0, 0, "YXZ");
+            } else {
+                this.pivot.rotation.set(80, 180, 0, "YXZ");
+            } 
+            this.skeleton.override(this.animHandle.ladderClimb.sample(offsetTime, 2));
+            break;
+        default: this.skeleton.override(this.animHandle.movement.sample(offsetTime)); break;
+        }
+
+        const jumpTime = time - (anim.lastJumpTime / 1000);
+        const jumpAnim = this.animHandle.jump[anim.jumpAnimIndex];
+        const inJump = (jumpTime < jumpAnim.duration || anim.state === "Jump");
+        if (inJump) {
+            const blend = jumpTime < jumpAnim.duration / 2 ? Math.clamp01(jumpTime / 0.15) : Math.clamp01((jumpAnim.duration - jumpTime) / 0.15);
+            this.skeleton.blend(jumpAnim.sample(Math.clamp(jumpTime, 0, jumpAnim.duration)), blend);
+            return;
+        }
+
+        if (this.animHandle.melee !== undefined) {
+            const meleeTime = time - (anim.lastMeleeTime / 1000);
+            const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
+            const inMelee = meleeAnim !== undefined && meleeTime < meleeAnim.duration;
+            if (inMelee) {
+                const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
+                this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
+            }
         }
 
         const windupTime = time - (anim.lastWindupTime / 1000);
@@ -714,6 +810,16 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (inWindup) {
             const blend = windupTime < windupAnim.duration / 2 ? Math.clamp01(windupTime / 0.15) : Math.clamp01((windupAnim.duration - windupTime) / 0.15);
             this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
+        }
+
+        if (this.animHandle.melee !== undefined) {
+            const meleeTime = time - (anim.lastMeleeTime / 1000);
+            const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
+            const inMelee = meleeAnim !== undefined && meleeTime < meleeAnim.duration;
+            if (inMelee) {
+                const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
+                this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
+            }
         }
 
         const hitreactTime = time - (anim.lastHitreactTime / 1000);
@@ -740,15 +846,12 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (inHitreact) {
             const blend = hitreactTime < hitreactAnim.duration / 2 ? Math.clamp01(hitreactTime / 0.15) : Math.clamp01((hitreactAnim.duration - hitreactTime) / 0.15);
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
-            
-            this.setAnchor = false;
-            this.anchor.quaternion.copy(anim.hitreactRotation);
         }
     }
 
     public render(enemy: Enemy): void {
         this.root.position.copy(enemy.position);
-        if (this.setAnchor) this.anchor.quaternion.copy(enemy.rotation);
+        this.anchor.quaternion.copy(enemy.rotation);
 
         getWorldPos(worldPos, this.skeleton);
 
