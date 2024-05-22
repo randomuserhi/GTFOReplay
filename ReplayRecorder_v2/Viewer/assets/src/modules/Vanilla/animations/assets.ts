@@ -155,6 +155,8 @@ import { WalkBwdLoop } from "./assets/WalkBwdLoop.js";
 import { WalkFwdLoop } from "./assets/WalkFwdLoop.js";
 
 import { AnimBlend } from "./animation.js";
+import { Ability_Fire_0_Start } from "./assets/Ability_Fire_0_Start.js";
+import { Ability_Fire_2_Start } from "./assets/Ability_Fire_2_Start.js";
 import { Bat_Crouch_ChargeRelease } from "./assets/Bat_Crouch_ChargeRelease.js";
 import { Bat_Crouch_Chargeup } from "./assets/Bat_Crouch_Chargeup.js";
 import { Bat_Crouch_Shove } from "./assets/Bat_Crouch_Shove.js";
@@ -164,16 +166,23 @@ import { Bat_Stand_Chargeup } from "./assets/Bat_Stand_Chargeup.js";
 import { Bat_Stand_ChargeupIdle } from "./assets/Bat_Stand_ChargeupIdle.js";
 import { Bat_Stand_Shove } from "./assets/Bat_Stand_Shove.js";
 import { Bat_Stand_SwingRight } from "./assets/Bat_Stand_SwingRight.js";
+import { CA_Ability_Fire_In_A } from "./assets/CA_Ability_Fire_In_A.js";
+import { CA_Ability_Fire_In_B } from "./assets/CA_Ability_Fire_In_B.js";
 import { CA_Idle_A } from "./assets/CA_Idle_A.js";
 import { CA_Walk_Bwd_A } from "./assets/CA_Walk_Bwd_A.js";
 import { CA_Walk_Fwd_A } from "./assets/CA_Walk_Fwd_A.js";
 import { CA_Walk_Lt_A } from "./assets/CA_Walk_Lt_A.js";
 import { CA_Walk_Rt_A } from "./assets/CA_Walk_Rt_A.js";
+import { CF_Ability_Fire_In_A } from "./assets/CF_Ability_Fire_In_A.js";
+import { CF_Ability_Fire_In_B } from "./assets/CF_Ability_Fire_In_B.js";
 import { CF_Idle_A } from "./assets/CF_Idle_A.js";
 import { CF_Walk_Bwd_A } from "./assets/CF_Walk_Bwd_A.js";
 import { CF_Walk_Fwd_A } from "./assets/CF_Walk_Fwd_A.js";
 import { CF_Walk_Lt_A } from "./assets/CF_Walk_Lt_A.js";
 import { CF_Walk_Rt_A } from "./assets/CF_Walk_Rt_A.js";
+import { CR_Ability_Fire_In_A } from "./assets/CR_Ability_Fire_In_A.js";
+import { CR_Ability_Fire_In_B } from "./assets/CR_Ability_Fire_In_B.js";
+import { CR_Ability_Fire_In_C } from "./assets/CR_Ability_Fire_In_C.js";
 import { CR_Idle_A } from "./assets/CR_Idle_A.js";
 import { CR_Run_Bwd } from "./assets/CR_Run_Bwd.js";
 import { CR_Run_Fwd } from "./assets/CR_Run_Fwd.js";
@@ -189,6 +198,8 @@ import { Consumable_Throw_Charge } from "./assets/Consumable_Throw_Charge.js";
 import { Consumable_Throw_Charge_Idle } from "./assets/Consumable_Throw_Charge_Idle.js";
 import { Dead } from "./assets/Dead.js";
 import { Die } from "./assets/Die.js";
+import { Enemy_Big_Fire_In_A } from "./assets/Enemy_Big_Fire_In_A.js";
+import { Enemy_Big_Fire_In_B } from "./assets/Enemy_Big_Fire_In_B.js";
 import { Enemy_Big_Idle_A } from "./assets/Enemy_Big_Idle_A.js";
 import { Enemy_Big_Run_Bwd_A } from "./assets/Enemy_Big_Run_Bwd_A.js";
 import { Enemy_Big_Run_Bwd_Left_A } from "./assets/Enemy_Big_Run_Bwd_Left_A.js";
@@ -206,6 +217,8 @@ import { Enemy_Big_Walk_Fwd_Left_A } from "./assets/Enemy_Big_Walk_Fwd_Left_A.js
 import { Enemy_Big_Walk_Fwd_Right_A } from "./assets/Enemy_Big_Walk_Fwd_Right_A.js";
 import { Enemy_Big_Walk_Left_A } from "./assets/Enemy_Big_Walk_Left_A.js";
 import { Enemy_Big_Walk_Right_A } from "./assets/Enemy_Big_Walk_Right_A.js";
+import { FD_Ability_Fire_In_A } from "./assets/FD_Ability_Fire_In_A.js";
+import { FD_Ability_Fire_In_B } from "./assets/FD_Ability_Fire_In_B.js";
 import { FD_Idle_A } from "./assets/FD_Idle_A.js";
 import { FD_Run_Bwd_A } from "./assets/FD_Run_Bwd_A.js";
 import { FD_Run_Fwd_A } from "./assets/FD_Run_Fwd_A.js";
@@ -256,6 +269,9 @@ import { Knife_Stand_ChargeRelease } from "./assets/Knife_Stand_ChargeRelease.js
 import { Knife_Stand_Chargeup } from "./assets/Knife_Stand_Chargeup.js";
 import { Knife_Stand_ChargeupIdle } from "./assets/Knife_Stand_ChargeupIdle.js";
 import { Knife_Stand_SwingRight } from "./assets/Knife_Stand_SwingRight.js";
+import { LO_Ability_Fire_In_A } from "./assets/LO_Ability_Fire_In_A.js";
+import { LO_Ability_Fire_In_B } from "./assets/LO_Ability_Fire_In_B.js";
+import { LO_Ability_Fire_In_C } from "./assets/LO_Ability_Fire_In_C.js";
 import { LO_Idle_A } from "./assets/LO_Idle_A.js";
 import { LO_Run_Bwd_A } from "./assets/LO_Run_Bwd_A.js";
 import { LO_Run_Fwd_A } from "./assets/LO_Run_Fwd_A.js";
@@ -266,6 +282,8 @@ import { LO_Walk_Fwd_A } from "./assets/LO_Walk_Fwd_A.js";
 import { LO_Walk_Lt_A } from "./assets/LO_Walk_Lt_A.js";
 import { LO_Walk_Rt_A } from "./assets/LO_Walk_Rt_A.js";
 import { Monster_Idle_01 } from "./assets/Monster_Idle_01.js";
+import { Monster_TentacleLoop } from "./assets/Monster_TentacleLoop.js";
+import { Monster_TentacleStart } from "./assets/Monster_TentacleStart.js";
 import { Monster_Walk_Bwd } from "./assets/Monster_Walk_Bwd.js";
 import { Monster_Walk_Fwd } from "./assets/Monster_Walk_Fwd.js";
 import { Monster_Walk_Left } from "./assets/Monster_Walk_Left.js";
@@ -1059,6 +1077,24 @@ export const enemyAnimationClips = {
     PO_JogRight,
     PO_RunFwd,
     PO_IdleCombat,
+    LO_Ability_Fire_In_A,
+    LO_Ability_Fire_In_B,
+    LO_Ability_Fire_In_C,
+    CA_Ability_Fire_In_A,
+    CA_Ability_Fire_In_B,
+    CF_Ability_Fire_In_A,
+    CF_Ability_Fire_In_B,
+    FD_Ability_Fire_In_A,
+    FD_Ability_Fire_In_B,
+    CR_Ability_Fire_In_A,
+    CR_Ability_Fire_In_B,
+    CR_Ability_Fire_In_C,
+    Ability_Fire_0_Start,
+    Ability_Fire_2_Start,
+    Enemy_Big_Fire_In_A,
+    Enemy_Big_Fire_In_B,
+    Monster_TentacleStart,
+    Monster_TentacleLoop,
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 

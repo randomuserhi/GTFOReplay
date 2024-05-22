@@ -64,6 +64,12 @@ declare module "../../../replay/moduleloader.js" {
                 id: number;
                 limb: Limb; 
             };
+
+            "Vanilla.Enemy.Animation.AttackWindup": {
+                id: number;
+                animIndex: number;
+                duration: number;
+            }
         }
 
         interface Data {
@@ -396,6 +402,9 @@ export class DuplicateEnemy extends Error {
 export interface EnemyAnimState {
     velocity: Pod.Vector;
     state: State;
+    lastWindupTime: number;
+    windupDuration: number;
+    windupAnimIndex: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -427,7 +436,10 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         
             if (anims.has(id)) throw new DuplicateAnim(`EnemyAnim of id '${id}' already exists.`);
             anims.set(id, { 
-                ...data
+                ...data,
+                lastWindupTime: -Infinity,
+                windupDuration: 1,
+                windupAnimIndex: 0
             });
         }
     },
@@ -440,6 +452,26 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' did not exist.`);
             anims.delete(id);
         }
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            animIndex: await BitHelper.readByte(bytes),
+            duration: await BitHelper.readHalf(bytes),
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastWindupTime = snapshot.time();
+        anim.windupDuration = data.duration;
+        anim.windupAnimIndex = data.animIndex;
     }
 });
 
@@ -616,9 +648,22 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
 
         switch (anim.state) {
-        case "PathMove": {
-            this.skeleton.override(this.animHandle.movement.sample(time));
-        } break;
+        default: this.skeleton.override(this.animHandle.movement.sample(time)); break;
+        }
+
+        const windupTime = time - (anim.lastWindupTime / 1000);
+        const inWindup = windupTime < anim.windupDuration;
+        if (inWindup) {
+            const windupAnim = this.animHandle.abilityFireIn[anim.windupAnimIndex];
+            if (windupAnim !== undefined) {
+                const blend = Math.clamp01(windupTime / 0.15);
+                if (this.animHandle.abilityFireInLoop !== undefined && this.animHandle.abilityFireInLoop[anim.windupAnimIndex] !== undefined && windupTime > windupAnim.duration) {
+                    const windupAnimLoop = this.animHandle.abilityFireInLoop[anim.windupAnimIndex];
+                    this.skeleton.blend(windupAnimLoop.sample(windupTime), blend);
+                } else {
+                    this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
+                }
+            }
         }
     }
 

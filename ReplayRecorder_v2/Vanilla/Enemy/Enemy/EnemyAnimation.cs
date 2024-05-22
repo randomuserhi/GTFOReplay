@@ -1,17 +1,40 @@
-﻿using Enemies;
+﻿using Agents;
+using Enemies;
 using HarmonyLib;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using ReplayRecorder.Core;
 using UnityEngine;
 
 namespace Vanilla.Enemy {
+    [ReplayData("Vanilla.Enemy.Animation.AttackWindup", "0.0.1")]
+    internal class rAttackWindup : Id {
+        private byte animIndex;
+        private float duration;
+
+        public rAttackWindup(EnemyAgent enemy, byte animIndex, float duration) : base(enemy.GlobalID) {
+            this.animIndex = animIndex;
+            this.duration = duration;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
+            BitHelper.WriteHalf(duration, buffer);
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
-
+            [HarmonyPatch(typeof(ES_EnemyAttackBase), nameof(ES_EnemyAttackBase.DoStartAttack))]
+            [HarmonyPrefix]
+            private static void Prefix_DoStartAttack(ES_EnemyAttackBase __instance, Vector3 pos, Vector3 attackTargetPosition, Agent targetAgent, int animIndex, AgentAbility abilityType, int abilityIndex) {
+                Replay.Trigger(new rAttackWindup(__instance.m_enemyAgent, (byte)animIndex, __instance.m_attackWindupDuration));
+            }
         }
 
         public EnemyAgent enemy;
