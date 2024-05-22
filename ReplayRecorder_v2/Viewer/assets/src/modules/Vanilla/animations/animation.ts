@@ -110,7 +110,7 @@ export interface AvatarMask<T extends string = string> {
 
 export interface AnimFunc<T extends string> {
     joints: ReadonlyArray<T>;
-    sample(t: number): Avatar<T>;
+    sample(t: number, timescale?: number): Avatar<T>;
     duration: number;
 }
 
@@ -148,7 +148,8 @@ export class Anim<T extends string = string> implements AnimFunc<T> {
         this.cache = new Avatar(this.joints);
     }
 
-    public sample(t: number): Avatar<T> {
+    public sample(t: number, timescale?: number): Avatar<T> {
+        if (timescale !== undefined) t *= timescale;
         t = t % this.duration;
     
         let min = 0;
@@ -202,7 +203,8 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
     points: {
         anim: AnimFunc<T>,
         x: number,
-        y: number
+        y: number,
+        timescale?: number
     }[]; 
     readonly duration: number;
 
@@ -214,7 +216,8 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
     constructor(joints: ReadonlyArray<T>, points: {
         anim: AnimFunc<T>,
         x: number,
-        y: number
+        y: number,
+        timescale?: number
     }[], point?: Vector2Like) {
         if (point === undefined) {
             this.point = {
@@ -225,7 +228,7 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
             this.point = point;
         }
         this.points = points;
-        this.duration = Math.max(...points.map(p => p.anim.duration));
+        this.duration = Math.max(...points.map(p => p.timescale === undefined ? p.anim.duration : p.anim.duration / p.timescale));
 
         this.joints = joints;
         this.cache = new Avatar(this.joints);
@@ -234,7 +237,7 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
         this.numStates = 0;
     }
 
-    private weights(): {anim: AnimFunc<T>, weight: number}[] {
+    private weights(): { anim: AnimFunc<T>, weight: number, timescale?: number }[] {
         // Implementation from https://www.shadertoy.com/view/XlKXWR
         let totalWeight: number = 0;
         const weights = [];
@@ -264,7 +267,7 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
             }
 
             if (weight > 0) {
-                weights.push({ anim: point_i.anim, weight: weight });
+                weights.push({ anim: point_i.anim, weight: weight, timescale: point_i.timescale });
             }
             totalWeight += weight;
         }
@@ -353,10 +356,12 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
         Pod.Quat.copy(this.cache.joints[key], this.buffer[0].value);
     }
 
-    public sample(t: number): Avatar<T> {
+    public sample(t: number, timescale?: number): Avatar<T> {        
+        if (timescale !== undefined) t *= timescale;
+
         this.numStates = 0;
-        for (const { anim, weight } of this.weights()) {
-            const frame: Avatar<T> = anim.sample(t);
+        for (const { anim, weight, timescale } of this.weights()) {
+            const frame: Avatar<T> = anim.sample(t, timescale);
             while (this.numStates >= this.states.length) {
                 this.states.push({
                     anim: undefined as any,

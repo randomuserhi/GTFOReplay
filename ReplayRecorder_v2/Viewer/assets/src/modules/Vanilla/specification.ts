@@ -104,6 +104,27 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyFiddler",
     movement: enemyAnimations.enemyFiddleMovement
+}, {
+    name: "enemyCrawl",
+    movement: enemyAnimations.enemyCrawlMovement
+}, {
+    name: "enemyCrawlFlip",
+    movement: enemyAnimations.enemyCrawlFlipMovement
+}, {
+    name: "enemyCripple",
+    movement: enemyAnimations.enemyCrippleMovement
+}, {
+    name: "enemyBig",
+    movement: enemyAnimations.enemyBigMovement
+}, {
+    name: "enemyGiant",
+    movement: enemyAnimations.enemyGiantMovement
+}, {
+    name: "enemyPouncer",
+    movement: enemyAnimations.enemyPouncerMovement
+}, {
+    name: "enemyBirtherCrawlFlip",
+    movement: enemyAnimations.enemyCrawlFlipMovement
 }];
 
 export interface EnemySpecification {
