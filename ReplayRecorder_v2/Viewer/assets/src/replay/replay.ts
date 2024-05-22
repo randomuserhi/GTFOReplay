@@ -33,7 +33,7 @@ export interface Snapshot {
 //                     Have the data split up across Storage and RAM much like how mp4 or streaming videos work with m3u8 to minimise RAM usage. 
 
 // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
-export const largestTickRate = 100; //ms -> tick rate of 50ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
+export const largestTickRate = 400; //ms -> tick rate of 200ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
 
 export class Replay {
     typemap: Map<number, ModuleDesc>;

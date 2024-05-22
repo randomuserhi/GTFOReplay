@@ -58,7 +58,7 @@ import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
 import { Syringe } from "./Equippable/syringe.js";
-import { enemyAnimationClips, enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
+import { enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation } from "./animations/human.js";
 import { AnimHandles, EnemyModel } from "./enemy/enemy.js";
@@ -93,88 +93,82 @@ export interface Specification {
 export interface EnemyAnimHandle {
     name: AnimHandles.Flags;
     movement: HumanAnimation;
-    abilityFireIn: HumanAnimation[];
-    abilityFireInLoop?: HumanAnimation[];
+    abilityFire: HumanAnimation[];
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
     movement: enemyAnimations.enemyRunnerMovement,
-    abilityFireIn: [
-        enemyAnimationClips.Ability_Fire_0_Start, 
-        enemyAnimationClips.Ability_Fire_0_Start,
-        enemyAnimationClips.Ability_Fire_2_Start
+    abilityFire: [
+        enemyAnimations.Ability_Fire_0,
+        enemyAnimations.Ability_Fire_0,
+        enemyAnimations.Ability_Fire_2
     ]
 }, {
     name: "enemyLow",
     movement: enemyAnimations.enemyLowMovement,
-    abilityFireIn: [
-        enemyAnimationClips.LO_Ability_Fire_In_A, 
-        enemyAnimationClips.LO_Ability_Fire_In_B,
-        enemyAnimationClips.LO_Ability_Fire_In_C
+    abilityFire: [
+        enemyAnimations.LO_Ability_Fire_A,
+        enemyAnimations.LO_Ability_Fire_B,
+        enemyAnimations.LO_Ability_Fire_C
     ]
 }, {
     name: "enemyFiddler",
     movement: enemyAnimations.enemyFiddleMovement,
-    abilityFireIn: [
-        enemyAnimationClips.FD_Ability_Fire_In_A, 
-        enemyAnimationClips.FD_Ability_Fire_In_B,
-        enemyAnimationClips.FD_Ability_Fire_In_B
+    abilityFire: [
+        enemyAnimations.FD_Ability_Fire_A,
+        enemyAnimations.FD_Ability_Fire_B,
+        enemyAnimations.FD_Ability_Fire_B
     ]
 }, {
     name: "enemyCrawl",
     movement: enemyAnimations.enemyCrawlMovement,
-    abilityFireIn: [
-        enemyAnimationClips.CA_Ability_Fire_In_A, 
-        enemyAnimationClips.CA_Ability_Fire_In_B,
-        enemyAnimationClips.CA_Ability_Fire_In_B
+    abilityFire: [
+        enemyAnimations.CA_Ability_Fire_A,
+        enemyAnimations.CA_Ability_Fire_B,
+        enemyAnimations.CA_Ability_Fire_B
     ]
 }, {
     name: "enemyCrawlFlip",
     movement: enemyAnimations.enemyCrawlFlipMovement,
-    abilityFireIn: [
-        enemyAnimationClips.CF_Ability_Fire_In_A, 
-        enemyAnimationClips.CF_Ability_Fire_In_B,
-        enemyAnimationClips.CF_Ability_Fire_In_B
+    abilityFire: [
+        enemyAnimations.CF_Ability_Fire_A,
+        enemyAnimations.CF_Ability_Fire_B,
+        enemyAnimations.CF_Ability_Fire_B
     ]
 }, {
     name: "enemyCripple",
     movement: enemyAnimations.enemyCrippleMovement,
-    abilityFireIn: [
-        enemyAnimationClips.CR_Ability_Fire_In_A, 
-        enemyAnimationClips.CR_Ability_Fire_In_B,
-        enemyAnimationClips.CR_Ability_Fire_In_C
+    abilityFire: [
+        enemyAnimations.CR_Ability_Fire_A,
+        enemyAnimations.CR_Ability_Fire_B,
+        enemyAnimations.CR_Ability_Fire_C
     ]
 }, {
     name: "enemyBig",
     movement: enemyAnimations.enemyBigMovement,
-    abilityFireIn: [
-        enemyAnimationClips.Enemy_Big_Fire_In_A,
-        enemyAnimationClips.Enemy_Big_Fire_In_B
+    abilityFire: [
+        enemyAnimations.Enemy_Big_Fire_A,
+        enemyAnimations.Enemy_Big_Fire_B
     ]
 }, {
     name: "enemyGiant",
     movement: enemyAnimations.enemyGiantMovement,
-    abilityFireIn: [
-        enemyAnimationClips.Monster_TentacleStart,
-        enemyAnimationClips.Monster_TentacleStart, 
-    ],
-    abilityFireInLoop: [
-        enemyAnimationClips.Monster_TentacleLoop,
-        enemyAnimationClips.Monster_TentacleLoop,
-        enemyAnimationClips.Monster_TentacleLoop
+    abilityFire: [
+        enemyAnimations.Monster_Tentacle,
+        enemyAnimations.Monster_Tentacle, 
     ]
 }, {
     name: "enemyPouncer",
     movement: enemyAnimations.enemyPouncerMovement,
-    abilityFireIn: []
+    abilityFire: []
 }, {
     name: "enemyBirtherCrawlFlip",
     movement: enemyAnimations.enemyCrawlFlipMovement,
-    abilityFireIn: [
-        enemyAnimationClips.CF_Ability_Fire_In_A, 
-        enemyAnimationClips.CF_Ability_Fire_In_B,
-        enemyAnimationClips.CF_Ability_Fire_In_B
+    abilityFire: [
+        enemyAnimations.CF_Ability_Fire_A, 
+        enemyAnimations.CF_Ability_Fire_B,
+        enemyAnimations.CF_Ability_Fire_B
     ]
 }];
 

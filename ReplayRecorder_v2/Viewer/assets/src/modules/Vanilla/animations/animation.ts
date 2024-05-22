@@ -114,6 +114,20 @@ export interface AnimFunc<T extends string> {
     duration: number;
 }
 
+export function mergeAnims<T extends string>(...anims: Anim<T>[]): Anim<T> {
+    if (anims.length < 2) throw new Error("Cannot merge 1 or less animations.");
+    
+    const rate = anims[0].rate;
+    let duration = 0;
+    const frames: AvatarLike<T>[] = [];
+    for (const anim of anims) {
+        if (anim.rate !== rate) throw new Error("All animations must have the same rate to merge them.");     
+        duration += anim.duration;
+        frames.push(...anim.frames);
+    }
+    return new Anim(anims[0].joints, anims[0].rate, duration, frames);
+}
+
 export function toAnim<T extends string>(joints: ReadonlyArray<T>, rate: number, duration: number, ...frames: AvatarLike<T>[]): Anim<T> {
     return new Anim<T>(joints, rate, duration, frames);
 }

@@ -68,7 +68,6 @@ declare module "../../../replay/moduleloader.js" {
             "Vanilla.Enemy.Animation.AttackWindup": {
                 id: number;
                 animIndex: number;
-                duration: number;
             }
         }
 
@@ -403,7 +402,6 @@ export interface EnemyAnimState {
     velocity: Pod.Vector;
     state: State;
     lastWindupTime: number;
-    windupDuration: number;
     windupAnimIndex: number;
 }
 
@@ -438,7 +436,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             anims.set(id, { 
                 ...data,
                 lastWindupTime: -Infinity,
-                windupDuration: 1,
                 windupAnimIndex: 0
             });
         }
@@ -460,7 +457,6 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
         return {
             id: await BitHelper.readInt(bytes),
             animIndex: await BitHelper.readByte(bytes),
-            duration: await BitHelper.readHalf(bytes),
         };
     },
     exec: async (data, snapshot) => {
@@ -470,7 +466,6 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
         if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
         anim.lastWindupTime = snapshot.time();
-        anim.windupDuration = data.duration;
         anim.windupAnimIndex = data.animIndex;
     }
 });
@@ -652,18 +647,11 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
 
         const windupTime = time - (anim.lastWindupTime / 1000);
-        const inWindup = windupTime < anim.windupDuration;
+        const windupAnim = this.animHandle.abilityFire[anim.windupAnimIndex];
+        const inWindup = windupAnim !== undefined && windupTime < windupAnim.duration;
         if (inWindup) {
-            const windupAnim = this.animHandle.abilityFireIn[anim.windupAnimIndex];
-            if (windupAnim !== undefined) {
-                const blend = Math.clamp01(windupTime / 0.15);
-                if (this.animHandle.abilityFireInLoop !== undefined && this.animHandle.abilityFireInLoop[anim.windupAnimIndex] !== undefined && windupTime > windupAnim.duration) {
-                    const windupAnimLoop = this.animHandle.abilityFireInLoop[anim.windupAnimIndex];
-                    this.skeleton.blend(windupAnimLoop.sample(windupTime), blend);
-                } else {
-                    this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
-                }
-            }
+            const blend = Math.clamp01(windupTime / 0.15);
+            this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
         }
     }
 
