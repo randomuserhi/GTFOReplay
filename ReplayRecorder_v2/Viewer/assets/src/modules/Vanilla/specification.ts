@@ -182,6 +182,7 @@ export interface EnemySpecification {
     chestScale?: Vector3Like;
     armScale?: Vector3Like;
     legScale?: Vector3Like;
+    scale?: number; 
 }
 
 export interface MeleeArchetype {
@@ -793,6 +794,7 @@ const _equippable: Equippable[] = [{
     model: () => new CollectionCase()
 }];
 
+const _shooter_scale = 0.8;
 const _enemies: EnemySpecification[] = [{
     id: 0,
     name: "Unknown",
@@ -842,15 +844,18 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 9,
     name: "Shooter",
-    maxHealth: 30
+    maxHealth: 30,
+    scale: _shooter_scale,
 }, {
     id: 10,
     name: "Big Shooter",
-    maxHealth: 150
+    maxHealth: 150,
+    scale: _shooter_scale,
 }, {
     id: 11,
     name: "Hybrid",
-    maxHealth: 150
+    maxHealth: 150,
+    scale: _shooter_scale,
 }, {
     id: 12,
     name: "Charger",
@@ -902,7 +907,8 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 24,
     name: "Nightmare Shooter",
-    maxHealth: 18
+    maxHealth: 18,
+    scale: _shooter_scale,
 }, {
     id: 25,
     name: "Nightmare Scout",

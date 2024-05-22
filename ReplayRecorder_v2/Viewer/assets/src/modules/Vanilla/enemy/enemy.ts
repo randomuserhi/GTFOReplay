@@ -601,6 +601,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.skeleton.set(defaultHumanStructure);
 
         // Scale model - NOTE(randomuserhi): IK doesn't work with scaled models
+        let scale = enemy.scale;
         if (this.datablock !== undefined) {
             if (this.datablock.neckScale !== undefined) {
                 this.skeleton.joints.neck.scale.copy(this.datablock.neckScale);
@@ -616,9 +617,12 @@ export class HumanoidEnemyModel extends EnemyModel {
             if (this.datablock.chestScale !== undefined) {
                 this.skeleton.joints.spine2.scale.copy(this.datablock.chestScale);
             }
+            if (this.datablock.scale !== undefined) {
+                scale *= this.datablock.scale;
+            }
         }
 
-        this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
+        this.anchor.scale.set(scale, scale, scale);
 
         this.parts = new Array(9);
         this.points = new Array(14);
