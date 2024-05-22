@@ -111,6 +111,8 @@ namespace ReplayRecorder {
             return false;
         }
 
+        public static float tickRate => SnapshotManager.GetInstance().tickRate;
+
         public static bool Ready => SnapshotManager.Ready;
         public static bool Active => SnapshotManager.Active;
 

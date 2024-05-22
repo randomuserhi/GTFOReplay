@@ -486,7 +486,7 @@ namespace ReplayRecorder.Snapshot {
             Destroy(gameObject);
         }
 
-        private float tickRate = 1f / 20f;
+        public float tickRate = 1f / 20f;
         private float timer = 0;
         private void Update() {
             if (fs == null || !completedHeader) {

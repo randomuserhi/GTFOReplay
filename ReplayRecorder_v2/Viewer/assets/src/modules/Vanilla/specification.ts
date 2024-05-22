@@ -409,6 +409,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     movement: enemyAnimations.enemyBigMovement,
     abilityFire: [
         enemyAnimationClips.Enemy_Big_Fire_In_A,
+        enemyAnimationClips.Enemy_Big_Fire_In_B,
         enemyAnimationClips.Enemy_Big_Fire_In_B
     ],
     hitLightBwd: [
@@ -458,6 +459,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     movement: enemyAnimations.enemyGiantMovement,
     abilityFire: [
         enemyAnimationClips.Monster_TentacleStart,
+        enemyAnimationClips.Monster_TentacleStart, 
         enemyAnimationClips.Monster_TentacleStart, 
     ],
     hitLightBwd: [

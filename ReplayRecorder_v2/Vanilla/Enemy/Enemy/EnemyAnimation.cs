@@ -110,6 +110,8 @@ namespace Vanilla.Enemy {
         }
         public override bool IsDirty {
             get {
+                UpdateVelocity();
+
                 bool vel =
                     velFwd != compress(_velFwd, 10f) ||
                     velRight != compress(_velRight, 10f);
@@ -120,10 +122,22 @@ namespace Vanilla.Enemy {
             }
         }
 
-        private float _velFwd => enemy.Locomotion.PathMove.m_animFwd;
+        private Vector3 lastPosition;
+        private Vector3 velocity;
+
+        private void UpdateVelocity() {
+            Vector3 v = enemy.transform.position - lastPosition;
+            v /= Replay.tickRate;
+            lastPosition = enemy.transform.position;
+
+            velocity.z = Vector3.Dot(enemy.transform.forward, v);
+            velocity.x = Vector3.Dot(enemy.transform.right, v);
+        }
+
+        private float _velFwd => velocity.z;
         private byte velFwd;
 
-        private float _velRight => enemy.Locomotion.PathMove.m_animRight;
+        private float _velRight => velocity.x;
         private byte velRight;
 
         private byte _state => (byte)enemy.Locomotion.m_currentState.m_stateEnum;
@@ -147,6 +161,9 @@ namespace Vanilla.Enemy {
         }
 
         public override void Spawn(ByteBuffer buffer) {
+            lastPosition = enemy.transform.position;
+            UpdateVelocity();
+
             Write(buffer);
         }
     }
