@@ -154,10 +154,8 @@ import { StrafeRightLoop } from "./assets/StrafeRightLoop.js";
 import { WalkBwdLoop } from "./assets/WalkBwdLoop.js";
 import { WalkFwdLoop } from "./assets/WalkFwdLoop.js";
 
-import { AnimBlend, mergeAnims } from "./animation.js";
-import { Ability_Fire_0_End } from "./assets/Ability_Fire_0_End.js";
+import { AnimBlend } from "./animation.js";
 import { Ability_Fire_0_Start } from "./assets/Ability_Fire_0_Start.js";
-import { Ability_Fire_2_End } from "./assets/Ability_Fire_2_End.js";
 import { Ability_Fire_2_Start } from "./assets/Ability_Fire_2_Start.js";
 import { Bat_Crouch_ChargeRelease } from "./assets/Bat_Crouch_ChargeRelease.js";
 import { Bat_Crouch_Chargeup } from "./assets/Bat_Crouch_Chargeup.js";
@@ -170,8 +168,6 @@ import { Bat_Stand_Shove } from "./assets/Bat_Stand_Shove.js";
 import { Bat_Stand_SwingRight } from "./assets/Bat_Stand_SwingRight.js";
 import { CA_Ability_Fire_In_A } from "./assets/CA_Ability_Fire_In_A.js";
 import { CA_Ability_Fire_In_B } from "./assets/CA_Ability_Fire_In_B.js";
-import { CA_Ability_Fire_Out_A } from "./assets/CA_Ability_Fire_Out_A.js";
-import { CA_Ability_Fire_Out_B } from "./assets/CA_Ability_Fire_Out_B.js";
 import { CA_Idle_A } from "./assets/CA_Idle_A.js";
 import { CA_Walk_Bwd_A } from "./assets/CA_Walk_Bwd_A.js";
 import { CA_Walk_Fwd_A } from "./assets/CA_Walk_Fwd_A.js";
@@ -179,8 +175,6 @@ import { CA_Walk_Lt_A } from "./assets/CA_Walk_Lt_A.js";
 import { CA_Walk_Rt_A } from "./assets/CA_Walk_Rt_A.js";
 import { CF_Ability_Fire_In_A } from "./assets/CF_Ability_Fire_In_A.js";
 import { CF_Ability_Fire_In_B } from "./assets/CF_Ability_Fire_In_B.js";
-import { CF_Ability_Fire_Out_A } from "./assets/CF_Ability_Fire_Out_A.js";
-import { CF_Ability_Fire_Out_B } from "./assets/CF_Ability_Fire_Out_B.js";
 import { CF_Idle_A } from "./assets/CF_Idle_A.js";
 import { CF_Walk_Bwd_A } from "./assets/CF_Walk_Bwd_A.js";
 import { CF_Walk_Fwd_A } from "./assets/CF_Walk_Fwd_A.js";
@@ -189,9 +183,6 @@ import { CF_Walk_Rt_A } from "./assets/CF_Walk_Rt_A.js";
 import { CR_Ability_Fire_In_A } from "./assets/CR_Ability_Fire_In_A.js";
 import { CR_Ability_Fire_In_B } from "./assets/CR_Ability_Fire_In_B.js";
 import { CR_Ability_Fire_In_C } from "./assets/CR_Ability_Fire_In_C.js";
-import { CR_Ability_Fire_Out_A } from "./assets/CR_Ability_Fire_Out_A.js";
-import { CR_Ability_Fire_Out_B } from "./assets/CR_Ability_Fire_Out_B.js";
-import { CR_Ability_Fire_Out_C } from "./assets/CR_Ability_Fire_Out_C.js";
 import { CR_Idle_A } from "./assets/CR_Idle_A.js";
 import { CR_Run_Bwd } from "./assets/CR_Run_Bwd.js";
 import { CR_Run_Fwd } from "./assets/CR_Run_Fwd.js";
@@ -207,8 +198,6 @@ import { Consumable_Throw_Charge } from "./assets/Consumable_Throw_Charge.js";
 import { Consumable_Throw_Charge_Idle } from "./assets/Consumable_Throw_Charge_Idle.js";
 import { Dead } from "./assets/Dead.js";
 import { Die } from "./assets/Die.js";
-import { Enemy_Big_Fire_End_A } from "./assets/Enemy_Big_Fire_End_A.js";
-import { Enemy_Big_Fire_End_B } from "./assets/Enemy_Big_Fire_End_B.js";
 import { Enemy_Big_Fire_In_A } from "./assets/Enemy_Big_Fire_In_A.js";
 import { Enemy_Big_Fire_In_B } from "./assets/Enemy_Big_Fire_In_B.js";
 import { Enemy_Big_Idle_A } from "./assets/Enemy_Big_Idle_A.js";
@@ -230,8 +219,6 @@ import { Enemy_Big_Walk_Left_A } from "./assets/Enemy_Big_Walk_Left_A.js";
 import { Enemy_Big_Walk_Right_A } from "./assets/Enemy_Big_Walk_Right_A.js";
 import { FD_Ability_Fire_In_A } from "./assets/FD_Ability_Fire_In_A.js";
 import { FD_Ability_Fire_In_B } from "./assets/FD_Ability_Fire_In_B.js";
-import { FD_Ability_Fire_Out_A } from "./assets/FD_Ability_Fire_Out_A.js";
-import { FD_Ability_Fire_Out_B } from "./assets/FD_Ability_Fire_Out_B.js";
 import { FD_Idle_A } from "./assets/FD_Idle_A.js";
 import { FD_Run_Bwd_A } from "./assets/FD_Run_Bwd_A.js";
 import { FD_Run_Fwd_A } from "./assets/FD_Run_Fwd_A.js";
@@ -285,9 +272,6 @@ import { Knife_Stand_SwingRight } from "./assets/Knife_Stand_SwingRight.js";
 import { LO_Ability_Fire_In_A } from "./assets/LO_Ability_Fire_In_A.js";
 import { LO_Ability_Fire_In_B } from "./assets/LO_Ability_Fire_In_B.js";
 import { LO_Ability_Fire_In_C } from "./assets/LO_Ability_Fire_In_C.js";
-import { LO_Ability_Fire_Out_A } from "./assets/LO_Ability_Fire_Out_A.js";
-import { LO_Ability_Fire_Out_B } from "./assets/LO_Ability_Fire_Out_B.js";
-import { LO_Ability_Fire_Out_C } from "./assets/LO_Ability_Fire_Out_C.js";
 import { LO_Idle_A } from "./assets/LO_Idle_A.js";
 import { LO_Run_Bwd_A } from "./assets/LO_Run_Bwd_A.js";
 import { LO_Run_Fwd_A } from "./assets/LO_Run_Fwd_A.js";
@@ -298,7 +282,6 @@ import { LO_Walk_Fwd_A } from "./assets/LO_Walk_Fwd_A.js";
 import { LO_Walk_Lt_A } from "./assets/LO_Walk_Lt_A.js";
 import { LO_Walk_Rt_A } from "./assets/LO_Walk_Rt_A.js";
 import { Monster_Idle_01 } from "./assets/Monster_Idle_01.js";
-import { Monster_TentacleEnd } from "./assets/Monster_TentacleEnd.js";
 import { Monster_TentacleStart } from "./assets/Monster_TentacleStart.js";
 import { Monster_Walk_Bwd } from "./assets/Monster_Walk_Bwd.js";
 import { Monster_Walk_Fwd } from "./assets/Monster_Walk_Fwd.js";
@@ -1110,7 +1093,7 @@ export const enemyAnimationClips = {
     Enemy_Big_Fire_In_A,
     Enemy_Big_Fire_In_B,
     Monster_TentacleStart,
-    LO_Ability_Fire_Out_A,
+    /*LO_Ability_Fire_Out_A,
     LO_Ability_Fire_Out_B,
     LO_Ability_Fire_Out_C,
     CA_Ability_Fire_Out_A,
@@ -1126,7 +1109,7 @@ export const enemyAnimationClips = {
     Ability_Fire_2_End,
     Enemy_Big_Fire_End_A,
     Enemy_Big_Fire_End_B,
-    Monster_TentacleEnd,
+    Monster_TentacleEnd,*/
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
@@ -1257,7 +1240,7 @@ export const enemyPouncerMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.PO_WalkRight, x: 1.2, y: 0 },
 ], animVelocity);
 
-export const LO_Ability_Fire_A = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_A, enemyAnimationClips.LO_Ability_Fire_Out_A);
+/*export const LO_Ability_Fire_A = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_A, enemyAnimationClips.LO_Ability_Fire_Out_A);
 export const LO_Ability_Fire_B = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_B, enemyAnimationClips.LO_Ability_Fire_Out_B);
 export const LO_Ability_Fire_C = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_C, enemyAnimationClips.LO_Ability_Fire_Out_C);
 export const CA_Ability_Fire_A = mergeAnims(enemyAnimationClips.CA_Ability_Fire_In_A, enemyAnimationClips.CA_Ability_Fire_Out_A);
@@ -1273,7 +1256,7 @@ export const Ability_Fire_0 = mergeAnims(enemyAnimationClips.Ability_Fire_0_Star
 export const Ability_Fire_2 = mergeAnims(enemyAnimationClips.Ability_Fire_2_Start, enemyAnimationClips.Ability_Fire_2_End);
 export const Enemy_Big_Fire_A = mergeAnims(enemyAnimationClips.Enemy_Big_Fire_In_A, enemyAnimationClips.Enemy_Big_Fire_End_A);
 export const Enemy_Big_Fire_B = mergeAnims(enemyAnimationClips.Enemy_Big_Fire_In_B, enemyAnimationClips.Enemy_Big_Fire_End_B);
-export const Monster_Tentacle = mergeAnims(enemyAnimationClips.Monster_TentacleStart, enemyAnimationClips.Monster_TentacleEnd);
+export const Monster_Tentacle = mergeAnims(enemyAnimationClips.Monster_TentacleStart, enemyAnimationClips.Monster_TentacleEnd);*/
 
 export const enemyAnimations = {
     enemyRunnerMovement,
@@ -1285,7 +1268,7 @@ export const enemyAnimations = {
     enemyBigMovement,
     enemyGiantMovement,
     enemyPouncerMovement,
-    LO_Ability_Fire_A,
+    /*LO_Ability_Fire_A,
     LO_Ability_Fire_B,
     LO_Ability_Fire_C,
     CA_Ability_Fire_A,
@@ -1301,6 +1284,6 @@ export const enemyAnimations = {
     Ability_Fire_2,
     Enemy_Big_Fire_A,
     Enemy_Big_Fire_B,
-    Monster_Tentacle,
+    Monster_Tentacle,*/
 } as const;
 export type EnemyAnimations = keyof typeof enemyAnimations;

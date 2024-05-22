@@ -650,7 +650,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         const windupAnim = this.animHandle.abilityFire[anim.windupAnimIndex];
         const inWindup = windupAnim !== undefined && windupTime < windupAnim.duration;
         if (inWindup) {
-            const blend = Math.clamp01(windupTime / 0.15);
+            const blend = windupTime < windupAnim.duration / 2 ? Math.clamp01(windupTime / 0.15) : Math.clamp01((windupAnim.duration - windupTime) / 0.15);
             this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
         }
     }
