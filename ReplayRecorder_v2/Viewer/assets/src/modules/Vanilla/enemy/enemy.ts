@@ -6,7 +6,7 @@ import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
 import { animCrouch, animVelocity, playerAnimations } from "../animations/assets.js";
-import { HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
+import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { createDeathCross } from "../deathcross.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
@@ -23,7 +23,6 @@ declare module "../../../replay/moduleloader.js" {
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
                     animHandle?: AnimHandles.Flags;
-                    twitchHit: boolean;
                     scale: number;
                     type: number;
                 };
@@ -68,7 +67,15 @@ declare module "../../../replay/moduleloader.js" {
             "Vanilla.Enemy.Animation.AttackWindup": {
                 id: number;
                 animIndex: number;
-            }
+            };
+
+            "Vanilla.Enemy.Animation.Hitreact": {
+                id: number;
+                animIndex: number;
+                direction: HitreactDirection;
+                type: HitreactType;
+                rotation: Pod.Quaternion;
+            };
         }
 
         interface Data {
@@ -124,6 +131,20 @@ export const states = [
 export type State = typeof states[number];
 export const stateMap: Map<State, number> = new Map([...states.entries()].map(e => [e[1], e[0]]));
 
+export const hitreactDirections = [
+    "Forward",
+    "Backward",
+    "Left",
+    "Right",
+] as const;
+export type HitreactDirection = typeof hitreactDirections[number];
+
+export const hitreactTypes = [
+    "Light",
+    "Heavy",
+] as const;
+export type HitreactType = typeof hitreactTypes[number];
+
 export interface LimbCustom extends DynamicPosition {
     owner: number;
     scale: number;
@@ -137,7 +158,6 @@ export interface EnemyCache {
 
 export interface Enemy extends DynamicTransform {
     animHandle?: AnimHandles.Flags;
-    twitchHit: boolean;
     health: number;
     head: boolean;
     scale: number;
@@ -208,7 +228,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const result = {
                 ...spawn,
                 animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
-                twitchHit: await BitHelper.readBool(data),
                 scale: await BitHelper.readHalf(data),
                 type: await BitHelper.readUShort(data)
             };
@@ -403,6 +422,11 @@ export interface EnemyAnimState {
     state: State;
     lastWindupTime: number;
     windupAnimIndex: number;
+    lastHitreactTime: number;
+    hitreactAnimIndex: number;
+    hitreactDirection: HitreactDirection;
+    hitreactType: HitreactType;
+    hitreactRotation: Pod.Quaternion;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -436,7 +460,12 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             anims.set(id, { 
                 ...data,
                 lastWindupTime: -Infinity,
-                windupAnimIndex: 0
+                windupAnimIndex: 0,
+                lastHitreactTime: -Infinity,
+                hitreactAnimIndex: 0,
+                hitreactDirection: "Forward",
+                hitreactType: "Light",
+                hitreactRotation: Pod.Quat.identity()
             });
         }
     },
@@ -467,6 +496,29 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
         const anim = anims.get(id)!;
         anim.lastWindupTime = snapshot.time();
         anim.windupAnimIndex = data.animIndex;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            animIndex: await BitHelper.readByte(bytes),
+            direction: hitreactDirections[await BitHelper.readByte(bytes)],
+            type: hitreactTypes[await BitHelper.readByte(bytes)],
+            rotation: await BitHelper.readHalfQuaternion(bytes),
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastHitreactTime = snapshot.time();
+        anim.hitreactType = data.type;
+        anim.hitreactDirection = data.direction;
+        anim.hitreactRotation = data.rotation;
     }
 });
 
@@ -559,6 +611,8 @@ export class HumanoidEnemyModel extends EnemyModel {
     datablock?: EnemySpecification;
     animHandle?: EnemyAnimHandle;
 
+    setAnchor: boolean;
+
     constructor(enemy: Enemy) {
         super(enemy);
 
@@ -627,9 +681,12 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.parts = new Array(9);
         this.points = new Array(14);
         this.head = -1;
+
+        this.setAnchor = true;
     }
 
     public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
+        this.setAnchor = true;
         this.animate(time, enemy, anim);
         this.render(enemy);
     }
@@ -657,11 +714,40 @@ export class HumanoidEnemyModel extends EnemyModel {
             const blend = windupTime < windupAnim.duration / 2 ? Math.clamp01(windupTime / 0.15) : Math.clamp01((windupAnim.duration - windupTime) / 0.15);
             this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
         }
+
+        const hitreactTime = time - (anim.lastHitreactTime / 1000);
+        let hitreactAnim: HumanAnimation | undefined = undefined;
+        switch (anim.hitreactType) {
+        case "Heavy": {
+            switch (anim.hitreactDirection) {
+            case "Backward": hitreactAnim = this.animHandle.hitHeavyBwd[anim.hitreactAnimIndex]; break;
+            case "Forward": hitreactAnim = this.animHandle.hitHeavyFwd[anim.hitreactAnimIndex]; break;
+            case "Left": hitreactAnim = this.animHandle.hitHeavyLt[anim.hitreactAnimIndex]; break;
+            case "Right": hitreactAnim = this.animHandle.hitHeavyRt[anim.hitreactAnimIndex]; break;
+            }
+        } break;
+        case "Light": {
+            switch (anim.hitreactDirection) {
+            case "Backward": hitreactAnim = this.animHandle.hitLightBwd[anim.hitreactAnimIndex]; break;
+            case "Forward": hitreactAnim = this.animHandle.hitLightFwd[anim.hitreactAnimIndex]; break;
+            case "Left": hitreactAnim = this.animHandle.hitLightLt[anim.hitreactAnimIndex]; break;
+            case "Right": hitreactAnim = this.animHandle.hitLightRt[anim.hitreactAnimIndex]; break;
+            }
+        } break;
+        }
+        const inHitreact = hitreactAnim !== undefined && hitreactTime < hitreactAnim.duration;
+        if (inHitreact) {
+            const blend = hitreactTime < hitreactAnim.duration / 2 ? Math.clamp01(hitreactTime / 0.15) : Math.clamp01((hitreactAnim.duration - hitreactTime) / 0.15);
+            this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
+            
+            this.setAnchor = false;
+            this.anchor.quaternion.copy(anim.hitreactRotation);
+        }
     }
 
     public render(enemy: Enemy): void {
         this.root.position.copy(enemy.position);
-        this.anchor.quaternion.copy(enemy.rotation);
+        if (this.setAnchor) this.anchor.quaternion.copy(enemy.rotation);
 
         getWorldPos(worldPos, this.skeleton);
 

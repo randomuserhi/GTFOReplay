@@ -94,16 +94,66 @@ export interface EnemyAnimHandle {
     name: AnimHandles.Flags;
     movement: HumanAnimation;
     abilityFire: HumanAnimation[];
+    hitLightFwd: HumanAnimation[];
+    hitLightBwd: HumanAnimation[];
+    hitLightLt: HumanAnimation[];
+    hitLightRt: HumanAnimation[];
+    hitHeavyFwd: HumanAnimation[];
+    hitHeavyBwd: HumanAnimation[];
+    hitHeavyLt: HumanAnimation[];
+    hitHeavyRt: HumanAnimation[];
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
     movement: enemyAnimations.enemyRunnerMovement,
     abilityFire: [
-        enemyAnimationClips.Ability_Fire_0_Start, 
+        enemyAnimationClips.Ability_Fire_0_Start,
         enemyAnimationClips.Ability_Fire_0_Start,
         enemyAnimationClips.Ability_Fire_2_Start
-    ]
+    ],
+    hitLightBwd: [
+        enemyAnimationClips.RU_Hit_Light_Bwd_A,
+        enemyAnimationClips.RU_Hit_Light_Bwd_B,
+        enemyAnimationClips.RU_Hit_Light_Bwd_C,
+        enemyAnimationClips.RU_Hit_Light_Bwd_B
+    ],
+    hitLightFwd: [
+        enemyAnimationClips.RU_Hit_Light_Fwd_A,
+        enemyAnimationClips.RU_Hit_Light_Fwd_B,
+        enemyAnimationClips.RU_Hit_Light_Fwd_C
+    ],
+    hitLightLt: [
+        enemyAnimationClips.RU_Hit_Light_Lt_A,
+        enemyAnimationClips.RU_Hit_Light_Lt_B,
+        enemyAnimationClips.RU_Hit_Light_Lt_C
+    ],
+    hitLightRt: [
+        enemyAnimationClips.RU_Hit_Light_Rt_A,
+        enemyAnimationClips.RU_Hit_Light_Rt_B,
+        enemyAnimationClips.RU_Hit_Light_Rt_C
+    ],
+    hitHeavyBwd: [
+        enemyAnimationClips.RU_Hit_Heavy_Bwd_A,
+        enemyAnimationClips.RU_Hit_Heavy_Bwd_B,
+        enemyAnimationClips.RU_Hit_Heavy_Bwd_Turn_A,
+        enemyAnimationClips.RU_Hit_Heavy_Bwd_C
+    ],
+    hitHeavyFwd: [
+        enemyAnimationClips.RU_Hit_Heavy_Fwd_A,
+        enemyAnimationClips.RU_Hit_Heavy_Fwd_B,
+        enemyAnimationClips.RU_Hit_Heavy_Fwd_C
+    ],
+    hitHeavyLt: [
+        enemyAnimationClips.RU_Hit_Heavy_Lt_A,
+        enemyAnimationClips.RU_Hit_Heavy_Lt_B,
+        enemyAnimationClips.RU_Hit_Heavy_Lt_C
+    ],
+    hitHeavyRt: [
+        enemyAnimationClips.RU_Hit_Heavy_Rt_A,
+        enemyAnimationClips.RU_Hit_Heavy_Rt_B,
+        enemyAnimationClips.RU_Hit_Heavy_Rt_C
+    ],
 }, {
     name: "enemyLow",
     movement: enemyAnimations.enemyLowMovement,
@@ -111,7 +161,49 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.LO_Ability_Fire_In_A, 
         enemyAnimationClips.LO_Ability_Fire_In_B,
         enemyAnimationClips.LO_Ability_Fire_In_C
-    ]
+    ],
+    hitLightBwd: [
+        enemyAnimationClips.LO_Hit_Light_Bwd_A,
+        enemyAnimationClips.LO_Hit_Light_Bwd_b,
+        enemyAnimationClips.LO_Hit_Light_Bwd_C,
+        enemyAnimationClips.LO_Hit_Light_Bwd_Turn_A
+    ],
+    hitLightFwd: [
+        enemyAnimationClips.LO_Hit_Light_Fwd_A,
+        enemyAnimationClips.LO_Hit_Light_Fwd_B,
+        enemyAnimationClips.LO_Hit_Light_Fwd_C
+    ],
+    hitLightLt: [
+        enemyAnimationClips.LO_Hit_Light_Lt_A,
+        enemyAnimationClips.LO_Hit_Light_Lt_B,
+        enemyAnimationClips.LO_Hit_Light_Lt_C
+    ],
+    hitLightRt: [
+        enemyAnimationClips.LO_Hit_Light_Rt_A,
+        enemyAnimationClips.LO_Hit_Light_Rt_B,
+        enemyAnimationClips.LO_Hit_Light_Rt_C
+    ],
+    hitHeavyBwd: [
+        enemyAnimationClips.LO_Hit_Heavy_Bwd_A,
+        enemyAnimationClips.LO_Hit_Heavy_Bwd_A,
+        enemyAnimationClips.LO_Hit_Heavy_Bwd_A,
+        enemyAnimationClips.CR_Hit_Heavy_Bwd_D
+    ],
+    hitHeavyFwd: [
+        enemyAnimationClips.LO_Hit_Heavy_Fwd_A,
+        enemyAnimationClips.LO_Hit_Heavy_Fwd_B,
+        enemyAnimationClips.LO_Hit_Heavy_Fwd_C
+    ],
+    hitHeavyLt: [
+        enemyAnimationClips.LO_Hit_Heavy_Lt_A,
+        enemyAnimationClips.LO_Hit_Heavy_Lt_B,
+        enemyAnimationClips.LO_Hit_Heavy_Lt_C
+    ],
+    hitHeavyRt: [
+        enemyAnimationClips.LO_Hit_Heavy_Rt_A,
+        enemyAnimationClips.LO_Hit_Heavy_Rt_B,
+        enemyAnimationClips.LO_Hit_Heavy_Rt_C
+    ],
 }, {
     name: "enemyFiddler",
     movement: enemyAnimations.enemyFiddleMovement,
@@ -119,7 +211,49 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.FD_Ability_Fire_In_A, 
         enemyAnimationClips.FD_Ability_Fire_In_B,
         enemyAnimationClips.FD_Ability_Fire_In_B
-    ]
+    ],
+    hitLightBwd: [
+        enemyAnimationClips.FD_Hit_Light_Bwd_A,
+        enemyAnimationClips.FD_Hit_Light_Bwd_B,
+        enemyAnimationClips.FD_Hit_Light_Bwd_C,
+        enemyAnimationClips.FD_Hit_Light_Bwd_C // Not actually defined in vanilla game
+    ],
+    hitLightFwd: [
+        enemyAnimationClips.FD_Hit_Light_Fwd_A,
+        enemyAnimationClips.FD_Hit_Light_Fwd_B,
+        enemyAnimationClips.FD_Hit_Light_Fwd_C,
+    ],
+    hitLightLt: [
+        enemyAnimationClips.FD_Hit_Light_Lt_A,
+        enemyAnimationClips.FD_Hit_Light_Lt_B,
+        enemyAnimationClips.FD_Hit_Light_Lt_C
+    ],
+    hitLightRt: [
+        enemyAnimationClips.FD_Hit_Light_Rt_A,
+        enemyAnimationClips.FD_Hit_Light_Rt_B,
+        enemyAnimationClips.FD_Hit_Light_Rt_C
+    ],
+    hitHeavyBwd: [
+        enemyAnimationClips.FD_Hit_Heavy_Bwd_A,
+        enemyAnimationClips.FD_Hit_Heavy_Bwd_B,
+        enemyAnimationClips.FD_Hit_Heavy_Bwd_C,
+        enemyAnimationClips.FD_Hit_Heavy_Bwd_C // Not actually defined in vanilla game
+    ],
+    hitHeavyFwd: [
+        enemyAnimationClips.FD_Hit_Heavy_Fwd_A,
+        enemyAnimationClips.FD_Hit_Heavy_Fwd_B,
+        enemyAnimationClips.FD_Hit_Heavy_Fwd_C
+    ],
+    hitHeavyLt: [
+        enemyAnimationClips.FD_Hit_Heavy_Lt_A,
+        enemyAnimationClips.FD_Hit_Heavy_Lt_B,
+        enemyAnimationClips.FD_Hit_Heavy_Lt_C
+    ],
+    hitHeavyRt: [
+        enemyAnimationClips.FD_Hit_Heavy_Rt_A,
+        enemyAnimationClips.FD_Hit_Heavy_Rt_B,
+        enemyAnimationClips.FD_Hit_Heavy_Rt_C
+    ],
 }, {
     name: "enemyCrawl",
     movement: enemyAnimations.enemyCrawlMovement,
@@ -143,14 +277,56 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.CR_Ability_Fire_In_A, 
         enemyAnimationClips.CR_Ability_Fire_In_B,
         enemyAnimationClips.CR_Ability_Fire_In_C
-    ]
+    ],
+    hitLightBwd: [
+        enemyAnimationClips.CR_Hit_Light_Bwd_A,
+        enemyAnimationClips.CR_Hit_Light_Bwd_B,
+        enemyAnimationClips.CR_Hit_Light_Bwd_C,
+        enemyAnimationClips.CR_Hit_Light_Bwd_D
+    ],
+    hitLightFwd: [
+        enemyAnimationClips.CR_Hit_Light_Fwd_A,
+        enemyAnimationClips.CR_Hit_Light_Fwd_B,
+        enemyAnimationClips.CR_Hit_Light_Fwd_C
+    ],
+    hitLightLt: [
+        enemyAnimationClips.CR_Hit_Light_Lt_A,
+        enemyAnimationClips.CR_Hit_Light_Lt_B,
+        enemyAnimationClips.CR_Hit_Light_Lt_C
+    ],
+    hitLightRt: [
+        enemyAnimationClips.CR_Hit_Light_Rt_A,
+        enemyAnimationClips.CR_Hit_Light_Rt_B,
+        enemyAnimationClips.CR_Hit_Light_Rt_C
+    ],
+    hitHeavyBwd: [
+        enemyAnimationClips.CR_Hit_Heavy_Bwd_A_Turn,
+        enemyAnimationClips.CR_Hit_Heavy_Bwd_B,
+        enemyAnimationClips.CR_Hit_Heavy_Bwd_C_Turn,
+        enemyAnimationClips.CR_Hit_Heavy_Bwd_D_0
+    ],
+    hitHeavyFwd: [
+        enemyAnimationClips.CR_Hit_Heavy_Fwd_A,
+        enemyAnimationClips.CR_Hit_Heavy_Fwd_B,
+        enemyAnimationClips.CR_Hit_Heavy_Fwd_C
+    ],
+    hitHeavyLt: [
+        enemyAnimationClips.CR_Hit_Heavy_Lt_A,
+        enemyAnimationClips.CR_Hit_Heavy_Lt_B,
+        enemyAnimationClips.CR_Hit_Heavy_Lt_C
+    ],
+    hitHeavyRt: [
+        enemyAnimationClips.CR_Hit_Heavy_Rt_A,
+        enemyAnimationClips.CR_Hit_Heavy_Rt_B,
+        enemyAnimationClips.CR_Hit_Heavy_Rt_C_0
+    ],
 }, {
     name: "enemyBig",
     movement: enemyAnimations.enemyBigMovement,
     abilityFire: [
         enemyAnimationClips.Enemy_Big_Fire_In_A,
         enemyAnimationClips.Enemy_Big_Fire_In_B
-    ]
+    ],
 }, {
     name: "enemyGiant",
     movement: enemyAnimations.enemyGiantMovement,

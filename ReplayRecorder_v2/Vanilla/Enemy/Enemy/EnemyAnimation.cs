@@ -22,11 +22,67 @@ namespace Vanilla.Enemy {
         }
     }
 
+    [ReplayData("Vanilla.Enemy.Animation.Hitreact", "0.0.1")]
+    internal class rHitreact : Id {
+        public enum Direction {
+            Forward,
+            Backward,
+            Left,
+            Right,
+        }
+
+        public enum Type {
+            Light,
+            Heavy,
+        }
+
+        private byte animIndex;
+        private Direction direction;
+        private Type type;
+        private Quaternion rot;
+
+        public rHitreact(EnemyAgent enemy, byte animIndex, Type type, Direction direction) : base(enemy.GlobalID) {
+            this.animIndex = animIndex;
+            this.direction = direction;
+            this.type = type;
+            rot = enemy.transform.rotation;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
+            BitHelper.WriteBytes((byte)direction, buffer);
+            BitHelper.WriteBytes((byte)type, buffer);
+            BitHelper.WriteHalf(rot, buffer);
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.DoHitReact))]
+            [HarmonyPrefix]
+            private static void Prefix_DoHitReact(ES_Hitreact __instance, int index, ES_HitreactType hitreactType, ImpactDirection impactDirection, float deathDelay, bool propagated, Vector3 damagePos, Vector3 source) {
+                rHitreact.Type type;
+                rHitreact.Direction direction;
+                switch (hitreactType) {
+                case ES_HitreactType.Heavy: type = rHitreact.Type.Heavy; break;
+                case ES_HitreactType.Light: type = rHitreact.Type.Light; break;
+                default: return;
+                }
+
+                switch (impactDirection) {
+                case ImpactDirection.Front: direction = rHitreact.Direction.Forward; break;
+                case ImpactDirection.Back: direction = rHitreact.Direction.Backward; break;
+                case ImpactDirection.Left: direction = rHitreact.Direction.Left; break;
+                case ImpactDirection.Right: direction = rHitreact.Direction.Right; break;
+                default: return;
+                }
+                Replay.Trigger(new rHitreact(__instance.m_enemyAgent, (byte)index, type, direction));
+            }
+
             [HarmonyPatch(typeof(ES_EnemyAttackBase), nameof(ES_EnemyAttackBase.DoStartAttack))]
             [HarmonyPrefix]
             private static void Prefix_DoStartAttack(ES_EnemyAttackBase __instance, Vector3 pos, Vector3 attackTargetPosition, Agent targetAgent, int animIndex, AgentAbility abilityType, int abilityIndex) {

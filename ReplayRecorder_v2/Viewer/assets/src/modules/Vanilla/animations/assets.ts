@@ -183,6 +183,34 @@ import { CF_Walk_Rt_A } from "./assets/CF_Walk_Rt_A.js";
 import { CR_Ability_Fire_In_A } from "./assets/CR_Ability_Fire_In_A.js";
 import { CR_Ability_Fire_In_B } from "./assets/CR_Ability_Fire_In_B.js";
 import { CR_Ability_Fire_In_C } from "./assets/CR_Ability_Fire_In_C.js";
+import { CR_Hit_Heavy_Bwd_A_Turn } from "./assets/CR_Hit_Heavy_Bwd_A_Turn.js";
+import { CR_Hit_Heavy_Bwd_B } from "./assets/CR_Hit_Heavy_Bwd_B.js";
+import { CR_Hit_Heavy_Bwd_C_Turn } from "./assets/CR_Hit_Heavy_Bwd_C_Turn.js";
+import { CR_Hit_Heavy_Bwd_D } from "./assets/CR_Hit_Heavy_Bwd_D.js";
+import { CR_Hit_Heavy_Bwd_D_0 } from "./assets/CR_Hit_Heavy_Bwd_D_0.js";
+import { CR_Hit_Heavy_Fwd_A } from "./assets/CR_Hit_Heavy_Fwd_A.js";
+import { CR_Hit_Heavy_Fwd_B } from "./assets/CR_Hit_Heavy_Fwd_B.js";
+import { CR_Hit_Heavy_Fwd_C } from "./assets/CR_Hit_Heavy_Fwd_C.js";
+import { CR_Hit_Heavy_Lt_A } from "./assets/CR_Hit_Heavy_Lt_A.js";
+import { CR_Hit_Heavy_Lt_B } from "./assets/CR_Hit_Heavy_Lt_B.js";
+import { CR_Hit_Heavy_Lt_C } from "./assets/CR_Hit_Heavy_Lt_C.js";
+import { CR_Hit_Heavy_Rt_A } from "./assets/CR_Hit_Heavy_Rt_A.js";
+import { CR_Hit_Heavy_Rt_B } from "./assets/CR_Hit_Heavy_Rt_B.js";
+import { CR_Hit_Heavy_Rt_C } from "./assets/CR_Hit_Heavy_Rt_C.js";
+import { CR_Hit_Heavy_Rt_C_0 } from "./assets/CR_Hit_Heavy_Rt_C_0.js";
+import { CR_Hit_Light_Bwd_A } from "./assets/CR_Hit_Light_Bwd_A.js";
+import { CR_Hit_Light_Bwd_B } from "./assets/CR_Hit_Light_Bwd_B.js";
+import { CR_Hit_Light_Bwd_C } from "./assets/CR_Hit_Light_Bwd_C.js";
+import { CR_Hit_Light_Bwd_D } from "./assets/CR_Hit_Light_Bwd_D.js";
+import { CR_Hit_Light_Fwd_A } from "./assets/CR_Hit_Light_Fwd_A.js";
+import { CR_Hit_Light_Fwd_B } from "./assets/CR_Hit_Light_Fwd_B.js";
+import { CR_Hit_Light_Fwd_C } from "./assets/CR_Hit_Light_Fwd_C.js";
+import { CR_Hit_Light_Lt_A } from "./assets/CR_Hit_Light_Lt_A.js";
+import { CR_Hit_Light_Lt_B } from "./assets/CR_Hit_Light_Lt_B.js";
+import { CR_Hit_Light_Lt_C } from "./assets/CR_Hit_Light_Lt_C.js";
+import { CR_Hit_Light_Rt_A } from "./assets/CR_Hit_Light_Rt_A.js";
+import { CR_Hit_Light_Rt_B } from "./assets/CR_Hit_Light_Rt_B.js";
+import { CR_Hit_Light_Rt_C } from "./assets/CR_Hit_Light_Rt_C.js";
 import { CR_Idle_A } from "./assets/CR_Idle_A.js";
 import { CR_Run_Bwd } from "./assets/CR_Run_Bwd.js";
 import { CR_Run_Fwd } from "./assets/CR_Run_Fwd.js";
@@ -219,6 +247,30 @@ import { Enemy_Big_Walk_Left_A } from "./assets/Enemy_Big_Walk_Left_A.js";
 import { Enemy_Big_Walk_Right_A } from "./assets/Enemy_Big_Walk_Right_A.js";
 import { FD_Ability_Fire_In_A } from "./assets/FD_Ability_Fire_In_A.js";
 import { FD_Ability_Fire_In_B } from "./assets/FD_Ability_Fire_In_B.js";
+import { FD_Hit_Heavy_Bwd_A } from "./assets/FD_Hit_Heavy_Bwd_A.js";
+import { FD_Hit_Heavy_Bwd_B } from "./assets/FD_Hit_Heavy_Bwd_B.js";
+import { FD_Hit_Heavy_Bwd_C } from "./assets/FD_Hit_Heavy_Bwd_C.js";
+import { FD_Hit_Heavy_Fwd_A } from "./assets/FD_Hit_Heavy_Fwd_A.js";
+import { FD_Hit_Heavy_Fwd_B } from "./assets/FD_Hit_Heavy_Fwd_B.js";
+import { FD_Hit_Heavy_Fwd_C } from "./assets/FD_Hit_Heavy_Fwd_C.js";
+import { FD_Hit_Heavy_Lt_A } from "./assets/FD_Hit_Heavy_Lt_A.js";
+import { FD_Hit_Heavy_Lt_B } from "./assets/FD_Hit_Heavy_Lt_B.js";
+import { FD_Hit_Heavy_Lt_C } from "./assets/FD_Hit_Heavy_Lt_C.js";
+import { FD_Hit_Heavy_Rt_A } from "./assets/FD_Hit_Heavy_Rt_A.js";
+import { FD_Hit_Heavy_Rt_B } from "./assets/FD_Hit_Heavy_Rt_B.js";
+import { FD_Hit_Heavy_Rt_C } from "./assets/FD_Hit_Heavy_Rt_C.js";
+import { FD_Hit_Light_Bwd_A } from "./assets/FD_Hit_Light_Bwd_A.js";
+import { FD_Hit_Light_Bwd_B } from "./assets/FD_Hit_Light_Bwd_B.js";
+import { FD_Hit_Light_Bwd_C } from "./assets/FD_Hit_Light_Bwd_C.js";
+import { FD_Hit_Light_Fwd_A } from "./assets/FD_Hit_Light_Fwd_A.js";
+import { FD_Hit_Light_Fwd_B } from "./assets/FD_Hit_Light_Fwd_B.js";
+import { FD_Hit_Light_Fwd_C } from "./assets/FD_Hit_Light_Fwd_C.js";
+import { FD_Hit_Light_Lt_A } from "./assets/FD_Hit_Light_Lt_A.js";
+import { FD_Hit_Light_Lt_B } from "./assets/FD_Hit_Light_Lt_B.js";
+import { FD_Hit_Light_Lt_C } from "./assets/FD_Hit_Light_Lt_C.js";
+import { FD_Hit_Light_Rt_A } from "./assets/FD_Hit_Light_Rt_A.js";
+import { FD_Hit_Light_Rt_B } from "./assets/FD_Hit_Light_Rt_B.js";
+import { FD_Hit_Light_Rt_C } from "./assets/FD_Hit_Light_Rt_C.js";
 import { FD_Idle_A } from "./assets/FD_Idle_A.js";
 import { FD_Run_Bwd_A } from "./assets/FD_Run_Bwd_A.js";
 import { FD_Run_Fwd_A } from "./assets/FD_Run_Fwd_A.js";
@@ -272,6 +324,30 @@ import { Knife_Stand_SwingRight } from "./assets/Knife_Stand_SwingRight.js";
 import { LO_Ability_Fire_In_A } from "./assets/LO_Ability_Fire_In_A.js";
 import { LO_Ability_Fire_In_B } from "./assets/LO_Ability_Fire_In_B.js";
 import { LO_Ability_Fire_In_C } from "./assets/LO_Ability_Fire_In_C.js";
+import { LO_Hit_Heavy_Bwd_A } from "./assets/LO_Hit_Heavy_Bwd_A.js";
+import { LO_Hit_Heavy_Fwd_A } from "./assets/LO_Hit_Heavy_Fwd_A.js";
+import { LO_Hit_Heavy_Fwd_B } from "./assets/LO_Hit_Heavy_Fwd_B.js";
+import { LO_Hit_Heavy_Fwd_C } from "./assets/LO_Hit_Heavy_Fwd_C.js";
+import { LO_Hit_Heavy_Lt_A } from "./assets/LO_Hit_Heavy_Lt_A.js";
+import { LO_Hit_Heavy_Lt_B } from "./assets/LO_Hit_Heavy_Lt_B.js";
+import { LO_Hit_Heavy_Lt_C } from "./assets/LO_Hit_Heavy_Lt_C.js";
+import { LO_Hit_Heavy_Rt_A } from "./assets/LO_Hit_Heavy_Rt_A.js";
+import { LO_Hit_Heavy_Rt_B } from "./assets/LO_Hit_Heavy_Rt_B.js";
+import { LO_Hit_Heavy_Rt_C } from "./assets/LO_Hit_Heavy_Rt_C.js";
+import { LO_Hit_Light_Bwd_A } from "./assets/LO_Hit_Light_Bwd_A.js";
+import { LO_Hit_Light_Bwd_C } from "./assets/LO_Hit_Light_Bwd_C.js";
+import { LO_Hit_Light_Bwd_Turn_A } from "./assets/LO_Hit_Light_Bwd_Turn_A.js";
+import { LO_Hit_Light_Bwd_b } from "./assets/LO_Hit_Light_Bwd_b.js";
+import { LO_Hit_Light_Fwd_A } from "./assets/LO_Hit_Light_Fwd_A.js";
+import { LO_Hit_Light_Fwd_B } from "./assets/LO_Hit_Light_Fwd_B.js";
+import { LO_Hit_Light_Fwd_C } from "./assets/LO_Hit_Light_Fwd_C.js";
+import { LO_Hit_Light_Lt_A } from "./assets/LO_Hit_Light_Lt_A.js";
+import { LO_Hit_Light_Lt_B } from "./assets/LO_Hit_Light_Lt_B.js";
+import { LO_Hit_Light_Lt_C } from "./assets/LO_Hit_Light_Lt_C.js";
+import { LO_Hit_Light_Rt_A } from "./assets/LO_Hit_Light_Rt_A.js";
+import { LO_Hit_Light_Rt_B } from "./assets/LO_Hit_Light_Rt_B.js";
+import { LO_Hit_Light_Rt_C } from "./assets/LO_Hit_Light_Rt_C.js";
+import { LO_Hit_Light_Rt_D } from "./assets/LO_Hit_Light_Rt_D.js";
 import { LO_Idle_A } from "./assets/LO_Idle_A.js";
 import { LO_Run_Bwd_A } from "./assets/LO_Run_Bwd_A.js";
 import { LO_Run_Fwd_A } from "./assets/LO_Run_Fwd_A.js";
@@ -306,6 +382,31 @@ import { Player_Climb_Ladder_Down_A } from "./assets/Player_Climb_Ladder_Down_A.
 import { Player_Climb_Ladder_Idle_A } from "./assets/Player_Climb_Ladder_Idle_A.js";
 import { Player_Climb_Ladder_Up_A } from "./assets/Player_Climb_Ladder_Up_A.js";
 import { Player_Reviving_Upperbody_Loop } from "./assets/Player_Reviving_Upperbody_Loop.js";
+import { RU_Hit_Heavy_Bwd_A } from "./assets/RU_Hit_Heavy_Bwd_A.js";
+import { RU_Hit_Heavy_Bwd_B } from "./assets/RU_Hit_Heavy_Bwd_B.js";
+import { RU_Hit_Heavy_Bwd_C } from "./assets/RU_Hit_Heavy_Bwd_C.js";
+import { RU_Hit_Heavy_Bwd_Turn_A } from "./assets/RU_Hit_Heavy_Bwd_Turn_A.js";
+import { RU_Hit_Heavy_Fwd_A } from "./assets/RU_Hit_Heavy_Fwd_A.js";
+import { RU_Hit_Heavy_Fwd_B } from "./assets/RU_Hit_Heavy_Fwd_B.js";
+import { RU_Hit_Heavy_Fwd_C } from "./assets/RU_Hit_Heavy_Fwd_C.js";
+import { RU_Hit_Heavy_Lt_A } from "./assets/RU_Hit_Heavy_Lt_A.js";
+import { RU_Hit_Heavy_Lt_B } from "./assets/RU_Hit_Heavy_Lt_B.js";
+import { RU_Hit_Heavy_Lt_C } from "./assets/RU_Hit_Heavy_Lt_C.js";
+import { RU_Hit_Heavy_Rt_A } from "./assets/RU_Hit_Heavy_Rt_A.js";
+import { RU_Hit_Heavy_Rt_B } from "./assets/RU_Hit_Heavy_Rt_B.js";
+import { RU_Hit_Heavy_Rt_C } from "./assets/RU_Hit_Heavy_Rt_C.js";
+import { RU_Hit_Light_Bwd_A } from "./assets/RU_Hit_Light_Bwd_A.js";
+import { RU_Hit_Light_Bwd_B } from "./assets/RU_Hit_Light_Bwd_B.js";
+import { RU_Hit_Light_Bwd_C } from "./assets/RU_Hit_Light_Bwd_C.js";
+import { RU_Hit_Light_Fwd_A } from "./assets/RU_Hit_Light_Fwd_A.js";
+import { RU_Hit_Light_Fwd_B } from "./assets/RU_Hit_Light_Fwd_B.js";
+import { RU_Hit_Light_Fwd_C } from "./assets/RU_Hit_Light_Fwd_C.js";
+import { RU_Hit_Light_Lt_A } from "./assets/RU_Hit_Light_Lt_A.js";
+import { RU_Hit_Light_Lt_B } from "./assets/RU_Hit_Light_Lt_B.js";
+import { RU_Hit_Light_Lt_C } from "./assets/RU_Hit_Light_Lt_C.js";
+import { RU_Hit_Light_Rt_A } from "./assets/RU_Hit_Light_Rt_A.js";
+import { RU_Hit_Light_Rt_B } from "./assets/RU_Hit_Light_Rt_B.js";
+import { RU_Hit_Light_Rt_C } from "./assets/RU_Hit_Light_Rt_C.js";
 import { RU_Run_Bwd } from "./assets/RU_Run_Bwd.js";
 import { RU_Run_Fwd } from "./assets/RU_Run_Fwd.js";
 import { RU_Run_Lt } from "./assets/RU_Run_Lt.js";
@@ -1110,6 +1211,111 @@ export const enemyAnimationClips = {
     Enemy_Big_Fire_End_A,
     Enemy_Big_Fire_End_B,
     Monster_TentacleEnd,*/
+    /*LO_TwitchLeft,
+    LO_TwitchRight,
+    RU_Twitch_Left,
+    RU_Twitch_Right,*/
+    RU_Hit_Heavy_Bwd_A,
+    RU_Hit_Heavy_Bwd_B,
+    RU_Hit_Heavy_Bwd_C,
+    RU_Hit_Heavy_Bwd_Turn_A,
+    RU_Hit_Heavy_Fwd_A,
+    RU_Hit_Heavy_Fwd_B,
+    RU_Hit_Heavy_Fwd_C,
+    RU_Hit_Heavy_Lt_A,
+    RU_Hit_Heavy_Lt_B,
+    RU_Hit_Heavy_Lt_C,
+    RU_Hit_Heavy_Rt_A,
+    RU_Hit_Heavy_Rt_B,
+    RU_Hit_Heavy_Rt_C,
+    RU_Hit_Light_Bwd_A,
+    RU_Hit_Light_Bwd_B,
+    RU_Hit_Light_Bwd_C,
+    RU_Hit_Light_Fwd_A,
+    RU_Hit_Light_Fwd_B,
+    RU_Hit_Light_Fwd_C,
+    RU_Hit_Light_Lt_A,
+    RU_Hit_Light_Lt_B,
+    RU_Hit_Light_Lt_C,
+    RU_Hit_Light_Rt_A,
+    RU_Hit_Light_Rt_B,
+    RU_Hit_Light_Rt_C,
+    LO_Hit_Heavy_Bwd_A,
+    LO_Hit_Heavy_Fwd_A,
+    LO_Hit_Heavy_Fwd_B,
+    LO_Hit_Heavy_Fwd_C,
+    LO_Hit_Heavy_Lt_A,
+    LO_Hit_Heavy_Lt_B,
+    LO_Hit_Heavy_Lt_C,
+    LO_Hit_Heavy_Rt_A,
+    LO_Hit_Heavy_Rt_B,
+    LO_Hit_Heavy_Rt_C,
+    LO_Hit_Light_Bwd_A,
+    LO_Hit_Light_Bwd_b,
+    LO_Hit_Light_Bwd_C,
+    LO_Hit_Light_Bwd_Turn_A,
+    LO_Hit_Light_Fwd_A,
+    LO_Hit_Light_Fwd_B,
+    LO_Hit_Light_Fwd_C,
+    LO_Hit_Light_Lt_A,
+    LO_Hit_Light_Lt_B,
+    LO_Hit_Light_Lt_C,
+    LO_Hit_Light_Rt_A,
+    LO_Hit_Light_Rt_B,
+    LO_Hit_Light_Rt_C,
+    LO_Hit_Light_Rt_D, 
+    CR_Hit_Heavy_Bwd_A_Turn,
+    CR_Hit_Heavy_Bwd_B,
+    CR_Hit_Heavy_Bwd_C_Turn,
+    CR_Hit_Heavy_Bwd_D_0,
+    CR_Hit_Heavy_Bwd_D,
+    CR_Hit_Heavy_Fwd_A,
+    CR_Hit_Heavy_Fwd_B,
+    CR_Hit_Heavy_Fwd_C,
+    CR_Hit_Heavy_Lt_A,
+    CR_Hit_Heavy_Lt_B,
+    CR_Hit_Heavy_Lt_C,
+    CR_Hit_Heavy_Rt_A,
+    CR_Hit_Heavy_Rt_B,
+    CR_Hit_Heavy_Rt_C,
+    CR_Hit_Heavy_Rt_C_0,
+    CR_Hit_Light_Bwd_A,
+    CR_Hit_Light_Bwd_B,
+    CR_Hit_Light_Bwd_C,
+    CR_Hit_Light_Bwd_D,
+    CR_Hit_Light_Fwd_A,
+    CR_Hit_Light_Fwd_B,
+    CR_Hit_Light_Fwd_C,
+    CR_Hit_Light_Lt_A,
+    CR_Hit_Light_Lt_B,
+    CR_Hit_Light_Lt_C,
+    CR_Hit_Light_Rt_A,
+    CR_Hit_Light_Rt_B,
+    CR_Hit_Light_Rt_C,
+    FD_Hit_Heavy_Bwd_A,
+    FD_Hit_Heavy_Bwd_B,
+    FD_Hit_Heavy_Bwd_C,
+    FD_Hit_Heavy_Fwd_A,
+    FD_Hit_Heavy_Fwd_B,
+    FD_Hit_Heavy_Fwd_C,
+    FD_Hit_Heavy_Lt_A,
+    FD_Hit_Heavy_Lt_B,
+    FD_Hit_Heavy_Lt_C,
+    FD_Hit_Heavy_Rt_A,
+    FD_Hit_Heavy_Rt_B,
+    FD_Hit_Heavy_Rt_C,
+    FD_Hit_Light_Bwd_A,
+    FD_Hit_Light_Bwd_B,
+    FD_Hit_Light_Bwd_C,
+    FD_Hit_Light_Fwd_A,
+    FD_Hit_Light_Fwd_B,
+    FD_Hit_Light_Fwd_C,
+    FD_Hit_Light_Lt_A,
+    FD_Hit_Light_Lt_B,
+    FD_Hit_Light_Lt_C,
+    FD_Hit_Light_Rt_A,
+    FD_Hit_Light_Rt_B,
+    FD_Hit_Light_Rt_C,
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
