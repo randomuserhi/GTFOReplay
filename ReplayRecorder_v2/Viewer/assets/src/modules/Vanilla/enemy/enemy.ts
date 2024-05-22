@@ -516,8 +516,9 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
         anim.lastHitreactTime = snapshot.time();
-        anim.hitreactType = data.type;
+        anim.hitreactAnimIndex = data.animIndex;
         anim.hitreactDirection = data.direction;
+        anim.hitreactType = data.type;
         anim.hitreactRotation = data.rotation;
     }
 });

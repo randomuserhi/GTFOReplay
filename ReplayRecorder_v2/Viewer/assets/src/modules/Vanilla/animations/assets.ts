@@ -168,6 +168,21 @@ import { Bat_Stand_Shove } from "./assets/Bat_Stand_Shove.js";
 import { Bat_Stand_SwingRight } from "./assets/Bat_Stand_SwingRight.js";
 import { CA_Ability_Fire_In_A } from "./assets/CA_Ability_Fire_In_A.js";
 import { CA_Ability_Fire_In_B } from "./assets/CA_Ability_Fire_In_B.js";
+import { CA_Hit_Heavy_Bwd_A } from "./assets/CA_Hit_Heavy_Bwd_A.js";
+import { CA_Hit_Heavy_Fwd_B } from "./assets/CA_Hit_Heavy_Fwd_B.js";
+import { CA_Hit_Heavy_Fwd_C } from "./assets/CA_Hit_Heavy_Fwd_C.js";
+import { CA_Hit_Heavy_Lt_A } from "./assets/CA_Hit_Heavy_Lt_A.js";
+import { CA_Hit_Heavy_Lt_B } from "./assets/CA_Hit_Heavy_Lt_B.js";
+import { CA_Hit_Heavy_Rt_A } from "./assets/CA_Hit_Heavy_Rt_A.js";
+import { CA_Hit_Heavy_Rt_B } from "./assets/CA_Hit_Heavy_Rt_B.js";
+import { CA_Hit_Light_Bwd_A } from "./assets/CA_Hit_Light_Bwd_A.js";
+import { CA_Hit_Light_Bwd_B } from "./assets/CA_Hit_Light_Bwd_B.js";
+import { CA_Hit_Light_Fwd_A } from "./assets/CA_Hit_Light_Fwd_A.js";
+import { CA_Hit_Light_Fwd_B } from "./assets/CA_Hit_Light_Fwd_B.js";
+import { CA_Hit_Light_Lt_A } from "./assets/CA_Hit_Light_Lt_A.js";
+import { CA_Hit_Light_Lt_B } from "./assets/CA_Hit_Light_Lt_B.js";
+import { CA_Hit_Light_Rt_A } from "./assets/CA_Hit_Light_Rt_A.js";
+import { CA_Hit_Light_Rt_B } from "./assets/CA_Hit_Light_Rt_B.js";
 import { CA_Idle_A } from "./assets/CA_Idle_A.js";
 import { CA_Walk_Bwd_A } from "./assets/CA_Walk_Bwd_A.js";
 import { CA_Walk_Fwd_A } from "./assets/CA_Walk_Fwd_A.js";
@@ -175,6 +190,8 @@ import { CA_Walk_Lt_A } from "./assets/CA_Walk_Lt_A.js";
 import { CA_Walk_Rt_A } from "./assets/CA_Walk_Rt_A.js";
 import { CF_Ability_Fire_In_A } from "./assets/CF_Ability_Fire_In_A.js";
 import { CF_Ability_Fire_In_B } from "./assets/CF_Ability_Fire_In_B.js";
+import { CF_Hit_Light_A } from "./assets/CF_Hit_Light_A.js";
+import { CF_Hit_Light_B } from "./assets/CF_Hit_Light_B.js";
 import { CF_Idle_A } from "./assets/CF_Idle_A.js";
 import { CF_Walk_Bwd_A } from "./assets/CF_Walk_Bwd_A.js";
 import { CF_Walk_Fwd_A } from "./assets/CF_Walk_Fwd_A.js";
@@ -228,6 +245,14 @@ import { Dead } from "./assets/Dead.js";
 import { Die } from "./assets/Die.js";
 import { Enemy_Big_Fire_In_A } from "./assets/Enemy_Big_Fire_In_A.js";
 import { Enemy_Big_Fire_In_B } from "./assets/Enemy_Big_Fire_In_B.js";
+import { Enemy_Big_Hit_Back_A } from "./assets/Enemy_Big_Hit_Back_A.js";
+import { Enemy_Big_Hit_Back_B } from "./assets/Enemy_Big_Hit_Back_B.js";
+import { Enemy_Big_Hit_Front_A } from "./assets/Enemy_Big_Hit_Front_A.js";
+import { Enemy_Big_Hit_Front_B } from "./assets/Enemy_Big_Hit_Front_B.js";
+import { Enemy_Big_Hit_Left_A } from "./assets/Enemy_Big_Hit_Left_A.js";
+import { Enemy_Big_Hit_Left_B } from "./assets/Enemy_Big_Hit_Left_B.js";
+import { Enemy_Big_Hit_Right_A } from "./assets/Enemy_Big_Hit_Right_A.js";
+import { Enemy_Big_Hit_Right_B } from "./assets/Enemy_Big_Hit_Right_B.js";
 import { Enemy_Big_Idle_A } from "./assets/Enemy_Big_Idle_A.js";
 import { Enemy_Big_Run_Bwd_A } from "./assets/Enemy_Big_Run_Bwd_A.js";
 import { Enemy_Big_Run_Bwd_Left_A } from "./assets/Enemy_Big_Run_Bwd_Left_A.js";
@@ -357,6 +382,17 @@ import { LO_Walk_Bwd_A } from "./assets/LO_Walk_Bwd_A.js";
 import { LO_Walk_Fwd_A } from "./assets/LO_Walk_Fwd_A.js";
 import { LO_Walk_Lt_A } from "./assets/LO_Walk_Lt_A.js";
 import { LO_Walk_Rt_A } from "./assets/LO_Walk_Rt_A.js";
+import { Monster_Hit_Back_01 } from "./assets/Monster_Hit_Back_01.js";
+import { Monster_Hit_Back_02 } from "./assets/Monster_Hit_Back_02.js";
+import { Monster_Hit_Back_04 } from "./assets/Monster_Hit_Back_04.js";
+import { Monster_Hit_Front_01 } from "./assets/Monster_Hit_Front_01.js";
+import { Monster_Hit_Front_02 } from "./assets/Monster_Hit_Front_02.js";
+import { Monster_Hit_Front_03 } from "./assets/Monster_Hit_Front_03.js";
+import { Monster_Hit_Front_04 } from "./assets/Monster_Hit_Front_04.js";
+import { Monster_Hit_Leg_01 } from "./assets/Monster_Hit_Leg_01.js";
+import { Monster_Hit_Leg_02 } from "./assets/Monster_Hit_Leg_02.js";
+import { Monster_Hit_Leg_03 } from "./assets/Monster_Hit_Leg_03.js";
+import { Monster_Hit_Right_01 } from "./assets/Monster_Hit_Right_01.js";
 import { Monster_Idle_01 } from "./assets/Monster_Idle_01.js";
 import { Monster_TentacleStart } from "./assets/Monster_TentacleStart.js";
 import { Monster_Walk_Bwd } from "./assets/Monster_Walk_Bwd.js";
@@ -1316,6 +1352,42 @@ export const enemyAnimationClips = {
     FD_Hit_Light_Rt_A,
     FD_Hit_Light_Rt_B,
     FD_Hit_Light_Rt_C,
+    CA_Hit_Heavy_Bwd_A,
+    CA_Hit_Heavy_Fwd_B,
+    CA_Hit_Heavy_Fwd_C,
+    CA_Hit_Heavy_Lt_A,
+    CA_Hit_Heavy_Lt_B,
+    CA_Hit_Heavy_Rt_A,
+    CA_Hit_Heavy_Rt_B,
+    CA_Hit_Light_Bwd_A,
+    CA_Hit_Light_Bwd_B,
+    CA_Hit_Light_Fwd_A,
+    CA_Hit_Light_Fwd_B,
+    CA_Hit_Light_Lt_A,
+    CA_Hit_Light_Lt_B,
+    CA_Hit_Light_Rt_A,
+    CA_Hit_Light_Rt_B,
+    CF_Hit_Light_A,
+    CF_Hit_Light_B,
+    Enemy_Big_Hit_Back_A,
+    Enemy_Big_Hit_Back_B,
+    Enemy_Big_Hit_Front_A,
+    Enemy_Big_Hit_Front_B,
+    Enemy_Big_Hit_Left_A,
+    Enemy_Big_Hit_Left_B,
+    Enemy_Big_Hit_Right_A,
+    Enemy_Big_Hit_Right_B,
+    Monster_Hit_Back_01,
+    Monster_Hit_Back_02,
+    Monster_Hit_Back_04,
+    Monster_Hit_Front_01,
+    Monster_Hit_Front_02,
+    Monster_Hit_Front_03,
+    Monster_Hit_Front_04,
+    Monster_Hit_Leg_01,
+    Monster_Hit_Leg_02,
+    Monster_Hit_Leg_03,
+    Monster_Hit_Right_01
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
