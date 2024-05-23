@@ -1519,27 +1519,27 @@ export const enemyFiddleMovement = new AnimBlend(HumanJoints, [
 
 export const enemyCrawlMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 1.2 },
-    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 2.5, timescale: 2 },
-    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 4, timescale: 3 },
+    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 2.5, timescale: 1.5 },
+    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 4, timescale: 2 },
     { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -1.2},
-    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -2.5, timescale: 2 },
-    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -4, timescale: 3 },
+    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -2.5, timescale: 1.5 },
+    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -4, timescale: 2 },
     { anim: enemyAnimationClips.CA_Walk_Lt_A, x: -1.1, y: 0 },
     { anim: enemyAnimationClips.CA_Walk_Rt_A, x: 1.1, y: 0 },
-    { anim: enemyAnimationClips.CA_Walk_Lt_A, x: -3.5, y: 0, timescale: 2 },
-    { anim: enemyAnimationClips.CA_Walk_Rt_A, x: 3.5, y: 0, timescale: 2 },
+    { anim: enemyAnimationClips.CA_Walk_Lt_A, x: -3.5, y: 0, timescale: 1.5 },
+    { anim: enemyAnimationClips.CA_Walk_Rt_A, x: 3.5, y: 0, timescale: 1.5 },
     { anim: enemyAnimationClips.CA_Idle_A, x: 0, y: 0},
 ], animVelocity);
 
 export const enemyCrawlFlipMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.CF_Walk_Fwd_A, x: 0, y: 1 },
-    { anim: enemyAnimationClips.CF_Walk_Fwd_A, x: 0, y: 3, timescale: 2 },
+    { anim: enemyAnimationClips.CF_Walk_Fwd_A, x: 0, y: 3, timescale: 1.5 },
     { anim: enemyAnimationClips.CF_Walk_Bwd_A, x: 0, y: -1},
-    { anim: enemyAnimationClips.CF_Walk_Bwd_A, x: 0, y: -3, timescale: 2 },
+    { anim: enemyAnimationClips.CF_Walk_Bwd_A, x: 0, y: -3, timescale: 1.5 },
     { anim: enemyAnimationClips.CF_Walk_Lt_A, x: -1.1, y: 0 },
     { anim: enemyAnimationClips.CF_Walk_Rt_A, x: 1.1, y: 0 },
-    { anim: enemyAnimationClips.CF_Walk_Lt_A, x: -2.5, y: 0, timescale: 2 },
-    { anim: enemyAnimationClips.CF_Walk_Rt_A, x: 2.5, y: 0, timescale: 2 },
+    { anim: enemyAnimationClips.CF_Walk_Lt_A, x: -2.5, y: 0, timescale: 1.5 },
+    { anim: enemyAnimationClips.CF_Walk_Rt_A, x: 2.5, y: 0, timescale: 1.5 },
     { anim: enemyAnimationClips.CF_Idle_A, x: 0, y: 0},
 ], animVelocity);
 
@@ -1578,21 +1578,21 @@ export const enemyBigMovement = new AnimBlend(HumanJoints, [
 export const enemyGiantMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.Monster_Idle_01, x: 0, y: 0 },
     { anim: enemyAnimationClips.Monster_Walk_Fwd, x: 0, y: 1.2 },
-    { anim: enemyAnimationClips.Monster_Walk_Fwd, x: 0, y: 2.6, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Fwd, x: 0, y: 2.6, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Bwd, x: 0, y: -1.2 },
-    { anim: enemyAnimationClips.Monster_Walk_Bwd, x: 0, y: -2.6, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Bwd, x: 0, y: -2.6, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Right, x: 1.2, y: 0 },
-    { anim: enemyAnimationClips.Monster_Walk_Right, x: 2.6, y: 0, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Right, x: 2.6, y: 0, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Left, x: -1.2, y: 0 },
-    { anim: enemyAnimationClips.Monster_Walk_Left, x: -2.6, y: 0, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Left, x: -2.6, y: 0, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Left_135, x: -1.1, y: -1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Left_135, x: -2.6, y: -2.6, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Left_135, x: -2.6, y: -2.6, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Left_45, x: -1.1, y: 1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Left_45, x: -2.6, y: 2.6, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Left_45, x: -2.6, y: 2.6, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Right_135, x: 1.1, y: -1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Right_135, x: 2.6, y: -2.6, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Right_135, x: 2.6, y: -2.6, timescale: 1.5 },
     { anim: enemyAnimationClips.Monster_Walk_Right_45, x: 1.1, y: 1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Right_45, x: 2.6, y: 2.6, timescale: 2 },
+    { anim: enemyAnimationClips.Monster_Walk_Right_45, x: 2.6, y: 2.6, timescale: 1.5 },
 ], animVelocity);
 
 export const enemyPouncerMovement = new AnimBlend(HumanJoints, [

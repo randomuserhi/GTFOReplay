@@ -665,7 +665,7 @@ export class EnemyModel {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
     }
 
     public dispose() {
@@ -761,12 +761,12 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.head = -1;
     }
 
-    public update(time: number, enemy: Enemy, anim: EnemyAnimState) {
-        this.animate(time, enemy, anim);
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+        this.animate(dt, time, enemy, anim);
         this.render(enemy);
     }
 
-    private animate(time: number, enemy: Enemy, anim: EnemyAnimState) {
+    private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
         this.pivot.rotation.set(0, 0, 0);
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
@@ -776,8 +776,10 @@ export class HumanoidEnemyModel extends EnemyModel {
         animVelocity.y = anim.velocity.z;
         animCrouch.x = 0;
 
+        const overrideBlend = Math.clamp01(10 * dt);
+
         if (this.animHandle === undefined) {
-            this.skeleton.override(playerAnimations.defaultMovement.sample(offsetTime));
+            this.skeleton.blend(playerAnimations.defaultMovement.sample(offsetTime), overrideBlend);
             return;
         }
 
@@ -789,9 +791,9 @@ export class HumanoidEnemyModel extends EnemyModel {
             } else {
                 this.pivot.rotation.set(90 * Math.deg2rad, 180 * Math.deg2rad, 0, "YXZ");
             } 
-            this.skeleton.override(this.animHandle.ladderClimb.sample(offsetTime, 2));
+            this.skeleton.blend(this.animHandle.ladderClimb.sample(offsetTime, 2), overrideBlend);
             break;
-        default: this.skeleton.override(this.animHandle.movement.sample(offsetTime)); break;
+        default: this.skeleton.blend(this.animHandle.movement.sample(offsetTime), overrideBlend); break;
         }
 
         const screamTime = time - (anim.lastScreamTime / 1000);
@@ -956,7 +958,7 @@ export class HumanoidEnemyModel extends EnemyModel {
 ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
-        name, pass: (renderer, snapshot) => {
+        name, pass: (renderer, snapshot, dt) => {
             const time = snapshot.time();
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
@@ -980,7 +982,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 if (model.root.visible) {
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
-                        model.update(time, enemy, anim);
+                        model.update(dt, time, enemy, anim);
                     }
                 }
             }
