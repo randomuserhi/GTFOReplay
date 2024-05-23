@@ -102,11 +102,11 @@ namespace Vanilla.Enemy {
             }
 
             [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.UpdateJump))]
-            [HarmonyPostfix]
-            private static void Postfix_UpdateJump(ES_Jump __instance) {
+            [HarmonyPrefix]
+            private static void Prefix_UpdateJump(ES_Jump __instance) {
                 switch (__instance.m_state) {
                 case ESJumpState.InAir:
-                    if (__instance.m_jumpMoveTimeRel < 1f) {
+                    if (__instance.m_jumpMoveTimeRel + Clock.Delta * __instance.m_jumpMoveSpeed < 1f) {
                         break;
                     }
                     Replay.Trigger(new rJump(__instance.m_enemyAgent, 1));
@@ -192,7 +192,6 @@ namespace Vanilla.Enemy {
 
             velocity.z = Vector3.Dot(enemy.transform.forward, v);
             velocity.x = Vector3.Dot(enemy.transform.right, v);
-            velocity.y = Vector3.Dot(enemy.transform.up, v);
         }
 
         private float _velFwd => velocity.z;
@@ -204,7 +203,7 @@ namespace Vanilla.Enemy {
         private byte _state => (byte)enemy.Locomotion.m_currentState.m_stateEnum;
         private byte state;
 
-        private bool _up => velocity.y >= 0;
+        private bool _up => enemy.Locomotion.ClimbLadder.m_goingUp;
         private bool up;
 
         public rEnemyAnimation(EnemyAgent enemy) : base(enemy.GlobalID) {

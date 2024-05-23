@@ -468,6 +468,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             const anim = anims.get(id)!;
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
             anim.state = data.state;
+            anim.up = data.up;
         }
     },
     spawn: {
@@ -775,10 +776,11 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         switch (anim.state) {
         case "ClimbLadder": 
+            console.log(anim.up);
             if (anim.up) {
-                this.pivot.rotation.set(80, 0, 0, "YXZ");
+                this.pivot.rotation.set(-90 * Math.deg2rad, 0, 0, "YXZ");
             } else {
-                this.pivot.rotation.set(80, 180, 0, "YXZ");
+                this.pivot.rotation.set(90 * Math.deg2rad, 180 * Math.deg2rad, 0, "YXZ");
             } 
             this.skeleton.override(this.animHandle.ladderClimb.sample(offsetTime, 2));
             break;
