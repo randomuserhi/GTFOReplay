@@ -33,7 +33,7 @@ export interface Snapshot {
 //                     Have the data split up across Storage and RAM much like how mp4 or streaming videos work with m3u8 to minimise RAM usage. 
 
 // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
-export const largestTickRate = 400; //ms -> tick rate of 200ms so longest possible time is 50ms. We add lee-way of an extra tick for variance.
+export const largestTickRate = 100; //ms -> tick rate of 50ms (1/20) so longest possible time is 50ms. We add lee-way of an extra tick for variance.
 
 export class Replay {
     typemap: Map<number, ModuleDesc>;
@@ -110,7 +110,7 @@ export class Replay {
         return module;
     }
 
-    private exec(time: number, api: ReplayApi, state: Snapshot, snapshot: Timeline.Snapshot, exists?: Map<number, Map<number, boolean>>) {
+    private exec(time: number, api: ReplayApi, state: Snapshot, snapshot: Timeline.Snapshot, exists?: Map<number, Map<number, boolean>>, future?: Set<number>) {
         if (exists === undefined) exists = new Map<number, Map<number, boolean>>();
 
         // perform events
@@ -187,11 +187,17 @@ export class Replay {
 
                 if (!state.typedTime.has(module.typename)) state.typedTime.set(module.typename, state.time);
                 const typedTime = state.typedTime.has(module.typename) ? state.typedTime.get(module.typename)! : state.time;
+                const typedDiff = snapshot.time - typedTime;
+
+                if (future !== undefined && snapshot.time > time && diff >= 0) {
+                    if (future.has(type)) continue; // Skip because we have already processed this type once for upcoming future snapshots.
+                    future.add(type);
+                }
 
                 // Lerp dynamics -> pushing "start" to largestTickRate in the event of large breaks due to non-written snapshots for changes of 0.
-                const start = snapshot.time - Math.min(largestTickRate, snapshot.time - typedTime);
-                const diff = snapshot.time - start;
-                const lerp = time < snapshot.time ? (time - start) / diff : 1;
+                const start = snapshot.time - Math.min(largestTickRate, typedDiff);
+                const lerpDiff = snapshot.time - start;
+                const lerp = time < snapshot.time ? (time - start) / lerpDiff : 1;
                 if (lerp > 1) throw new Error(`Lerp should be between 0 and 1. ${lerp}`);
                 if (lerp <= 0) continue;
 
@@ -203,7 +209,7 @@ export class Replay {
                     }
                 }
                 
-                state.typedTime.set(module.typename, lerp === 1 ? snapshot.time : (typedTime + lerp * diff));
+                state.typedTime.set(module.typename, lerp === 1 ? snapshot.time : (typedTime + lerp * lerpDiff));
             }
         }
 
@@ -255,9 +261,10 @@ export class Replay {
 
         // Persistent exist map needs to be used to prevent error from dynamics not yet being spawned
         const exists = new Map<number, Map<number, boolean>>();
+        const future = new Set<number>(); // Persistent future set to only process each dynamic type once in the future
         for (; tick < this.timeline.length; ++tick) {
             const snapshot = this.timeline[tick];
-            this.exec(time, api, state, snapshot, exists);
+            this.exec(time, api, state, snapshot, exists, future);
             if (snapshot.time > state.time + largestTickRate) break;
         }
 

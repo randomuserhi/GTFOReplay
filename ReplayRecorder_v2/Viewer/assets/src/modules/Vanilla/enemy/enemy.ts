@@ -776,7 +776,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         animVelocity.y = anim.velocity.z;
         animCrouch.x = 0;
 
-        const overrideBlend = Math.clamp01(10 * dt);
+        const overrideBlend = this.animHandle !== undefined && this.animHandle.blend ? Math.clamp01(this.animHandle.blend * dt) : 1;
 
         if (this.animHandle === undefined) {
             this.skeleton.blend(playerAnimations.defaultMovement.sample(offsetTime), overrideBlend);
@@ -838,7 +838,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (this.animHandle.melee !== undefined) {
             const meleeTime = time - (anim.lastMeleeTime / 1000);
             const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
-            const inMelee = meleeAnim !== undefined && meleeTime < meleeAnim.duration;
+            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerAttack");
             if (inMelee) {
                 const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
                 this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);

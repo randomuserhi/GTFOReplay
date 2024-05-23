@@ -470,9 +470,10 @@ class PlayerModel  {
                     if (!isShoving) {
                         const swingTime = time - (anim.lastSwingTime / 1000);
                         let swingAnim: HumanAnimation | undefined = undefined;
-                        if (anim.chargedSwing && swingTime < this.meleeArchetype.releaseAnim.duration) {
+                        const isSwinging = swingTime < this.meleeArchetype.releaseAnim.duration;
+                        if (anim.chargedSwing && isSwinging) {
                             swingAnim = this.meleeArchetype.releaseAnim;
-                        } else if (!anim.chargedSwing && swingTime < this.meleeArchetype.attackAnim.duration) {
+                        } else if (!anim.chargedSwing && isSwinging) {
                             swingAnim = this.meleeArchetype.attackAnim;
                         }
                         if (swingAnim !== undefined) {

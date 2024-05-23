@@ -107,10 +107,13 @@ export interface EnemyAnimHandle {
     ladderClimb: HumanAnimation;
     jump: [HumanAnimation, HumanAnimation]; // NOTE(randomuserhi): 0 - Jump start, 1 - Jump end
     screams: HumanAnimation[];
+    blend?: number;
 }
 
+const defaultBlend = 50;
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
+    blend: defaultBlend,
     movement: enemyAnimations.enemyRunnerMovement,
     ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     screams: [
@@ -176,6 +179,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyLow",
     movement: enemyAnimations.enemyLowMovement,
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.LO_Scream_A,
         enemyAnimationClips.LO_Scream_B,
@@ -239,6 +243,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyFiddler",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.FD_Scream_A,
         enemyAnimationClips.FD_Scream_B,
@@ -299,6 +304,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawl",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CA_Scream_A,
         enemyAnimationClips.CA_Scream_B,
@@ -359,6 +365,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawlFlip",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CF_Scream,
         enemyAnimationClips.CF_Scream,
@@ -419,6 +426,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCripple",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CR_Scream_A,
         enemyAnimationClips.CR_Scream_B,
@@ -479,6 +487,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBig",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.Enemy_Big_Detect_Front_A,
         enemyAnimationClips.Enemy_Big_Detect_Front_B,
@@ -539,6 +548,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyGiant",
+    blend: 10,
     screams: [
         enemyAnimationClips.Monster_Taunt_01,
         enemyAnimationClips.Monster_Taunt_01,
@@ -603,6 +613,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyPouncer",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CA_Scream_A,
         enemyAnimationClips.CA_Scream_B,
@@ -659,6 +670,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBirtherCrawlFlip",
+    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CF_Scream,
         enemyAnimationClips.CF_Scream,

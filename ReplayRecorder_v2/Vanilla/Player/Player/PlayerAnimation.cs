@@ -111,10 +111,19 @@ namespace Vanilla.Player {
                 anim._chargingMelee = false;
             }
 
+            private static bool swingTrigger = false;
             [HarmonyPatch(typeof(MWS_AttackLight), nameof(MWS_AttackLight.Enter))]
             [HarmonyPostfix]
+            private static void Postfix_MWS_AttackLight_Enter(MWS_AttackLight __instance) {
+                swingTrigger = false;
+            }
+            [HarmonyPatch(typeof(MWS_AttackLight), nameof(MWS_AttackLight.UpdateStateInput))]
+            [HarmonyPostfix]
             private static void Postfix_MWS_AttackLight(MWS_AttackLight __instance) {
+                if (__instance.m_canCharge && __instance.m_weapon.FireButton) return;
+                if (swingTrigger) return;
                 Replay.Trigger(new rMeleeSwing(__instance.m_weapon.Owner));
+                swingTrigger = true;
             }
 
             [HarmonyPatch(typeof(MWS_AttackHeavy), nameof(MWS_AttackHeavy.Enter))]
