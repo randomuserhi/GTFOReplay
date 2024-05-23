@@ -565,7 +565,7 @@ class PlayerModel  {
         this.root.position.copy(player.position);
         this.anchor.quaternion.copy(player.rotation);
 
-        const blendFactor = Math.clamp01(dt * 30);
+        const blendFactor = Math.clamp01(dt * 20);
         for (const key of HumanJoints) {
             this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
         }
