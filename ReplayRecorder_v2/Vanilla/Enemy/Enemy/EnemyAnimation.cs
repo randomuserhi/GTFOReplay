@@ -114,7 +114,6 @@ namespace Vanilla.Enemy {
                 }
             }
 
-
             [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.DoHitReact))]
             [HarmonyPrefix]
             private static void Prefix_DoHitReact(ES_Hitreact __instance, int index, ES_HitreactType hitreactType, ImpactDirection impactDirection, float deathDelay, bool propagated, Vector3 damagePos, Vector3 source) {

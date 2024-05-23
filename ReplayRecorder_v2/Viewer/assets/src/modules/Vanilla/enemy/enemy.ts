@@ -12,6 +12,7 @@ import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
 import { Damage } from "../stattracker/damage.js";
 import { StatTracker, getPlayerStats, isPlayer } from "../stattracker/stats.js";
+import { ScreamType } from "./enemyscreams.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -450,6 +451,9 @@ export interface EnemyAnimState {
     meleeAnimIndex: number;
     lastJumpTime: number;
     jumpAnimIndex: number;
+    lastScreamTime: number;
+    screamAnimIndex: number;
+    screamType: ScreamType;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -496,6 +500,9 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 meleeType: "Forward",
                 lastJumpTime: -Infinity,
                 jumpAnimIndex: 0,
+                lastScreamTime: -Infinity,
+                screamAnimIndex: 0,
+                screamType: "Regular",
             });
         }
     },
@@ -785,6 +792,18 @@ export class HumanoidEnemyModel extends EnemyModel {
             this.skeleton.override(this.animHandle.ladderClimb.sample(offsetTime, 2));
             break;
         default: this.skeleton.override(this.animHandle.movement.sample(offsetTime)); break;
+        }
+
+        const screamTime = time - (anim.lastScreamTime / 1000);
+        const screamAnim = this.animHandle.screams[anim.screamAnimIndex];
+        const inScream = screamAnim !== undefined && screamTime < screamAnim.duration && (anim.state === "Scream" || anim.state === "ScoutScream");
+        if (inScream) {
+            if (anim.screamType === "Regular") {
+                const blend = screamTime < screamAnim.duration / 2 ? Math.clamp01(screamTime / 0.15) : Math.clamp01((screamAnim.duration - screamTime) / 0.15);
+                this.skeleton.blend(screamAnim.sample(Math.clamp(screamTime, 0, screamAnim.duration)), blend);
+            }
+
+            // TODO(randomuserhi): scream effect...
         }
 
         const jumpTime = time - (anim.lastJumpTime / 1000);

@@ -106,12 +106,18 @@ export interface EnemyAnimHandle {
     melee?: { [K in MeleeType]: HumanAnimation[] }
     ladderClimb: HumanAnimation;
     jump: [HumanAnimation, HumanAnimation]; // NOTE(randomuserhi): 0 - Jump start, 1 - Jump end
+    screams: HumanAnimation[];
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
     movement: enemyAnimations.enemyRunnerMovement,
     ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
+    screams: [
+        enemyAnimationClips.RU_Scream_A,
+        enemyAnimationClips.RU_Scream_B,
+        enemyAnimationClips.RU_Scream_C,
+    ],
     jump: [
         mergeAnims(enemyAnimationClips.RU_Jump_In, enemyAnimationClips.RU_Jump_Air_TimeBlend),
         enemyAnimationClips.RU_Jump_Out
@@ -170,6 +176,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyLow",
     movement: enemyAnimations.enemyLowMovement,
+    screams: [
+        enemyAnimationClips.LO_Scream_A,
+        enemyAnimationClips.LO_Scream_B,
+        enemyAnimationClips.LO_Scream_C,
+    ],
     jump: [
         mergeAnims(enemyAnimationClips.LO_Jump_Start, enemyAnimationClips.LO_Jump_Air),
         enemyAnimationClips.LO_Jump_Land
@@ -228,6 +239,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyFiddler",
+    screams: [
+        enemyAnimationClips.FD_Scream_A,
+        enemyAnimationClips.FD_Scream_B,
+        enemyAnimationClips.FD_Scream_C,
+    ],
     jump: [
         mergeAnims(enemyAnimationClips.FD_Jump_Start, enemyAnimationClips.FD_Jump_Air),
         enemyAnimationClips.FD_Jump_Land
@@ -283,6 +299,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawl",
+    screams: [
+        enemyAnimationClips.CA_Scream_A,
+        enemyAnimationClips.CA_Scream_B,
+        enemyAnimationClips.CA_Scream_A,
+    ],
     movement: enemyAnimations.enemyCrawlMovement,
     jump: [
         mergeAnims(enemyAnimationClips.CA_Jump_Start, enemyAnimationClips.CA_Jump_Air),
@@ -338,6 +359,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawlFlip",
+    screams: [
+        enemyAnimationClips.CF_Scream,
+        enemyAnimationClips.CF_Scream,
+        enemyAnimationClips.CF_Scream,
+    ],
     movement: enemyAnimations.enemyCrawlFlipMovement,
     jump: [
         mergeAnims(enemyAnimationClips.CF_Jump_Start, enemyAnimationClips.CF_Jump_Air),
@@ -393,6 +419,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCripple",
+    screams: [
+        enemyAnimationClips.CR_Scream_A,
+        enemyAnimationClips.CR_Scream_B,
+        enemyAnimationClips.CR_Scream_C,
+    ],
     movement: enemyAnimations.enemyCrippleMovement,
     jump: [
         mergeAnims(enemyAnimationClips.CR_Jump_Start, enemyAnimationClips.CR_Jump_Air),
@@ -448,6 +479,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBig",
+    screams: [
+        enemyAnimationClips.Enemy_Big_Detect_Front_A,
+        enemyAnimationClips.Enemy_Big_Detect_Front_B,
+        enemyAnimationClips.Enemy_Big_Detect_Front_A,
+    ],
     movement: enemyAnimations.enemyBigMovement,
     jump: [
         mergeAnims(enemyAnimationClips.Enemy_Big_Jump_Start_A, enemyAnimationClips.Enemy_Big_Jump_Loop_A),
@@ -503,6 +539,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyGiant",
+    screams: [
+        enemyAnimationClips.Monster_Taunt_01,
+        enemyAnimationClips.Monster_Taunt_01,
+        enemyAnimationClips.Monster_Taunt_01,
+    ],
     ladderClimb: enemyAnimationClips.CA_Walk_Fwd_A,
     melee: {
         "Forward": [enemyAnimationClips.Monster_Attack_06_shortened],
@@ -562,6 +603,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyPouncer",
+    screams: [
+        enemyAnimationClips.CA_Scream_A,
+        enemyAnimationClips.CA_Scream_B,
+        enemyAnimationClips.CA_Scream_A,
+    ],
     jump: [
         mergeAnims(enemyAnimationClips.LO_Jump_Start, enemyAnimationClips.LO_Jump_Air),
         enemyAnimationClips.LO_Jump_Land
@@ -613,6 +659,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBirtherCrawlFlip",
+    screams: [
+        enemyAnimationClips.CF_Scream,
+        enemyAnimationClips.CF_Scream,
+        enemyAnimationClips.CF_Scream,
+    ],
     movement: enemyAnimations.enemyCrawlFlipMovement,
     jump: [
         mergeAnims(enemyAnimationClips.CF_Jump_Start, enemyAnimationClips.CF_Jump_Air),

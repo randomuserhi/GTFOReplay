@@ -187,6 +187,8 @@ import { CA_Idle_A } from "./assets/CA_Idle_A.js";
 import { CA_Jump_Air } from "./assets/CA_Jump_Air.js";
 import { CA_Jump_Land } from "./assets/CA_Jump_Land.js";
 import { CA_Jump_Start } from "./assets/CA_Jump_Start.js";
+import { CA_Scream_A } from "./assets/CA_Scream_A.js";
+import { CA_Scream_B } from "./assets/CA_Scream_B.js";
 import { CA_Walk_Bwd_A } from "./assets/CA_Walk_Bwd_A.js";
 import { CA_Walk_Fwd_A } from "./assets/CA_Walk_Fwd_A.js";
 import { CA_Walk_Lt_A } from "./assets/CA_Walk_Lt_A.js";
@@ -199,6 +201,7 @@ import { CF_Idle_A } from "./assets/CF_Idle_A.js";
 import { CF_Jump_Air } from "./assets/CF_Jump_Air.js";
 import { CF_Jump_Land } from "./assets/CF_Jump_Land.js";
 import { CF_Jump_Start } from "./assets/CF_Jump_Start.js";
+import { CF_Scream } from "./assets/CF_Scream.js";
 import { CF_Walk_Bwd_A } from "./assets/CF_Walk_Bwd_A.js";
 import { CF_Walk_Fwd_A } from "./assets/CF_Walk_Fwd_A.js";
 import { CF_Walk_Lt_A } from "./assets/CF_Walk_Lt_A.js";
@@ -242,6 +245,9 @@ import { CR_Run_Bwd } from "./assets/CR_Run_Bwd.js";
 import { CR_Run_Fwd } from "./assets/CR_Run_Fwd.js";
 import { CR_Run_Lt } from "./assets/CR_Run_Lt.js";
 import { CR_Run_Rt } from "./assets/CR_Run_Rt.js";
+import { CR_Scream_A } from "./assets/CR_Scream_A.js";
+import { CR_Scream_B } from "./assets/CR_Scream_B.js";
+import { CR_Scream_C } from "./assets/CR_Scream_C.js";
 import { CR_Walk_Bwd } from "./assets/CR_Walk_Bwd.js";
 import { CR_Walk_Fwd } from "./assets/CR_Walk_Fwd.js";
 import { CR_Walk_Lt } from "./assets/CR_Walk_Lt.js";
@@ -252,6 +258,8 @@ import { Consumable_Throw_Charge } from "./assets/Consumable_Throw_Charge.js";
 import { Consumable_Throw_Charge_Idle } from "./assets/Consumable_Throw_Charge_Idle.js";
 import { Dead } from "./assets/Dead.js";
 import { Die } from "./assets/Die.js";
+import { Enemy_Big_Detect_Front_A } from "./assets/Enemy_Big_Detect_Front_A.js";
+import { Enemy_Big_Detect_Front_B } from "./assets/Enemy_Big_Detect_Front_B.js";
 import { Enemy_Big_Fire_In_A } from "./assets/Enemy_Big_Fire_In_A.js";
 import { Enemy_Big_Fire_In_B } from "./assets/Enemy_Big_Fire_In_B.js";
 import { Enemy_Big_Hit_Back_A } from "./assets/Enemy_Big_Hit_Back_A.js";
@@ -316,6 +324,9 @@ import { FD_Run_Bwd_A } from "./assets/FD_Run_Bwd_A.js";
 import { FD_Run_Fwd_A } from "./assets/FD_Run_Fwd_A.js";
 import { FD_Run_Lt_A } from "./assets/FD_Run_Lt_A.js";
 import { FD_Run_Rt_A } from "./assets/FD_Run_Rt_A.js";
+import { FD_Scream_A } from "./assets/FD_Scream_A.js";
+import { FD_Scream_B } from "./assets/FD_Scream_B.js";
+import { FD_Scream_C } from "./assets/FD_Scream_C.js";
 import { FD_Walk_Bwd_A } from "./assets/FD_Walk_Bwd_A.js";
 import { FD_Walk_Fwd_A } from "./assets/FD_Walk_Fwd_A.js";
 import { FD_Walk_Lt_B } from "./assets/FD_Walk_Lt_B.js";
@@ -397,6 +408,9 @@ import { LO_Run_Bwd_A } from "./assets/LO_Run_Bwd_A.js";
 import { LO_Run_Fwd_A } from "./assets/LO_Run_Fwd_A.js";
 import { LO_Run_Lt_A } from "./assets/LO_Run_Lt_A.js";
 import { LO_Run_Rt_A } from "./assets/LO_Run_Rt_A.js";
+import { LO_Scream_A } from "./assets/LO_Scream_A.js";
+import { LO_Scream_B } from "./assets/LO_Scream_B.js";
+import { LO_Scream_C } from "./assets/LO_Scream_C.js";
 import { LO_Walk_Bwd_A } from "./assets/LO_Walk_Bwd_A.js";
 import { LO_Walk_Fwd_A } from "./assets/LO_Walk_Fwd_A.js";
 import { LO_Walk_Lt_A } from "./assets/LO_Walk_Lt_A.js";
@@ -417,6 +431,7 @@ import { Monster_Hit_Leg_02 } from "./assets/Monster_Hit_Leg_02.js";
 import { Monster_Hit_Leg_03 } from "./assets/Monster_Hit_Leg_03.js";
 import { Monster_Hit_Right_01 } from "./assets/Monster_Hit_Right_01.js";
 import { Monster_Idle_01 } from "./assets/Monster_Idle_01.js";
+import { Monster_Taunt_01 } from "./assets/Monster_Taunt_01.js";
 import { Monster_TentacleStart } from "./assets/Monster_TentacleStart.js";
 import { Monster_Walk_Bwd } from "./assets/Monster_Walk_Bwd.js";
 import { Monster_Walk_Fwd } from "./assets/Monster_Walk_Fwd.js";
@@ -474,6 +489,9 @@ import { RU_Run_Bwd } from "./assets/RU_Run_Bwd.js";
 import { RU_Run_Fwd } from "./assets/RU_Run_Fwd.js";
 import { RU_Run_Lt } from "./assets/RU_Run_Lt.js";
 import { RU_Run_Rt } from "./assets/RU_Run_Rt.js";
+import { RU_Scream_A } from "./assets/RU_Scream_A.js";
+import { RU_Scream_B } from "./assets/RU_Scream_B.js";
+import { RU_Scream_C } from "./assets/RU_Scream_C.js";
 import { RU_Walk_Bwd } from "./assets/RU_Walk_Bwd.js";
 import { RU_Walk_Fwd } from "./assets/RU_Walk_Fwd.js";
 import { RU_Walk_Lt } from "./assets/RU_Walk_Lt.js";
@@ -1441,7 +1459,25 @@ export const enemyAnimationClips = {
     Enemy_Big_Jump_Loop_A,
     Enemy_Big_Jump_Land_A,
     Giant_Jump_Start,
-    Monster_Fall_Landing_01
+    Monster_Fall_Landing_01,
+    RU_Scream_A,
+    RU_Scream_B,
+    RU_Scream_C,
+    CA_Scream_A,
+    CA_Scream_B,
+    CR_Scream_A,
+    CR_Scream_B,
+    CR_Scream_C,
+    CF_Scream,
+    FD_Scream_A,
+    FD_Scream_B,
+    FD_Scream_C,
+    Monster_Taunt_01,
+    LO_Scream_A,
+    LO_Scream_B,
+    LO_Scream_C,
+    Enemy_Big_Detect_Front_A,
+    Enemy_Big_Detect_Front_B
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
@@ -1483,27 +1519,27 @@ export const enemyFiddleMovement = new AnimBlend(HumanJoints, [
 
 export const enemyCrawlMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 1.2 },
-    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 2.5, timescale: 1.5 },
-    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 4, timescale: 2 },
+    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 2.5, timescale: 2 },
+    { anim: enemyAnimationClips.CA_Walk_Fwd_A, x: 0, y: 4, timescale: 3 },
     { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -1.2},
-    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -2.5, timescale: 1.5 },
-    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -4, timescale: 2 },
+    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -2.5, timescale: 2 },
+    { anim: enemyAnimationClips.CA_Walk_Bwd_A, x: 0, y: -4, timescale: 3 },
     { anim: enemyAnimationClips.CA_Walk_Lt_A, x: -1.1, y: 0 },
     { anim: enemyAnimationClips.CA_Walk_Rt_A, x: 1.1, y: 0 },
-    { anim: enemyAnimationClips.CA_Walk_Lt_A, x: -3.5, y: 0, timescale: 1.5 },
-    { anim: enemyAnimationClips.CA_Walk_Rt_A, x: 3.5, y: 0, timescale: 1.5 },
+    { anim: enemyAnimationClips.CA_Walk_Lt_A, x: -3.5, y: 0, timescale: 2 },
+    { anim: enemyAnimationClips.CA_Walk_Rt_A, x: 3.5, y: 0, timescale: 2 },
     { anim: enemyAnimationClips.CA_Idle_A, x: 0, y: 0},
 ], animVelocity);
 
 export const enemyCrawlFlipMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.CF_Walk_Fwd_A, x: 0, y: 1 },
-    { anim: enemyAnimationClips.CF_Walk_Fwd_A, x: 0, y: 3, timescale: 1.5 },
+    { anim: enemyAnimationClips.CF_Walk_Fwd_A, x: 0, y: 3, timescale: 2 },
     { anim: enemyAnimationClips.CF_Walk_Bwd_A, x: 0, y: -1},
-    { anim: enemyAnimationClips.CF_Walk_Bwd_A, x: 0, y: -3, timescale: 1.5 },
+    { anim: enemyAnimationClips.CF_Walk_Bwd_A, x: 0, y: -3, timescale: 2 },
     { anim: enemyAnimationClips.CF_Walk_Lt_A, x: -1.1, y: 0 },
     { anim: enemyAnimationClips.CF_Walk_Rt_A, x: 1.1, y: 0 },
-    { anim: enemyAnimationClips.CF_Walk_Lt_A, x: -2.5, y: 0, timescale: 1.5 },
-    { anim: enemyAnimationClips.CF_Walk_Rt_A, x: 2.5, y: 0, timescale: 1.5 },
+    { anim: enemyAnimationClips.CF_Walk_Lt_A, x: -2.5, y: 0, timescale: 2 },
+    { anim: enemyAnimationClips.CF_Walk_Rt_A, x: 2.5, y: 0, timescale: 2 },
     { anim: enemyAnimationClips.CF_Idle_A, x: 0, y: 0},
 ], animVelocity);
 
@@ -1542,21 +1578,21 @@ export const enemyBigMovement = new AnimBlend(HumanJoints, [
 export const enemyGiantMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.Monster_Idle_01, x: 0, y: 0 },
     { anim: enemyAnimationClips.Monster_Walk_Fwd, x: 0, y: 1.2 },
-    { anim: enemyAnimationClips.Monster_Walk_Fwd, x: 0, y: 2.6, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Fwd, x: 0, y: 2.6, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Bwd, x: 0, y: -1.2 },
-    { anim: enemyAnimationClips.Monster_Walk_Bwd, x: 0, y: -2.6, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Bwd, x: 0, y: -2.6, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Right, x: 1.2, y: 0 },
-    { anim: enemyAnimationClips.Monster_Walk_Right, x: 2.6, y: 0, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Right, x: 2.6, y: 0, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Left, x: -1.2, y: 0 },
-    { anim: enemyAnimationClips.Monster_Walk_Left, x: -2.6, y: 0, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Left, x: -2.6, y: 0, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Left_135, x: -1.1, y: -1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Left_135, x: -2.6, y: -2.6, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Left_135, x: -2.6, y: -2.6, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Left_45, x: -1.1, y: 1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Left_45, x: -2.6, y: 2.6, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Left_45, x: -2.6, y: 2.6, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Right_135, x: 1.1, y: -1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Right_135, x: 2.6, y: -2.6, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Right_135, x: 2.6, y: -2.6, timescale: 2 },
     { anim: enemyAnimationClips.Monster_Walk_Right_45, x: 1.1, y: 1.1 },
-    { anim: enemyAnimationClips.Monster_Walk_Right_45, x: 2.6, y: 2.6, timescale: 1.5 },
+    { anim: enemyAnimationClips.Monster_Walk_Right_45, x: 2.6, y: 2.6, timescale: 2 },
 ], animVelocity);
 
 export const enemyPouncerMovement = new AnimBlend(HumanJoints, [
