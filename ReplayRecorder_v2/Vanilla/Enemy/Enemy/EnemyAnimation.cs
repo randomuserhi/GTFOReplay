@@ -90,11 +90,33 @@ namespace Vanilla.Enemy {
         }
     }
 
+    [ReplayData("Vanilla.Enemy.Animation.Heartbeat", "0.0.1")]
+    internal class rHeartbeat : Id {
+        private byte animIndex;
+
+        public rHeartbeat(EnemyAgent enemy, byte animIndex) : base(enemy.GlobalID) {
+            this.animIndex = animIndex;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(ES_Hibernate), nameof(ES_Hibernate.StartBeat))]
+            [HarmonyPrefix]
+            private static void Prefix_StartBeat(ES_Hibernate __instance, float strength, bool doAnim) {
+                if (doAnim && __instance.m_lastHeartbeatAnim < Clock.Time) {
+                    Replay.Trigger(new rHeartbeat(__instance.m_enemyAgent, (byte)__instance.m_currentHeartBeatIndex));
+                }
+            }
+
             [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.DoStartJump))]
             [HarmonyPrefix]
             private static void Prefix_DoStartJump(ES_Jump __instance) {
@@ -177,7 +199,8 @@ namespace Vanilla.Enemy {
                 return
                     vel ||
                     up != _up ||
-                    state != _state;
+                    state != _state ||
+                    detect != _detect;
             }
         }
 
@@ -205,6 +228,9 @@ namespace Vanilla.Enemy {
         private bool _up => enemy.Locomotion.ClimbLadder.m_goingUp;
         private bool up;
 
+        private byte _detect => (byte)(Mathf.Clamp01(enemy.Locomotion.Hibernate.m_detectionCurrent) * byte.MaxValue);
+        private byte detect;
+
         public rEnemyAnimation(EnemyAgent enemy) : base(enemy.GlobalID) {
             this.enemy = enemy;
             animator = enemy.Anim;
@@ -224,6 +250,10 @@ namespace Vanilla.Enemy {
             up = _up;
 
             BitHelper.WriteBytes(up, buffer);
+
+            detect = _detect;
+
+            BitHelper.WriteBytes(detect, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

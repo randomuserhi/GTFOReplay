@@ -168,6 +168,14 @@ import { Bat_Stand_Shove } from "./assets/Bat_Stand_Shove.js";
 import { Bat_Stand_SwingRight } from "./assets/Bat_Stand_SwingRight.js";
 import { CA_Ability_Fire_In_A } from "./assets/CA_Ability_Fire_In_A.js";
 import { CA_Ability_Fire_In_B } from "./assets/CA_Ability_Fire_In_B.js";
+import { CA_Hibernate_Detect_Loop } from "./assets/CA_Hibernate_Detect_Loop.js";
+import { CA_Hibernate_Heartbeat_A } from "./assets/CA_Hibernate_Heartbeat_A.js";
+import { CA_Hibernate_Heartbeat_B } from "./assets/CA_Hibernate_Heartbeat_B.js";
+import { CA_Hibernate_Heartbeat_C } from "./assets/CA_Hibernate_Heartbeat_C.js";
+import { CA_Hibernate_Heartbeat_D } from "./assets/CA_Hibernate_Heartbeat_D.js";
+import { CA_Hibernate_Heartbeat_E } from "./assets/CA_Hibernate_Heartbeat_E.js";
+import { CA_Hibernate_In } from "./assets/CA_Hibernate_In.js";
+import { CA_Hibernate_Loop_A } from "./assets/CA_Hibernate_Loop_A.js";
 import { CA_Hit_Heavy_Bwd_A } from "./assets/CA_Hit_Heavy_Bwd_A.js";
 import { CA_Hit_Heavy_Fwd_B } from "./assets/CA_Hit_Heavy_Fwd_B.js";
 import { CA_Hit_Heavy_Fwd_C } from "./assets/CA_Hit_Heavy_Fwd_C.js";
@@ -195,6 +203,17 @@ import { CA_Walk_Lt_A } from "./assets/CA_Walk_Lt_A.js";
 import { CA_Walk_Rt_A } from "./assets/CA_Walk_Rt_A.js";
 import { CF_Ability_Fire_In_A } from "./assets/CF_Ability_Fire_In_A.js";
 import { CF_Ability_Fire_In_B } from "./assets/CF_Ability_Fire_In_B.js";
+import { CF_Birther_Heartbeat } from "./assets/CF_Birther_Heartbeat.js";
+import { CF_Birther_Hibernate_In } from "./assets/CF_Birther_Hibernate_In.js";
+import { CF_Birther_Hibernate_Loop } from "./assets/CF_Birther_Hibernate_Loop.js";
+import { CF_Hibernate_Detect_Loop } from "./assets/CF_Hibernate_Detect_Loop.js";
+import { CF_Hibernate_Heartbeat_A } from "./assets/CF_Hibernate_Heartbeat_A.js";
+import { CF_Hibernate_Heartbeat_B } from "./assets/CF_Hibernate_Heartbeat_B.js";
+import { CF_Hibernate_Heartbeat_C } from "./assets/CF_Hibernate_Heartbeat_C.js";
+import { CF_Hibernate_Heartbeat_D } from "./assets/CF_Hibernate_Heartbeat_D.js";
+import { CF_Hibernate_Heartbeat_E } from "./assets/CF_Hibernate_Heartbeat_E.js";
+import { CF_Hibernate_In } from "./assets/CF_Hibernate_In.js";
+import { CF_Hibernate_Loop_A } from "./assets/CF_Hibernate_Loop_A.js";
 import { CF_Hit_Light_A } from "./assets/CF_Hit_Light_A.js";
 import { CF_Hit_Light_B } from "./assets/CF_Hit_Light_B.js";
 import { CF_Idle_A } from "./assets/CF_Idle_A.js";
@@ -209,6 +228,14 @@ import { CF_Walk_Rt_A } from "./assets/CF_Walk_Rt_A.js";
 import { CR_Ability_Fire_In_A } from "./assets/CR_Ability_Fire_In_A.js";
 import { CR_Ability_Fire_In_B } from "./assets/CR_Ability_Fire_In_B.js";
 import { CR_Ability_Fire_In_C } from "./assets/CR_Ability_Fire_In_C.js";
+import { CR_Hibernate_Detect_Loop } from "./assets/CR_Hibernate_Detect_Loop.js";
+import { CR_Hibernate_Heartbeat_A } from "./assets/CR_Hibernate_Heartbeat_A.js";
+import { CR_Hibernate_Heartbeat_B } from "./assets/CR_Hibernate_Heartbeat_B.js";
+import { CR_Hibernate_Heartbeat_C } from "./assets/CR_Hibernate_Heartbeat_C.js";
+import { CR_Hibernate_Heartbeat_D } from "./assets/CR_Hibernate_Heartbeat_D.js";
+import { CR_Hibernate_Heartbeat_E } from "./assets/CR_Hibernate_Heartbeat_E.js";
+import { CR_Hibernate_In } from "./assets/CR_Hibernate_In.js";
+import { CR_Hibernate_Loop } from "./assets/CR_Hibernate_Loop.js";
 import { CR_Hit_Heavy_Bwd_A_Turn } from "./assets/CR_Hit_Heavy_Bwd_A_Turn.js";
 import { CR_Hit_Heavy_Bwd_B } from "./assets/CR_Hit_Heavy_Bwd_B.js";
 import { CR_Hit_Heavy_Bwd_C_Turn } from "./assets/CR_Hit_Heavy_Bwd_C_Turn.js";
@@ -262,6 +289,13 @@ import { Enemy_Big_Detect_Front_A } from "./assets/Enemy_Big_Detect_Front_A.js";
 import { Enemy_Big_Detect_Front_B } from "./assets/Enemy_Big_Detect_Front_B.js";
 import { Enemy_Big_Fire_In_A } from "./assets/Enemy_Big_Fire_In_A.js";
 import { Enemy_Big_Fire_In_B } from "./assets/Enemy_Big_Fire_In_B.js";
+import { Enemy_Big_Hibernate_Heartbeat_1_A } from "./assets/Enemy_Big_Hibernate_Heartbeat_1_A.js";
+import { Enemy_Big_Hibernate_Heartbeat_2_A } from "./assets/Enemy_Big_Hibernate_Heartbeat_2_A.js";
+import { Enemy_Big_Hibernate_Heartbeat_3_A } from "./assets/Enemy_Big_Hibernate_Heartbeat_3_A.js";
+import { Enemy_Big_Hibernate_Heartbeat_4_A } from "./assets/Enemy_Big_Hibernate_Heartbeat_4_A.js";
+import { Enemy_Big_Hibernate_Heartbeat_5_A } from "./assets/Enemy_Big_Hibernate_Heartbeat_5_A.js";
+import { Enemy_Big_Hibernate_In_A } from "./assets/Enemy_Big_Hibernate_In_A.js";
+import { Enemy_Big_Hibernate_Loop_A } from "./assets/Enemy_Big_Hibernate_Loop_A.js";
 import { Enemy_Big_Hit_Back_A } from "./assets/Enemy_Big_Hit_Back_A.js";
 import { Enemy_Big_Hit_Back_B } from "./assets/Enemy_Big_Hit_Back_B.js";
 import { Enemy_Big_Hit_Front_A } from "./assets/Enemy_Big_Hit_Front_A.js";
@@ -292,6 +326,14 @@ import { Enemy_Big_Walk_Left_A } from "./assets/Enemy_Big_Walk_Left_A.js";
 import { Enemy_Big_Walk_Right_A } from "./assets/Enemy_Big_Walk_Right_A.js";
 import { FD_Ability_Fire_In_A } from "./assets/FD_Ability_Fire_In_A.js";
 import { FD_Ability_Fire_In_B } from "./assets/FD_Ability_Fire_In_B.js";
+import { FD_Hibernate_Detect_Loop } from "./assets/FD_Hibernate_Detect_Loop.js";
+import { FD_Hibernate_Heartbeat_A } from "./assets/FD_Hibernate_Heartbeat_A.js";
+import { FD_Hibernate_Heartbeat_B } from "./assets/FD_Hibernate_Heartbeat_B.js";
+import { FD_Hibernate_Heartbeat_C } from "./assets/FD_Hibernate_Heartbeat_C.js";
+import { FD_Hibernate_Heartbeat_D } from "./assets/FD_Hibernate_Heartbeat_D.js";
+import { FD_Hibernate_Heartbeat_E } from "./assets/FD_Hibernate_Heartbeat_E.js";
+import { FD_Hibernate_In } from "./assets/FD_Hibernate_In.js";
+import { FD_Hibernate_Loop } from "./assets/FD_Hibernate_Loop.js";
 import { FD_Hit_Heavy_Bwd_A } from "./assets/FD_Hit_Heavy_Bwd_A.js";
 import { FD_Hit_Heavy_Bwd_B } from "./assets/FD_Hit_Heavy_Bwd_B.js";
 import { FD_Hit_Heavy_Bwd_C } from "./assets/FD_Hit_Heavy_Bwd_C.js";
@@ -376,6 +418,14 @@ import { Knife_Stand_SwingRight } from "./assets/Knife_Stand_SwingRight.js";
 import { LO_Ability_Fire_In_A } from "./assets/LO_Ability_Fire_In_A.js";
 import { LO_Ability_Fire_In_B } from "./assets/LO_Ability_Fire_In_B.js";
 import { LO_Ability_Fire_In_C } from "./assets/LO_Ability_Fire_In_C.js";
+import { LO_Hibernate_Detect_Loop } from "./assets/LO_Hibernate_Detect_Loop.js";
+import { LO_Hibernate_Heartbeat_A } from "./assets/LO_Hibernate_Heartbeat_A.js";
+import { LO_Hibernate_Heartbeat_B } from "./assets/LO_Hibernate_Heartbeat_B.js";
+import { LO_Hibernate_Heartbeat_C } from "./assets/LO_Hibernate_Heartbeat_C.js";
+import { LO_Hibernate_Heartbeat_D } from "./assets/LO_Hibernate_Heartbeat_D.js";
+import { LO_Hibernate_Heartbeat_E } from "./assets/LO_Hibernate_Heartbeat_E.js";
+import { LO_Hibernate_In_A } from "./assets/LO_Hibernate_In_A.js";
+import { LO_Hibernate_Loop } from "./assets/LO_Hibernate_Loop.js";
 import { LO_Hit_Heavy_Bwd_A } from "./assets/LO_Hit_Heavy_Bwd_A.js";
 import { LO_Hit_Heavy_Fwd_A } from "./assets/LO_Hit_Heavy_Fwd_A.js";
 import { LO_Hit_Heavy_Fwd_B } from "./assets/LO_Hit_Heavy_Fwd_B.js";
@@ -456,6 +506,18 @@ import { Player_Climb_Ladder_Down_A } from "./assets/Player_Climb_Ladder_Down_A.
 import { Player_Climb_Ladder_Idle_A } from "./assets/Player_Climb_Ladder_Idle_A.js";
 import { Player_Climb_Ladder_Up_A } from "./assets/Player_Climb_Ladder_Up_A.js";
 import { Player_Reviving_Upperbody_Loop } from "./assets/Player_Reviving_Upperbody_Loop.js";
+import { RU_Hibernate_Heartbeat_A } from "./assets/RU_Hibernate_Heartbeat_A.js";
+import { RU_Hibernate_Heartbeat_A_0 } from "./assets/RU_Hibernate_Heartbeat_A_0.js";
+import { RU_Hibernate_Heartbeat_B } from "./assets/RU_Hibernate_Heartbeat_B.js";
+import { RU_Hibernate_Heartbeat_B_0 } from "./assets/RU_Hibernate_Heartbeat_B_0.js";
+import { RU_Hibernate_Heartbeat_C } from "./assets/RU_Hibernate_Heartbeat_C.js";
+import { RU_Hibernate_Heartbeat_C_0 } from "./assets/RU_Hibernate_Heartbeat_C_0.js";
+import { RU_Hibernate_Heartbeat_D } from "./assets/RU_Hibernate_Heartbeat_D.js";
+import { RU_Hibernate_Heartbeat_D_0 } from "./assets/RU_Hibernate_Heartbeat_D_0.js";
+import { RU_Hibernate_Heartbeat_E } from "./assets/RU_Hibernate_Heartbeat_E.js";
+import { RU_Hibernate_Heartbeat_E_0 } from "./assets/RU_Hibernate_Heartbeat_E_0.js";
+import { RU_Hibernate_In } from "./assets/RU_Hibernate_In.js";
+import { RU_Hibernate_Loop_0 } from "./assets/RU_Hibernate_Loop_0.js";
 import { RU_Hit_Heavy_Bwd_A } from "./assets/RU_Hit_Heavy_Bwd_A.js";
 import { RU_Hit_Heavy_Bwd_B } from "./assets/RU_Hit_Heavy_Bwd_B.js";
 import { RU_Hit_Heavy_Bwd_C } from "./assets/RU_Hit_Heavy_Bwd_C.js";
@@ -500,6 +562,7 @@ import { Revive } from "./assets/Revive.js";
 import { Revolver_Front_1_Reload_1 } from "./assets/Revolver_Front_1_Reload_1.js";
 import { Rifle1_Reload } from "./assets/Rifle1_Reload.js";
 import { Rifle_Recoil } from "./assets/Rifle_Recoil.js";
+import { Ru_Hibernate_Detect_Loop_0 } from "./assets/Ru_Hibernate_Detect_Loop_0.js";
 import { SMG_Front_4_Reload_1 } from "./assets/SMG_Front_4_Reload_1.js";
 import { Sledgehammer_Crouch_Shove } from "./assets/Sledgehammer_Crouch_Shove.js";
 import { Sledgehammer_Crouch_SwingLeft_Charge } from "./assets/Sledgehammer_Crouch_SwingLeft_Charge.js";
@@ -1477,7 +1540,70 @@ export const enemyAnimationClips = {
     LO_Scream_B,
     LO_Scream_C,
     Enemy_Big_Detect_Front_A,
-    Enemy_Big_Detect_Front_B
+    Enemy_Big_Detect_Front_B,
+    Enemy_Big_Hibernate_In_A,
+    Enemy_Big_Hibernate_Loop_A,
+    CA_Hibernate_In,
+    CA_Hibernate_Detect_Loop,
+    CA_Hibernate_Loop_A,
+    CR_Hibernate_In,
+    CR_Hibernate_Detect_Loop,
+    CR_Hibernate_Loop,
+    CF_Hibernate_In,
+    CF_Hibernate_Detect_Loop,
+    CF_Hibernate_Loop_A,
+    FD_Hibernate_In,
+    FD_Hibernate_Detect_Loop,
+    FD_Hibernate_Loop,
+    LO_Hibernate_In_A,
+    LO_Hibernate_Detect_Loop,
+    LO_Hibernate_Loop,
+    RU_Hibernate_In,
+    Ru_Hibernate_Detect_Loop_0,
+    RU_Hibernate_Loop_0,
+    CF_Birther_Hibernate_In,
+    CF_Birther_Hibernate_Loop,
+    Enemy_Big_Hibernate_Heartbeat_1_A,
+    Enemy_Big_Hibernate_Heartbeat_2_A,
+    Enemy_Big_Hibernate_Heartbeat_3_A,
+    Enemy_Big_Hibernate_Heartbeat_4_A,
+    Enemy_Big_Hibernate_Heartbeat_5_A,
+    CA_Hibernate_Heartbeat_A,
+    CA_Hibernate_Heartbeat_B,
+    CA_Hibernate_Heartbeat_C,
+    CA_Hibernate_Heartbeat_D,
+    CA_Hibernate_Heartbeat_E,
+    CR_Hibernate_Heartbeat_A,
+    CR_Hibernate_Heartbeat_B,
+    CR_Hibernate_Heartbeat_C,
+    CR_Hibernate_Heartbeat_D,
+    CR_Hibernate_Heartbeat_E,
+    CF_Hibernate_Heartbeat_A,
+    CF_Hibernate_Heartbeat_B,
+    CF_Hibernate_Heartbeat_C,
+    CF_Hibernate_Heartbeat_D,
+    CF_Hibernate_Heartbeat_E,
+    FD_Hibernate_Heartbeat_A,
+    FD_Hibernate_Heartbeat_B,
+    FD_Hibernate_Heartbeat_C,
+    FD_Hibernate_Heartbeat_D,
+    FD_Hibernate_Heartbeat_E,
+    LO_Hibernate_Heartbeat_A,
+    LO_Hibernate_Heartbeat_B,
+    LO_Hibernate_Heartbeat_C,
+    LO_Hibernate_Heartbeat_D,
+    LO_Hibernate_Heartbeat_E,
+    RU_Hibernate_Heartbeat_A,
+    RU_Hibernate_Heartbeat_A_0,
+    RU_Hibernate_Heartbeat_B,
+    RU_Hibernate_Heartbeat_B_0,
+    RU_Hibernate_Heartbeat_C,
+    RU_Hibernate_Heartbeat_C_0,
+    RU_Hibernate_Heartbeat_D,
+    RU_Hibernate_Heartbeat_D_0,
+    RU_Hibernate_Heartbeat_E,
+    RU_Hibernate_Heartbeat_E_0,
+    CF_Birther_Heartbeat
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
@@ -1608,6 +1734,38 @@ export const enemyPouncerMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.PO_WalkRight, x: 1.2, y: 0 },
 ], animVelocity);
 
+export const animDetection = { x: 0, y: 0 };
+
+export const CA_HibernateDetect = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.CA_Hibernate_Loop_A, x: 0, y: 0 },
+    { anim: enemyAnimationClips.CA_Hibernate_Detect_Loop, x: 1, y: 0, timescale: 0.2 },
+], animDetection);
+
+export const CR_HibernateDetect = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.CR_Hibernate_Loop, x: 0, y: 0 },
+    { anim: enemyAnimationClips.CR_Hibernate_Detect_Loop, x: 1, y: 0, timescale: 0.2 },
+], animDetection);
+
+export const CF_HibernateDetect = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.CF_Hibernate_Loop_A, x: 0, y: 0 },
+    { anim: enemyAnimationClips.CF_Hibernate_Detect_Loop, x: 1, y: 0, timescale: 0.2 },
+], animDetection);
+
+export const FD_HibernateDetect = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.FD_Hibernate_Loop, x: 0, y: 0 },
+    { anim: enemyAnimationClips.FD_Hibernate_Detect_Loop, x: 1, y: 0, timescale: 0.2 },
+], animDetection);
+
+export const LO_HibernateDetect = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.LO_Hibernate_Loop, x: 0, y: 0 },
+    { anim: enemyAnimationClips.LO_Hibernate_Detect_Loop, x: 1, y: 0, timescale: 0.2 },
+], animDetection);
+
+export const RU_HibernateDetect = new AnimBlend(HumanJoints, [
+    { anim: enemyAnimationClips.RU_Hibernate_Loop_0, x: 0, y: 0 },
+    { anim: enemyAnimationClips.Ru_Hibernate_Detect_Loop_0, x: 1, y: 0, timescale: 0.2 },
+], animDetection);
+
 /*export const LO_Ability_Fire_A = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_A, enemyAnimationClips.LO_Ability_Fire_Out_A);
 export const LO_Ability_Fire_B = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_B, enemyAnimationClips.LO_Ability_Fire_Out_B);
 export const LO_Ability_Fire_C = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_C, enemyAnimationClips.LO_Ability_Fire_Out_C);
@@ -1636,6 +1794,12 @@ export const enemyAnimations = {
     enemyBigMovement,
     enemyGiantMovement,
     enemyPouncerMovement,
+    CA_HibernateDetect,
+    CR_HibernateDetect,
+    CF_HibernateDetect,
+    FD_HibernateDetect,
+    LO_HibernateDetect,
+    RU_HibernateDetect,
     /*LO_Ability_Fire_A,
     LO_Ability_Fire_B,
     LO_Ability_Fire_C,

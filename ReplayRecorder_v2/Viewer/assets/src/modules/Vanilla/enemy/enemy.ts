@@ -1,11 +1,12 @@
-import { Color, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, SphereGeometry, Vector3 } from "three";
+import { Camera, Color, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, SphereGeometry, Vector3 } from "three";
+import { Text } from "troika-three-text";
 import * as BitHelper from "../../../replay/bithelper.js";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
-import { animCrouch, animVelocity, playerAnimations } from "../animations/assets.js";
+import { animCrouch, animDetection, animVelocity, playerAnimations } from "../animations/assets.js";
 import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { createDeathCross } from "../deathcross.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
@@ -51,11 +52,13 @@ declare module "../../../replay/moduleloader.js" {
                     velocity: Pod.Vector;
                     state: State;
                     up: boolean;
+                    detect: number;
                 };
                 spawn: {
                     velocity: Pod.Vector;
                     state: State;
                     up: boolean;
+                    detect: number;
                 };
                 despawn: void;
             }
@@ -86,6 +89,11 @@ declare module "../../../replay/moduleloader.js" {
             };
 
             "Vanilla.Enemy.Animation.Jump": {
+                id: number;
+                animIndex: number;
+            };
+
+            "Vanilla.Enemy.Animation.Heartbeat": {
                 id: number;
                 animIndex: number;
             };
@@ -248,7 +256,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 ...spawn,
                 animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
                 scale: await BitHelper.readHalf(data),
-                type: await BitHelper.readUShort(data)
+                type: await BitHelper.readUShort(data),
             };
             return result;
         },
@@ -439,7 +447,9 @@ export class DuplicateEnemy extends Error {
 export interface EnemyAnimState {
     velocity: Pod.Vector;
     state: State;
+    lastStateTime: number;
     up: boolean;
+    detect: number;
     lastWindupTime: number;
     windupAnimIndex: number;
     lastHitreactTime: number;
@@ -454,6 +464,8 @@ export interface EnemyAnimState {
     lastScreamTime: number;
     screamAnimIndex: number;
     screamType: ScreamType;
+    heartbeatAnimIndex: number;
+    lastHeartbeatTime: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -462,7 +474,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 state: states[await BitHelper.readByte(data)],
-                up: await BitHelper.readBool(data)
+                up: await BitHelper.readBool(data),
+                detect: await BitHelper.readByte(data) / 255
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -471,8 +484,12 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
             const anim = anims.get(id)!;
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
-            anim.state = data.state;
+            if (anim.state !== data.state) {
+                anim.state = data.state;
+                anim.lastStateTime = snapshot.time();
+            }
             anim.up = data.up;
+            anim.detect = anim.detect + (data.detect - anim.detect) * lerp;
         }
     },
     spawn: {
@@ -480,7 +497,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: 0, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 state: states[await BitHelper.readByte(data)],
-                up: await BitHelper.readBool(data)
+                up: await BitHelper.readBool(data),
+                detect: await BitHelper.readByte(data) / 255
             };
         },
         exec: (id, data, snapshot) => {
@@ -489,6 +507,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             if (anims.has(id)) throw new DuplicateAnim(`EnemyAnim of id '${id}' already exists.`);
             anims.set(id, { 
                 ...data,
+                lastStateTime: -Infinity,
                 lastWindupTime: -Infinity,
                 windupAnimIndex: 0,
                 lastHitreactTime: -Infinity,
@@ -503,6 +522,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 lastScreamTime: -Infinity,
                 screamAnimIndex: 0,
                 screamType: "Regular",
+                lastHeartbeatTime: -Infinity,
+                heartbeatAnimIndex: 0
             });
         }
     },
@@ -596,6 +617,24 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Jump", "0.0.1", {
     }
 });
 
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Heartbeat", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            animIndex: await BitHelper.readByte(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastHeartbeatTime = snapshot.time();
+        anim.heartbeatAnimIndex = data.animIndex;
+    }
+});
+
 export class AnimNotFound extends Error {
     constructor(message?: string) {
         super(message);
@@ -665,12 +704,15 @@ export class EnemyModel {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
     }
 
     public dispose() {
     }
 }
+
+const tmpPos = new Vector3();
+const camPos = new Vector3();
 
 export class HumanoidEnemyModel extends EnemyModel {
     anchor: Object3D;
@@ -687,6 +729,8 @@ export class HumanoidEnemyModel extends EnemyModel {
     animHandle?: EnemyAnimHandle;
 
     offset: number;
+
+    tmp?: Text;
 
     constructor(enemy: Enemy) {
         super(enemy);
@@ -759,14 +803,25 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.parts = new Array(9);
         this.points = new Array(14);
         this.head = -1;
+    
+        this.tmp = new Text();
+        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.tmp.fontSize = 0.2;
+        this.tmp.position.y = 2;
+        this.tmp.textAlign = "center";
+        this.tmp.anchorX = "center";
+        this.tmp.anchorY = "bottom";
+        this.tmp.color = 0xffffff;
+        this.tmp.visible = false;
+        this.anchor.add(this.tmp);
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
-        this.animate(dt, time, enemy, anim);
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+        this.animate(dt, time, enemy, anim, camera);
         this.render(enemy);
     }
 
-    private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+    private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         this.pivot.rotation.set(0, 0, 0);
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
@@ -775,6 +830,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         animVelocity.x = anim.velocity.x;
         animVelocity.y = anim.velocity.z;
         animCrouch.x = 0;
+        animDetection.x = anim.detect;
 
         const overrideBlend = this.animHandle !== undefined && this.animHandle.blend ? Math.clamp01(this.animHandle.blend * dt) : 1;
 
@@ -783,9 +839,23 @@ export class HumanoidEnemyModel extends EnemyModel {
             return;
         }
 
+        const stateTime = time - (anim.lastStateTime / 1000);
         switch (anim.state) {
+        case "Hibernate": {
+            this.skeleton.override(this.animHandle.hibernateLoop.sample(stateTime));
+            if (stateTime < this.animHandle.hibernateIn.duration) {
+                this.skeleton.blend(this.animHandle.hibernateIn.sample(stateTime), 1 - Math.clamp01(stateTime / this.animHandle.hibernateIn.duration));
+            }
+            
+            const heartbeatTime = time - (anim.lastHeartbeatTime / 1000);
+            const heartbeatAnim = this.animHandle.heartbeats[anim.heartbeatAnimIndex];
+            const inHeartbeat = heartbeatAnim !== undefined && heartbeatTime < heartbeatAnim.duration;
+            if (inHeartbeat) {
+                const blend = heartbeatTime < heartbeatAnim.duration / 2 ? Math.clamp01(heartbeatTime / 0.15) : Math.clamp01((heartbeatAnim.duration - heartbeatTime) / 0.15);
+                this.skeleton.blend(heartbeatAnim.sample(Math.clamp(heartbeatTime, 0, heartbeatAnim.duration)), blend);
+            }
+        } break;
         case "ClimbLadder": 
-            console.log(anim.up);
             if (anim.up) {
                 this.pivot.rotation.set(-90 * Math.deg2rad, 0, 0, "YXZ");
             } else {
@@ -870,6 +940,19 @@ export class HumanoidEnemyModel extends EnemyModel {
             const blend = hitreactTime < hitreactAnim.duration / 2 ? Math.clamp01(hitreactTime / 0.15) : Math.clamp01((hitreactAnim.duration - hitreactTime) / 0.15);
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
         }
+
+        if (this.tmp === undefined) return;
+
+        //this.tmp.text = `${stateTime < this.animHandle.hibernateIn.duration}`;
+
+        this.tmp.visible = false;
+
+        this.tmp.getWorldPosition(tmpPos);
+        camera.getWorldPosition(camPos);
+
+        const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
+        this.tmp.fontSize = lerp * 0.3 + 0.05;
+        this.tmp.lookAt(camPos);
     }
 
     public render(enemy: Enemy): void {
@@ -953,6 +1036,11 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
         this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot, zeroQ, sM), this.color);
     }
+
+    public dispose(): void {
+        this.tmp?.dispose();
+        this.tmp = undefined;
+    }
 }
 
 ModuleLoader.registerRender("Enemies", (name, api) => {
@@ -963,6 +1051,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+            const camera = renderer.get("Camera")!;
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
                     const modelFactory = specification.enemies.get(enemy.type)?.model;
@@ -982,7 +1071,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 if (model.root.visible) {
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
-                        model.update(dt, time, enemy, anim);
+                        model.update(dt, time, enemy, anim, camera);
                     }
                 }
             }
