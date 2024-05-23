@@ -113,10 +113,8 @@ export interface EnemyAnimHandle {
     heartbeats: HumanAnimation[];
 }
 
-const defaultBlend = 50;
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
-    blend: defaultBlend,
     movement: enemyAnimations.enemyRunnerMovement,
     hibernateIn: enemyAnimationClips.RU_Hibernate_In,
     hibernateLoop: enemyAnimations.RU_HibernateDetect,
@@ -200,7 +198,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     movement: enemyAnimations.enemyLowMovement,
     hibernateIn: enemyAnimationClips.LO_Hibernate_In_A,
     hibernateLoop: enemyAnimations.LO_HibernateDetect,
-    blend: defaultBlend,
     screams: [
         enemyAnimationClips.LO_Scream_A,
         enemyAnimationClips.LO_Scream_B,
@@ -271,7 +268,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.FD_Hibernate_Heartbeat_D,
         enemyAnimationClips.FD_Hibernate_Heartbeat_E,
     ],
-    blend: defaultBlend,
     hibernateIn: enemyAnimationClips.FD_Hibernate_In,
     hibernateLoop: enemyAnimations.FD_HibernateDetect,
     screams: [
@@ -341,7 +337,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.CA_Hibernate_Heartbeat_D,
         enemyAnimationClips.CA_Hibernate_Heartbeat_E,
     ],
-    blend: defaultBlend,
     hibernateIn: enemyAnimationClips.CA_Hibernate_In,
     hibernateLoop: enemyAnimations.CA_HibernateDetect,
     screams: [
@@ -413,7 +408,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.CF_Hibernate_Heartbeat_D,
         enemyAnimationClips.CF_Hibernate_Heartbeat_E,
     ],
-    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CF_Scream,
         enemyAnimationClips.CF_Scream,
@@ -483,7 +477,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
     hibernateIn: enemyAnimationClips.CR_Hibernate_In,
     hibernateLoop: enemyAnimations.CR_HibernateDetect,
-    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CR_Scream_A,
         enemyAnimationClips.CR_Scream_B,
@@ -553,7 +546,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
     hibernateIn: enemyAnimationClips.Enemy_Big_Hibernate_In_A,
     hibernateLoop: enemyAnimationClips.Enemy_Big_Hibernate_Loop_A,
-    blend: defaultBlend,
     screams: [
         enemyAnimationClips.Enemy_Big_Detect_Front_A,
         enemyAnimationClips.Enemy_Big_Detect_Front_B,
@@ -697,7 +689,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
     hibernateIn: enemyAnimationClips.CA_Hibernate_In,
     hibernateLoop: enemyAnimations.CA_HibernateDetect,
-    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CA_Scream_A,
         enemyAnimationClips.CA_Scream_B,
@@ -763,7 +754,6 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
     hibernateIn: enemyAnimationClips.CF_Birther_Hibernate_In,
     hibernateLoop: enemyAnimationClips.CF_Birther_Hibernate_Loop,
-    blend: defaultBlend,
     screams: [
         enemyAnimationClips.CF_Scream,
         enemyAnimationClips.CF_Scream,

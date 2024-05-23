@@ -94,6 +94,7 @@ class PlayerModel  {
     color: Color;
     
     skeleton: HumanSkeleton;
+    visual: HumanSkeleton;
     
     aimIK: IKSolverAim;
     aimTarget: Object3D;
@@ -122,38 +123,48 @@ class PlayerModel  {
     consumableArchetype?: ConsumableArchetype;
     gearArchetype?: GearArchetype;
 
+    private construct(skeleton: HumanSkeleton) {
+        skeleton.joints.hip.add(
+            skeleton.joints.spine0,
+            skeleton.joints.leftUpperLeg,
+            skeleton.joints.rightUpperLeg
+        );
+        skeleton.joints.leftUpperLeg.add(skeleton.joints.leftLowerLeg);
+        skeleton.joints.leftLowerLeg.add(skeleton.joints.leftFoot!);
+        skeleton.joints.rightUpperLeg.add(skeleton.joints.rightLowerLeg);
+        skeleton.joints.rightLowerLeg.add(skeleton.joints.rightFoot!);
+        skeleton.joints.spine0.add(skeleton.joints.spine1);
+        skeleton.joints.spine1.add(skeleton.joints.spine2);
+        skeleton.joints.spine2.add(
+            skeleton.joints.neck,
+            skeleton.joints.leftShoulder,
+            skeleton.joints.rightShoulder
+        );
+        skeleton.joints.leftShoulder.add(skeleton.joints.leftUpperArm);
+        skeleton.joints.leftUpperArm.add(skeleton.joints.leftLowerArm);
+        skeleton.joints.leftLowerArm.add(skeleton.joints.leftHand!);
+        skeleton.joints.rightShoulder.add(skeleton.joints.rightUpperArm);
+        skeleton.joints.rightUpperArm.add(skeleton.joints.rightLowerArm);
+        skeleton.joints.rightLowerArm.add(skeleton.joints.rightHand!);
+        skeleton.joints.neck.add(skeleton.joints.head);
+        
+        skeleton.set(defaultHumanStructure);
+    }
+
     constructor(color: Color) {
         this.root = new Group();
         this.anchor = new Group();
         this.root.add(this.anchor);
 
         this.skeleton = new AvatarSkeleton(HumanJoints, "hip");
+        this.visual = new AvatarSkeleton(HumanJoints, "hip");
+
+        this.construct(this.skeleton);
+        this.construct(this.visual);
+
+        this.anchor.add(this.visual.joints.hip);
         this.anchor.add(this.skeleton.joints.hip);
-        this.skeleton.joints.hip.add(
-            this.skeleton.joints.spine0,
-            this.skeleton.joints.leftUpperLeg,
-            this.skeleton.joints.rightUpperLeg
-        );
-        this.skeleton.joints.leftUpperLeg.add(this.skeleton.joints.leftLowerLeg);
-        this.skeleton.joints.leftLowerLeg.add(this.skeleton.joints.leftFoot!);
-        this.skeleton.joints.rightUpperLeg.add(this.skeleton.joints.rightLowerLeg);
-        this.skeleton.joints.rightLowerLeg.add(this.skeleton.joints.rightFoot!);
-        this.skeleton.joints.spine0.add(this.skeleton.joints.spine1);
-        this.skeleton.joints.spine1.add(this.skeleton.joints.spine2);
-        this.skeleton.joints.spine2.add(
-            this.skeleton.joints.neck,
-            this.skeleton.joints.leftShoulder,
-            this.skeleton.joints.rightShoulder
-        );
-        this.skeleton.joints.leftShoulder.add(this.skeleton.joints.leftUpperArm);
-        this.skeleton.joints.leftUpperArm.add(this.skeleton.joints.leftLowerArm);
-        this.skeleton.joints.leftLowerArm.add(this.skeleton.joints.leftHand!);
-        this.skeleton.joints.rightShoulder.add(this.skeleton.joints.rightUpperArm);
-        this.skeleton.joints.rightUpperArm.add(this.skeleton.joints.rightLowerArm);
-        this.skeleton.joints.rightLowerArm.add(this.skeleton.joints.rightHand!);
-        this.skeleton.joints.neck.add(this.skeleton.joints.head);
-        
-        this.skeleton.set(defaultHumanStructure);
+        this.skeleton.root.visible = false;
 
         this.color = color;
         this.parts = new Array(9);
@@ -180,7 +191,7 @@ class PlayerModel  {
         this.skeleton.joints.rightHand.add(this.handAttachment);
 
         this.backpack = new Group();
-        this.skeleton.joints.spine1.add(this.backpack);
+        this.visual.joints.spine1.add(this.backpack);
 
         this.slots = new Array(inventorySlots.length);
         this.backpackAligns = new Array(inventorySlots.length);
@@ -258,12 +269,13 @@ class PlayerModel  {
         this.root.visible = visible;
     }
 
-    public update(time: number, player: Player, anim: PlayerAnimState): void {
+    public update(dt: number, time: number, player: Player, anim: PlayerAnimState): void {
         this.animate(time, player, anim);
-        this.render(player);
+        this.render(dt, player);
     }
     
     public animate(time: number, player: Player, anim: PlayerAnimState): void {
+        this.skeleton.joints.rightHand.add(this.handAttachment);
         this.equippedItem.model?.reset();
         this.equipped.visible = true;
 
@@ -549,11 +561,18 @@ class PlayerModel  {
         }
     }
 
-    public render(player: Player): void {
+    public render(dt: number, player: Player): void {
         this.root.position.copy(player.position);
         this.anchor.quaternion.copy(player.rotation);
 
-        getWorldPos(worldPos, this.skeleton);
+        const blendFactor = Math.clamp01(dt * 30);
+        for (const key of HumanJoints) {
+            this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
+        }
+        this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
+        getWorldPos(worldPos, this.visual);
+
+        this.visual.joints.rightHand.add(this.handAttachment);
 
         const pM = new Matrix4();
         this.head = consume("Sphere.MeshPhong", pM.compose(worldPos.head, zeroQ, headScale), this.color);
@@ -745,7 +764,7 @@ export const playerColors: ColorRepresentation[] = [
 ModuleLoader.registerRender("Players", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
-        name, pass: (renderer, snapshot) => {
+        name, pass: (renderer, snapshot, dt) => {
             const time = snapshot.time();
             const camera = renderer.get("Camera")!;
             const models = renderer.getOrDefault("Players", () => new Map());
@@ -770,7 +789,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
 
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
-                        model.update(time, player, anim);
+                        model.update(dt, time, player, anim);
                     }
                 }
             }

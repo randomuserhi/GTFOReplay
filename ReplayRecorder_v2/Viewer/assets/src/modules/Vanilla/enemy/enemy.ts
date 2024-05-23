@@ -719,6 +719,7 @@ export class HumanoidEnemyModel extends EnemyModel {
     pivot: Object3D;
     
     skeleton: HumanSkeleton;
+    visual: HumanSkeleton;
     color: Color;
 
     head: number;
@@ -731,6 +732,34 @@ export class HumanoidEnemyModel extends EnemyModel {
     offset: number;
 
     tmp?: Text;
+
+    private construct(skeleton: HumanSkeleton) {
+        skeleton.joints.hip.add(
+            skeleton.joints.spine0,
+            skeleton.joints.leftUpperLeg,
+            skeleton.joints.rightUpperLeg
+        );
+        skeleton.joints.leftUpperLeg.add(skeleton.joints.leftLowerLeg);
+        skeleton.joints.leftLowerLeg.add(skeleton.joints.leftFoot!);
+        skeleton.joints.rightUpperLeg.add(skeleton.joints.rightLowerLeg);
+        skeleton.joints.rightLowerLeg.add(skeleton.joints.rightFoot!);
+        skeleton.joints.spine0.add(skeleton.joints.spine1);
+        skeleton.joints.spine1.add(skeleton.joints.spine2);
+        skeleton.joints.spine2.add(
+            skeleton.joints.neck,
+            skeleton.joints.leftShoulder,
+            skeleton.joints.rightShoulder
+        );
+        skeleton.joints.leftShoulder.add(skeleton.joints.leftUpperArm);
+        skeleton.joints.leftUpperArm.add(skeleton.joints.leftLowerArm);
+        skeleton.joints.leftLowerArm.add(skeleton.joints.leftHand!);
+        skeleton.joints.rightShoulder.add(skeleton.joints.rightUpperArm);
+        skeleton.joints.rightUpperArm.add(skeleton.joints.rightLowerArm);
+        skeleton.joints.rightLowerArm.add(skeleton.joints.rightHand!);
+        skeleton.joints.neck.add(skeleton.joints.head);
+        
+        skeleton.set(defaultHumanStructure);
+    }
 
     constructor(enemy: Enemy) {
         super(enemy);
@@ -749,32 +778,11 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.root.add(this.anchor);
 
         this.skeleton = new AvatarSkeleton(HumanJoints, "hip");
-        this.pivot.add(this.skeleton.joints.hip);
-        this.skeleton.joints.hip.add(
-            this.skeleton.joints.spine0,
-            this.skeleton.joints.leftUpperLeg,
-            this.skeleton.joints.rightUpperLeg
-        );
-        this.skeleton.joints.leftUpperLeg.add(this.skeleton.joints.leftLowerLeg);
-        this.skeleton.joints.leftLowerLeg.add(this.skeleton.joints.leftFoot!);
-        this.skeleton.joints.rightUpperLeg.add(this.skeleton.joints.rightLowerLeg);
-        this.skeleton.joints.rightLowerLeg.add(this.skeleton.joints.rightFoot!);
-        this.skeleton.joints.spine0.add(this.skeleton.joints.spine1);
-        this.skeleton.joints.spine1.add(this.skeleton.joints.spine2);
-        this.skeleton.joints.spine2.add(
-            this.skeleton.joints.neck,
-            this.skeleton.joints.leftShoulder,
-            this.skeleton.joints.rightShoulder
-        );
-        this.skeleton.joints.leftShoulder.add(this.skeleton.joints.leftUpperArm);
-        this.skeleton.joints.leftUpperArm.add(this.skeleton.joints.leftLowerArm);
-        this.skeleton.joints.leftLowerArm.add(this.skeleton.joints.leftHand!);
-        this.skeleton.joints.rightShoulder.add(this.skeleton.joints.rightUpperArm);
-        this.skeleton.joints.rightUpperArm.add(this.skeleton.joints.rightLowerArm);
-        this.skeleton.joints.rightLowerArm.add(this.skeleton.joints.rightHand!);
-        this.skeleton.joints.neck.add(this.skeleton.joints.head);
-        
-        this.skeleton.set(defaultHumanStructure);
+        this.visual = new AvatarSkeleton(HumanJoints, "hip");
+        this.construct(this.skeleton);
+        this.construct(this.visual);
+
+        this.pivot.add(this.visual.joints.hip);
 
         // Scale model - NOTE(randomuserhi): IK doesn't work with scaled models
         let scale = enemy.scale;
@@ -818,7 +826,7 @@ export class HumanoidEnemyModel extends EnemyModel {
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         this.animate(dt, time, enemy, anim, camera);
-        this.render(enemy);
+        this.render(dt, enemy);
     }
 
     private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
@@ -955,11 +963,16 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp.lookAt(camPos);
     }
 
-    public render(enemy: Enemy): void {
+    public render(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
 
-        getWorldPos(worldPos, this.skeleton);
+        const blendFactor = Math.clamp01(dt * 50);
+        for (const key of HumanJoints) {
+            this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
+        }
+        this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
+        getWorldPos(worldPos, this.visual);
 
         const pM = new Matrix4();
 
