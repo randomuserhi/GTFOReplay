@@ -539,8 +539,11 @@ import { RU_Hibernate_Heartbeat_E } from "./assets/RU_Hibernate_Heartbeat_E.js";
 import { RU_Hibernate_Heartbeat_E_0 } from "./assets/RU_Hibernate_Heartbeat_E_0.js";
 import { RU_Hibernate_In } from "./assets/RU_Hibernate_In.js";
 import { RU_Hibernate_Loop_0 } from "./assets/RU_Hibernate_Loop_0.js";
+import { RU_Hibernate_Wakeup_A } from "./assets/RU_Hibernate_Wakeup_A.js";
 import { RU_Hibernate_Wakeup_A_0 } from "./assets/RU_Hibernate_Wakeup_A_0.js";
+import { RU_Hibernate_Wakeup_B } from "./assets/RU_Hibernate_Wakeup_B.js";
 import { RU_Hibernate_Wakeup_B_0 } from "./assets/RU_Hibernate_Wakeup_B_0.js";
+import { RU_Hibernate_Wakeup_C } from "./assets/RU_Hibernate_Wakeup_C.js";
 import { RU_Hibernate_Wakeup_C_0 } from "./assets/RU_Hibernate_Wakeup_C_0.js";
 import { RU_Hibernate_Wakeup_Turn_A } from "./assets/RU_Hibernate_Wakeup_Turn_A.js";
 import { RU_Hit_Heavy_Bwd_A } from "./assets/RU_Hit_Heavy_Bwd_A.js";
@@ -1654,6 +1657,9 @@ export const enemyAnimationClips = {
     FD_Hibernate_Wakeup_B,
     FD_Hibernate_Wakeup_C,
     FD_Hibernate_Wakeup_Turn_A,
+    RU_Hibernate_Wakeup_A,
+    RU_Hibernate_Wakeup_B,
+    RU_Hibernate_Wakeup_C,
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 

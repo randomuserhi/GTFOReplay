@@ -127,8 +127,8 @@ namespace Vanilla.Enemy {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(ES_HibernateWakeUp), nameof(ES_HibernateWakeUp.DoWakeup))]
-            [HarmonyPrefix]
-            private static void Prefix_Wakeup(ES_HibernateWakeUp __instance) {
+            [HarmonyPostfix]
+            private static void Postfix_Wakeup(ES_HibernateWakeUp __instance) {
                 Replay.Trigger(new rWakeup(__instance.m_enemyAgent, (byte)__instance.m_animationIndex, __instance.m_isTurn));
             }
 

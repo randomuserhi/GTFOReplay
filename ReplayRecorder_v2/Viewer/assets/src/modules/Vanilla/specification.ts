@@ -672,10 +672,10 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 }, {
     name: "enemyGiant",
     wakeup: [
-        enemyAnimationClips.RU_Hibernate_Wakeup_A_0,
-        enemyAnimationClips.RU_Hibernate_Wakeup_B_0,
-        enemyAnimationClips.RU_Hibernate_Wakeup_C_0,
-        enemyAnimationClips.RU_Hibernate_Wakeup_B_0
+        enemyAnimationClips.RU_Hibernate_Wakeup_A,
+        enemyAnimationClips.RU_Hibernate_Wakeup_B,
+        enemyAnimationClips.RU_Hibernate_Wakeup_C,
+        enemyAnimationClips.RU_Hibernate_Wakeup_B
     ],
     wakeupTurns: [
         enemyAnimationClips.Monster_Turn_Left_180

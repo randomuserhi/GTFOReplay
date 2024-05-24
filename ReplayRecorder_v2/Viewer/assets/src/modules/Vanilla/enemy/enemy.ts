@@ -881,6 +881,15 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         const stateTime = time - (anim.lastStateTime / 1000);
         switch (anim.state) {
+        case "HibernateWakeUp": {
+            const wakeupTime = time - (anim.lastWakeupTime / 1000);
+            const wakeupAnim = anim.wakeupTurn ? this.animHandle.wakeupTurns[anim.wakeupAnimIndex] : this.animHandle.wakeup[anim.wakeupAnimIndex];
+            const inWakeup = wakeupAnim !== undefined && wakeupTime < wakeupAnim.duration && anim.state === "HibernateWakeUp";
+            if (inWakeup) {
+                const blend = wakeupTime < wakeupAnim.duration / 2 ? Math.clamp01(wakeupTime / 0.15) : Math.clamp01((wakeupAnim.duration - wakeupTime) / 0.15);
+                this.skeleton.blend(wakeupAnim.sample(Math.clamp(wakeupTime, 0, wakeupAnim.duration)), blend);
+            }
+        } break;
         case "Hibernate": {
             this.skeleton.override(this.animHandle.hibernateLoop.sample(stateTime));
             if (stateTime < this.animHandle.hibernateIn.duration) {
@@ -904,14 +913,6 @@ export class HumanoidEnemyModel extends EnemyModel {
             this.skeleton.blend(this.animHandle.ladderClimb.sample(offsetTime, 2), overrideBlend);
             break;
         default: this.skeleton.blend(this.animHandle.movement.sample(offsetTime), overrideBlend); break;
-        }
-
-        const wakeupTime = time - (anim.lastWakeupTime / 1000);
-        const wakeupAnim = anim.wakeupTurn ? this.animHandle.wakeupTurns[anim.wakeupAnimIndex] : this.animHandle.wakeup[anim.wakeupAnimIndex];
-        const inWakeup = wakeupAnim !== undefined && wakeupTime < wakeupAnim.duration && anim.state === "HibernateWakeUp";
-        if (inWakeup) {
-            const blend = wakeupTime < wakeupAnim.duration / 2 ? Math.clamp01(wakeupTime / 0.15) : Math.clamp01((wakeupAnim.duration - wakeupTime) / 0.15);
-            this.skeleton.blend(wakeupAnim.sample(Math.clamp(wakeupTime, 0, wakeupAnim.duration)), blend);
         }
 
         const screamTime = time - (anim.lastScreamTime / 1000);
