@@ -104,11 +104,34 @@ namespace Vanilla.Enemy {
         }
     }
 
+    [ReplayData("Vanilla.Enemy.Animation.Wakeup", "0.0.1")]
+    internal class rWakeup : Id {
+        private byte animIndex;
+        private bool turn;
+
+        public rWakeup(EnemyAgent enemy, byte animIndex, bool turn) : base(enemy.GlobalID) {
+            this.animIndex = animIndex;
+            this.turn = turn;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
+            BitHelper.WriteBytes(turn, buffer);
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(ES_HibernateWakeUp), nameof(ES_HibernateWakeUp.DoWakeup))]
+            [HarmonyPrefix]
+            private static void Prefix_Wakeup(ES_HibernateWakeUp __instance) {
+                Replay.Trigger(new rWakeup(__instance.m_enemyAgent, (byte)__instance.m_animationIndex, __instance.m_isTurn));
+            }
+
             [HarmonyPatch(typeof(ES_Hibernate), nameof(ES_Hibernate.StartBeat))]
             [HarmonyPrefix]
             private static void Prefix_StartBeat(ES_Hibernate __instance, float strength, bool doAnim) {

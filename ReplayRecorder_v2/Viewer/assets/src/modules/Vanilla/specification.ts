@@ -111,10 +111,21 @@ export interface EnemyAnimHandle {
     hibernateIn: HumanAnimation;
     hibernateLoop: HumanAnimation;
     heartbeats: HumanAnimation[];
+    wakeup: HumanAnimation[];
+    wakeupTurns: HumanAnimation[];
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
+    wakeup: [
+        enemyAnimationClips.RU_Hibernate_Wakeup_A_0,
+        enemyAnimationClips.RU_Hibernate_Wakeup_B_0,
+        enemyAnimationClips.RU_Hibernate_Wakeup_C_0,
+        enemyAnimationClips.RU_Hibernate_Wakeup_B_0
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.RU_Hibernate_Wakeup_Turn_A
+    ],
     movement: enemyAnimations.enemyRunnerMovement,
     hibernateIn: enemyAnimationClips.RU_Hibernate_In,
     hibernateLoop: enemyAnimations.RU_HibernateDetect,
@@ -188,6 +199,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyLow",
+    wakeup: [
+        enemyAnimationClips.LO_Hibernate_Wakeup_A,
+        enemyAnimationClips.LO_Hibernate_Wakeup_B,
+        enemyAnimationClips.LO_Hibernate_Wakeup_Fwd_C,
+        enemyAnimationClips.LO_Hibernate_Wakeup_Fwd_D
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.LO_Hibernate_Wakeup_Turn_A
+    ],
     heartbeats: [
         enemyAnimationClips.LO_Hibernate_Heartbeat_A,
         enemyAnimationClips.LO_Hibernate_Heartbeat_B,
@@ -261,6 +281,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyFiddler",
+    wakeup: [
+        enemyAnimationClips.FD_Hibernate_Wakeup_A,
+        enemyAnimationClips.FD_Hibernate_Wakeup_B,
+        enemyAnimationClips.FD_Hibernate_Wakeup_C,
+        enemyAnimationClips.FD_Hibernate_Wakeup_B
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.FD_Hibernate_Wakeup_Turn_A
+    ],
     heartbeats: [
         enemyAnimationClips.FD_Hibernate_Heartbeat_A,
         enemyAnimationClips.FD_Hibernate_Heartbeat_B,
@@ -330,6 +359,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawl",
+    wakeup: [
+        enemyAnimationClips.CA_Hibernate_Wakeup_A,
+        enemyAnimationClips.CA_Hibernate_Wakeup_A,
+        enemyAnimationClips.CA_Hibernate_Wakeup_A,
+        enemyAnimationClips.CA_Hibernate_Wakeup_A
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.CA_Hibernate_Wakeup_Turn_A
+    ],
     heartbeats: [
         enemyAnimationClips.CA_Hibernate_Heartbeat_A,
         enemyAnimationClips.CA_Hibernate_Heartbeat_B,
@@ -399,6 +437,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawlFlip",
+    wakeup: [
+        enemyAnimationClips.CF_Hibernate_Wakeup_A,
+        enemyAnimationClips.CF_Hibernate_Wakeup_A,
+        enemyAnimationClips.CF_Hibernate_Wakeup_A,
+        enemyAnimationClips.CF_Hibernate_Wakeup_A
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.CF_Hibernate_Wakeup_Turn_A
+    ],
     hibernateIn: enemyAnimationClips.CF_Hibernate_In,
     hibernateLoop: enemyAnimations.CF_HibernateDetect,
     heartbeats: [
@@ -468,6 +515,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCripple",
+    wakeup: [
+        enemyAnimationClips.CR_Hibernate_Wakeup_A,
+        enemyAnimationClips.CR_Hibernate_Wakeup_B,
+        enemyAnimationClips.CR_Hibernate_Wakeup_C,
+        enemyAnimationClips.CR_Hibernate_Wakeup_D
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.CR_Hibernate_Wakeup_Turn_A
+    ],
     heartbeats: [
         enemyAnimationClips.CR_Hibernate_Heartbeat_A,
         enemyAnimationClips.CR_Hibernate_Heartbeat_B,
@@ -537,6 +593,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBig",
+    wakeup: [
+        enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_A,
+        enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_A,
+        enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_A,
+        enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_A
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_180_B,
+    ],
     heartbeats: [
         enemyAnimationClips.Enemy_Big_Hibernate_Heartbeat_1_A,
         enemyAnimationClips.Enemy_Big_Hibernate_Heartbeat_2_A,
@@ -606,6 +671,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyGiant",
+    wakeup: [
+        enemyAnimationClips.RU_Hibernate_Wakeup_A_0,
+        enemyAnimationClips.RU_Hibernate_Wakeup_B_0,
+        enemyAnimationClips.RU_Hibernate_Wakeup_C_0,
+        enemyAnimationClips.RU_Hibernate_Wakeup_B_0
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.Monster_Turn_Left_180
+    ],
     hibernateIn: enemyAnimationClips.RU_Hibernate_In,
     hibernateLoop: enemyAnimations.RU_HibernateDetect,
     heartbeats: [
@@ -680,6 +754,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyPouncer",
+    wakeup: [
+        enemyAnimationClips.CA_Hibernate_Wakeup_A,
+        enemyAnimationClips.CA_Hibernate_Wakeup_A,
+        enemyAnimationClips.CA_Hibernate_Wakeup_A,
+        enemyAnimationClips.CA_Hibernate_Wakeup_A
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.CA_Hibernate_Wakeup_Turn_A
+    ],
     heartbeats: [
         enemyAnimationClips.CA_Hibernate_Heartbeat_A,
         enemyAnimationClips.CA_Hibernate_Heartbeat_B,
@@ -745,6 +828,15 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBirtherCrawlFlip",
+    wakeup: [
+        enemyAnimationClips.CF_Hibernate_Wakeup_A,
+        enemyAnimationClips.CF_Hibernate_Wakeup_A,
+        enemyAnimationClips.CF_Hibernate_Wakeup_A,
+        enemyAnimationClips.CF_Hibernate_Wakeup_A
+    ],
+    wakeupTurns: [
+        enemyAnimationClips.CF_Hibernate_Wakeup_Turn_A
+    ],
     heartbeats: [
         enemyAnimationClips.CF_Birther_Heartbeat,
         enemyAnimationClips.CF_Birther_Heartbeat,

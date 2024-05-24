@@ -97,6 +97,12 @@ declare module "../../../replay/moduleloader.js" {
                 id: number;
                 animIndex: number;
             };
+
+            "Vanilla.Enemy.Animation.Wakeup": {
+                id: number;
+                animIndex: number;
+                turn: boolean;
+            };
         }
 
         interface Data {
@@ -466,6 +472,9 @@ export interface EnemyAnimState {
     screamType: ScreamType;
     heartbeatAnimIndex: number;
     lastHeartbeatTime: number;
+    lastWakeupTime: number;
+    wakeupAnimIndex: number;
+    wakeupTurn: boolean;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -523,7 +532,10 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 screamAnimIndex: 0,
                 screamType: "Regular",
                 lastHeartbeatTime: -Infinity,
-                heartbeatAnimIndex: 0
+                heartbeatAnimIndex: 0,
+                lastWakeupTime: -Infinity,
+                wakeupAnimIndex: 0,
+                wakeupTurn: false
             });
         }
     },
@@ -632,6 +644,26 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Heartbeat", "0.0.1", {
         const anim = anims.get(id)!;
         anim.lastHeartbeatTime = snapshot.time();
         anim.heartbeatAnimIndex = data.animIndex;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Wakeup", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            animIndex: await BitHelper.readByte(bytes),
+            turn: await BitHelper.readBool(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastWakeupTime = snapshot.time();
+        anim.wakeupAnimIndex = data.animIndex;
+        anim.wakeupTurn = data.turn;
     }
 });
 
@@ -872,6 +904,14 @@ export class HumanoidEnemyModel extends EnemyModel {
             this.skeleton.blend(this.animHandle.ladderClimb.sample(offsetTime, 2), overrideBlend);
             break;
         default: this.skeleton.blend(this.animHandle.movement.sample(offsetTime), overrideBlend); break;
+        }
+
+        const wakeupTime = time - (anim.lastWakeupTime / 1000);
+        const wakeupAnim = anim.wakeupTurn ? this.animHandle.wakeupTurns[anim.wakeupAnimIndex] : this.animHandle.wakeup[anim.wakeupAnimIndex];
+        const inWakeup = wakeupAnim !== undefined && wakeupTime < wakeupAnim.duration && anim.state === "HibernateWakeUp";
+        if (inWakeup) {
+            const blend = wakeupTime < wakeupAnim.duration / 2 ? Math.clamp01(wakeupTime / 0.15) : Math.clamp01((wakeupAnim.duration - wakeupTime) / 0.15);
+            this.skeleton.blend(wakeupAnim.sample(Math.clamp(wakeupTime, 0, wakeupAnim.duration)), blend);
         }
 
         const screamTime = time - (anim.lastScreamTime / 1000);

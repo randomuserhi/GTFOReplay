@@ -176,6 +176,8 @@ import { CA_Hibernate_Heartbeat_D } from "./assets/CA_Hibernate_Heartbeat_D.js";
 import { CA_Hibernate_Heartbeat_E } from "./assets/CA_Hibernate_Heartbeat_E.js";
 import { CA_Hibernate_In } from "./assets/CA_Hibernate_In.js";
 import { CA_Hibernate_Loop_A } from "./assets/CA_Hibernate_Loop_A.js";
+import { CA_Hibernate_Wakeup_A } from "./assets/CA_Hibernate_Wakeup_A.js";
+import { CA_Hibernate_Wakeup_Turn_A } from "./assets/CA_Hibernate_Wakeup_Turn_A.js";
 import { CA_Hit_Heavy_Bwd_A } from "./assets/CA_Hit_Heavy_Bwd_A.js";
 import { CA_Hit_Heavy_Fwd_B } from "./assets/CA_Hit_Heavy_Fwd_B.js";
 import { CA_Hit_Heavy_Fwd_C } from "./assets/CA_Hit_Heavy_Fwd_C.js";
@@ -214,6 +216,8 @@ import { CF_Hibernate_Heartbeat_D } from "./assets/CF_Hibernate_Heartbeat_D.js";
 import { CF_Hibernate_Heartbeat_E } from "./assets/CF_Hibernate_Heartbeat_E.js";
 import { CF_Hibernate_In } from "./assets/CF_Hibernate_In.js";
 import { CF_Hibernate_Loop_A } from "./assets/CF_Hibernate_Loop_A.js";
+import { CF_Hibernate_Wakeup_A } from "./assets/CF_Hibernate_Wakeup_A.js";
+import { CF_Hibernate_Wakeup_Turn_A } from "./assets/CF_Hibernate_Wakeup_Turn_A.js";
 import { CF_Hit_Light_A } from "./assets/CF_Hit_Light_A.js";
 import { CF_Hit_Light_B } from "./assets/CF_Hit_Light_B.js";
 import { CF_Idle_A } from "./assets/CF_Idle_A.js";
@@ -236,6 +240,11 @@ import { CR_Hibernate_Heartbeat_D } from "./assets/CR_Hibernate_Heartbeat_D.js";
 import { CR_Hibernate_Heartbeat_E } from "./assets/CR_Hibernate_Heartbeat_E.js";
 import { CR_Hibernate_In } from "./assets/CR_Hibernate_In.js";
 import { CR_Hibernate_Loop } from "./assets/CR_Hibernate_Loop.js";
+import { CR_Hibernate_Wakeup_A } from "./assets/CR_Hibernate_Wakeup_A.js";
+import { CR_Hibernate_Wakeup_B } from "./assets/CR_Hibernate_Wakeup_B.js";
+import { CR_Hibernate_Wakeup_C } from "./assets/CR_Hibernate_Wakeup_C.js";
+import { CR_Hibernate_Wakeup_D } from "./assets/CR_Hibernate_Wakeup_D.js";
+import { CR_Hibernate_Wakeup_Turn_A } from "./assets/CR_Hibernate_Wakeup_Turn_A.js";
 import { CR_Hit_Heavy_Bwd_A_Turn } from "./assets/CR_Hit_Heavy_Bwd_A_Turn.js";
 import { CR_Hit_Heavy_Bwd_B } from "./assets/CR_Hit_Heavy_Bwd_B.js";
 import { CR_Hit_Heavy_Bwd_C_Turn } from "./assets/CR_Hit_Heavy_Bwd_C_Turn.js";
@@ -296,6 +305,8 @@ import { Enemy_Big_Hibernate_Heartbeat_4_A } from "./assets/Enemy_Big_Hibernate_
 import { Enemy_Big_Hibernate_Heartbeat_5_A } from "./assets/Enemy_Big_Hibernate_Heartbeat_5_A.js";
 import { Enemy_Big_Hibernate_In_A } from "./assets/Enemy_Big_Hibernate_In_A.js";
 import { Enemy_Big_Hibernate_Loop_A } from "./assets/Enemy_Big_Hibernate_Loop_A.js";
+import { Enemy_Big_Hibernate_Wakeup_180_B } from "./assets/Enemy_Big_Hibernate_Wakeup_180_B.js";
+import { Enemy_Big_Hibernate_Wakeup_A } from "./assets/Enemy_Big_Hibernate_Wakeup_A.js";
 import { Enemy_Big_Hit_Back_A } from "./assets/Enemy_Big_Hit_Back_A.js";
 import { Enemy_Big_Hit_Back_B } from "./assets/Enemy_Big_Hit_Back_B.js";
 import { Enemy_Big_Hit_Front_A } from "./assets/Enemy_Big_Hit_Front_A.js";
@@ -334,6 +345,10 @@ import { FD_Hibernate_Heartbeat_D } from "./assets/FD_Hibernate_Heartbeat_D.js";
 import { FD_Hibernate_Heartbeat_E } from "./assets/FD_Hibernate_Heartbeat_E.js";
 import { FD_Hibernate_In } from "./assets/FD_Hibernate_In.js";
 import { FD_Hibernate_Loop } from "./assets/FD_Hibernate_Loop.js";
+import { FD_Hibernate_Wakeup_A } from "./assets/FD_Hibernate_Wakeup_A.js";
+import { FD_Hibernate_Wakeup_B } from "./assets/FD_Hibernate_Wakeup_B.js";
+import { FD_Hibernate_Wakeup_C } from "./assets/FD_Hibernate_Wakeup_C.js";
+import { FD_Hibernate_Wakeup_Turn_A } from "./assets/FD_Hibernate_Wakeup_Turn_A.js";
 import { FD_Hit_Heavy_Bwd_A } from "./assets/FD_Hit_Heavy_Bwd_A.js";
 import { FD_Hit_Heavy_Bwd_B } from "./assets/FD_Hit_Heavy_Bwd_B.js";
 import { FD_Hit_Heavy_Bwd_C } from "./assets/FD_Hit_Heavy_Bwd_C.js";
@@ -426,6 +441,11 @@ import { LO_Hibernate_Heartbeat_D } from "./assets/LO_Hibernate_Heartbeat_D.js";
 import { LO_Hibernate_Heartbeat_E } from "./assets/LO_Hibernate_Heartbeat_E.js";
 import { LO_Hibernate_In_A } from "./assets/LO_Hibernate_In_A.js";
 import { LO_Hibernate_Loop } from "./assets/LO_Hibernate_Loop.js";
+import { LO_Hibernate_Wakeup_A } from "./assets/LO_Hibernate_Wakeup_A.js";
+import { LO_Hibernate_Wakeup_B } from "./assets/LO_Hibernate_Wakeup_B.js";
+import { LO_Hibernate_Wakeup_Fwd_C } from "./assets/LO_Hibernate_Wakeup_Fwd_C.js";
+import { LO_Hibernate_Wakeup_Fwd_D } from "./assets/LO_Hibernate_Wakeup_Fwd_D.js";
+import { LO_Hibernate_Wakeup_Turn_A } from "./assets/LO_Hibernate_Wakeup_Turn_A.js";
 import { LO_Hit_Heavy_Bwd_A } from "./assets/LO_Hit_Heavy_Bwd_A.js";
 import { LO_Hit_Heavy_Fwd_A } from "./assets/LO_Hit_Heavy_Fwd_A.js";
 import { LO_Hit_Heavy_Fwd_B } from "./assets/LO_Hit_Heavy_Fwd_B.js";
@@ -483,6 +503,7 @@ import { Monster_Hit_Right_01 } from "./assets/Monster_Hit_Right_01.js";
 import { Monster_Idle_01 } from "./assets/Monster_Idle_01.js";
 import { Monster_Taunt_01 } from "./assets/Monster_Taunt_01.js";
 import { Monster_TentacleStart } from "./assets/Monster_TentacleStart.js";
+import { Monster_Turn_Left_180 } from "./assets/Monster_Turn_Left_180.js";
 import { Monster_Walk_Bwd } from "./assets/Monster_Walk_Bwd.js";
 import { Monster_Walk_Fwd } from "./assets/Monster_Walk_Fwd.js";
 import { Monster_Walk_Left } from "./assets/Monster_Walk_Left.js";
@@ -518,6 +539,10 @@ import { RU_Hibernate_Heartbeat_E } from "./assets/RU_Hibernate_Heartbeat_E.js";
 import { RU_Hibernate_Heartbeat_E_0 } from "./assets/RU_Hibernate_Heartbeat_E_0.js";
 import { RU_Hibernate_In } from "./assets/RU_Hibernate_In.js";
 import { RU_Hibernate_Loop_0 } from "./assets/RU_Hibernate_Loop_0.js";
+import { RU_Hibernate_Wakeup_A_0 } from "./assets/RU_Hibernate_Wakeup_A_0.js";
+import { RU_Hibernate_Wakeup_B_0 } from "./assets/RU_Hibernate_Wakeup_B_0.js";
+import { RU_Hibernate_Wakeup_C_0 } from "./assets/RU_Hibernate_Wakeup_C_0.js";
+import { RU_Hibernate_Wakeup_Turn_A } from "./assets/RU_Hibernate_Wakeup_Turn_A.js";
 import { RU_Hit_Heavy_Bwd_A } from "./assets/RU_Hit_Heavy_Bwd_A.js";
 import { RU_Hit_Heavy_Bwd_B } from "./assets/RU_Hit_Heavy_Bwd_B.js";
 import { RU_Hit_Heavy_Bwd_C } from "./assets/RU_Hit_Heavy_Bwd_C.js";
@@ -1603,7 +1628,32 @@ export const enemyAnimationClips = {
     RU_Hibernate_Heartbeat_D_0,
     RU_Hibernate_Heartbeat_E,
     RU_Hibernate_Heartbeat_E_0,
-    CF_Birther_Heartbeat
+    CF_Birther_Heartbeat,
+    CR_Hibernate_Wakeup_A,
+    CR_Hibernate_Wakeup_B,
+    CR_Hibernate_Wakeup_C,
+    CR_Hibernate_Wakeup_D,
+    CR_Hibernate_Wakeup_Turn_A,
+    LO_Hibernate_Wakeup_A,
+    LO_Hibernate_Wakeup_B,
+    LO_Hibernate_Wakeup_Fwd_C,
+    LO_Hibernate_Wakeup_Fwd_D,
+    LO_Hibernate_Wakeup_Turn_A,
+    CA_Hibernate_Wakeup_A,
+    CA_Hibernate_Wakeup_Turn_A,
+    RU_Hibernate_Wakeup_A_0,
+    RU_Hibernate_Wakeup_B_0,
+    RU_Hibernate_Wakeup_C_0,
+    RU_Hibernate_Wakeup_Turn_A,
+    CF_Hibernate_Wakeup_A,
+    CF_Hibernate_Wakeup_Turn_A,
+    Monster_Turn_Left_180,
+    Enemy_Big_Hibernate_Wakeup_180_B,
+    Enemy_Big_Hibernate_Wakeup_A,
+    FD_Hibernate_Wakeup_A,
+    FD_Hibernate_Wakeup_B,
+    FD_Hibernate_Wakeup_C,
+    FD_Hibernate_Wakeup_Turn_A,
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
