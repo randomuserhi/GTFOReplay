@@ -154,7 +154,7 @@ import { StrafeRightLoop } from "./assets/StrafeRightLoop.js";
 import { WalkBwdLoop } from "./assets/WalkBwdLoop.js";
 import { WalkFwdLoop } from "./assets/WalkFwdLoop.js";
 
-import { AnimBlend } from "./animation.js";
+import { AnimBlend, ScaledAnim } from "./animation.js";
 import { Ability_Fire_0_Start } from "./assets/Ability_Fire_0_Start.js";
 import { Ability_Fire_2_Start } from "./assets/Ability_Fire_2_Start.js";
 import { Bat_Crouch_ChargeRelease } from "./assets/Bat_Crouch_ChargeRelease.js";
@@ -1822,6 +1822,8 @@ export const RU_HibernateDetect = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.Ru_Hibernate_Detect_Loop_0, x: 1, y: 0, timescale: 0.2 },
 ], animDetection);
 
+export const RU_Melee_Sequence_A_Fast = new ScaledAnim(HumanJoints, enemyAnimationClips.RU_Melee_Sequence_A, 2);
+
 /*export const LO_Ability_Fire_A = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_A, enemyAnimationClips.LO_Ability_Fire_Out_A);
 export const LO_Ability_Fire_B = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_B, enemyAnimationClips.LO_Ability_Fire_Out_B);
 export const LO_Ability_Fire_C = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_C, enemyAnimationClips.LO_Ability_Fire_Out_C);
@@ -1856,6 +1858,7 @@ export const enemyAnimations = {
     FD_HibernateDetect,
     LO_HibernateDetect,
     RU_HibernateDetect,
+    RU_Melee_Sequence_A_Fast
     /*LO_Ability_Fire_A,
     LO_Ability_Fire_B,
     LO_Ability_Fire_C,

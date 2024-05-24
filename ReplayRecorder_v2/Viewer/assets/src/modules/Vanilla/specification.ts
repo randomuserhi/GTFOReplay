@@ -147,8 +147,8 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.RU_Jump_Out
     ],
     melee: {
-        "Forward": [enemyAnimationClips.RU_Melee_Sequence_A],
-        "Backward": [enemyAnimationClips.RU_Melee_Sequence_A],
+        "Forward": [enemyAnimations.RU_Melee_Sequence_A_Fast],
+        "Backward": [enemyAnimations.RU_Melee_Sequence_A_Fast],
     },
     abilityFire: [
         enemyAnimationClips.Ability_Fire_0_Start,

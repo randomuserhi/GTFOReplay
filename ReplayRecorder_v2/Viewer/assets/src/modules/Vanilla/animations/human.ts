@@ -1,4 +1,4 @@
-import { Anim, AnimBlend, Avatar, AvatarLike, AvatarMask, AvatarSkeleton, AvatarStructure } from "./animation.js";
+import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkeleton, AvatarStructure } from "./animation.js";
 
 export const HumanJoints = [
     "hip",
@@ -34,7 +34,7 @@ export type HumanAvatar = Avatar<HumanJoints>;
 export type HumanAvatarLike = AvatarLike<HumanJoints>;
 export type HumanAnim = Anim<HumanJoints>;
 export type HumanAnimBlend = AnimBlend<HumanJoints>;
-export type HumanAnimation = HumanAnim | HumanAnimBlend;
+export type HumanAnimation = AnimFunc<HumanJoints>;
 export type HumanSkeleton = AvatarSkeleton<HumanJoints>;
 export type HumanMask = AvatarMask<HumanJoints>;
 

@@ -201,6 +201,25 @@ export class Anim<T extends string = string> implements AnimFunc<T> {
     }
 }
 
+export class ScaledAnim<T extends string = string> implements AnimFunc<T> {
+    anim: Anim<T>;
+    duration: number;
+    scale: number;
+    joints: readonly T[];
+
+    constructor(joints: ReadonlyArray<T>, anim: Anim<T>, scale: number) {
+        this.joints = joints;
+        this.scale = scale;
+        this.anim = anim;
+        this.duration = this.anim.duration / this.scale;
+    }
+
+    public sample(t: number, timescale?: number): Avatar<T> {
+        const scale = timescale === undefined ? this.scale : this.scale * timescale;
+        return this.anim.sample(t, scale);
+    }
+}
+
 export function isAnimBlend<T extends string>(obj: Anim<T> | AnimBlend<T>): obj is AnimBlend<T> {
     return Object.prototype.isPrototypeOf.call(AnimBlend.prototype, obj);
 }

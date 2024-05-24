@@ -566,6 +566,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
         const anim = anims.get(id)!;
         anim.lastWindupTime = snapshot.time();
         anim.windupAnimIndex = data.animIndex;
+        anim.lastMeleeTime = -Infinity; // Don't do melee animation if tongue animation is triggered
     }
 });
 
@@ -588,6 +589,10 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         anim.hitreactAnimIndex = data.animIndex;
         anim.hitreactDirection = data.direction;
         anim.hitreactType = data.type;
+
+        // On hitreact, stop other anims
+        anim.lastMeleeTime = -Infinity; 
+        anim.lastWindupTime = -Infinity;
     }
 });
 
@@ -957,7 +962,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (this.animHandle.melee !== undefined) {
             const meleeTime = time - (anim.lastMeleeTime / 1000);
             const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
-            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerAttack");
+            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerMelee");
             if (inMelee) {
                 const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
                 this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);

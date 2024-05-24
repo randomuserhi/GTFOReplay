@@ -1,4 +1,5 @@
 ﻿using Agents;
+using API;
 using Enemies;
 using HarmonyLib;
 using ReplayRecorder;
@@ -182,7 +183,8 @@ namespace Vanilla.Enemy {
 
             [HarmonyPatch(typeof(ES_StrikerMelee), nameof(ES_StrikerMelee.DoStartMeleeAttack))]
             [HarmonyPrefix]
-            private static void Prefix_DoStartMeleeAttack(ES_EnemyAttackBase __instance, int animIndex, bool fwdAttack) {
+            private static void Prefix_DoStartMeleeAttack(ES_StrikerMelee __instance, int animIndex, bool fwdAttack) {
+                APILogger.Debug("swing");
                 Replay.Trigger(new rMelee(__instance.m_enemyAgent, (byte)animIndex, fwdAttack ? rMelee.Type.foward : rMelee.Type.backward));
             }
 
