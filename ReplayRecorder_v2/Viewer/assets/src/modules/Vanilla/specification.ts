@@ -1609,11 +1609,12 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 16,
     name: "Big Mother",
-    maxHealth: 2500
+    maxHealth: 2500,
 }, {
     id: 17,
     name: "Snatcher",
-    maxHealth: 225
+    maxHealth: 225,
+    scale: 1.5
 }, {
     id: 18,
     name: "Immortal Tank",

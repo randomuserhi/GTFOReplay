@@ -154,7 +154,7 @@ import { StrafeRightLoop } from "./assets/StrafeRightLoop.js";
 import { WalkBwdLoop } from "./assets/WalkBwdLoop.js";
 import { WalkFwdLoop } from "./assets/WalkFwdLoop.js";
 
-import { AnimBlend, ScaledAnim } from "./animation.js";
+import { AnimBlend, ScaledAnim, mergeAnims } from "./animation.js";
 import { Ability_Fire_0_Start } from "./assets/Ability_Fire_0_Start.js";
 import { Ability_Fire_2_Start } from "./assets/Ability_Fire_2_Start.js";
 import { Bat_Crouch_ChargeRelease } from "./assets/Bat_Crouch_ChargeRelease.js";
@@ -512,12 +512,17 @@ import { Monster_Walk_Left_45 } from "./assets/Monster_Walk_Left_45.js";
 import { Monster_Walk_Right } from "./assets/Monster_Walk_Right.js";
 import { Monster_Walk_Right_135 } from "./assets/Monster_Walk_Right_135.js";
 import { Monster_Walk_Right_45 } from "./assets/Monster_Walk_Right_45.js";
+import { PO_ConsumeAttack } from "./assets/PO_ConsumeAttack.js";
+import { PO_ConsumeEnd } from "./assets/PO_ConsumeEnd.js";
+import { PO_ConsumeLoop } from "./assets/PO_ConsumeLoop.js";
+import { PO_ConsumeStart } from "./assets/PO_ConsumeStart.js";
 import { PO_IdleCombat } from "./assets/PO_IdleCombat.js";
 import { PO_JogBwd } from "./assets/PO_JogBwd.js";
 import { PO_JogFwd } from "./assets/PO_JogFwd.js";
 import { PO_JogLeft } from "./assets/PO_JogLeft.js";
 import { PO_JogRight } from "./assets/PO_JogRight.js";
 import { PO_RunFwd } from "./assets/PO_RunFwd.js";
+import { PO_SpitOut } from "./assets/PO_SpitOut.js";
 import { PO_WalkBwd } from "./assets/PO_WalkBwd.js";
 import { PO_WalkFwd } from "./assets/PO_WalkFwd.js";
 import { PO_WalkLeft } from "./assets/PO_WalkLeft.js";
@@ -1660,6 +1665,11 @@ export const enemyAnimationClips = {
     RU_Hibernate_Wakeup_A,
     RU_Hibernate_Wakeup_B,
     RU_Hibernate_Wakeup_C,
+    PO_ConsumeAttack,
+    PO_ConsumeStart,
+    PO_ConsumeEnd,
+    PO_ConsumeLoop,
+    PO_SpitOut,
 } as const;
 export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
 
@@ -1842,6 +1852,13 @@ export const Enemy_Big_Fire_A = mergeAnims(enemyAnimationClips.Enemy_Big_Fire_In
 export const Enemy_Big_Fire_B = mergeAnims(enemyAnimationClips.Enemy_Big_Fire_In_B, enemyAnimationClips.Enemy_Big_Fire_End_B);
 export const Monster_Tentacle = mergeAnims(enemyAnimationClips.Monster_TentacleStart, enemyAnimationClips.Monster_TentacleEnd);*/
 
+export const PO_Consume = new ScaledAnim(HumanJoints, mergeAnims(
+    enemyAnimationClips.PO_ConsumeStart,
+    enemyAnimationClips.PO_ConsumeEnd,
+), 1.5);
+
+export const PO_SpitOut_Fast = new ScaledAnim(HumanJoints, enemyAnimationClips.PO_SpitOut, 1.5);
+
 export const enemyAnimations = {
     enemyRunnerMovement,
     enemyLowMovement,
@@ -1858,7 +1875,9 @@ export const enemyAnimations = {
     FD_HibernateDetect,
     LO_HibernateDetect,
     RU_HibernateDetect,
-    RU_Melee_Sequence_A_Fast
+    RU_Melee_Sequence_A_Fast,
+    PO_Consume,
+    PO_SpitOut_Fast,
     /*LO_Ability_Fire_A,
     LO_Ability_Fire_B,
     LO_Ability_Fire_C,

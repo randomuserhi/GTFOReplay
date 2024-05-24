@@ -4,9 +4,9 @@ import * as BitHelper from "../../../replay/bithelper.js";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
-import { DuplicateDynamic, DynamicNotFound, DynamicParse, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
+import { DuplicateDynamic, DynamicNotFound, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
-import { animCrouch, animDetection, animVelocity, playerAnimations } from "../animations/assets.js";
+import { animCrouch, animDetection, animVelocity, enemyAnimations, playerAnimations } from "../animations/assets.js";
 import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
 import { createDeathCross } from "../deathcross.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
@@ -19,7 +19,13 @@ declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy": {
-                parse: DynamicParse;
+                parse: {
+                    dimension: number;
+                    absolute: boolean;
+                    position: Pod.Vector;
+                    rotation: Pod.Quaternion;
+                    consumedPlayerSlotIndex: number;
+                };
                 spawn: {
                     dimension: number;
                     position: Pod.Vector;
@@ -102,6 +108,14 @@ declare module "../../../replay/moduleloader.js" {
                 id: number;
                 animIndex: number;
                 turn: boolean;
+            };
+
+            "Vanilla.Enemy.Animation.PouncerGrab": {
+                id: number;
+            };
+
+            "Vanilla.Enemy.Animation.PouncerSpit": {
+                id: number;
             };
         }
 
@@ -198,6 +212,7 @@ export interface Enemy extends DynamicTransform {
     players: Set<bigint>;
     lastHit?: Damage;
     lastHitTime?: number;
+    consumedPlayerSlotIndex: number;
 }
 
 export namespace AnimHandles {
@@ -245,14 +260,20 @@ export namespace AnimHandles {
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await DynamicTransform.parse(data);
+            const transform = await DynamicTransform.parse(data);
+            const result = {
+                ...transform,
+                consumedPlayerSlotIndex: await BitHelper.readByte(data)
+            };
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
     
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
-            DynamicTransform.lerp(enemies.get(id)!, data, lerp);
+            const enemy = enemies.get(id)!;
+            DynamicTransform.lerp(enemy, data, lerp);
+            enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
         }
     },
     spawn: {
@@ -277,6 +298,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 health: datablock.maxHealth,
                 head: true,
                 players: new Set(),
+                consumedPlayerSlotIndex: 255,
             });
         }
     },
@@ -475,6 +497,8 @@ export interface EnemyAnimState {
     lastWakeupTime: number;
     wakeupAnimIndex: number;
     wakeupTurn: boolean;
+    lastPouncerGrabTime: number;
+    lastPouncerSpitTime: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -535,7 +559,9 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 heartbeatAnimIndex: 0,
                 lastWakeupTime: -Infinity,
                 wakeupAnimIndex: 0,
-                wakeupTurn: false
+                wakeupTurn: false,
+                lastPouncerGrabTime: -Infinity,
+                lastPouncerSpitTime: -Infinity
             });
         }
     },
@@ -669,6 +695,40 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Wakeup", "0.0.1", {
         anim.lastWakeupTime = snapshot.time();
         anim.wakeupAnimIndex = data.animIndex;
         anim.wakeupTurn = data.turn;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerGrab", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastPouncerGrabTime = snapshot.time();
+        anim.lastPouncerSpitTime = -Infinity;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerSpit", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastPouncerSpitTime = snapshot.time();
+        anim.lastPouncerGrabTime = -Infinity;
     }
 });
 
@@ -967,6 +1027,20 @@ export class HumanoidEnemyModel extends EnemyModel {
                 const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
                 this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
             }
+        }
+
+        const pouncerGrabTime = time - (anim.lastPouncerGrabTime / 1000);
+        const inPouncerGrab = pouncerGrabTime < enemyAnimations.PO_Consume.duration;
+        if (inPouncerGrab) {
+            const blend = pouncerGrabTime < enemyAnimations.PO_Consume.duration / 2 ? Math.clamp01(pouncerGrabTime / 0.15) : Math.clamp01((enemyAnimations.PO_Consume.duration - pouncerGrabTime) / 0.15);
+            this.skeleton.blend(enemyAnimations.PO_Consume.sample(Math.clamp(pouncerGrabTime, 0, enemyAnimations.PO_Consume.duration)), blend);
+        }
+
+        const pouncerSpitTime = time - (anim.lastPouncerSpitTime / 1000);
+        const inPouncerSpit = pouncerSpitTime < enemyAnimations.PO_SpitOut_Fast.duration;
+        if (inPouncerSpit) {
+            const blend = pouncerSpitTime < enemyAnimations.PO_SpitOut_Fast.duration / 2 ? Math.clamp01(pouncerSpitTime / 0.15) : Math.clamp01((enemyAnimations.PO_SpitOut_Fast.duration - pouncerSpitTime) / 0.15);
+            this.skeleton.blend(enemyAnimations.PO_SpitOut_Fast.sample(Math.clamp(pouncerSpitTime, 0, enemyAnimations.PO_SpitOut_Fast.duration)), blend);
         }
 
         const hitreactTime = time - (anim.lastHitreactTime / 1000);

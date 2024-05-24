@@ -1,11 +1,11 @@
 ﻿using Agents;
-using API;
 using Enemies;
 using HarmonyLib;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using SNetwork;
 using UnityEngine;
 
 namespace Vanilla.Enemy {
@@ -122,11 +122,52 @@ namespace Vanilla.Enemy {
         }
     }
 
+    [ReplayData("Vanilla.Enemy.Animation.PouncerGrab", "0.0.1")]
+    internal class rPouncerGrab : Id {
+
+        public rPouncerGrab(EnemyAgent enemy) : base(enemy.GlobalID) {
+
+        }
+    }
+
+    [ReplayData("Vanilla.Enemy.Animation.PouncerSpit", "0.0.1")]
+    internal class rPouncerSpit : Id {
+
+        public rPouncerSpit(EnemyAgent enemy) : base(enemy.GlobalID) {
+
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(PouncerBehaviour), nameof(PouncerBehaviour.ForceChangeAnimationState))]
+            [HarmonyPostfix]
+            private static void Postfix_Pouncer_Host(PouncerBehaviour __instance, int animationState) {
+                if (!SNet.IsMaster) return;
+
+                if (animationState == PouncerBehaviour.PO_ConsumeStart) {
+                    Replay.Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
+                } else if (animationState == PouncerBehaviour.PO_SpitOut) {
+                    Replay.Trigger(new rPouncerSpit(__instance.m_ai.m_enemyAgent));
+                }
+            }
+
+            // NOTE(randomuserhi): The above code probably runs on client as well, so can remove this
+            [HarmonyPatch(typeof(PouncerBehaviour), nameof(PouncerBehaviour.OnAnimationStateChangePacketReceived))]
+            [HarmonyPostfix]
+            private static void Postfix_Pouncer_Client(PouncerBehaviour __instance, pEB_AnimationStateChanagePacket data) {
+                if (SNet.IsMaster) return;
+
+                if (data.AnimationState == PouncerBehaviour.PO_ConsumeStart) {
+                    Replay.Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
+                } else if (data.AnimationState == PouncerBehaviour.PO_SpitOut) {
+                    Replay.Trigger(new rPouncerSpit(__instance.m_ai.m_enemyAgent));
+                }
+            }
+
             [HarmonyPatch(typeof(ES_HibernateWakeUp), nameof(ES_HibernateWakeUp.DoWakeup))]
             [HarmonyPostfix]
             private static void Postfix_Wakeup(ES_HibernateWakeUp __instance) {
@@ -184,7 +225,6 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ES_StrikerMelee), nameof(ES_StrikerMelee.DoStartMeleeAttack))]
             [HarmonyPrefix]
             private static void Prefix_DoStartMeleeAttack(ES_StrikerMelee __instance, int animIndex, bool fwdAttack) {
-                APILogger.Debug("swing");
                 Replay.Trigger(new rMelee(__instance.m_enemyAgent, (byte)animIndex, fwdAttack ? rMelee.Type.foward : rMelee.Type.backward));
             }
 
@@ -196,7 +236,6 @@ namespace Vanilla.Enemy {
         }
 
         public EnemyAgent enemy;
-        private Animator animator;
 
         private static byte compress(float value, float max) {
             value /= max;
@@ -258,7 +297,6 @@ namespace Vanilla.Enemy {
 
         public rEnemyAnimation(EnemyAgent enemy) : base(enemy.GlobalID) {
             this.enemy = enemy;
-            animator = enemy.Anim;
         }
 
         public override void Write(ByteBuffer buffer) {

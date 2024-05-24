@@ -29,6 +29,27 @@ namespace Vanilla.Enemy {
 
         public rEnemy(EnemyAgent enemy) : base(enemy.GlobalID, new AgentTransform(enemy)) {
             agent = enemy;
+            pouncer = enemy.GetComponent<PouncerBehaviour>();
+        }
+
+        private PouncerBehaviour? pouncer;
+        // NOTE(randomuserhi): For snatcher, unused for regular enemies
+        private byte _consumedPlayer {
+            get {
+                if (pouncer == null) return byte.MaxValue;
+                if (pouncer.CapturedPlayer == null) return byte.MaxValue;
+                return (byte)pouncer.CapturedPlayer.PlayerSlotIndex;
+            }
+        }
+        private byte consumedPlayer;
+
+        public override bool IsDirty => base.IsDirty || consumedPlayer != _consumedPlayer;
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+
+            consumedPlayer = _consumedPlayer;
+            BitHelper.WriteBytes(consumedPlayer, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

@@ -440,7 +440,7 @@ class PlayerModel  {
             } break;
             }
 
-            if (!isEquipping) {
+            if (!isEquipping && player.equippedId !== 0) {
                 const dist = 10;
                 this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
                 this.aimTarget.position.x += anim.targetLookDir.x * dist;
