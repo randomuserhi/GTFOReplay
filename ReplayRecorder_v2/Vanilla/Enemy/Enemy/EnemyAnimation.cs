@@ -318,8 +318,9 @@ namespace Vanilla.Enemy {
             v /= Replay.tickRate;
             lastPosition = enemy.transform.position;
 
-            velocity.z = Vector3.Dot(enemy.transform.forward, v);
             velocity.x = Vector3.Dot(enemy.transform.right, v);
+            velocity.y = Vector3.Dot(enemy.transform.up, v);
+            velocity.z = Vector3.Dot(enemy.transform.forward, v);
         }
 
         private float _velFwd => velocity.z;
@@ -327,6 +328,9 @@ namespace Vanilla.Enemy {
 
         private float _velRight => velocity.x;
         private byte velRight;
+
+        private float _velUp => velocity.y;
+        private byte velUp;
 
         private byte _state => (byte)enemy.Locomotion.m_currentState.m_stateEnum;
         private byte state;
@@ -343,9 +347,11 @@ namespace Vanilla.Enemy {
 
         public override void Write(ByteBuffer buffer) {
             velRight = compress(_velRight, 10f);
+            velUp = compress(_velUp, 10f);
             velFwd = compress(_velFwd, 10f);
 
             BitHelper.WriteBytes(velRight, buffer);
+            BitHelper.WriteBytes(velUp, buffer);
             BitHelper.WriteBytes(velFwd, buffer);
 
             state = _state;

@@ -62,7 +62,8 @@ import { AvatarStructure, ScaledAnim, mergeAnims } from "./animations/animation.
 import { enemyAnimationClips, enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation, HumanJoints } from "./animations/human.js";
-import { AnimHandles, EnemyModel, MeleeType } from "./enemy/enemy.js";
+import { AnimHandles, Enemy, EnemyModel, MeleeType } from "./enemy/enemy.js";
+import { FlyerModel } from "./enemy/flyer.js";
 
 export type Archetype = 
     "melee" |
@@ -956,7 +957,7 @@ export interface EnemySpecification {
     id: number;
     maxHealth: number;
     name?: string;
-    model?: () => EnemyModel;
+    model?: (enemy: Enemy) => EnemyModel;
     rotOffset?: Vector3Like;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;
@@ -1790,11 +1791,13 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 19,
     name: "Flyer",
-    maxHealth: 16.2
+    maxHealth: 16.2,
+    model: (enemy) => new FlyerModel(enemy),
 }, {
     id: 20,
     name: "Big Flyer",
-    maxHealth: 150
+    maxHealth: 150,
+    model: (enemy) => new FlyerModel(enemy),
 }, {
     id: 21,
     name: "Squid",
