@@ -105,7 +105,7 @@ export interface EnemyAnimHandle {
     hitHeavyRt: HumanAnimation[];
     melee?: { [K in MeleeType]: HumanAnimation[] }
     ladderClimb: HumanAnimation;
-    jump: [HumanAnimation, HumanAnimation]; // NOTE(randomuserhi): 0 - Jump start, 1 - Jump end
+    jump: [HumanAnimation, HumanAnimation]; // NOTE(randomuserhi): Jump start, Jump end
     screams: HumanAnimation[];
     blend?: number;
     hibernateIn: HumanAnimation;
@@ -113,10 +113,16 @@ export interface EnemyAnimHandle {
     heartbeats: HumanAnimation[];
     wakeup: HumanAnimation[];
     wakeupTurns: HumanAnimation[];
+    abilityUse?: [HumanAnimation, HumanAnimation, HumanAnimation] // NOTE(randomuserhi): in, loop, out
 }
 
 const _enemyAnimHandles: EnemyAnimHandle[] = [{
     name: "enemyRunner",
+    abilityUse: [
+        enemyAnimationClips.RU_Ability_Use_In_a,
+        enemyAnimationClips.RU_Ability_Use_Loop_a,
+        enemyAnimationClips.RU_Ability_Use_Out_a,
+    ],
     wakeup: [
         enemyAnimationClips.RU_Hibernate_Wakeup_A_0,
         enemyAnimationClips.RU_Hibernate_Wakeup_B_0,
@@ -199,6 +205,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyLow",
+    abilityUse: [
+        enemyAnimationClips.LO_Ability_Use_In_A,
+        enemyAnimationClips.LO_Ability_Use_Loop_A,
+        enemyAnimationClips.LO_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.LO_Hibernate_Wakeup_A,
         enemyAnimationClips.LO_Hibernate_Wakeup_B,
@@ -281,6 +292,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyFiddler",
+    abilityUse: [
+        enemyAnimationClips.FD_Ability_Use_In_A,
+        enemyAnimationClips.FD_Ability_Use_Loop_A,
+        enemyAnimationClips.FD_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.FD_Hibernate_Wakeup_A,
         enemyAnimationClips.FD_Hibernate_Wakeup_B,
@@ -359,6 +375,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawl",
+    abilityUse: [
+        enemyAnimationClips.CA_Ability_Use_In_A,
+        enemyAnimationClips.CA_Ability_Use_Loop_A,
+        enemyAnimationClips.CA_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.CA_Hibernate_Wakeup_A,
         enemyAnimationClips.CA_Hibernate_Wakeup_A,
@@ -437,6 +458,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCrawlFlip",
+    abilityUse: [
+        enemyAnimationClips.CF_Ability_Use_In_A,
+        enemyAnimationClips.CF_Ability_Use_Loop_A,
+        enemyAnimationClips.CF_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.CF_Hibernate_Wakeup_A,
         enemyAnimationClips.CF_Hibernate_Wakeup_A,
@@ -515,6 +541,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyCripple",
+    abilityUse: [
+        enemyAnimationClips.CR_Ability_Use_In_A,
+        enemyAnimationClips.CR_Ability_Use_Loop_A,
+        enemyAnimationClips.CR_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.CR_Hibernate_Wakeup_A,
         enemyAnimationClips.CR_Hibernate_Wakeup_B,
@@ -593,6 +624,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBig",
+    abilityUse: [
+        enemyAnimationClips.FD_Ability_Use_In_A,
+        enemyAnimationClips.FD_Ability_Use_Loop_A,
+        enemyAnimationClips.FD_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_A,
         enemyAnimationClips.Enemy_Big_Hibernate_Wakeup_A,
@@ -671,6 +707,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyGiant",
+    abilityUse: [
+        enemyAnimationClips.RU_Ability_Use_In_a,
+        enemyAnimationClips.RU_Ability_Use_Loop_a,
+        enemyAnimationClips.RU_Ability_Use_Out_a,
+    ],
     wakeup: [
         enemyAnimationClips.RU_Hibernate_Wakeup_A,
         enemyAnimationClips.RU_Hibernate_Wakeup_B,
@@ -828,6 +869,11 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
     ],
 }, {
     name: "enemyBirtherCrawlFlip",
+    abilityUse: [
+        enemyAnimationClips.CF_Ability_Use_In_A,
+        enemyAnimationClips.CF_Ability_Use_Loop_A,
+        enemyAnimationClips.CF_Ability_Use_Out_A,
+    ],
     wakeup: [
         enemyAnimationClips.CF_Hibernate_Wakeup_A,
         enemyAnimationClips.CF_Hibernate_Wakeup_A,

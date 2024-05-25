@@ -117,6 +117,11 @@ declare module "../../../replay/moduleloader.js" {
             "Vanilla.Enemy.Animation.PouncerSpit": {
                 id: number;
             };
+
+            "Vanilla.Enemy.Animation.ScoutScream": {
+                id: number;
+                start: boolean;
+            };
         }
 
         interface Data {
@@ -499,6 +504,8 @@ export interface EnemyAnimState {
     wakeupTurn: boolean;
     lastPouncerGrabTime: number;
     lastPouncerSpitTime: number;
+    scoutScreamStart: boolean;
+    lastScoutScream: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -561,7 +568,9 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 wakeupAnimIndex: 0,
                 wakeupTurn: false,
                 lastPouncerGrabTime: -Infinity,
-                lastPouncerSpitTime: -Infinity
+                lastPouncerSpitTime: -Infinity,
+                lastScoutScream: -Infinity,
+                scoutScreamStart: true
             });
         }
     },
@@ -592,7 +601,9 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
         const anim = anims.get(id)!;
         anim.lastWindupTime = snapshot.time();
         anim.windupAnimIndex = data.animIndex;
-        anim.lastMeleeTime = -Infinity; // Don't do melee animation if tongue animation is triggered
+        // Don't trigger other animations
+        anim.lastMeleeTime = -Infinity; 
+        anim.lastScoutScream = -Infinity;
     }
 });
 
@@ -619,6 +630,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         // On hitreact, stop other anims
         anim.lastMeleeTime = -Infinity; 
         anim.lastWindupTime = -Infinity;
+        anim.lastScoutScream = -Infinity;
     }
 });
 
@@ -639,6 +651,9 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Melee", "0.0.1", {
         anim.lastMeleeTime = snapshot.time();
         anim.meleeAnimIndex = data.animIndex;
         anim.meleeType = data.type;
+
+        // Don't trigger other animations
+        anim.lastScoutScream = -Infinity;
     }
 });
 
@@ -729,6 +744,24 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerSpit", "0.0.1", {
         const anim = anims.get(id)!;
         anim.lastPouncerSpitTime = snapshot.time();
         anim.lastPouncerGrabTime = -Infinity;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.ScoutScream", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            start: await BitHelper.readBool(bytes)
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastScoutScream = snapshot.time();
+        anim.scoutScreamStart = data.start;
     }
 });
 
@@ -969,15 +1002,35 @@ export class HumanoidEnemyModel extends EnemyModel {
                 this.skeleton.blend(heartbeatAnim.sample(Math.clamp(heartbeatTime, 0, heartbeatAnim.duration)), blend);
             }
         } break;
-        case "ClimbLadder": 
+        case "ClimbLadder": {
             if (anim.up) {
                 this.pivot.rotation.set(-90 * Math.deg2rad, 0, 0, "YXZ");
             } else {
                 this.pivot.rotation.set(90 * Math.deg2rad, 180 * Math.deg2rad, 0, "YXZ");
             } 
             this.skeleton.blend(this.animHandle.ladderClimb.sample(offsetTime, 2), overrideBlend);
-            break;
+        } break;
         default: this.skeleton.blend(this.animHandle.movement.sample(offsetTime), overrideBlend); break;
+        }
+
+        if (this.animHandle.abilityUse !== undefined && (anim.state === "ScoutScream" || anim.state === "ScoutDetection")) {
+            const screamTime = time - (anim.lastScoutScream / 1000);
+            if (anim.scoutScreamStart === true) {
+                const inStartup = screamTime < this.animHandle.abilityUse[0].duration;
+                if (inStartup) {
+                    this.skeleton.blend(this.animHandle.abilityUse[0].sample(screamTime), overrideBlend);
+                } else {
+                    this.skeleton.blend(this.animHandle.abilityUse[1].sample(screamTime), overrideBlend);
+                }
+
+                return;
+            } else {
+                const inEnd = screamTime < this.animHandle.abilityUse[2].duration;
+                if (inEnd) {
+                    this.skeleton.blend(this.animHandle.abilityUse[2].sample(screamTime), overrideBlend);
+                    return;
+                }
+            }
         }
 
         const screamTime = time - (anim.lastScreamTime / 1000);
@@ -1094,7 +1147,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
         getWorldPos(worldPos, this.visual);
 
-        const pM = new Matrix4();
+        const pM = new Matrix4(); // TODO(randomuserhi): Move somewhere for garbage collector
 
         if (enemy.head)
             this.head = consume("Sphere.MeshPhong", pM.compose(worldPos.head, zeroQ, headScale), this.color);

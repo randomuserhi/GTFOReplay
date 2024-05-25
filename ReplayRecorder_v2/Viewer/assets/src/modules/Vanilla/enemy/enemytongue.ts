@@ -198,7 +198,7 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
 
                 const enemyModel = enemyModels.get(owner.id);
                 
-                const originThree = new Vector3(0, 0, 0).copy(owner.position);
+                const originThree = new Vector3(0, 0, 0).copy(owner.position); // TODO(randomuserhi): Move elsewhere to prevent GC
                 if (enemyModel !== undefined && Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, enemyModel)) {
                     const humanoidModel: HumanoidEnemyModel = enemyModel as HumanoidEnemyModel;
                     const matrix = new Matrix4(); // TODO(randomuserhi): Move elsewhere to prevent GC

@@ -138,11 +138,53 @@ namespace Vanilla.Enemy {
         }
     }
 
+    [ReplayData("Vanilla.Enemy.Animation.ScoutScream", "0.0.1")]
+    internal class rScoutScream : Id {
+        private bool start;
+
+        public rScoutScream(EnemyAgent enemy, bool start) : base(enemy.GlobalID) {
+            this.start = start;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteBytes(start, buffer);
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonEnter))]
+            [HarmonyPostfix]
+            private static void Postfix_ScoutDetection_Enter(ES_ScoutScream __instance) {
+                Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
+            }
+
+            [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonExit))]
+            [HarmonyPostfix]
+            private static void Postfix_ScoutDetection_Exit(ES_ScoutScream __instance) {
+                Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
+            }
+
+            [HarmonyPatch(typeof(ES_ScoutScream), nameof(ES_ScoutScream.CommonUpdate))]
+            [HarmonyPrefix]
+            private static void Prefix_ScoutScream(ES_ScoutScream __instance) {
+                switch (__instance.m_state) {
+                case ES_ScoutScream.ScoutScreamState.Setup:
+                    Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
+                    break;
+                case ES_ScoutScream.ScoutScreamState.Chargeup:
+                    if (!(__instance.m_stateDoneTimer < Clock.Time)) {
+                        break;
+                    }
+                    Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
+                    break;
+                }
+            }
+
             [HarmonyPatch(typeof(PouncerBehaviour), nameof(PouncerBehaviour.ForceChangeAnimationState))]
             [HarmonyPostfix]
             private static void Postfix_Pouncer_Host(PouncerBehaviour __instance, int animationState) {
@@ -324,6 +366,83 @@ namespace Vanilla.Enemy {
             UpdateVelocity();
 
             Write(buffer);
+        }
+    }
+
+    [HarmonyPatch]
+    [ReplayData("Vanilla.Enemy.Tendril", "0.0.1")]
+    internal class rEnemyTendril : ReplayDynamic {
+        [HarmonyPatch]
+        private static class Patches {
+            [HarmonyPatch(typeof(ScoutAntenna), nameof(ScoutAntenna.DetailUpdate))]
+            [HarmonyPostfix]
+            private static void Postfix_Update(ScoutAntenna __instance) {
+                int id = __instance.GetInstanceID();
+                if (Replay.Has<rEnemyTendril>(id)) return;
+
+                if (__instance.m_detection != null && __instance.m_detection.State != eDetectionState.Idle) {
+                    Replay.Spawn(new rEnemyTendril(__instance));
+                }
+            }
+
+            [HarmonyPatch(typeof(ScoutAntenna), nameof(ScoutAntenna.Remove))]
+            [HarmonyPostfix]
+            private static void Postfix_Remove(ScoutAntenna __instance) {
+                int id = __instance.GetInstanceID();
+                if (Replay.Has<rEnemyTendril>(id)) {
+                    Replay.Despawn(Replay.Get<rEnemyTendril>(id));
+                }
+            }
+        }
+
+        private ScoutAntenna tendril;
+        private EnemyAgent owner;
+        private Vector3 relPos => tendril.m_currentPos - owner.transform.position;
+        private Vector3 _relPos;
+
+        private Vector3 sourcePos => tendril.m_sourcePos - owner.transform.position;
+        private Vector3 _sourcePos;
+
+        private bool detect => tendril.m_state == ScoutAntenna.eTendrilState.MovingInDetect;
+        private bool _detect = false;
+
+        public override bool Active {
+            get {
+                if (tendril == null && Replay.Has<rEnemyTendril>(id)) {
+                    Replay.Despawn(Replay.Get<rEnemyTendril>(id));
+                }
+                return tendril != null;
+            }
+        }
+
+        public override bool IsDirty {
+            get {
+                return _relPos != relPos || _sourcePos != sourcePos;
+            }
+        }
+
+        public rEnemyTendril(ScoutAntenna tendril) : base(tendril.GetInstanceID()) {
+            owner = tendril.m_detection.m_owner;
+            this.tendril = tendril;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            _sourcePos = sourcePos;
+
+            BitHelper.WriteHalf(_sourcePos, buffer);
+
+            _relPos = relPos;
+
+            BitHelper.WriteHalf(_relPos, buffer);
+
+            _detect = detect;
+
+            BitHelper.WriteBytes(_detect, buffer);
+        }
+
+        public override void Spawn(ByteBuffer buffer) {
+            Write(buffer);
+            BitHelper.WriteBytes(owner.GlobalID, buffer);
         }
     }
 }
