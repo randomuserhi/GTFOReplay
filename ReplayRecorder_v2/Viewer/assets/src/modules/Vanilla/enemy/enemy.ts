@@ -4,10 +4,10 @@ import * as BitHelper from "../../../replay/bithelper.js";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
-import { DuplicateDynamic, DynamicNotFound, DynamicPosition, DynamicTransform } from "../../replayrecorder.js";
+import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../../replayrecorder.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
 import { animCrouch, animDetection, animVelocity, enemyAnimations, playerAnimations } from "../animations/assets.js";
-import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanStructure } from "../animations/human.js";
+import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanPose, defaultHumanStructure } from "../animations/human.js";
 import { createDeathCross } from "../deathcross.js";
 import { upV, zeroQ, zeroV } from "../humanmodel.js";
 import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
@@ -39,15 +39,12 @@ declare module "../../../replay/moduleloader.js" {
 
             "Vanilla.Enemy.LimbCustom": {
                 parse: {
-                    dimension: number;
-                    absolute: boolean;
-                    position: Pod.Vector;
                     active: boolean;
                 };
                 spawn: {
-                    dimension: number;
-                    position: Pod.Vector;
                     owner: number;
+                    bone: HumanJoints;
+                    offset: Pod.Vector;
                     scale: number;
                 };
                 despawn: void;
@@ -197,8 +194,10 @@ export const meleeTypes = [
 ] as const;
 export type MeleeType = typeof meleeTypes[number];
 
-export interface LimbCustom extends DynamicPosition {
+export interface LimbCustom {
     owner: number;
+    bone: HumanJoints;
+    offset: Pod.Vector;
     scale: number;
     active: boolean;
 }
@@ -419,37 +418,33 @@ ModuleLoader.registerEvent("Vanilla.Enemy.LimbDestruction", "0.0.1", {
 ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
     main: {
         parse: async (data) => {
-            const result = await DynamicPosition.parse(data);
             return {
-                ...result,
                 active: await BitHelper.readBool(data)
             };
         }, 
-        exec: (id, data, snapshot, lerp) => {
+        exec: (id, data, snapshot) => {
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
     
             if (!limbs.has(id)) throw new DynamicNotFound(`Limb of id '${id}' was not found.`);
             const limb = limbs.get(id)!;
-            DynamicPosition.lerp(limb, data, lerp);
             limb.active = data.active;
         }
     },
     spawn: {
         parse: async (data) => {
-            const spawn = await DynamicPosition.parseSpawn(data);
-            const result = {
-                ...spawn,
+            return {
                 owner: await BitHelper.readUShort(data),
+                bone: HumanJoints[await BitHelper.readByte(data)],
+                offset: await BitHelper.readHalfVector(data),
                 scale: await BitHelper.readHalf(data)
             };
-            return result;
         },
         exec: (id, data, snapshot) => {
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
         
             if (limbs.has(id)) throw new DuplicateDynamic(`Limb of id '${id}' already exists.`);
             limbs.set(id, { 
-                id, ...data, active: true
+                ...data, active: true
             });
         }
     },
@@ -850,6 +845,7 @@ export class HumanoidEnemyModel extends EnemyModel {
     
     skeleton: HumanSkeleton;
     visual: HumanSkeleton;
+    inverseMatrix: AvatarStructure<HumanJoints, Matrix4>;
     color: Color;
 
     head: number;
@@ -888,7 +884,16 @@ export class HumanoidEnemyModel extends EnemyModel {
         skeleton.joints.rightLowerArm.add(skeleton.joints.rightHand!);
         skeleton.joints.neck.add(skeleton.joints.head);
         
-        skeleton.set(defaultHumanStructure);
+        skeleton.setPos(defaultHumanStructure);
+        skeleton.setRot(defaultHumanPose);
+
+        if (this.datablock?.structure !== undefined) {
+            for (const joint of HumanJoints) {
+                if (this.datablock.structure[joint] !== undefined) {
+                    skeleton.joints[joint].position.copy(this.datablock.structure[joint]!);
+                }
+            }
+        }
     }
 
     constructor(enemy: Enemy) {
@@ -919,17 +924,27 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (this.datablock !== undefined) {
             if (this.datablock.neckScale !== undefined) {
                 this.skeleton.joints.neck.scale.copy(this.datablock.neckScale);
+
+                this.visual.joints.neck.scale.copy(this.datablock.neckScale);
             }
             if (this.datablock.armScale !== undefined) {
                 this.skeleton.joints.leftUpperArm.scale.copy(this.datablock.armScale);
                 this.skeleton.joints.rightUpperArm.scale.copy(this.datablock.armScale);
+
+                this.visual.joints.leftUpperArm.scale.copy(this.datablock.armScale);
+                this.visual.joints.rightUpperArm.scale.copy(this.datablock.armScale);
             }
             if (this.datablock.legScale !== undefined) {
                 this.skeleton.joints.leftUpperLeg.scale.copy(this.datablock.legScale);
                 this.skeleton.joints.rightUpperLeg.scale.copy(this.datablock.legScale);
+
+                this.visual.joints.leftUpperLeg.scale.copy(this.datablock.legScale);
+                this.visual.joints.rightUpperLeg.scale.copy(this.datablock.legScale);
             }
             if (this.datablock.chestScale !== undefined) {
                 this.skeleton.joints.spine2.scale.copy(this.datablock.chestScale);
+
+                this.visual.joints.spine2.scale.copy(this.datablock.chestScale);
             }
             if (this.datablock.scale !== undefined) {
                 scale *= this.datablock.scale;
@@ -937,6 +952,17 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
 
         this.anchor.scale.set(scale, scale, scale);
+        if (this.datablock?.rotOffset !== undefined) {
+            this.anchor.rotateX(Math.deg2rad * this.datablock.rotOffset.x);
+            this.anchor.rotateY(Math.deg2rad * this.datablock.rotOffset.y);
+            this.anchor.rotateZ(Math.deg2rad * this.datablock.rotOffset.z);
+        }
+
+        this.inverseMatrix = createAvatarStruct(HumanJoints, () => new Matrix4());
+        for (const joint of HumanJoints) {
+            this.visual.joints[joint].updateWorldMatrix(true, false);
+            this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
+        }
 
         this.parts = new Array(9);
         this.points = new Array(14);
@@ -952,6 +978,12 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
         this.anchor.add(this.tmp);
+    }
+
+    // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
+    public addToLimb(limb: HumanJoints, obj: Object3D) {
+        this.visual.joints[limb].add(obj);
+        obj.applyMatrix4(this.inverseMatrix[limb]);
     }
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
@@ -1057,7 +1089,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (this.animHandle.melee !== undefined) {
             const meleeTime = time - (anim.lastMeleeTime / 1000);
             const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
-            const inMelee = meleeAnim !== undefined && meleeTime < meleeAnim.duration;
+            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerMelee");
             if (inMelee) {
                 const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
                 this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
@@ -1070,16 +1102,6 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (inWindup) {
             const blend = windupTime < windupAnim.duration / 2 ? Math.clamp01(windupTime / 0.15) : Math.clamp01((windupAnim.duration - windupTime) / 0.15);
             this.skeleton.blend(windupAnim.sample(Math.clamp(windupTime, 0, windupAnim.duration)), blend);
-        }
-
-        if (this.animHandle.melee !== undefined) {
-            const meleeTime = time - (anim.lastMeleeTime / 1000);
-            const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
-            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerMelee");
-            if (inMelee) {
-                const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
-                this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
-            }
         }
 
         const pouncerGrabTime = time - (anim.lastPouncerGrabTime / 1000);
@@ -1139,6 +1161,11 @@ export class HumanoidEnemyModel extends EnemyModel {
     public render(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
+        if (this.datablock?.rotOffset !== undefined) {
+            this.anchor.rotateX(Math.deg2rad * this.datablock.rotOffset.x);
+            this.anchor.rotateY(Math.deg2rad * this.datablock.rotOffset.y);
+            this.anchor.rotateZ(Math.deg2rad * this.datablock.rotOffset.z);
+        }
 
         const blendFactor = Math.clamp01(dt * 50);
         for (const key of HumanJoints) {
@@ -1149,8 +1176,13 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         const pM = new Matrix4(); // TODO(randomuserhi): Move somewhere for garbage collector
 
-        if (enemy.head)
+        if (enemy.head) {
+            headScale.set(0.15, 0.15, 0.15);
+            if(this.datablock?.headScale !== undefined) headScale.multiply(this.datablock.headScale);
             this.head = consume("Sphere.MeshPhong", pM.compose(worldPos.head, zeroQ, headScale), this.color);
+        } else {
+            this.head = -1;
+        }
 
         let i = 0;
         let j = 0;
@@ -1274,9 +1306,13 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Enemy.LimbCustom", () => new Map());
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            const skeletons = renderer.getOrDefault("Enemies", () => new Map());
             for (const [id, limb] of limbs) {
-                const owner = enemies.get(limb.owner);
+                if (!skeletons.has(limb.owner)) continue;
+                const skeleton = skeletons.get(limb.owner)!;
+                if (!Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, skeleton)) continue;
+                const human: HumanoidEnemyModel = skeleton as HumanoidEnemyModel;
+
                 if (!models.has(id)) {
                     const material = new MeshPhongMaterial({
                         color: 0xff0000
@@ -1284,25 +1320,26 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     material.transparent = true;
                     material.opacity = 0.8;
             
-                    const geometry = new SphereGeometry(limb.scale, 10, 10);
+                    const geometry = new SphereGeometry(1, 10, 10);
             
                     const mesh = new Mesh(geometry, material);
+                    
                     models.set(id, { mesh, material });
                     renderer.scene.add(mesh);
                 }
                 const model = models.get(id)!;
-                if (owner === undefined) {
-                    model.mesh.visible = false;
-                    continue;
-                }
+                model.mesh.visible = limb.active;
 
-                model.mesh.position.set(limb.position.x, limb.position.y, limb.position.z);
-                model.mesh.visible = limb.active && limb.dimension === renderer.get("Dimension");
+                // TODO(randomuserhi): I should only need to add once on creation... why need to add every frame?
+                model.mesh.scale.set(limb.scale, limb.scale, limb.scale);
+                model.mesh.quaternion.set(0, 0, 0, 1);
+                model.mesh.position.set(limb.offset.x, limb.offset.y, limb.offset.z);
+                human.addToLimb(limb.bone, model.mesh);
             }
 
             for (const [id, model] of [...models.entries()]) {
                 if (!limbs.has(id)) {
-                    renderer.scene.remove(model.mesh);
+                    model.mesh.removeFromParent();
                     models.delete(id);
                 }
             }

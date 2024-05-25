@@ -53,9 +53,15 @@ export class AvatarSkeleton<T extends string = string> {
         this.root = this.joints[root];
     }
 
-    public set(structure: AvatarStructure<T>) {
+    public setPos(structure: AvatarStructure<T>) {
         for (const key of this.keys) {
             this.joints[key].position.copy(structure[key]);
+        }
+    }
+
+    public setRot(structure: AvatarStructure<T, QuaternionLike>) {
+        for (const key of this.keys) {
+            this.joints[key].quaternion.copy(structure[key]);
         }
     }
 

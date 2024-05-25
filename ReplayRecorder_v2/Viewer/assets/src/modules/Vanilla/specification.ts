@@ -58,10 +58,10 @@ import { Smg } from "./Equippable/smg.js";
 import { Sniper } from "./Equippable/sniper.js";
 import { Spear } from "./Equippable/spear.js";
 import { Syringe } from "./Equippable/syringe.js";
-import { mergeAnims } from "./animations/animation.js";
+import { AvatarStructure, ScaledAnim, mergeAnims } from "./animations/animation.js";
 import { enemyAnimationClips, enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
-import { HumanAnimation } from "./animations/human.js";
+import { HumanAnimation, HumanJoints } from "./animations/human.js";
 import { AnimHandles, EnemyModel, MeleeType } from "./enemy/enemy.js";
 
 export type Archetype = 
@@ -891,7 +891,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
         enemyAnimationClips.CF_Birther_Heartbeat,
     ],
     hibernateIn: enemyAnimationClips.CF_Birther_Hibernate_In,
-    hibernateLoop: enemyAnimationClips.CF_Birther_Hibernate_Loop,
+    hibernateLoop: new ScaledAnim(HumanJoints, enemyAnimationClips.CF_Birther_Hibernate_Loop, 0.2),
     screams: [
         enemyAnimationClips.CF_Scream,
         enemyAnimationClips.CF_Scream,
@@ -957,12 +957,14 @@ export interface EnemySpecification {
     maxHealth: number;
     name?: string;
     model?: () => EnemyModel;
+    rotOffset?: Vector3Like;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;
     chestScale?: Vector3Like;
     armScale?: Vector3Like;
     legScale?: Vector3Like;
     scale?: number; 
+    structure?: Partial<AvatarStructure<HumanJoints, Vector3>>; 
 }
 
 export interface MeleeArchetype {
@@ -1582,15 +1584,50 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 1,
     name: "Scout",
-    maxHealth: 42
+    maxHealth: 42,
+    headScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3
+    },
+    armScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1,
+    }
 }, {
     id: 2,
     name: "Shadow Scout",
-    maxHealth: 42
+    maxHealth: 42,
+    headScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3
+    },
+    armScale: {
+        x: 1.25,
+        y: 1.25,
+        z: 1.25,
+    },
+    legScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1,
+    }
 }, {
     id: 3,
     name: "Charger Scout",
-    maxHealth: 60
+    maxHealth: 60,
+    headScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3
+    },
+    armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2,
+    }
 }, {
     id: 4,
     name: "Shadow",
@@ -1598,11 +1635,41 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 5,
     name: "Big Shadow",
-    maxHealth: 20
+    maxHealth: 20,
+    headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65,
+    },
+    chestScale: {
+        x: 1,
+        y: 0.7,
+        z: 1,
+    },
+    armScale: {
+        x: 1.2,
+        y: 1,
+        z: 1.2,
+    }
 }, {
     id: 6,
     name: "Baby",
-    maxHealth: 5
+    maxHealth: 5,
+    armScale: {
+        x: 1,
+        y: 0.8,
+        z: 0.8,
+    },
+    legScale: {
+        x: 1,
+        y: 0.8,
+        z: 0.8,
+    },
+    chestScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3,
+    },
 }, {
     id: 7,
     name: "Striker",
@@ -1631,31 +1698,86 @@ const _enemies: EnemySpecification[] = [{
     name: "Big Shooter",
     maxHealth: 150,
     scale: _shooter_scale,
+    headScale: {
+        x: 0.8,
+        y: 0.8,
+        z: 0.8
+    },
+    chestScale: {
+        x: 1.0,
+        y: 1.0,
+        z: 1.0
+    },
+    armScale: {
+        x: 0.85,
+        y: 0.85,
+        z: 0.85
+    },
 }, {
     id: 11,
     name: "Hybrid",
     maxHealth: 150,
     scale: _shooter_scale,
+    armScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+    },
+    chestScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+    },
+    headScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+    },
 }, {
     id: 12,
     name: "Charger",
-    maxHealth: 30
+    maxHealth: 30,
+    armScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3
+    }
 }, {
     id: 13,
     name: "Big Charger",
-    maxHealth: 120
+    maxHealth: 120,
+    armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+    },
+    headScale: {
+        x: 0.7,
+        y: 0.7,
+        z: 0.7
+    }
 }, {
     id: 14,
     name: "Tank",
-    maxHealth: 1000
+    maxHealth: 1000,
 }, {
     id: 15,
     name: "Mother",
-    maxHealth: 1000
+    maxHealth: 1000,
+    rotOffset: {
+        x: 0,
+        y: 180,
+        z: 0
+    }
 }, {
     id: 16,
     name: "Big Mother",
     maxHealth: 2500,
+    rotOffset: {
+        x: 0,
+        y: 180,
+        z: 0
+    }
 }, {
     id: 17,
     name: "Snatcher",
@@ -1684,16 +1806,75 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 23,
     name: "Nightmare Striker",
-    maxHealth: 37
+    maxHealth: 37,
+    armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+    },
+    headScale: {
+        x: 0,
+        y: 0,
+        z: 0
+    },
+    legScale: {
+        x: 0.97,
+        y: 0.97,
+        z: 0.97
+    },
+    chestScale: {
+        x: 1.05,
+        y: 1.05,
+        z: 1.05
+    }
 }, {
     id: 24,
     name: "Nightmare Shooter",
     maxHealth: 18,
     scale: _shooter_scale,
+    armScale: {
+        x: 0.2,
+        y: 0.2,
+        z: 0.2
+    },
+    headScale: {
+        x: 0,
+        y: 0,
+        z: 0
+    },
+    legScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+    },
 }, {
     id: 25,
     name: "Nightmare Scout",
-    maxHealth: 161
+    maxHealth: 161,
+    armScale: {
+        x: 0.2,
+        y: 0.2,
+        z: 0.2
+    },
+    headScale: {
+        x: 0,
+        y: 0,
+        z: 0
+    },
+    legScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+    },
+}, {
+    id: 26,
+    name: "Mega Mother",
+    maxHealth: 5000,
+    rotOffset: {
+        x: 0,
+        y: 180,
+        z: 0
+    }
 }];
 
 export const specification: Specification = {

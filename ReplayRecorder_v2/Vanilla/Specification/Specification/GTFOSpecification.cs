@@ -240,6 +240,8 @@ namespace Vanilla.Specification {
 
                 // Nightmare Scout
                 { 54, 25 }, // scout_zoomer
+
+                { 55, 26 }, // mega_mother
             }
         };
         private static GTFOSpecification spec = defaultSpec;

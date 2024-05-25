@@ -148,7 +148,7 @@ class PlayerModel  {
         skeleton.joints.rightLowerArm.add(skeleton.joints.rightHand!);
         skeleton.joints.neck.add(skeleton.joints.head);
         
-        skeleton.set(defaultHumanStructure);
+        skeleton.setPos(defaultHumanStructure);
     }
 
     constructor(color: Color) {
