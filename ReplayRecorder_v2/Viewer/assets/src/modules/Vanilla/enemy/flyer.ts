@@ -1,5 +1,5 @@
 import { BufferGeometry, Camera, Group, Material, Mesh, MeshPhongMaterial, Object3D, Vector3 } from "three";
-import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+//import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Text } from "troika-three-text";
 import { loadGLTF } from "../modeloader.js";
 import { Enemy, EnemyAnimState, EnemyModel } from "./enemy.js";
@@ -23,9 +23,9 @@ function getSpike(parent: Object3D, material: Material) {
 let ball: BufferGeometry | undefined = undefined;
 loadGLTF("../js3party/models/meatball.glb").then((model) => {
     // https://discourse.threejs.org/t/how-to-smooth-an-obj-with-threejs/3950/13
-    model.deleteAttribute("normal");
+    /*model.deleteAttribute("normal");
     model = BufferGeometryUtils.mergeVertices(model);
-    model.computeVertexNormals();
+    model.computeVertexNormals();*/
     ball = model;
     for (const { parent, material } of ballWaiting) {
         parent.add(new Mesh(ball, material));
