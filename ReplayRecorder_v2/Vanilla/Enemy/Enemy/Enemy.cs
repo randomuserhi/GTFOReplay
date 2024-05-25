@@ -1,7 +1,10 @@
-﻿using Enemies;
+﻿using Agents;
+using Enemies;
 using ReplayRecorder;
+using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using UnityEngine;
 using Vanilla.Specification;
 
 namespace Vanilla.Enemy {
@@ -23,11 +26,27 @@ namespace Vanilla.Enemy {
         }
     }
 
+    public struct EnemyTransform : IReplayTransform {
+        private Agent agent;
+
+        public bool active => agent != null;
+
+        public byte dimensionIndex => (byte)agent.m_dimensionIndex;
+
+        public Vector3 position => agent.transform.position;
+
+        public Quaternion rotation => agent.transform.rotation;
+
+        public EnemyTransform(Agent agent) {
+            this.agent = agent;
+        }
+    }
+
     [ReplayData("Vanilla.Enemy", "0.0.1")]
     internal class rEnemy : DynamicTransform {
         public EnemyAgent agent;
 
-        public rEnemy(EnemyAgent enemy) : base(enemy.GlobalID, new AgentTransform(enemy)) {
+        public rEnemy(EnemyAgent enemy) : base(enemy.GlobalID, new EnemyTransform(enemy)) {
             agent = enemy;
             pouncer = enemy.GetComponent<PouncerBehaviour>();
         }
