@@ -62,7 +62,7 @@ import { AvatarStructure, ScaledAnim, mergeAnims } from "./animations/animation.
 import { enemyAnimationClips, enemyAnimations, gearFoldAnimations, playerAnimationClips, playerAnimations } from "./animations/assets.js";
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation, HumanJoints } from "./animations/human.js";
-import { AnimHandles, Enemy, EnemyModel, MeleeType } from "./enemy/enemy.js";
+import { AnimHandles, EnemyModel, MeleeType } from "./enemy/enemy.js";
 import { FlyerModel } from "./enemy/flyer.js";
 
 export type Archetype = 
@@ -957,7 +957,7 @@ export interface EnemySpecification {
     id: number;
     maxHealth: number;
     name?: string;
-    model?: (enemy: Enemy) => EnemyModel;
+    model?: (data: any) => EnemyModel;
     rotOffset?: Vector3Like;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;

@@ -1,4 +1,5 @@
 import { BufferGeometry, Camera, Group, Material, Mesh, MeshPhongMaterial, Object3D, Vector3 } from "three";
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Text } from "troika-three-text";
 import { loadGLTF } from "../modeloader.js";
 import { Enemy, EnemyAnimState, EnemyModel } from "./enemy.js";
@@ -21,6 +22,10 @@ function getSpike(parent: Object3D, material: Material) {
 
 let ball: BufferGeometry | undefined = undefined;
 loadGLTF("../js3party/models/meatball.glb").then((model) => {
+    // https://discourse.threejs.org/t/how-to-smooth-an-obj-with-threejs/3950/13
+    model.deleteAttribute("normal");
+    model = BufferGeometryUtils.mergeVertices(model);
+    model.computeVertexNormals();
     ball = model;
     for (const { parent, material } of ballWaiting) {
         parent.add(new Mesh(ball, material));
@@ -63,6 +68,7 @@ export class FlyerModel extends EnemyModel {
         }
 
         this.anchor.add(this.eye, ...this.spikes);
+        this.root.add(this.anchor);
 
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
@@ -84,9 +90,9 @@ export class FlyerModel extends EnemyModel {
     public animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         if (this.tmp === undefined) return;
 
-        //this.tmp.text = `${stateTime < this.animHandle.hibernateIn.duration}`;
+        this.tmp.text = `flyer`;
 
-        this.tmp.visible = false;
+        this.tmp.visible = true;
 
         this.tmp.getWorldPosition(tmpPos);
         camera.getWorldPosition(camPos);
@@ -99,10 +105,10 @@ export class FlyerModel extends EnemyModel {
     public render(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
-
-        
     }
 
     public dispose() {
+        this.tmp?.dispose();
+        this.tmp = undefined;
     }
 }
