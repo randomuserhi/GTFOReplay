@@ -1,4 +1,4 @@
-import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Material, Mesh, MeshPhongMaterial, MeshStandardMaterial, Object3D, Scene } from "three";
+import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "three";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import { Mine, MineType } from "../parser/mine.js";
 import { loadGLTF } from "./modeloader.js";
@@ -17,54 +17,6 @@ declare module "../../replay/moduleloader.js" {
 
 const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
 
-let consumableMineAsset: BufferGeometry | undefined = undefined;
-loadGLTF("../js3party/models/Consumables/emine.glb").then((model) => {
-    consumableMineAsset = model;
-    for (const { parent, material } of waitingConsumable) {
-        parent.add(new Mesh(consumableMineAsset, material));
-    }
-});
-const waitingConsumable: { parent: Object3D, material: Material }[] = [];
-function getConsumableMineAsset(parent: Object3D, material: Material) {
-    if (consumableMineAsset === undefined) {
-        waitingConsumable.push({ parent, material });
-    } else {
-        parent.add(new Mesh(consumableMineAsset, material));
-    }
-}
-
-let deployableMineAsset: BufferGeometry | undefined = undefined;
-loadGLTF("../js3party/models/Consumables/depmine.glb").then((model) => {
-    deployableMineAsset = model;
-    for (const { parent, material } of waitingDeployable) {
-        parent.add(new Mesh(deployableMineAsset, material));
-    }
-});
-const waitingDeployable: { parent: Object3D, material: Material }[] = [];
-function getDeployableMineAsset(parent: Object3D, material: Material) {
-    if (deployableMineAsset === undefined) {
-        waitingDeployable.push({ parent, material });
-    } else {
-        parent.add(new Mesh(deployableMineAsset, material));
-    }
-}
-
-let cfoamMineAsset: BufferGeometry | undefined = undefined;
-loadGLTF("../js3party/models/Consumables/ctrip.glb").then((model) => {
-    cfoamMineAsset = model;
-    for (const { parent, material } of waitingCfoam) {
-        parent.add(new Mesh(cfoamMineAsset, material));
-    }
-});
-const waitingCfoam: { parent: Object3D, material: Material }[] = [];
-function getCfoamMineAsset(parent: Object3D, material: Material) {
-    if (cfoamMineAsset === undefined) {
-        waitingCfoam.push({ parent, material });
-    } else {
-        parent.add(new Mesh(cfoamMineAsset, material));
-    }
-}
-
 class MineModel {
     readonly group: Group;
 
@@ -82,10 +34,11 @@ class MineModel {
         
         this.base = new Group();
         this.group.add(this.base);
+        const apply = (model: BufferGeometry) => this.base.add(new Mesh(model, material));
         switch(type) {
-        case "Explosive": getDeployableMineAsset(this.base, material); break;
-        case "Cfoam": getCfoamMineAsset(this.base, material); break;
-        case "ConsumableExplosive": getConsumableMineAsset(this.base, material); break;
+        case "Explosive": loadGLTF("../js3party/models/Consumables/depmine.glb").then(apply); break;
+        case "Cfoam": loadGLTF("../js3party/models/Consumables/ctrip.glb").then(apply); break;
+        case "ConsumableExplosive": loadGLTF("../js3party/models/Consumables/emine.glb").then(apply); break;
         }
         this.base.scale.set(0.05, 0.05, 0.05);
         this.base.rotateX(90 * Math.deg2rad);

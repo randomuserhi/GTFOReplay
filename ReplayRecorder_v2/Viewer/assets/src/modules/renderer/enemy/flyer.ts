@@ -1,45 +1,9 @@
-import { BufferGeometry, Camera, Group, Material, Mesh, MeshPhongMaterial, Object3D, Vector3 } from "three";
+import { Camera, Group, Mesh, MeshPhongMaterial, Vector3 } from "three";
 //import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Text } from "troika-three-text";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
 import { loadGLTF } from "../modeloader.js";
 import { EnemyModel } from "./enemy.js";
-
-let spike: BufferGeometry | undefined = undefined;
-loadGLTF("../js3party/models/spike.glb").then((model) => {
-    spike = model;
-    for (const { parent, material } of spikeWaiting) {
-        parent.add(new Mesh(spike, material));
-    }
-});
-const spikeWaiting: { parent: Object3D, material: Material }[] = [];
-function getSpike(parent: Object3D, material: Material) {
-    if (spike === undefined) {
-        spikeWaiting.push({ parent, material });
-    } else {
-        parent.add(new Mesh(spike, material));
-    }
-}
-
-let ball: BufferGeometry | undefined = undefined;
-loadGLTF("../js3party/models/meatball.glb").then((model) => {
-    // https://discourse.threejs.org/t/how-to-smooth-an-obj-with-threejs/3950/13
-    /*model.deleteAttribute("normal");
-    model = BufferGeometryUtils.mergeVertices(model);
-    model.computeVertexNormals();*/
-    ball = model;
-    for (const { parent, material } of ballWaiting) {
-        parent.add(new Mesh(ball, material));
-    }
-});
-const ballWaiting: { parent: Object3D, material: Material }[] = [];
-function getBall(parent: Object3D, material: Material) {
-    if (ball === undefined) {
-        ballWaiting.push({ parent, material });
-    } else {
-        parent.add(new Mesh(ball, material));
-    }
-}
 
 const tmpPos = new Vector3();
 const camPos = new Vector3();
@@ -60,12 +24,13 @@ export class FlyerModel extends EnemyModel {
         });
 
         this.eye = new Group();
-        getBall(this.eye, material);
+        loadGLTF("../js3party/models/meatball.glb").then((model) => this.eye.add(new Mesh(model, material)));
         
         this.spikes = new Array(6);
         for (let i = 0; i < this.spikes.length; ++i) {
-            this.spikes[i] = new Group();
-            getSpike(this.spikes[i], material);
+            const group = new Group();
+            loadGLTF("../js3party/models/spike.glb").then((model) => group.add(new Mesh(model, material)));
+            this.spikes[i] = group;
         }
 
         this.anchor.add(this.eye, ...this.spikes);
