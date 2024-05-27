@@ -1,21 +1,23 @@
 import * as chokidar from "chokidar";
-import * as path from "path";
 import * as fs from 'node:fs/promises';
+import * as path from "path";
 
 export class ModuleLoader {
     private post: (event: string, ...args: any[]) => void;
     readonly path: string;
     private watcher: chokidar.FSWatcher;
+    readonly channel: string;
 
-    constructor(post: (event: string, ...args: any[]) => void, path: string) {
+    constructor(channel: string, post: (event: string, ...args: any[]) => void, path: string) {
         this.post = post;
         this.path = path;
-        this.watcher = chokidar.watch(path);
+        this.channel = channel;
+        this.watcher = chokidar.watch(this.path);
         this.watcher.on("all", (event, path) => {
             switch(event) {
             case "change":
             case "add":
-                this.post("loadModules", [path]);
+                this.post(this.channel, [path]);
                 break;
             }
         });
@@ -31,7 +33,7 @@ export class ModuleLoader {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
-        ipc.handle("loadModules", async () => {
+        ipc.handle(this.channel, async () => {
             return await ModuleLoader.getFiles(this.path);
         });
     }

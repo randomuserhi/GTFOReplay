@@ -14,6 +14,7 @@
     "sourceMap": false,
     "paths": {
       "@/*": ["./@types/*"],
+      "@anim/*": ["./src/modules/renderer/animations/*"],
       "troika-three-text": ["./@types/troika-three-text"]
     }
   },

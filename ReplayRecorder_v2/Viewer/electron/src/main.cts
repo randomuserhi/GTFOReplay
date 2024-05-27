@@ -19,7 +19,8 @@ export default class Program {
     static win: Electron.BrowserWindow | null;
     static app: Electron.App;
 
-    static moduleLoader: ModuleLoader;
+    static parserModuleLoader: ModuleLoader;
+    static rendererModuleLoader: ModuleLoader;
     static fileManager: FileManager;
     static gtfoManager: GTFOManager;
 
@@ -37,8 +38,11 @@ export default class Program {
     private static onReady(): void {
         Program.setupIPC();
 
-        this.moduleLoader = new ModuleLoader(Program.post, path.join(__dirname, "assets/modules"));
-        this.moduleLoader.setupIPC(ipcMain);
+        this.parserModuleLoader = new ModuleLoader("loadParserModules", Program.post, path.join(__dirname, "assets/modules/parser"));
+        this.parserModuleLoader.setupIPC(ipcMain);
+
+        this.rendererModuleLoader = new ModuleLoader("loadRendererModules", Program.post, path.join(__dirname, "assets/modules/renderer"));
+        this.rendererModuleLoader.setupIPC(ipcMain);
 
         this.fileManager = new FileManager();
         this.fileManager.setupIPC(ipcMain);
