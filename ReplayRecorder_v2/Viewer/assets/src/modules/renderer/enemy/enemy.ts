@@ -276,7 +276,7 @@ export class HumanoidEnemyModel extends EnemyModel {
             } else {
                 this.pivot.rotation.set(90 * Math.deg2rad, 180 * Math.deg2rad, 0, "YXZ");
             } 
-            this.skeleton.blend(this.animHandle.ladderClimb.sample(offsetTime, 2), overrideBlend);
+            if (anim.velocity.y !== 0) this.skeleton.blend(this.animHandle.ladderClimb.sample(offsetTime, 2), overrideBlend);
         } break;
         default: this.skeleton.blend(this.animHandle.movement.sample(offsetTime), overrideBlend); break;
         }

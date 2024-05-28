@@ -367,7 +367,8 @@ namespace Vanilla.Enemy {
 
                 bool vel =
                     velFwd != compress(_velFwd, 10f) ||
-                    velRight != compress(_velRight, 10f);
+                    velRight != compress(_velRight, 10f) ||
+                    velUp != compress(_velUp, 10f);
 
                 return
                     vel ||
