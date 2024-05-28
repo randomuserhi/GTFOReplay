@@ -104,10 +104,6 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
                 r: await BitHelper.readByte(data),
                 g: await BitHelper.readByte(data),
                 b: await BitHelper.readByte(data),
-                slot0: await BitHelper.readBool(data),
-                slot1: await BitHelper.readBool(data),
-                slot2: await BitHelper.readBool(data),
-                slot3: await BitHelper.readBool(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -127,10 +123,6 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
                 r: await BitHelper.readByte(data),
                 g: await BitHelper.readByte(data),
                 b: await BitHelper.readByte(data),
-                slot0: await BitHelper.readBool(data),
-                slot1: await BitHelper.readBool(data),
-                slot2: await BitHelper.readBool(data),
-                slot3: await BitHelper.readBool(data)
             };
         },
         exec: (id, data, snapshot) => {
