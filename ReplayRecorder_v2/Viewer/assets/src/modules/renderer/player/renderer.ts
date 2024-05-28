@@ -713,24 +713,6 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
 
             if (item.model === undefined || backpack.slots[i] !== item.spec?.id) {
                 item.spec = specification.equippable.get(backpack.slots[i]);
-                if (item.spec !== undefined) {
-                    switch (item.spec.archetype) {
-                    case "melee": {
-                        if (specification.meleeArchetype.has(item.spec.id)) {
-                            const archetype = specification.meleeArchetype.get(item.spec.id)!;
-                            this.meleeArchetype = archetype;
-                        }
-                    } break;
-                    case "consumable": {
-                        this.consumableArchetype = specification.consumableArchetype.get(item.spec.id);
-                    } break;
-                    case "pistol":
-                    case "rifle": {
-                        this.gearArchetype = specification.gearArchetype.get(item.spec.id);
-                    } break;
-                    }
-                }
-
                 item.model = item.spec?.model();
             }
 
@@ -738,9 +720,28 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
                 item.model.reset();
                 
                 if (item.spec?.id === player.equippedId) {
-                    this.equipped.add(item.model.group);
                     this.equippedItem = item;
                     this.equippedSlot = inventorySlots[i];
+
+                    if (item.spec !== undefined) {
+                        switch (item.spec.archetype) {
+                        case "melee": {
+                            if (specification.meleeArchetype.has(item.spec.id)) {
+                                const archetype = specification.meleeArchetype.get(item.spec.id)!;
+                                this.meleeArchetype = archetype;
+                            }
+                        } break;
+                        case "consumable": {
+                            this.consumableArchetype = specification.consumableArchetype.get(item.spec.id);
+                        } break;
+                        case "pistol":
+                        case "rifle": {
+                            this.gearArchetype = specification.gearArchetype.get(item.spec.id);
+                        } break;
+                        }
+                    }
+
+                    this.equipped.add(item.model.group);
                     item.model.group.position.copy(item.model.equipOffsetPos);
                     item.model.group.quaternion.copy(item.model.equipOffsetRot);
                 } else {
@@ -787,14 +788,14 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 model.setVisible(player.dimension === renderer.get("Dimension"));
                 
                 if (model.root.visible) {
+                    const backpack = backpacks.get(id);
+                    model.updateBackpack(player, backpack);
+                    model.updateTmp(player, camera, stats.get(id), backpack);
+
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
                         model.update(dt, time, player, anim);
                     }
-
-                    const backpack = backpacks.get(id);
-                    model.updateBackpack(player, backpack);
-                    model.updateTmp(player, camera, stats.get(id), backpack);
                 }
             }
 

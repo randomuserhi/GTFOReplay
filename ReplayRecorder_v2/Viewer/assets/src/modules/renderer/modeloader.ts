@@ -21,7 +21,6 @@ export async function loadGLTF(path: string): Promise<BufferGeometry> {
     }
 
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
-        console.log("LOAD");
         loader.load(path, function (gltf) {
             const mesh: Mesh = (gltf.scene.children[0] as Mesh);
             const geometry = mesh.geometry.scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
