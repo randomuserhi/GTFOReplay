@@ -175,7 +175,6 @@ namespace Vanilla.Enemy {
             [HarmonyPostfix]
             private static void Postfix_BigFlyerAttack_Client(EB_InCombat_ChargedAttack_Flyer __instance) {
                 if (SNet.IsMaster) return;
-                if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
                 Il2CppSystem.Action<pEB_FlyerAttackVisualInfoSignal>? previous = __instance.m_attackVisualsPacket.ReceiveAction;
                 __instance.m_attackVisualsPacket.ReceiveAction = (Action<pEB_FlyerAttackVisualInfoSignal>)((packet) => {
@@ -188,7 +187,6 @@ namespace Vanilla.Enemy {
             [HarmonyPostfix]
             private static void Postfix_BigFlyerAttack_Host(EB_InCombat_ChargedAttack_Flyer __instance) {
                 if (!SNet.IsMaster) return;
-                if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
                 Replay.Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, __instance.m_CharageDuration));
             }
@@ -196,24 +194,18 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonEnter))]
             [HarmonyPostfix]
             private static void Postfix_ScoutDetection_Enter(ES_ScoutScream __instance) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
             }
 
             [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonExit))]
             [HarmonyPostfix]
             private static void Postfix_ScoutDetection_Exit(ES_ScoutScream __instance) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
             }
 
             [HarmonyPatch(typeof(ES_ScoutScream), nameof(ES_ScoutScream.CommonUpdate))]
             [HarmonyPrefix]
             private static void Prefix_ScoutScream(ES_ScoutScream __instance) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 switch (__instance.m_state) {
                 case ES_ScoutScream.ScoutScreamState.Setup:
                     Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
@@ -231,7 +223,6 @@ namespace Vanilla.Enemy {
             [HarmonyPostfix]
             private static void Postfix_Pouncer_Host(PouncerBehaviour __instance, int animationState) {
                 if (!SNet.IsMaster) return;
-                if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
                 if (animationState == PouncerBehaviour.PO_ConsumeStart) {
                     Replay.Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
@@ -245,7 +236,6 @@ namespace Vanilla.Enemy {
             [HarmonyPostfix]
             private static void Postfix_Pouncer_Client(PouncerBehaviour __instance, pEB_AnimationStateChanagePacket data) {
                 if (SNet.IsMaster) return;
-                if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
                 if (data.AnimationState == PouncerBehaviour.PO_ConsumeStart) {
                     Replay.Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
@@ -257,16 +247,12 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ES_HibernateWakeUp), nameof(ES_HibernateWakeUp.DoWakeup))]
             [HarmonyPostfix]
             private static void Postfix_Wakeup(ES_HibernateWakeUp __instance) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 Replay.Trigger(new rWakeup(__instance.m_enemyAgent, (byte)__instance.m_animationIndex, __instance.m_isTurn));
             }
 
             [HarmonyPatch(typeof(ES_Hibernate), nameof(ES_Hibernate.StartBeat))]
             [HarmonyPrefix]
             private static void Prefix_StartBeat(ES_Hibernate __instance, float strength, bool doAnim) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 if (doAnim && __instance.m_lastHeartbeatAnim < Clock.Time) {
                     Replay.Trigger(new rHeartbeat(__instance.m_enemyAgent, (byte)__instance.m_currentHeartBeatIndex));
                 }
@@ -275,16 +261,12 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.DoStartJump))]
             [HarmonyPrefix]
             private static void Prefix_DoStartJump(ES_Jump __instance) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 Replay.Trigger(new rJump(__instance.m_enemyAgent, 0));
             }
 
             [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.UpdateJump))]
             [HarmonyPrefix]
             private static void Prefix_UpdateJump(ES_Jump __instance) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 switch (__instance.m_state) {
                 case ESJumpState.InAir:
                     if (__instance.m_jumpMoveTimeRel + Clock.Delta * __instance.m_jumpMoveSpeed < 1f) {
@@ -298,8 +280,6 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ES_Hitreact), nameof(ES_Hitreact.DoHitReact))]
             [HarmonyPrefix]
             private static void Prefix_DoHitReact(ES_Hitreact __instance, int index, ES_HitreactType hitreactType, ImpactDirection impactDirection, float deathDelay, bool propagated, Vector3 damagePos, Vector3 source) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 rHitreact.Type type;
                 rHitreact.Direction direction;
                 switch (hitreactType) {
@@ -321,16 +301,12 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ES_StrikerMelee), nameof(ES_StrikerMelee.DoStartMeleeAttack))]
             [HarmonyPrefix]
             private static void Prefix_DoStartMeleeAttack(ES_StrikerMelee __instance, int animIndex, bool fwdAttack) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 Replay.Trigger(new rMelee(__instance.m_enemyAgent, (byte)animIndex, fwdAttack ? rMelee.Type.foward : rMelee.Type.backward));
             }
 
             [HarmonyPatch(typeof(ES_EnemyAttackBase), nameof(ES_EnemyAttackBase.DoStartAttack))]
             [HarmonyPrefix]
             private static void Prefix_DoStartAttack(ES_EnemyAttackBase __instance, Vector3 pos, Vector3 attackTargetPosition, Agent targetAgent, int animIndex, AgentAbility abilityType, int abilityIndex) {
-                if (!__instance.m_enemyAgent.Alive) return;
-
                 Replay.Trigger(new rAttackWindup(__instance.m_enemyAgent, (byte)animIndex));
             }
         }
