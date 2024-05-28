@@ -27,6 +27,7 @@ export class SquidModel extends EnemyModel {
         this.eye.rotateY(15 * Math.deg2rad);
         
         this.anchor.add(this.eye);
+        this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
         this.root.add(this.anchor);
 
         this.tmp = new Text();
@@ -101,6 +102,7 @@ export class FlyerModel extends EnemyModel {
         }
         
         this.anchor.add(this.eye, ...this.spikes);
+        this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
         this.root.add(this.anchor);
 
         this.tmp = new Text();
@@ -243,6 +245,7 @@ export class BigFlyerModel extends EnemyModel {
         this.corners[3].position.set(cornerWidth * scale, cornerWidth * scale, 0.25);
 
         this.anchor.add(this.eye, ...this.spikes, ...this.corners);
+        this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
         this.root.add(this.anchor);
 
         this.tmp = new Text();
