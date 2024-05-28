@@ -24,9 +24,12 @@ ModuleLoader.registerRender("Enemy.Tendril", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const tendrils = snapshot.getOrDefault("Vanilla.Enemy.Tendril", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
             for (const [_, tendril] of tendrils) {
                 const owner = enemies.get(tendril.owner);
-                if (owner === undefined || owner.dimension !== renderer.get("Dimension")) continue;
+                const anim = anims.get(tendril.owner);
+                if (anim === undefined || owner === undefined || owner.dimension !== renderer.get("Dimension")) continue;
+                if (anim.state !== "ScoutDetection") continue;
 
                 pM.lookAt(temp.copy(tendril.relPos).sub(tendril.sourcePos), zeroV, upV);
                 scale.z = Pod.Vec.dist(tendril.sourcePos, tendril.relPos);
