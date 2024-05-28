@@ -29,7 +29,7 @@ ModuleLoader.registerRender("Enemy.Tendril", (name, api) => {
                 const owner = enemies.get(tendril.owner);
                 const anim = anims.get(tendril.owner);
                 if (anim === undefined || owner === undefined || owner.dimension !== renderer.get("Dimension")) continue;
-                if (anim.state !== "ScoutDetection") continue;
+                if (anim.state !== "ScoutDetection" && anim.state !== "ScoutScream") continue;
 
                 pM.lookAt(temp.copy(tendril.relPos).sub(tendril.sourcePos), zeroV, upV);
                 scale.z = Pod.Vec.dist(tendril.sourcePos, tendril.relPos);
