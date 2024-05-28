@@ -617,7 +617,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
         
         const id = data.id;
-        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        if (!anims.has(id)) return; //throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`); // NOTE(randomuserhi): for some reason backend reports hitreacts post-enemy death
         const anim = anims.get(id)!;
         anim.lastHitreactTime = snapshot.time();
         anim.hitreactAnimIndex = data.animIndex;

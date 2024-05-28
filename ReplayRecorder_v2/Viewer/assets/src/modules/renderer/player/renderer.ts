@@ -704,7 +704,6 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
     public updateBackpack(player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
-        this.equippedItem.spec = undefined;
         this.equippedSlot = undefined;
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
@@ -788,14 +787,14 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 model.setVisible(player.dimension === renderer.get("Dimension"));
                 
                 if (model.root.visible) {
-                    const backpack = backpacks.get(id);
-                    model.updateBackpack(player, backpack);
-                    model.updateTmp(player, camera, stats.get(id), backpack);
-
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
                         model.update(dt, time, player, anim);
                     }
+
+                    const backpack = backpacks.get(id);
+                    model.updateBackpack(player, backpack);
+                    model.updateTmp(player, camera, stats.get(id), backpack);
                 }
             }
 
