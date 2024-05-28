@@ -156,17 +156,13 @@ namespace Vanilla.Enemy.Detection {
                 Replay.Trigger(new rEnemyAlert(self));
                 APILogger.Debug("Enemy was woken by a scream.");
             } else {
-                PlayerAgent? player = null;
-
                 if (NoiseTracker.CurrentNoise != null) {
-                    player = NoiseTracker.CurrentNoise.source;
+                    PlayerAgent? player = NoiseTracker.CurrentNoise.source;
                     APILogger.Debug("Detection from noise manager.");
+                    Replay.Trigger(new rEnemyAlert(self, player));
                 } else {
-                    AgentTarget? target = __instance.m_ai.Target;
-                    if (target != null) player = target.m_agent.TryCast<PlayerAgent>();
-                    else APILogger.Error("AgentTarget was null, this should not happen.");
+                    Replay.Trigger(new rEnemyAlert(self, null));
                 }
-                Replay.Trigger(new rEnemyAlert(self, player));
             }
         }
         [HarmonyPatch(typeof(EnemyDetection), nameof(EnemyDetection.UpdateHibernationDetection))]

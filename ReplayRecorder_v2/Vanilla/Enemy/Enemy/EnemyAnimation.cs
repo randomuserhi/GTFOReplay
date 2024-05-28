@@ -270,6 +270,15 @@ namespace Vanilla.Enemy {
                 if (doAnim && __instance.m_lastHeartbeatAnim < Clock.Time) {
                     Replay.Trigger(new rHeartbeat(__instance.m_enemyAgent, (byte)__instance.m_currentHeartBeatIndex));
                 }
+
+                // The game doesn't reset the animation clock if the enemy is culled, so we do it manually when culled.
+                if (!__instance.m_enemyAgent.MovingCuller.IsShown) {
+                    __instance.m_lastHeartbeatAnim = Clock.Time + 1f;
+                    __instance.m_currentHeartBeatIndex++;
+                    if (__instance.m_currentHeartBeatIndex == __instance.m_heartBeatIndexMax) {
+                        __instance.m_currentHeartBeatIndex = 0;
+                    }
+                }
             }
 
             [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.DoStartJump))]

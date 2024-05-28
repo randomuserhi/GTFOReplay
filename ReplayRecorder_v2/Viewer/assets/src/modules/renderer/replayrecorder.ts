@@ -309,6 +309,7 @@ class CameraControls {
     }
 }
 
+const globalCameraPos = new Vector3();
 ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
     const init = api.getInitPasses();
     const pass = { 
@@ -375,7 +376,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
     api.setRenderLoop([{ 
         name, pass: (renderer, snapshot, dt) => {
             const light = renderer.get("MainLight")!;
-            const cameraPos = renderer.get("Camera")!.position;
+            const cameraPos = renderer.get("Camera")!.getWorldPosition(globalCameraPos);
             light.position.set(cameraPos.x, cameraPos.y + 50, cameraPos.z); 
             light.target.position.set(cameraPos.x, cameraPos.y - 10, cameraPos.z);
 
