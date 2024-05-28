@@ -1152,7 +1152,7 @@ const _gearArchetype: Id<GearArchetype>[] = [{
     offset: new Vector3(0, 0, 0.2)
 }, {
     id: 18,
-    gunFoldAnim: gearFoldAnimations.Front_AutoShotgun_2_Parts_Reload,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
     offset: new Vector3(0, 0, 0.2)
 }, {
     id: 19,
@@ -1164,8 +1164,8 @@ const _gearArchetype: Id<GearArchetype>[] = [{
     offset: new Vector3(0, 0, 0.2)
 }, {
     id: 21,
-    gunFoldAnim: gearFoldAnimations.Front_AutoShotgun_2_Parts_Reload,
-    offset: new Vector3(0, -0.05, 0.2)
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
+    offset: new Vector3(0, 0, 0.2)
 }, {
     id: 22,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
@@ -1176,8 +1176,8 @@ const _gearArchetype: Id<GearArchetype>[] = [{
     offset: new Vector3(0, 0, 0.2)
 }, {
     id: 24,
-    gunFoldAnim: gearFoldAnimations.Front_AutoShotgun_2_Parts_Reload,
-    offset: new Vector3(0, -0.05, 0.2)
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
+    offset: new Vector3(0, 0, 0.2)
 }, {
     id: 25,
     gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
