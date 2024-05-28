@@ -387,10 +387,9 @@ ModuleLoader.registerTick((snapshot) => {
     const cache = snapshot.getOrDefault("Vanilla.Enemy.Cache", () => new Map());
     for (const [id, item] of [...cache.entries()]) {
         if (snapshot.time() - item.time > cacheClearTime) {
-            if (item.enemy.health > 0) {
+            /*if (item.enemy.health > 0) {
                 console.warn(`Cache cleared enemy: ${id}[health: ${item.enemy.health}]`);
-                console.log(item.enemy);
-            }
+            }*/
             cache.delete(id);
         }
     }
