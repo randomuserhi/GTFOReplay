@@ -152,11 +152,45 @@ namespace Vanilla.Enemy {
         }
     }
 
+    [ReplayData("Vanilla.Enemy.Animation.BigFlyerCharge", "0.0.1")]
+    internal class rBigFlyerCharge : Id {
+        private float charge;
+
+        public rBigFlyerCharge(EnemyAgent enemy, float chargeDuration) : base(enemy.GlobalID) {
+            charge = chargeDuration;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            base.Write(buffer);
+            BitHelper.WriteHalf(charge, buffer);
+        }
+    }
+
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [HarmonyPatch(typeof(EB_InCombat_ChargedAttack_Flyer), nameof(EB_InCombat_ChargedAttack_Flyer.SetAI))]
+            [HarmonyPostfix]
+            private static void Postfix_BigFlyerAttack_Client(EB_InCombat_ChargedAttack_Flyer __instance) {
+                if (SNet.IsMaster) return;
+
+                Il2CppSystem.Action<pEB_FlyerAttackVisualInfoSignal>? previous = __instance.m_attackVisualsPacket.ReceiveAction;
+                __instance.m_attackVisualsPacket.ReceiveAction = (Action<pEB_FlyerAttackVisualInfoSignal>)((packet) => {
+                    Replay.Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, packet.ChargeDuration));
+                    previous?.Invoke(packet);
+                });
+            }
+
+            [HarmonyPatch(typeof(EB_InCombat_ChargedAttack_Flyer), nameof(EB_InCombat_ChargedAttack_Flyer.CommonEnter))]
+            [HarmonyPostfix]
+            private static void Postfix_BigFlyerAttack_Host(EB_InCombat_ChargedAttack_Flyer __instance) {
+                if (!SNet.IsMaster) return;
+
+                Replay.Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, __instance.m_CharageDuration));
+            }
+
             [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonEnter))]
             [HarmonyPostfix]
             private static void Postfix_ScoutDetection_Enter(ES_ScoutScream __instance) {

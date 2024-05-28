@@ -64,7 +64,7 @@ import { enemyAnimationClips, enemyAnimations, gearFoldAnimations, playerAnimati
 import { GearFoldAnimation } from "./animations/gearfold.js";
 import { HumanAnimation, HumanJoints } from "./animations/human.js";
 import { EnemyModel } from "./enemy/enemy.js";
-import { FlyerModel } from "./enemy/flyer.js";
+import { BigFlyerModel, FlyerModel, SquidModel } from "./enemy/flyer.js";
 
 export type Archetype = 
     "melee" |
@@ -1596,7 +1596,8 @@ const _enemies: EnemySpecification[] = [{
         x: 1.1,
         y: 1.1,
         z: 1.1,
-    }
+    },
+    scale: _shooter_scale
 }, {
     id: 2,
     name: "Shadow Scout",
@@ -1615,7 +1616,8 @@ const _enemies: EnemySpecification[] = [{
         x: 1.1,
         y: 1.1,
         z: 1.1,
-    }
+    },
+    scale: _shooter_scale
 }, {
     id: 3,
     name: "Charger Scout",
@@ -1798,15 +1800,17 @@ const _enemies: EnemySpecification[] = [{
     id: 20,
     name: "Big Flyer",
     maxHealth: 150,
-    model: (enemy) => new FlyerModel(enemy),
+    model: (enemy) => new BigFlyerModel(enemy),
 }, {
     id: 21,
     name: "Squid",
-    maxHealth: 6000
+    maxHealth: 6000,
+    model: (enemy) => new SquidModel(enemy),
 }, {
     id: 22,
     name: "Squid Boss",
-    maxHealth: 6000
+    maxHealth: 6000,
+    model: (enemy) => new SquidModel(enemy),
 }, {
     id: 23,
     name: "Nightmare Striker",
@@ -1853,6 +1857,30 @@ const _enemies: EnemySpecification[] = [{
     },
 }, {
     id: 25,
+    name: "Zoomer Scout",
+    maxHealth: 42,
+    headScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3
+    },
+    armScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1,
+    },
+    scale: _shooter_scale
+}, {
+    id: 26,
+    name: "Mega Mother",
+    maxHealth: 5000,
+    rotOffset: {
+        x: 0,
+        y: 180,
+        z: 0
+    }
+}, {
+    id: 27,
     name: "Nightmare Scout",
     maxHealth: 161,
     armScale: {
@@ -1870,15 +1898,7 @@ const _enemies: EnemySpecification[] = [{
         y: 1.1,
         z: 1.1
     },
-}, {
-    id: 26,
-    name: "Mega Mother",
-    maxHealth: 5000,
-    rotOffset: {
-        x: 0,
-        y: 180,
-        z: 0
-    }
+    scale: _shooter_scale
 }];
 
 export const specification: Specification = {

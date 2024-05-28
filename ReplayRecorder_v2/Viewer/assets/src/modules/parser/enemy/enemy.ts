@@ -113,6 +113,11 @@ declare module "../../../replay/moduleloader.js" {
                 id: number;
                 start: boolean;
             };
+
+            "Vanilla.Enemy.Animation.BigFlyerCharge": {
+                id: number;
+                charge: number;
+            };
         }
 
         interface Data {
@@ -495,6 +500,8 @@ export interface EnemyAnimState {
     lastPouncerSpitTime: number;
     scoutScreamStart: boolean;
     lastScoutScream: number;
+    bigFlyerCharge: number;
+    lastBigFlyerCharge: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
@@ -559,7 +566,9 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 lastPouncerGrabTime: -Infinity,
                 lastPouncerSpitTime: -Infinity,
                 lastScoutScream: -Infinity,
-                scoutScreamStart: true
+                scoutScreamStart: true,
+                lastBigFlyerCharge: -Infinity,
+                bigFlyerCharge: 0,
             });
         }
     },
@@ -751,6 +760,24 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.ScoutScream", "0.0.1", {
         const anim = anims.get(id)!;
         anim.lastScoutScream = snapshot.time();
         anim.scoutScreamStart = data.start;
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Enemy.Animation.BigFlyerCharge", "0.0.1", {
+    parse: async (bytes) => {
+        return {
+            id: await BitHelper.readInt(bytes),
+            charge: await BitHelper.readHalf(bytes),
+        };
+    },
+    exec: async (data, snapshot) => {
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        
+        const id = data.id;
+        if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
+        const anim = anims.get(id)!;
+        anim.lastBigFlyerCharge = snapshot.time();
+        anim.bigFlyerCharge = data.charge;
     }
 });
 
