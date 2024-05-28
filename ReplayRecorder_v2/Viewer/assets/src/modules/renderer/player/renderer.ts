@@ -123,6 +123,8 @@ class PlayerModel  {
     consumableArchetype?: ConsumableArchetype;
     gearArchetype?: GearArchetype;
 
+    offset: number;
+
     private construct(skeleton: HumanSkeleton) {
         skeleton.joints.hip.add(
             skeleton.joints.spine0,
@@ -255,6 +257,8 @@ class PlayerModel  {
     
         this.lastArchetype = "rifle";
         this.meleeArchetype = hammerArchetype;
+
+        this.offset = Math.random() * 10;
     }
 
     public addToScene(scene: Scene) {
@@ -280,6 +284,7 @@ class PlayerModel  {
         this.equipped.visible = true;
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
+        const offsetTime = time + this.offset;
 
         animVelocity.x = anim.velocity.x;
         animVelocity.y = anim.velocity.z;
@@ -287,9 +292,9 @@ class PlayerModel  {
 
         const equipTime = time - (player.lastEquippedTime / 1000);
         switch (this.lastArchetype) {
-        case "pistol": this.skeleton.override(playerAnimations.pistolMovement.sample(time)); break;
-        case "rifle": this.skeleton.override(playerAnimations.rifleMovement.sample(time)); break;
-        default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(time)); break;
+        case "pistol": this.skeleton.override(playerAnimations.pistolMovement.sample(offsetTime)); break;
+        case "rifle": this.skeleton.override(playerAnimations.rifleMovement.sample(offsetTime)); break;
+        default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
         }
         
         if (this.lastArchetype !== this.equippedItem.spec?.archetype) {
@@ -299,9 +304,9 @@ class PlayerModel  {
             }
 
             switch (this.equippedItem.spec?.archetype) {
-            case "pistol": this.skeleton.blend(playerAnimations.pistolMovement.sample(time), blend); break;
-            case "rifle": this.skeleton.blend(playerAnimations.rifleMovement.sample(time), blend); break;
-            default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(time), blend); break;
+            case "pistol": this.skeleton.blend(playerAnimations.pistolMovement.sample(offsetTime), blend); break;
+            case "rifle": this.skeleton.blend(playerAnimations.rifleMovement.sample(offsetTime), blend); break;
+            default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;
             }
         }
 
