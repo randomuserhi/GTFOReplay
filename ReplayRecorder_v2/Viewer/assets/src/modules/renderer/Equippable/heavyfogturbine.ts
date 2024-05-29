@@ -25,13 +25,13 @@ const material = new MeshPhongMaterial({
 export class HeavyFogRepeller extends Model {
     constructor() {
         super();
-        this.equipOffsetPos = { x: 0, y: -0.17, z: -0.02 };
-        this.leftHandGrip = { x: 0.1, y: -0.2, z: 0 };
+        this.equipOffsetPos = { x: 0.1, y: 0, z: 0 };
+        this.leftHandGrip = { x: 0.2, y: 0, z: 0.1 };
 
         const model = new Group();
         getAsset(model, material);
         model.scale.set(0.2, 0.2, 0.2);
-        model.rotation.set(90 * Math.deg2rad, -60 * Math.deg2rad, 0, "YXZ");
+        model.rotation.set(0, 0, 0, "YXZ");
 
         this.group.add(model);
     }

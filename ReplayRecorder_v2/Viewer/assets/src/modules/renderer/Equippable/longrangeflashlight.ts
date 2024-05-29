@@ -27,6 +27,7 @@ export class LongRangeFlashlight extends Model {
         super();
         this.equipOffsetPos = { x: 0.07, y: 0, z: -0.15 };
         this.leftHandGrip = { x: 0.2, y: 0, z: 0 };
+        this.offsetRot = { x: 0.707106829, y: 0, z: 0, w: 0.707106829 };
 
         const model = new Group();
         getAsset(model, material);
