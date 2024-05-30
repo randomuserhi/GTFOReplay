@@ -7,6 +7,7 @@ namespace Vanilla.Map.StaticItems.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 [BepInDependency(ReplayRecorder.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency(Specification.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]
 public class Plugin : BasePlugin {
     public override void Load() {
         harmony = new Harmony(Module.GUID);

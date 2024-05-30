@@ -153,6 +153,9 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
 
         this.color = new Color(0xff0000);
+        if (this.datablock?.color !== undefined) {
+            this.color.set(this.datablock.color);
+        }
 
         this.anchor = new Group();
         this.pivot = new Group();

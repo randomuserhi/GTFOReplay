@@ -1,4 +1,4 @@
-import { Color, Vector3, Vector3Like } from "three";
+import { Color, ColorRepresentation, Vector3, Vector3Like } from "three";
 import { AnimHandles, MeleeType } from "../parser/enemy/enemy.js";
 import { AssaultRifle } from "./Equippable/assaultrifle.js";
 import { AutoPistol } from "./Equippable/autopistol.js";
@@ -958,6 +958,7 @@ export interface EnemySpecification {
     id: number;
     maxHealth: number;
     transparent?: boolean;
+    color?: ColorRepresentation;
     name?: string;
     model?: (data: any) => EnemyModel;
     rotOffset?: Vector3Like;
