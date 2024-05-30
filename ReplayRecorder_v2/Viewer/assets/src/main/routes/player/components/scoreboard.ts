@@ -1,8 +1,8 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { Player } from "../../../../modules/Vanilla/player/player.js";
-import { PlayerStats } from "../../../../modules/Vanilla/player/playerstats.js";
-import { PlayerStats as PlayerStatTracker, StatTracker, getPlayerStats } from "../../../../modules/Vanilla/stattracker/stats.js";
+import { Player } from "../../../../modules/parser/player/player.js";
+import { PlayerStats } from "../../../../modules/parser/player/playerstats.js";
+import { PlayerStats as PlayerStatTracker, StatTracker, getPlayerStats } from "../../../../modules/parser/stattracker/stats.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
 import { MedalDescriptor, getMedals, medal } from "./medal.js";
 

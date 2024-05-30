@@ -213,6 +213,7 @@ namespace ReplayRecorder.Snapshot {
                     // release buffer back to pool
                     e.Dispose();
                 }
+                APILogger.Debug($"[Events] {events.Count} events written.");
 
                 // Serialize dynamic properties
                 int numWritten = 0;
@@ -233,9 +234,10 @@ namespace ReplayRecorder.Snapshot {
                     APILogger.Debug($"Flushed {numWritten} dynamic collections.");
                 }
 
+                bool eventsWritten = events.Count != 0;
                 events.Clear();
 
-                return events.Count != 0 || numWritten != 0;
+                return eventsWritten || numWritten != 0;
             }
         }
 
@@ -484,11 +486,29 @@ namespace ReplayRecorder.Snapshot {
             Destroy(gameObject);
         }
 
-        private float tickRate = 1f / 20f;
+        public float tickRate = 1f / 20f;
         private float timer = 0;
         private void Update() {
             if (fs == null || !completedHeader) {
                 return;
+            }
+
+            float rate;
+            // Change tick rate based on state:
+            switch (DramaManager.CurrentStateEnum) {
+            case DRAMA_State.Encounter:
+            case DRAMA_State.Survival:
+            case DRAMA_State.IntentionalCombat:
+            case DRAMA_State.Combat:
+                rate = 1f / 20f;
+                break;
+            default:
+                rate = 1f / 10f;
+                break;
+            }
+            if (tickRate != rate) {
+                timer = 0;
+                tickRate = rate;
             }
 
             timer += Time.deltaTime;

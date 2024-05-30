@@ -8,9 +8,17 @@ import { player } from "./routes/player/index.js";
 async function __main__() {
     window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
-    window.api.on("loadModules", (paths: string[]) => paths.forEach(p => ModuleLoader.loadModule(p)));
+    window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
+        ModuleLoader.loadScriptModule(p);
+        ModuleLoader.registerScriptModule(p); 
+    }));
+    window.api.on("loadRendererModules", (paths: string[]) => paths.forEach(p => ModuleLoader.loadScriptModule(p)));
     
-    (await window.api.invoke("loadModules")).forEach((p: string) => ModuleLoader.loadModule(p));
+    (await window.api.invoke("loadParserModules")).forEach((p: string) => {
+        ModuleLoader.loadScriptModule(p);
+        ModuleLoader.registerScriptModule(p); 
+    });
+    (await window.api.invoke("loadRendererModules")).forEach((p: string) => ModuleLoader.loadScriptModule(p));
 }
 
 export const theme = Theme(({ theme }) => {

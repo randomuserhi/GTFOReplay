@@ -51,7 +51,7 @@ namespace Vanilla.Player {
             APILogger.Debug($"(SpawnPlayer) {agent.Owner.NickName} has joined.");
             rPlayer player = new rPlayer(agent);
             Replay.Spawn(player);
-            Replay.Spawn(new rPlayerModel(agent));
+            Replay.Spawn(new rPlayerAnimation(agent));
             Replay.Spawn(new rPlayerBackpack(agent));
             Replay.Spawn(new rPlayerStats(agent));
             players.Add(player);
@@ -77,7 +77,7 @@ namespace Vanilla.Player {
         }
 
         private static void Despawn(rPlayer player) {
-            Replay.TryDespawn<rPlayerModel>(player.id);
+            Replay.TryDespawn<rPlayerAnimation>(player.id);
             Replay.TryDespawn<rPlayerBackpack>(player.id);
             Replay.TryDespawn<rPlayerStats>(player.id);
             Replay.TryDespawn<rPlayer>(player.id);

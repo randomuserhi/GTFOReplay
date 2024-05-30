@@ -1,5 +1,6 @@
 ﻿using AIGraph;
 using GameData;
+using Gear;
 using HarmonyLib;
 using LevelGeneration;
 using Player;
@@ -19,6 +20,26 @@ namespace Vanilla.Enemy.Detection {
                 agent = player.PlayerAgent.TryCast<PlayerAgent>();
             }
             NoiseTracker.TrackNextNoise(new NoiseInfo(agent));
+        }
+
+        // Local Player Melee
+        private static bool fromMWS_AttackHit = false;
+        [HarmonyPatch(typeof(MWS_AttackHit), nameof(MWS_AttackHit.Update))]
+        [HarmonyPrefix]
+        private static void Prefix_MWS_AttackHit() {
+            fromMWS_AttackHit = true;
+        }
+        [HarmonyPatch(typeof(MWS_AttackHit), nameof(MWS_AttackHit.Update))]
+        [HarmonyPostfix]
+        private static void Postfix_MWS_AttackHit() {
+            fromMWS_AttackHit = false;
+        }
+        [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.MakeNoise))]
+        [HarmonyPrefix]
+        private static void MakeNoise() {
+            if (fromMWS_AttackHit) {
+                NoiseTracker.TrackNextNoise(new NoiseInfo(PlayerManager.GetLocalPlayerAgent()));
+            }
         }
 
         // Sentry gun noises

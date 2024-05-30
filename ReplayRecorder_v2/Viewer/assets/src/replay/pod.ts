@@ -5,6 +5,32 @@ export interface Vector {
 }
 
 export namespace Vec {
+    export function angle(from: Vector, to: Vector) {
+        const num = Math.sqrt(Vec.sqrLength(from) * Vec.sqrLength(to));
+        if (num < 1e-15) {
+            return 0.0;
+        }
+
+        const num2 = Math.clamp(Vec.dot(from, to) / num, -1, 1);
+        return Math.acos(num2) * 57.29578;
+    }
+    export function signedAngle(from: Vector, to: Vector) {
+        const num = Vec.angle(from, to);
+        const num2 = Math.sign(from.x * to.y - from.y * to.x);
+        return num * num2;
+    }
+    export function copy(a: Vector, b: Vector) {
+        a.x = b.x;
+        a.y = b.y;
+        a.z = b.z;
+    }
+    export function clone(a: Vector) {
+        return {
+            x: a.x,
+            y: a.y,
+            z: a.z
+        };
+    }
     export function zero(): Vector {
         return {
             x: 0,
@@ -14,6 +40,9 @@ export namespace Vec {
     }
     export function length(v: Vector): number {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    }
+    export function sqrLength(v: Vector): number {
+        return v.x * v.x + v.y * v.y + v.z * v.z;
     }
     export function dist(a: Vector, b: Vector): number {
         const x = a.x - b.x;
@@ -71,6 +100,27 @@ export interface Quaternion {
 }
 
 export namespace Quat {
+    export function inverse(result: Quaternion, a: Quaternion): Quaternion {
+        result.x = -a.x;
+        result.y = -a.y;
+        result.z = -a.z;
+        result.w = a.w;
+        return result;
+    }
+    export function copy(a: Quaternion, b: Quaternion) {
+        a.x = b.x;
+        a.y = b.y;
+        a.z = b.z;
+        a.w = b.w;
+    }
+    export function clone(a: Quaternion) {
+        return {
+            x: a.x,
+            y: a.y,
+            z: a.z,
+            w: a.w
+        };
+    }
     export function identity(): Quaternion {
         return {
             w: 1,
@@ -110,7 +160,32 @@ export namespace Quat {
         }
         return euler;
     }
+    export function mul(result: Quaternion, a: Quaternion, b: Quaternion): Quaternion {
+        const ax = a.x;
+        const ay = a.y;
+        const az = a.z;
+        const aw = a.w;
+
+        const bx = b.x;
+        const by = b.y;
+        const bz = b.z;
+        const bw = b.w;
+        
+        result.x = ax * bw + aw * bx + ay * bz - az * by;
+        result.y = ay * bw + aw * by + az * bx - ax * bz;
+        result.z = az * bw + aw * bz + ax * by - ay * bx;
+        result.w = aw * bw - ax * bx - ay * by - az * bz;
+        return result;
+    }
     export function slerp(result: Quaternion, a: Quaternion, b: Quaternion, lerp: number) {
+        if (a.x === b.x && a.y === b.y && a.z === b.z && a.w === b.w) {
+            result.x = a.x;
+            result.y = a.y;
+            result.z = a.z;
+            result.w = a.w;
+            return result;
+        }
+
         lerp = Math.clamp01(lerp);
         
         const cosHalfTheta = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
@@ -122,12 +197,11 @@ export namespace Quat {
             a.w = -a.w;
         }
         if (Math.abs(cosHalfTheta) >= 1.0) {
-            return {
-                w: a.w,
-                x: a.x,
-                y: a.y,
-                z: a.z
-            };
+            result.x = a.x;
+            result.y = a.y;
+            result.z = a.z;
+            result.w = a.w;
+            return result;
         }
         const halfTheta = Math.acos(cosHalfTheta);
         const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);

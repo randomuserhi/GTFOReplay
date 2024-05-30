@@ -27,20 +27,24 @@ namespace Vanilla.Enemy.Detection {
         }
     }
 
-    [ReplayData("Vanilla.Enemy.Scream", "0.0.1")]
+    // TODO(randomuserhi): Move to animations...
+    [ReplayData("Vanilla.Enemy.Animation.Scream", "0.0.1")]
     internal class rEnemyScream : Id {
         internal enum Type {
             Regular,
             Scout
         }
         private Type type;
+        private byte animIndex;
 
-        public rEnemyScream(EnemyAgent agent, Type type = Type.Regular) : base(agent.GlobalID) {
+        public rEnemyScream(EnemyAgent agent, byte animIndex, Type type = Type.Regular) : base(agent.GlobalID) {
             this.type = type;
+            this.animIndex = animIndex;
         }
 
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
+            BitHelper.WriteBytes(animIndex, buffer);
             BitHelper.WriteBytes((byte)type, buffer);
         }
     }
@@ -52,6 +56,13 @@ namespace Vanilla.Enemy.Detection {
         private static bool wokenFromScream = false;
 
         // Handling regular screams
+        [HarmonyPatch(typeof(ES_Scream), nameof(ES_Scream.ActivateState))]
+        [HarmonyPostfix]
+        private static void Postfix_Scream(ES_Scream __instance) {
+            if (!SNet.IsMaster) return;
+
+            Replay.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent, (byte)__instance.m_lastAnimIndex));
+        }
         [HarmonyPatch(typeof(ES_Scream), nameof(ES_Scream.Update))]
         [HarmonyPrefix]
         private static void Prefix_Scream(ES_Scream __instance) {
@@ -59,7 +70,6 @@ namespace Vanilla.Enemy.Detection {
 
             // Condition taken from source
             if (!__instance.m_hasTriggeredPropagation && __instance.m_triggerPropgationAt < Clock.Time) {
-                Replay.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent));
                 wokenFromScream = true;
             }
         }
@@ -70,7 +80,7 @@ namespace Vanilla.Enemy.Detection {
 
             Il2CppSystem.Action<pES_EnemyScreamData>? previous = __instance.m_screamPacket.ReceiveAction;
             __instance.m_screamPacket.ReceiveAction = (Action<pES_EnemyScreamData>)((packet) => {
-                Replay.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent));
+                Replay.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent, packet.AnimIndex));
                 previous?.Invoke(packet);
             });
         }
@@ -93,7 +103,7 @@ namespace Vanilla.Enemy.Detection {
                 }
 
                 EnemyAgent self = __instance.m_enemyAgent;
-                Replay.Trigger(new rEnemyScream(self, rEnemyScream.Type.Scout));
+                Replay.Trigger(new rEnemyScream(self, (byte)__instance.m_lastAnimIndex, rEnemyScream.Type.Scout));
                 if (!SNet.IsMaster) {
                     Replay.Trigger(new rEnemyAlert(self));
                     APILogger.Debug("Client-side scout wake up.");
@@ -146,17 +156,13 @@ namespace Vanilla.Enemy.Detection {
                 Replay.Trigger(new rEnemyAlert(self));
                 APILogger.Debug("Enemy was woken by a scream.");
             } else {
-                PlayerAgent? player = null;
-
                 if (NoiseTracker.CurrentNoise != null) {
-                    player = NoiseTracker.CurrentNoise.source;
+                    PlayerAgent? player = NoiseTracker.CurrentNoise.source;
                     APILogger.Debug("Detection from noise manager.");
+                    Replay.Trigger(new rEnemyAlert(self, player));
                 } else {
-                    AgentTarget? target = __instance.m_ai.Target;
-                    if (target != null) player = target.m_agent.TryCast<PlayerAgent>();
-                    else APILogger.Error("AgentTarget was null, this should not happen.");
+                    Replay.Trigger(new rEnemyAlert(self, null));
                 }
-                Replay.Trigger(new rEnemyAlert(self, player));
             }
         }
         [HarmonyPatch(typeof(EnemyDetection), nameof(EnemyDetection.UpdateHibernationDetection))]

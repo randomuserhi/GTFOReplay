@@ -1,7 +1,7 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { specification } from "../../../../modules/Vanilla/specification.js";
-import { StatTracker, getPlayerStats } from "../../../../modules/Vanilla/stattracker/stats.js";
+import { StatTracker, getPlayerStats } from "../../../../modules/parser/stattracker/stats.js";
+import { specification } from "../../../../modules/renderer/specification.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
 
 declare module "@/rhu/macro.js" {

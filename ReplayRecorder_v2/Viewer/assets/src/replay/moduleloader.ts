@@ -150,9 +150,11 @@ export namespace ModuleLoader {
         library.dispose.add(func);
     }
 
-    export function loadModule(path: string) {
+    export function registerScriptModule(path: string) {
         links.add(path);
+    }
 
+    export function loadScriptModule(path: string) {
         const script = document.createElement("script");
         script.setAttribute("type", "module");
         script.addEventListener("load", () => {

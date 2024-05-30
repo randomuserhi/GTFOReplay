@@ -1,0 +1,22 @@
+{ 
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "build",
+    "module": "ES2022",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "declarationDir": "build-types",
+    "target": "ES2021",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": true,
+    "sourceMap": false,
+    "paths": {
+      "@anim/*": ["./@types/*"],
+    }
+  },
+  "include": ["./src/**/*"]
+}

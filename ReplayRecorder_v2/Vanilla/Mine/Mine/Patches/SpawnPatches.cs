@@ -23,7 +23,7 @@ namespace Vanilla.Mine.Patches {
                     Replay.Spawn(new rMine(owner, __instance, rMine.Type.Explosive));
                     break;
                 case 139: // Consumable mine
-                    Replay.Spawn(new rMine(owner, __instance, rMine.Type.Explosive));
+                    Replay.Spawn(new rMine(owner, __instance, rMine.Type.ConsumableExplosive));
                     break;
                 case 144: // Cfoam mine
                     Replay.Spawn(new rMine(owner, __instance, rMine.Type.Cfoam));

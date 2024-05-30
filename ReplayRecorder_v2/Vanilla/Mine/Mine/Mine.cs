@@ -29,7 +29,8 @@ namespace Vanilla.Mine {
     public class rMine : DynamicTransform {
         public enum Type {
             Explosive,
-            Cfoam
+            Cfoam,
+            ConsumableExplosive,
         }
         private Type type;
 

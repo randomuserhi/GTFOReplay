@@ -137,7 +137,7 @@ namespace Vanilla.Map {
                 meshes[i] = surfaceBuffer[i].ToMesh();
                 meshes[i].RecalculateBounds();
             }
-            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 10).ToArray(); // Cull meshes that are too small
+            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 5).ToArray(); // Cull meshes that are too small
 
             /// This works since each dimension has Layer information containing:
             /// - spawn locations
@@ -208,7 +208,7 @@ namespace Vanilla.Map {
                             {
                                 int count = 0;
                                 foreach (Mesh mesh in meshes.OrderBy(m => (area.Position - m.bounds.ClosestPoint(area.Position)).sqrMagnitude)) {
-                                    if (++count > 1) break;
+                                    if (++count > 2) break;
                                     if (!relevantSurfaces.ContainsKey(mesh)) {
                                         relevantSurfaces.Add(mesh, new Surface(mesh));
                                     }
