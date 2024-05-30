@@ -418,7 +418,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             const frustum = new Frustum();
             frustum.setFromProjectionMatrix(pM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
             r.set("Frustum", frustum);
-            r.set("RenderDistance", 50);
+            r.set("RenderDistance", 100);
 
             // Setup resize event
             r.addEventListener("resize", ({ width, height }) => {
