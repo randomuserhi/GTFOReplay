@@ -27,14 +27,14 @@ declare module "../../replay/instancing.js" {
     createInstance("Cylinder.MeshPhong.HalfTransparency.Mask", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = 1;
+        mesh.renderOrder = -2;
     });
     
 
     createInstance("Sphere.MeshPhong.HalfTransparency.Mask", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = 1;
+        mesh.renderOrder = -2;
     });
 })();
 
@@ -47,13 +47,13 @@ declare module "../../replay/instancing.js" {
     createInstance("Cylinder.MeshPhong.HalfTransparency", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = 2;
+        mesh.renderOrder = -1;
     });
     
     createInstance("Sphere.MeshPhong.HalfTransparency", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = 2;
+        mesh.renderOrder = -1;
     });
 })();
 
