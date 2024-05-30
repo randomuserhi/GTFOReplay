@@ -9,17 +9,30 @@ const temp = new Color();
 class DynamicInstanceManager {
     mesh: InstancedMesh;
     capacity: number;
+    material: Material | Material[];
+    init?: (mesh: InstancedMesh) => void;
 
-    constructor(geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], capacity: number) {
+    constructor(geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], capacity: number, init?: (mesh: InstancedMesh) => void) {
+        this.init = init;
+        this.material = material;
+        
         this.mesh = new InstancedMesh(geometry, material, capacity);
+        if (this.init !== undefined) {
+            this.init(this.mesh);
+        }
         this.mesh.frustumCulled = false;
+
         this.capacity = capacity;
     }
 
     public consume(matrix: Matrix4, color: Color): number {
         if (this.mesh.count >= this.capacity) {
             const newCapacity = this.capacity * 2;
+            
             const instance = new InstancedMesh(this.mesh.geometry, this.mesh.material, newCapacity);
+            if (this.init !== undefined) {
+                this.init(instance);
+            }
             instance.frustumCulled = false;
             
             for (let i = 0; i < this.capacity; ++i) {
@@ -45,9 +58,9 @@ class DynamicInstanceManager {
 
 export const _instances = new Map<keyof InstanceTypes, DynamicInstanceManager>(); 
 
-export function createInstance(type: keyof InstanceTypes, geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], maximumCount: number): InstancedMesh {
+export function createInstance(type: keyof InstanceTypes, geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], maximumCount: number, init?: (mesh: InstancedMesh) => void): InstancedMesh {
     if (_instances.has(type)) return _instances.get(type)!.mesh;
-    const manager = new DynamicInstanceManager(geometry, material, maximumCount);
+    const manager = new DynamicInstanceManager(geometry, material, maximumCount, init);
     _instances.set(type, manager);
     return manager.mesh;
 }

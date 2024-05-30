@@ -1,6 +1,6 @@
 import { Camera, Color, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, SphereGeometry, Vector3 } from "three";
 import { Text } from "troika-three-text";
-import { consume } from "../../../replay/instancing.js";
+import { InstanceTypes, consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
@@ -74,6 +74,17 @@ export class EnemyModel {
 
 const tmpPos = new Vector3();
 const camPos = new Vector3();
+
+const _head: Matrix4 = new Matrix4();
+const _parts: Matrix4[] = new Array(9);
+const _points: Matrix4[] = new Array(14);
+
+for (let i = 0; i < _parts.length; ++i) {
+    _parts[i] = new Matrix4();
+}
+for (let i = 0; i < _points.length; ++i) {
+    _points[i] = new Matrix4();
+}
 
 export class HumanoidEnemyModel extends EnemyModel {
     anchor: Object3D;
@@ -224,7 +235,29 @@ export class HumanoidEnemyModel extends EnemyModel {
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         this.animate(dt, time, enemy, anim, camera);
-        this.render(dt, enemy);
+        this.computeMatrices(dt, enemy);
+
+        if (this.datablock?.transparent === true) {
+            this.render(enemy, "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
+            this.render(enemy, "Sphere.MeshPhong.HalfTransparency", "Cylinder.MeshPhong.HalfTransparency");
+        } else {
+            this.render(enemy, "Sphere.MeshPhong", "Cylinder.MeshPhong");
+        }
+    }
+
+    private render(enemy: Enemy, sphere: keyof InstanceTypes, cylinder: keyof InstanceTypes) {
+        if (enemy.head) {
+            this.head = consume(sphere, _head, this.color);
+        } else {
+            this.head = -1;
+        }
+
+        for (let i = 0; i < _points.length; ++i) {
+            this.points[i] = consume(sphere, _points[i], this.color);
+        }
+        for (let i = 0; i < _parts.length; ++i) {
+            this.parts[i] = consume(cylinder, _parts[i], this.color);
+        }
     }
 
     private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
@@ -394,7 +427,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp.lookAt(camPos);
     }
 
-    public render(dt: number, enemy: Enemy): void {
+    public computeMatrices(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
         if (this.datablock?.rotOffset !== undefined) {
@@ -410,85 +443,79 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
         getWorldPos(worldPos, this.visual);
 
-        const pM = new Matrix4(); // TODO(randomuserhi): Move somewhere for garbage collector
-
-        if (enemy.head) {
-            headScale.set(0.15, 0.15, 0.15);
-            if(this.datablock?.headScale !== undefined) headScale.multiply(this.datablock.headScale);
-            this.head = consume("Sphere.MeshPhong", pM.compose(worldPos.head, zeroQ, headScale), this.color);
-        } else {
-            this.head = -1;
-        }
+        headScale.set(0.15, 0.15, 0.15);
+        if(this.datablock?.headScale !== undefined) headScale.multiply(this.datablock.headScale);
+        _head.compose(worldPos.head, zeroQ, headScale);
 
         let i = 0;
         let j = 0;
-
+        
         Pod.Vec.copy(bodyTop, worldPos.neck);
-
+        
         Pod.Vec.mid(bodyBottom, worldPos.leftUpperLeg, worldPos.rightUpperLeg);
-
-        pM.lookAt(temp.copy(bodyBottom).sub(bodyTop), zeroV, upV);
+        
+        _parts[i].lookAt(temp.copy(bodyBottom).sub(bodyTop), zeroV, upV);
         scale.z = Pod.Vec.dist(bodyTop, bodyBottom);
-        pM.compose(temp.copy(bodyTop), rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(bodyTop, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(bodyBottom, zeroQ, sM), this.color);
+        _parts[i].compose(temp.copy(bodyTop), rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
+        _points[j++].compose(bodyTop, zeroQ, sM);
+        _points[j++].compose(bodyBottom, zeroQ, sM);
 
-        pM.lookAt(temp.copy(worldPos.leftLowerArm).sub(worldPos.leftUpperArm), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.leftLowerArm).sub(worldPos.leftUpperArm), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.leftUpperArm, worldPos.leftLowerArm);
-        pM.compose(worldPos.leftUpperArm, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.leftUpperArm, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        pM.lookAt(temp.copy(worldPos.leftHand!).sub(worldPos.leftLowerArm), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.leftHand!).sub(worldPos.leftLowerArm), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.leftLowerArm, worldPos.leftHand!);
-        pM.compose(worldPos.leftLowerArm, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.leftLowerArm, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftUpperArm, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftLowerArm, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftHand, zeroQ, sM), this.color);
+        _points[j++].compose(worldPos.leftUpperArm, zeroQ, sM);
+        _points[j++].compose(worldPos.leftLowerArm, zeroQ, sM);
+        _points[j++].compose(worldPos.leftHand, zeroQ, sM);
 
-        pM.lookAt(temp.copy(worldPos.rightLowerArm).sub(worldPos.rightUpperArm), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.rightLowerArm).sub(worldPos.rightUpperArm), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.rightUpperArm, worldPos.rightLowerArm);
-        pM.compose(worldPos.rightUpperArm, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.rightUpperArm, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        pM.lookAt(temp.copy(worldPos.rightHand!).sub(worldPos.rightLowerArm), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.rightHand!).sub(worldPos.rightLowerArm), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.rightLowerArm, worldPos.rightHand!);
-        pM.compose(worldPos.rightLowerArm, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.rightLowerArm, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperArm, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerArm, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightHand, zeroQ, sM), this.color);
+        _points[j++].compose(worldPos.rightUpperArm, zeroQ, sM);
+        _points[j++].compose(worldPos.rightLowerArm, zeroQ, sM);
+        _points[j++].compose(worldPos.rightHand, zeroQ, sM);
 
-        pM.lookAt(temp.copy(worldPos.leftLowerLeg).sub(worldPos.leftUpperLeg), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.leftLowerLeg).sub(worldPos.leftUpperLeg), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.leftUpperLeg, worldPos.leftLowerLeg);
-        pM.compose(worldPos.leftUpperLeg, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.leftUpperLeg, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        pM.lookAt(temp.copy(worldPos.leftFoot!).sub(worldPos.leftLowerLeg), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.leftFoot!).sub(worldPos.leftLowerLeg), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.leftLowerLeg, worldPos.leftFoot);
-        pM.compose(worldPos.leftLowerLeg, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.leftLowerLeg, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftUpperLeg, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftLowerLeg, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.leftFoot, zeroQ, sM), this.color);
+        _points[j++].compose(worldPos.leftUpperLeg, zeroQ, sM);
+        _points[j++].compose(worldPos.leftLowerLeg, zeroQ, sM);
+        _points[j++].compose(worldPos.leftFoot, zeroQ, sM);
 
-        pM.lookAt(temp.copy(worldPos.rightLowerLeg).sub(worldPos.rightUpperLeg), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.rightLowerLeg).sub(worldPos.rightUpperLeg), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.rightUpperLeg, worldPos.rightLowerLeg);
-        pM.compose(worldPos.rightUpperLeg, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.rightUpperLeg, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        pM.lookAt(temp.copy(worldPos.rightFoot!).sub(worldPos.rightLowerLeg), zeroV, upV);
+        _parts[i].lookAt(temp.copy(worldPos.rightFoot!).sub(worldPos.rightLowerLeg), zeroV, upV);
         scale.z = Pod.Vec.dist(worldPos.rightLowerLeg, worldPos.rightFoot!);
-        pM.compose(worldPos.rightLowerLeg, rot.setFromRotationMatrix(pM), scale);
-        this.parts[i++] = consume("Cylinder.MeshPhong", pM, this.color);
+        _parts[i].compose(worldPos.rightLowerLeg, rot.setFromRotationMatrix(_parts[i]), scale);
+        ++i;
 
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightUpperLeg, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightLowerLeg, zeroQ, sM), this.color);
-        this.points[j++] = consume("Sphere.MeshPhong", pM.compose(worldPos.rightFoot, zeroQ, sM), this.color);
+        _points[j++].compose(worldPos.rightUpperLeg, zeroQ, sM);
+        _points[j++].compose(worldPos.rightLowerLeg, zeroQ, sM);
+        _points[j++].compose(worldPos.rightFoot, zeroQ, sM);
     }
 
     public dispose(): void {

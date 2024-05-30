@@ -9,21 +9,70 @@ declare module "../../replay/instancing.js" {
     interface InstanceTypes {
         "Cylinder.MeshPhong": void;
         "Sphere.MeshPhong": void;
+
+        // https://stackoverflow.com/questions/36947704/rendering-a-transparent-shell
+        "Cylinder.MeshPhong.HalfTransparency.Mask": void;
+        "Sphere.MeshPhong.HalfTransparency.Mask": void;
+        "Cylinder.MeshPhong.HalfTransparency": void;
+        "Sphere.MeshPhong.HalfTransparency": void;
     } 
 }
 
 (() => {
-    const cylinders = createInstance("Cylinder.MeshPhong", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), new MeshPhongMaterial(), 100);
-    cylinders.frustumCulled = false;
-    cylinders.instanceMatrix.setUsage( DynamicDrawUsage );
-    cylinders.castShadow = true;
-    cylinders.receiveShadow = true;
+    const material = new MeshPhongMaterial();
+    material.transparent = true;
+    material.opacity = 0.5;
+    material.colorWrite = false;
 
-    const spheres = createInstance("Sphere.MeshPhong", new SphereGeometry(1, 10, 10), new MeshPhongMaterial(), 100);
-    spheres.frustumCulled = false;
-    spheres.instanceMatrix.setUsage( DynamicDrawUsage );
-    spheres.castShadow = true;
-    spheres.receiveShadow = true;
+    createInstance("Cylinder.MeshPhong.HalfTransparency.Mask", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.renderOrder = 1;
+    });
+    
+
+    createInstance("Sphere.MeshPhong.HalfTransparency.Mask", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.renderOrder = 1;
+    });
+})();
+
+(() => {
+    const material = new MeshPhongMaterial();
+    material.transparent = true;
+    material.opacity = 0.5;
+    material.colorWrite = true;
+
+    createInstance("Cylinder.MeshPhong.HalfTransparency", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.renderOrder = 2;
+    });
+    
+    createInstance("Sphere.MeshPhong.HalfTransparency", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.renderOrder = 2;
+    });
+})();
+
+(() => {
+    const material = new MeshPhongMaterial();
+
+    createInstance("Cylinder.MeshPhong", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    });
+
+    createInstance("Sphere.MeshPhong", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    });
 })();
 
 declare module "../../replay/moduleloader.js" {

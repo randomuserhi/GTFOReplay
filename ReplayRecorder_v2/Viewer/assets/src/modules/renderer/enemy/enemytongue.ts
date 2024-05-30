@@ -107,9 +107,10 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                     
                     d += dist;
                 }
-
-                model.geometry.morph(points);
-                model.mesh.visible = tongue.dimension === renderer.get("Dimension");
+                if (points.length > 1) {
+                    model.geometry.morph(points);
+                }
+                model.mesh.visible = points.length > 1 && tongue.dimension === renderer.get("Dimension");
             }
 
             for (const [id, model] of [...models.entries()]) {

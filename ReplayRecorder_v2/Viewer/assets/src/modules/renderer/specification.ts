@@ -957,6 +957,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 export interface EnemySpecification {
     id: number;
     maxHealth: number;
+    transparent?: boolean;
     name?: string;
     model?: (data: any) => EnemyModel;
     rotOffset?: Vector3Like;
@@ -1601,6 +1602,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 2,
     name: "Shadow Scout",
+    transparent: true,
     maxHealth: 42,
     headScale: {
         x: 1.3,
@@ -1635,10 +1637,12 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 4,
     name: "Shadow",
+    transparent: true,
     maxHealth: 20
 }, {
     id: 5,
     name: "Big Shadow",
+    transparent: true,
     maxHealth: 20,
     headScale: {
         x: 0.65,
