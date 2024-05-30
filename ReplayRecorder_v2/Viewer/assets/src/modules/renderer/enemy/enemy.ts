@@ -1,4 +1,4 @@
-import { Camera, Color, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, SphereGeometry, Vector3 } from "three";
+import { Camera, Color, Frustum, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, Sphere, SphereGeometry, Vector3, Vector3Like } from "three";
 import { Text } from "troika-three-text";
 import { InstanceTypes, consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
@@ -52,6 +52,14 @@ export class EnemyModel {
         this.root = new Group();
     }
 
+    public cull(position: Vector3Like, radius: number, camera: Camera, frustum: Frustum, renderDistance: number) {
+        sphere.center.copy(position);
+        sphere.radius = radius;
+        if (camera.getWorldPosition(diff).sub(position).lengthSq() > renderDistance * renderDistance) return true;
+        if (!frustum.intersectsSphere(sphere)) return true;
+        return false;
+    }
+
     public addToScene(scene: Scene) {
         scene.add(this.root);
     }
@@ -65,7 +73,7 @@ export class EnemyModel {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
     }
 
     public dispose() {
@@ -86,6 +94,8 @@ for (let i = 0; i < _points.length; ++i) {
     _points[i] = new Matrix4();
 }
 
+const sphere = new Sphere();
+const diff = new Vector3();
 export class HumanoidEnemyModel extends EnemyModel {
     anchor: Object3D;
     pivot: Object3D;
@@ -236,7 +246,9 @@ export class HumanoidEnemyModel extends EnemyModel {
         obj.applyMatrix4(this.inverseMatrix[limb]);
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
+        if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
+
         this.animate(dt, time, enemy, anim, camera);
         this.computeMatrices(dt, enemy);
 
@@ -536,6 +548,8 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
             const camera = renderer.get("Camera")!;
+            const frustum = renderer.get("Frustum")!;
+            const renderDistance = renderer.get("RenderDistance")!;
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
                     const modelFactory = specification.enemies.get(enemy.type)?.model;
@@ -555,7 +569,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 if (model.root.visible) {
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
-                        model.update(dt, time, enemy, anim, camera);
+                        model.update(dt, time, enemy, anim, camera, frustum, renderDistance);
                     }
                 }
             }

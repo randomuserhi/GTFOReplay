@@ -1,4 +1,4 @@
-import { Camera, EulerOrder, Group, Mesh, MeshPhongMaterial, Vector3 } from "three";
+import { Camera, EulerOrder, Frustum, Group, Mesh, MeshPhongMaterial, Vector3 } from "three";
 //import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Text } from "troika-three-text";
 import * as Pod from "../../../replay/pod.js";
@@ -42,7 +42,9 @@ export class SquidModel extends EnemyModel {
         this.anchor.add(this.tmp);
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
+        if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
+
         this.animate(dt, time, enemy, anim, camera);
         this.render(dt, enemy);
     }

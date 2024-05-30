@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { createInstance } from "../../replay/instancing.js";
@@ -82,6 +82,8 @@ declare module "../../replay/moduleloader.js" {
         }
 
         interface RenderData {
+            "Frustum": Frustum;
+            "RenderDistance": number;
             "Camera": PerspectiveCamera;
             "CameraControls": CameraControls;
             "FakeCamera": PerspectiveCamera;
@@ -358,6 +360,7 @@ class CameraControls {
     }
 }
 
+const pM = new Matrix4();
 const globalCameraPos = new Vector3();
 ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
     const init = api.getInitPasses();
@@ -412,6 +415,11 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
 
             r.set("CameraControls",  new CameraControls(camera, r.renderer.domElement));
 
+            const frustum = new Frustum();
+            frustum.setFromProjectionMatrix(pM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+            r.set("Frustum", frustum);
+            r.set("RenderDistance", 50);
+
             // Setup resize event
             r.addEventListener("resize", ({ width, height }) => {
                 camera.aspect = width / height;
@@ -425,9 +433,13 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
     api.setRenderLoop([{ 
         name, pass: (renderer, snapshot, dt) => {
             const light = renderer.get("MainLight")!;
-            const cameraPos = renderer.get("Camera")!.getWorldPosition(globalCameraPos);
+            const camera = renderer.get("Camera")!;
+            const cameraPos = camera.getWorldPosition(globalCameraPos);
             light.position.set(cameraPos.x, cameraPos.y + 50, cameraPos.z); 
             light.target.position.set(cameraPos.x, cameraPos.y - 10, cameraPos.z);
+
+            const frustum = renderer.get("Frustum")!;
+            frustum.setFromProjectionMatrix(pM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
 
             renderer.get("CameraControls")!.update(renderer, snapshot, dt);
         } 
