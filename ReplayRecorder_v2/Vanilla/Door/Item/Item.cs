@@ -45,7 +45,9 @@ namespace Vanilla.Map.Items {
         private Vector3 _position;
         private Quaternion rotation => item.m_stateReplicator.State.placement.rotation;
         private Quaternion _rotation;
-        private bool onGround => item.m_stateReplicator.State.status == ePickupItemStatus.PlacedInLevel;
+        private bool onGround =>
+            item.m_stateReplicator.State.status == ePickupItemStatus.PlacedInLevel ||
+            item.m_stateReplicator.State.placement.droppedOnFloor;
         private bool _onGround;
         private byte player {
             get {

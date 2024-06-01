@@ -5,8 +5,8 @@ using ReplayRecorder.API.Attributes;
 using UnityEngine;
 
 namespace Vanilla.Map.ResourceContainers {
-    internal class rContainer {
-        public readonly int id;
+    [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.1")]
+    internal class rContainer : ReplayDynamic {
         public LG_ResourceContainer_Storage container;
 
         public bool isLocker;
@@ -15,12 +15,14 @@ namespace Vanilla.Map.ResourceContainers {
         public Vector3 position => container.transform.position;
         public Quaternion rotation => container.transform.rotation;
 
-        public rContainer(LG_ResourceContainer_Storage container, bool isLocker, byte dimension) {
+        public rContainer(LG_ResourceContainer_Storage container, bool isLocker, byte dimension) : base(container.GetInstanceID()) {
             this.container = container;
             this.isLocker = isLocker;
             this.dimension = dimension;
-            id = container.GetInstanceID();
         }
+
+        public override bool Active => throw new NotImplementedException();
+        public override bool IsDirty => throw new NotImplementedException();
     }
 
     [ReplayData("Vanilla.Map.ResourceContainers", "0.0.1")]
@@ -29,6 +31,10 @@ namespace Vanilla.Map.ResourceContainers {
         [ReplayOnElevatorStop]
         private static void Trigger() {
             Replay.Trigger(new rContainers());
+
+            foreach (rContainer container in containers.Values) {
+                Replay.Spawn(container);
+            }
         }
 
         [ReplayInit]
@@ -39,7 +45,7 @@ namespace Vanilla.Map.ResourceContainers {
         internal static Dictionary<int, rContainer> containers = new Dictionary<int, rContainer>();
 
         public override void Write(ByteBuffer buffer) {
-            // TODO(randomuserhi): Throw error on too many ladders
+            // TODO(randomuserhi): Throw error on too many containers
             BitHelper.WriteBytes((ushort)containers.Count, buffer);
 
             foreach (rContainer container in containers.Values) {
