@@ -5,23 +5,20 @@ using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using SNetwork;
 using UnityEngine;
 using Vanilla.Specification;
 
-namespace Vanilla.Map.HeavyItem {
-
-    // TODO(randomuserhi): Test cells placed into generators...
-
+namespace Vanilla.Map.Items {
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.HeavyItem", "0.0.1")]
-    internal class rHeavyItem : ReplayDynamic {
+    [ReplayData("Vanilla.Map.Items", "0.0.1")]
+    internal class rItem : ReplayDynamic {
         [HarmonyPatch]
         private class Patches {
             [HarmonyPatch(typeof(LG_PickupItem_Sync), nameof(LG_PickupItem_Sync.Setup))]
             [HarmonyPostfix]
             private static void Postfix_Setup(LG_PickupItem_Sync __instance) {
-                if (__instance.GetComponent<CarryItemPickup_Core>() == null) return; // NOTE(randomuserhi): removing this line includes normal consumables
-                Replay.Spawn(new rHeavyItem(__instance));
+                Replay.Spawn(new rItem(__instance));
             }
         }
 
@@ -48,13 +45,19 @@ namespace Vanilla.Map.HeavyItem {
         private Vector3 _position;
         private Quaternion rotation => item.m_stateReplicator.State.placement.rotation;
         private Quaternion _rotation;
-        private bool onGround =>
-            !item.m_stateReplicator.State.placement.hasBeenPickedUp ||
-            item.m_stateReplicator.State.placement.linkedToMachine ||
-            item.m_stateReplicator.State.placement.droppedOnFloor;
+        private bool onGround => item.m_stateReplicator.State.status == ePickupItemStatus.PlacedInLevel;
         private bool _onGround;
+        private byte player {
+            get {
+                if (item.m_stateReplicator.State.pPlayer.TryGetPlayer(out SNet_Player player)) {
+                    return (byte)player.PlayerSlotIndex();
+                }
+                return byte.MaxValue;
+            }
+        }
+        private byte _player = byte.MaxValue;
 
-        public rHeavyItem(LG_PickupItem_Sync item) : base(item.m_stateReplicator.Replicator.Key) {
+        public rItem(LG_PickupItem_Sync item) : base(item.m_stateReplicator.Replicator.Key) {
             this.item = item;
         }
 
@@ -63,15 +66,20 @@ namespace Vanilla.Map.HeavyItem {
             _position = position;
             _rotation = rotation;
             _onGround = onGround;
+            _player = player;
 
             BitHelper.WriteBytes(_dimensionIndex, buffer);
             BitHelper.WriteBytes(_position, buffer);
             BitHelper.WriteHalf(_rotation, buffer);
             BitHelper.WriteBytes(_onGround, buffer);
+            BitHelper.WriteBytes(_player, buffer);
+
+            // NOTE(randomuserhi): If item is not on ground and player slot is undefined (byte.MaxValue) then it means 
+            //                     item was on a player / bot that has been disconnected from the game.
         }
 
         public override void Spawn(ByteBuffer buffer) {
-            APILogger.Debug($"Spawned heavy item - {GTFOSpecification.GetItem(item.item.ItemDataBlock.persistentID)}");
+            APILogger.Debug($"Spawned item - {GTFOSpecification.GetItem(item.item.ItemDataBlock.persistentID)}");
 
             Write(buffer);
             BitHelper.WriteBytes(GTFOSpecification.GetItem(item.item.ItemDataBlock.persistentID), buffer);

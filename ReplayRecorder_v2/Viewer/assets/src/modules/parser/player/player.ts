@@ -28,6 +28,7 @@ declare module "../../../replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Player": Map<number, Player>;
+            "Vanilla.Player.Slots": (Player | undefined)[];
         }
     }
 }
@@ -74,15 +75,18 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
         },
         exec: (id, data, snapshot) => {
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const slots = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
         
             const { snet } = data;
         
             if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
-            players.set(id, { 
+            const player = { 
                 id, ...data,
                 equippedId: 0,
                 lastEquippedTime: 0
-            });
+            };
+            players.set(id, player);
+            slots[data.slot] = player;
         }
     },
     despawn: {
@@ -90,8 +94,10 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
         }, 
         exec: (id, data, snapshot) => {
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const slots = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
 
             if (!players.has(id)) throw new PlayerNotFound(`Player of id '${id}' did not exist.`);
+            slots[players.get(id)!.slot] = undefined;
             players.delete(id);
         }
     }
