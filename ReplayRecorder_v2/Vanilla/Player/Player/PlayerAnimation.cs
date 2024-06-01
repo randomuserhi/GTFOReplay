@@ -137,6 +137,7 @@ namespace Vanilla.Player {
             private static void Prefix_ReceiveClassItemSync(MeleeWeaponThirdPerson __instance) {
                 if (!Replay.TryGet(__instance.Owner.GlobalID, out rPlayerAnimation? _anim)) return;
                 rPlayerAnimation anim = _anim!;
+                anim.meleeWeaponThirdPerson = __instance;
 
                 anim._chargingMelee = false;
             }
@@ -146,6 +147,7 @@ namespace Vanilla.Player {
             private static void Prefix_ReceiveClassItemSync(MeleeWeaponThirdPerson __instance, PlayerInventoryBase.pSimpleItemSyncData data) {
                 if (!Replay.TryGet(__instance.Owner.GlobalID, out rPlayerAnimation? _anim)) return;
                 rPlayerAnimation anim = _anim!;
+                anim.meleeWeaponThirdPerson = __instance;
 
                 if (data.inFireMode) {
                     anim._chargingMelee = false;
@@ -179,6 +181,7 @@ namespace Vanilla.Player {
 
         public PlayerAgent player;
         private Animator animator;
+        private MeleeWeaponThirdPerson? meleeWeaponThirdPerson = null;
 
         private static byte compress(float value, float max) {
             value /= max;
@@ -197,6 +200,17 @@ namespace Vanilla.Player {
         }
         public override bool IsDirty {
             get {
+                if (equipped != lastEquipped) {
+                    _chargingMelee = false;
+                    _chargingThrow = false;
+
+                    lastEquipped = equipped;
+                }
+
+                if (meleeWeaponThirdPerson != null) {
+                    _chargingMelee = meleeWeaponThirdPerson.m_inChargeAnim;
+                }
+
                 bool vel =
                     velFwd != compress(_velFwd, 10f) ||
                     velRight != compress(_velRight, 10f);
@@ -270,15 +284,6 @@ namespace Vanilla.Player {
                     }
                 }
                 return 0;
-            }
-        }
-        [ReplayTick]
-        private void tick() {
-            if (equipped != lastEquipped) {
-                _chargingMelee = false;
-                _chargingThrow = false;
-
-                lastEquipped = equipped;
             }
         }
 

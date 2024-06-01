@@ -47,6 +47,10 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 }
 
                 const enemyModel = enemyModels.get(owner.id);
+                if (enemyModel !== undefined && !enemyModel.isVisible()) {
+                    model.mesh.visible = false;
+                    continue;
+                }
                 
                 const originThree = new Vector3(0, 0, 0).copy(owner.position); // TODO(randomuserhi): Move elsewhere to prevent GC
                 if (enemyModel !== undefined && Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, enemyModel)) {

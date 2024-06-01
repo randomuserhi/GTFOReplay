@@ -46,17 +46,23 @@ const scale = new Vector3(radius, radius, radius);
 
 export class EnemyModel {
     root: Object3D;
+    culled: boolean;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(enemy: Enemy) {
         this.root = new Group();
+        this.culled = false;
     }
 
     public cull(position: Vector3Like, radius: number, camera: Camera, frustum: Frustum, renderDistance: number) {
         sphere.center.copy(position);
         sphere.radius = radius;
-        if (camera.getWorldPosition(diff).sub(position).lengthSq() > renderDistance * renderDistance) return true;
-        if (!frustum.intersectsSphere(sphere)) return true;
+        if (camera.getWorldPosition(diff).sub(position).lengthSq() > renderDistance * renderDistance ||
+            !frustum.intersectsSphere(sphere)) {
+            this.culled = true;
+            return true;
+        }
+        this.culled = false;
         return false;
     }
 
@@ -66,6 +72,11 @@ export class EnemyModel {
 
     public removeFromScene(scene: Scene) {
         scene.remove(this.root);
+    }
+
+    public isVisible(): boolean {
+        if (this.culled) return false;
+        return this.root.visible;
     }
 
     public setVisible(visible: boolean) {
@@ -608,6 +619,11 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     renderer.scene.add(mesh);
                 }
                 const model = models.get(id)!;
+                if (!human.isVisible()) {
+                    model.mesh.visible = false;
+                    continue;
+                }
+
                 model.mesh.visible = limb.active;
 
                 // TODO(randomuserhi): I should only need to add once on creation... why need to add every frame?
