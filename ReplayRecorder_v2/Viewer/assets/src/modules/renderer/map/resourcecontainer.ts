@@ -1,6 +1,7 @@
-import { Group, Mesh, MeshPhongMaterial, Scene } from "three";
+import { Color, Group, Mesh, MeshPhongMaterial, Scene } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
+import { white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -21,16 +22,14 @@ const material = new MeshPhongMaterial({
 material.transparent = true;
 material.opacity = 0.5;
 
-const lockMaterial = new MeshPhongMaterial({
-    color: 0xffffff
-});
-
 class ContainerModel {
     group: Group;
     anchor: Group;
 
     hacklock: Group;
     padlock: Group;
+
+    lockColor: Color;
 
     constructor(container: ResourceContainer) {
         this.group = new Group();
@@ -44,6 +43,10 @@ class ContainerModel {
         this.hacklock = new Group();
         this.padlock = new Group();
 
+        this.lockColor = new Color(0xffffff);
+        const lockMaterial = new MeshPhongMaterial();
+        lockMaterial.color = this.lockColor;
+        lockMaterial.specular = white;
         loadGLTF("../js3party/models/hacklock.glb").then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
         loadGLTF("../js3party/models/padlock.glb").then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
 
@@ -66,7 +69,16 @@ class ContainerModel {
     }
 
     public update(time: number, container: ResourceContainerState) {
+        if (container.closed) {
+            this.hacklock.visible = container.lockType === "Hackable" || container.lockType === "Melee";
+            this.padlock.visible = container.lockType === "Melee";
 
+            if (container.lockType === "Hackable") {
+                this.lockColor.set(0xaaaaff);
+            } else {
+                this.lockColor.set(0x444444);
+            }
+        }
     }
 }
 
@@ -108,13 +120,11 @@ class Locker extends ContainerModel {
     }
 
     public update(time: number, container: ResourceContainerState): void {
+        super.update(time, container);
+        
         if (container.closed) {
             this.pivot.rotation.set(0, 0, 0);
             this.right.position.set(0, 0, 0);
-
-            this.hacklock.visible = container.lockType === "Hackable" || container.lockType === "Melee";
-            this.padlock.visible = container.lockType === "Melee";
-
             return;
         }
 
@@ -158,12 +168,10 @@ class Box extends ContainerModel {
     }
 
     public update(time: number, container: ResourceContainerState): void {
+        super.update(time, container);
+
         if (container.closed) {
             this.pivot.rotation.set(0, 0, 0);
-
-            this.hacklock.visible = container.lockType === "Hackable" || container.lockType === "Melee";
-            this.padlock.visible = container.lockType === "Melee";
-
             return;
         }
 

@@ -2,6 +2,7 @@ import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene }
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
 import { Bezier } from "../../renderer/bezier.js";
+import { white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -17,15 +18,13 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
-const lockMaterial = new MeshPhongMaterial({
-    color: 0xffffff
-});
-
 class LockModel {
     padlock: Group;
     hacklock: Group;
 
     anchor: Group;
+
+    lockColor: Color;
 
     constructor() {
         this.anchor = new Group();
@@ -33,6 +32,10 @@ class LockModel {
         this.hacklock = new Group();
         this.padlock = new Group();
 
+        this.lockColor = new Color(0xffffff);
+        const lockMaterial = new MeshPhongMaterial();
+        lockMaterial.specular = white;
+        lockMaterial.color = this.lockColor;
         loadGLTF("../js3party/models/hacklock.glb").then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
         loadGLTF("../js3party/models/padlock.glb").then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
 
@@ -48,6 +51,12 @@ class LockModel {
     public update(status: LockType) {
         this.hacklock.visible = status === "Hackable" || status === "Melee";
         this.padlock.visible = status === "Melee";
+
+        if (status === "Hackable") {
+            this.lockColor.set(0xaaaaff);
+        } else {
+            this.lockColor.set(0x444444);
+        }
     }
 }
 
