@@ -74,9 +74,9 @@ class ContainerModel {
             this.padlock.visible = container.lockType === "Melee";
 
             if (container.lockType === "Hackable") {
-                this.lockColor.set(0xaaaaff);
+                this.lockColor.set(0x6666ff);
             } else {
-                this.lockColor.set(0x444444);
+                this.lockColor.set(0x666666);
             }
         }
     }
