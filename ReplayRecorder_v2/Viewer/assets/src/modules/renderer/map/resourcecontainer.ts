@@ -156,7 +156,7 @@ class Box extends ContainerModel {
         this.pivot.position.set(0, 0.4, -1);
         
         this.anchor.scale.set(0.25, 0.25, 0.25);
-        this.anchor.position.set(0, 0, 0.15);
+        this.anchor.position.set(0, 0, 0.1);
 
         loadGLTF("../js3party/models/StorageContainers/box bottom.glb").then((model) => this.bottom.add(new Mesh(model, material)));
         loadGLTF("../js3party/models/StorageContainers/box top.glb").then((model) => this.top.add(new Mesh(model, material)));

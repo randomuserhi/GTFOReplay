@@ -23,15 +23,21 @@ const material = new MeshPhongMaterial({
 });
 
 export class LockMelter extends Model {
+    model: Group;
+    
     constructor() {
         super();
         this.equipOffsetPos = { x: 0.1, y: 0, z: 0 };
         this.leftHandGrip = { x: 0.1, y: 0, z: 0 };
 
-        const model = new Group();
+        const model = this.model = new Group();
         getAsset(model, material);
-        model.scale.set(0.05, 0.05, 0.05);
+        model.scale.set(0.04, 0.04, 0.04);
 
         this.group.add(model);
+    }
+    public inLevel(): void {
+        this.model.position.set(0, 0.05, 0);
+        this.model.rotation.set(0, 0, 90 * Math.deg2rad);
     }
 }

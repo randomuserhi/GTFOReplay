@@ -1,36 +1,28 @@
-import { BufferGeometry, Color, Group, Material, Mesh, MeshPhongMaterial, Object3D } from "three";
+import { Color, Group, Mesh, MeshPhongMaterial } from "three";
 import { loadGLTF } from "../modeloader.js";
 import { Model } from "./equippable.js";
 
-let asset: BufferGeometry | undefined = undefined;
-loadGLTF("../js3party/models/Consumables/syringe.glb").then((model) => {
-    asset = model;
-    for (const { parent, material } of waiting) {
-        parent.add(new Mesh(asset, material));
-    }
-});
-const waiting: { parent: Object3D, material: Material }[] = [];
-function getAsset(parent: Object3D, material: Material) {
-    if (asset === undefined) {
-        waiting.push({ parent, material });
-    } else {
-        parent.add(new Mesh(asset, material));
-    }
-}
-
 export class Syringe extends Model {
+    model: Group;
+
     constructor(color: Color) {
         super();
         this.equipOffsetPos = { x: 0, y: 0.1, z: -0.05 };
         this.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
 
-        const model = new Group();
-        getAsset(model, new MeshPhongMaterial({
+        const model = this.model = new Group();
+        loadGLTF("../js3party/models/Consumables/syringe.glb").then((geometry) => model.add(new Mesh(geometry, new MeshPhongMaterial({
             color
-        }));
+        }))));
         model.scale.set(0.1, 0.1, 0.1);
         model.rotateX(-90 * Math.deg2rad);
 
         this.group.add(model);
+    }
+
+    public inLevel(): void {
+        this.model.scale.set(0.08, 0.08, 0.08);
+        this.model.rotation.set(0, 90 * Math.deg2rad, 90 * Math.deg2rad);
+        this.model.position.set(0.05, 0.04, 0);
     }
 }

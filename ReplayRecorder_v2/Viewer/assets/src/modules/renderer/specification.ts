@@ -18,6 +18,7 @@ import { CollectionCase } from "./Equippable/collectioncase.js";
 import { CombatShotgun } from "./Equippable/combatshotgun.js";
 import { ConsumableMine } from "./Equippable/consumablemine.js";
 import { Cryo } from "./Equippable/cryo.js";
+import { DataSphere } from "./Equippable/datasphere.js";
 import { Dmr } from "./Equippable/dmr.js";
 import { DoubleTap } from "./Equippable/doubletap.js";
 import { Model } from "./Equippable/equippable.js";
@@ -1558,6 +1559,11 @@ const _equippable: Equippable[] = [{
     name: "Matter Wave Projector",
     archetype: "rifle",
     model: () => new MatterWaveProjector()
+}, { 
+    id: 70,
+    name: "Data Sphere",
+    archetype: "rifle",
+    model: () => new DataSphere()
 }, { 
     id: 71,
     name: "Cargo Crate",

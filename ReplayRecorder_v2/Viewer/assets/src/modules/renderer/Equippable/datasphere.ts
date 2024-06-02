@@ -6,7 +6,7 @@ const material = new MeshPhongMaterial({
     color: 0xcccccc
 });
 
-export class HeavyFogRepeller extends Model {
+export class DataSphere extends Model {
     model: Group;
 
     constructor() {
@@ -15,8 +15,8 @@ export class HeavyFogRepeller extends Model {
         this.leftHandGrip = { x: 0.2, y: 0, z: 0.1 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/BigPickups/fog turbine.glb").then((geometry) => model.add(new Mesh(geometry, material)));
-        model.scale.set(0.2, 0.2, 0.2);
+        loadGLTF("../js3party/models/BigPickups/data sphere.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        model.scale.set(0.13, 0.13, 0.13);
         model.rotation.set(0, 0, 0, "YXZ");
 
         this.group.add(model);

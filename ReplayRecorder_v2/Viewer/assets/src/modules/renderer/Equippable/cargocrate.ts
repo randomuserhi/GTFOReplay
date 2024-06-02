@@ -13,7 +13,7 @@ export class CargoCrate extends Model {
         this.leftHandGrip = { x: 0.1, y: -0.1, z: 0.1 };
 
         const model = new Group();
-        loadGLTF("../js3party/models/Consumables/base cargo.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/BigPickups/base cargo.glb").then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.1, 0.1, 0.1);
         model.rotateZ(Math.PI);
         model.rotateY(40 * Math.deg2rad);
