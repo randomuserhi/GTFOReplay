@@ -153,6 +153,15 @@ namespace Vanilla.Specification {
                 { 155, 72 },
                 { 148, 73 }, // Cryo
                 { 173, 74 }, // collection case
+
+                // Booster
+                { 152, 75 }, // Artifact (Boosters)
+
+                // Objective
+                { 168, 76 }, // Data cube
+                { 165, 76 },
+                { 179, 76 },
+                { 178, 76 },
             },
             enemies = new Dictionary<uint, ushort>() {
                 { uint.MaxValue, 0 }, // Not necessary for this application to know, but its here to remind that 0 is unavailable
