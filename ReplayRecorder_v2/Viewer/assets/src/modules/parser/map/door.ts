@@ -39,6 +39,13 @@ const doorSizeTypemap: DoorSize[] = [
     "Large"
 ];
 
+export const lockType = [
+    "None",
+    "Melee",
+    "Hackable"
+] as const;
+export type LockType = typeof lockType[number];
+
 export interface Door {
     id: number;
     position: Pod.Vector;
@@ -58,6 +65,8 @@ export interface DoorState extends Dynamic {
 export interface WeakDoor extends Dynamic {
     maxHealth: number;
     health: number;
+    lock0: LockType;
+    lock1: LockType;
 }
 
 export interface DoorStatusChange {
@@ -79,9 +88,13 @@ declare module "../../../replay/moduleloader.js" {
             "Vanilla.Map.WeakDoor":  {
                 parse: {
                     health: number;
+                    lock0: LockType;
+                    lock1: LockType;
                 };
                 spawn: {
                     maxHealth: number;
+                    lock0: LockType;
+                    lock1: LockType;
                 };
                 despawn: void;
             };
@@ -127,7 +140,9 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
     main: {
         parse: async (data) => {
             return {
-                health: await BitHelper.readByte(data)
+                health: await BitHelper.readByte(data),
+                lock0: lockType[await BitHelper.readByte(data)],
+                lock1: lockType[await BitHelper.readByte(data)],
             };
         }, 
         exec: (id, data, snapshot) => {
@@ -136,12 +151,16 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
             if (!weakDoors.has(id)) throw new DoorNotFound(`WeakDoor of id '${id}' was not found.`);
             const weakDoor = weakDoors.get(id)!;
             weakDoor.health = (data.health / 255) * weakDoor.maxHealth;
+            weakDoor.lock0 = data.lock0;
+            weakDoor.lock1 = data.lock1;
         }
     },
     spawn: {
         parse: async (data) => {
             return {
-                maxHealth: await BitHelper.readHalf(data)
+                maxHealth: await BitHelper.readHalf(data),
+                lock0: lockType[await BitHelper.readByte(data)],
+                lock1: lockType[await BitHelper.readByte(data)],
             };
         },
         exec: (id, data, snapshot) => {

@@ -1,7 +1,8 @@
 import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
-import { DoorState } from "../../parser/map/door.js";
+import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
 import { Bezier } from "../../renderer/bezier.js";
+import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -16,6 +17,40 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
+const lockMaterial = new MeshPhongMaterial({
+    color: 0xffffff
+});
+
+class LockModel {
+    padlock: Group;
+    hacklock: Group;
+
+    anchor: Group;
+
+    constructor() {
+        this.anchor = new Group();
+
+        this.hacklock = new Group();
+        this.padlock = new Group();
+
+        loadGLTF("../js3party/models/hacklock.glb").then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
+        loadGLTF("../js3party/models/padlock.glb").then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
+
+        this.hacklock.add(this.padlock);
+        this.hacklock.rotation.set(0, 0, -90 * Math.deg2rad);
+        this.anchor.add(this.hacklock);
+
+        this.padlock.scale.set(0.2, 0.2, 0.2);
+        this.padlock.position.set(0.5, 0, 0.1);
+        this.padlock.rotation.set(0, 0, 90 * Math.deg2rad);
+    }
+
+    public update(status: LockType) {
+        this.hacklock.visible = status === "Hackable" || status === "Melee";
+        this.padlock.visible = status === "Melee";
+    }
+}
+
 class DoorModel {
     group: Group;
     left: Mesh;
@@ -26,6 +61,9 @@ class DoorModel {
     mainColor: Color;
     width: number;
     height: number;
+
+    lock0: LockModel;
+    lock1: LockModel;
 
     constructor(width: number, height: number, color: Color) {
         this.group = new Group();
@@ -72,10 +110,25 @@ class DoorModel {
             this.group.add(this.shutter);
             this.shutter.position.set(0, 0, 0);
         }
+
+        this.lock0 = new LockModel();
+        this.lock1 = new LockModel();
+        this.group.add(this.lock0.anchor, this.lock1.anchor);
+
+        this.lock0.anchor.visible = false;
+        this.lock1.anchor.visible = false;
+
+        this.lock0.anchor.position.set(-width / 2 + 0.1, -height / 6, -0.5);
+        this.lock0.anchor.rotation.set(0, 180 * Math.deg2rad, 0);
+        this.lock0.anchor.scale.set(0.4, 0.4, 0.4);
+
+        this.lock1.anchor.position.set(width / 2 - 0.1, -height / 6, 0.5);
+        this.lock1.anchor.rotation.set(0, 0, 0);
+        this.lock1.anchor.scale.set(0.4, 0.4, 0.4);
     }
 
     private static bezier = Bezier(0.5, 0.0, 0.5, 1);
-    public update(t: number, door: DoorState) {
+    public update(t: number, door: DoorState, weakDoor?: WeakDoor) {
         switch(door.status) {
         case "Closed":
         case "Open": {
@@ -105,6 +158,16 @@ class DoorModel {
         (this.left.material as MeshPhongMaterial).color.setHex(color);
         (this.right.material as MeshPhongMaterial).color.setHex(color);
         (this.shutter.material as MeshPhongMaterial).color.setHex(color);
+
+        const isWeak = weakDoor !== undefined;
+
+        this.lock0.anchor.visible = isWeak;
+        this.lock1.anchor.visible = isWeak;
+
+        if (isWeak) {
+            this.lock0.update(weakDoor.lock0);
+            this.lock1.update(weakDoor.lock1);
+        }
     }
 
     public addToScene(scene: Scene) {
@@ -157,6 +220,7 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
             const t = snapshot.time();
 
             const doors = snapshot.header.getOrDefault("Vanilla.Map.Doors", () => new Map());
+            const weakdoors = snapshot.getOrDefault("Vanilla.Map.WeakDoor", () => new Map());
             const states = snapshot.getOrDefault("Vanilla.Map.DoorState", () => new Map());
             const models = renderer.getOrDefault("Doors", () => new Map());
             for (const [id, door] of doors) {
@@ -165,7 +229,7 @@ ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
                 if (!states.has(id)) states.set(id, { id, status: "Closed" });
                 const state = states.get(id)!;
 
-                model.update(t, state);
+                model.update(t, state, weakdoors.get(id));
                 model.setVisible(door.dimension === renderer.get("Dimension"));
             }
         } 

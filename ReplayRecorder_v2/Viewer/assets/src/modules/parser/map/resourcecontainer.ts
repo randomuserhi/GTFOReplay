@@ -14,7 +14,15 @@ export interface ResourceContainerState {
     id: number;
     closed: boolean;
     lastCloseTime: number;
+    lockType: LockType;
 }
+
+export const lockType = [
+    "None",
+    "Melee",
+    "Hackable"
+] as const;
+export type LockType = typeof lockType[number];
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -29,6 +37,7 @@ declare module "../../../replay/moduleloader.js" {
                 };
                 spawn: {
                     closed: boolean;
+                    lockType: LockType;
                 };
                 despawn: void;
             };
@@ -78,12 +87,13 @@ ModuleLoader.registerDynamic("Vanilla.Map.ResourceContainers.State", "0.0.1", {
     spawn: {
         parse: async (data) => {
             return {
-                closed: await BitHelper.readBool(data)
+                closed: await BitHelper.readBool(data),
+                lockType: lockType[await BitHelper.readByte(data)]
             };
         },
         exec: (id, data, snapshot) => {
             const resourceContainers = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());
-        
+
             if (resourceContainers.has(id)) throw new DuplicateDoor(`Resource container of id '${id}' already exists.`);
             resourceContainers.set(id, { 
                 id, ...data,

@@ -7,8 +7,15 @@ using UnityEngine;
 namespace Vanilla.Map.ResourceContainers {
     [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.1")]
     internal class rContainer : ReplayDynamic {
-        public LG_ResourceContainer_Storage container;
-        public LG_ResourceContainer_Sync sync;
+        private enum LockType {
+            None,
+            Melee,
+            Hackable
+        }
+
+        private LG_ResourceContainer_Storage container;
+        private LG_WeakResourceContainer core;
+        private LG_ResourceContainer_Sync sync;
 
         public bool isLocker;
 
@@ -20,14 +27,18 @@ namespace Vanilla.Map.ResourceContainers {
             this.container = container;
             this.isLocker = isLocker;
             this.dimension = dimension;
-            sync = container.gameObject.GetComponent<LG_ResourceContainer_Sync>();
+            core = container.m_core.Cast<LG_WeakResourceContainer>();
+            sync = core.m_sync.Cast<LG_ResourceContainer_Sync>();
         }
 
-        public override bool Active => sync != null;
+        public override bool Active => core != null;
         public override bool IsDirty => _closed != closed;
 
         private bool closed => sync.m_stateReplicator.State.status != eResourceContainerStatus.Open;
         private bool _closed = true;
+
+        private bool weaklock => core.m_weakLock != null && core.m_weakLock.Status == eWeakLockStatus.LockedMelee;
+        private bool hacklock => core.m_weakLock != null && core.m_weakLock.Status == eWeakLockStatus.LockedHackable;
 
         public override void Write(ByteBuffer buffer) {
             _closed = closed;
@@ -37,6 +48,18 @@ namespace Vanilla.Map.ResourceContainers {
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
+            LockType type = LockType.None;
+            if (core.m_weakLock != null) {
+                switch (core.m_weakLock.Status) {
+                case eWeakLockStatus.LockedMelee:
+                    type = LockType.Melee;
+                    break;
+                case eWeakLockStatus.LockedHackable:
+                    type = LockType.Hackable;
+                    break;
+                }
+            }
+            BitHelper.WriteBytes((byte)type, buffer);
         }
     }
 

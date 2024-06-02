@@ -110,7 +110,7 @@ class PlayerModel  {
 
     handAttachment: Group;
     equipped: Group;
-    equippedItem: { spec?: Equippable, model?: Model };
+    equippedItem?: { spec?: Equippable, model?: Model };
     equippedSlot?: InventorySlot;
     lastEquipped: number;
 
@@ -197,7 +197,7 @@ class PlayerModel  {
 
         this.slots = new Array(inventorySlots.length);
         this.backpackAligns = new Array(inventorySlots.length);
-        this.equippedItem = { spec: undefined, model: undefined };
+        this.equippedItem = undefined;
         for (let i = 0; i < inventorySlots.length; ++i) {
             this.slots[i] = { spec: undefined, model: undefined };
 
@@ -280,7 +280,7 @@ class PlayerModel  {
     
     public animate(time: number, player: Player, anim: PlayerAnimState): void {
         this.skeleton.joints.rightHand.add(this.handAttachment);
-        this.equippedItem.model?.reset();
+        this.equippedItem?.model?.reset();
         this.equipped.visible = true;
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
@@ -297,13 +297,13 @@ class PlayerModel  {
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
         }
         
-        if (this.lastArchetype !== this.equippedItem.spec?.archetype) {
+        if (this.lastArchetype !== this.equippedItem?.spec?.archetype) {
             const blend = Math.clamp01(equipTime / 0.2);
-            if (blend === 1 && this.equippedItem.spec !== undefined) {
+            if (blend === 1 && this.equippedItem?.spec !== undefined) {
                 this.lastArchetype = this.equippedItem.spec?.archetype;
             }
 
-            switch (this.equippedItem.spec?.archetype) {
+            switch (this.equippedItem?.spec?.archetype) {
             case "pistol": this.skeleton.blend(playerAnimations.pistolMovement.sample(offsetTime), blend); break;
             case "rifle": this.skeleton.blend(playerAnimations.rifleMovement.sample(offsetTime), blend); break;
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;
@@ -331,7 +331,7 @@ class PlayerModel  {
         const stateTime = time - (anim.lastStateTransition / 1000);
         switch(anim.state) {
         case "jump": {
-            switch (this.equippedItem.spec?.archetype) {
+            switch (this.equippedItem?.spec?.archetype) {
             case "pistol": this.skeleton.override(playerAnimationClips.Pistol_Jump.sample(stateTime)); break;
             case "rifle": this.skeleton.override(playerAnimationClips.Rifle_Jump.sample(stateTime)); break;
             default: this.skeleton.override(this.meleeArchetype.jumpAnim.sample(stateTime)); break;
@@ -339,7 +339,7 @@ class PlayerModel  {
         } break;
         case "fall": {
             const blendWeight = Math.clamp01(stateTime / 0.2);
-            switch (this.equippedItem.spec?.archetype) {
+            switch (this.equippedItem?.spec?.archetype) {
             case "pistol": this.skeleton.blend(playerAnimationClips.Pistol_Fall.sample(stateTime), blendWeight); break;
             case "rifle": this.skeleton.blend(playerAnimationClips.Rifle_Fall.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.fallAnim.sample(stateTime), blendWeight); break;
@@ -348,7 +348,7 @@ class PlayerModel  {
         case "land": {
             const isSlow = (Math.abs(anim.velocity.x) < 0.08 && Math.abs(anim.velocity.z) < 0.08);
             const blendWeight = 1 - Math.clamp01(stateTime / (isSlow ? 1 : 0.5));
-            switch (this.equippedItem.spec?.archetype) {
+            switch (this.equippedItem?.spec?.archetype) {
             case "pistol": this.skeleton.blend(playerAnimationClips.Pistol_Land.sample(stateTime), blendWeight); break;
             case "rifle": this.skeleton.blend(playerAnimationClips.Rifle_Land.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.landAnim.sample(stateTime), blendWeight); break;
@@ -366,7 +366,7 @@ class PlayerModel  {
         }
 
         const shoveTime = time - (anim.lastShoveTime / 1000);
-        const shoveDuration = this.equippedItem.spec?.archetype === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
+        const shoveDuration = this.equippedItem?.spec?.archetype === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
         const isShoving = shoveTime < shoveDuration;
         if (isShoving) {
             this.equipped.visible = true;
@@ -704,6 +704,7 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
     public updateBackpack(player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
+        this.equippedItem = undefined;
         this.equippedSlot = undefined;
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
