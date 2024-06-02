@@ -10,10 +10,32 @@ export interface ResourceContainer {
     isLocker: boolean;
 }
 
+export interface ResourceContainerState {
+    id: number;
+    closed: boolean;
+    lastCloseTime: number;
+}
+
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Map.ResourceContainers": Map<number, ResourceContainer>;
+        }
+
+        interface Dynamics {
+            "Vanilla.Map.ResourceContainers.State":  {
+                parse: {
+                    closed: boolean;
+                };
+                spawn: {
+                    closed: boolean;
+                };
+                despawn: void;
+            };
+        }
+
+        interface Data {
+            "Vanilla.Map.ResourceContainers.State": Map<number, ResourceContainerState>
         }
     }
 }
@@ -34,3 +56,61 @@ ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
         }
     }
 });
+
+ModuleLoader.registerDynamic("Vanilla.Map.ResourceContainers.State", "0.0.1", {
+    main: {
+        parse: async (data) => {
+            return {
+                closed: await BitHelper.readBool(data)
+            };
+        }, 
+        exec: (id, data, snapshot) => {
+            const resourceContainers = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());
+    
+            if (!resourceContainers.has(id)) throw new ResourceContainerNotFound(`Resource container of id '${id}' was not found.`);
+            const resourceContainer = resourceContainers.get(id)!;
+            if (resourceContainer.closed !== data.closed) {
+                resourceContainer.lastCloseTime = snapshot.time();
+                resourceContainer.closed = data.closed;
+            }
+        }
+    },
+    spawn: {
+        parse: async (data) => {
+            return {
+                closed: await BitHelper.readBool(data)
+            };
+        },
+        exec: (id, data, snapshot) => {
+            const resourceContainers = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());
+        
+            if (resourceContainers.has(id)) throw new DuplicateDoor(`Resource container of id '${id}' already exists.`);
+            resourceContainers.set(id, { 
+                id, ...data,
+                lastCloseTime: -Infinity
+            });
+        }
+    },
+    despawn: {
+        parse: async () => {
+        }, 
+        exec: (id, data, snapshot) => {
+            const resourceContainers = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());
+
+            if (!resourceContainers.has(id)) throw new ResourceContainerNotFound(`Resource container of id '${id}' did not exist.`);
+            resourceContainers.delete(id);
+        }
+    }
+});
+
+class ResourceContainerNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+class DuplicateDoor extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}

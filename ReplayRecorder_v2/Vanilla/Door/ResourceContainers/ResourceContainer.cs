@@ -8,6 +8,7 @@ namespace Vanilla.Map.ResourceContainers {
     [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.1")]
     internal class rContainer : ReplayDynamic {
         public LG_ResourceContainer_Storage container;
+        public LG_ResourceContainer_Sync sync;
 
         public bool isLocker;
 
@@ -19,10 +20,24 @@ namespace Vanilla.Map.ResourceContainers {
             this.container = container;
             this.isLocker = isLocker;
             this.dimension = dimension;
+            sync = container.gameObject.GetComponent<LG_ResourceContainer_Sync>();
         }
 
-        public override bool Active => throw new NotImplementedException();
-        public override bool IsDirty => throw new NotImplementedException();
+        public override bool Active => sync != null;
+        public override bool IsDirty => _closed != closed;
+
+        private bool closed => sync.m_stateReplicator.State.status != eResourceContainerStatus.Open;
+        private bool _closed = true;
+
+        public override void Write(ByteBuffer buffer) {
+            _closed = closed;
+
+            BitHelper.WriteBytes(_closed, buffer);
+        }
+
+        public override void Spawn(ByteBuffer buffer) {
+            Write(buffer);
+        }
     }
 
     [ReplayData("Vanilla.Map.ResourceContainers", "0.0.1")]
@@ -35,6 +50,8 @@ namespace Vanilla.Map.ResourceContainers {
             foreach (rContainer container in containers.Values) {
                 Replay.Spawn(container);
             }
+
+            containers.Clear();
         }
 
         [ReplayInit]
@@ -55,7 +72,6 @@ namespace Vanilla.Map.ResourceContainers {
                 BitHelper.WriteHalf(container.rotation, buffer);
                 BitHelper.WriteBytes(container.isLocker, buffer);
             }
-            containers.Clear();
         }
     }
 }
