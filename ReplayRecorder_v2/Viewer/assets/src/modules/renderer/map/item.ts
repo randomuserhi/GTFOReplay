@@ -24,6 +24,7 @@ ModuleLoader.registerRender("Vanilla.Items", (name, api) => {
                 if (!models.has(id)) {
                     const model = specification.equippable.get(item.itemID)?.model();
                     if (model === undefined) continue;
+                    model.inLevel();
                     renderer.scene.add(model.group);
                     models.set(id, model);
                 }

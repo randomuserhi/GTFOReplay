@@ -48,4 +48,8 @@ export abstract class Model {
         this.fold?.quaternion.copy(this.baseFoldRot);
         this.leftHand?.position.copy(this.leftHandGrip);
     }
+
+    public inLevel() {
+        
+    }
 }
