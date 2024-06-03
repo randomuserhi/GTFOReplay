@@ -45,7 +45,7 @@ class GeneratorModel {
         });
 
         this.model.scale.set(0.43, 0.43, 0.43);
-        this.model.position.set(0, 0.8, 0.15);
+        this.model.position.set(0.016, 0.83, 0.12);
     }
 
     public addToScene(scene: Scene) {
