@@ -4,6 +4,7 @@ import { AssaultRifle } from "./Equippable/assaultrifle.js";
 import { AutoPistol } from "./Equippable/autopistol.js";
 import { Bat } from "./Equippable/bat.js";
 import { Biotracker } from "./Equippable/biotracker.js";
+import { BulkheadKey } from "./Equippable/bulkheadkey.js";
 import { Bullpup } from "./Equippable/bullpup.js";
 import { BurstCannon } from "./Equippable/burstcannon.js";
 import { BurstPistol } from "./Equippable/burstpistol.js";
@@ -18,13 +19,17 @@ import { CollectionCase } from "./Equippable/collectioncase.js";
 import { CombatShotgun } from "./Equippable/combatshotgun.js";
 import { ConsumableMine } from "./Equippable/consumablemine.js";
 import { Cryo } from "./Equippable/cryo.js";
+import { DataCube } from "./Equippable/datacube.js";
 import { DataSphere } from "./Equippable/datasphere.js";
 import { Dmr } from "./Equippable/dmr.js";
 import { DoubleTap } from "./Equippable/doubletap.js";
 import { Model } from "./Equippable/equippable.js";
 import { FogRepeller } from "./Equippable/fogrepeller.js";
 import { GlowStick } from "./Equippable/glowsticks.js";
+import { GLP1 } from "./Equippable/glp1.js";
+import { GLP2 } from "./Equippable/glp2.js";
 import { Hammer } from "./Equippable/hammer.js";
+import { HardDrive } from "./Equippable/harddrive.js";
 import { HeavyAssaultRifle } from "./Equippable/heavyassaultrifle.js";
 import { HeavyFogRepeller } from "./Equippable/heavyfogturbine.js";
 import { HeavySmg } from "./Equippable/heavysmg.js";
@@ -34,6 +39,7 @@ import { HelRifle } from "./Equippable/helrifle.js";
 import { HelShotgun } from "./Equippable/helshotgun.js";
 import { HighCal } from "./Equippable/highcal.js";
 import { HisecCargoCrate } from "./Equippable/hisec.js";
+import { Keycard } from "./Equippable/keycard.js";
 import { Knife } from "./Equippable/knife.js";
 import { LockMelter } from "./Equippable/lockmelter.js";
 import { LongRangeFlashlight } from "./Equippable/longrangeflashlight.js";
@@ -41,11 +47,16 @@ import { MachineGun0 } from "./Equippable/machinegun0.js";
 import { MachineGun1 } from "./Equippable/machinegun1.js";
 import { MachinePistol } from "./Equippable/machinepistol.js";
 import { MatterWaveProjector } from "./Equippable/matterwaveprojector.js";
+import { MemoryStick } from "./Equippable/memorystick.js";
 import { MineDeployer } from "./Equippable/minedeployer.js";
 import { Neonate } from "./Equippable/neonate.js";
+import { OSIP } from "./Equippable/osip.js";
 import { Pack } from "./Equippable/pack.js";
+import { PartialDecoder } from "./Equippable/partialdecoder.js";
 import { PDW } from "./Equippable/pdw.js";
+import { PID } from "./Equippable/pid.js";
 import { Pistol } from "./Equippable/pistol.js";
+import { PlantSample } from "./Equippable/plantsample.js";
 import { PowerCell } from "./Equippable/powercell.js";
 import { PrecisionRifle } from "./Equippable/precisionrifle.js";
 import { Revolver } from "./Equippable/revolver.js";
@@ -1584,6 +1595,106 @@ const _equippable: Equippable[] = [{
     name: "Collection Case",
     archetype: "rifle",
     model: () => new CollectionCase()
+}, { 
+    id: 76,
+    name: "Data Cube",
+    archetype: "rifle",
+    model: () => new DataCube()
+}, { 
+    id: 77,
+    name: "Bulkhead Key",
+    archetype: "rifle",
+    model: () => new BulkheadKey()
+}, { 
+    id: 78,
+    name: "Key Red",
+    archetype: "rifle",
+    model: () => new Keycard(0xff0000)
+}, { 
+    id: 79,
+    name: "Key Blue",
+    archetype: "rifle",
+    model: () => new Keycard(0x0000ff)
+}, { 
+    id: 80,
+    name: "Key Green",
+    archetype: "rifle",
+    model: () => new Keycard(0x00ff00)
+}, { 
+    id: 81,
+    name: "Key Yellow",
+    archetype: "rifle",
+    model: () => new Keycard(0xffff00)
+}, { 
+    id: 82,
+    name: "Key White",
+    archetype: "rifle",
+    model: () => new Keycard(0xffffff)
+}, { 
+    id: 83,
+    name: "Key Black",
+    archetype: "rifle",
+    model: () => new Keycard(0x444444)
+}, { 
+    id: 84,
+    name: "Key Grey",
+    archetype: "rifle",
+    model: () => new Keycard(0xaaaaaa)
+}, { 
+    id: 85,
+    name: "Key Orange",
+    archetype: "rifle",
+    model: () => new Keycard(0xff8800)
+}, { 
+    id: 86,
+    name: "Key Purple",
+    archetype: "rifle",
+    model: () => new Keycard(0xb300ff)
+}, { 
+    id: 87,
+    name: "Personnel Id",
+    archetype: "rifle",
+    model: () => new PID()
+}, { 
+    id: 89,
+    name: "Personnel Id",
+    archetype: "rifle",
+    model: () => new PID()
+}, { 
+    id: 88,
+    name: "Partial Decoder",
+    archetype: "rifle",
+    model: () => new PartialDecoder()
+}, { 
+    id: 89,
+    name: "Hard Drive",
+    archetype: "rifle",
+    model: () => new HardDrive()
+}, { 
+    id: 90,
+    name: "GLP",
+    archetype: "rifle",
+    model: () => new GLP1()
+}, { 
+    id: 91,
+    name: "OSIP",
+    archetype: "rifle",
+    model: () => new OSIP()
+}, { 
+    id: 92,
+    name: "GLP",
+    archetype: "rifle",
+    model: () => new GLP2()
+}, { 
+    id: 93,
+    name: "Plant Sample",
+    archetype: "rifle",
+    model: () => new PlantSample()
+}, { 
+    id: 94,
+    name: "Memory Stick",
+    archetype: "rifle",
+    model: () => new MemoryStick()
 }];
 
 const _shooter_scale = 0.8;

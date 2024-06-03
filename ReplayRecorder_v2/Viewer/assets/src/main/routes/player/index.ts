@@ -2,7 +2,7 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Parser } from "../../../replay/parser.js";
 import { Renderer } from "../../../replay/renderer.js";
-import { Replay } from "../../../replay/replay.js";
+import { Replay, Snapshot } from "../../../replay/replay.js";
 import { FileHandle } from "../../../replay/stream.js";
 import { scoreboard } from "./components/scoreboard.js";
 import { seeker } from "./components/seeker.js";
@@ -70,6 +70,7 @@ export interface player extends HTMLDivElement {
     pause: boolean;
     live: boolean;
     time: number;
+    snapshot: Snapshot | undefined;
     timescale: number;
     lerp: number;
     prevTime: number;
@@ -216,9 +217,12 @@ export const player = Macro((() => {
             
             if (this.time > length) this.time = length;
 
-            const snapshot = this.replay.getSnapshot(this.time);
-            if (snapshot !== undefined) {
-                const api = this.replay.api(snapshot);
+            if (this.snapshot?.time !== this.time) {
+                this.snapshot = this.replay.getSnapshot(this.time);
+            }
+
+            if (this.snapshot !== undefined) {
+                const api = this.replay.api(this.snapshot);
                 this.renderer.render(dt / 1000, api);
 
                 if (this.scoreboardMount.style.display !== "none") {

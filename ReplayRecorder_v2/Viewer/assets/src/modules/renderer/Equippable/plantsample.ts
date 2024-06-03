@@ -6,7 +6,7 @@ const material = new MeshPhongMaterial({
     color: 0xcccccc
 });
 
-export class LockMelter extends Model {
+export class PlantSample extends Model {
     model: Group;
     
     constructor() {
@@ -15,13 +15,13 @@ export class LockMelter extends Model {
         this.leftHandGrip = { x: 0.1, y: 0, z: 0 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/Consumables/lock melter.glb").then((geometry) => model.add(new Mesh(geometry, material)));
-        model.scale.set(0.04, 0.04, 0.04);
+        loadGLTF("../js3party/models/Objective/plant.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        model.scale.set(0.05, 0.05, 0.05);
 
         this.group.add(model);
     }
     public inLevel(): void {
-        this.model.position.set(0, 0.05, 0);
+        this.model.position.set(0, 0.1, 0);
         this.model.rotation.set(0, 0, 90 * Math.deg2rad);
     }
 }

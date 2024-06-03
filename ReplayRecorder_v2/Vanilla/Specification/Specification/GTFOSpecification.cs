@@ -162,6 +162,30 @@ namespace Vanilla.Specification {
                 { 165, 76 },
                 { 179, 76 },
                 { 178, 76 },
+
+                { 146, 77 }, // Bulkhead key
+
+                { 27, 78 }, // red key
+                { 85, 79 }, // blue key
+                { 86, 80 }, // green key
+                { 87, 81 }, // yellow key
+                { 88, 82 }, // white key
+                { 89, 83 }, // black key
+                { 90, 84 }, // grey key
+                { 91, 85 }, // orange key
+                { 92, 86 }, // purple key
+
+                { 128, 87 }, // Personnel Id
+                { 129, 88 }, // Partial Decoder
+                { 147, 89 }, // Hard drive
+                { 180, 89 },
+                { 183, 89 },
+                { 149, 90 }, // GLP 1
+                { 150, 91 }, // OSIP
+                { 169, 92 }, // GLP 2
+                { 153, 93 }, // Plant Sample
+                { 171, 94 }, // Memory Stick
+                { 172, 94 },
             },
             enemies = new Dictionary<uint, ushort>() {
                 { uint.MaxValue, 0 }, // Not necessary for this application to know, but its here to remind that 0 is unavailable
