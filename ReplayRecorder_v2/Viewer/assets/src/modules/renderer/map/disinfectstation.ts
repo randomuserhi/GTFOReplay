@@ -1,7 +1,6 @@
 import { Group, Mesh, MeshPhongMaterial, Scene } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { DisinfectStation } from "../../parser/map/disinfectstation.js";
-import { white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -17,9 +16,8 @@ declare module "../../../replay/moduleloader.js" {
 }
 
 const material = new MeshPhongMaterial({
-    color: 0xcbd9f5
+    color: 0xa0c7eb
 });
-material.specular = white;
 
 class DisinfectStationModel {
     group: Group;
