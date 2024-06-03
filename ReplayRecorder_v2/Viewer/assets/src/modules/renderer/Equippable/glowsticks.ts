@@ -15,7 +15,7 @@ export class GlowStick extends Model {
         this.leftHand = undefined;
 
         this.model = new Group();
-        loadGLTF("../js3party/models/Consumables/glowstick.glb").then((model) => this.model.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/Consumables/glowstick.glb", false).then((model) => this.model.add(new Mesh(model, material)));
         this.model.scale.set(0.02, 0.02, 0.02);
 
         this.group.add(this.model);

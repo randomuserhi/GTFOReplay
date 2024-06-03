@@ -15,7 +15,7 @@ export class Neonate extends Model {
         this.leftHandGrip = { x: 0.1, y: -0.1, z: 0.1 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/BigPickups/neonate.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/BigPickups/neonate.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.1, 0.1, 0.1);
         model.rotation.set(-90 * Math.deg2rad, 180 * Math.deg2rad, -40 * Math.deg2rad);
 

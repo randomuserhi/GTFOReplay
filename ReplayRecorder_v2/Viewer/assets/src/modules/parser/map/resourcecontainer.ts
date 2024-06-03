@@ -94,7 +94,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.ResourceContainers.State", "0.0.1", {
         exec: (id, data, snapshot) => {
             const resourceContainers = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());
 
-            if (resourceContainers.has(id)) throw new DuplicateDoor(`Resource container of id '${id}' already exists.`);
+            if (resourceContainers.has(id)) throw new DuplicateResourceContainer(`Resource container of id '${id}' already exists.`);
             resourceContainers.set(id, { 
                 id, ...data,
                 lastCloseTime: -Infinity
@@ -119,7 +119,7 @@ class ResourceContainerNotFound extends Error {
     }
 }
 
-class DuplicateDoor extends Error {
+class DuplicateResourceContainer extends Error {
     constructor(message?: string) {
         super(message);
     }

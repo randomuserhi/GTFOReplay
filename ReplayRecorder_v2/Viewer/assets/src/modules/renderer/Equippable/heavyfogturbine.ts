@@ -15,7 +15,7 @@ export class HeavyFogRepeller extends Model {
         this.leftHandGrip = { x: 0.2, y: 0, z: 0.1 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/BigPickups/fog turbine.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/BigPickups/fog turbine.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.2, 0.2, 0.2);
         model.rotation.set(0, 0, 0, "YXZ");
 

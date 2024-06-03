@@ -15,7 +15,7 @@ export class MatterWaveProjector extends Model {
         this.leftHandGrip = { x: 0.1, y: -0.2, z: 0 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/BigPickups/matter wave projector.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/BigPickups/matter wave projector.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.1, 0.1, 0.1);
         model.rotateZ(Math.PI);
 

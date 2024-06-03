@@ -16,7 +16,7 @@ export class LongRangeFlashlight extends Model {
         this.offsetRot = { x: 0.707106829, y: 0, z: 0, w: 0.707106829 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/Consumables/long range flashlight.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/Consumables/long range flashlight.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.1, 0.1, 0.1);
         model.rotateX(Math.PI);
 

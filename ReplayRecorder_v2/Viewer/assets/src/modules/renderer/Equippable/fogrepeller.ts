@@ -15,7 +15,7 @@ export class FogRepeller extends Model {
         this.leftHandGrip = { x: 0.1, y: 0, z: -0.1 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/Consumables/fog rep.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/Consumables/fog rep.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.07, 0.07, 0.07);
         model.rotateY(90 * Math.deg2rad);
 

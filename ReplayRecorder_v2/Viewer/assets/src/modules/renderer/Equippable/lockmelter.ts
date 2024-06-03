@@ -15,7 +15,7 @@ export class LockMelter extends Model {
         this.leftHandGrip = { x: 0.1, y: 0, z: 0 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/Consumables/lock melter.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/Consumables/lock melter.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.04, 0.04, 0.04);
 
         this.group.add(model);

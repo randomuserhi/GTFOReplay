@@ -24,7 +24,7 @@ namespace Vanilla.Map.Doors {
         private byte size;
 
         public rDoor(Type type, LG_Gate gate, MonoBehaviourExtended mono, int serialNumber, bool isCheckpoint = false) {
-            id = mono.GetInstanceID();
+            id = gate.GetInstanceID();
             this.gate = gate;
             this.mono = mono;
             this.serialNumber = (ushort)serialNumber;

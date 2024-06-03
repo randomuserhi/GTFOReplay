@@ -22,7 +22,7 @@ export class SquidModel extends EnemyModel {
             color: 0xff0000
         });
 
-        loadGLTF("../js3party/models/based_squid.glb").then((model) => this.eye.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/based_squid.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
         this.eye.scale.set(1, 1, 1);
         this.eye.rotateY(15 * Math.deg2rad);
         
@@ -92,14 +92,14 @@ export class FlyerModel extends EnemyModel {
             color: 0xff0000
         });
 
-        loadGLTF("../js3party/models/meatball.glb").then((model) => this.eye.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/meatball.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
         this.eye.scale.set(0.4, 0.4, 0.4);
         this.eye.rotateY(15 * Math.deg2rad);
         
         for (let i = 0; i < this.spikes.length; ++i) {
             const group = new Group();
             group.scale.set(0.2, 0.4, 0.2);
-            loadGLTF("../js3party/models/spike.glb").then((model) => group.add(new Mesh(model, material)));
+            loadGLTF("../js3party/models/spike.glb", false).then((model) => group.add(new Mesh(model, material)));
             this.spikes[i] = group;
         }
         
@@ -206,13 +206,13 @@ export class BigFlyerModel extends EnemyModel {
         });
 
         const scale = 1.3;
-        loadGLTF("../js3party/models/big_meatball_body.glb").then((model) => this.eye.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/big_meatball_body.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
         this.eye.scale.set(scale, scale, scale);
         
         for (let i = 0; i < this.spikes.length; ++i) {
             const group = new Group();
             group.scale.set(0.2, 0.6, 0.2);
-            loadGLTF("../js3party/models/spike.glb").then((model) => group.add(new Mesh(model, material)));
+            loadGLTF("../js3party/models/spike.glb", false).then((model) => group.add(new Mesh(model, material)));
             this.spikes[i] = group;
         }
         
@@ -234,7 +234,7 @@ export class BigFlyerModel extends EnemyModel {
             const group = new Group();
             group.scale.set(scale, scale, scale);
             const corner = new Group();
-            loadGLTF("../js3party/models/big_meatball_corner.glb").then((model) => corner.add(new Mesh(model, material)));
+            loadGLTF("../js3party/models/big_meatball_corner.glb", false).then((model) => corner.add(new Mesh(model, material)));
             corner.rotation.set(0, 0, rotations[i]);
             group.add(corner);
             this.corners[i] = group;

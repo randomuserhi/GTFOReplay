@@ -36,8 +36,8 @@ class LockModel {
         const lockMaterial = new MeshPhongMaterial();
         lockMaterial.specular = white;
         lockMaterial.color = this.lockColor;
-        loadGLTF("../js3party/models/hacklock.glb").then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
-        loadGLTF("../js3party/models/padlock.glb").then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
+        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
+        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
 
         this.hacklock.add(this.padlock);
         this.hacklock.rotation.set(0, 0, -90 * Math.deg2rad);

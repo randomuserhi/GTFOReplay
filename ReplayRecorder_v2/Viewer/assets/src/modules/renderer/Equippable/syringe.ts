@@ -11,7 +11,7 @@ export class Syringe extends Model {
         this.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/Consumables/syringe.glb").then((geometry) => model.add(new Mesh(geometry, new MeshPhongMaterial({
+        loadGLTF("../js3party/models/Consumables/syringe.glb", false).then((geometry) => model.add(new Mesh(geometry, new MeshPhongMaterial({
             color
         }))));
         model.scale.set(0.1, 0.1, 0.1);

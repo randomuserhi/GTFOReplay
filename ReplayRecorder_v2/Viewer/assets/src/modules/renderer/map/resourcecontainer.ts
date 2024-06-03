@@ -47,8 +47,8 @@ class ContainerModel {
         const lockMaterial = new MeshPhongMaterial();
         lockMaterial.color = this.lockColor;
         lockMaterial.specular = white;
-        loadGLTF("../js3party/models/hacklock.glb").then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
-        loadGLTF("../js3party/models/padlock.glb").then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
+        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
+        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
 
         this.hacklock.add(this.padlock);
         this.anchor.add(this.hacklock);
@@ -110,9 +110,9 @@ class Locker extends ContainerModel {
 
         this.pivot.position.set(-1.1, 0, 0.55);
 
-        loadGLTF("../js3party/models/StorageContainers/locker back.glb").then((model) => this.back.add(new Mesh(model, material)));
-        loadGLTF("../js3party/models/StorageContainers/locker front.glb").then((model) => this.left.add(new Mesh(model, material)));
-        loadGLTF("../js3party/models/StorageContainers/locker front.glb").then((model) => this.right.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, material)));
         
         this.hacklock.position.set(0, 0.575, 0.6);
         
@@ -158,8 +158,8 @@ class Box extends ContainerModel {
         this.anchor.scale.set(0.25, 0.25, 0.25);
         this.anchor.position.set(0, 0, 0.1);
 
-        loadGLTF("../js3party/models/StorageContainers/box bottom.glb").then((model) => this.bottom.add(new Mesh(model, material)));
-        loadGLTF("../js3party/models/StorageContainers/box top.glb").then((model) => this.top.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, material)));
         
         this.hacklock.position.set(0, 0.4, 1);
         this.hacklock.scale.set(1.72, 1.72, 1.72);

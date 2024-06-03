@@ -1,12 +1,14 @@
 import { BufferGeometry, Mesh } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const loadedGLTF = new Map<string, BufferGeometry>();
 const loadingGLTF = new Map<string, Promise<BufferGeometry>>();
 
 const loader = new GLTFLoader();
 
-export async function loadGLTF(path: string): Promise<BufferGeometry> {
+// NOTE(randomuserhi): `newLoader` exists due to old models being imported without transforms. All models should have transforms applied, but old models were implemented prior to this.
+export async function loadGLTF(path: string, newLoader: boolean = true): Promise<BufferGeometry> {
     if (loadedGLTF.has(path)) {
         return new Promise((resolve) => {
             resolve(loadedGLTF.get(path)!);
@@ -22,13 +24,29 @@ export async function loadGLTF(path: string): Promise<BufferGeometry> {
 
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
         loader.load(path, function (gltf) {
-            const mesh: Mesh = (gltf.scene.children[0] as Mesh);
-            const geometry = mesh.geometry.scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
-            loadedGLTF.set(path, geometry);
-            resolve(geometry);
+            try {
+                const geometries: BufferGeometry[] = [];
+                gltf.scene.traverse((obj) => {
+                    const mesh = obj as Mesh;
+                    if (mesh.isMesh === true) {
+                        mesh.updateWorldMatrix(true, true);
+                        const geometry = mesh.geometry;
+                        if (newLoader) geometry.applyMatrix4(mesh.matrixWorld);
+                        else geometry.scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+                        geometries.push(geometry);
+                    }
+                });
+                
+                const geometry = BufferGeometryUtils.mergeGeometries(geometries);
+                loadedGLTF.set(path, geometry);
+                resolve(geometry);
+            } catch(e) {
+                console.error(`Failed to load ${path}: ${e}`);
+                reject(e);
+            }
         }, undefined, function (error) {
             console.error(error);
-            reject();
+            reject(error);
         });
     });
     loadingGLTF.set(path, promise);

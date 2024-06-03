@@ -15,7 +15,7 @@ export class PlantSample extends Model {
         this.leftHandGrip = { x: 0.1, y: 0, z: 0 };
 
         const model = this.model = new Group();
-        loadGLTF("../js3party/models/Objective/plant.glb").then((geometry) => model.add(new Mesh(geometry, material)));
+        loadGLTF("../js3party/models/Objective/plant.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
         model.scale.set(0.05, 0.05, 0.05);
 
         this.group.add(model);
