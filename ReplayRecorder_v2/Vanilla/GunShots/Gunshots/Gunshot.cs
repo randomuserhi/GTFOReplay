@@ -18,24 +18,27 @@ namespace Vanilla.Player.Gunshots {
             this.damage = damage;
             this.start = start;
             if (!sentry && source.IsLocallyOwned && !source.Owner.IsBot) {
-                ItemEquippable? wieldedItem = source.Inventory.WieldedItem;
-                Animator anim = source.AnimatorBody;
-                if (wieldedItem != null) {
-                    Vector3 LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
-                    Vector3 RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
-                    Vector3 footCenter = (LFoot + RFoot) / 2.0f;
-                    footCenter.y = 0;
-                    Vector3 posFlat = source.transform.position;
-                    posFlat.y = 0;
-                    Vector3 displacement;
-                    if (source.Locomotion.m_currentStateEnum == PlayerLocomotion.PLOC_State.Crouch) {
-                        displacement = Vector3.down * 0.2f;
+                // NOTE(randomuserhi): Check start is within player, otherwise its from penetration and does not need adjusting
+                Vector3 a = source.transform.position; a.y = 0;
+                Vector3 b = this.start; b.y = 0;
+                if ((a - b).sqrMagnitude < 1) {
+                    ItemEquippable? wieldedItem = source.Inventory.WieldedItem;
+                    Animator anim = source.AnimatorBody;
+                    if (wieldedItem != null) {
+                        Vector3 LFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot).position;
+                        Vector3 RFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                        Vector3 footCenter = (LFoot + RFoot) / 2.0f;
+                        footCenter.y = 0;
+                        Vector3 posFlat = source.transform.position;
+                        posFlat.y = 0;
+                        Vector3 displacement = Vector3.zero;
+                        if (source.Locomotion.m_currentStateEnum != PlayerLocomotion.PLOC_State.Crouch) {
+                            displacement = Vector3.down * 0.45f;
+                        }
+                        this.start = wieldedItem.GearPartHolder.transform.position + displacement + (posFlat - footCenter);
                     } else {
-                        displacement = Vector3.down * 0.45f;
+                        this.start += Vector3.down * 0.4f;
                     }
-                    this.start = wieldedItem.GearPartHolder.transform.position + displacement + (posFlat - footCenter);
-                } else {
-                    this.start += Vector3.down * 0.4f;
                 }
             }
             this.end = end;
