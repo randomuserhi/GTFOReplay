@@ -1303,7 +1303,7 @@ const _equippable: Equippable[] = [{
 }, {
     id: 56,
     archetype: "consumable",
-    model: () => new Pack(0xffffff)
+    model: () => new Pack(0x7b9fe8)
 }, {
     id: 37,
     archetype: "rifle",

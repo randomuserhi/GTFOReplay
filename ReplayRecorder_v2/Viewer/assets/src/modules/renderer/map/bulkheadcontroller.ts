@@ -1,6 +1,7 @@
 import { Group, Mesh, MeshPhongMaterial, Scene } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { BulkheadController } from "../../parser/map/bulkheadcontroller.js";
+import { white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -16,8 +17,9 @@ declare module "../../../replay/moduleloader.js" {
 }
 
 const material = new MeshPhongMaterial({
-    color: 0xffffff
+    color: 0x535966
 });
+material.specular = white;
 
 class BulkheadControllerModel {
     group: Group;
@@ -37,6 +39,9 @@ class BulkheadControllerModel {
             this.mesh = new Mesh(geometry, material);
             this.model.add(this.mesh);
         });
+
+        this.model.scale.set(0.5, 0.5, 0.5);
+        this.model.position.set(0, 0.8, 0);
     }
 
     public addToScene(scene: Scene) {

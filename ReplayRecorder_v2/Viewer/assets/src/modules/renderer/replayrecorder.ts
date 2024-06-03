@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, SphereGeometry, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, PointLight, SphereGeometry, VSMShadowMap, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { createInstance } from "../../replay/instancing.js";
@@ -89,6 +89,7 @@ declare module "../../replay/moduleloader.js" {
             "FakeCamera": PerspectiveCamera;
             "OrbitControls": OrbitControls;
             "MainLight": DirectionalLight;
+            "PointLight": PointLight;
         }
     }
 }
@@ -414,6 +415,12 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.set("OrbitControls",  controls);
 
             r.set("CameraControls",  new CameraControls(camera, r.renderer.domElement));
+
+            const pointLight = new PointLight(0xFFFFFF, 1, undefined, 1.2);
+            r.set("PointLight", pointLight);
+            r.scene.add(pointLight);
+            camera.add(pointLight);
+            pointLight.position.set(0, 0, 0);
 
             const frustum = new Frustum();
             frustum.setFromProjectionMatrix(pM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));

@@ -19,8 +19,9 @@ declare module "../../../replay/moduleloader.js" {
 const material = new MeshPhongMaterial({
     color: 0xc57000
 });
-material.transparent = true;
-material.opacity = 0.5;
+// TODO(randomuserhi): Option to make it transparent
+//material.transparent = true;
+//material.opacity = 0.5;
 
 class ContainerModel {
     group: Group;
