@@ -1,7 +1,7 @@
 import { BoxGeometry, ColorRepresentation, Mesh, MeshPhongMaterial } from "three";
 import { Model } from "./equippable.js";
 
-const geometry = new BoxGeometry(0.3, 0.25, 0.1);
+const geometry = new BoxGeometry(0.25, 0.3, 0.1);
 
 export class Pack extends Model {
     pack: Mesh;
@@ -22,6 +22,6 @@ export class Pack extends Model {
     public inLevel(): void {
         this.group.scale.set(0.8, 0.8, 0.8);
         this.pack.position.set(0, 0, 0.15);
-        this.pack.rotation.set(-90 * Math.deg2rad, 0, 90 * Math.deg2rad);
+        this.pack.rotation.set(-90 * Math.deg2rad, 0, 0);
     }
 }
