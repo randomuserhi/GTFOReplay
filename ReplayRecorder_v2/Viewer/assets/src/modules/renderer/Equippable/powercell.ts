@@ -16,7 +16,7 @@ export class PowerCell extends Model {
 
         const model = this.model = new Group();
         loadGLTF("../js3party/models/BigPickups/cell.glb", false).then((geometry) => model.add(new Mesh(geometry, material)));
-        model.scale.set(0.05, 0.05, 0.05);
+        model.scale.set(0.04, 0.04, 0.04);
         model.rotateZ(Math.PI);
 
         this.group.add(model);
@@ -24,5 +24,6 @@ export class PowerCell extends Model {
 
     public inLevel(): void {
         this.model.rotation.set(-90 * Math.deg2rad, 0, 90 * Math.deg2rad);
+        this.model.scale.set(0.07, 0.07, 0.07);
     }
 }

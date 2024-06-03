@@ -19,9 +19,7 @@ declare module "../../../replay/moduleloader.js" {
 const material = new MeshPhongMaterial({
     color: 0xc57000
 });
-// TODO(randomuserhi): Option to make it transparent
-//material.transparent = true;
-//material.opacity = 0.5;
+material.transparent = true;
 
 class ContainerModel {
     group: Group;
@@ -191,10 +189,24 @@ class Box extends ContainerModel {
     }
 }
 
+declare module "../../../replay/moduleloader.js" {
+    namespace Typemap {
+        interface RenderData {
+            "TransparentResourceContainers": boolean;
+        }
+    }
+}
+
 ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
+            if (renderer.getOrDefault("TransparentResourceContainers", () => false)) {
+                material.opacity = 0.5;
+            } else {
+                material.opacity = 1;
+            }
+
             const time = snapshot.time();
             const containers = snapshot.header.getOrDefault("Vanilla.Map.ResourceContainers", () => new Map());
             const states = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());

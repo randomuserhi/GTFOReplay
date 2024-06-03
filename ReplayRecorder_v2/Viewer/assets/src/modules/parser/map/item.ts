@@ -9,6 +9,7 @@ export interface Item {
     rotation: Pod.Quaternion;
     itemID: number;
     onGround: boolean;
+    linkedToMachine: boolean;
     player: bigint | undefined;
 }
 
@@ -21,6 +22,7 @@ declare module "../../../replay/moduleloader.js" {
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
                     onGround: boolean;
+                    linkedToMachine: boolean;
                     // NOTE(randomuserhi): If item is not on ground and player slot is undefined (byte.MaxValue) then it means 
                     //                     item was on a player / bot that has been disconnected from the game.
                     playerSlot: number;  
@@ -30,6 +32,7 @@ declare module "../../../replay/moduleloader.js" {
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
                     onGround: boolean;
+                    linkedToMachine: boolean;
                     playerSlot: number;  
                     itemID: number;
                 };
@@ -51,6 +54,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
                 onGround: await BitHelper.readBool(data),
+                linkedToMachine: await BitHelper.readBool(data),
                 playerSlot: await BitHelper.readByte(data)
             };
         }, 
@@ -62,6 +66,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             Pod.Vec.copy(item.position, data.position);
             Pod.Quat.copy(item.rotation, data.rotation);
             item.onGround = data.onGround;
+            item.linkedToMachine = data.linkedToMachine;
             
             // If the item is on the ground, a player doesn't have it.
             if (item.onGround === true) {
@@ -84,6 +89,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
                 onGround: await BitHelper.readBool(data),
+                linkedToMachine: await BitHelper.readBool(data),
                 playerSlot: await BitHelper.readByte(data),
                 itemID: await BitHelper.readUShort(data)
             };
@@ -101,6 +107,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 position: data.position,
                 rotation: data.rotation,
                 onGround: data.onGround,
+                linkedToMachine: data.linkedToMachine,
                 itemID: data.itemID, 
                 player: undefined
             });

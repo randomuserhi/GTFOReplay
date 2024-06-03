@@ -135,8 +135,7 @@ class CameraControls {
             if (this.slot !== undefined) return;
     
             e.preventDefault();
-            this.speed -= e.deltaY * 0.1;
-            this.speed = Math.clamp(this.speed, 1, 1000);
+            this.speed *= Math.sign(e.deltaY) < 0 ? 10/9 : 9/10;
         };
         canvas.addEventListener("wheel", this.wheel);
         this.keyup = (e) => {

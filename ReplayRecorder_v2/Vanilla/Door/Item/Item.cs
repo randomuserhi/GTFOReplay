@@ -29,7 +29,8 @@ namespace Vanilla.Map.Items {
             dimensionIndex != _dimensionIndex ||
             position != _position ||
             rotation != _rotation ||
-            onGround != _onGround;
+            onGround != _onGround ||
+            linkedToMachine != _linkedToMachine;
 
         private byte dimensionIndex {
             get {
@@ -49,6 +50,8 @@ namespace Vanilla.Map.Items {
             item.m_stateReplicator.State.status == ePickupItemStatus.PlacedInLevel ||
             item.m_stateReplicator.State.placement.droppedOnFloor;
         private bool _onGround;
+        private bool linkedToMachine => item.m_stateReplicator.State.placement.linkedToMachine;
+        private bool _linkedToMachine;
         private byte player {
             get {
                 if (item.m_stateReplicator.State.pPlayer.TryGetPlayer(out SNet_Player player)) {
@@ -68,12 +71,14 @@ namespace Vanilla.Map.Items {
             _position = position;
             _rotation = rotation;
             _onGround = onGround;
+            _linkedToMachine = linkedToMachine;
             _player = player;
 
             BitHelper.WriteBytes(_dimensionIndex, buffer);
             BitHelper.WriteBytes(_position, buffer);
             BitHelper.WriteHalf(_rotation, buffer);
             BitHelper.WriteBytes(_onGround, buffer);
+            BitHelper.WriteBytes(_linkedToMachine, buffer);
             BitHelper.WriteBytes(_player, buffer);
 
             // NOTE(randomuserhi): If item is not on ground and player slot is undefined (byte.MaxValue) then it means 

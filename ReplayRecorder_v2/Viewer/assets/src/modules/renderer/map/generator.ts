@@ -44,8 +44,8 @@ class GeneratorModel {
             this.model.add(this.mesh);
         });
 
-        this.model.scale.set(0.4, 0.4, 0.4);
-        this.model.position.set(0, 0.6, 0);
+        this.model.scale.set(0.43, 0.43, 0.43);
+        this.model.position.set(0, 0.8, 0.15);
     }
 
     public addToScene(scene: Scene) {
