@@ -57,6 +57,8 @@ class GeneratorModel {
     }
 
     public update(time: number, generator: GeneratorState) {
+        if (this.mesh === undefined) return;
+
         this.mesh.material = active;
 
         // TODO(randomuserhi): inputting cell

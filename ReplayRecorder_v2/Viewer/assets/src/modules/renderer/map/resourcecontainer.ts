@@ -1,7 +1,7 @@
 import { Color, Group, Mesh, MeshPhongMaterial, Scene } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
-import { white } from "../constants.js";
+import { black, white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -31,6 +31,7 @@ class ContainerModel {
     padlock: Group;
 
     lockColor: Color;
+    lockMaterial: MeshPhongMaterial;
 
     constructor(container: ResourceContainer) {
         this.group = new Group();
@@ -45,11 +46,11 @@ class ContainerModel {
         this.padlock = new Group();
 
         this.lockColor = new Color(0xffffff);
-        const lockMaterial = new MeshPhongMaterial();
-        lockMaterial.color = this.lockColor;
-        lockMaterial.specular = white;
-        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
-        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
+        this.lockMaterial = new MeshPhongMaterial();
+        this.lockMaterial.color = this.lockColor;
+        this.lockMaterial.specular = black;
+        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
+        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
 
         this.hacklock.add(this.padlock);
         this.anchor.add(this.hacklock);
@@ -73,6 +74,12 @@ class ContainerModel {
         if (container.closed) {
             this.hacklock.visible = container.lockType === "Hackable" || container.lockType === "Melee";
             this.padlock.visible = container.lockType === "Melee";
+
+            if (container.lockType === "Melee") {
+                this.lockMaterial.specular = white;
+            } else {
+                this.lockMaterial.specular = black;
+            }
 
             if (container.lockType === "Hackable") {
                 this.lockColor.set(0x6666ff);
@@ -135,7 +142,7 @@ class Locker extends ContainerModel {
         const animDuration = 700;
         const lerp = Math.clamp01((time - container.lastCloseTime) / animDuration);
         this.pivot.rotation.set(0, -70 * Math.deg2rad * lerp, 0);
-        this.right.position.set(0.8 * lerp, 0, -0.02);
+        this.right.position.set(0.8 * lerp, 0, -0.05);
     }
 }
 

@@ -2,7 +2,7 @@ import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene }
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
 import { Bezier } from "../../renderer/bezier.js";
-import { white } from "../constants.js";
+import { black, white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -25,6 +25,7 @@ class LockModel {
     anchor: Group;
 
     lockColor: Color;
+    lockMaterial: MeshPhongMaterial;
 
     constructor() {
         this.anchor = new Group();
@@ -33,11 +34,10 @@ class LockModel {
         this.padlock = new Group();
 
         this.lockColor = new Color(0xffffff);
-        const lockMaterial = new MeshPhongMaterial();
-        lockMaterial.specular = white;
-        lockMaterial.color = this.lockColor;
-        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, lockMaterial)));
-        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, lockMaterial)));
+        this.lockMaterial = new MeshPhongMaterial();
+        this.lockMaterial.color = this.lockColor;
+        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
+        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
 
         this.hacklock.add(this.padlock);
         this.hacklock.rotation.set(0, 0, -90 * Math.deg2rad);
@@ -56,6 +56,12 @@ class LockModel {
             this.lockColor.set(0x6666ff);
         } else {
             this.lockColor.set(0x666666);
+        }
+
+        if (status === "Melee") {
+            this.lockMaterial.specular = white;
+        } else {
+            this.lockMaterial.specular = black;
         }
     }
 }

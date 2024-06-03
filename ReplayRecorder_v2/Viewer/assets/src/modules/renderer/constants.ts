@@ -6,3 +6,4 @@ export const zeroV = new Vector3(0, 0, 0);
 export const upV = new Vector3(0, 1, 0);
 
 export const white = new Color(0xffffff);
+export const black = new Color(0x111111);
