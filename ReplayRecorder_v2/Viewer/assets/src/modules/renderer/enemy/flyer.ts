@@ -104,7 +104,8 @@ export class FlyerModel extends EnemyModel {
         }
         
         this.anchor.add(this.eye, ...this.spikes);
-        this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
+        const scale = enemy.scale * 1.3;
+        this.anchor.scale.set(scale, scale, scale);
         this.root.add(this.anchor);
 
         this.tmp = new Text();
@@ -130,7 +131,7 @@ export class FlyerModel extends EnemyModel {
         const min = 90 - separation;
         const max = 90 + separation;
         
-        const z = drift * Math.deg2rad * Math.clamp(anim.velocity.z / 10, -1, 1);
+        const z = drift * Math.deg2rad * Math.clamp(-anim.velocity.z / 10, -1, 1);
         const x = Math.clamp(anim.velocity.x / 10, -1, 1);
         const value = Math.abs(x) * Math.sign(z) * drift * Math.deg2rad;
         const left = x < 1 ? 0 : value;
@@ -275,7 +276,7 @@ export class BigFlyerModel extends EnemyModel {
         const min = 90 - separation;
         const max = 90 + separation;
         
-        const z = drift * Math.deg2rad * Math.clamp(anim.velocity.z / 10, -1, 1);
+        const z = drift * Math.deg2rad * Math.clamp(-anim.velocity.z / 10, -1, 1);
         const x = Math.clamp(anim.velocity.x / 10, -1, 1);
         const value = Math.abs(x) * Math.sign(z) * drift * Math.deg2rad;
         const left = x < 1 ? 0 : value;
