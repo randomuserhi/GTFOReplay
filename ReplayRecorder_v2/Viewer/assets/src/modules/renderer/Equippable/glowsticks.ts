@@ -22,7 +22,7 @@ export class GlowStick extends Model {
     }
 
     public inLevel(): void {
-        this.model.rotation.set(90 * Math.deg2rad, 0, 0);
+        this.model.rotation.set(90 * Math.deg2rad, 0, -90 * Math.deg2rad);
         this.model.position.set(0, 0.1, 0);
     }
 }

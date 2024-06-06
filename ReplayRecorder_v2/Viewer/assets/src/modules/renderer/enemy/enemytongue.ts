@@ -1,5 +1,4 @@
-import { Matrix4, Mesh, MeshPhongMaterial, Vector3 } from "three";
-import { getInstance } from "../../../replay/instancing.js";
+import { Mesh, MeshPhongMaterial, Vector3 } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DynamicSplineGeometry } from "../dynamicspline.js";
@@ -55,13 +54,10 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 const originThree = new Vector3(0, 0, 0).copy(owner.position); // TODO(randomuserhi): Move elsewhere to prevent GC
                 if (enemyModel !== undefined && Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, enemyModel)) {
                     const humanoidModel: HumanoidEnemyModel = enemyModel as HumanoidEnemyModel;
-                    const matrix = new Matrix4(); // TODO(randomuserhi): Move elsewhere to prevent GC
-                    if (owner.head && humanoidModel.head !== -1)  {
-                        getInstance("Sphere.MeshPhong").getMatrixAt(humanoidModel.head, matrix);
-                        originThree.setFromMatrixPosition(matrix);
+                    if (owner.head)  {
+                        originThree.setFromMatrixPosition(humanoidModel.head);
                     } else {
-                        getInstance("Cylinder.MeshPhong").getMatrixAt(humanoidModel.parts[0], matrix);
-                        originThree.setFromMatrixPosition(matrix);
+                        originThree.setFromMatrixPosition(humanoidModel.neck);
                     }
                 }
 

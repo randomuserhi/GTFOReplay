@@ -94,7 +94,6 @@ export class EnemyModel {
 const tmpPos = new Vector3();
 const camPos = new Vector3();
 
-const _head: Matrix4 = new Matrix4();
 const _parts: Matrix4[] = new Array(9);
 const _points: Matrix4[] = new Array(14);
 
@@ -116,9 +115,8 @@ export class HumanoidEnemyModel extends EnemyModel {
     inverseMatrix: AvatarStructure<HumanJoints, Matrix4>;
     color: Color;
 
-    head: number;
-    parts: number[];
-    points: number[];
+    head: Matrix4;
+    neck: Matrix4;
 
     datablock?: EnemySpecification;
     animHandle?: EnemyAnimHandle;
@@ -167,6 +165,8 @@ export class HumanoidEnemyModel extends EnemyModel {
     constructor(enemy: Enemy) {
         super(enemy);
         this.offset = Math.random() * 10;
+        this.head = new Matrix4();
+        this.neck = new Matrix4();
 
         this.datablock = specification.enemies.get(enemy.type);
         if (enemy.animHandle !== undefined) {
@@ -234,10 +234,6 @@ export class HumanoidEnemyModel extends EnemyModel {
             this.visual.joints[joint].updateWorldMatrix(true, false);
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
         }
-
-        this.parts = new Array(9);
-        this.points = new Array(14);
-        this.head = -1;
     
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
@@ -273,16 +269,14 @@ export class HumanoidEnemyModel extends EnemyModel {
 
     private render(enemy: Enemy, sphere: keyof InstanceTypes, cylinder: keyof InstanceTypes) {
         if (enemy.head) {
-            this.head = consume(sphere, _head, this.color);
-        } else {
-            this.head = -1;
+            consume(sphere, this.head, this.color);
         }
 
         for (let i = 0; i < _points.length; ++i) {
-            this.points[i] = consume(sphere, _points[i], this.color);
+            consume(sphere, _points[i], this.color);
         }
         for (let i = 0; i < _parts.length; ++i) {
-            this.parts[i] = consume(cylinder, _parts[i], this.color);
+            consume(cylinder, _parts[i], this.color);
         }
     }
 
@@ -471,12 +465,13 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         headScale.set(0.15, 0.15, 0.15);
         if(this.datablock?.headScale !== undefined) headScale.multiply(this.datablock.headScale);
-        _head.compose(worldPos.head, zeroQ, headScale);
+        this.head.compose(worldPos.head, zeroQ, headScale);
 
         let i = 0;
         let j = 0;
         
         Pod.Vec.copy(bodyTop, worldPos.neck);
+        this.neck.setPosition(worldPos.neck);
         
         Pod.Vec.mid(bodyBottom, worldPos.leftUpperLeg, worldPos.rightUpperLeg);
         

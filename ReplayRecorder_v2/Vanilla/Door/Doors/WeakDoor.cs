@@ -50,7 +50,7 @@ namespace Vanilla.Map.Doors {
         private byte lock1 => (byte)GetLockType(1);
         private byte _lock1 = (byte)LockType.None;
 
-        public rWeakDoor(LG_WeakDoor door) : base(door.GetInstanceID()) {
+        public rWeakDoor(LG_WeakDoor door) : base(door.Gate.GetInstanceID()) {
             this.door = door;
 
             LG_WeakDoor_Destruction? _d = door.m_destruction.TryCast<LG_WeakDoor_Destruction>();

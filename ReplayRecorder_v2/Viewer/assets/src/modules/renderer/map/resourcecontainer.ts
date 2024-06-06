@@ -16,10 +16,15 @@ declare module "../../../replay/moduleloader.js" {
     }
 }
 
-const material = new MeshPhongMaterial({
+const materialOrange = new MeshPhongMaterial({
     color: 0xc57000
 });
-material.transparent = true;
+materialOrange.transparent = true;
+
+const materialGrey = new MeshPhongMaterial({
+    color: 0x777777
+});
+materialGrey.transparent = true;
 
 class ContainerModel {
     group: Group;
@@ -116,9 +121,9 @@ class Locker extends ContainerModel {
 
         this.pivot.position.set(-1.1, 0, 0.55);
 
-        loadGLTF("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, material)));
-        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, material)));
-        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, materialGrey)));
+        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, materialOrange)));
+        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, materialOrange)));
         
         this.hacklock.position.set(0, 0.575, 0.6);
         
@@ -159,13 +164,13 @@ class Box extends ContainerModel {
         this.anchor.add(this.bottom, this.pivot);
         
         this.top.position.set(0, 0.4, 1);
-        this.pivot.position.set(0, 0.4, -1);
+        this.pivot.position.set(0, 0.42, -1);
         
         this.anchor.scale.set(0.25, 0.25, 0.25);
         this.anchor.position.set(0, 0, 0.1);
 
-        loadGLTF("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, material)));
-        loadGLTF("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, material)));
+        loadGLTF("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, materialGrey)));
+        loadGLTF("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, materialOrange)));
         
         this.hacklock.position.set(0, 0.4, 1);
         this.hacklock.scale.set(1.72, 1.72, 1.72);
@@ -202,9 +207,11 @@ ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
             if (renderer.getOrDefault("TransparentResourceContainers", () => false)) {
-                material.opacity = 0.5;
+                materialOrange.opacity = 0.5;
+                materialGrey.opacity = 0.5;
             } else {
-                material.opacity = 1;
+                materialOrange.opacity = 1;
+                materialGrey.opacity = 1;
             }
 
             const time = snapshot.time();

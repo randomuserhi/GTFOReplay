@@ -65,6 +65,7 @@ namespace Vanilla.Enemy.Detection {
         [HarmonyPrefix]
         private static void SpitterExplodeNoise(InfectionSpitter __instance) {
             if (!SNet.IsMaster) return;
+            if (!__instance.m_hasNode) return;
             if (__instance.m_isExploding) {
                 if (__instance.m_explodeProgression > 1.6f) {
                     NoiseTracker.TrackNextNoise(new NoiseInfo());
