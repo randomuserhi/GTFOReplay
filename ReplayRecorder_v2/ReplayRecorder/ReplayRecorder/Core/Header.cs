@@ -1,4 +1,8 @@
-﻿using ReplayRecorder.API;
+﻿/// Header.cs
+/// 
+/// Internal header data that is included in all replays.
+
+using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Snapshot;

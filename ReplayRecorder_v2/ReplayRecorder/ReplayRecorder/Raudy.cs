@@ -1,4 +1,10 @@
-﻿using API;
+﻿/// Raudy.cs
+///
+/// Contains utility methods for maintaining and writing byte buffers of data.
+/// - Supports Unity types such as Vector3 and Quaternion.
+/// - Supports half precision 16-bit floats.
+
+using API;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;

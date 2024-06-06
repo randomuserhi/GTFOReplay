@@ -464,7 +464,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp.visible = false;
 
         this.orientateText(this.tmp, camera, 3, 0.05);
-        this.orientateText(this.tag, camera, 1.5, 0.1);
+        this.orientateText(this.tag, camera, 0.5, 0.1);
     }
 
     private orientateText(tmp: Text, camera: Camera, scale: number, min: number) {

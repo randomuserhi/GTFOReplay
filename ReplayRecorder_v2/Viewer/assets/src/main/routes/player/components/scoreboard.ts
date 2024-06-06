@@ -109,12 +109,9 @@ const slot = Macro((() => {
 
         if (medals === undefined) {
             this.medalList.replaceChildren();
+            this.medals.clear();
             return;
         }
-
-        /*if (player.nickname.toLowerCase() === "kingofjungle27") {
-            console.log(medals);
-        }*/
 
         for (const medal of medals) {
             if (!this.medals.has(medal.id)) {
@@ -128,6 +125,7 @@ const slot = Macro((() => {
         for (const [id, medal] of [...this.medals.entries()]) {
             if (!medals.some(m => m.id === id)) {
                 medal.replaceWith();
+                this.medals.delete(id);
             }
         }
     };

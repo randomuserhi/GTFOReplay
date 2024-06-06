@@ -1,9 +1,18 @@
-﻿using Agents;
+﻿/// Dynamic.cs
+/// 
+/// Provides additional utility templates for handling majority of GTFO content.
+
+using Agents;
 using API;
 using ReplayRecorder.API;
 using UnityEngine;
 
 namespace ReplayRecorder.Core {
+    /// <summary>
+    /// An event type that includes an id. 
+    /// 
+    /// Most frequently used for events that relate to a specific dynamic.
+    /// </summary>
     public abstract class Id : ReplayEvent {
         public readonly int id;
 
@@ -18,6 +27,9 @@ namespace ReplayRecorder.Core {
         }
     }
 
+    /// <summary>
+    /// Represents the transform of an Agent.
+    /// </summary>
     public struct AgentTransform : IReplayTransform {
         private Agent agent;
         public bool active => agent != null;
@@ -36,6 +48,9 @@ namespace ReplayRecorder.Core {
         }
     }
 
+    /// <summary>
+    /// A dynamic type that writes positional data.
+    /// </summary>
     public abstract class DynamicPosition : ReplayDynamic {
         public IReplayTransform transform;
         private Vector3 oldPosition;
@@ -97,6 +112,9 @@ namespace ReplayRecorder.Core {
         }
     }
 
+    /// <summary>
+    /// A dynamic type that writes orientation data.
+    /// </summary>
     public abstract class DynamicRotation : ReplayDynamic {
         public IReplayTransform transform;
         private Quaternion oldRotation;
@@ -141,6 +159,9 @@ namespace ReplayRecorder.Core {
         }
     }
 
+    /// <summary>
+    /// A dynamic type that writes transform (position + rotation) data.
+    /// </summary>
     public abstract class DynamicTransform : ReplayDynamic {
         public IReplayTransform transform;
         private Vector3 oldPosition;

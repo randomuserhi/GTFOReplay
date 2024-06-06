@@ -13,6 +13,13 @@ namespace ReplayRecorder.BepInEx;
 public class Plugin : BasePlugin {
     internal static HashSet<EndPoint> acknowledged = new HashSet<EndPoint>();
     internal static TCPServer server = new TCPServer();
+
+    /// <summary>
+    /// Is called when a client connects to the TCPServer.
+    /// 
+    /// Acknowledge the connected client and send back current replay path if currently in a game.
+    /// </summary>
+    /// <param name="endPoint"></param>
     internal static void onAccept(EndPoint endPoint) {
         APILogger.Debug($"{endPoint} connected.");
 
@@ -26,6 +33,16 @@ public class Plugin : BasePlugin {
             _ = server.SendTo(packet.Array, endPoint);
         }
     }
+
+    /// <summary>
+    /// Is called when receiving a message from a client.
+    /// 
+    /// Manages incoming messages from the client:
+    /// - Acknowledgement: Upon receiving acknowledgement from the client, will proceed with communication.
+    ///                    Non-acknowledged but connected clients will not be communicated with.
+    /// </summary>
+    /// <param name="buffer">Received bytes.</param>
+    /// <param name="endPoint"></param>
     internal static void onReceive(ArraySegment<byte> buffer, EndPoint endPoint) {
         APILogger.Debug($"Received bytes '{buffer.Count}' from {endPoint}.");
         int index = 0;
@@ -45,14 +62,26 @@ public class Plugin : BasePlugin {
         }
         }
     }
+
+    /// <summary>
+    /// Unregister acknowledgement from clients on disconnect.
+    /// </summary>
+    /// <param name="endPoint"></param>
     internal static void onDisconnect(EndPoint endPoint) {
         APILogger.Debug($"{endPoint} disconnected.");
         acknowledged.Remove(endPoint);
     }
+
+    /// <summary>
+    /// Clear all acknowledged clients on closure of TCPServer.
+    /// </summary>
     internal static void onClose() {
         acknowledged.Clear();
     }
 
+    /// <summary>
+    /// Send a "game has started" message to acknowledged clients.
+    /// </summary>
     [ReplayOnHeaderCompletion]
     internal static void TriggerGameStart() {
         ByteBuffer packet = new ByteBuffer();
@@ -62,6 +91,9 @@ public class Plugin : BasePlugin {
         _ = server.Send(packet.Array);
     }
 
+    /// <summary>
+    /// Send a "game has ended" message to acknowledged clients.
+    /// </summary>
     [ReplayReset]
     internal static void TriggerGameEnd() {
         ByteBuffer packet = new ByteBuffer();

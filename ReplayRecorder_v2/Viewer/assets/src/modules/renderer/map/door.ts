@@ -49,8 +49,6 @@ class LockModel {
     }
 
     public update(status: LockType) {
-        if (status === "Hackable" || status === "Melee") console.log(status);
-
         this.hacklock.visible = status === "Hackable" || status === "Melee";
         this.padlock.visible = status === "Melee";
 

@@ -1,4 +1,9 @@
-﻿namespace ReplayRecorder {
+﻿/// BufferPool.cs
+///
+/// Manages a pool of pre-allocated buffers used through the codebase to minimize
+/// garbage collections and allocations.
+
+namespace ReplayRecorder {
     internal class BufferPool {
         private Stack<ByteBuffer> pool = new Stack<ByteBuffer>();
         private readonly object lockObj = new Object();

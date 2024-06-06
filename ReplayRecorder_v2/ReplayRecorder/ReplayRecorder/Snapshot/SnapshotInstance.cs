@@ -12,8 +12,6 @@ using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
     internal class SnapshotInstance : MonoBehaviour {
-        // NOTE(randomuserhi): This may cause a huge performance hit of allocating a byte buffer every single time an event is triggered
-        //                     Look into an arena allocator or something here
         private class EventWrapper {
             private ushort id;
             private ReplayEvent eventObj;
