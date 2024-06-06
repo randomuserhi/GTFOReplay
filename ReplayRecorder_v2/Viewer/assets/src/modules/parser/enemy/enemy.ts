@@ -18,6 +18,7 @@ declare module "../../../replay/moduleloader.js" {
                     absolute: boolean;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
+                    tagged: boolean;
                     consumedPlayerSlotIndex: number;
                 };
                 spawn: {
@@ -215,6 +216,7 @@ export interface Enemy extends DynamicTransform {
     players: Set<bigint>;
     lastHit?: Damage;
     lastHitTime?: number;
+    tagged: boolean;
     consumedPlayerSlotIndex: number;
 }
 
@@ -266,6 +268,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const transform = await DynamicTransform.parse(data);
             const result = {
                 ...transform,
+                tagged: await BitHelper.readBool(data),
                 consumedPlayerSlotIndex: await BitHelper.readByte(data)
             };
             return result;
@@ -276,6 +279,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
             const enemy = enemies.get(id)!;
             DynamicTransform.lerp(enemy, data, lerp);
+            enemy.tagged = data.tagged;
             enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
         }
     },
@@ -301,6 +305,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 health: datablock.maxHealth,
                 head: true,
                 players: new Set(),
+                tagged: false,
                 consumedPlayerSlotIndex: 255,
             });
         }

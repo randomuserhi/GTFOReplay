@@ -124,6 +124,7 @@ export class HumanoidEnemyModel extends EnemyModel {
     offset: number;
 
     tmp?: Text;
+    tag?: Text;
 
     private construct(skeleton: HumanSkeleton) {
         skeleton.joints.hip.add(
@@ -245,6 +246,25 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
         this.anchor.add(this.tmp);
+
+        this.tag = new Text();
+        this.tag.font = "./fonts/oxanium/Oxanium-ExtraBold.ttf";
+        this.tag.fontSize = 0.2;
+        this.tag.textAlign = "center";
+        this.tag.anchorX = "center";
+        this.tag.anchorY = "bottom";
+        this.tag.color = 0xffffff;
+        this.tag.visible = true; // false;
+        this.tag.text = `Δ
+·`;
+        this.tag.colorRanges = {
+            0: 0xff0000,
+            1: 0xffffff,
+        };
+        this.tag.material.depthTest = false;
+        this.tag.material.depthWrite = false;
+        this.tag.renderOrder = Infinity;
+        this.anchor.add(this.tag);
     }
 
     // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
@@ -433,18 +453,27 @@ export class HumanoidEnemyModel extends EnemyModel {
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
         }
 
-        if (this.tmp === undefined) return;
+        if (this.tmp === undefined || this.tag === undefined) return;
+        
+        this.tag.visible = enemy.tagged;
+        this.tag.position.copy(this.visual.joints.spine1.position);
+        this.tag.position.y += 1;
 
         //this.tmp.text = `${stateTime < this.animHandle.hibernateIn.duration}`;
 
         this.tmp.visible = false;
 
-        this.tmp.getWorldPosition(tmpPos);
+        this.orientateText(this.tmp, camera, 3, 0.05);
+        this.orientateText(this.tag, camera, 1.5, 0.1);
+    }
+
+    private orientateText(tmp: Text, camera: Camera, scale: number, min: number) {
+        tmp.getWorldPosition(tmpPos);
         camera.getWorldPosition(camPos);
 
         const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
-        this.tmp.fontSize = lerp * 0.3 + 0.05;
-        this.tmp.lookAt(camPos);
+        tmp.fontSize = lerp * scale + min;
+        tmp.lookAt(camPos);
     }
 
     public computeMatrices(dt: number, enemy: Enemy): void {
@@ -540,6 +569,9 @@ export class HumanoidEnemyModel extends EnemyModel {
     }
 
     public dispose(): void {
+        this.tag?.dispose();
+        this.tag = undefined;
+
         this.tmp?.dispose();
         this.tmp = undefined;
     }

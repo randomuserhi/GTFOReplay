@@ -51,6 +51,9 @@ namespace Vanilla.Enemy {
             pouncer = enemy.GetComponent<PouncerBehaviour>();
         }
 
+        private bool _tagged => agent.IsTagged;
+        private bool tagged = false;
+
         private PouncerBehaviour? pouncer;
         // NOTE(randomuserhi): For snatcher, unused for regular enemies
         private byte _consumedPlayer {
@@ -62,10 +65,13 @@ namespace Vanilla.Enemy {
         }
         private byte consumedPlayer;
 
-        public override bool IsDirty => base.IsDirty || consumedPlayer != _consumedPlayer;
+        public override bool IsDirty => base.IsDirty || consumedPlayer != _consumedPlayer || tagged != _tagged;
 
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
+
+            tagged = _tagged;
+            BitHelper.WriteBytes(tagged, buffer);
 
             consumedPlayer = _consumedPlayer;
             BitHelper.WriteBytes(consumedPlayer, buffer);
