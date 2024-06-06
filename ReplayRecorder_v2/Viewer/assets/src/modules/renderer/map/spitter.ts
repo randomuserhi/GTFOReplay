@@ -19,7 +19,7 @@ const bodyMaterial = new MeshPhongMaterial({
     color: 0xe0ebb2
 });
 const dimpleMaterial = new MeshPhongMaterial({
-    color: 0x1ba0ff
+    color: 0x1b70ff
 });
 
 class SpitterModel {
