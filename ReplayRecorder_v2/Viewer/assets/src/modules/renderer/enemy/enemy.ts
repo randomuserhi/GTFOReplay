@@ -254,7 +254,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tag.anchorX = "center";
         this.tag.anchorY = "bottom";
         this.tag.color = 0xffffff;
-        this.tag.visible = true; // false;
+        this.tag.visible = false;
         this.tag.text = `Δ
 ·`;
         this.tag.colorRanges = {
