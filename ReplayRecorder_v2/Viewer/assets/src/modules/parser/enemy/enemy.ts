@@ -522,7 +522,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         }, 
         exec: (id, data, snapshot, lerp) => {
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
-    
+
             if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
             const anim = anims.get(id)!;
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
@@ -545,7 +545,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         },
         exec: (id, data, snapshot) => {
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
-        
+
             if (anims.has(id)) throw new DuplicateAnim(`EnemyAnim of id '${id}' already exists.`);
             anims.set(id, { 
                 ...data,

@@ -253,9 +253,9 @@ namespace Vanilla.Enemy {
                 if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
                 if (data.AnimationState == PouncerBehaviour.PO_ConsumeStart) {
-                    Replay.Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
+                    Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
                 } else if (data.AnimationState == PouncerBehaviour.PO_SpitOut) {
-                    Replay.Trigger(new rPouncerSpit(__instance.m_ai.m_enemyAgent));
+                    Trigger(new rPouncerSpit(__instance.m_ai.m_enemyAgent));
                 }
             }
 
@@ -264,7 +264,7 @@ namespace Vanilla.Enemy {
             private static void Postfix_Wakeup(ES_HibernateWakeUp __instance) {
                 if (!__instance.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rWakeup(__instance.m_enemyAgent, (byte)__instance.m_animationIndex, __instance.m_isTurn));
+                Trigger(new rWakeup(__instance.m_enemyAgent, (byte)__instance.m_animationIndex, __instance.m_isTurn));
             }
 
             [HarmonyPatch(typeof(ES_Hibernate), nameof(ES_Hibernate.StartBeat))]
@@ -273,7 +273,7 @@ namespace Vanilla.Enemy {
                 if (!__instance.m_enemyAgent.Alive) return;
 
                 if (doAnim && __instance.m_lastHeartbeatAnim < Clock.Time) {
-                    Replay.Trigger(new rHeartbeat(__instance.m_enemyAgent, (byte)__instance.m_currentHeartBeatIndex));
+                    Trigger(new rHeartbeat(__instance.m_enemyAgent, (byte)__instance.m_currentHeartBeatIndex));
                 }
 
                 // The game doesn't reset the animation clock if the enemy is culled, so we do it manually when culled.
@@ -291,7 +291,7 @@ namespace Vanilla.Enemy {
             private static void Prefix_DoStartJump(ES_Jump __instance) {
                 if (!__instance.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rJump(__instance.m_enemyAgent, 0));
+                Trigger(new rJump(__instance.m_enemyAgent, 0));
             }
 
             [HarmonyPatch(typeof(ES_Jump), nameof(ES_Jump.UpdateJump))]
@@ -304,7 +304,7 @@ namespace Vanilla.Enemy {
                     if (__instance.m_jumpMoveTimeRel + Clock.Delta * __instance.m_jumpMoveSpeed < 1f) {
                         break;
                     }
-                    Replay.Trigger(new rJump(__instance.m_enemyAgent, 1));
+                    Trigger(new rJump(__instance.m_enemyAgent, 1));
                     break;
                 }
             }
@@ -329,7 +329,7 @@ namespace Vanilla.Enemy {
                 case ImpactDirection.Right: direction = rHitreact.Direction.Right; break;
                 default: return;
                 }
-                Replay.Trigger(new rHitreact(__instance.m_enemyAgent, (byte)index, type, direction));
+                Trigger(new rHitreact(__instance.m_enemyAgent, (byte)index, type, direction));
             }
 
             [HarmonyPatch(typeof(ES_StrikerMelee), nameof(ES_StrikerMelee.DoStartMeleeAttack))]
@@ -337,7 +337,7 @@ namespace Vanilla.Enemy {
             private static void Prefix_DoStartMeleeAttack(ES_StrikerMelee __instance, int animIndex, bool fwdAttack) {
                 if (!__instance.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rMelee(__instance.m_enemyAgent, (byte)animIndex, fwdAttack ? rMelee.Type.foward : rMelee.Type.backward));
+                Trigger(new rMelee(__instance.m_enemyAgent, (byte)animIndex, fwdAttack ? rMelee.Type.foward : rMelee.Type.backward));
             }
 
             [HarmonyPatch(typeof(ES_EnemyAttackBase), nameof(ES_EnemyAttackBase.DoStartAttack))]
@@ -345,7 +345,7 @@ namespace Vanilla.Enemy {
             private static void Prefix_DoStartAttack(ES_EnemyAttackBase __instance, Vector3 pos, Vector3 attackTargetPosition, Agent targetAgent, int animIndex, AgentAbility abilityType, int abilityIndex) {
                 if (!__instance.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rAttackWindup(__instance.m_enemyAgent, (byte)animIndex));
+                Trigger(new rAttackWindup(__instance.m_enemyAgent, (byte)animIndex));
             }
         }
 
