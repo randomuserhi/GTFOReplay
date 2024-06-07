@@ -5,10 +5,11 @@ using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 
 namespace Vanilla {
+    /// <summary>
+    /// Used to identify a Type within the game (e.g Item / Gear / Enemy type)
+    /// Abstracts away from persistent Id or other types of identification the game uses (such as Gear Public Name)
+    /// </summary>
     public struct Identifier : BufferWriteable, IEquatable<Identifier> {
-        // Identifier manages identifying types in GTFO
-        // abstracting away the idea of persistent ID etc...
-
         private static Dictionary<int, string> GearCache = new Dictionary<int, string>();
         private static Dictionary<string, ushort> GearTable = new Dictionary<string, ushort>();
         private static HashSet<ushort> WrittenGears = new HashSet<ushort>();
