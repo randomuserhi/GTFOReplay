@@ -24,6 +24,10 @@ namespace Vanilla {
 
         public static Identifier unknown = new Identifier() { type = Type.Unknown };
 
+        public override string ToString() {
+            return $"{stringKey}({id})[{type}]";
+        }
+
         /// <summary>
         /// Describes the format of the identifier.
         /// 
