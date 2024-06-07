@@ -51,16 +51,21 @@ namespace Vanilla.Player {
     internal class rPlayerAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            // NOTE(randomuserhi): Since all events rely on animation being spawned, make sure that is spawned prior to triggering anything.
+            private static void Trigger(Id e) {
+                if (Replay.Has<rPlayerAnimation>(e.id)) Replay.Trigger(e);
+            }
+
             [HarmonyPatch(typeof(PLOC_Downed), nameof(PLOC_Downed.OnPlayerRevived))]
             [HarmonyPrefix]
             private static void Prefix_OnPlayerRevived(PLOC_Downed __instance) {
-                Replay.Trigger(new rRevive(__instance.m_owner));
+                Trigger(new rRevive(__instance.m_owner));
             }
 
             [HarmonyPatch(typeof(PLOC_Downed), nameof(PLOC_Downed.CommonEnter))]
             [HarmonyPrefix]
             private static void Prefix_CommonEnter(PLOC_Downed __instance) {
-                Replay.Trigger(new rDowned(__instance.m_owner));
+                Trigger(new rDowned(__instance.m_owner));
             }
 
             [HarmonyPatch(typeof(PlayerSync), nameof(PlayerSync.SendThrowStatus))]
@@ -87,7 +92,7 @@ namespace Vanilla.Player {
                     break;
                 case pPlayerThrowStatus.StatusEnum.Throw:
                     anim._chargingThrow = false;
-                    Replay.Trigger(new rConsumableThrow(player));
+                    Trigger(new rConsumableThrow(player));
                     break;
                 }
             }
@@ -121,14 +126,14 @@ namespace Vanilla.Player {
             private static void Postfix_MWS_AttackLight(MWS_AttackLight __instance) {
                 if (__instance.m_canCharge && __instance.m_weapon.FireButton) return;
                 if (swingTrigger) return;
-                Replay.Trigger(new rMeleeSwing(__instance.m_weapon.Owner));
+                Trigger(new rMeleeSwing(__instance.m_weapon.Owner));
                 swingTrigger = true;
             }
 
             [HarmonyPatch(typeof(MWS_AttackHeavy), nameof(MWS_AttackHeavy.Enter))]
             [HarmonyPostfix]
             private static void Postfix_MWS_AttackHeavy(MWS_AttackHeavy __instance) {
-                Replay.Trigger(new rMeleeSwing(__instance.m_weapon.Owner, true));
+                Trigger(new rMeleeSwing(__instance.m_weapon.Owner, true));
             }
 
             [HarmonyPatch(typeof(MeleeWeaponThirdPerson), nameof(MeleeWeaponThirdPerson.OnWield))]
@@ -152,9 +157,9 @@ namespace Vanilla.Player {
                     anim._chargingMelee = false;
 
                     if (__instance.m_inChargeAnim) {
-                        Replay.Trigger(new rMeleeSwing(__instance.Owner, true));
+                        Trigger(new rMeleeSwing(__instance.Owner, true));
                     } else {
-                        Replay.Trigger(new rMeleeSwing(__instance.Owner));
+                        Trigger(new rMeleeSwing(__instance.Owner));
                     }
                 } else if (data.inAimMode) {
                     anim._chargingMelee = true;
@@ -164,7 +169,7 @@ namespace Vanilla.Player {
             [HarmonyPatch(typeof(MWS_Push), nameof(MWS_Push.Enter))]
             [HarmonyPostfix]
             private static void Postfix_MWS_Push(MWS_Push __instance) {
-                Replay.Trigger(new rMeleeShove(__instance.m_weapon.Owner));
+                Trigger(new rMeleeShove(__instance.m_weapon.Owner));
             }
 
             [HarmonyPatch(typeof(PlayerInventorySynced), nameof(PlayerInventorySynced.SyncGenericInteract))]
@@ -172,7 +177,7 @@ namespace Vanilla.Player {
             private static void Prefix_SyncGenericInteract(PlayerInventorySynced __instance, pGenericInteractAnimation.TypeEnum type) {
                 switch (type) {
                 case pGenericInteractAnimation.TypeEnum.MeleeShove:
-                    Replay.Trigger(new rMeleeShove(__instance.Owner));
+                    Trigger(new rMeleeShove(__instance.Owner));
                     break;
                 }
             }
