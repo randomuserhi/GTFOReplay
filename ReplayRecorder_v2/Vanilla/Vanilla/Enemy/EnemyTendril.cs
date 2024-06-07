@@ -43,14 +43,7 @@ namespace Vanilla.Enemy {
         private bool detect => tendril.m_state == ScoutAntenna.eTendrilState.MovingInDetect;
         private bool _detect = false;
 
-        public override bool Active {
-            get {
-                if (tendril == null && Replay.Has<rEnemyTendril>(id)) {
-                    Replay.Despawn(Replay.Get<rEnemyTendril>(id));
-                }
-                return tendril != null;
-            }
-        }
+        public override bool Active => tendril != null;
 
         public override bool IsDirty {
             get {

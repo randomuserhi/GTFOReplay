@@ -63,14 +63,5 @@ namespace Vanilla.Enemy {
 
         public rEnemyProjectile(GameObject projectile) : base(projectile.GetInstanceID(), new ProjectileTransform(projectile)) {
         }
-
-        public override bool Active {
-            get {
-                if (!transform.active && Replay.Has<rEnemyProjectile>(id)) {
-                    Replay.Despawn(Replay.Get<rEnemyProjectile>(id));
-                }
-                return base.Active;
-            }
-        }
     }
 }

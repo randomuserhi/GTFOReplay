@@ -41,14 +41,7 @@ namespace Vanilla.Player {
         private Identifier lastHeavyItem = Identifier.unknown;
         private Identifier heavyItem => GetSlotId(InventorySlot.InLevelCarry);
 
-        public override bool Active {
-            get {
-                if (agent == null && Replay.Has<rPlayerBackpack>(id)) {
-                    Replay.Despawn(Replay.Get<rPlayerBackpack>(id));
-                }
-                return agent != null;
-            }
-        }
+        public override bool Active => agent != null;
         public override bool IsDirty =>
             melee != lastMelee ||
             primary != lastPrimary ||

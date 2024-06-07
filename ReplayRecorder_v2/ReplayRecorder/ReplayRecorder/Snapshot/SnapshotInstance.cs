@@ -69,8 +69,10 @@ namespace ReplayRecorder.Snapshot {
             private List<ReplayDynamic> _dynamics = new List<ReplayDynamic>();
             private List<ReplayDynamic> dynamics = new List<ReplayDynamic>();
             private Dictionary<int, ReplayDynamic> mapOfDynamics = new Dictionary<int, ReplayDynamic>();
+            private SnapshotInstance instance;
 
-            public DynamicCollection(Type type) {
+            public DynamicCollection(Type type, SnapshotInstance instance) {
+                this.instance = instance;
                 if (!SnapshotManager.types.Contains(type)) throw new ReplayTypeDoesNotExist($"Could not create DynamicCollection of type '{type.FullName}'.");
                 Type = type;
                 Id = SnapshotManager.types[type];
@@ -156,6 +158,11 @@ namespace ReplayRecorder.Snapshot {
                                 dynamic.Write(buffer);
                             }
                         }
+                    }
+
+                    // If the dynamic is no longer active, and its not already marked for removal => despawn it
+                    if (!dynamic.Active && !dynamic.remove) {
+                        instance.Despawn(dynamic);
                     }
 
                     if (_handleRemoval && !dynamic.remove) {
@@ -307,7 +314,7 @@ namespace ReplayRecorder.Snapshot {
 
             state.Clear();
             foreach (Type t in SnapshotManager.types.dynamics) {
-                state.dynamics.Add(t, new DynamicCollection(t));
+                state.dynamics.Add(t, new DynamicCollection(t, this));
             }
         }
 

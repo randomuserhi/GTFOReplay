@@ -8,14 +8,7 @@ namespace Vanilla.Player {
     internal class rPlayerStats : ReplayDynamic {
         public PlayerAgent player;
 
-        public override bool Active {
-            get {
-                if (player == null && Replay.Has<rPlayerStats>(id)) {
-                    Replay.Despawn(Replay.Get<rPlayerStats>(id));
-                }
-                return player != null;
-            }
-        }
+        public override bool Active => player != null;
         public override bool IsDirty => health != oldHealth ||
                                         infection != oldInfection ||
                                         primaryAmmo != oldPrimaryAmmo ||

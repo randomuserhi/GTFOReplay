@@ -358,14 +358,7 @@ namespace Vanilla.Enemy {
             return (byte)(value * byte.MaxValue);
         }
 
-        public override bool Active {
-            get {
-                if (enemy == null && Replay.Has<rEnemyAnimation>(id)) {
-                    Replay.Despawn(Replay.Get<rEnemyAnimation>(id));
-                }
-                return enemy != null;
-            }
-        }
+        public override bool Active => enemy != null;
         public override bool IsDirty {
             get {
                 UpdateVelocity();

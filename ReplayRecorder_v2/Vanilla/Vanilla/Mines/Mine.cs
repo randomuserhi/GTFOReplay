@@ -137,14 +137,6 @@ namespace Vanilla.Mines {
         private MineDeployerInstance_Detect_Laser? laser;
         public MineDeployerInstance instance;
 
-        public override bool Active {
-            get {
-                if (!transform.active && Replay.Has<rMine>(id)) {
-                    Replay.Despawn(Replay.Get<rMine>(id));
-                }
-                return base.Active;
-            }
-        }
         public override bool IsDirty => base.IsDirty || length != oldLength;
 
         private float length => laser == null ? 0 : laser.DetectionRange;

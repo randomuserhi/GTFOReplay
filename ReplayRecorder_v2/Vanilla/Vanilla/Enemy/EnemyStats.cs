@@ -31,14 +31,7 @@ namespace Vanilla.Enemy {
 
         public EnemyAgent agent;
 
-        public override bool Active {
-            get {
-                if (agent == null && Replay.Has<rEnemyStats>(id)) {
-                    Replay.Despawn(Replay.Get<rEnemyStats>(id));
-                }
-                return agent != null;
-            }
-        }
+        public override bool Active => agent != null;
         public override bool IsDirty => lastTagged != tagged;
 
         private bool lastTagged = false;
