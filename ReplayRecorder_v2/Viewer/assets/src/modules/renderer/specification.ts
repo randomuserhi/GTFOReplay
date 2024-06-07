@@ -78,6 +78,8 @@ import { HumanAnimation, HumanJoints } from "./animations/human.js";
 import { EnemyModel } from "./enemy/enemy.js";
 import { BigFlyerModel, FlyerModel, SquidModel } from "./enemy/flyer.js";
 
+// TODO(randomuserhi): Verify all IDs and code cleanup!
+
 export type Archetype = 
     "melee" |
     "pistol" |
