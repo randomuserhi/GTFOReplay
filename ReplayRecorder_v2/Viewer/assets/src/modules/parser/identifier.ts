@@ -21,6 +21,7 @@ type IdentifierType = typeof identifierTypes[number];
 
 export type IdentifierHash = string;
 
+// Database of internal aliases created by this replay instance
 export interface IdentifierData {
     gearTable: Map<number, string>;
 }

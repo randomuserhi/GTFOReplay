@@ -72,6 +72,17 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
                     playerStats.timeSpentDowned += time - playerStats._downedTimeStamp;
                     playerStats._downedTimeStamp = undefined;
                 }
+
+                // Handle race conditions when hp is > 0 but player is still downed
+                const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+                const anim = anims.get(player.id);
+                if (anim !== undefined) {
+                    if (anim.isDowned !== true && status.health <= 0) {
+                        anim.isDowned = true;
+                    } else if (anim.isDowned !== false && status.health > 0) {
+                        anim.isDowned = false;
+                    }
+                }
             }
         }
     },
