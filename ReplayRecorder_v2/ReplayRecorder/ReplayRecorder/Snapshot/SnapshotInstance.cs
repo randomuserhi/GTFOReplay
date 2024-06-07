@@ -139,7 +139,7 @@ namespace ReplayRecorder.Snapshot {
                 buffer.Reserve(sizeof(int), true);
 
                 // Store old state, since dynamics can trigger events (Spawn / Despawn included)
-                // during writes, we need to maintain state and not reset after causing a race condition.
+                // during writes, we need to maintain state and not reset after which causes a race condition.
                 bool _handleRemoval = handleRemoval;
                 handleRemoval = false;
 
@@ -162,8 +162,15 @@ namespace ReplayRecorder.Snapshot {
                     }
 
                     // If the dynamic is no longer active, and its not already marked for removal => despawn it
+                    // If another active dynamic of the same id exists, do not trigger despawn and instead silently
+                    // discard self.
                     if (!active && !dynamic.remove) {
-                        instance.Despawn(dynamic);
+                        if (dynamics.Any((d) => ReferenceEquals(d, dynamic) && d == dynamic && d.Active && !d.remove)) {
+                            dynamic.remove = true;
+                            handleRemoval = true;
+                        } else {
+                            instance.Despawn(dynamic);
+                        }
                     }
 
                     if (_handleRemoval && !dynamic.remove) {
@@ -195,7 +202,6 @@ namespace ReplayRecorder.Snapshot {
 
         private class DeltaState {
             internal List<EventWrapper> events = new List<EventWrapper>();
-            private List<EventWrapper> _events = new List<EventWrapper>();
             internal Dictionary<Type, DynamicCollection> dynamics = new Dictionary<Type, DynamicCollection>();
 
             internal void Clear() {
@@ -207,17 +213,10 @@ namespace ReplayRecorder.Snapshot {
                 // Tick header
                 BitHelper.WriteBytes((uint)now, bs);
 
-                // Since events could be triggered whilst events are being written,
-                // store state.
-                List<EventWrapper> temp = events;
-                events = _events;
-                _events = temp;
-                events.Clear();
-
-                // Write Events
-                BitHelper.WriteBytes(_events.Count, bs);
-                for (int i = 0; i < _events.Count; ++i) {
-                    EventWrapper e = _events[i];
+                // Write Events - Unlike dynamics there is no support for triggering events whilst writing events.
+                BitHelper.WriteBytes(events.Count, bs);
+                for (int i = 0; i < events.Count; ++i) {
+                    EventWrapper e = events[i];
 
                     long delta = now - e.now;
                     if (delta < 0) delta = 0;
@@ -232,8 +231,9 @@ namespace ReplayRecorder.Snapshot {
                     // release buffer back to pool
                     e.Dispose();
                 }
-                bool eventsWritten = _events.Count != 0;
-                APILogger.Debug($"[Events] {_events.Count} events written.");
+                bool eventsWritten = events.Count != 0;
+                APILogger.Debug($"[Events] {events.Count} events written.");
+                events.Clear();
 
                 // Serialize dynamic properties
                 int numWritten = 0;

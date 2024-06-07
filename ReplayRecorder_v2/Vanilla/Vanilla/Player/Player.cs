@@ -93,6 +93,7 @@ namespace Vanilla.Player {
         }
 
         private static void Despawn(rPlayer player) {
+            APILogger.Debug("Despawn duplicate player.");
             Replay.TryDespawn<rPlayerAnimation>(player.id);
             Replay.TryDespawn<rPlayerBackpack>(player.id);
             Replay.TryDespawn<rPlayerStats>(player.id);
