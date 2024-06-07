@@ -148,9 +148,10 @@ namespace ReplayRecorder.Snapshot {
                     cycle = cycle % dynamics.Count;
                     ReplayDynamic dynamic = dynamics[cycle++];
 
+                    bool active = dynamic.Active;
                     if (numWritten < max) { // check we are writing within cap
                         if (!dynamic.remove || tickRate == 1) { // check that we only write removal sync if the tick rate matches event rate.
-                            if (dynamic.Active && (dynamic.IsDirty/* || !dynamic.init*/)) {
+                            if (active && (dynamic.IsDirty/* || !dynamic.init*/)) {
                                 if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
                                 ++numWritten;
                                 //dynamic.init = true;
@@ -161,7 +162,7 @@ namespace ReplayRecorder.Snapshot {
                     }
 
                     // If the dynamic is no longer active, and its not already marked for removal => despawn it
-                    if (!dynamic.Active && !dynamic.remove) {
+                    if (!active && !dynamic.remove) {
                         instance.Despawn(dynamic);
                     }
 
