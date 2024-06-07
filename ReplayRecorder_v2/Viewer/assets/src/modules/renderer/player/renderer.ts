@@ -227,6 +227,7 @@ class PlayerModel  {
         this.backpackAligns[inventorySlotMap.get("consumable")!].scale.set(0.7, 0.7, 0.7);
 
         this.backpackAligns[inventorySlotMap.get("heavyItem")!].visible = false;
+        this.backpackAligns[inventorySlotMap.get("hackingTool")!].visible = false;
 
         this.lastEquipped = 0;
 

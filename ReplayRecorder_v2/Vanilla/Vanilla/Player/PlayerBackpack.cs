@@ -41,6 +41,9 @@ namespace Vanilla.Player {
         private Identifier lastHeavyItem = Identifier.unknown;
         private Identifier heavyItem => GetSlotId(InventorySlot.InLevelCarry);
 
+        private Identifier lastHackingTool = Identifier.unknown;
+        private Identifier hackingTool => GetSlotId(InventorySlot.HackingTool);
+
         public override bool Active => agent != null;
         public override bool IsDirty =>
             melee != lastMelee ||
@@ -49,7 +52,8 @@ namespace Vanilla.Player {
             tool != lastTool ||
             pack != lastPack ||
             consumable != lastConsumable ||
-            heavyItem != lastHeavyItem;
+            heavyItem != lastHeavyItem ||
+            hackingTool != lastHackingTool;
 
         public rPlayerBackpack(PlayerAgent player) : base(player.GlobalID) {
             this.agent = player;
@@ -63,6 +67,7 @@ namespace Vanilla.Player {
             lastPack = pack;
             lastConsumable = consumable;
             lastHeavyItem = heavyItem;
+            lastHackingTool = hackingTool;
 
             BitHelper.WriteBytes(lastMelee, buffer);
             BitHelper.WriteBytes(lastPrimary, buffer);
@@ -71,6 +76,7 @@ namespace Vanilla.Player {
             BitHelper.WriteBytes(lastPack, buffer);
             BitHelper.WriteBytes(lastConsumable, buffer);
             BitHelper.WriteBytes(lastHeavyItem, buffer);
+            BitHelper.WriteBytes(lastHackingTool, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

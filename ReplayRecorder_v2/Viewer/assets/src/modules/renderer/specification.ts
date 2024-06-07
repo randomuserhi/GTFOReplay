@@ -29,6 +29,7 @@ import { FogRepeller } from "./Equippable/fogrepeller.js";
 import { GlowStick } from "./Equippable/glowsticks.js";
 import { GLP1 } from "./Equippable/glp1.js";
 import { GLP2 } from "./Equippable/glp2.js";
+import { HackingTool } from "./Equippable/hackingtool.js";
 import { Hammer } from "./Equippable/hammer.js";
 import { HardDrive } from "./Equippable/harddrive.js";
 import { HeavyAssaultRifle } from "./Equippable/heavyassaultrifle.js";
@@ -1439,6 +1440,11 @@ const _gear: Equippable<string>[] = [{
         offset: new Vector3(0, 0, 0.2)
     },
     model: () => new HelRifle()
+}, {
+    id: `{"Ver":1,"Name":"Hacking Tool","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":15},"b":{"c":3,"v":53},"c":{"c":4,"v":17},"d":{"c":5,"v":28}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Hacking Tool"}}}`,
+    name: "Hacking Tool",
+    type: "rifle",
+    model: () => new HackingTool()
 }];
 
 const _item: Equippable<number>[] = [{

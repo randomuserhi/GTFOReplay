@@ -29,7 +29,8 @@ export type InventorySlot =
     "tool" |
     "pack" |
     "consumable" |
-    "heavyItem";
+    "heavyItem" | 
+    "hackingTool";
 export const inventorySlots: InventorySlot[] = [
     "melee",
     "main",
@@ -37,7 +38,8 @@ export const inventorySlots: InventorySlot[] = [
     "tool",
     "pack",
     "consumable",
-    "heavyItem"
+    "heavyItem",
+    "hackingTool"
 ];
 export const inventorySlotMap: Map<InventorySlot, number> = new Map([...inventorySlots.entries()].map(e => [e[1], e[0]]));
 export class PlayerBackpack {
