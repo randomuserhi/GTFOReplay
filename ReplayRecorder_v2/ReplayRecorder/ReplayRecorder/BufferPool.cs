@@ -26,7 +26,9 @@ namespace ReplayRecorder {
                     ++size;
                     return new ByteBuffer();
                 }
-                return pool.Pop();
+                ByteBuffer buffer = pool.Pop();
+                buffer.Clear();
+                return buffer;
             }
         }
 
@@ -37,7 +39,6 @@ namespace ReplayRecorder {
                 } else {
                     ++size;
                 }
-                buffer.Clear();
                 pool.Push(buffer);
             }
         }

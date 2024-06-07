@@ -19,6 +19,7 @@ namespace Vanilla {
             _id = 0;
             GearTable.Clear();
             GearCache.Clear();
+            WrittenGears.Clear();
         }
 
         public static Identifier unknown = new Identifier() { type = Type.Unknown };

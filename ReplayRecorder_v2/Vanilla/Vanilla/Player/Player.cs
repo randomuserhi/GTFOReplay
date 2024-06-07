@@ -58,7 +58,7 @@ namespace Vanilla.Player {
         private static List<rPlayer> players = new List<rPlayer>();
         private static List<rPlayer> _players = new List<rPlayer>();
 
-        public static void Spawn(PlayerAgent agent) {
+        private static void Spawn(PlayerAgent agent) {
             if (!Replay.Ready) return;
 
             // Remove any player of same SNET
@@ -73,7 +73,7 @@ namespace Vanilla.Player {
             players.Add(player);
         }
 
-        public static void Despawn(PlayerAgent agent) {
+        private static void Despawn(PlayerAgent agent) {
             if (!Replay.Ready) return;
             if (!Replay.Has<rPlayer>(agent.GlobalID)) return;
 

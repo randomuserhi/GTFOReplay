@@ -43,6 +43,7 @@ namespace ReplayRecorder.Snapshot {
 
             public void Write(ByteBuffer buffer) {
                 if (eventBuffer == null) throw new Exception("Memory Buffer was disposed too early..."); // TODO(randomuserhi): Custom exception...
+                if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Event: {eventObj.GetType().FullName}({SnapshotManager.types[eventObj.GetType()]})]{(eventObj.Debug != null ? $": {eventObj.Debug}" : "")}");
 
                 BitHelper.WriteBytes(id, buffer);
                 BitHelper.WriteBytes(eventBuffer.Array, buffer, false);
@@ -211,6 +212,8 @@ namespace ReplayRecorder.Snapshot {
                     // release buffer back to pool
                     e.Dispose();
                 }
+                bool eventsWritten = events.Count != 0;
+                events.Clear();
                 APILogger.Debug($"[Events] {events.Count} events written.");
 
                 // Serialize dynamic properties
@@ -231,9 +234,6 @@ namespace ReplayRecorder.Snapshot {
                 if (ConfigManager.Debug && ConfigManager.DebugDynamics) {
                     APILogger.Debug($"Flushed {numWritten} dynamic collections.");
                 }
-
-                bool eventsWritten = events.Count != 0;
-                events.Clear();
 
                 return eventsWritten || numWritten != 0;
             }
@@ -348,7 +348,6 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
-            if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Event: {e.GetType().FullName}({SnapshotManager.types[e.GetType()]})]{(e.Debug != null ? $": {e.Debug}" : "")}");
             EventWrapper ev = new EventWrapper(Now, e, pool.Checkout());
             state.events.Add(ev);
         }

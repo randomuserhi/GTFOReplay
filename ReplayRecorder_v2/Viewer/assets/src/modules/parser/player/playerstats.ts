@@ -74,14 +74,11 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
                 }
 
                 // Handle race conditions when hp is > 0 but player is still downed
+                // Mostly an issue with checkpoints
                 const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
                 const anim = anims.get(player.id);
-                if (anim !== undefined) {
-                    if (anim.isDowned !== true && status.health <= 0) {
-                        anim.isDowned = true;
-                    } else if (anim.isDowned !== false && status.health > 0) {
-                        anim.isDowned = false;
-                    }
+                if (anim !== undefined && anim.isDowned !== false && status.health > 0) {
+                    anim.isDowned = false;
                 }
             }
         }
