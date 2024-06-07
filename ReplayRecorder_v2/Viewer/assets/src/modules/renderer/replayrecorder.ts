@@ -100,6 +100,7 @@ const move: Vector3 = new Vector3();
 
 class CameraControls {
     slot?: number;
+    targetSlot?: number;
 
     up: boolean;
     down: boolean;
@@ -205,19 +206,19 @@ class CameraControls {
     
             case 49:
                 e.preventDefault();
-                this.slot = 0;
+                this.targetSlot = 0;
                 break;
             case 50:
                 e.preventDefault();
-                this.slot = 1;
+                this.targetSlot = 1;
                 break;
             case 51:
                 e.preventDefault();
-                this.slot = 2;
+                this.targetSlot = 2;
                 break;
             case 52:
                 e.preventDefault();
-                this.slot = 3;
+                this.targetSlot = 3;
                 break;
     
             case 38:
@@ -288,6 +289,16 @@ class CameraControls {
 
     public update(renderer: Renderer, snapshot: ReplayApi, dt: number) {
         const camera = renderer.get("Camera")!;
+
+        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+        const slots = [...players.values()];
+        if (this.targetSlot !== undefined) {
+            const followTarget = slots[Math.clamp(this.targetSlot, 0, 3)];
+            if (followTarget !== undefined) {
+                this.slot = this.targetSlot;
+            }
+        }
+
         if (this.slot !== undefined) {
             if (this.forward || this.backward || this.left || this.right || this.up || this.down) {
                 this.slot = undefined;
@@ -296,9 +307,8 @@ class CameraControls {
                 camera.parent = renderer.scene;
                 camera.position.copy(worldPos);
             } else {
-                const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
                 const models = renderer.getOrDefault("Players", () => new Map());
-                const first = [...players.values()][Math.clamp(this.slot, 0, 3)];
+                const first = slots[this.slot];
                 if (first !== undefined) {
                     renderer.set("Dimension", first.dimension);
                     
