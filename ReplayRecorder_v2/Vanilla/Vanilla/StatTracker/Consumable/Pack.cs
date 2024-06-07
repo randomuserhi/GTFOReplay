@@ -120,13 +120,13 @@ namespace Vanilla.StatTracker.Consumable {
                     PlayerAgent target = __instance.Owner;
                     if (sourcePackUser != null) {
                         APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used disinfect pack on {target.Owner.NickName}.");
-                        Replay.Trigger(new rPack(rPack.Type.Disinfect, sourcePackUser, target));
+                        Replay.Trigger(new rPack(Type.Disinfect, sourcePackUser, target));
                     } else if (SNetUtils.TryGetSender(__instance.m_receiveModifyInfectionPacket, out SNet_Player? sender)) {
                         APILogger.Debug($"Player {sender.NickName} used disinfect pack on {target.Owner.NickName}.");
-                        Replay.Trigger(new rPack(rPack.Type.Disinfect, sender.PlayerAgent.Cast<PlayerAgent>(), target));
+                        Replay.Trigger(new rPack(Type.Disinfect, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                     } else {
                         APILogger.Debug($"Player {target.Owner.NickName} used disinfect pack.");
-                        Replay.Trigger(new rPack(rPack.Type.Disinfect, target, target));
+                        Replay.Trigger(new rPack(Type.Disinfect, target, target));
                     }
                 }
 

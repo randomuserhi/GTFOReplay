@@ -4,7 +4,6 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
-using Vanilla.Specification;
 
 namespace Vanilla.Player {
     [HarmonyPatch]
@@ -106,19 +105,7 @@ namespace Vanilla.Player {
         public PlayerAgent agent;
 
         private ushort lastEquipped = 0;
-        private ushort equipped {
-            get {
-                ItemEquippable? item = agent.Inventory.WieldedItem;
-                if (item != null) {
-                    if (item.GearIDRange != null) {
-                        return GTFOSpecification.GetGear(item.GearIDRange.PublicGearName);
-                    } else if (item.ItemDataBlock != null) {
-                        return GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
-                    }
-                }
-                return 0;
-            }
-        }
+        private ushort equipped => GTFO.GetItemID(agent.Inventory.WieldedItem);
 
         public override bool Active {
             get {

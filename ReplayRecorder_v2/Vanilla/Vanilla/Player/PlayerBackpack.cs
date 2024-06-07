@@ -2,7 +2,6 @@
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
-using Vanilla.Specification;
 
 namespace Vanilla.Player {
     [ReplayData("Vanilla.Player.Backpack", "0.0.1")]
@@ -14,11 +13,7 @@ namespace Vanilla.Player {
                 if (PlayerBackpackManager.TryGetItem(agent.Owner, slot, out BackpackItem bpItem)) {
                     if (bpItem.Instance != null) {
                         ItemEquippable item = bpItem.Instance.Cast<ItemEquippable>();
-                        if (item.GearIDRange != null) {
-                            return GTFOSpecification.GetGear(item.GearIDRange.PublicGearName);
-                        } else if (item.ItemDataBlock != null) {
-                            return GTFOSpecification.GetItem(item.ItemDataBlock.persistentID);
-                        }
+                        return GTFO.GetItemID(item);
                     }
                 }
             } catch { }

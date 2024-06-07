@@ -6,7 +6,6 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using UnityEngine;
-using Vanilla.Specification;
 
 namespace Vanilla.Enemy {
     [HarmonyPatch]
@@ -102,10 +101,12 @@ namespace Vanilla.Enemy {
         }
 
         public override void Spawn(ByteBuffer buffer) {
+            // TODO(randomuserhi): Error handling on IDs larger than ushort.MaxValue
+
             base.Spawn(buffer);
             BitHelper.WriteBytes((ushort)agent.Locomotion.AnimHandleName, buffer);
             BitHelper.WriteHalf(agent.SizeMultiplier, buffer);
-            BitHelper.WriteBytes(GTFOSpecification.GetEnemyType(agent.EnemyData.persistentID), buffer);
+            BitHelper.WriteBytes((ushort)agent.EnemyData.persistentID, buffer);
         }
     }
 }

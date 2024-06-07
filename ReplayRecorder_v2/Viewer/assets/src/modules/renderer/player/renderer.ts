@@ -15,7 +15,7 @@ import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../constants.js";
-import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
+import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, getItemEquippable, hammerArchetype, specification } from "../specification.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -675,9 +675,9 @@ Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
                     [nickname.length]: 0xffffff,
                 };
             } else {
-                const main = specification.equippable.get(backpack.slots[inventorySlotMap.get("main")!]);
-                const special = specification.equippable.get(backpack.slots[inventorySlotMap.get("special")!]);
-                const tool = specification.equippable.get(backpack.slots[inventorySlotMap.get("tool")!]);
+                const main = getItemEquippable(backpack.slots[inventorySlotMap.get("main")!]);
+                const special = getItemEquippable(backpack.slots[inventorySlotMap.get("special")!]);
+                const tool = getItemEquippable(backpack.slots[inventorySlotMap.get("tool")!]);
                 this.tmp.text = `${nickname}
 ${health}${infection}
 ${(main !== undefined && main.name !== undefined ? main.name : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
@@ -713,7 +713,7 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
             }
 
             if (item.model === undefined || backpack.slots[i] !== item.spec?.id) {
-                item.spec = specification.equippable.get(backpack.slots[i]);
+                item.spec = getItemEquippable(backpack.slots[i]);
                 item.model = item.spec?.model();
             }
 

@@ -1,5 +1,4 @@
 ﻿using AIGraph;
-using API;
 using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
@@ -7,7 +6,6 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using SNetwork;
 using UnityEngine;
-using Vanilla.Specification;
 
 namespace Vanilla.StaticItems {
     [HarmonyPatch]
@@ -86,10 +84,8 @@ namespace Vanilla.StaticItems {
         }
 
         public override void Spawn(ByteBuffer buffer) {
-            APILogger.Debug($"Spawned item - {GTFOSpecification.GetItem(item.item.ItemDataBlock.persistentID)}");
-
             Write(buffer);
-            BitHelper.WriteBytes(GTFOSpecification.GetItem(item.item.ItemDataBlock.persistentID), buffer);
+            BitHelper.WriteBytes(GTFO.GetItemID(item.item), buffer);
         }
     }
 

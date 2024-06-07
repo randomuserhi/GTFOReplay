@@ -8,7 +8,6 @@ using ReplayRecorder.API.Attributes;
 using SNetwork;
 using UnityEngine;
 using Vanilla.Mines;
-using Vanilla.Specification;
 
 namespace Vanilla.StatTracker {
     [HarmonyPatch]
@@ -113,11 +112,11 @@ namespace Vanilla.StatTracker {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                             if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                                gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                                gear = GTFO.GetItemID(currentEquipped);
                             }
                         } else {
                             // Get sentry used
-                            gear = GTFOSpecification.GetGear(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass).GearIDRange.PublicGearName);
+                            gear = GTFO.GetItemID(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
                         }
                     }
                     float damage = data.damage.Get(__instance.HealthMax);
@@ -140,11 +139,11 @@ namespace Vanilla.StatTracker {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                             if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                                gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                                gear = GTFO.GetItemID(currentEquipped);
                             }
                         } else {
                             // Get sentry used
-                            gear = GTFOSpecification.GetGear(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass).GearIDRange.PublicGearName);
+                            gear = GTFO.GetItemID(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
                         }
                     }
                     float damage = data.damage.Get(__instance.HealthMax);
@@ -196,7 +195,7 @@ namespace Vanilla.StatTracker {
                         // Get weapon used
                         ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                         if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                            gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                            gear = GTFO.GetItemID(currentEquipped);
                         }
                     }
 
@@ -222,11 +221,11 @@ namespace Vanilla.StatTracker {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                             if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                                gear = GTFOSpecification.GetGear(currentEquipped.GearIDRange.PublicGearName);
+                                gear = GTFO.GetItemID(currentEquipped);
                             }
                         } else {
                             // Get sentry used
-                            gear = GTFOSpecification.GetGear(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass).GearIDRange.PublicGearName);
+                            gear = GTFO.GetItemID(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
                         }
                     }
                     float damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.ProjectileResistance, data.damage.Get(__instance.HealthMax));

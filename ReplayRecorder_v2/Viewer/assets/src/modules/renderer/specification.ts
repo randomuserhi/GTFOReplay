@@ -97,7 +97,8 @@ export interface Specification {
     player: {
         maxHealth: number
     }
-    equippable: Map<number, Equippable>;
+    item: Map<number, Equippable>;
+    gear: Map<number, Equippable>;
     meleeArchetype: Map<number, Id<MeleeArchetype>>; 
     consumableArchetype: Map<number, Id<ConsumableArchetype>>;
     gearArchetype: Map<number, Id<GearArchetype>>;
@@ -1061,45 +1062,42 @@ export const batArchetype: MeleeArchetype = {
 };
 
 const _melee: Id<MeleeArchetype>[] = [{
-    id: 41,
+    id: 57,
     ...hammerArchetype
 }, {
-    id: 74,
+    id: 26,
     ...hammerArchetype
 }, {
-    id: 42,
+    id: 9,
     ...hammerArchetype
 }, {
-    id: 49,
+    id: 27,
     ...hammerArchetype
 }, {
-    id: 50,
+    id: 28,
     ...hammerArchetype
 }, {
-    id: 51,
-    ...hammerArchetype
-}, {
-    id: 43,
+    id: 53,
     ...knifeArchetype
 }, {
-    id: 44,
+    id: 68,
     ...knifeArchetype
 }, {
-    id: 45,
+    id: 55,
     ...batArchetype
 }, {
-    id: 46,
+    id: 69,
     ...batArchetype
 }, {
-    id: 47,
+    id: 54,
     ...spearArchetype
 }, {
-    id: 48,
+    id: 70,
     ...spearArchetype
 }];
 
 const _consumable: Id<ConsumableArchetype>[] = [{
-    id: 63,
+    id: 117,
     equipAnim: playerAnimationClips.Fogrepeller_Throw_Equip,
     throwAnim: playerAnimationClips.Fogrepeller_Throw,
     chargeAnim: playerAnimationClips.Fogrepeller_Throw_Charge,
@@ -1107,38 +1105,42 @@ const _consumable: Id<ConsumableArchetype>[] = [{
 }];
 
 const _gearArchetype: Id<GearArchetype>[] = [{
-    id: 1,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 2,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
     id: 3,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 67,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 47,
     gunFoldAnim: gearFoldAnimations.Front_Revolver_2_Reload_0,
 }, {
-    id: 4,
+    id: 29,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
 }, {
-    id: 5,
+    id: 45,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
     offset: new Vector3(0, 0, 0.1)
 }, {
-    id: 6,
+    id: 40,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
 }, {
-    id: 7,
+    id: 4,
     gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
 }, {
-    id: 8,
+    id: 60,
     gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
 }, {
-    id: 9,
+    id: 49,
     gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
 }, {
-    id: 10,
+    id: 34,
     gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
 }, {
-    id: 11,
+    id: 5,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 50,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
     offset: new Vector3(0, 0, 0.2)
 }, {
@@ -1146,7 +1148,72 @@ const _gearArchetype: Id<GearArchetype>[] = [{
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
     offset: new Vector3(0, 0, 0.2)
 }, {
+    id: 30,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 41,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 51,
+    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
+}, {
+    id: 61,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 65,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 46,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 66,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
     id: 13,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 31,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 56,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 44,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 15,
+    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
+}, {
+    id: 16,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 38,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 39,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 43,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    offset: new Vector3(0, 0, 0.2)
+}, {
+    id: 63,
+    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+}, {
+    id: 62,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
     offset: new Vector3(0, 0, 0.2)
 }, {
@@ -1154,544 +1221,552 @@ const _gearArchetype: Id<GearArchetype>[] = [{
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
     offset: new Vector3(0, 0, 0.2)
 }, {
-    id: 15,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 16,
-    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
-}, {
-    id: 17,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 18,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 19,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 20,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 21,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 22,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 23,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 24,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 25,
-    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
-}, {
-    id: 26,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 27,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 28,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 29,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 30,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 31,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 32,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 33,
+    id: 42,
     gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
     offset: new Vector3(0, 0, 0.2)
 }];
 
-const _equippable: Equippable[] = [{
-    id: 43,
-    name: "knife",
-    archetype: "melee",
-    model: () => new Knife()
-}, {
-    id: 44,
-    name: "knife",
-    archetype: "melee",
-    model: () => new Knife()
-}, {
-    id: 45,
-    name: "Bat",
-    archetype: "melee",
-    model: () => new Bat()
-}, {
-    id: 46,
-    name: "Bat",
-    archetype: "melee",
-    model: () => new Bat()
-}, {
-    id: 48,
-    name: "Spear",
-    archetype: "melee",
-    model: () => new Spear()
-}, {
-    id: 47,
-    name: "Spear",
-    archetype: "melee",
-    model: () => new Spear()
-}, {
-    id: 41,
-    name: "Hammer",
-    archetype: "melee",
-    model: () => new Hammer()
-}, {
-    id: 74,
-    name: "Hammer",
-    archetype: "melee",
-    model: () => new Hammer()
-}, {
-    id: 42,
-    name: "Hammer",
-    archetype: "melee",
-    model: () => new Hammer()
-}, {
-    id: 49,
-    name: "Hammer",
-    archetype: "melee",
-    model: () => new Hammer()
-}, {
-    id: 50,
-    name: "Hammer",
-    archetype: "melee",
-    model: () => new Hammer()
-}, {
-    id: 51,
-    name: "Hammer",
-    archetype: "melee",
-    model: () => new Hammer()
-}, {
+const _gear: Equippable[] = [{
     id: 53,
-    archetype: "consumable",
-    model: () => new Pack(0xff0000)
+    name: "knife",
+    archetype: "melee",
+    model: () => new Knife()
 }, {
-    id: 54,
-    archetype: "consumable",
-    model: () => new Pack(0x00ff00)
+    id: 68,
+    name: "knife",
+    archetype: "melee",
+    model: () => new Knife()
 }, {
     id: 55,
-    archetype: "consumable",
-    model: () => new Pack(0x0000ff)
+    name: "Bat",
+    archetype: "melee",
+    model: () => new Bat()
 }, {
-    id: 56,
-    archetype: "consumable",
-    model: () => new Pack(0x7b9fe8)
+    id: 69,
+    name: "Bat",
+    archetype: "melee",
+    model: () => new Bat()
 }, {
-    id: 37,
+    id: 54,
+    name: "Spear",
+    archetype: "melee",
+    model: () => new Spear()
+}, {
+    id: 70,
+    name: "Spear",
+    archetype: "melee",
+    model: () => new Spear()
+}, {
+    id: 9,
+    name: "Hammer",
+    archetype: "melee",
+    model: () => new Hammer()
+}, {
+    id: 27,
+    name: "Hammer",
+    archetype: "melee",
+    model: () => new Hammer()
+}, {
+    id: 28,
+    name: "Hammer",
+    archetype: "melee",
+    model: () => new Hammer()
+}, {
+    id: 57,
+    name: "Hammer",
+    archetype: "melee",
+    model: () => new Hammer()
+}, {
+    id: 26,
+    name: "Hammer",
+    archetype: "melee",
+    model: () => new Hammer()
+}, {
+    id: 24,
     archetype: "rifle",
     name: "Burst Sentry",
     model: () => new Sentry()
 }, {
-    id: 38,
+    id: 6,
     name: "Shotgun Sentry",
     archetype: "rifle",
     model: () => new Sentry()
 }, {
-    id: 39,
+    id: 23,
     name: "Auto Sentry",
     archetype: "rifle",
     model: () => new Sentry()
 }, {
-    id: 40,
+    id: 25,
     name: "Sniper Sentry",
     archetype: "rifle",
     model: () => new Sentry()
 }, {
-    id: 34,
+    id: 18,
     name: "Bio Tracker",
     archetype: "rifle",
     model: () => new Biotracker()
 }, {
-    id: 35,
+    id: 17,
     name: "C-Foam Launcher",
     archetype: "rifle",
     model: () => new CfoamLauncher()
 }, {
-    id: 36,
+    id: 20,
     name: "Mine Deployer",
     archetype: "rifle",
     model: () => new MineDeployer()
 }, {
-    id: 1,
+    id: 3,
     name: "Pistol",
     archetype: "pistol",
     model: () => new Pistol()
 }, {
-    id: 2,
+    id: 67,
     name: "Burst Pistol",
     archetype: "pistol",
     model: () => new BurstPistol()
 }, {
-    id: 3,
+    id: 47,
     name: "Hel Revolver",
     archetype: "pistol",
     model: () => new HelRevolver()
 }, {
-    id: 4,
+    id: 29,
     name: "Machine Pistol",
     archetype: "pistol",
     model: () => new MachinePistol()
 }, {
-    id: 5,
+    id: 45,
     name: "Auto Pistol",
     archetype: "pistol",
     model: () => new AutoPistol()
 }, {
-    id: 6,
+    id: 40,
     name: "Bullpup",
     archetype: "rifle",
     model: () => new Bullpup()
 }, {
-    id: 7,
+    id: 4,
     name: "Smg",
     archetype: "rifle",
     model: () => new Smg()
 }, {
-    id: 8,
+    id: 60,
     name: "PDW",
     archetype: "rifle",
     model: () => new PDW()
 }, {
-    id: 9,
+    id: 49,
     name: "Heavy Smg",
     archetype: "rifle",
     model: () => new HeavySmg()
 }, {
-    id: 10,
+    id: 34,
     name: "Carbine",
     archetype: "rifle",
     model: () => new Carbine()
 }, {
-    id: 11,
+    id: 5,
     name: "Dmr",
     archetype: "rifle",
     model: () => new Dmr()
 }, {
-    id: 12,
+    id: 50,
     name: "Double Tap",
     archetype: "rifle",
     model: () => new DoubleTap()
 }, {
-    id: 13,
+    id: 12,
     name: "Assault Rifle",
     archetype: "rifle",
     model: () => new AssaultRifle()
 }, {
-    id: 14,
+    id: 30,
     name: "Burst Rifle",
     archetype: "rifle",
     model: () => new BurstRifle()
 }, {
-    id: 15,
+    id: 41,
     name: "Rifle",
     archetype: "rifle",
     model: () => new Rifle()
 }, {
-    id: 16,
+    id: 51,
     name: "Sawed Off",
     archetype: "pistol",
     model: () => new SawedOff()
 }, {
-    id: 17,
+    id: 61,
     name: "Hel Shotgun",
     archetype: "rifle",
     model: () => new HelShotgun()
 }, {
-    id: 18,
+    id: 65,
     name: "Slug Shotgun",
     archetype: "rifle",
     model: () => new SlugShotgun()
 }, {
-    id: 19,
+    id: 46,
     name: "Heavy Assault Rifle",
     archetype: "rifle",
     model: () => new HeavyAssaultRifle()
 }, {
-    id: 20,
+    id: 66,
     name: "Short Rifle",
     archetype: "rifle",
     model: () => new ShortRifle()
 }, {
-    id: 21,
+    id: 13,
     name: "Shotgun",
     archetype: "rifle",
     model: () => new Shotgun()
 }, {
-    id: 22,
+    id: 31,
     name: "Combat Shotgun",
     archetype: "rifle",
     model: () => new CombatShotgun()
 }, {
-    id: 23,
+    id: 56,
     name: "Scatter Gun",
     archetype: "rifle",
     model: () => new ScatterGun()
 }, {
-    id: 24,
+    id: 44,
     name: "Choke Mod Shotgun",
     archetype: "rifle",
     model: () => new ChokeModShotgun()
 }, {
-    id: 25,
+    id: 15,
     name: "Revolver",
     archetype: "pistol",
     model: () => new Revolver()
 }, {
-    id: 26,
+    id: 16,
     name: "Machine Gun",
     archetype: "rifle",
     model: () => new MachineGun0()
 }, {
-    id: 27,
+    id: 38,
     name: "Machine Gun",
     archetype: "rifle",
     model: () => new MachineGun1()
 }, {
-    id: 28,
+    id: 39,
     name: "Burst Cannon",
     archetype: "rifle",
     model: () => new BurstCannon()
 }, {
-    id: 29,
+    id: 43,
     name: "Hel Gun",
     archetype: "rifle",
     model: () => new HelGun()
 }, {
-    id: 30,
+    id: 63,
     name: "High Cal",
     archetype: "pistol",
     model: () => new HighCal()
 }, {
-    id: 31,
+    id: 62,
     name: "Precision Rifle",
     archetype: "rifle",
     model: () => new PrecisionRifle()
 }, {
-    id: 32,
+    id: 14,
     name: "Sniper",
     archetype: "rifle",
     model: () => new Sniper()
 }, {
-    id: 33,
+    id: 42,
     name: "Hel Rifle",
     archetype: "rifle",
     model: () => new HelRifle()
+}];
+
+const _item: Equippable[] = [{
+    id: 102,
+    archetype: "consumable",
+    model: () => new Pack(0xff0000)
+}, {
+    id: 101,
+    archetype: "consumable",
+    model: () => new Pack(0x00ff00)
+}, {
+    id: 127,
+    archetype: "consumable",
+    model: () => new Pack(0x0000ff)
+}, {
+    id: 132,
+    archetype: "consumable",
+    model: () => new Pack(0x7b9fe8)
 }, { 
-    id: 57,
+    id: 114,
     name: "Glow Sticks",
     archetype: "consumable",
     model: () => new GlowStick()
 }, { 
-    id: 58,
+    id: 174,
+    name: "Glow Sticks",
+    archetype: "consumable",
+    model: () => new GlowStick()
+}, { 
+    id: 30,
     name: "Long Range Flashlight",
     archetype: "consumable",
     model: () => new LongRangeFlashlight() 
 }, { 
-    id: 59,
+    id: 140,
     name: "I2-LP Syringe",
     archetype: "consumable",
     model: () => new Syringe(new Color(0xff4444)) 
 }, { 
-    id: 60,
+    id: 142,
     name: "IIX Syringe",
     archetype: "consumable",
     model: () => new Syringe(new Color(0xffff00))
 }, { 
-    id: 61,
+    id: 115,
     name: "Cfoam Grenade",
     archetype: "consumable",
     model: () => new CfoamGrenade()
 }, { 
-    id: 62,
+    id: 116,
     name: "Lock Melter",
     archetype: "consumable",
     model: () => new LockMelter()
 
 }, { 
-    id: 63,
+    id: 117,
     name: "Fog Repeller",
     archetype: "consumable",
     model: () => new FogRepeller()   
 }, { 
-    id: 64,
+    id: 139,
     name: "Explosive Tripmine",
     archetype: "consumable",
     model: () => new ConsumableMine()
 }, { 
-    id: 65,
+    id: 144,
     name: "Cfoam Tripmine",
     archetype: "consumable",
     model: () => new CfoamTripMine()
 }, { 
-    id: 66,
+    id: 131,
     name: "Power Cell",
     archetype: "rifle",
     model: () => new PowerCell()
 }, { 
-    id: 67,
+    id: 133,
     name: "Fog Repeller",
     archetype: "rifle",
     model: () => new HeavyFogRepeller()
 }, { 
-    id: 68,
+    id: 137,
     name: "Neonate",
     archetype: "rifle",
     model: () => new Neonate()
 }, { 
-    id: 69,
+    id: 141,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 143,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 170,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 145,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 175,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 177,
+    name: "Neonate",
+    archetype: "rifle",
+    model: () => new Neonate()
+}, { 
+    id: 164,
     name: "Matter Wave Projector",
     archetype: "rifle",
     model: () => new MatterWaveProjector()
 }, { 
-    id: 70,
+    id: 166,
+    name: "Matter Wave Projector",
+    archetype: "rifle",
+    model: () => new MatterWaveProjector()
+}, { 
+    id: 151,
     name: "Data Sphere",
     archetype: "rifle",
     model: () => new DataSphere()
 }, { 
-    id: 71,
+    id: 181,
+    name: "Data Sphere",
+    archetype: "rifle",
+    model: () => new DataSphere()
+}, { 
+    id: 138,
     name: "Cargo Crate",
     archetype: "rifle",
     model: () => new CargoCrate()
 }, { 
-    id: 72,
+    id: 176,
+    name: "Cargo Crate",
+    archetype: "rifle",
+    model: () => new CargoCrate()
+}, { 
+    id: 154,
     name: "Hisec Cargo Crate",
     archetype: "rifle",
     model: () => new HisecCargoCrate()
 }, { 
-    id: 73,
+    id: 155,
+    name: "Hisec Cargo Crate",
+    archetype: "rifle",
+    model: () => new HisecCargoCrate()
+}, { 
+    id: 148,
     name: "Cryo",
     archetype: "rifle",
     model: () => new Cryo()
 }, { 
-    id: 74,
+    id: 173,
     name: "Collection Case",
     archetype: "rifle",
     model: () => new CollectionCase()
 }, { 
-    id: 76,
+    id: 168,
     name: "Data Cube",
     archetype: "rifle",
     model: () => new DataCube()
 }, { 
-    id: 77,
+    id: 165,
+    name: "Data Cube",
+    archetype: "rifle",
+    model: () => new DataCube()
+}, { 
+    id: 179,
+    name: "Data Cube",
+    archetype: "rifle",
+    model: () => new DataCube()
+}, { 
+    id: 178,
+    name: "Data Cube",
+    archetype: "rifle",
+    model: () => new DataCube()
+}, { 
+    id: 146,
     name: "Bulkhead Key",
     archetype: "rifle",
     model: () => new BulkheadKey()
 }, { 
-    id: 78,
+    id: 27,
     name: "Key Red",
     archetype: "rifle",
     model: () => new Keycard(0xff0000)
 }, { 
-    id: 79,
+    id: 85,
     name: "Key Blue",
     archetype: "rifle",
     model: () => new Keycard(0x0000ff)
 }, { 
-    id: 80,
+    id: 86,
     name: "Key Green",
     archetype: "rifle",
     model: () => new Keycard(0x00ff00)
 }, { 
-    id: 81,
+    id: 87,
     name: "Key Yellow",
     archetype: "rifle",
     model: () => new Keycard(0xffff00)
 }, { 
-    id: 82,
+    id: 88,
     name: "Key White",
     archetype: "rifle",
     model: () => new Keycard(0xffffff)
 }, { 
-    id: 83,
+    id: 89,
     name: "Key Black",
     archetype: "rifle",
     model: () => new Keycard(0x444444)
 }, { 
-    id: 84,
+    id: 90,
     name: "Key Grey",
     archetype: "rifle",
     model: () => new Keycard(0xaaaaaa)
 }, { 
-    id: 85,
+    id: 91,
     name: "Key Orange",
     archetype: "rifle",
     model: () => new Keycard(0xff8800)
 }, { 
-    id: 86,
+    id: 92,
     name: "Key Purple",
     archetype: "rifle",
     model: () => new Keycard(0xb300ff)
 }, { 
-    id: 87,
+    id: 128,
     name: "Personnel Id",
     archetype: "rifle",
     model: () => new PID()
 }, { 
-    id: 89,
-    name: "Personnel Id",
-    archetype: "rifle",
-    model: () => new PID()
-}, { 
-    id: 88,
+    id: 129,
     name: "Partial Decoder",
     archetype: "rifle",
     model: () => new PartialDecoder()
 }, { 
-    id: 89,
+    id: 147,
     name: "Hard Drive",
     archetype: "rifle",
     model: () => new HardDrive()
 }, { 
-    id: 90,
+    id: 180,
+    name: "Hard Drive",
+    archetype: "rifle",
+    model: () => new HardDrive()
+}, { 
+    id: 183,
+    name: "Hard Drive",
+    archetype: "rifle",
+    model: () => new HardDrive()
+}, { 
+    id: 149,
     name: "GLP",
     archetype: "rifle",
     model: () => new GLP1()
 }, { 
-    id: 91,
+    id: 150,
     name: "OSIP",
     archetype: "rifle",
     model: () => new OSIP()
 }, { 
-    id: 92,
+    id: 169,
     name: "GLP",
     archetype: "rifle",
     model: () => new GLP2()
 }, { 
-    id: 93,
+    id: 153,
     name: "Plant Sample",
     archetype: "rifle",
     model: () => new PlantSample()
 }, { 
-    id: 94,
+    id: 171,
+    name: "Memory Stick",
+    archetype: "rifle",
+    model: () => new MemoryStick()
+}, { 
+    id: 172,
     name: "Memory Stick",
     archetype: "rifle",
     model: () => new MemoryStick()
@@ -1703,7 +1778,7 @@ const _enemies: EnemySpecification[] = [{
     name: "Unknown",
     maxHealth: Infinity
 }, {
-    id: 1,
+    id: 20,
     name: "Scout",
     maxHealth: 42,
     headScale: {
@@ -1718,7 +1793,7 @@ const _enemies: EnemySpecification[] = [{
     },
     scale: _shooter_scale
 }, {
-    id: 2,
+    id: 40,
     name: "Shadow Scout",
     transparent: true,
     maxHealth: 42,
@@ -1739,7 +1814,7 @@ const _enemies: EnemySpecification[] = [{
     },
     scale: _shooter_scale
 }, {
-    id: 3,
+    id: 41,
     name: "Charger Scout",
     maxHealth: 60,
     headScale: {
@@ -1751,14 +1826,15 @@ const _enemies: EnemySpecification[] = [{
         x: 1.2,
         y: 1.2,
         z: 1.2,
-    }
+    },
+    color: 0x880000
 }, {
-    id: 4,
+    id: 21,
     name: "Shadow",
     transparent: true,
     maxHealth: 20
 }, {
-    id: 5,
+    id: 35,
     name: "Big Shadow",
     transparent: true,
     maxHealth: 20,
@@ -1778,7 +1854,7 @@ const _enemies: EnemySpecification[] = [{
         z: 1.2,
     }
 }, {
-    id: 6,
+    id: 38,
     name: "Baby",
     maxHealth: 5,
     armScale: {
@@ -1797,11 +1873,46 @@ const _enemies: EnemySpecification[] = [{
         z: 1.3,
     },
 }, {
-    id: 7,
+    id: 48,
+    name: "Baby",
+    maxHealth: 5,
+    armScale: {
+        x: 1,
+        y: 0.8,
+        z: 0.8,
+    },
+    legScale: {
+        x: 1,
+        y: 0.8,
+        z: 0.8,
+    },
+    chestScale: {
+        x: 1.3,
+        y: 1.3,
+        z: 1.3,
+    },
+}, {
+    id: 13,
     name: "Striker",
     maxHealth: 20
 }, {
-    id: 8,
+    id: 32,
+    name: "Striker",
+    maxHealth: 20
+}, {
+    id: 31,
+    name: "Striker",
+    maxHealth: 20
+}, {
+    id: 24,
+    name: "Striker",
+    maxHealth: 20
+}, {
+    id: 49,
+    name: "Striker",
+    maxHealth: 20
+}, {
+    id: 16,
     name: "Big Striker",
     maxHealth: 120,
     headScale: {
@@ -1815,12 +1926,50 @@ const _enemies: EnemySpecification[] = [{
         z: 1.2
     },
 }, {
-    id: 9,
+    id: 28,
+    name: "Big Striker",
+    maxHealth: 120,
+    headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65
+    },
+    armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+    },
+}, {
+    id: 50,
+    name: "Big Striker",
+    maxHealth: 120,
+    headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65
+    },
+    armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+    },
+}, {
+    id: 26,
     name: "Shooter",
     maxHealth: 30,
     scale: _shooter_scale,
 }, {
-    id: 10,
+    id: 51,
+    name: "Shooter",
+    maxHealth: 30,
+    scale: _shooter_scale,
+}, {
+    id: 11,
+    name: "Shooter",
+    maxHealth: 30,
+    scale: _shooter_scale,
+}, {
+    id: 18,
     name: "Big Shooter",
     maxHealth: 150,
     scale: _shooter_scale,
@@ -1840,7 +1989,7 @@ const _enemies: EnemySpecification[] = [{
         z: 0.85
     },
 }, {
-    id: 11,
+    id: 33,
     name: "Hybrid",
     maxHealth: 150,
     scale: _shooter_scale,
@@ -1860,16 +2009,17 @@ const _enemies: EnemySpecification[] = [{
         z: 1.1
     },
 }, {
-    id: 12,
+    id: 30,
     name: "Charger",
     maxHealth: 30,
     armScale: {
         x: 1.3,
         y: 1.3,
         z: 1.3
-    }
+    },
+    color: 0x880000
 }, {
-    id: 13,
+    id: 39,
     name: "Big Charger",
     maxHealth: 120,
     armScale: {
@@ -1881,13 +2031,14 @@ const _enemies: EnemySpecification[] = [{
         x: 0.7,
         y: 0.7,
         z: 0.7
-    }
+    },
+    color: 0x880000
 }, {
-    id: 14,
+    id: 29,
     name: "Tank",
     maxHealth: 1000,
 }, {
-    id: 15,
+    id: 36,
     name: "Mother",
     maxHealth: 1000,
     rotOffset: {
@@ -1896,7 +2047,7 @@ const _enemies: EnemySpecification[] = [{
         z: 0
     }
 }, {
-    id: 16,
+    id: 37,
     name: "Big Mother",
     maxHealth: 2500,
     rotOffset: {
@@ -1905,36 +2056,36 @@ const _enemies: EnemySpecification[] = [{
         z: 0
     }
 }, {
-    id: 17,
+    id: 46,
     name: "Snatcher",
     maxHealth: 225,
     scale: 1.5
 }, {
-    id: 18,
+    id: 47,
     name: "Immortal Tank",
     maxHealth: Infinity
 }, {
-    id: 19,
+    id: 42,
     name: "Flyer",
     maxHealth: 16.2,
     model: (enemy) => new FlyerModel(enemy),
 }, {
-    id: 20,
+    id: 45,
     name: "Big Flyer",
     maxHealth: 150,
     model: (enemy) => new BigFlyerModel(enemy),
 }, {
-    id: 21,
+    id: 43,
     name: "Squid",
     maxHealth: 6000,
     model: (enemy) => new SquidModel(enemy),
 }, {
-    id: 22,
+    id: 44,
     name: "Squid Boss",
     maxHealth: 6000,
     model: (enemy) => new SquidModel(enemy),
 }, {
-    id: 23,
+    id: 53,
     name: "Nightmare Striker",
     maxHealth: 37,
     armScale: {
@@ -1958,7 +2109,7 @@ const _enemies: EnemySpecification[] = [{
         z: 1.05
     }
 }, {
-    id: 24,
+    id: 52,
     name: "Nightmare Shooter",
     maxHealth: 18,
     scale: _shooter_scale,
@@ -1978,7 +2129,7 @@ const _enemies: EnemySpecification[] = [{
         z: 1.1
     },
 }, {
-    id: 25,
+    id: 54,
     name: "Zoomer Scout",
     maxHealth: 42,
     headScale: {
@@ -1993,7 +2144,7 @@ const _enemies: EnemySpecification[] = [{
     },
     scale: _shooter_scale
 }, {
-    id: 26,
+    id: 55,
     name: "Mega Mother",
     maxHealth: 5000,
     rotOffset: {
@@ -2002,7 +2153,7 @@ const _enemies: EnemySpecification[] = [{
         z: 0
     }
 }, {
-    id: 27,
+    id: 56,
     name: "Nightmare Scout",
     maxHealth: 161,
     armScale: {
@@ -2023,14 +2174,37 @@ const _enemies: EnemySpecification[] = [{
     scale: _shooter_scale
 }];
 
+export function getItemEquippable(itemId: number): Equippable | undefined {
+    const type = itemId & 0b0000000000000001;
+    if (type === 0b0000000000000001) {
+        return specification.gear.get(itemId);
+    } else {
+        return specification.item.get(itemId);
+    }
+}
+
+function translateId<T>(identifiable: Id<T>, type: "gear" | "item"): [number, Id<T>] {
+    const persistentId = identifiable.id;
+    let id = 0;
+    if (type === "gear") {
+        id = (persistentId << 1) | 0b0000000000000001;
+    } else if (type === "item") {
+        id = (persistentId << 1) & 0b1111111111111110;
+    }
+
+    identifiable.id = id;
+    return [id, identifiable];
+}
+
 export const specification: Specification = {
     player: {
         maxHealth: 25
     },
-    equippable: new Map(_equippable.map(g => [g.id, g])),
-    meleeArchetype: new Map(_melee.map(g => [g.id, g])),
-    consumableArchetype: new Map(_consumable.map(g => [g.id, g])),
-    gearArchetype: new Map(_gearArchetype.map(g => [g.id, g])),
+    item: new Map(_item.map(g => translateId(g, "item"))),
+    gear: new Map(_gear.map(g => translateId(g, "gear"))),
+    meleeArchetype: new Map(_melee.map(g => translateId(g, "gear"))),
+    consumableArchetype: new Map(_consumable.map(g => translateId(g, "item"))),
+    gearArchetype: new Map(_gearArchetype.map(g => translateId(g, "gear"))),
     enemies: new Map(_enemies.map(e => [e.id, e])),
     enemyAnimHandles: new Map(_enemyAnimHandles.map(e => [e.name, e]))
 };
