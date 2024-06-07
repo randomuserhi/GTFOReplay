@@ -7,7 +7,8 @@ using ReplayRecorder.API.Attributes;
 namespace Vanilla {
     /// <summary>
     /// Used to identify a Type within the game (e.g Item / Gear / Enemy type)
-    /// Abstracts away from persistent Id or other types of identification the game uses (such as Gear Public Name)
+    /// Abstracts away from persistent Id or other types of identification the game uses (such as Gear Public Name),
+    /// providing compressed aliases to save storage space for large types (Gear public name + construction json)
     /// </summary>
     public struct Identifier : BufferWriteable, IEquatable<Identifier> {
         private static Dictionary<int, string> GearCache = new Dictionary<int, string>();
