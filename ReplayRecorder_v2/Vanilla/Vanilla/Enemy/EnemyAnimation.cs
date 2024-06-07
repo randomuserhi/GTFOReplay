@@ -171,6 +171,11 @@ namespace Vanilla.Enemy {
     internal class rEnemyAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            // NOTE(randomuserhi): Since all events rely on animation being spawned, make sure that is spawned prior to triggering anything.
+            private static void Trigger(Id e) {
+                if (Replay.Has<rEnemyAnimation>(e.id)) Replay.Trigger(e);
+            }
+
             [HarmonyPatch(typeof(EB_InCombat_ChargedAttack_Flyer), nameof(EB_InCombat_ChargedAttack_Flyer.SetAI))]
             [HarmonyPostfix]
             private static void Postfix_BigFlyerAttack_Client(EB_InCombat_ChargedAttack_Flyer __instance) {
@@ -179,7 +184,7 @@ namespace Vanilla.Enemy {
 
                 Il2CppSystem.Action<pEB_FlyerAttackVisualInfoSignal>? previous = __instance.m_attackVisualsPacket.ReceiveAction;
                 __instance.m_attackVisualsPacket.ReceiveAction = (Action<pEB_FlyerAttackVisualInfoSignal>)((packet) => {
-                    Replay.Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, packet.ChargeDuration));
+                    Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, packet.ChargeDuration));
                     previous?.Invoke(packet);
                 });
             }
@@ -190,7 +195,7 @@ namespace Vanilla.Enemy {
                 if (!SNet.IsMaster) return;
                 if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, __instance.m_CharageDuration));
+                Trigger(new rBigFlyerCharge(__instance.m_ai.m_enemyAgent, __instance.m_CharageDuration));
             }
 
             [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonEnter))]
@@ -198,7 +203,7 @@ namespace Vanilla.Enemy {
             private static void Postfix_ScoutDetection_Enter(ES_ScoutScream __instance) {
                 if (!__instance.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
+                Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
             }
 
             [HarmonyPatch(typeof(ES_ScoutDetection), nameof(ES_ScoutDetection.CommonExit))]
@@ -206,7 +211,7 @@ namespace Vanilla.Enemy {
             private static void Postfix_ScoutDetection_Exit(ES_ScoutScream __instance) {
                 if (!__instance.m_enemyAgent.Alive) return;
 
-                Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
+                Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
             }
 
             [HarmonyPatch(typeof(ES_ScoutScream), nameof(ES_ScoutScream.CommonUpdate))]
@@ -216,13 +221,13 @@ namespace Vanilla.Enemy {
 
                 switch (__instance.m_state) {
                 case ES_ScoutScream.ScoutScreamState.Setup:
-                    Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
+                    Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, true));
                     break;
                 case ES_ScoutScream.ScoutScreamState.Chargeup:
                     if (!(__instance.m_stateDoneTimer < Clock.Time)) {
                         break;
                     }
-                    Replay.Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
+                    Trigger(new rScoutScream(__instance.m_ai.m_enemyAgent, false));
                     break;
                 }
             }
@@ -234,9 +239,9 @@ namespace Vanilla.Enemy {
                 if (!__instance.m_ai.m_enemyAgent.Alive) return;
 
                 if (animationState == PouncerBehaviour.PO_ConsumeStart) {
-                    Replay.Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
+                    Trigger(new rPouncerGrab(__instance.m_ai.m_enemyAgent));
                 } else if (animationState == PouncerBehaviour.PO_SpitOut) {
-                    Replay.Trigger(new rPouncerSpit(__instance.m_ai.m_enemyAgent));
+                    Trigger(new rPouncerSpit(__instance.m_ai.m_enemyAgent));
                 }
             }
 
