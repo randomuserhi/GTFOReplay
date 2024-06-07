@@ -297,11 +297,14 @@ class CameraControls {
             if (followTarget !== undefined) {
                 this.slot = this.targetSlot;
             }
+        } else {
+            this.slot = undefined;
         }
 
         if (this.slot !== undefined) {
             if (this.forward || this.backward || this.left || this.right || this.up || this.down) {
-                this.slot = undefined;
+                this.targetSlot = undefined;
+
                 const worldPos = new Vector3();
                 camera.getWorldPosition(worldPos);
                 camera.parent = renderer.scene;
