@@ -8,38 +8,38 @@ namespace Vanilla.Player {
     internal class rPlayerBackpack : ReplayDynamic {
         public PlayerAgent agent;
 
-        private ushort GetSlotId(InventorySlot slot) {
+        private Identifier GetSlotId(InventorySlot slot) {
             try {
                 if (PlayerBackpackManager.TryGetItem(agent.Owner, slot, out BackpackItem bpItem)) {
                     if (bpItem.Instance != null) {
                         ItemEquippable item = bpItem.Instance.Cast<ItemEquippable>();
-                        return GTFO.GetItemID(item);
+                        return Identifier.From(item);
                     }
                 }
             } catch { }
-            return 0;
+            return Identifier.unknown;
         }
 
-        private ushort lastMelee = 0;
-        private ushort melee => GetSlotId(InventorySlot.GearMelee);
+        private Identifier lastMelee = Identifier.unknown;
+        private Identifier melee => GetSlotId(InventorySlot.GearMelee);
 
-        private ushort lastPrimary = 0;
-        private ushort primary => GetSlotId(InventorySlot.GearStandard);
+        private Identifier lastPrimary = Identifier.unknown;
+        private Identifier primary => GetSlotId(InventorySlot.GearStandard);
 
-        private ushort lastSpecial = 0;
-        private ushort special => GetSlotId(InventorySlot.GearSpecial);
+        private Identifier lastSpecial = Identifier.unknown;
+        private Identifier special => GetSlotId(InventorySlot.GearSpecial);
 
-        private ushort lastTool = 0;
-        private ushort tool => GetSlotId(InventorySlot.GearClass);
+        private Identifier lastTool = Identifier.unknown;
+        private Identifier tool => GetSlotId(InventorySlot.GearClass);
 
-        private ushort lastPack = 0;
-        private ushort pack => GetSlotId(InventorySlot.ResourcePack);
+        private Identifier lastPack = Identifier.unknown;
+        private Identifier pack => GetSlotId(InventorySlot.ResourcePack);
 
-        private ushort lastConsumable = 0;
-        private ushort consumable => GetSlotId(InventorySlot.Consumable);
+        private Identifier lastConsumable = Identifier.unknown;
+        private Identifier consumable => GetSlotId(InventorySlot.Consumable);
 
-        private ushort lastHeavyItem = 0;
-        private ushort heavyItem => GetSlotId(InventorySlot.InLevelCarry);
+        private Identifier lastHeavyItem = Identifier.unknown;
+        private Identifier heavyItem => GetSlotId(InventorySlot.InLevelCarry);
 
         public override bool Active {
             get {

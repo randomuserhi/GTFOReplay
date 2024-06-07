@@ -3,6 +3,7 @@ import { Text } from "troika-three-text";
 import { consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
+import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { Player } from "../../parser/player/player.js";
 import { InventorySlot, PlayerBackpack, inventorySlotMap, inventorySlots } from "../../parser/player/playerbackpack.js";
@@ -15,7 +16,7 @@ import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../constants.js";
-import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, getItemEquippable, hammerArchetype, specification } from "../specification.js";
+import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -297,13 +298,13 @@ class PlayerModel  {
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
         }
         
-        if (this.lastArchetype !== this.equippedItem?.spec?.archetype) {
+        if (this.lastArchetype !== this.equippedItem?.spec?.type) {
             const blend = Math.clamp01(equipTime / 0.2);
             if (blend === 1 && this.equippedItem?.spec !== undefined) {
-                this.lastArchetype = this.equippedItem.spec?.archetype;
+                this.lastArchetype = this.equippedItem.spec?.type;
             }
 
-            switch (this.equippedItem?.spec?.archetype) {
+            switch (this.equippedItem?.spec?.type) {
             case "pistol": this.skeleton.blend(playerAnimations.pistolMovement.sample(offsetTime), blend); break;
             case "rifle": this.skeleton.blend(playerAnimations.rifleMovement.sample(offsetTime), blend); break;
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;
@@ -331,7 +332,7 @@ class PlayerModel  {
         const stateTime = time - (anim.lastStateTransition / 1000);
         switch(anim.state) {
         case "jump": {
-            switch (this.equippedItem?.spec?.archetype) {
+            switch (this.equippedItem?.spec?.type) {
             case "pistol": this.skeleton.override(playerAnimationClips.Pistol_Jump.sample(stateTime)); break;
             case "rifle": this.skeleton.override(playerAnimationClips.Rifle_Jump.sample(stateTime)); break;
             default: this.skeleton.override(this.meleeArchetype.jumpAnim.sample(stateTime)); break;
@@ -339,7 +340,7 @@ class PlayerModel  {
         } break;
         case "fall": {
             const blendWeight = Math.clamp01(stateTime / 0.2);
-            switch (this.equippedItem?.spec?.archetype) {
+            switch (this.equippedItem?.spec?.type) {
             case "pistol": this.skeleton.blend(playerAnimationClips.Pistol_Fall.sample(stateTime), blendWeight); break;
             case "rifle": this.skeleton.blend(playerAnimationClips.Rifle_Fall.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.fallAnim.sample(stateTime), blendWeight); break;
@@ -348,7 +349,7 @@ class PlayerModel  {
         case "land": {
             const isSlow = (Math.abs(anim.velocity.x) < 0.08 && Math.abs(anim.velocity.z) < 0.08);
             const blendWeight = 1 - Math.clamp01(stateTime / (isSlow ? 1 : 0.5));
-            switch (this.equippedItem?.spec?.archetype) {
+            switch (this.equippedItem?.spec?.type) {
             case "pistol": this.skeleton.blend(playerAnimationClips.Pistol_Land.sample(stateTime), blendWeight); break;
             case "rifle": this.skeleton.blend(playerAnimationClips.Rifle_Land.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.landAnim.sample(stateTime), blendWeight); break;
@@ -366,7 +367,7 @@ class PlayerModel  {
         }
 
         const shoveTime = time - (anim.lastShoveTime / 1000);
-        const shoveDuration = this.equippedItem?.spec?.archetype === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
+        const shoveDuration = this.equippedItem?.spec?.type === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
         const isShoving = shoveTime < shoveDuration;
         if (isShoving) {
             this.equipped.visible = true;
@@ -445,14 +446,14 @@ class PlayerModel  {
             } break;
             }
 
-            if (!isEquipping && player.equippedId !== 0) {
+            if (!isEquipping && Identifier.isKnown(player.equippedId)) {
                 const dist = 10;
                 this.skeleton.joints.head.getWorldPosition(this.aimTarget.position);
                 this.aimTarget.position.x += anim.targetLookDir.x * dist;
                 this.aimTarget.position.y += anim.targetLookDir.y * dist;
                 this.aimTarget.position.z += anim.targetLookDir.z * dist;
 
-                switch (this.equippedItem.spec?.archetype) {
+                switch (this.equippedItem.spec?.type) {
                 case "pistol":
                 case "rifle": {
                     this.aimIK.update();
@@ -472,7 +473,7 @@ class PlayerModel  {
                         }
                     } else {
                         const shotTime = time - (anim.lastShot / 1000);
-                        const recoilAnim = this.equippedItem.spec?.archetype === "pistol" ? playerAnimationClips.Pistol_Recoil : playerAnimationClips.Rifle_Recoil;
+                        const recoilAnim = this.equippedItem.spec?.type === "pistol" ? playerAnimationClips.Pistol_Recoil : playerAnimationClips.Rifle_Recoil;
                         if (shotTime < recoilAnim.duration) {
                             this.skeleton.additive(difference(_tempAvatar, recoilAnim.frames[0], recoilAnim.sample(shotTime)), 1, upperBodyMask);
                         }
@@ -675,9 +676,9 @@ Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
                     [nickname.length]: 0xffffff,
                 };
             } else {
-                const main = getItemEquippable(backpack.slots[inventorySlotMap.get("main")!]);
-                const special = getItemEquippable(backpack.slots[inventorySlotMap.get("special")!]);
-                const tool = getItemEquippable(backpack.slots[inventorySlotMap.get("tool")!]);
+                const main = specification.getEquippable(backpack.slots[inventorySlotMap.get("main")!]);
+                const special = specification.getEquippable(backpack.slots[inventorySlotMap.get("special")!]);
+                const tool = specification.getEquippable(backpack.slots[inventorySlotMap.get("tool")!]);
                 this.tmp.text = `${nickname}
 ${health}${infection}
 ${(main !== undefined && main.name !== undefined ? main.name : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
@@ -701,43 +702,51 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
         }
     }
 
-    public updateBackpack(player: Player, backpack?: PlayerBackpack) {
+    public updateBackpack(database: IdentifierData, player: Player, backpack?: PlayerBackpack) {
         if (backpack === undefined) return;
 
         this.equippedItem = undefined;
         this.equippedSlot = undefined;
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
+
             if (item.model !== undefined) {
                 item.model.group.removeFromParent();
             }
 
-            if (item.model === undefined || backpack.slots[i] !== item.spec?.id) {
-                item.spec = getItemEquippable(backpack.slots[i]);
+            if (item.model === undefined || !Identifier.equals(backpack.slots[i], database, item.spec?.id)) {
+                item.spec = specification.getEquippable(backpack.slots[i]);
                 item.model = item.spec?.model();
             }
 
             if (item.model !== undefined) {
                 item.model.reset();
-                
-                if (item.spec?.id === player.equippedId) {
+                if (Identifier.equals(player.equippedId, database, item.spec?.id)) {
                     this.equippedItem = item;
                     this.equippedSlot = inventorySlots[i];
 
                     if (item.spec !== undefined) {
-                        switch (item.spec.archetype) {
+                        switch (item.spec.type) {
                         case "melee": {
-                            if (specification.meleeArchetype.has(item.spec.id)) {
-                                const archetype = specification.meleeArchetype.get(item.spec.id)!;
+                            const spec = specification.getEquippable(item.spec.id);
+                            if (spec?.meleeArchetype !== undefined) {
+                                const archetype = spec.meleeArchetype!;
                                 this.meleeArchetype = archetype;
                             }
                         } break;
                         case "consumable": {
-                            this.consumableArchetype = specification.consumableArchetype.get(item.spec.id);
+                            const spec = specification.getEquippable(item.spec.id);
+                            if (spec?.consumableArchetype !== undefined) {
+                                this.consumableArchetype = spec.consumableArchetype!;
+                            }
                         } break;
                         case "pistol":
                         case "rifle": {
-                            this.gearArchetype = specification.gearArchetype.get(item.spec.id);
+                            const spec = specification.getEquippable(item.spec.id);
+                            if (spec?.gearArchetype !== undefined) {
+                                const archetype = spec.gearArchetype!;
+                                this.gearArchetype = archetype;
+                            }
                         } break;
                         }
                     }
@@ -772,6 +781,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot, dt) => {
             const time = snapshot.time();
+            const database = IdentifierData(snapshot);
             const camera = renderer.get("Camera")!;
             const models = renderer.getOrDefault("Players", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
@@ -790,7 +800,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 
                 if (model.root.visible) {
                     const backpack = backpacks.get(id);
-                    model.updateBackpack(player, backpack);
+                    model.updateBackpack(database, player, backpack);
                     model.updateTmp(player, camera, stats.get(id), backpack);
 
                     if (anims.has(id)) {

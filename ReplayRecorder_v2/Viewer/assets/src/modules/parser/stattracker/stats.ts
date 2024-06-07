@@ -1,4 +1,5 @@
 import { Enemy, EnemyCache } from "../enemy/enemy";
+import { Identifier, IdentifierHash } from "../identifier";
 import { Player } from "../player/player";
 import { PackType } from "./pack";
 
@@ -39,13 +40,18 @@ export function PlayerDamage(): PlayerDamage {
     };
 }
 
+interface IdentifiedValue {
+    type: Identifier;
+    value: number;
+}
+
 export interface EnemyDamage {
-    explosiveDamage: Map<number, number>;
-    bulletDamage: Map<number, number>;
-    sentryDamage: Map<number, number>;
-    meleeDamage: Map<number, number>;
-    staggerDamage: Map<number, number>;
-    sentryStaggerDamage: Map<number, number>;
+    explosiveDamage: Map<IdentifierHash, IdentifiedValue>;
+    bulletDamage: Map<IdentifierHash, IdentifiedValue>;
+    sentryDamage: Map<IdentifierHash, IdentifiedValue>;
+    meleeDamage: Map<IdentifierHash, IdentifiedValue>;
+    staggerDamage: Map<IdentifierHash, IdentifiedValue>;
+    sentryStaggerDamage: Map<IdentifierHash, IdentifiedValue>;
 }
 
 export function EnemyDamage(): EnemyDamage {
@@ -67,12 +73,12 @@ export interface PlayerStats {
     packsUsed: Map<PackType, number>;
     packsGiven: Map<PackType, number>;
     timeSpentDowned: number;
-    kills: Map<number, number>;
-    mineKills: Map<number, number>;
-    sentryKills: Map<number, number>;
-    assists: Map<number, number>;
+    kills: Map<IdentifierHash, IdentifiedValue>;
+    mineKills: Map<IdentifierHash, IdentifiedValue>;
+    sentryKills: Map<IdentifierHash, IdentifiedValue>;
+    assists: Map<IdentifierHash, IdentifiedValue>;
     fallDamage: number;
-    tongueDodges: Map<number, number>;
+    tongueDodges: Map<IdentifierHash, IdentifiedValue>;
     _downedTimeStamp?: number;
 }
 

@@ -87,7 +87,7 @@ let replay: Replay | undefined = undefined;
                         // Special case to parse spawn and despawn events
                         const parse = Internal.DynamicParse[module.typename][module.version];
                         if (parse === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                        data = await parse(bytes, replay);
+                        data = await parse(bytes, replay, api);
                         events.push({
                             type,
                             delta,
@@ -103,7 +103,7 @@ let replay: Replay | undefined = undefined;
                         // Parse regular events
                         const func = ModuleLoader.getEvent(module as any);
                         if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                        data = await func.parse(bytes);
+                        data = await func.parse(bytes, api);
                         events.push({
                             type,
                             delta,
@@ -128,7 +128,7 @@ let replay: Replay | undefined = undefined;
                 const size = await BitHelper.readInt(bytes);
                 for (let i = 0; i < size; ++i) {
                     const id = await BitHelper.readInt(bytes);
-                    const data = await func.main.parse(bytes);
+                    const data = await func.main.parse(bytes, api);
                     dynamics.push({ id, data });
 
                     if (!exists.has(type)) exists.set(type, new Map());

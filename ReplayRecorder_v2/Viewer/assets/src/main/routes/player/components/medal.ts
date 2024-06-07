@@ -52,12 +52,12 @@ const medalRequirements: MedalRequirement[] = [
                 
                 let bulletDamage = 0;
                 for (const damage of stats.enemyDamage.bulletDamage.values()) {
-                    bulletDamage += damage;
+                    bulletDamage += damage.value;
                 } 
 
                 let meleeDamage = 0;
                 for (const damage of stats.enemyDamage.meleeDamage.values()) {
-                    meleeDamage += damage;
+                    meleeDamage += damage.value;
                 }
 
                 const total = bulletDamage + meleeDamage;
@@ -158,7 +158,7 @@ const medalRequirements: MedalRequirement[] = [
                 
                 let dodges = 0;
                 for (const count of stats.tongueDodges.values()) {
-                    dodges += count;
+                    dodges += count.value;
                 }
 
                 if (dodges > maxDodges) {
@@ -249,7 +249,7 @@ const medalRequirements: MedalRequirement[] = [
                 
                 let assists = 0;
                 for (const count of stats.assists.values()) {
-                    assists += count;
+                    assists += count.value;
                 }
 
                 if (assists > maxAssists) {
@@ -298,7 +298,7 @@ const medalRequirements: MedalRequirement[] = [
 
                 let kills = 0;
                 for (const count of stats.kills.values()) {
-                    kills += count;
+                    kills += count.value;
                 }
 
                 if (kills > maxKills) {
@@ -320,12 +320,12 @@ const medalRequirements: MedalRequirement[] = [
                 
                 let bulletDamage = 0;
                 for (const damage of stats.enemyDamage.bulletDamage.values()) {
-                    bulletDamage += damage;
+                    bulletDamage += damage.value;
                 } 
 
                 let meleeDamage = 0;
                 for (const damage of stats.enemyDamage.meleeDamage.values()) {
-                    meleeDamage += damage;
+                    meleeDamage += damage.value;
                 }
 
                 const total = bulletDamage + meleeDamage;
@@ -466,23 +466,23 @@ const medalRequirements: MedalRequirement[] = [
                 
                 let sentryDamage = 0;
                 for (const damage of stats.enemyDamage.sentryDamage.values()) {
-                    sentryDamage += damage;
+                    sentryDamage += damage.value;
                 }
                 if (sentryDamage === 0) continue;
 
                 let bulletDamage = 0;
                 for (const damage of stats.enemyDamage.bulletDamage.values()) {
-                    bulletDamage += damage;
+                    bulletDamage += damage.value;
                 } 
 
                 let meleeDamage = 0;
                 for (const damage of stats.enemyDamage.meleeDamage.values()) {
-                    meleeDamage += damage;
+                    meleeDamage += damage.value;
                 }
 
                 let explosiveDamage = 0;
                 for (const damage of stats.enemyDamage.explosiveDamage.values()) {
-                    explosiveDamage += damage;
+                    explosiveDamage += damage.value;
                 }
 
                 const gunDamage = bulletDamage + meleeDamage + explosiveDamage;

@@ -1,5 +1,6 @@
 import { Color, ColorRepresentation, Vector3, Vector3Like } from "three";
 import { AnimHandles, MeleeType } from "../parser/enemy/enemy.js";
+import { Identifier, IdentifierData } from "../parser/identifier.js";
 import { AssaultRifle } from "./Equippable/assaultrifle.js";
 import { AutoPistol } from "./Equippable/autopistol.js";
 import { Bat } from "./Equippable/bat.js";
@@ -86,26 +87,39 @@ export type Archetype =
     "rifle" |
     "consumable";
 
-type Id<T> = { id: number } & T;
-
-export interface Equippable {
-    id: number;
-    name?: string;
-    archetype: Archetype;
-    model(): Model;
+export interface ConsumableArchetype {
+    equipAnim?: HumanAnimation;
+    throwAnim?: HumanAnimation;
+    chargeAnim?: HumanAnimation;
+    chargeIdleAnim?: HumanAnimation;
 }
 
-export interface Specification {
-    player: {
-        maxHealth: number
-    }
-    item: Map<number, Equippable>;
-    gear: Map<number, Equippable>;
-    meleeArchetype: Map<number, Id<MeleeArchetype>>; 
-    consumableArchetype: Map<number, Id<ConsumableArchetype>>;
-    gearArchetype: Map<number, Id<GearArchetype>>;
-    enemies: Map<number, EnemySpecification>;
-    enemyAnimHandles: Map<AnimHandles.Flags, EnemyAnimHandle>;
+export interface MeleeArchetype {
+    equipAnim: HumanAnimation,
+    movementAnim: HumanAnimation,
+    jumpAnim: HumanAnimation,
+    fallAnim: HumanAnimation,
+    landAnim: HumanAnimation,
+    attackAnim: HumanAnimation,
+    chargeAnim: HumanAnimation,
+    chargeIdleAnim: HumanAnimation,
+    releaseAnim: HumanAnimation,
+    shoveAnim: HumanAnimation,
+}
+
+export interface GearArchetype {
+    gunFoldAnim?: GearFoldAnimation;
+    offset?: Vector3Like;
+}
+
+export interface Equippable<T = Identifier> {
+    id: T;
+    name?: string;
+    type: Archetype;
+    gearArchetype?: GearArchetype;
+    meleeArchetype?: MeleeArchetype;
+    consumableArchetype?: ConsumableArchetype
+    model(): Model;
 }
 
 export interface EnemyAnimHandle {
@@ -986,31 +1000,6 @@ export interface EnemySpecification {
     structure?: Partial<AvatarStructure<HumanJoints, Vector3>>; 
 }
 
-export interface MeleeArchetype {
-    equipAnim: HumanAnimation,
-    movementAnim: HumanAnimation,
-    jumpAnim: HumanAnimation,
-    fallAnim: HumanAnimation,
-    landAnim: HumanAnimation,
-    attackAnim: HumanAnimation,
-    chargeAnim: HumanAnimation,
-    chargeIdleAnim: HumanAnimation,
-    releaseAnim: HumanAnimation,
-    shoveAnim: HumanAnimation,
-}
-
-export interface ConsumableArchetype {
-    equipAnim?: HumanAnimation;
-    throwAnim?: HumanAnimation;
-    chargeAnim?: HumanAnimation;
-    chargeIdleAnim?: HumanAnimation;
-}
-
-export interface GearArchetype {
-    gunFoldAnim?: GearFoldAnimation;
-    offset?: Vector3Like;
-}
-
 export const hammerArchetype: MeleeArchetype = {
     equipAnim: playerAnimationClips.Equip_Melee,
     movementAnim: playerAnimations.hammerMovement,
@@ -1063,714 +1052,687 @@ export const batArchetype: MeleeArchetype = {
     shoveAnim: playerAnimations.batShove,
 };
 
-const _melee: Id<MeleeArchetype>[] = [{
-    id: 57,
-    ...hammerArchetype
-}, {
-    id: 26,
-    ...hammerArchetype
-}, {
-    id: 9,
-    ...hammerArchetype
-}, {
-    id: 27,
-    ...hammerArchetype
-}, {
-    id: 28,
-    ...hammerArchetype
-}, {
-    id: 53,
-    ...knifeArchetype
-}, {
-    id: 68,
-    ...knifeArchetype
-}, {
-    id: 55,
-    ...batArchetype
-}, {
-    id: 69,
-    ...batArchetype
-}, {
-    id: 54,
-    ...spearArchetype
-}, {
-    id: 70,
-    ...spearArchetype
-}];
-
-const _consumable: Id<ConsumableArchetype>[] = [{
-    id: 117,
-    equipAnim: playerAnimationClips.Fogrepeller_Throw_Equip,
-    throwAnim: playerAnimationClips.Fogrepeller_Throw,
-    chargeAnim: playerAnimationClips.Fogrepeller_Throw_Charge,
-    chargeIdleAnim: playerAnimationClips.Fogrepeller_Throw_Charge_Idle
-}];
-
-const _gearArchetype: Id<GearArchetype>[] = [{
-    id: 3,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 67,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 47,
-    gunFoldAnim: gearFoldAnimations.Front_Revolver_2_Reload_0,
-}, {
-    id: 29,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 45,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.1)
-}, {
-    id: 40,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 4,
-    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
-}, {
-    id: 60,
-    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
-}, {
-    id: 49,
-    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
-}, {
-    id: 34,
-    gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
-}, {
-    id: 5,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 50,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 12,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 30,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 41,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 51,
-    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
-}, {
-    id: 61,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 65,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 46,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 66,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 13,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 31,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 56,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 44,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1, //
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 15,
-    gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
-}, {
-    id: 16,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 38,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 39,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 43,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 63,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-}, {
-    id: 62,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 14,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}, {
-    id: 42,
-    gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-    offset: new Vector3(0, 0, 0.2)
-}];
-
-const _gear: Equippable[] = [{
-    id: 53,
+const _gear: Equippable<string>[] = [{
+    id: `{"Ver":1,"Name":"Mastaba Fixed Blade","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":27},"b":{"c":3,"v":161},"c":{"c":4,"v":39},"d":{"c":44,"v":12},"e":{"c":48,"v":14},"f":{"c":50,"v":10}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mastaba Fixed Blade"}}}`,
     name: "knife",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: knifeArchetype,
     model: () => new Knife()
 }, {
-    id: 68,
+    id: `{"Ver":1,"Name":"Wox Compact","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":27},"b":{"c":3,"v":161},"c":{"c":4,"v":39},"d":{"c":48,"v":19}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Wox Compact"}}}`,
     name: "knife",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: knifeArchetype,
     model: () => new Knife()
 }, {
-    id: 55,
+    id: `{"Ver":1,"Name":"Kovac Peacekeeper","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":29},"b":{"c":3,"v":163},"c":{"c":4,"v":41},"d":{"c":44,"v":14},"e":{"c":48,"v":16},"f":{"c":50,"v":12}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Kovac Peacekeeper"}}}`,
     name: "Bat",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: batArchetype,
     model: () => new Bat()
 }, {
-    id: 69,
+    id: `{"Ver":1,"Name":"Attroc Titanium","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":29},"b":{"c":3,"v":163},"c":{"c":4,"v":41},"d":{"c":48,"v":17}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Attroc Titanium"}}}`,
     name: "Bat",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: batArchetype,
     model: () => new Bat()
 }, {
-    id: 54,
+    id: `{"Ver":1,"Name":"MACO Drillhead","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":28},"b":{"c":3,"v":162},"c":{"c":4,"v":40},"d":{"c":44,"v":13},"e":{"c":48,"v":15},"f":{"c":50,"v":11}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"MACO Drillhead"}}}`,
     name: "Spear",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: spearArchetype,
     model: () => new Spear()
 }, {
-    id: 70,
+    id: `{"Ver":1,"Name":"IsoCo Stinger","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":28},"b":{"c":3,"v":162},"c":{"c":4,"v":40},"d":{"c":44,"v":16},"e":{"c":48,"v":18},"f":{"c":50,"v":13}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"IsoCo Stinger"}}}`,
     name: "Spear",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: spearArchetype,
     model: () => new Spear()
 }, {
-    id: 9,
+    id: `{"Ver":1,"Name":"Kovac Sledgehammer","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":11},"e":{"c":46,"v":12},"f":{"c":48,"v":6},"g":{"c":50,"v":4}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Kovac Sledgehammer"}}}`,
     name: "Hammer",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: hammerArchetype,
     model: () => new Hammer()
 }, {
-    id: 27,
+    id: `{"Ver":1,"Name":"Santonian HDH","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":2},"e":{"c":46,"v":4},"f":{"c":48,"v":9},"g":{"c":50,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Santonian HDH"}}}`,
     name: "Hammer",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: hammerArchetype,
     model: () => new Hammer()
 }, {
-    id: 28,
+    id: `{"Ver":1,"Name":"Santonian Mallet","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":6},"e":{"c":46,"v":9},"f":{"c":48,"v":10},"g":{"c":50,"v":8}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Santonian Mallet"}}}`,
     name: "Hammer",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: hammerArchetype,
     model: () => new Hammer()
 }, {
-    id: 57,
+    id: `{"Ver":1,"Name":"MACO Gavel","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":5},"e":{"c":46,"v":3},"f":{"c":48,"v":5},"g":{"c":50,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"MACO Gavel"}}}`,
     name: "Hammer",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: hammerArchetype,
     model: () => new Hammer()
 }, {
-    id: 26,
+    id: `{"Ver":1,"Name":"Omneco Maul","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":3},"e":{"c":46,"v":5},"f":{"c":48,"v":2},"g":{"c":50,"v":5}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Omneco Maul"}}}`,
     name: "Hammer",
-    archetype: "melee",
+    type: "melee",
+    meleeArchetype: hammerArchetype,
     model: () => new Hammer()
 }, {
-    id: 24,
-    archetype: "rifle",
+    id: `{"Ver":1,"Name":"Mechatronic SGB3","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":12},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":3},"f":{"c":12,"v":17},"g":{"c":16,"v":8},"h":{"c":27,"v":9},"i":{"c":40,"v":3},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mechatronic SGB3"}}}`,
+    type: "rifle",
     name: "Burst Sentry",
     model: () => new Sentry()
 }, {
-    id: 6,
+    id: `{"Ver":1,"Name":"RAD Labs Meduza","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":11},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":45},"f":{"c":12,"v":28},"g":{"c":16,"v":2},"h":{"c":27,"v":9},"i":{"c":40,"v":2},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"RAD Labs Meduza"}}}`,
     name: "Shotgun Sentry",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Sentry()
 }, {
-    id: 23,
+    id: `{"Ver":1,"Name":"Autotek 51 RSG","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":10},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":36},"f":{"c":12,"v":19},"g":{"c":16,"v":1},"h":{"c":27,"v":9},"i":{"c":40,"v":1},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Autotek 51 RSG"}}}`,
     name: "Auto Sentry",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Sentry()
 }, {
-    id: 25,
+    id: `{"Ver":1,"Name":"Mechatronic B5 LFR","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":13},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":4},"f":{"c":12,"v":13},"g":{"c":16,"v":2},"h":{"c":27,"v":9},"i":{"c":40,"v":2},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mechatronic B5 LFR"}}}`,
     name: "Sniper Sentry",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Sentry()
 }, {
-    id: 18,
+    id: `{"Ver":1,"Name":"D-tek Optron IV","Packet":{"Comps":{"Length":9,"a":{"c":2,"v":9},"b":{"c":3,"v":28},"c":{"c":4,"v":10},"d":{"c":27,"v":10},"e":{"c":30,"v":3},"f":{"c":33,"v":3},"g":{"c":40,"v":2},"h":{"c":42,"v":3}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"D-tek Optron IV"}}}`,
     name: "Bio Tracker",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Biotracker()
 }, {
-    id: 17,
+    id: `{"Ver":1,"Name":"Stalwart Flow G2","Packet":{"Comps":{"Length":12,"a":{"c":2,"v":11},"b":{"c":3,"v":73},"c":{"c":4,"v":15},"d":{"c":27,"v":15},"e":{"c":30,"v":5},"f":{"c":32,"v":4},"g":{"c":33,"v":4},"h":{"c":36,"v":1},"i":{"c":37,"v":2},"j":{"c":40,"v":2},"k":{"c":42,"v":7}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Stalwart Flow G2"}}}`,
     name: "C-Foam Launcher",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new CfoamLauncher()
 }, {
-    id: 20,
+    id: `{"Ver":1,"Name":"Krieger O4","Packet":{"Comps":{"Length":10,"a":{"c":2,"v":13},"b":{"c":3,"v":37},"c":{"c":4,"v":14},"d":{"c":27,"v":12},"e":{"c":30,"v":2},"f":{"c":33,"v":2},"g":{"c":37,"v":1},"h":{"c":40,"v":1},"i":{"c":42,"v":6}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Krieger O4"}}}`,
     name: "Mine Deployer",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new MineDeployer()
 }, {
-    id: 3,
+    id: `{"Ver":1,"Name":"Shelling S49","Packet":{"Comps":{"Length":16,"a":{"c":2,"v":8},"b":{"c":3,"v":108},"c":{"c":4,"v":8},"d":{"c":5,"v":1},"e":{"c":6,"v":1},"f":{"c":7,"v":2},"g":{"c":8,"v":16},"h":{"c":9,"v":15},"i":{"c":10,"v":27},"j":{"c":11,"v":27},"k":{"c":12,"v":38},"l":{"c":16,"v":21},"m":{"c":19,"v":18},"n":{"c":23,"v":8},"o":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.05},"tDecalB":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.04},"tPattern":{"position":{"x":-0.09,"y":-0.03,"normalized":{"x":-0.9486833,"y":-0.316227764,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.09486833,"sqrMagnitude":0.009000001},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Shelling S49"}}}`,
     name: "Pistol",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    },
     model: () => new Pistol()
 }, {
-    id: 67,
+    id: `{"Ver":1,"Name":"Shelling Nano","Packet":{"Comps":{"Length":15,"a":{"c":1,"v":1},"b":{"c":2,"v":8},"c":{"c":3,"v":108},"d":{"c":4,"v":8},"e":{"c":5,"v":1},"f":{"c":6,"v":1},"g":{"c":7,"v":1},"h":{"c":8,"v":16},"i":{"c":9,"v":15},"j":{"c":10,"v":27},"k":{"c":11,"v":27},"l":{"c":12,"v":45},"m":{"c":19,"v":22},"n":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.05},"tDecalB":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.04},"tPattern":{"position":{"x":-0.09,"y":-0.03,"normalized":{"x":-0.9486833,"y":-0.316227764,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.09486833,"sqrMagnitude":0.009000001},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Shelling Nano"}}}`,
     name: "Burst Pistol",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    },
     model: () => new BurstPistol()
 }, {
-    id: 47,
+    id: `{"Ver":1,"Name":"Bataldo 3RB","Packet":{"Comps":{"Length":16,"a":{"c":1,"v":1},"b":{"c":2,"v":23},"c":{"c":3,"v":108},"d":{"c":4,"v":42},"e":{"c":5,"v":29},"f":{"c":6,"v":29},"g":{"c":7,"v":2},"h":{"c":8,"v":19},"i":{"c":9,"v":10},"j":{"c":10,"v":17},"k":{"c":11,"v":17},"l":{"c":12,"v":35},"m":{"c":16,"v":17},"n":{"c":19,"v":15},"o":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.115,"y":-0.02,"normalized":{"x":0.9852118,"y":-0.171341166,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.116726175,"sqrMagnitude":0.0136250006},"angle":45.0,"scale":0.05},"tDecalB":{"position":{"x":0.115,"y":-0.02,"normalized":{"x":0.9852118,"y":-0.171341166,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.116726175,"sqrMagnitude":0.0136250006},"scale":0.06},"tPattern":{"position":{"x":0.07,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.07,"sqrMagnitude":0.0049},"angle":120.0,"scale":0.08}},"publicName":{"data":"Bataldo 3RB"}}}`,
     name: "Hel Revolver",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Front_Revolver_2_Reload_0,
+    },
     model: () => new HelRevolver()
 }, {
-    id: 29,
+    id: `{"Ver":1,"Name":"Raptus Treffen 2","Packet":{"Comps":{"Length":17,"a":{"c":1,"v":2},"b":{"c":2,"v":8},"c":{"c":3,"v":108},"d":{"c":4,"v":21},"e":{"c":5,"v":1},"f":{"c":6,"v":1},"g":{"c":7,"v":1},"h":{"c":8,"v":19},"i":{"c":9,"v":12},"j":{"c":10,"v":20},"k":{"c":11,"v":20},"l":{"c":12,"v":40},"m":{"c":16,"v":18},"n":{"c":19,"v":18},"o":{"c":23,"v":5},"p":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.09,"y":0.03,"normalized":{"x":-0.9486833,"y":0.316227764,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.09486833,"sqrMagnitude":0.009000001},"scale":0.2},"tDecalB":{"position":{"x":-0.1,"y":0.04,"normalized":{"x":-0.9284767,"y":0.371390671,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.1077033,"sqrMagnitude":0.0116000008},"scale":0.2},"tPattern":{"position":{"x":-0.07,"y":0.03,"normalized":{"x":-0.919145,"y":0.3939193,"normalized":{"x":-0.919145048,"y":0.393919319,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.0761577338,"sqrMagnitude":0.0058},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Raptus Treffen 2"}}}`,
     name: "Machine Pistol",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    },
     model: () => new MachinePistol()
 }, {
-    id: 45,
+    id: `{"Ver":1,"Name":"Raptus Steigro","Packet":{"Comps":{"Length":17,"a":{"c":1,"v":2},"b":{"c":2,"v":21},"c":{"c":3,"v":108},"d":{"c":4,"v":21},"e":{"c":5,"v":44},"f":{"c":6,"v":1},"g":{"c":7,"v":1},"h":{"c":8,"v":18},"i":{"c":9,"v":11},"j":{"c":10,"v":28},"k":{"c":11,"v":28},"l":{"c":12,"v":39},"m":{"c":16,"v":18},"n":{"c":19,"v":18},"o":{"c":23,"v":17},"p":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.03,"y":0.032,"normalized":{"x":-0.683941066,"y":0.7295372,"normalized":{"x":-0.6839411,"y":0.729537249,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.0438634269,"sqrMagnitude":0.0019240001},"scale":0.033},"tDecalB":{"position":{"x":-0.03,"y":0.032,"normalized":{"x":-0.683941066,"y":0.7295372,"normalized":{"x":-0.6839411,"y":0.729537249,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.0438634269,"sqrMagnitude":0.0019240001},"scale":0.03},"tPattern":{"position":{"x":-0.1,"y":0.032,"normalized":{"x":-0.9524241,"y":0.3047757,"normalized":{"x":-0.952424169,"y":0.304775745,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.104995243,"sqrMagnitude":0.0110240011},"angle":140.0,"scale":0.15}},"publicName":{"data":"Raptus Steigro"}}}`,
     name: "Auto Pistol",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.1)
+    },
     model: () => new AutoPistol()
 }, {
-    id: 40,
+    id: `{"Ver":1,"Name":"Accrat Golok DA","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":17},"c":{"c":3,"v":108},"d":{"c":4,"v":22},"e":{"c":5,"v":38},"f":{"c":6,"v":2},"g":{"c":7,"v":2},"h":{"c":8,"v":18},"i":{"c":9,"v":13},"j":{"c":10,"v":22},"k":{"c":11,"v":22},"l":{"c":12,"v":41},"m":{"c":16,"v":19},"n":{"c":19,"v":17},"o":{"c":21,"v":9},"p":{"c":23,"v":5},"q":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":-0.202,"y":0.012,"normalized":{"x":-0.9982401,"y":0.05930139,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.20235613,"sqrMagnitude":0.0409480035},"scale":0.07},"tDecalB":{"position":{"x":-0.2,"y":0.01,"normalized":{"x":-0.9987523,"y":0.0499376133,"normalized":{"x":-0.998752356,"y":0.049937617,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.200249851,"sqrMagnitude":0.0401000045},"scale":0.07},"tPattern":{"position":{"x":-0.1,"y":0.032,"normalized":{"x":-0.9524241,"y":0.3047757,"normalized":{"x":-0.952424169,"y":0.304775745,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.104995243,"sqrMagnitude":0.0110240011},"angle":-140.0,"scale":0.1}},"publicName":{"data":"Accrat Golok DA"}}}`,
     name: "Bullpup",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+    },
     model: () => new Bullpup()
 }, {
-    id: 4,
+    id: `{"Ver":1,"Name":"Van Auken LTC5","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":2},"c":{"c":3,"v":108},"d":{"c":4,"v":2},"e":{"c":5,"v":2},"f":{"c":6,"v":2},"g":{"c":7,"v":1},"h":{"c":8,"v":15},"i":{"c":9,"v":5},"j":{"c":10,"v":17},"k":{"c":11,"v":17},"l":{"c":12,"v":26},"m":{"c":16,"v":6},"n":{"c":19,"v":5},"o":{"c":21,"v":10},"p":{"c":23,"v":5},"q":{"c":25,"v":2}},"MatTrans":{"tDecalA":{"position":{"x":0.07,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.07,"sqrMagnitude":0.0049},"angle":45.0,"scale":0.1},"tDecalB":{"position":{"x":0.075,"y":0.003,"normalized":{"x":0.999201059,"y":0.03996804,"normalized":{"x":0.99920094,"y":0.0399680361,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":1.00000012,"sqrMagnitude":1.00000024},"magnitude":0.07505997,"sqrMagnitude":0.005634},"angle":45.0,"scale":0.1},"tPattern":{"position":{"x":0.02,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.02,"sqrMagnitude":0.0004},"angle":200.0,"scale":0.5}},"publicName":{"data":"Van Auken LTC5"}}}`,
     name: "Smg",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+    },
     model: () => new Smg()
 }, {
-    id: 60,
+    id: `{"Ver":1,"Name":"Accrat STB","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":32},"c":{"c":3,"v":108},"d":{"c":4,"v":1},"e":{"c":5,"v":49},"f":{"c":6,"v":3},"g":{"c":7,"v":1},"h":{"c":8,"v":17},"i":{"c":9,"v":6},"j":{"c":10,"v":12},"k":{"c":11,"v":12},"l":{"c":12,"v":24},"m":{"c":16,"v":23},"n":{"c":19,"v":9},"o":{"c":21,"v":16},"p":{"c":23,"v":8},"q":{"c":25,"v":6}},"MatTrans":{"tDecalA":{"position":{"x":0.045,"y":0.025,"normalized":{"x":0.8741573,"y":0.48564294,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05147815,"sqrMagnitude":0.00265000015},"angle":90.0,"scale":0.1},"tDecalB":{"position":{"x":0.05,"y":0.03,"normalized":{"x":0.8574929,"y":0.51449573,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05830952,"sqrMagnitude":0.00340000028},"angle":90.0,"scale":0.1},"tPattern":{"position":{"x":0.05,"y":0.03,"normalized":{"x":0.8574929,"y":0.51449573,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05830952,"sqrMagnitude":0.00340000028},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Accrat STB"}}}`,
     name: "PDW",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+    },
     model: () => new PDW()
 }, {
-    id: 49,
+    id: `{"Ver":1,"Name":"Accrat ND6","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":25},"c":{"c":3,"v":108},"d":{"c":4,"v":2},"e":{"c":5,"v":47},"f":{"c":6,"v":2},"g":{"c":7,"v":1},"h":{"c":8,"v":15},"i":{"c":9,"v":5},"j":{"c":10,"v":17},"k":{"c":11,"v":17},"l":{"c":12,"v":25},"m":{"c":16,"v":6},"n":{"c":19,"v":5},"o":{"c":21,"v":8},"p":{"c":23,"v":5},"q":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.07,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.07,"sqrMagnitude":0.0049},"angle":45.0,"scale":0.1},"tDecalB":{"position":{"x":0.075,"y":0.003,"normalized":{"x":0.999201059,"y":0.03996804,"normalized":{"x":0.99920094,"y":0.0399680361,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":1.00000012,"sqrMagnitude":1.00000024},"magnitude":0.07505997,"sqrMagnitude":0.005634},"angle":45.0,"scale":0.1},"tPattern":{"position":{"x":0.02,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.02,"sqrMagnitude":0.0004},"angle":200.0,"scale":0.5}},"publicName":{"data":"Accrat ND6"}}}`,
     name: "Heavy Smg",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+    },
     model: () => new HeavySmg()
 }, {
-    id: 34,
+    id: `{"Ver":1,"Name":"Van Auken CAB F4","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":1},"b":{"c":2,"v":2},"c":{"c":3,"v":108},"d":{"c":4,"v":2},"e":{"c":5,"v":41},"f":{"c":6,"v":2},"g":{"c":7,"v":1},"h":{"c":8,"v":19},"i":{"c":9,"v":9},"j":{"c":10,"v":10},"k":{"c":11,"v":10},"l":{"c":12,"v":23},"m":{"c":16,"v":6},"n":{"c":19,"v":9},"o":{"c":21,"v":12},"p":{"c":23,"v":5},"q":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.05,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05,"sqrMagnitude":0.00250000018},"scale":0.3},"tDecalB":{"position":{"x":0.1,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.1,"sqrMagnitude":0.0100000007},"scale":0.3},"tPattern":{"angle":-135.0,"scale":0.2}},"publicName":{"data":"Van Auken CAB F4"}}}`,
     name: "Carbine",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.SMG_Front_4_Reload_1,
+    },
     model: () => new Carbine()
 }, {
-    id: 5,
+    id: `{"Ver":1,"Name":"TR22 Hanaway","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":4},"b":{"c":3,"v":108},"c":{"c":4,"v":4},"d":{"c":5,"v":34},"e":{"c":6,"v":34},"f":{"c":7,"v":5},"g":{"c":8,"v":14},"h":{"c":9,"v":10},"i":{"c":10,"v":18},"j":{"c":11,"v":18},"k":{"c":12,"v":15},"l":{"c":16,"v":8},"m":{"c":19,"v":2},"n":{"c":21,"v":7},"o":{"c":23,"v":1},"p":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.48,"y":-0.035,"normalized":{"x":0.9973521,"y":-0.0727236,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.481274337,"sqrMagnitude":0.231624991},"scale":0.5},"tDecalB":{"position":{"x":0.53,"y":-0.05,"normalized":{"x":0.995579541,"y":-0.0939226,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.5323532,"sqrMagnitude":0.283399969},"scale":0.5},"tPattern":{"position":{"y":-0.02,"normalized":{"y":-1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.02,"sqrMagnitude":0.0004},"scale":0.5}},"publicName":{"data":"TR22 Hanaway"}}}`,
     name: "Dmr",
-    archetype: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
+    type: "rifle",
     model: () => new Dmr()
 }, {
-    id: 50,
+    id: `{"Ver":1,"Name":"Hanaway PSB","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":1},"b":{"c":2,"v":4},"c":{"c":3,"v":108},"d":{"c":4,"v":4},"e":{"c":5,"v":34},"f":{"c":6,"v":34},"g":{"c":7,"v":5},"h":{"c":8,"v":13},"i":{"c":9,"v":9},"j":{"c":10,"v":10},"k":{"c":11,"v":10},"l":{"c":12,"v":15},"m":{"c":16,"v":2},"n":{"c":19,"v":8},"o":{"c":21,"v":18},"p":{"c":23,"v":1},"q":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":0.035,"y":0.045,"normalized":{"x":0.6139406,"y":0.789352238,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.0570087731,"sqrMagnitude":0.00325},"scale":0.3},"tDecalB":{"position":{"x":0.03,"y":0.04,"normalized":{"x":0.599999964,"y":0.799999952,"normalized":{"x":0.6,"y":0.8,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.05,"sqrMagnitude":0.0025},"scale":0.2},"tPattern":{"position":{"y":0.03,"normalized":{"y":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.03,"sqrMagnitude":0.0009},"angle":-90.0,"scale":0.3}},"publicName":{"data":"Hanaway PSB"}}}`,
     name: "Double Tap",
-    archetype: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
+    type: "rifle",
     model: () => new DoubleTap()
 }, {
-    id: 12,
+    id: `{"Ver":1,"Name":"Malatack LX","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":1},"c":{"c":3,"v":108},"d":{"c":4,"v":1},"e":{"c":5,"v":3},"f":{"c":6,"v":3},"g":{"c":7,"v":3},"h":{"c":8,"v":17},"i":{"c":9,"v":6},"j":{"c":10,"v":12},"k":{"c":11,"v":12},"l":{"c":12,"v":28},"m":{"c":16,"v":9},"n":{"c":19,"v":7},"o":{"c":21,"v":20},"p":{"c":23,"v":4},"q":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.045,"y":0.025,"normalized":{"x":0.8741573,"y":0.48564294,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05147815,"sqrMagnitude":0.00265000015},"angle":90.0,"scale":0.1},"tDecalB":{"position":{"x":0.05,"y":0.03,"normalized":{"x":0.8574929,"y":0.51449573,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05830952,"sqrMagnitude":0.00340000028},"angle":90.0,"scale":0.1},"tPattern":{"position":{"x":0.05,"y":0.03,"normalized":{"x":0.8574929,"y":0.51449573,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05830952,"sqrMagnitude":0.00340000028},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Malatack LX"}}}`,
     name: "Assault Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new AssaultRifle()
 }, {
-    id: 30,
+    id: `{"Ver":1,"Name":"Malatack CH 4","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":1},"b":{"c":2,"v":1},"c":{"c":3,"v":108},"d":{"c":4,"v":1},"e":{"c":5,"v":3},"f":{"c":6,"v":3},"g":{"c":7,"v":3},"h":{"c":8,"v":17},"i":{"c":9,"v":1},"j":{"c":10,"v":14},"k":{"c":11,"v":23},"l":{"c":12,"v":17},"m":{"c":16,"v":9},"n":{"c":19,"v":8},"o":{"c":21,"v":21},"p":{"c":23,"v":4},"q":{"c":25,"v":4}},"MatTrans":{"tDecalA":{"position":{"x":0.225,"y":0.003,"normalized":{"x":0.9999111,"y":0.013332149,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.225019991,"sqrMagnitude":0.0506339967},"angle":-90.0,"scale":0.05},"tDecalB":{"position":{"x":0.03,"y":-0.012,"normalized":{"x":0.9284767,"y":-0.371390671,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.03231099,"sqrMagnitude":0.001044},"scale":0.06},"tPattern":{"position":{"x":0.07,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.07,"sqrMagnitude":0.0049},"angle":180.0,"scale":0.3}},"publicName":{"data":"Malatack CH 4"}}}`,
     name: "Burst Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new BurstRifle()
 }, {
-    id: 41,
+    id: `{"Ver":1,"Name":"Drekker Pres MOD 556","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":1},"b":{"c":3,"v":108},"c":{"c":4,"v":1},"d":{"c":5,"v":42},"e":{"c":6,"v":3},"f":{"c":7,"v":2},"g":{"c":8,"v":9},"h":{"c":9,"v":8},"i":{"c":10,"v":10},"j":{"c":11,"v":10},"k":{"c":12,"v":14},"l":{"c":16,"v":8},"m":{"c":19,"v":7},"n":{"c":21,"v":15},"o":{"c":23,"v":1},"p":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":0.03,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.03,"sqrMagnitude":0.0009},"scale":0.3},"tDecalB":{"position":{"x":0.1,"y":0.02,"normalized":{"x":0.9805806,"y":0.19611612,"normalized":{"x":0.9805807,"y":0.196116135,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.101980396,"sqrMagnitude":0.010400001},"scale":0.3},"tPattern":{"position":{"x":0.32,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.32,"sqrMagnitude":0.1024},"scale":0.6}},"publicName":{"data":"Drekker Pres MOD 556"}}}`,
     name: "Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new Rifle()
 }, {
-    id: 51,
+    id: `{"Ver":1,"Name":"Buckland SBS III","Packet":{"Comps":{"Length":14,"a":{"c":2,"v":16},"b":{"c":3,"v":156},"c":{"c":4,"v":20},"d":{"c":5,"v":37},"e":{"c":6,"v":4},"f":{"c":8,"v":17},"g":{"c":9,"v":5},"h":{"c":10,"v":18},"i":{"c":11,"v":18},"j":{"c":12,"v":47},"k":{"c":16,"v":22},"l":{"c":19,"v":21},"m":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.51,"y":-0.05,"normalized":{"x":0.9952285,"y":-0.09757143,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.5124451,"sqrMagnitude":0.262599975},"scale":0.3},"tDecalB":{"position":{"x":0.5,"y":-0.07,"normalized":{"x":0.990341663,"y":-0.138647839,"normalized":{"x":0.9903418,"y":-0.138647854,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.9999999,"sqrMagnitude":0.9999998},"magnitude":0.504876256,"sqrMagnitude":0.2549},"scale":0.3},"tPattern":{"angle":-90.0,"scale":0.3}},"publicName":{"data":"Buckland SBS III"}}}`,
     name: "Sawed Off",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1
+    },
     model: () => new SawedOff()
 }, {
-    id: 61,
+    id: `{"Ver":1,"Name":"Bataldo J 300","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":33},"c":{"c":3,"v":156},"d":{"c":4,"v":46},"e":{"c":5,"v":50},"f":{"c":6,"v":4},"g":{"c":7,"v":4},"h":{"c":8,"v":17},"i":{"c":9,"v":5},"j":{"c":10,"v":18},"k":{"c":11,"v":18},"l":{"c":12,"v":32},"m":{"c":16,"v":12},"n":{"c":19,"v":10},"o":{"c":21,"v":11},"p":{"c":23,"v":9},"q":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":0.51,"y":-0.05,"normalized":{"x":0.9952285,"y":-0.09757143,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.5124451,"sqrMagnitude":0.262599975},"scale":0.3},"tDecalB":{"position":{"x":0.5,"y":-0.07,"normalized":{"x":0.990341663,"y":-0.138647839,"normalized":{"x":0.9903418,"y":-0.138647854,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.9999999,"sqrMagnitude":0.9999998},"magnitude":0.504876256,"sqrMagnitude":0.2549},"scale":0.3},"tPattern":{"angle":-90.0,"scale":0.3}},"publicName":{"data":"Bataldo J 300"}}}`,
     name: "Hel Shotgun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new HelShotgun()
 }, {
-    id: 65,
+    id: `{"Ver":1,"Name":"Bataldo Custom K330","Packet":{"Comps":{"Length":16,"a":{"c":2,"v":37},"b":{"c":3,"v":108},"c":{"c":4,"v":6},"d":{"c":5,"v":50},"e":{"c":6,"v":4},"f":{"c":7,"v":4},"g":{"c":8,"v":18},"h":{"c":9,"v":13},"i":{"c":10,"v":22},"j":{"c":11,"v":22},"k":{"c":12,"v":33},"l":{"c":16,"v":12},"m":{"c":19,"v":12},"n":{"c":21,"v":49},"o":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":-0.202,"y":0.012,"normalized":{"x":-0.9982401,"y":0.05930139,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.20235613,"sqrMagnitude":0.0409480035},"scale":0.07},"tDecalB":{"position":{"x":-0.2,"y":0.01,"normalized":{"x":-0.9987523,"y":0.0499376133,"normalized":{"x":-0.998752356,"y":0.049937617,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.200249851,"sqrMagnitude":0.0401000045},"scale":0.07},"tPattern":{"position":{"x":-0.1,"y":0.032,"normalized":{"x":-0.9524241,"y":0.3047757,"normalized":{"x":-0.952424169,"y":0.304775745,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.104995243,"sqrMagnitude":0.0110240011},"angle":-140.0,"scale":0.1}},"publicName":{"data":"Bataldo Custom K330"}}}`,
     name: "Slug Shotgun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new SlugShotgun()
 }, {
-    id: 46,
+    id: `{"Ver":1,"Name":"Malatack HXC","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":22},"c":{"c":3,"v":109},"d":{"c":4,"v":1},"e":{"c":5,"v":42},"f":{"c":6,"v":3},"g":{"c":7,"v":3},"h":{"c":8,"v":17},"i":{"c":9,"v":6},"j":{"c":10,"v":12},"k":{"c":11,"v":12},"l":{"c":12,"v":28},"m":{"c":16,"v":9},"n":{"c":19,"v":3},"o":{"c":21,"v":45},"p":{"c":23,"v":1},"q":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":0.045,"y":0.025,"normalized":{"x":0.8741573,"y":0.48564294,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05147815,"sqrMagnitude":0.00265000015},"angle":90.0,"scale":0.1},"tDecalB":{"position":{"x":0.05,"y":0.03,"normalized":{"x":0.8574929,"y":0.51449573,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05830952,"sqrMagnitude":0.00340000028},"angle":90.0,"scale":0.1},"tPattern":{"position":{"x":0.05,"y":0.03,"normalized":{"x":0.8574929,"y":0.51449573,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.05830952,"sqrMagnitude":0.00340000028},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Malatack HXC"}}}`,
     name: "Heavy Assault Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new HeavyAssaultRifle()
 }, {
-    id: 66,
+    id: `{"Ver":1,"Name":"Drekker CLR","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":24},"b":{"c":3,"v":109},"c":{"c":4,"v":49},"d":{"c":5,"v":2},"e":{"c":6,"v":2},"f":{"c":7,"v":1},"g":{"c":8,"v":15},"h":{"c":9,"v":5},"i":{"c":10,"v":17},"j":{"c":11,"v":17},"k":{"c":12,"v":25},"l":{"c":16,"v":7},"m":{"c":19,"v":8},"n":{"c":21,"v":50},"o":{"c":23,"v":5},"p":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":0.07,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.07,"sqrMagnitude":0.0049},"angle":45.0,"scale":0.1},"tDecalB":{"position":{"x":0.075,"y":0.003,"normalized":{"x":0.999201059,"y":0.03996804,"normalized":{"x":0.99920094,"y":0.0399680361,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":1.00000012,"sqrMagnitude":1.00000024},"magnitude":0.07505997,"sqrMagnitude":0.005634},"angle":45.0,"scale":0.1},"tPattern":{"position":{"x":0.02,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.02,"sqrMagnitude":0.0004},"angle":200.0,"scale":0.5}},"publicName":{"data":"Drekker CLR"}}}`,
     name: "Short Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new ShortRifle()
 }, {
-    id: 13,
+    id: `{"Ver":1,"Name":"Buckland AF6","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":6},"c":{"c":3,"v":110},"d":{"c":4,"v":46},"e":{"c":5,"v":4},"f":{"c":6,"v":4},"g":{"c":7,"v":4},"h":{"c":8,"v":17},"i":{"c":9,"v":5},"j":{"c":10,"v":18},"k":{"c":11,"v":18},"l":{"c":12,"v":12},"m":{"c":16,"v":6},"n":{"c":19,"v":10},"o":{"c":21,"v":42},"p":{"c":23,"v":9},"q":{"c":25,"v":2}},"MatTrans":{"tDecalA":{"position":{"x":0.51,"y":-0.05,"normalized":{"x":0.9952285,"y":-0.09757143,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.5124451,"sqrMagnitude":0.262599975},"scale":0.3},"tDecalB":{"position":{"x":0.5,"y":-0.07,"normalized":{"x":0.990341663,"y":-0.138647839,"normalized":{"x":0.9903418,"y":-0.138647854,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.9999999,"sqrMagnitude":0.9999998},"magnitude":0.504876256,"sqrMagnitude":0.2549},"scale":0.3},"tPattern":{"angle":-90.0,"scale":0.3}},"publicName":{"data":"Buckland AF6"}}}`,
     name: "Shotgun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new Shotgun()
 }, {
-    id: 31,
+    id: `{"Ver":1,"Name":"Buckland s870","Packet":{"Comps":{"Length":16,"a":{"c":2,"v":6},"b":{"c":3,"v":110},"c":{"c":4,"v":6},"d":{"c":5,"v":4},"e":{"c":6,"v":4},"f":{"c":7,"v":4},"g":{"c":8,"v":7},"h":{"c":9,"v":1},"i":{"c":10,"v":24},"j":{"c":11,"v":24},"k":{"c":12,"v":22},"l":{"c":16,"v":12},"m":{"c":19,"v":13},"n":{"c":21,"v":40},"o":{"c":25,"v":2}},"MatTrans":{"tDecalA":{"position":{"x":0.11,"y":0.01,"normalized":{"x":0.99589324,"y":0.090535745,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.110453606,"sqrMagnitude":0.0122},"angle":0.07,"scale":0.07},"tDecalB":{"position":{"x":0.105,"y":0.005,"normalized":{"x":0.9988681,"y":0.0475651473,"normalized":{"x":0.998868167,"y":0.04756515,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.105118982,"sqrMagnitude":0.01105},"angle":0.07,"scale":0.07},"tPattern":{"position":{"x":0.25,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.25,"sqrMagnitude":0.0625},"angle":180.0,"scale":0.5}},"publicName":{"data":"Buckland s870"}}}`,
     name: "Combat Shotgun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new CombatShotgun()
 }, {
-    id: 56,
+    id: `{"Ver":1,"Name":"Drekker INEX Drei","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":1},"b":{"c":2,"v":30},"c":{"c":3,"v":110},"d":{"c":4,"v":43},"e":{"c":5,"v":4},"f":{"c":6,"v":4},"g":{"c":7,"v":4},"h":{"c":8,"v":19},"i":{"c":9,"v":10},"j":{"c":10,"v":19},"k":{"c":11,"v":19},"l":{"c":12,"v":11},"m":{"c":16,"v":9},"n":{"c":19,"v":13},"o":{"c":21,"v":33},"p":{"c":23,"v":19},"q":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":0.06,"y":0.005,"normalized":{"x":0.9965458,"y":0.08304548,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.06020797,"sqrMagnitude":0.003625},"scale":0.08},"tDecalB":{"position":{"x":0.07,"y":0.01,"normalized":{"x":0.9899496,"y":0.141421363,"normalized":{"x":0.989949465,"y":0.141421348,"normalized":{"x":0.9899495,"y":0.141421363,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":1.00000012,"sqrMagnitude":1.00000024},"magnitude":0.0707106739,"sqrMagnitude":0.005},"scale":0.08},"tPattern":{"position":{"x":0.06,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.06,"sqrMagnitude":0.0036},"angle":-60.0,"scale":0.3}},"publicName":{"data":"Drekker INEX Drei"}}}`,
     name: "Scatter Gun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new ScatterGun()
 }, {
-    id: 44,
+    id: `{"Ver":1,"Name":"Buckland XDist2","Packet":{"Comps":{"Length":17,"a":{"c":1,"v":1},"b":{"c":2,"v":6},"c":{"c":3,"v":110},"d":{"c":4,"v":6},"e":{"c":5,"v":46},"f":{"c":6,"v":4},"g":{"c":7,"v":4},"h":{"c":8,"v":19},"i":{"c":9,"v":10},"j":{"c":10,"v":19},"k":{"c":11,"v":19},"l":{"c":12,"v":20},"m":{"c":16,"v":6},"n":{"c":19,"v":12},"o":{"c":21,"v":43},"p":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":0.06,"y":0.005,"normalized":{"x":0.9965458,"y":0.08304548,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.06020797,"sqrMagnitude":0.003625},"scale":0.08},"tDecalB":{"position":{"x":0.07,"y":0.01,"normalized":{"x":0.9899496,"y":0.141421363,"normalized":{"x":0.989949465,"y":0.141421348,"normalized":{"x":0.9899495,"y":0.141421363,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":1.00000012,"sqrMagnitude":1.00000024},"magnitude":0.0707106739,"sqrMagnitude":0.005},"scale":0.08},"tPattern":{"position":{"x":0.06,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.06,"sqrMagnitude":0.0036},"angle":-60.0,"scale":0.3}},"publicName":{"data":"Buckland XDist2"}}}`,
     name: "Choke Mod Shotgun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new ChokeModShotgun()
 }, {
-    id: 15,
+    id: `{"Ver":1,"Name":"Mastaba R66","Packet":{"Comps":{"Length":14,"a":{"c":2,"v":7},"b":{"c":3,"v":109},"c":{"c":4,"v":7},"d":{"c":5,"v":29},"e":{"c":6,"v":29},"f":{"c":8,"v":7},"g":{"c":9,"v":14},"h":{"c":10,"v":20},"i":{"c":11,"v":35},"j":{"c":12,"v":36},"k":{"c":16,"v":16},"l":{"c":19,"v":14},"m":{"c":25,"v":2}},"MatTrans":{"tDecalA":{"position":{"x":0.17,"y":0.02,"normalized":{"x":0.993150651,"y":0.116841249,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.171172425,"sqrMagnitude":0.0293},"scale":0.06},"tDecalB":{"position":{"x":0.17,"y":-0.015,"normalized":{"x":0.9961299,"y":-0.08789381,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.170660481,"sqrMagnitude":0.0291250013},"scale":0.2},"tPattern":{"position":{"x":0.24,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.24,"sqrMagnitude":0.0576},"scale":0.5}},"publicName":{"data":"Mastaba R66"}}}`,
     name: "Revolver",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Revolver_Front_1_Reload_1,
+    },
     model: () => new Revolver()
 }, {
-    id: 16,
+    id: `{"Ver":1,"Name":"TechMan Arbalist V","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":3},"c":{"c":3,"v":109},"d":{"c":4,"v":3},"e":{"c":5,"v":33},"f":{"c":6,"v":33},"g":{"c":7,"v":3},"h":{"c":8,"v":10},"i":{"c":9,"v":10},"j":{"c":10,"v":13},"k":{"c":11,"v":14},"l":{"c":12,"v":18},"m":{"c":16,"v":6},"n":{"c":19,"v":3},"o":{"c":21,"v":13},"p":{"c":23,"v":14},"q":{"c":25,"v":6}},"MatTrans":{"tDecalA":{"position":{"x":0.1,"y":0.02,"normalized":{"x":0.9805806,"y":0.19611612,"normalized":{"x":0.9805807,"y":0.196116135,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.101980396,"sqrMagnitude":0.010400001},"angle":180.0,"scale":0.4},"tDecalB":{"position":{"x":-0.07,"y":0.03,"normalized":{"x":-0.919145,"y":0.3939193,"normalized":{"x":-0.919145048,"y":0.393919319,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.0761577338,"sqrMagnitude":0.0058},"angle":-90.0,"scale":0.05},"tPattern":{"angle":-90.0,"scale":0.1}},"publicName":{"data":"TechMan Arbalist V"}}}`,
     name: "Machine Gun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new MachineGun0()
 }, {
-    id: 38,
+    id: `{"Ver":1,"Name":"TechMan Veruta XII","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":2},"b":{"c":2,"v":19},"c":{"c":3,"v":109},"d":{"c":4,"v":3},"e":{"c":5,"v":39},"f":{"c":6,"v":33},"g":{"c":7,"v":3},"h":{"c":8,"v":10},"i":{"c":9,"v":10},"j":{"c":10,"v":13},"k":{"c":11,"v":14},"l":{"c":12,"v":27},"m":{"c":16,"v":6},"n":{"c":19,"v":3},"o":{"c":21,"v":5},"p":{"c":23,"v":7},"q":{"c":25,"v":6}},"MatTrans":{"tDecalA":{"position":{"x":0.1,"y":0.02,"normalized":{"x":0.9805806,"y":0.19611612,"normalized":{"x":0.9805807,"y":0.196116135,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.101980396,"sqrMagnitude":0.010400001},"angle":180.0,"scale":0.4},"tDecalB":{"position":{"x":-0.07,"y":0.03,"normalized":{"x":-0.919145,"y":0.3939193,"normalized":{"x":-0.919145048,"y":0.393919319,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.0761577338,"sqrMagnitude":0.0058},"angle":-90.0,"scale":0.05},"tPattern":{"angle":-90.0,"scale":0.1}},"publicName":{"data":"TechMan Veruta XII"}}}`,
     name: "Machine Gun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new MachineGun1()
 }, {
-    id: 39,
+    id: `{"Ver":1,"Name":"TechMan Klust 6","Packet":{"Comps":{"Length":18,"a":{"c":1,"v":1},"b":{"c":2,"v":3},"c":{"c":3,"v":109},"d":{"c":4,"v":3},"e":{"c":5,"v":43},"f":{"c":6,"v":33},"g":{"c":7,"v":3},"h":{"c":8,"v":18},"i":{"c":9,"v":8},"j":{"c":10,"v":27},"k":{"c":11,"v":26},"l":{"c":12,"v":27},"m":{"c":16,"v":11},"n":{"c":19,"v":8},"o":{"c":21,"v":4},"p":{"c":23,"v":16},"q":{"c":25,"v":6}},"MatTrans":{"tDecalA":{"position":{"x":-0.05,"y":0.01,"normalized":{"x":-0.9805806,"y":0.19611612,"normalized":{"x":-0.9805807,"y":0.196116135,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.0509901978,"sqrMagnitude":0.00260000024},"scale":0.1},"tDecalB":{"position":{"x":-0.05,"y":0.01,"normalized":{"x":-0.9805806,"y":0.19611612,"normalized":{"x":-0.9805807,"y":0.196116135,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.99999994,"sqrMagnitude":0.9999999},"magnitude":0.0509901978,"sqrMagnitude":0.00260000024},"scale":0.1},"tPattern":{"position":{"x":0.17,"y":0.05,"normalized":{"x":0.9593655,"y":0.282166332,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.177200451,"sqrMagnitude":0.0314000025},"angle":-135.0,"scale":0.2}},"publicName":{"data":"TechMan Klust 6"}}}`,
     name: "Burst Cannon",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new BurstCannon()
 }, {
-    id: 43,
+    id: `{"Ver":1,"Name":"Omneco exp1","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":3},"b":{"c":3,"v":109},"c":{"c":4,"v":3},"d":{"c":5,"v":33},"e":{"c":6,"v":33},"f":{"c":7,"v":3},"g":{"c":8,"v":13},"h":{"c":9,"v":5},"i":{"c":10,"v":25},"j":{"c":11,"v":12},"k":{"c":12,"v":27},"l":{"c":16,"v":10},"m":{"c":19,"v":1},"n":{"c":21,"v":24},"o":{"c":23,"v":14},"p":{"c":25,"v":5}},"MatTrans":{"tDecalA":{"position":{"x":-0.05,"y":0.045,"normalized":{"x":-0.7432942,"y":0.6689648,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.06726812,"sqrMagnitude":0.004525},"scale":0.05},"tDecalB":{"position":{"x":-0.22,"normalized":{"x":-1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.22,"sqrMagnitude":0.0484},"scale":0.1},"tPattern":{"position":{"y":0.02,"normalized":{"y":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.02,"sqrMagnitude":0.0004},"angle":-90.0,"scale":0.2}},"publicName":{"data":"Omneco exp1"}}}`,
     name: "Hel Gun",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new HelGun()
 }, {
-    id: 63,
+    id: `{"Ver":1,"Name":"Shelling Arid 5","Packet":{"Comps":{"Length":16,"a":{"c":2,"v":35},"b":{"c":3,"v":109},"c":{"c":4,"v":48},"d":{"c":5,"v":48},"e":{"c":6,"v":29},"f":{"c":7,"v":2},"g":{"c":8,"v":16},"h":{"c":9,"v":15},"i":{"c":10,"v":27},"j":{"c":11,"v":27},"k":{"c":12,"v":49},"l":{"c":16,"v":21},"m":{"c":19,"v":18},"n":{"c":23,"v":8},"o":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.05},"tDecalB":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.04},"tPattern":{"position":{"x":-0.09,"y":-0.03,"normalized":{"x":-0.9486833,"y":-0.316227764,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.09486833,"sqrMagnitude":0.009000001},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Shelling Arid 5"}}}`,
     name: "High Cal",
-    archetype: "pistol",
+    type: "pistol",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new HighCal()
 }, {
-    id: 62,
+    id: `{"Ver":1,"Name":"Drekker DEL P1","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":34},"b":{"c":3,"v":109},"c":{"c":4,"v":47},"d":{"c":5,"v":51},"e":{"c":6,"v":36},"f":{"c":7,"v":5},"g":{"c":8,"v":18},"h":{"c":9,"v":10},"i":{"c":10,"v":27},"j":{"c":11,"v":15},"k":{"c":12,"v":19},"l":{"c":16,"v":1},"m":{"c":19,"v":1},"n":{"c":21,"v":14},"o":{"c":23,"v":12},"p":{"c":25,"v":2}},"MatTrans":{"tDecalA":{"position":{"x":0.04,"y":0.04,"normalized":{"x":0.707106769,"y":0.707106769,"normalized":{"x":0.7071068,"y":0.7071068,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.05656854,"sqrMagnitude":0.0032},"scale":0.08},"tDecalB":{"position":{"x":0.48,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.48,"sqrMagnitude":0.2304},"scale":0.3},"tPattern":{"position":{"y":0.04,"normalized":{"y":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.04,"sqrMagnitude":0.0016},"angle":-90.0,"scale":0.2}},"publicName":{"data":"Drekker DEL P1"}}}`,
     name: "Precision Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new PrecisionRifle()
 }, {
-    id: 14,
+    id: `{"Ver":1,"Name":"Köning PR 11","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":5},"b":{"c":3,"v":109},"c":{"c":4,"v":5},"d":{"c":5,"v":36},"e":{"c":6,"v":36},"f":{"c":7,"v":5},"g":{"c":8,"v":18},"h":{"c":9,"v":10},"i":{"c":10,"v":27},"j":{"c":11,"v":15},"k":{"c":12,"v":21},"l":{"c":16,"v":9},"m":{"c":19,"v":11},"n":{"c":21,"v":46},"o":{"c":23,"v":13},"p":{"c":25,"v":4}},"MatTrans":{"tDecalA":{"position":{"x":0.04,"y":0.04,"normalized":{"x":0.707106769,"y":0.707106769,"normalized":{"x":0.7071068,"y":0.7071068,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.05656854,"sqrMagnitude":0.0032},"scale":0.08},"tDecalB":{"position":{"x":0.48,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.48,"sqrMagnitude":0.2304},"scale":0.3},"tPattern":{"position":{"y":0.04,"normalized":{"y":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.04,"sqrMagnitude":0.0016},"angle":-90.0,"scale":0.2}},"publicName":{"data":"Köning PR 11"}}}`,
     name: "Sniper",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new Sniper()
 }, {
-    id: 42,
+    id: `{"Ver":1,"Name":"Omneco LRG","Packet":{"Comps":{"Length":17,"a":{"c":2,"v":20},"b":{"c":3,"v":109},"c":{"c":4,"v":5},"d":{"c":5,"v":36},"e":{"c":6,"v":36},"f":{"c":7,"v":5},"g":{"c":8,"v":18},"h":{"c":9,"v":10},"i":{"c":10,"v":27},"j":{"c":11,"v":15},"k":{"c":12,"v":29},"l":{"c":16,"v":10},"m":{"c":19,"v":2},"n":{"c":21,"v":19},"o":{"c":23,"v":12},"p":{"c":25,"v":4}},"MatTrans":{"tDecalA":{"position":{"x":0.04,"y":0.04,"normalized":{"x":0.707106769,"y":0.707106769,"normalized":{"x":0.7071068,"y":0.7071068,"magnitude":1.0,"sqrMagnitude":1.00000012},"magnitude":0.99999994,"sqrMagnitude":0.99999994},"magnitude":0.05656854,"sqrMagnitude":0.0032},"scale":0.08},"tDecalB":{"position":{"x":0.48,"normalized":{"x":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.48,"sqrMagnitude":0.2304},"scale":0.3},"tPattern":{"position":{"y":0.04,"normalized":{"y":1.0,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.04,"sqrMagnitude":0.0016},"angle":-90.0,"scale":0.2}},"publicName":{"data":"Omneco LRG"}}}`,
     name: "Hel Rifle",
-    archetype: "rifle",
+    type: "rifle",
+    gearArchetype: {
+        gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
+        offset: new Vector3(0, 0, 0.2)
+    },
     model: () => new HelRifle()
 }];
 
-const _item: Equippable[] = [{
+const _item: Equippable<number>[] = [{
     id: 102,
-    archetype: "consumable",
+    type: "consumable",
     model: () => new Pack(0xff0000)
 }, {
     id: 101,
-    archetype: "consumable",
+    type: "consumable",
     model: () => new Pack(0x00ff00)
 }, {
     id: 127,
-    archetype: "consumable",
+    type: "consumable",
     model: () => new Pack(0x0000ff)
 }, {
     id: 132,
-    archetype: "consumable",
+    type: "consumable",
     model: () => new Pack(0x7b9fe8)
 }, { 
     id: 114,
     name: "Glow Sticks",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new GlowStick()
 }, { 
     id: 174,
     name: "Glow Sticks",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new GlowStick()
 }, { 
     id: 30,
     name: "Long Range Flashlight",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new LongRangeFlashlight() 
 }, { 
     id: 140,
     name: "I2-LP Syringe",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new Syringe(new Color(0xff4444)) 
 }, { 
     id: 142,
     name: "IIX Syringe",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new Syringe(new Color(0xffff00))
 }, { 
     id: 115,
     name: "Cfoam Grenade",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new CfoamGrenade()
 }, { 
     id: 116,
     name: "Lock Melter",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new LockMelter()
 
 }, { 
     id: 117,
     name: "Fog Repeller",
-    archetype: "consumable",
+    type: "consumable",
+    consumableArchetype: {
+        equipAnim: playerAnimationClips.Fogrepeller_Throw_Equip,
+        throwAnim: playerAnimationClips.Fogrepeller_Throw,
+        chargeAnim: playerAnimationClips.Fogrepeller_Throw_Charge,
+        chargeIdleAnim: playerAnimationClips.Fogrepeller_Throw_Charge_Idle
+    },
     model: () => new FogRepeller()   
 }, { 
     id: 139,
     name: "Explosive Tripmine",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new ConsumableMine()
 }, { 
     id: 144,
     name: "Cfoam Tripmine",
-    archetype: "consumable",
+    type: "consumable",
     model: () => new CfoamTripMine()
 }, { 
     id: 131,
     name: "Power Cell",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new PowerCell()
 }, { 
     id: 133,
     name: "Fog Repeller",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new HeavyFogRepeller()
 }, { 
     id: 137,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 141,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 143,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 170,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 145,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 175,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 177,
     name: "Neonate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 164,
     name: "Matter Wave Projector",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new MatterWaveProjector()
 }, { 
     id: 166,
     name: "Matter Wave Projector",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new MatterWaveProjector()
 }, { 
     id: 151,
     name: "Data Sphere",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new DataSphere()
 }, { 
     id: 181,
     name: "Data Sphere",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new DataSphere()
 }, { 
     id: 138,
     name: "Cargo Crate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new CargoCrate()
 }, { 
     id: 176,
     name: "Cargo Crate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new CargoCrate()
 }, { 
     id: 154,
     name: "Hisec Cargo Crate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new HisecCargoCrate()
 }, { 
     id: 155,
     name: "Hisec Cargo Crate",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new HisecCargoCrate()
 }, { 
     id: 148,
     name: "Cryo",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Cryo()
 }, { 
     id: 173,
     name: "Collection Case",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new CollectionCase()
 }, { 
     id: 168,
     name: "Data Cube",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 165,
     name: "Data Cube",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 179,
     name: "Data Cube",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 178,
     name: "Data Cube",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 146,
     name: "Bulkhead Key",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new BulkheadKey()
 }, { 
     id: 27,
     name: "Key Red",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0xff0000)
 }, { 
     id: 85,
     name: "Key Blue",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0x0000ff)
 }, { 
     id: 86,
     name: "Key Green",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0x00ff00)
 }, { 
     id: 87,
     name: "Key Yellow",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0xffff00)
 }, { 
     id: 88,
     name: "Key White",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0xffffff)
 }, { 
     id: 89,
     name: "Key Black",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0x444444)
 }, { 
     id: 90,
     name: "Key Grey",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0xaaaaaa)
 }, { 
     id: 91,
     name: "Key Orange",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0xff8800)
 }, { 
     id: 92,
     name: "Key Purple",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new Keycard(0xb300ff)
 }, { 
     id: 128,
     name: "Personnel Id",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new PID()
 }, { 
     id: 129,
     name: "Partial Decoder",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new PartialDecoder()
 }, { 
     id: 147,
     name: "Hard Drive",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new HardDrive()
 }, { 
     id: 180,
     name: "Hard Drive",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new HardDrive()
 }, { 
     id: 183,
     name: "Hard Drive",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new HardDrive()
 }, { 
     id: 149,
     name: "GLP",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new GLP1()
 }, { 
     id: 150,
     name: "OSIP",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new OSIP()
 }, { 
     id: 169,
     name: "GLP",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new GLP2()
 }, { 
     id: 153,
     name: "Plant Sample",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new PlantSample()
 }, { 
     id: 171,
     name: "Memory Stick",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new MemoryStick()
 }, { 
     id: 172,
     name: "Memory Stick",
-    archetype: "rifle",
+    type: "rifle",
     model: () => new MemoryStick()
 }];
 
@@ -2176,37 +2138,61 @@ const _enemies: EnemySpecification[] = [{
     scale: _shooter_scale
 }];
 
-export function getItemEquippable(itemId: number): Equippable | undefined {
-    const type = itemId & 0b0000000000000001;
-    if (type === 0b0000000000000001) {
-        return specification.gear.get(itemId);
-    } else {
-        return specification.item.get(itemId);
-    }
-}
-
-function translateId<T>(identifiable: Id<T>, type: "gear" | "item"): [number, Id<T>] {
-    const persistentId = identifiable.id;
-    let id = 0;
-    if (type === "gear") {
-        id = (persistentId << 1) | 0b0000000000000001;
-    } else if (type === "item") {
-        id = (persistentId << 1) & 0b1111111111111110;
-    }
-
-    identifiable.id = id;
-    return [id, identifiable];
-}
-
-export const specification: Specification = {
+export class Specification {
     player: {
-        maxHealth: 25
-    },
-    item: new Map(_item.map(g => translateId(g, "item"))),
-    gear: new Map(_gear.map(g => translateId(g, "gear"))),
-    meleeArchetype: new Map(_melee.map(g => translateId(g, "gear"))),
-    consumableArchetype: new Map(_consumable.map(g => translateId(g, "item"))),
-    gearArchetype: new Map(_gearArchetype.map(g => translateId(g, "gear"))),
-    enemies: new Map(_enemies.map(e => [e.id, e])),
-    enemyAnimHandles: new Map(_enemyAnimHandles.map(e => [e.name, e]))
+        maxHealth: number
+    };
+    item: Map<number, Equippable>;
+    gear: Map<string, Equippable>;
+    enemies: Map<number, EnemySpecification>;
+    enemyAnimHandles: Map<AnimHandles.Flags, EnemyAnimHandle>;
+
+    public getEnemy(identifier: Identifier): EnemySpecification | undefined {
+        if (identifier.type === "Unknown") return undefined;
+        if (identifier.type !== "Enemy") throw new Error(`Identifier does not represent an enemy. ('${identifier.type}')`);
+        return this.enemies.get(identifier.id);
+    }
+
+    private getGear(identifier: Identifier, database?: IdentifierData): Equippable | undefined {
+        if (identifier.type === "Unknown") return undefined;
+        switch (identifier.type) {
+        case "Gear": return this.gear.get(identifier.stringKey);
+        case "Alias_Gear": {
+            if (database === undefined) throw new Error("'Gear' identifiers need to be converted to 'Gear' to be used without a database.");
+            const key = database.gearTable.get(identifier.id);
+            if (key === undefined) throw new Error("Could not obtain 'Gear' from database.");
+            return this.gear.get(key);
+        }
+        default: throw new Error(`Identifier does not represent a gear type. ('${identifier.type}')`);
+        }
+    }
+
+    private getItem(identifier: Identifier): Equippable | undefined {
+        if (identifier.type === "Unknown") return undefined;
+        if (identifier.type !== "Item") throw new Error(`Identifier does not represent an item. ('${identifier.type}')`);
+        return this.item.get(identifier.id);
+    }
+
+    public getEquippable(identifier: Identifier, database?: IdentifierData): Equippable | undefined {
+        if (identifier.type === "Unknown") return undefined;
+        switch (identifier.type) {
+        case "Gear":
+        case "Alias_Gear": {
+            return this.getGear(identifier, database);
+        }
+        case "Item": {
+            return this.getItem(identifier);
+        }
+        default: throw new Error(`Identifier does not represent a gear or item type. ('${identifier.type}')`);
+        }
+    }
+}
+
+export const specification: Specification = new Specification();
+specification.player = {
+    maxHealth: 25
 };
+specification.item = new Map(_item.map(g => [g.id, {...g, id: Identifier.create("Item", g.id)}]));
+specification.gear = new Map(_gear.map(g => [g.id, {...g, id: Identifier.create("Gear", undefined, g.id)}]));
+specification.enemies = new Map(_enemies.map(e => [e.id, e]));
+specification.enemyAnimHandles = new Map(_enemyAnimHandles.map(e => [e.name, e]));

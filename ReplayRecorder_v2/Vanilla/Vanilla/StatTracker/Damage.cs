@@ -105,18 +105,18 @@ namespace Vanilla.StatTracker {
                 if (!__instance.Owner.Alive) return;
 
                 if (data.source.TryGet(out Agent source)) {
-                    ushort gear = 0;
+                    Identifier gear = Identifier.unknown;
                     PlayerAgent? player = source.TryCast<PlayerAgent>();
                     if (player != null) {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                             if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                                gear = GTFO.GetItemID(currentEquipped);
+                                gear = Identifier.From(currentEquipped);
                             }
                         } else {
                             // Get sentry used
-                            gear = GTFO.GetItemID(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
+                            gear = Identifier.From(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
                         }
                     }
                     float damage = data.damage.Get(__instance.HealthMax);
@@ -132,18 +132,18 @@ namespace Vanilla.StatTracker {
                 if (!__instance.Owner.Alive) return;
 
                 if (data.source.TryGet(out Agent source)) {
-                    ushort gear = 0;
+                    Identifier gear = Identifier.unknown;
                     PlayerAgent? player = source.TryCast<PlayerAgent>();
                     if (player != null) {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                             if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                                gear = GTFO.GetItemID(currentEquipped);
+                                gear = Identifier.From(currentEquipped);
                             }
                         } else {
                             // Get sentry used
-                            gear = GTFO.GetItemID(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
+                            gear = Identifier.From(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
                         }
                     }
                     float damage = data.damage.Get(__instance.HealthMax);
@@ -176,7 +176,7 @@ namespace Vanilla.StatTracker {
                     float stagger = damage;
                     float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
                     if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
-                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage), 0, false, Mathf.Min(remainingStaggerDamage, stagger)));
+                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage), false, Mathf.Min(remainingStaggerDamage, stagger)));
                 } else {
                     APILogger.Error("Unable to find detonation event. This should not happen.");
                 }
@@ -189,13 +189,13 @@ namespace Vanilla.StatTracker {
                 if (!__instance.Owner.Alive) return;
 
                 if (data.source.TryGet(out Agent source)) {
-                    ushort gear = 0;
+                    Identifier gear = Identifier.unknown;
                     PlayerAgent? player = source.TryCast<PlayerAgent>();
                     if (player != null) {
                         // Get weapon used
                         ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                         if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                            gear = GTFO.GetItemID(currentEquipped);
+                            gear = Identifier.From(currentEquipped);
                         }
                     }
 
@@ -214,18 +214,18 @@ namespace Vanilla.StatTracker {
                 if (!__instance.Owner.Alive) return;
 
                 if (data.source.TryGet(out Agent source)) {
-                    ushort gear = 0;
+                    Identifier gear = Identifier.unknown;
                     PlayerAgent? player = source.TryCast<PlayerAgent>();
                     if (player != null) {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
                             if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
-                                gear = GTFO.GetItemID(currentEquipped);
+                                gear = Identifier.From(currentEquipped);
                             }
                         } else {
                             // Get sentry used
-                            gear = GTFO.GetItemID(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
+                            gear = Identifier.From(PlayerBackpackManager.GetItem(player.Owner, InventorySlot.GearClass));
                         }
                     }
                     float damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.ProjectileResistance, data.damage.Get(__instance.HealthMax));
@@ -251,13 +251,13 @@ namespace Vanilla.StatTracker {
         private int source;
         private ushort target;
 
-        private ushort gear;
+        private Identifier gear;
         private bool sentry;
 
         private float damage;
         private float staggerDamage;
 
-        public rDamage(Agent target, Agent source, Type type, float damage, ushort gear = 0, bool sentry = false, float staggerMulti = 0) {
+        public rDamage(Agent target, Agent source, Type type, float damage, Identifier gear, bool sentry = false, float staggerMulti = 0) {
             this.type = type;
             this.source = source.GlobalID;
             this.target = target.GlobalID;
@@ -267,7 +267,7 @@ namespace Vanilla.StatTracker {
             this.sentry = sentry;
         }
 
-        public rDamage(Agent target, int source, Type type, float damage, ushort gear = 0, bool sentry = false, float staggerMulti = 0) {
+        public rDamage(Agent target, int source, Type type, float damage, Identifier gear, bool sentry = false, float staggerMulti = 0) {
             this.type = type;
             this.source = source;
             this.target = target.GlobalID;
@@ -277,11 +277,41 @@ namespace Vanilla.StatTracker {
             this.sentry = sentry;
         }
 
-        public rDamage(ushort target, int source, Type type, float damage, ushort gear = 0, bool sentry = false, float staggerMulti = 0) {
+        public rDamage(ushort target, int source, Type type, float damage, Identifier gear, bool sentry = false, float staggerMulti = 0) {
             this.type = type;
             this.source = source;
             this.target = target;
             this.gear = gear;
+            this.damage = damage;
+            this.staggerDamage = staggerMulti;
+            this.sentry = sentry;
+        }
+
+        public rDamage(Agent target, Agent source, Type type, float damage, bool sentry = false, float staggerMulti = 0) {
+            this.type = type;
+            this.source = source.GlobalID;
+            this.target = target.GlobalID;
+            gear = Identifier.unknown;
+            this.damage = damage;
+            this.staggerDamage = staggerMulti;
+            this.sentry = sentry;
+        }
+
+        public rDamage(Agent target, int source, Type type, float damage, bool sentry = false, float staggerMulti = 0) {
+            this.type = type;
+            this.source = source;
+            this.target = target.GlobalID;
+            gear = Identifier.unknown;
+            this.damage = damage;
+            this.staggerDamage = staggerMulti;
+            this.sentry = sentry;
+        }
+
+        public rDamage(ushort target, int source, Type type, float damage, bool sentry = false, float staggerMulti = 0) {
+            this.type = type;
+            this.source = source;
+            this.target = target;
+            gear = Identifier.unknown;
             this.damage = damage;
             this.staggerDamage = staggerMulti;
             this.sentry = sentry;

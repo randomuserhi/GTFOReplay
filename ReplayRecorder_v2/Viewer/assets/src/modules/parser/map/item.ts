@@ -1,13 +1,14 @@
 import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
+import { Identifier, IdentifierData } from "../identifier.js";
 
 export interface Item {
     id: number;
     dimension: number;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
-    itemID: number;
+    itemID: Identifier;
     onGround: boolean;
     linkedToMachine: boolean;
     player: bigint | undefined;
@@ -34,7 +35,7 @@ declare module "../../../replay/moduleloader.js" {
                     onGround: boolean;
                     linkedToMachine: boolean;
                     playerSlot: number;  
-                    itemID: number;
+                    itemID: Identifier;
                 };
                 despawn: void;
             };
@@ -83,7 +84,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
         }
     },
     spawn: {
-        parse: async (data) => {
+        parse: async (data, snapshot) => {
             return {
                 dimension: await BitHelper.readByte(data),
                 position: await BitHelper.readVector(data),
@@ -91,7 +92,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 onGround: await BitHelper.readBool(data),
                 linkedToMachine: await BitHelper.readBool(data),
                 playerSlot: await BitHelper.readByte(data),
-                itemID: await BitHelper.readUShort(data)
+                itemID: await Identifier.parse(IdentifierData(snapshot), data),
             };
         },
         exec: (id, data, snapshot) => {

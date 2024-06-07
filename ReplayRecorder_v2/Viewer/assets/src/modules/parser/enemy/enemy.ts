@@ -5,6 +5,7 @@ import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../../parse
 import { HumanJoints } from "../../renderer/animations/human.js";
 import { specification } from "../../renderer/specification.js";
 import { createDeathCross } from "../deathcross.js";
+import { Identifier, IdentifierData } from "../identifier.js";
 import { Damage } from "../stattracker/damage.js";
 import { StatTracker, getPlayerStats, isPlayer } from "../stattracker/stats.js";
 import { ScreamType } from "./enemyscreams.js";
@@ -27,7 +28,7 @@ declare module "../../../replay/moduleloader.js" {
                     rotation: Pod.Quaternion;
                     animHandle?: AnimHandles.Flags;
                     scale: number;
-                    type: number;
+                    type: Identifier;
                 };
                 despawn: void;
             };
@@ -212,7 +213,7 @@ export interface Enemy extends DynamicTransform {
     health: number;
     head: boolean;
     scale: number;
-    type: number;
+    type: Identifier;
     players: Set<bigint>;
     lastHit?: Damage;
     lastHitTime?: number;
@@ -284,13 +285,13 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
         }
     },
     spawn: {
-        parse: async (data) => {
+        parse: async (data, snapshot) => {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
                 animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
                 scale: await BitHelper.readHalf(data),
-                type: await BitHelper.readUShort(data),
+                type: await Identifier.parse(IdentifierData(snapshot), data),
             };
             return result;
         },
@@ -298,7 +299,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
         
             if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
-            const datablock = specification.enemies.get(data.type);
+            const datablock = specification.getEnemy(data.type);
             if (datablock === undefined) throw new Error(`Could not find enemy datablock of type '${data.type}'.`);
             enemies.set(id, { 
                 id, ...data,
@@ -351,28 +352,29 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 for (const snet of enemy.players) {
                     const sourceStats = getPlayerStats(snet, statTracker);
 
+                    const enemyTypeHash = enemy.type.hash;
                     if (snet === lastHit) {
                         if (enemy.lastHit.type === "Explosive") {
-                            if (!sourceStats.mineKills.has(enemy.type)) {
-                                sourceStats.mineKills.set(enemy.type, 0);
+                            if (!sourceStats.mineKills.has(enemyTypeHash)) {
+                                sourceStats.mineKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
                             }
-                            sourceStats.mineKills.set(enemy.type, sourceStats.mineKills.get(enemy.type)! + 1);
+                            sourceStats.mineKills.get(enemyTypeHash)!.value += 1;
                         } else if (enemy.lastHit.sentry) {
-                            if (!sourceStats.sentryKills.has(enemy.type)) {
-                                sourceStats.sentryKills.set(enemy.type, 0);
+                            if (!sourceStats.sentryKills.has(enemyTypeHash)) {
+                                sourceStats.sentryKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
                             }
-                            sourceStats.sentryKills.set(enemy.type, sourceStats.sentryKills.get(enemy.type)! + 1);
+                            sourceStats.sentryKills.get(enemyTypeHash)!.value += 1;
                         } else {
-                            if (!sourceStats.kills.has(enemy.type)) {
-                                sourceStats.kills.set(enemy.type, 0);
+                            if (!sourceStats.kills.has(enemyTypeHash)) {
+                                sourceStats.kills.set(enemyTypeHash, { type: enemy.type, value: 0 });
                             }
-                            sourceStats.kills.set(enemy.type, sourceStats.kills.get(enemy.type)! + 1);
+                            sourceStats.kills.get(enemyTypeHash)!.value += 1;
                         }
                     } else {
-                        if (!sourceStats.assists.has(enemy.type)) {
-                            sourceStats.assists.set(enemy.type, 0);
+                        if (!sourceStats.assists.has(enemyTypeHash)) {
+                            sourceStats.assists.set(enemyTypeHash, { type: enemy.type, value: 0 });
                         }
-                        sourceStats.assists.set(enemy.type, sourceStats.assists.get(enemy.type)! + 1);
+                        sourceStats.assists.get(enemyTypeHash)!.value += 1;
                     }
                 }
             }

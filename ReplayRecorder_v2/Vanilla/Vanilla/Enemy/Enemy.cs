@@ -106,7 +106,7 @@ namespace Vanilla.Enemy {
             base.Spawn(buffer);
             BitHelper.WriteBytes((ushort)agent.Locomotion.AnimHandleName, buffer);
             BitHelper.WriteHalf(agent.SizeMultiplier, buffer);
-            BitHelper.WriteBytes((ushort)agent.EnemyData.persistentID, buffer);
+            BitHelper.WriteBytes(Identifier.From(agent), buffer);
         }
     }
 }

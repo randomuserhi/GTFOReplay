@@ -35,10 +35,11 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.TongueDodge", "0.0.1", {
                 const sourceStats = getPlayerStats(player.snet, statTracker)!;
 
                 const enemy = getEnemy(source, enemies, cache)!;
-                if (!sourceStats.tongueDodges.has(enemy.type)) {
-                    sourceStats.tongueDodges.set(enemy.type, 0);
+                const enemyTypeHash = enemy.type.hash;
+                if (!sourceStats.tongueDodges.has(enemyTypeHash)) {
+                    sourceStats.tongueDodges.set(enemyTypeHash, { type: enemy.type, value: 0 });
                 }
-                sourceStats.tongueDodges.set(enemy.type, sourceStats.tongueDodges.get(enemy.type)! + 1);
+                sourceStats.tongueDodges.get(enemyTypeHash)!.value += 1;
             } else {
                 throw new Error(`target '${target}' was not a player.`);
             }

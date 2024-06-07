@@ -82,15 +82,15 @@ const slot = Macro((() => {
 
         let totalKills = 0;
         for (const kills of stats.kills.values()) {
-            totalKills += kills;
+            totalKills += kills.value;
         }
         let mineKills = 0;
         for (const kills of stats.mineKills.values()) {
-            mineKills += kills;
+            mineKills += kills.value;
         }
         let sentryKills = 0;
         for (const kills of stats.sentryKills.values()) {
-            sentryKills += kills;
+            sentryKills += kills.value;
         }
         const nonPlayerKills = mineKills + sentryKills;
         let text = `${totalKills}${(nonPlayerKills != 0 ? ` (${nonPlayerKills})` : "")}`;
@@ -100,7 +100,7 @@ const slot = Macro((() => {
 
         let totalAssists = 0;
         for (const assists of stats.assists.values()) {
-            totalAssists += assists;
+            totalAssists += assists.value;
         }
         text = `${totalAssists}`;
         if (this.assists.innerText !== text) {

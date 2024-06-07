@@ -20,9 +20,9 @@ export namespace Internal {
         }
     };
 
-    export const DynamicParse: { [k in "ReplayRecorder.Despawn" | "ReplayRecorder.Spawn"]: { [v in string]: (data: ByteStream, replay: Replay) => Promise<{ id: number, type: number, detail: any }> } } = {
+    export const DynamicParse: { [k in "ReplayRecorder.Despawn" | "ReplayRecorder.Spawn"]: { [v in string]: (data: ByteStream, replay: Replay, snapshot: ReplayApi) => Promise<{ id: number, type: number, detail: any }> } } = {
         "ReplayRecorder.Spawn": {
-            "0.0.1": async (data: ByteStream, replay: Replay) => {
+            "0.0.1": async (data: ByteStream, replay: Replay, snapshot: ReplayApi) => {
                 const type = await BitHelper.readUShort(data);
                 const id = await BitHelper.readInt(data);
                 const module = replay.typemap.get(type);
@@ -31,12 +31,12 @@ export namespace Internal {
                 if (spawn === undefined) throw new ModuleNotFound(`Could not find spawn module of type '${type}'.`); 
                 return {
                     id, type,
-                    detail: await spawn(data)
+                    detail: await spawn(data, snapshot)
                 };
             }
         },
         "ReplayRecorder.Despawn": {
-            "0.0.1": async (data: ByteStream, replay: Replay) => {
+            "0.0.1": async (data: ByteStream, replay: Replay, snapshot: ReplayApi) => {
                 const type = await BitHelper.readUShort(data);
                 const id = await BitHelper.readInt(data);
                 const module = replay.typemap.get(type);
@@ -45,7 +45,7 @@ export namespace Internal {
                 if (despawn === undefined) throw new ModuleNotFound(`Could not find despawn module of type '${type}'.`); 
                 return {
                     id, type,
-                    detail: await despawn(data)
+                    detail: await despawn(data, snapshot)
                 };
             }
         }

@@ -104,8 +104,12 @@ namespace Vanilla.Player {
     internal class rPlayer : DynamicTransform {
         public PlayerAgent agent;
 
-        private ushort lastEquipped = 0;
-        private ushort equipped => GTFO.GetItemID(agent.Inventory.WieldedItem);
+        private Identifier lastEquipped = Identifier.unknown;
+        private Identifier equipped {
+            get {
+                return Identifier.From(agent.Inventory.WieldedItem);
+            }
+        }
 
         public override bool Active {
             get {

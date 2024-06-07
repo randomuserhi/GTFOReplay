@@ -1,7 +1,7 @@
 ﻿using BepInEx.Logging;
-using BioScannerFix.BepInEx;
+using Vanilla.BepInEx;
 
-namespace BioScannerFix.BepInEx {
+namespace Vanilla.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
         public const string GUID = "randomuserhi.ReplayRecorder.Vanilla";

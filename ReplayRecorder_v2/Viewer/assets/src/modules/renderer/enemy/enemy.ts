@@ -169,7 +169,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.head = new Matrix4();
         this.neck = new Matrix4();
 
-        this.datablock = specification.enemies.get(enemy.type);
+        this.datablock = specification.getEnemy(enemy.type);
         if (enemy.animHandle !== undefined) {
             this.animHandle = specification.enemyAnimHandles.get(enemy.animHandle);
         }
@@ -590,7 +590,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const renderDistance = renderer.get("RenderDistance")!;
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
-                    const modelFactory = specification.enemies.get(enemy.type)?.model;
+                    const modelFactory = specification.getEnemy(enemy.type)?.model;
                     let model: EnemyModel;
                     if (modelFactory !== undefined) {
                         model = modelFactory(enemy);

@@ -71,6 +71,10 @@ namespace ReplayRecorder {
         }
     }
 
+    public interface BufferWriteable {
+        void Write(ByteBuffer buffer);
+    }
+
     public static partial class BitHelper {
         // https://github.com/dotnet/runtime/blob/20c8ae6457caa652a34fc42ff5f92b6728231039/src/libraries/System.Private.CoreLib/src/System/Buffers/Binary/Reader.cs
 
@@ -276,6 +280,10 @@ namespace ReplayRecorder {
             buffer.Reserve(bytes.Count);
             Array.Copy(bytes.Array!, bytes.Offset, buffer._array.Array!, buffer._array.Offset + buffer.count, bytes.Count);
             buffer.count += bytes.Count;
+        }
+
+        public static unsafe void WriteBytes(BufferWriteable writeable, ByteBuffer buffer) {
+            writeable.Write(buffer);
         }
 
         // Special function to halve precision of float

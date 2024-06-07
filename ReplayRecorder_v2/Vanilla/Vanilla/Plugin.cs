@@ -4,7 +4,7 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using ReplayRecorder;
 
-namespace BioScannerFix.BepInEx;
+namespace Vanilla.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 public class Plugin : BasePlugin {

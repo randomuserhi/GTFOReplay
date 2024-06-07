@@ -1,6 +1,6 @@
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { Model } from "../Equippable/equippable.js";
-import { getItemEquippable } from "../specification.js";
+import { specification } from "../specification.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -22,7 +22,7 @@ ModuleLoader.registerRender("Vanilla.Items", (name, api) => {
             const collection = snapshot.getOrDefault("Vanilla.Map.Items", () => new Map());
             for (const [id, item] of collection) {
                 if (!models.has(id)) {
-                    const model = getItemEquippable(item.itemID)?.model();
+                    const model = specification.getEquippable(item.itemID)?.model();
                     if (model === undefined) continue;
                     model.inLevel();
                     renderer.scene.add(model.group);

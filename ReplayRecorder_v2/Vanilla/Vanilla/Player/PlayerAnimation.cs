@@ -271,8 +271,8 @@ namespace Vanilla.Player {
         }
         private float reloadTime;
 
-        private ushort lastEquipped = 0;
-        private ushort equipped => GTFO.GetItemID(player.Inventory.WieldedItem);
+        private Identifier lastEquipped = Identifier.unknown;
+        private Identifier equipped => Identifier.From(player.Inventory.WieldedItem);
 
         public rPlayerAnimation(PlayerAgent player) : base(player.GlobalID) {
             this.player = player;

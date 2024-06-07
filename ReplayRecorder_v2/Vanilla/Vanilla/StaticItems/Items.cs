@@ -85,7 +85,7 @@ namespace Vanilla.StaticItems {
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
-            BitHelper.WriteBytes(GTFO.GetItemID(item.item), buffer);
+            BitHelper.WriteBytes(Identifier.From(item.item), buffer);
         }
     }
 

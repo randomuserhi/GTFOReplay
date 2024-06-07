@@ -1,16 +1,16 @@
-import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader, ReplayApi } from "../../../replay/moduleloader.js";
 import { ByteStream } from "../../../replay/stream.js";
+import { Identifier, IdentifierData } from "../identifier.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Player.Backpack": {
                 parse: {
-                    slots: number[];
+                    slots: Identifier[];
                 };
                 spawn: {
-                    slots: number[];
+                    slots: Identifier[];
                 };
                 despawn: void;
             };
@@ -41,16 +41,16 @@ export const inventorySlots: InventorySlot[] = [
 ];
 export const inventorySlotMap: Map<InventorySlot, number> = new Map([...inventorySlots.entries()].map(e => [e[1], e[0]]));
 export class PlayerBackpack {
-    slots: number[];
+    slots: Identifier[];
 
     constructor() {
         this.slots = new Array(inventorySlots.length);
     }
 
-    public static async parse(data: ByteStream): Promise<number[]> {
-        const slots = new Array(inventorySlots.length);
+    public static async parse(snapshot: ReplayApi, data: ByteStream): Promise<Identifier[]> {
+        const slots: Identifier[] = new Array(inventorySlots.length);
         for (let i = 0; i < slots.length; ++i) {
-            slots[i] = await BitHelper.readUShort(data);
+            slots[i] = await Identifier.parse(IdentifierData(snapshot), data);
         }
         return slots;
     }
@@ -58,9 +58,9 @@ export class PlayerBackpack {
 
 ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
     main: {
-        parse: async (data) => {
+        parse: async (data, snapshot) => {
             return {
-                slots: await PlayerBackpack.parse(data)
+                slots: await PlayerBackpack.parse(snapshot, data)
             };
         }, 
         exec: (id, data, snapshot) => {
@@ -72,9 +72,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
         }
     },
     spawn: {
-        parse: async (data) => {
+        parse: async (data, snapshot) => {
             return {
-                slots: await PlayerBackpack.parse(data)
+                slots: await PlayerBackpack.parse(snapshot, data)
             };
         },
         exec: (id, data, snapshot) => {

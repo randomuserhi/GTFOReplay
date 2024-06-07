@@ -1,6 +1,7 @@
 import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
+import { Identifier, IdentifierData } from "../identifier.js";
 import { DynamicTransform } from "../replayrecorder.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -12,7 +13,7 @@ declare module "../../../replay/moduleloader.js" {
                     absolute: boolean;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
-                    equippedId: number;
+                    equippedId: Identifier;
                 };
                 spawn: {
                     dimension: number;
@@ -37,17 +38,17 @@ export interface Player extends DynamicTransform {
     snet: bigint;
     slot: number;
     nickname: string;
-    equippedId: number;
+    equippedId: Identifier;
     lastEquippedTime: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     main: {
-        parse: async (data) => {
+        parse: async (data, snapshot) => {
             const result = await DynamicTransform.parse(data);
             return {
                 ...result,
-                equippedId: await BitHelper.readUShort(data),
+                equippedId: await Identifier.parse(IdentifierData(snapshot), data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -56,8 +57,8 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
             const player = players.get(id)!;
             DynamicTransform.lerp(player, data, lerp);
-            if (player.equippedId !== data.equippedId) {
-                player.equippedId = data.equippedId;
+            if (!Identifier.equals(player.equippedId, IdentifierData(snapshot), data.equippedId)) {
+                Identifier.copy(player.equippedId, data.equippedId);
                 player.lastEquippedTime = snapshot.time();
             }
         }
@@ -82,7 +83,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
             const player = { 
                 id, ...data,
-                equippedId: 0,
+                equippedId: Identifier.create(),
                 lastEquippedTime: 0
             };
             players.set(id, player);
