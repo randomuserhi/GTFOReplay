@@ -165,7 +165,7 @@ namespace ReplayRecorder.Snapshot {
                     // If another active dynamic of the same id exists, do not trigger despawn and instead silently
                     // discard self as the other active dynamic is replacing the current inactive one.
                     if (!active && !dynamic.remove) {
-                        if (dynamics.Any((d) => ReferenceEquals(d, dynamic) && d == dynamic && d.Active && !d.remove)) {
+                        if (dynamics.Any((d) => !ReferenceEquals(d, dynamic) && d == dynamic && d.Active && !d.remove)) {
                             dynamic.remove = true;
                             handleRemoval = true;
                         } else {
