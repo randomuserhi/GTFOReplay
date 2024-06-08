@@ -398,7 +398,15 @@ namespace Vanilla.Enemy {
         private float _velUp => velocity.y;
         private byte velUp;
 
-        private byte _state => (byte)enemy.Locomotion.m_currentState.m_stateEnum;
+        private byte _state {
+            get {
+                // NOTE(randomuserhi): Override to fix bug with clients not setting proper cfoam state
+                if (enemy.Damage != null && enemy.Damage.IsStuckInGlue) {
+                    return (byte)ES_StateEnum.StuckInGlue;
+                }
+                return (byte)enemy.Locomotion.m_currentState.m_stateEnum;
+            }
+        }
         private byte state;
 
         private bool _up => enemy.Locomotion.ClimbLadder.m_goingUp;

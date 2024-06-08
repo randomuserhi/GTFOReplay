@@ -175,9 +175,6 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
 
         this.color = new Color(0xff0000);
-        if (this.datablock?.color !== undefined) {
-            this.color.set(this.datablock.color);
-        }
 
         this.anchor = new Group();
         this.pivot = new Group();
@@ -301,6 +298,11 @@ export class HumanoidEnemyModel extends EnemyModel {
     }
 
     private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+        this.color.set(0xff0000);
+        if (this.datablock?.color !== undefined) {
+            this.color.set(this.datablock.color);
+        }
+
         this.pivot.rotation.set(0, 0, 0);
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
@@ -320,6 +322,13 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         const stateTime = time - (anim.lastStateTime / 1000);
         switch (anim.state) {
+        case "StuckInGlue": {
+            const blend = Math.clamp01(stateTime / 0.15);
+            const screamAnim = this.animHandle.screams[0];
+            this.skeleton.blend(screamAnim.sample(Math.clamp(stateTime, 0, 0.5)), blend);
+
+            this.color.set(0x0000ff);
+        } break;
         case "HibernateWakeUp": {
             const wakeupTime = time - (anim.lastWakeupTime / 1000);
             const wakeupAnim = anim.wakeupTurn ? this.animHandle.wakeupTurns[anim.wakeupAnimIndex] : this.animHandle.wakeup[anim.wakeupAnimIndex];
@@ -451,6 +460,8 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (inHitreact) {
             const blend = hitreactTime < hitreactAnim.duration / 2 ? Math.clamp01(hitreactTime / 0.15) : Math.clamp01((hitreactAnim.duration - hitreactTime) / 0.15);
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
+            
+            this.color.set(0xaaaaaa);
         }
 
         if (this.tmp === undefined || this.tag === undefined) return;
