@@ -168,10 +168,10 @@ namespace ReplayRecorder.Snapshot {
                         if (dynamics.Any((d) => !ReferenceEquals(d, dynamic) && d == dynamic && d.Active && !d.remove)) {
                             dynamic.remove = true;
                             handleRemoval = true;
-                            APILogger.Debug($"Silent Removal {Type} {dynamic.id}");
+                            APILogger.Warn($"[DynamicCollection] Silent Removal {Type} {dynamic.id}");
                         } else {
                             instance.Despawn(dynamic);
-                            APILogger.Debug($"Forced Despawn {Type} {dynamic.id}");
+                            APILogger.Warn($"[DynamicCollection] Forced Despawn {Type} {dynamic.id}");
                         }
                     }
 

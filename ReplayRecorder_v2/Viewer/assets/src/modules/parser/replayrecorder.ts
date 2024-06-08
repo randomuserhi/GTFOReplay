@@ -4,6 +4,7 @@ import { ModuleLoader } from "../../replay/moduleloader.js";
 import { Quat, Quaternion, Vec, Vector } from "../../replay/pod.js";
 import { ByteStream } from "../../replay/stream.js";
 
+// NOTE(randomuserhi): Create an overload to support Pod Vector3 type
 declare module "three" {
     interface Matrix4 {
         compose(translation: Vector3Like, rotation: Quaternion, scale: Vector3): this;
