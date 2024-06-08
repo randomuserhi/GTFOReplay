@@ -324,7 +324,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         switch (anim.state) {
         case "StuckInGlue": {
             const blend = Math.clamp01(stateTime / 0.15);
-            const screamAnim = this.animHandle.screams[0];
+            const screamAnim = this.animHandle.screams[anim.screamAnimIndex];
             this.skeleton.blend(screamAnim.sample(Math.clamp(stateTime, 0, 0.5)), blend);
 
             this.color.set(0x0000ff);

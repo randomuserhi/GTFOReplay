@@ -24,6 +24,7 @@ namespace Vanilla.StaticItems {
         public byte dimension;
         public Vector3 position => container.transform.position;
         public Quaternion rotation => container.transform.rotation;
+        public ushort serialNumber => (ushort)core.m_serialNumber;
 
         public rContainer(LG_ResourceContainer_Storage container, bool isLocker, byte dimension) : base(container.GetInstanceID()) {
             this.container = container;
@@ -124,6 +125,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(container.dimension, buffer);
                 BitHelper.WriteBytes(container.position, buffer);
                 BitHelper.WriteHalf(container.rotation, buffer);
+                BitHelper.WriteBytes(container.serialNumber, buffer);
                 BitHelper.WriteBytes(container.isLocker, buffer);
             }
         }

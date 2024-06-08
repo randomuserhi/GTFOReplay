@@ -7,6 +7,7 @@ export interface DisinfectStation {
     dimension: number;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
+    serialNumber: number;
 }
 
 declare module "../../../replay/moduleloader.js" {
@@ -26,12 +27,14 @@ ModuleLoader.registerHeader("Vanilla.Map.DisinfectStations", "0.0.1", {
             const dimension = await BitHelper.readByte(data);
             const position = await BitHelper.readVector(data);
             const rotation = await BitHelper.readHalfQuaternion(data);
+            const serialNumber = await BitHelper.readUShort(data);
 
             stations.set(id, {
                 id,
                 dimension,
                 position,
                 rotation,
+                serialNumber,
             });
         }
     }

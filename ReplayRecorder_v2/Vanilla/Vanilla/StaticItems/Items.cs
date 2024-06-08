@@ -1,4 +1,5 @@
 ﻿using AIGraph;
+using Gear;
 using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
@@ -83,9 +84,26 @@ namespace Vanilla.StaticItems {
             //                     item was on a player / bot that has been disconnected from the game.
         }
 
+        private ushort SerialNumber() {
+            CarryItemPickup_Core? carryItem = item.item.TryCast<CarryItemPickup_Core>();
+            if (carryItem != null) {
+                return (ushort)carryItem.m_serialNumber;
+            }
+            ResourcePackPickup? resourceItem = item.item.TryCast<ResourcePackPickup>();
+            if (resourceItem != null) {
+                return (ushort)resourceItem.m_serialNumber;
+            }
+            GenericSmallPickupItem_Core? smallItem = item.item.TryCast<GenericSmallPickupItem_Core>();
+            if (smallItem != null) {
+                return (ushort)smallItem.m_serialNumber1;
+            }
+            return ushort.MaxValue;
+        }
+
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
             BitHelper.WriteBytes(Identifier.From(item.item), buffer);
+            BitHelper.WriteBytes(SerialNumber(), buffer);
         }
     }
 

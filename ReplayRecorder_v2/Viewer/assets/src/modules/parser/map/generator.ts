@@ -7,6 +7,7 @@ export interface Generator {
     dimension: number;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
+    serialNumber: number;
 }
 
 export interface GeneratorState {
@@ -56,6 +57,7 @@ ModuleLoader.registerHeader("Vanilla.Map.Generators", "0.0.1", {
                 dimension: await BitHelper.readByte(data),
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
+                serialNumber: await BitHelper.readUShort(data)
             });
         }
     }

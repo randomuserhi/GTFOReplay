@@ -13,6 +13,7 @@ namespace Vanilla.StaticItems {
         public Vector3 position => core.transform.position;
         public Quaternion rotation => core.transform.rotation;
         public byte dimensionIndex => (byte)core.SpawnNode.m_dimension.DimensionIndex;
+        public ushort serialNumber => (ushort)core.m_serialNumber;
 
         public rDisinfectStation(LG_DisinfectionStation disinfectStation) {
             id = disinfectStation.GetInstanceID();
@@ -55,6 +56,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(station.dimensionIndex, buffer);
                 BitHelper.WriteBytes(station.position, buffer);
                 BitHelper.WriteHalf(station.rotation, buffer);
+                BitHelper.WriteBytes(station.serialNumber, buffer);
             }
         }
     }

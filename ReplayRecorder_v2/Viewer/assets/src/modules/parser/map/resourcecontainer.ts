@@ -7,6 +7,7 @@ export interface ResourceContainer {
     dimension: number;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
+    serialNumber: number;
     isLocker: boolean;
 }
 
@@ -60,6 +61,7 @@ ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
                 dimension: await BitHelper.readByte(data),
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
+                serialNumber: await BitHelper.readUShort(data),
                 isLocker: await BitHelper.readBool(data)
             });
         }

@@ -14,6 +14,7 @@ export interface BulkheadController {
     position: Pod.Vector;
     rotation: Pod.Quaternion;
     connectedDoors: (number | undefined)[];
+    serialNumber: number;
 }
 
 declare module "../../../replay/moduleloader.js" {
@@ -33,8 +34,9 @@ ModuleLoader.registerHeader("Vanilla.Map.BulkheadControllers", "0.0.1", {
             const dimension = await BitHelper.readByte(data);
             const position = await BitHelper.readVector(data);
             const rotation = await BitHelper.readHalfQuaternion(data);
-            const connectedDoors: (number | undefined)[] = [];
+            const serialNumber = await BitHelper.readUShort(data);
 
+            const connectedDoors: (number | undefined)[] = [];
             for (let j = 0; j < layers.length; ++j) {
                 const connected = await BitHelper.readBool(data);
                 if (connected) {
@@ -49,7 +51,8 @@ ModuleLoader.registerHeader("Vanilla.Map.BulkheadControllers", "0.0.1", {
                 dimension,
                 position,
                 rotation,
-                connectedDoors
+                connectedDoors,
+                serialNumber
             });
         }
     }

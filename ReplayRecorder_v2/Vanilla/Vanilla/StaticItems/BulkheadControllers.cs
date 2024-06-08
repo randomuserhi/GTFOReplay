@@ -13,6 +13,7 @@ namespace Vanilla.StaticItems {
         public Vector3 position => core.transform.position;
         public Quaternion rotation => core.transform.rotation;
         public byte dimensionIndex => (byte)core.SpawnNode.m_dimension.DimensionIndex;
+        public ushort serialNumber => (ushort)core.m_serialNumber;
 
         public rBulkheadController(LG_BulkheadDoorController_Core controller) {
             id = controller.GetInstanceID();
@@ -55,13 +56,14 @@ namespace Vanilla.StaticItems {
             // TODO(randomuserhi): Throw error on too many containers
             BitHelper.WriteBytes((ushort)bulkheadControllers.Count, buffer);
 
-            foreach (rBulkheadController controllers in bulkheadControllers.Values) {
-                BitHelper.WriteBytes(controllers.id, buffer);
-                BitHelper.WriteBytes(controllers.dimensionIndex, buffer);
-                BitHelper.WriteBytes(controllers.position, buffer);
-                BitHelper.WriteHalf(controllers.rotation, buffer);
+            foreach (rBulkheadController controller in bulkheadControllers.Values) {
+                BitHelper.WriteBytes(controller.id, buffer);
+                BitHelper.WriteBytes(controller.dimensionIndex, buffer);
+                BitHelper.WriteBytes(controller.position, buffer);
+                BitHelper.WriteHalf(controller.rotation, buffer);
+                BitHelper.WriteBytes(controller.serialNumber, buffer);
 
-                var connectedDoors = controllers.core.m_connectedBulkheadDoors;
+                var connectedDoors = controller.core.m_connectedBulkheadDoors;
                 foreach (LG_LayerType layerType in layers) {
                     if (connectedDoors.ContainsKey(layerType)) {
                         BitHelper.WriteBytes(true, buffer);

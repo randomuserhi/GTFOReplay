@@ -13,6 +13,7 @@ namespace Vanilla.StaticItems {
         public Vector3 position => core.transform.position;
         public Quaternion rotation => core.transform.rotation;
         public byte dimensionIndex => (byte)core.SpawnNode.m_dimension.DimensionIndex;
+        public ushort serialNumber => (ushort)core.m_serialNumber;
 
         public override bool Active => core != null;
         public override bool IsDirty => _powered != powered;
@@ -77,6 +78,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(generator.dimensionIndex, buffer);
                 BitHelper.WriteBytes(generator.position, buffer);
                 BitHelper.WriteHalf(generator.rotation, buffer);
+                BitHelper.WriteBytes(generator.serialNumber, buffer);
             }
         }
     }

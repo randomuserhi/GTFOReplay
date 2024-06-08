@@ -9,6 +9,7 @@ export interface Item {
     position: Pod.Vector;
     rotation: Pod.Quaternion;
     itemID: Identifier;
+    serialNumber: number;
     onGround: boolean;
     linkedToMachine: boolean;
     player: bigint | undefined;
@@ -36,6 +37,7 @@ declare module "../../../replay/moduleloader.js" {
                     linkedToMachine: boolean;
                     playerSlot: number;  
                     itemID: Identifier;
+                    serialNumber: number;
                 };
                 despawn: void;
             };
@@ -93,6 +95,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 linkedToMachine: await BitHelper.readBool(data),
                 playerSlot: await BitHelper.readByte(data),
                 itemID: await Identifier.parse(IdentifierData(snapshot), data),
+                serialNumber: await BitHelper.readUShort(data)
             };
         },
         exec: (id, data, snapshot) => {
@@ -110,6 +113,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 onGround: data.onGround,
                 linkedToMachine: data.linkedToMachine,
                 itemID: data.itemID, 
+                serialNumber: data.serialNumber, // 65535 (ushort.MaxValue) indicates item has no serial number
                 player: undefined
             });
         }
