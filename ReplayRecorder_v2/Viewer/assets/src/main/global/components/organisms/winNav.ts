@@ -3,12 +3,14 @@ import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
 const style = Style(({ style }) => {
+    const height = "40px";
+
     const wrapper = style.class`
     display: flex;
     justify-content: flex-start;
     flex-direction: row-reverse;
     align-items: stretch;
-    height: 22px;
+    height: ${height};
     background-color: #11111B; /*TODO: Theme-ColorScheme*/
 
     z-index: 3001;
@@ -23,8 +25,8 @@ const style = Style(({ style }) => {
     cursor: pointer;
 
     position: relative;
-    width: 28px;
-    height: 22px;
+    width: 45px;
+    height: ${height};
     color: #B9BBBE; /*TODO: Theme-ColorScheme*/
 
     -webkit-app-region: no-drag;
@@ -58,16 +60,10 @@ const style = Style(({ style }) => {
     user-select: none;
     `;
 
-    const temp = style.class`
-    -webkit-app-region: no-drag;
-    pointer-events: auto;
-    `;
-
     return {
         wrapper,
         button,
-        text,
-        temp
+        text
     };
 });
 
@@ -75,7 +71,8 @@ export interface winNav extends HTMLDivElement {
     close: HTMLButtonElement;
     max: HTMLButtonElement;
     min: HTMLButtonElement;
-    file: HTMLInputElement;
+    file: HTMLButtonElement;
+    _file: HTMLInputElement;
 }
 
 declare module "@/rhu/macro.js" {
@@ -96,8 +93,11 @@ export const winNav = Macro((() => {
             window.api.minimizeWindow();
         };
         
+        this.file.onclick = () => {
+            this._file.click();
+        };
         // TODO(randomuserhi): dont put this here
-        this.file.addEventListener("change", (e: any) => {
+        this._file.addEventListener("change", (e: any) => {
             try {
                 const files = e.target.files;
                 if (!files.length) {
@@ -130,9 +130,11 @@ export const winNav = Macro((() => {
     </div>
     <div class="${style.text}">
         GTFO Replay Viewer
-        <div style="width: 10px"></div>
-        <input class="${style.temp}" rhu-id="file" type="file"/>
     </div>
+    <div rhu-id="file" class="${style.button}" style="padding: 10px; width: 65px;" tabindex="-1" role="button" aria-label="Load Replay">
+        ${icons.rug}
+    </div>
+    <input rhu-id="_file" type="file" style="display: none;"/>
     `, {
     element: //html
         `<nav class="${style.wrapper}"></nav>`

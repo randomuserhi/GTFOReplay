@@ -24,16 +24,17 @@ declare module "../../replay/instancing.js" {
     material.opacity = 0.5;
     material.colorWrite = false;
 
+    const order = -2;
     createInstance("Cylinder.MeshPhong.HalfTransparency.Mask", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = -2;
+        mesh.renderOrder = order;
     });
 
     createInstance("Sphere.MeshPhong.HalfTransparency.Mask", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = -2;
+        mesh.renderOrder = order;
     });
 })();
 
@@ -43,16 +44,17 @@ declare module "../../replay/instancing.js" {
     material.opacity = 0.5;
     material.colorWrite = true;
 
+    const order = -1;
     createInstance("Cylinder.MeshPhong.HalfTransparency", new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = -1;
+        mesh.renderOrder = order;
     });
     
     createInstance("Sphere.MeshPhong.HalfTransparency", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
-        mesh.renderOrder = -1;
+        mesh.renderOrder = order;
     });
 })();
 

@@ -46,7 +46,7 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 }
 
                 const enemyModel = enemyModels.get(owner.id);
-                if (enemyModel !== undefined && !enemyModel.isVisible()) {
+                if (tongue.dimension !== renderer.get("Dimension")) {
                     model.mesh.visible = false;
                     continue;
                 }
@@ -110,7 +110,7 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 if (points.length > 1) {
                     model.geometry.morph(points);
                 }
-                model.mesh.visible = points.length > 1 && tongue.dimension === renderer.get("Dimension");
+                model.mesh.visible = points.length > 1;
             }
 
             for (const [id, model] of [...models.entries()]) {

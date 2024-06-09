@@ -77,6 +77,7 @@ export interface player extends HTMLDivElement {
     frameRate: number;
     seekLength: number;
 
+    resize(): void;
     update(): void;
     close(): void;
     link(ip: string, port: number): Promise<void>;
@@ -111,17 +112,14 @@ export const player = Macro((() => {
             this.seeker.setPause(this.pause);
         };
 
-        const resize = () => {
-            const computed = getComputedStyle(this);
+        this.resize = () => {
+            const computed = getComputedStyle(this.canvas);
             const width = parseInt(computed.width);
             const height = parseInt(computed.height);
-            this.canvas.width = width;
-            this.canvas.height = height;
-
             this.renderer.resize(width, height);
         };
-        window.addEventListener("resize", resize);
-        this.addEventListener("mount", resize);
+        window.addEventListener("resize", this.resize);
+        this.addEventListener("mount", this.resize);
 
         this.update();
 
@@ -138,6 +136,7 @@ export const player = Macro((() => {
         await window.api.invoke("open", file);
         if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
+        this.replay = undefined;
         this.parser.addEventListener("eoh", () => {
             console.log("ready");
     
@@ -146,6 +145,7 @@ export const player = Macro((() => {
             this.renderer.init(this.replay);
 
             this.pause = false;
+            this.seeker.setPause(false);
             this.live = false;
             this.time = 0;
             this.timescale = 1;
@@ -161,6 +161,7 @@ export const player = Macro((() => {
     };
 
     player.prototype.close = function() {
+        this.replay = undefined;
         window.api.send("close");
     };
 

@@ -170,7 +170,7 @@ export class Renderer {
 
     public resize(width: number, height: number) {
         this.dispatchEvent(CreateEvent("resize", { width, height }));
-        this.renderer.setSize(width, height);
+        this.renderer.setSize(width, height, false);
         this.composer.setSize(width, height);
     }
 
