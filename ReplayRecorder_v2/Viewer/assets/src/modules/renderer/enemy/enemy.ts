@@ -276,8 +276,9 @@ export class HumanoidEnemyModel extends EnemyModel {
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
         if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
 
-        this.animate(dt, time, enemy, anim, camera);
+        this.animate(dt, time, enemy, anim);
         this.computeMatrices(dt, enemy);
+        this.updateTmp(enemy, anim, camera);
 
         if (this.datablock?.transparent === true) {
             this.render(enemy, "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
@@ -300,7 +301,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
     }
 
-    private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+    private animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
         this.color.set(0xff0000);
         if (this.datablock?.color !== undefined) {
             this.color.set(this.datablock.color);
@@ -474,7 +475,9 @@ export class HumanoidEnemyModel extends EnemyModel {
             }
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
         }
+    }
 
+    private updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         if (this.tmp === undefined || this.tag === undefined) return;
         
         this.tag.visible = enemy.tagged;

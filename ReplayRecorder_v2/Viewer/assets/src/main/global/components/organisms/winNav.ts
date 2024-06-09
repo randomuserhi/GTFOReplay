@@ -17,8 +17,13 @@ const style = Style(({ style }) => {
     -webkit-app-region: drag;
     -ms-flex-negative: 0;
     flex-shrink: 0;
+
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-bottom-color: #2f2e44;
     `;
     const button = style.class`
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,7 +136,7 @@ export const winNav = Macro((() => {
     <div class="${style.text}">
         GTFO Replay Viewer
     </div>
-    <div rhu-id="file" class="${style.button}" style="padding: 10px; width: 65px;" tabindex="-1" role="button" aria-label="Load Replay">
+    <div rhu-id="file" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
         ${icons.rug}
     </div>
     <input rhu-id="_file" type="file" style="display: none;"/>

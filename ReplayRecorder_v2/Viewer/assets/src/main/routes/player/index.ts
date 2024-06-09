@@ -4,6 +4,7 @@ import { Parser } from "../../../replay/parser.js";
 import { Renderer } from "../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../replay/replay.js";
 import { FileHandle } from "../../../replay/stream.js";
+import { bar } from "./components/bar.js";
 import { scoreboard } from "./components/scoreboard.js";
 import { seeker } from "./components/seeker.js";
 
@@ -24,6 +25,11 @@ const style = Style(({ style }) => {
     display: block;
     width: 100%;
     height: 100%;
+    `;
+    style`
+    ${canvas}:focus {
+        outline: none;
+    }
     `;
 
     const mount = style.class`
@@ -46,12 +52,25 @@ const style = Style(({ style }) => {
     transform: translate(-50%, -50%);
     `;
 
+    const window = style.class`
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-shrink: 0;
+    width: auto;
+    background-color: #1f1f29;
+    overflow-y: auto;
+    overflow-x: hidden;
+    `;
+
     return {
         wrapper,
         body,
         canvas,
         mount,
-        scoreboardMount
+        scoreboardMount,
+        bar,
+        window
     };
 });
 
@@ -59,6 +78,8 @@ export interface player extends HTMLDivElement {
     canvas: HTMLCanvasElement;
     mount: HTMLDivElement;
     seeker: seeker;
+    bar: bar;
+    window: HTMLDivElement;
     scoreboardMount: HTMLDivElement;
     scoreboard: scoreboard;
     
@@ -67,6 +88,7 @@ export interface player extends HTMLDivElement {
     path?: string;
     parser?: Parser;
     replay?: Replay;
+    ready: boolean;
     pause: boolean;
     live: boolean;
     time: number;
@@ -84,6 +106,9 @@ export interface player extends HTMLDivElement {
     goLive(): void;
     unlink(): void;
     open(path: string): Promise<void>;
+
+    loadedNode?: Node;
+    load(node?: Node): void;
 }
 
 declare module "@/rhu/macro.js" {
@@ -95,10 +120,14 @@ declare module "@/rhu/macro.js" {
 export const player = Macro((() => {
     const player = function(this: player) {
         this.renderer = new Renderer(this.canvas);
+        this.ready = false;
+
+        this.bar.init(this);
 
         this.seeker.trigger = (value) => {
             if (this.replay === undefined) return;
             this.time = value * this.seekLength;
+            requestAnimationFrame(() => this.canvas.focus());
         };
         this.seeker.live.onclick = () => {
             if (this.live) {
@@ -106,10 +135,12 @@ export const player = Macro((() => {
             } else {
                 this.goLive();
             }
+            this.canvas.focus();
         };
         this.seeker.pause.onclick = () => {
             this.pause = !this.pause;
             this.seeker.setPause(this.pause);
+            this.canvas.focus();
         };
 
         this.resize = () => {
@@ -126,9 +157,26 @@ export const player = Macro((() => {
         (window as any).player = this;
     } as Constructor<player>;
     
+    player.prototype.load = function(node) {
+        if (this.replay === undefined) return;
+        if (!this.ready) return;
+        if (this.loadedNode === node) node = undefined;
+        this.loadedNode = node;
+        if (node !== undefined) {
+            this.window.replaceChildren(node);
+            this.window.style.display = "flex";
+        } else {
+            this.canvas.focus();
+            this.window.replaceChildren();
+            this.window.style.display = "none";
+        }
+        this.resize();
+    };
+
     player.prototype.open = async function(path: string) {
         // TODO(randomuserhi): Loading screen prior map loads
 
+        this.ready = false;
         this.path = path;
         const file: FileHandle = {
             path, finite: false
@@ -137,12 +185,15 @@ export const player = Macro((() => {
         if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
         this.replay = undefined;
+        this.load();
         this.parser.addEventListener("eoh", () => {
             console.log("ready");
     
             if (this.replay === undefined) return;
 
+            this.ready = true;
             this.renderer.init(this.replay);
+            this.canvas.focus();
 
             this.pause = false;
             this.seeker.setPause(false);
@@ -235,9 +286,10 @@ export const player = Macro((() => {
             this.seeker.time.childNodes.item(0).textContent = `${msToTime(this.time)} / ${msToTime(this.seekLength)}`; //${(this.seeker.seeking ? `(${msToTime(this.replay.length())})` : "")}
 
             this.seeker.dot.style.backgroundColor = this.live ? "red" : "#eee";
+        
+            if (this.ready) this.bar.update();
         }
         this.frameRate = 1000 / dt;
-
 
         // TODO(randomuserhi): Method to dispose of loop when player is removed etc... 
         requestAnimationFrame(() => this.update());
@@ -246,8 +298,11 @@ export const player = Macro((() => {
     return player;
 })(), "routes/player", //html
 `
+    ${bar`rhu-id="bar"`}
+    <div rhu-id="window" class="${style.window}" style="display: none;">
+    </div>
     <div class="${style.body}">
-        <canvas class="${style.canvas}" rhu-id="canvas"></canvas>
+        <canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>
         <div rhu-id="mount" class="${style.mount}" style="display: none">
             ${seeker`rhu-id="seeker"`}
         </div>

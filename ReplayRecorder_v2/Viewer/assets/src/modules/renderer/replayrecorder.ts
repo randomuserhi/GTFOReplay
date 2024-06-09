@@ -122,6 +122,8 @@ class CameraControls {
     private mouseup: (e: MouseEvent) => void;
     private canvas: HTMLCanvasElement;
 
+    private focus: boolean;
+
     constructor(camera: Camera, canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.speed = 20;
@@ -140,7 +142,18 @@ class CameraControls {
             this.speed *= Math.sign(e.deltaY) < 0 ? 10/9 : 9/10;
         };
         canvas.addEventListener("wheel", this.wheel);
+        
+        this.focus = false;
+        this.canvas.addEventListener("focusin", () => {
+            this.focus = true;
+        });
+        this.canvas.addEventListener("blur", () => {
+            this.focus = false;
+        });
+
         this.keyup = (e) => {
+            if (!this.focus) return;
+
             switch (e.keyCode) {
             case 32:
                 e.preventDefault();
@@ -174,6 +187,8 @@ class CameraControls {
             }
         };
         this.keydown = (e: KeyboardEvent) => {
+            if (!this.focus) return;
+
             switch (e.keyCode) {
             case 70:
                 e.preventDefault();
@@ -248,7 +263,7 @@ class CameraControls {
         window.addEventListener("keydown", this.keydown);
         window.addEventListener("keyup", this.keyup);
         this.mousedown = (e: MouseEvent) => {
-            e.preventDefault();
+            //e.preventDefault();
             if (e.button === 0)
                 mouse.left = true;
             else if (e.button === 2)
