@@ -537,12 +537,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                     anim.lastEndHitreactTime = time; 
                 }
 
-                const wasInMelee = anim.state === "StrikerMelee";
-                const notInMelee = data.state !== "StrikerMelee";
-                if (wasInMelee && notInMelee) {
-                    anim.lastEndMeleeTime = time; 
-                }
-
                 anim.state = data.state;
                 anim.lastStateTime = time;
             }

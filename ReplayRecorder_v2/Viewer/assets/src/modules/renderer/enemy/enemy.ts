@@ -407,16 +407,9 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (this.animHandle.melee !== undefined) {
             const meleeTime = time - (anim.lastMeleeTime / 1000);
             const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
-            const inMelee = meleeAnim !== undefined && meleeTime < meleeAnim.duration;
+            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerMelee");
             if (inMelee) {
-                let blend: number;
-                // If melee ended early compared with duration of melee animation -> blend out of melee anim.
-                const endMeleeTime = time - (anim.lastEndMeleeTime / 1000);
-                if (anim.lastEndHitreactTime > anim.lastMeleeTime && endMeleeTime > 0) {
-                    blend = 1 - Math.clamp01(endMeleeTime / 0.25);
-                } else {
-                    blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
-                }
+                const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
                 this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
             }
         }
