@@ -76,6 +76,8 @@ function getBoundaryEdges(indices: number[]) {
     return edges;
 }
 
+const edgeMaterial = new LineBasicMaterial({ color: 0x63ade6 });
+
 ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
     const init = api.getInitPasses();
     api.setInitPasses([...init, { 
@@ -109,7 +111,7 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
                         edgeGeometry.setIndex(getBoundaryEdges(meshes[i].indices));
                         edgeGeometry.setAttribute("position", vertices);
 
-                        const line = new LineSegments(edgeGeometry, new LineBasicMaterial({ color: 0x63ade6 }));
+                        const line = new LineSegments(edgeGeometry, edgeMaterial);
                         surface.add(line);
 
                         renderer.scene.add(surface);

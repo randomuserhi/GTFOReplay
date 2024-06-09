@@ -97,6 +97,7 @@ class DoorModel {
             });
             material.transparent = true;
             material.opacity = 0.8;
+            material.depthWrite = false;
 
             this.left = new Mesh(geometry, material);
             this.left.castShadow = true;
@@ -118,6 +119,7 @@ class DoorModel {
             });
             material.transparent = true;
             material.opacity = 0.5;
+            material.depthWrite = false;
 
             this.shutter = new Mesh(geometry, material);
             this.shutter.castShadow = true;

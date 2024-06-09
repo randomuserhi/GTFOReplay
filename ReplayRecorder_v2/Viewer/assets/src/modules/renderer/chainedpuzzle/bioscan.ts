@@ -27,6 +27,7 @@ class BioscanModel {
         const material = new MeshPhongMaterial({ color: 0xffffff });
         material.transparent = true;
         material.opacity = 0.5;
+        material.depthWrite = false;
         
         this.base = new Mesh(cylinder, material);
         this.group.add(this.base);

@@ -29,6 +29,7 @@ ModuleLoader.registerRender("Holopath", (name, api) => {
                     const material = new MeshPhongMaterial( { color: 0xffffff } );
                     material.transparent = true;
                     material.opacity = 0.5;
+                    material.depthWrite = false;
 
                     const mesh = new Mesh(geometry, material);
 

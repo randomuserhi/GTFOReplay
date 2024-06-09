@@ -33,6 +33,7 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
                     const material = new MeshStandardMaterial({ color: 0xffffff });
                     material.transparent = true;
                     material.opacity = 1;
+                    material.depthWrite = false;
 
                     const mesh = new Mesh(gunshotGeometry, material);
                     mesh.scale.set(0.02, 0.02, 0.02);

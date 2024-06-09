@@ -29,7 +29,6 @@ declare module "../../replay/instancing.js" {
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
         mesh.renderOrder = -2;
     });
-    
 
     createInstance("Sphere.MeshPhong.HalfTransparency.Mask", new SphereGeometry(1, 10, 10), material, 100, (mesh) => {
         mesh.frustumCulled = false;

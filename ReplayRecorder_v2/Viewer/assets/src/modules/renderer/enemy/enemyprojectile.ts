@@ -59,6 +59,7 @@ ModuleLoader.registerRender("Enemy.Projectile", (name, api) => {
                     const material = new MeshStandardMaterial({ color: 0xffffff });
                     material.transparent = true;
                     material.opacity = 1;
+                    material.depthWrite = false;
 
                     const mesh = new Mesh(trailGeometry, material);
                     mesh.scale.set(0.03, 0.03, 0.03);

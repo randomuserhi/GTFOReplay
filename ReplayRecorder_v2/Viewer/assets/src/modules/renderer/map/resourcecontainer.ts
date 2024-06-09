@@ -197,7 +197,7 @@ class Box extends ContainerModel {
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
         interface RenderData {
-            "TransparentResourceContainers": boolean;
+            "ResourceContainers.Transparent": boolean;
         }
     }
 }
@@ -206,12 +206,18 @@ ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
-            if (renderer.getOrDefault("TransparentResourceContainers", () => false)) {
+            if (renderer.getOrDefault("ResourceContainers.Transparent", () => false)) {
                 materialOrange.opacity = 0.5;
+                materialOrange.depthWrite = false;
+
                 materialGrey.opacity = 0.5;
+                materialGrey.depthWrite = false;
             } else {
                 materialOrange.opacity = 1;
+                materialOrange.depthWrite = true;
+
                 materialGrey.opacity = 1;
+                materialGrey.depthWrite = true;
             }
 
             const time = snapshot.time();

@@ -17,6 +17,7 @@ declare module "../../../replay/moduleloader.js" {
         }
 
         interface RenderData {
+            "Enemy.ShowInfo": boolean;
             "Enemies": Map<number, EnemyModel>;
             "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
@@ -31,6 +32,8 @@ function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: 
 
     return worldPos;
 }
+
+let showInfo = false;
 
 const bodyTop = Pod.Vec.zero();
 const bodyBottom = Pod.Vec.zero();
@@ -236,13 +239,13 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
         this.tmp.fontSize = 0.2;
-        this.tmp.position.y = 2;
+        this.tmp.position.y = 2 * scale;
         this.tmp.textAlign = "center";
         this.tmp.anchorX = "center";
         this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
-        this.anchor.add(this.tmp);
+        this.root.add(this.tmp);
 
         this.tag = new Text();
         this.tag.font = "./fonts/oxanium/Oxanium-ExtraBold.ttf";
@@ -261,7 +264,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tag.material.depthTest = false;
         this.tag.material.depthWrite = false;
         this.tag.renderOrder = Infinity;
-        this.anchor.add(this.tag);
+        this.root.add(this.tag);
     }
 
     // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
@@ -478,11 +481,13 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tag.position.copy(this.visual.joints.spine1.position);
         this.tag.position.y += 1;
 
-        //this.tmp.text = `${stateTime < this.animHandle.hibernateIn.duration}`;
+        this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
+State: ${anim.state}
+HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A if client replay
 
-        this.tmp.visible = false;
+        this.tmp.visible = showInfo;
 
-        this.orientateText(this.tmp, camera, 3, 0.05);
+        this.orientateText(this.tmp, camera, 0.3, 0.05);
         this.orientateText(this.tag, camera, 0.5, 0.1);
     }
 
@@ -600,6 +605,8 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot, dt) => {
+            showInfo = renderer.getOrDefault("Enemy.ShowInfo", () => false);
+
             const time = snapshot.time();
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
@@ -656,6 +663,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     });
                     material.transparent = true;
                     material.opacity = 0.8;
+                    material.depthWrite = false;
             
                     const geometry = new SphereGeometry(1, 10, 10);
             

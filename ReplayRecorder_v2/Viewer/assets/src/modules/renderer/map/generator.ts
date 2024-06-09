@@ -20,6 +20,7 @@ const inactive = new MeshPhongMaterial({
 });
 inactive.transparent = true;
 inactive.opacity = 0.5;
+inactive.depthWrite = false;
 
 const active = new MeshPhongMaterial({
     color: 0xc57000
