@@ -485,11 +485,13 @@ export interface EnemyAnimState {
     detect: number;
     lastWindupTime: number;
     windupAnimIndex: number;
+    lastEndHitreactTime: number;
     lastHitreactTime: number;
     hitreactAnimIndex: number;
     hitreactDirection: HitreactDirection;
     hitreactType: HitreactType;
     lastMeleeTime: number;
+    lastEndMeleeTime: number;
     meleeType: MeleeType;
     meleeAnimIndex: number;
     lastJumpTime: number;
@@ -527,8 +529,22 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             const anim = anims.get(id)!;
             Pod.Vec.lerp(anim.velocity, anim.velocity, data.velocity, lerp);
             if (anim.state !== data.state) {
+                const time = snapshot.time();
+
+                const wasInHitreact = anim.state === "Hitreact" || anim.state === "HitReactFlyer";
+                const notInHitreact = data.state !== "Hitreact" && data.state !== "HitReactFlyer";
+                if (wasInHitreact && notInHitreact) {
+                    anim.lastEndHitreactTime = time; 
+                }
+
+                const wasInMelee = anim.state === "StrikerMelee";
+                const notInMelee = data.state !== "StrikerMelee";
+                if (wasInMelee && notInMelee) {
+                    anim.lastEndMeleeTime = time; 
+                }
+
                 anim.state = data.state;
-                anim.lastStateTime = snapshot.time();
+                anim.lastStateTime = time;
             }
             anim.up = data.up;
             anim.detect = anim.detect + (data.detect - anim.detect) * lerp;
@@ -553,10 +569,12 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
                 lastWindupTime: -Infinity,
                 windupAnimIndex: 0,
                 lastHitreactTime: -Infinity,
+                lastEndHitreactTime: -Infinity,
                 hitreactAnimIndex: 0,
                 hitreactDirection: "Forward",
                 hitreactType: "Light",
                 lastMeleeTime: -Infinity,
+                lastEndMeleeTime: -Infinity,
                 meleeAnimIndex: 0,
                 meleeType: "Forward",
                 lastJumpTime: -Infinity,

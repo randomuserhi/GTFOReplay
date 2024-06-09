@@ -94,6 +94,8 @@ export class AvatarSkeleton<T extends string = string> {
     }
 
     public blend(frame: AvatarLike<T>, weight:number, mask?: AvatarMask<T>) {
+        if (weight === 0) return this;
+
         if (mask === undefined || mask.root === true) {
             const position = this.root.position;
             position.lerp(frame.root, weight);

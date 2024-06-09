@@ -407,9 +407,16 @@ export class HumanoidEnemyModel extends EnemyModel {
         if (this.animHandle.melee !== undefined) {
             const meleeTime = time - (anim.lastMeleeTime / 1000);
             const meleeAnim = this.animHandle.melee[anim.meleeType][anim.meleeAnimIndex];
-            const inMelee = meleeAnim !== undefined && (meleeTime < meleeAnim.duration && anim.state === "StrikerMelee");
+            const inMelee = meleeAnim !== undefined && meleeTime < meleeAnim.duration;
             if (inMelee) {
-                const blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
+                let blend: number;
+                // If melee ended early compared with duration of melee animation -> blend out of melee anim.
+                const endMeleeTime = time - (anim.lastEndMeleeTime / 1000);
+                if (anim.lastEndHitreactTime > anim.lastMeleeTime && endMeleeTime > 0) {
+                    blend = 1 - Math.clamp01(endMeleeTime / 0.25);
+                } else {
+                    blend = meleeTime < meleeAnim.duration / 2 ? Math.clamp01(meleeTime / 0.15) : Math.clamp01((meleeAnim.duration - meleeTime) / 0.15);
+                }
                 this.skeleton.blend(meleeAnim.sample(Math.clamp(meleeTime, 0, meleeAnim.duration)), blend);
             }
         }
@@ -456,12 +463,20 @@ export class HumanoidEnemyModel extends EnemyModel {
             }
         } break;
         }
+        if (anim.state === "Hitreact" || anim.state === "HitReactFlyer") {
+            this.color.set(0xdddddd);
+        }
         const inHitreact = hitreactAnim !== undefined && hitreactTime < hitreactAnim.duration;
         if (inHitreact) {
-            const blend = hitreactTime < hitreactAnim.duration / 2 ? Math.clamp01(hitreactTime / 0.15) : Math.clamp01((hitreactAnim.duration - hitreactTime) / 0.15);
+            let blend: number;
+            // If hitreact ended early compared with duration of hitreact animation -> blend out of hit reaction.
+            const endHitreactTime = time - (anim.lastEndHitreactTime / 1000);
+            if (anim.lastEndHitreactTime > anim.lastHitreactTime && endHitreactTime > 0) {
+                blend = 1 - Math.clamp01(endHitreactTime / 0.5);
+            } else {
+                blend = hitreactTime < hitreactAnim.duration / 2 ? Math.clamp01(hitreactTime / 0.15) : Math.clamp01((hitreactAnim.duration - hitreactTime) / 0.15);
+            }
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
-            
-            this.color.set(0xaaaaaa);
         }
 
         if (this.tmp === undefined || this.tag === undefined) return;
