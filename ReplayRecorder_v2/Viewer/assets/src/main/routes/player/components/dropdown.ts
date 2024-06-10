@@ -8,6 +8,18 @@ const style = Style(({ style }) => {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    `;
+    style`
+    ${wrapper}:focus {
+        outline: none;
+    }
     `;
 
     const active = style.class``;
@@ -86,7 +98,8 @@ export interface dropdown extends HTMLDivElement {
     active: boolean;
     setActive(active: boolean): void;
     
-    set(key: any): void;
+    update(items: [any, string][]): void;
+    set(key?: any, trigger?: boolean): void;
     add(key: any, value: string): void;
     delete(key: any): void;
     clear(): void;
@@ -108,20 +121,55 @@ export const dropdown = Macro((() => {
         this.display.addEventListener("click", () => {
             this.setActive(!this.active);
         });
+
+        this.addEventListener("blur", () => {
+            this.setActive(false);
+        });
     } as Constructor<dropdown>;
+
+    dropdown.prototype.update = function(items) {
+        this._items.clear();
+        let i = 0;
+        for (const el of this.items.values()) {
+            if (i < items.length) {
+                el.innerText = items[i][1];
+                this._items.set(items[i][0], el);
+            } else {
+                break;
+            }
+            ++i;
+        }
+        const temp = this.items;
+        this.items = this._items;
+        this._items = temp; 
+        while (i < items.length) {
+            this.add(...items[i]);
+            ++i;
+        }
+
+        if (!this.items.has(this.value)) {
+            this.set();
+        }
+    };
 
     dropdown.prototype.setActive = function(active) {
         this.active = active;
+
+        if (this.items.size === 0) this.active = false;
+
         if (active) this.classList.add(`${style.active}`);
         else this.classList.remove(`${style.active}`);
     };
 
-    dropdown.prototype.set = function(key) {
+    dropdown.prototype.set = function(key, trigger = true) {
         const text = this.items.get(key)?.textContent;
         if (text !== undefined) {
             this.display.textContent = text;
-            this.onSet?.call(this, key);
+        } else {
+            this.display.textContent = "";
         }
+        this.value = key;
+        if (trigger) this.onSet?.call(this, key);
     };
 
     dropdown.prototype.add = function(key, value) {
@@ -148,6 +196,7 @@ export const dropdown = Macro((() => {
     dropdown.prototype.clear = function() {
         this.items.clear();
         this.body.replaceChildren();
+        this.set();
     };
 
     return dropdown;
@@ -158,5 +207,5 @@ export const dropdown = Macro((() => {
     </div>
     `, {
     element: //html
-        `<div class="${style.wrapper}"></div>`
+        `<div class="${style.wrapper}" tabindex="0"></div>`
 });

@@ -991,6 +991,7 @@ export interface EnemySpecification {
     color?: ColorRepresentation;
     name?: string;
     model?: (data: any) => EnemyModel;
+    height?: number;
     rotOffset?: Vector3Like;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;
@@ -2011,6 +2012,7 @@ const _enemies: EnemySpecification[] = [{
     id: 36,
     name: "Mother",
     maxHealth: 1000,
+    height: 1,
     rotOffset: {
         x: 0,
         y: 180,
@@ -2020,6 +2022,7 @@ const _enemies: EnemySpecification[] = [{
     id: 37,
     name: "Big Mother",
     maxHealth: 2500,
+    height: 1,
     rotOffset: {
         x: 0,
         y: 180,
@@ -2101,6 +2104,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 54,
     name: "Zoomer Scout",
+    height: 1,
     maxHealth: 42,
     headScale: {
         x: 1.3,
@@ -2116,6 +2120,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 55,
     name: "Mega Mother",
+    height: 1,
     maxHealth: 5000,
     rotOffset: {
         x: 0,

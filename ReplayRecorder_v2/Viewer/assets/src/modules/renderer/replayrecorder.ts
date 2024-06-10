@@ -149,6 +149,12 @@ class CameraControls {
         });
         this.canvas.addEventListener("blur", () => {
             this.focus = false;
+            this.up = false;
+            this.down = false;
+            this.left = false;
+            this.right = false;
+            this.forward = false;
+            this.backward = false;
         });
 
         this.keyup = (e) => {
@@ -315,16 +321,16 @@ class CameraControls {
             }
         } else {
             this.slot = undefined;
+
+            const worldPos = new Vector3();
+            camera.getWorldPosition(worldPos);
+            camera.parent = renderer.scene;
+            camera.position.copy(worldPos);
         }
 
         if (this.slot !== undefined) {
             if (this.forward || this.backward || this.left || this.right || this.up || this.down) {
                 this.targetSlot = undefined;
-
-                const worldPos = new Vector3();
-                camera.getWorldPosition(worldPos);
-                camera.parent = renderer.scene;
-                camera.position.copy(worldPos);
             } else {
                 const models = renderer.getOrDefault("Players", () => new Map());
                 const first = slots[this.slot];

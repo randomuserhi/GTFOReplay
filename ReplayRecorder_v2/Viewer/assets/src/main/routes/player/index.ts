@@ -75,6 +75,37 @@ const style = Style(({ style }) => {
     justify-content: center;
     `;
 
+    const loader = style.class`
+    width: 65px;
+    aspect-ratio: 1;
+    position: relative;
+    `;
+    style`
+    ${loader}:before,
+    ${loader}:after {
+        content: "";
+        position: absolute;
+        border-radius: 50px;
+        box-shadow: 0 0 0 3px inset #fff;
+        animation: l5 2.5s infinite;
+    }
+    ${loader}:after {
+        animation-delay: -1.25s;
+        border-radius: 0;
+    }
+    @keyframes l5{
+        0%    {inset:0    35px 35px 0   }
+        12.5% {inset:0    35px 0    0   }
+        25%   {inset:35px 35px 0    0   }
+        37.5% {inset:35px 0    0    0   }
+        50%   {inset:35px 0    0    35px}
+        62.5% {inset:0    0    0    35px}
+        75%   {inset:0    0    35px 35px}
+        87.5% {inset:0    0    35px 0   }
+        100%  {inset:0    35px 35px 0   }
+    }
+    `;
+
     return {
         wrapper,
         body,
@@ -83,7 +114,8 @@ const style = Style(({ style }) => {
         scoreboardMount,
         bar,
         window,
-        empty
+        empty,
+        loader
     };
 });
 
@@ -95,6 +127,9 @@ export interface player extends HTMLDivElement {
     window: HTMLDivElement;
     scoreboardMount: HTMLDivElement;
     scoreboard: scoreboard;
+    loadButton: HTMLButtonElement;
+    loading: HTMLDivElement;
+    cover: HTMLDivElement;
     
     renderer: Renderer;
     
@@ -157,6 +192,10 @@ export const player = Macro((() => {
             this.canvas.focus();
         };
 
+        this.loadButton.onclick = () => {
+            (window as any)._file.click();
+        };
+
         this.resize = () => {
             const computed = getComputedStyle(this.canvas);
             const width = parseInt(computed.width);
@@ -190,6 +229,10 @@ export const player = Macro((() => {
     player.prototype.open = async function(path: string) {
         // TODO(randomuserhi): Loading screen prior map loads
 
+        this.cover.style.display = "flex";
+        this.loadButton.style.display = "none";
+        this.loading.style.display = "block";
+
         this.ready = false;
         this.path = path;
         const file: FileHandle = {
@@ -205,11 +248,13 @@ export const player = Macro((() => {
     
             if (this.replay === undefined) return;
 
+            this.cover.style.display = "none";
+
             this.bar.reset();
-            this.ready = true;
             this.renderer.init(this.replay);
             this.canvas.focus();
-
+            
+            this.ready = true;
             this.pause = false;
             this.seeker.setPause(false);
             this.live = false;
@@ -323,6 +368,7 @@ export const player = Macro((() => {
             </video>   
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
                 <button rhu-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
+                <div rhu-id="loading" style="display: none;" class="${style.loader}"></div>
             </div>
         </div>
         <canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>

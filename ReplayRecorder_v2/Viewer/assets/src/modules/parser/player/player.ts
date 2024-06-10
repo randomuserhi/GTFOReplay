@@ -28,10 +28,16 @@ declare module "../../../replay/moduleloader.js" {
         }
 
         interface Data {
+            "Vanilla.AllPlayers": Map<bigint, PlayerInfo>;
             "Vanilla.Player": Map<number, Player>;
             "Vanilla.Player.Slots": (Player | undefined)[];
         }
     }
+}
+
+export interface PlayerInfo {
+    snet: bigint;
+    nickname: string;
 }
 
 export interface Player extends DynamicTransform {
@@ -76,6 +82,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
         },
         exec: (id, data, snapshot) => {
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const all = snapshot.getOrDefault("Vanilla.AllPlayers", () => new Map());
             const slots = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
         
             const { snet } = data;
@@ -88,6 +95,11 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             };
             players.set(id, player);
             slots[data.slot] = player;
+
+            all.set(snet, {
+                snet,
+                nickname: data.nickname
+            });
         }
     },
     despawn: {

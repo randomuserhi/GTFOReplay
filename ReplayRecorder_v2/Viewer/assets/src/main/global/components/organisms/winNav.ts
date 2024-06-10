@@ -119,6 +119,7 @@ export const winNav = Macro((() => {
                 console.error(err);
             }
         });
+        (window as any)._file = this._file;
     } as Constructor<winNav>;
 
     return winNav;

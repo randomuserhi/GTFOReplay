@@ -1,8 +1,8 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
-import { player } from "..";
 import { Typemap } from "../../../../replay/moduleloader.js";
+import { player } from "../index.js";
 import { dropdown } from "./dropdown.js";
 
 const style = Style(({ style }) => {
@@ -77,11 +77,6 @@ const style = Style(({ style }) => {
 });
 
 export interface settings extends HTMLDivElement {
-    gear: HTMLDivElement;
-    stats: HTMLDivElement;
-    finder: HTMLDivElement;
-    info: HTMLDivElement;
-
     search: HTMLInputElement;
     body: HTMLDivElement;
 
@@ -189,7 +184,10 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
             `);
             
         frag.dropdown.onSet = function(value) {
-            parent.player.renderer.set("Dimension", value);
+            if (parent.player.renderer.get("Dimension") !== value) {
+                parent.player.renderer.set("Dimension", value);
+                parent.player.renderer.get("CameraControls")!.targetSlot = undefined;
+            }
         };
 
         const reset = () => {
@@ -200,11 +198,13 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
             for (const index of dimensions.keys()) {
                 frag.dropdown.add(index, `${index === 0 ? "Reality" : `Dimension ${index}`}`);
             }
-
-            frag.dropdown.set(parent.player.renderer.getOrDefault("Dimension", () => 0));
         };
 
-        return [node.children[0], "Dimension", undefined, reset];
+        const update = () => {
+            frag.dropdown.set(parent.player.renderer.getOrDefault("Dimension", () => 0), false);
+        };
+
+        return [node.children[0], "Dimension", update, reset];
     },
     (parent) => {
         const [frag, node] = Macro.anon<{
