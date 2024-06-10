@@ -92,7 +92,7 @@ export interface finder extends HTMLDivElement {
     includeUnknown: HTMLButtonElement;
     includeUnknownItems: boolean;
 
-    items: { frag: { root: HTMLElement, name: HTMLSpanElement }, key: string, item: Item }[];
+    items: { frag: { root: HTMLElement, name: HTMLSpanElement, item: Item }, key: string }[];
     fuse: Fuse<Item>;
 
     player: player;
@@ -146,24 +146,26 @@ export const finder = Macro((() => {
         for (const item of items) {
             const key = item.key;
             if (key === "Unknown" && !this.includeUnknownItems) continue;
-            let li: { frag: { root: HTMLElement, name: HTMLSpanElement }, key: string, item: Item };
+            let li: { frag: { root: HTMLElement, name: HTMLSpanElement, item: Item }, key: string };
             if (i < this.items.length) {
-                this.items[i].item = item;
                 this.items[i].key = key;
                 this.items[i].frag.name.innerText = key;
+                this.items[i].frag.item = item;
                 li = this.items[i];
             } else {
                 const [frag, node] = Macro.anon<{
                     root: HTMLElement,
                     name: HTMLSpanElement,
+                    item: Item,
                 }>(/*html*/`
                     <div rhu-id="root" class="${style.item}">
                         <span rhu-id="name">${key}</span>
                     </div>
                     `);
-                li = { frag, item, key };
+                frag.item = item;
+                li = { frag, key };
                 frag.root.addEventListener("click", () => {
-                    this.player.renderer.get("CameraControls")!.tp(item.position);
+                    this.player.renderer.get("CameraControls")!.tp(frag.item.position);
                 });
                 this.body.append(frag.root);
             }
