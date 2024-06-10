@@ -54,8 +54,6 @@ const style = Style(({ style }) => {
     `;
 
     const window = style.class`
-    display: flex;
-    flex-direction: column;
     height: 100%;
     flex-shrink: 0;
     width: auto;
@@ -217,7 +215,7 @@ export const player = Macro((() => {
         this.loadedNode = node;
         if (node !== undefined) {
             this.window.replaceChildren(node);
-            this.window.style.display = "flex";
+            this.window.style.display = "block";
         } else {
             this.canvas.focus();
             this.window.replaceChildren();
