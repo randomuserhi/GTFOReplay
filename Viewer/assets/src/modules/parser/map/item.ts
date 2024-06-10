@@ -77,8 +77,9 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             item.serialNumber = data.serialNumber;
             
             const spec = specification.getEquippable(item.itemID);
-            const serial = data.serialNumber < 1000 ? data.serialNumber : "XXX";
-            item.key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name} (${serial})` : `${spec.serial}_${serial}`;
+            const _serial = data.serialNumber < 1000 ? `_${data.serialNumber}` : ""; 
+            const serial = data.serialNumber < 1000 ? ` (${data.serialNumber})` : "";
+            item.key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
             
             // If the item is on the ground, a player doesn't have it.
             if (item.onGround === true) {
@@ -114,9 +115,12 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             //                     Parse it anyway cause backend saves it regardless.
 
             if (items.has(id)) throw new DuplicateItem(`Item of id '${id}' already exists.`);
+
             const spec = specification.getEquippable(data.itemID);
-            const serial = data.serialNumber < 1000 ? data.serialNumber : "XXX";
-            const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name} (${serial})` : `${spec.serial}_${serial}`;
+            const _serial = data.serialNumber < 1000 ? `_${data.serialNumber}` : ""; 
+            const serial = data.serialNumber < 1000 ? ` (${data.serialNumber})` : "";
+            const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
+
             items.set(id, { 
                 id,
                 dimension: data.dimension,
