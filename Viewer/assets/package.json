@@ -1,0 +1,38 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "lint": "eslint src",
+    "lint-fix": "eslint src --fix",
+    "transpile": "tsc",
+    "copy-files": "copyfiles -u 1 -e src/**/*.ts src/**/* build/",
+    "copy-assets": "copyfiles -u 1 assets/**/*.* build/",
+    "copy-js3party": "del-cli build/js3party/**/* && copyfiles -u 1 js3party/**/*.* build/js3party/ && copyfiles -u 3 node_modules/fuse.js/dist/fuse.min.mjs build/js3party/fuse && copyfiles -u 2 node_modules/three/**/* build/js3party/three && copyfiles -u 2 node_modules/troika-three-text/**/* build/js3party/troika-three-text && copyfiles -u 3 node_modules/troika-three-utils/src/**/* build/js3party/troika-three-utils && copyfiles -u 3 node_modules/troika-worker-utils/src/**/* build/js3party/troika-worker-utils && copyfiles -u 3 node_modules/webgl-sdf-generator/dist/**/* build/js3party/webgl-sdf-generator && copyfiles -u 3 node_modules/bidi-js/dist/**/* build/js3party/bidi-js",
+    "build-animations": "npm run --prefix ../animations build && npm run --prefix ../animations offload",
+    "build": "del-cli build/**/* !build/js3party && npm run transpile && npm run copy-files && npm run copy-assets",
+    "offload": "del-cli -f ../electron/build/assets/**/* !../electron/build/assets/js3party && copyfiles -u 1 -e build/js3party/**/* build/**/*.* ../electron/build/assets/",
+    "offload-js3party": "del-cli -f ../electron/build/assets/js3party/**/* && copyfiles -u 2 build/js3party/**/*.* ../electron/build/assets/js3party/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomuserhi/Enter-the-Deep.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/three": "^0.161.2",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "copyfiles": "^2.4.1",
+    "del-cli": "^5.1.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-unused-imports": "^3.1.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "fuse.js": "^7.0.0",
+    "three": "^0.161.0",
+    "troika-three-text": "^0.49.0"
+  }
+}

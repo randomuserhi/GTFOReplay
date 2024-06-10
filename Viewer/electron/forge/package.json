@@ -1,0 +1,15 @@
+{
+    "name": "gtfo-replay-viewer",
+    "version": "1.0.0",
+    "description": "Viewer app for GTFOReplay.",
+    "main": "./app.cjs",
+    "author": "randomuserhi",
+    "devDependencies": {
+        "@electron-forge/cli": "^6.1.1",
+        "electron": "24.3.0"
+    },
+    "config": {
+        "forge": "../forge/forge.config.cjs"
+    }
+  }
+  
