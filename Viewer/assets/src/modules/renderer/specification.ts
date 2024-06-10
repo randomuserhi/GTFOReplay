@@ -1452,7 +1452,7 @@ const _gear: Equippable<string>[] = [{
 const _item: Equippable<number>[] = [{
     id: 102,
     type: "consumable",
-    serial: "MEDI_PACK",
+    serial: "MEDIPACK",
     model: () => new Pack(0xff0000)
 }, {
     id: 101,
