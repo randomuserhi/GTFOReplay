@@ -29,7 +29,8 @@ namespace Vanilla.StaticItems {
             position != _position ||
             rotation != _rotation ||
             onGround != _onGround ||
-            linkedToMachine != _linkedToMachine;
+            linkedToMachine != _linkedToMachine ||
+            serialNumber != _serialNumber;
 
         private byte dimensionIndex {
             get {
@@ -72,6 +73,7 @@ namespace Vanilla.StaticItems {
             _onGround = onGround;
             _linkedToMachine = linkedToMachine;
             _player = player;
+            _serialNumber = serialNumber;
 
             BitHelper.WriteBytes(_dimensionIndex, buffer);
             BitHelper.WriteBytes(_position, buffer);
@@ -79,31 +81,34 @@ namespace Vanilla.StaticItems {
             BitHelper.WriteBytes(_onGround, buffer);
             BitHelper.WriteBytes(_linkedToMachine, buffer);
             BitHelper.WriteBytes(_player, buffer);
+            BitHelper.WriteBytes(_serialNumber, buffer);
 
             // NOTE(randomuserhi): If item is not on ground and player slot is undefined (byte.MaxValue) then it means 
             //                     item was on a player / bot that has been disconnected from the game.
         }
 
-        private ushort SerialNumber() {
-            CarryItemPickup_Core? carryItem = item.item.TryCast<CarryItemPickup_Core>();
-            if (carryItem != null) {
-                return (ushort)carryItem.m_serialNumber;
+        private ushort serialNumber {
+            get {
+                CarryItemPickup_Core? carryItem = item.item.TryCast<CarryItemPickup_Core>();
+                if (carryItem != null) {
+                    return (ushort)carryItem.m_serialNumber;
+                }
+                ResourcePackPickup? resourceItem = item.item.TryCast<ResourcePackPickup>();
+                if (resourceItem != null) {
+                    return (ushort)resourceItem.m_serialNumber;
+                }
+                GenericSmallPickupItem_Core? smallItem = item.item.TryCast<GenericSmallPickupItem_Core>();
+                if (smallItem != null) {
+                    return (ushort)smallItem.m_serialNumber1;
+                }
+                return ushort.MaxValue;
             }
-            ResourcePackPickup? resourceItem = item.item.TryCast<ResourcePackPickup>();
-            if (resourceItem != null) {
-                return (ushort)resourceItem.m_serialNumber;
-            }
-            GenericSmallPickupItem_Core? smallItem = item.item.TryCast<GenericSmallPickupItem_Core>();
-            if (smallItem != null) {
-                return (ushort)smallItem.m_serialNumber1;
-            }
-            return ushort.MaxValue;
         }
+        private ushort _serialNumber = ushort.MaxValue;
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
             BitHelper.WriteBytes(Identifier.From(item.item), buffer);
-            BitHelper.WriteBytes(SerialNumber(), buffer);
         }
     }
 

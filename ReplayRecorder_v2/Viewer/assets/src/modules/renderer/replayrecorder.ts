@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, PointLight, SphereGeometry, VSMShadowMap, Vector3 } from "three";
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, PointLight, SphereGeometry, VSMShadowMap, Vector3, Vector3Like } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { createInstance } from "../../replay/instancing.js";
@@ -112,6 +112,8 @@ class CameraControls {
 
     speed: number;
 
+    private readonly renderer: Renderer;
+
     private wheel: (e: WheelEvent) => void;
 
     private keydown: (e: KeyboardEvent) => void;
@@ -124,7 +126,8 @@ class CameraControls {
 
     private focus: boolean;
 
-    constructor(camera: Camera, canvas: HTMLCanvasElement) {
+    constructor(renderer: Renderer, camera: Camera, canvas: HTMLCanvasElement) {
+        this.renderer = renderer;
         this.canvas = canvas;
         this.speed = 20;
         const mouse = {
@@ -309,7 +312,17 @@ class CameraControls {
         canvas.addEventListener("mouseup", this.mouseup);
     }
 
-    public update(renderer: Renderer, snapshot: ReplayApi, dt: number) {
+    public tp(position: Vector3Like) {
+        const camera = this.renderer.get("Camera")!;
+
+        this.targetSlot = undefined;
+        
+        camera.parent = this.renderer.scene;
+        camera.position.copy(position);
+    }
+
+    public update(snapshot: ReplayApi, dt: number) {
+        const renderer = this.renderer;
         const camera = renderer.get("Camera")!;
 
         const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
@@ -448,7 +461,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             controls.enablePan = false;
             r.set("OrbitControls",  controls);
 
-            r.set("CameraControls",  new CameraControls(camera, r.renderer.domElement));
+            r.set("CameraControls",  new CameraControls(r, camera, r.renderer.domElement));
 
             const pointLight = new PointLight(0xFFFFFF, 1, undefined, 1.2);
             r.set("PointLight", pointLight);
@@ -482,7 +495,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             const frustum = renderer.get("Frustum")!;
             frustum.setFromProjectionMatrix(pM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
 
-            renderer.get("CameraControls")!.update(renderer, snapshot, dt);
+            renderer.get("CameraControls")!.update(snapshot, dt);
         } 
     }, ...renderLoop]);
 });

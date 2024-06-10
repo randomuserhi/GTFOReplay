@@ -1,6 +1,7 @@
 import * as BitHelper from "../../../replay/bithelper.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
+import { specification } from "../../renderer/specification.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 
 export interface Item {
@@ -13,6 +14,7 @@ export interface Item {
     onGround: boolean;
     linkedToMachine: boolean;
     player: bigint | undefined;
+    key: string;
 }
 
 declare module "../../../replay/moduleloader.js" {
@@ -27,7 +29,8 @@ declare module "../../../replay/moduleloader.js" {
                     linkedToMachine: boolean;
                     // NOTE(randomuserhi): If item is not on ground and player slot is undefined (byte.MaxValue) then it means 
                     //                     item was on a player / bot that has been disconnected from the game.
-                    playerSlot: number;  
+                    playerSlot: number; 
+                    serialNumber: number, // 65535 (ushort.MaxValue) indicates item has no serial number
                 };
                 spawn: {
                     dimension: number,
@@ -36,8 +39,8 @@ declare module "../../../replay/moduleloader.js" {
                     onGround: boolean;
                     linkedToMachine: boolean;
                     playerSlot: number;  
-                    itemID: Identifier;
                     serialNumber: number;
+                    itemID: Identifier;
                 };
                 despawn: void;
             };
@@ -58,7 +61,8 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 rotation: await BitHelper.readHalfQuaternion(data),
                 onGround: await BitHelper.readBool(data),
                 linkedToMachine: await BitHelper.readBool(data),
-                playerSlot: await BitHelper.readByte(data)
+                playerSlot: await BitHelper.readByte(data),
+                serialNumber: await BitHelper.readUShort(data),
             };
         }, 
         exec: (id, data, snapshot) => {
@@ -70,6 +74,11 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             Pod.Quat.copy(item.rotation, data.rotation);
             item.onGround = data.onGround;
             item.linkedToMachine = data.linkedToMachine;
+            item.serialNumber = data.serialNumber;
+            
+            const spec = specification.getEquippable(item.itemID);
+            const serial = data.serialNumber < 1000 ? data.serialNumber : "XXX";
+            item.key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name} (${serial})` : `${spec.serial}_${serial}`;
             
             // If the item is on the ground, a player doesn't have it.
             if (item.onGround === true) {
@@ -94,8 +103,8 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 onGround: await BitHelper.readBool(data),
                 linkedToMachine: await BitHelper.readBool(data),
                 playerSlot: await BitHelper.readByte(data),
+                serialNumber: await BitHelper.readUShort(data),
                 itemID: await Identifier.parse(IdentifierData(snapshot), data),
-                serialNumber: await BitHelper.readUShort(data)
             };
         },
         exec: (id, data, snapshot) => {
@@ -105,6 +114,9 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             //                     Parse it anyway cause backend saves it regardless.
 
             if (items.has(id)) throw new DuplicateItem(`Item of id '${id}' already exists.`);
+            const spec = specification.getEquippable(data.itemID);
+            const serial = data.serialNumber < 1000 ? data.serialNumber : "XXX";
+            const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name} (${serial})` : `${spec.serial}_${serial}`;
             items.set(id, { 
                 id,
                 dimension: data.dimension,
@@ -112,9 +124,10 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 rotation: data.rotation,
                 onGround: data.onGround,
                 linkedToMachine: data.linkedToMachine,
-                itemID: data.itemID, 
                 serialNumber: data.serialNumber, // 65535 (ushort.MaxValue) indicates item has no serial number
-                player: undefined
+                itemID: data.itemID,
+                player: undefined,
+                key
             });
         }
     },

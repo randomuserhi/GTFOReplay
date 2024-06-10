@@ -116,6 +116,7 @@ export interface GearArchetype {
 export interface Equippable<T = Identifier> {
     id: T;
     name?: string;
+    serial?: string;
     type: Archetype;
     gearArchetype?: GearArchetype;
     meleeArchetype?: MeleeArchetype;
@@ -1451,18 +1452,22 @@ const _gear: Equippable<string>[] = [{
 const _item: Equippable<number>[] = [{
     id: 102,
     type: "consumable",
+    serial: "MEDI_PACK",
     model: () => new Pack(0xff0000)
 }, {
     id: 101,
     type: "consumable",
+    serial: "AMMO_PACK",
     model: () => new Pack(0x00ff00)
 }, {
     id: 127,
     type: "consumable",
+    serial: "TOOL_REFILL_PACK",
     model: () => new Pack(0x0000ff)
 }, {
     id: 132,
     type: "consumable",
+    serial: "DISINFECT_PACK",
     model: () => new Pack(0x7b9fe8)
 }, { 
     id: 114,
@@ -1524,176 +1529,211 @@ const _item: Equippable<number>[] = [{
 }, { 
     id: 131,
     name: "Power Cell",
+    serial: "CELL",
     type: "rifle",
     model: () => new PowerCell()
 }, { 
     id: 133,
-    name: "Fog Repeller",
+    name: "Fog Turbine",
+    serial: "FOG_TURBINE",
     type: "rifle",
     model: () => new HeavyFogRepeller()
 }, { 
     id: 137,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 141,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 143,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 170,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 145,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 175,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 177,
     name: "Neonate",
+    serial: "NEONATE",
     type: "rifle",
     model: () => new Neonate()
 }, { 
     id: 164,
     name: "Matter Wave Projector",
+    serial: "MATTER_WAVE_PROJECTOR",
     type: "rifle",
     model: () => new MatterWaveProjector()
 }, { 
     id: 166,
     name: "Matter Wave Projector",
+    serial: "MATTER_WAVE_PROJECTOR",
     type: "rifle",
     model: () => new MatterWaveProjector()
 }, { 
     id: 151,
     name: "Data Sphere",
+    serial: "DATA_SPHERE",
     type: "rifle",
     model: () => new DataSphere()
 }, { 
     id: 181,
     name: "Data Sphere",
+    serial: "DATA_SPHERE",
     type: "rifle",
     model: () => new DataSphere()
 }, { 
     id: 138,
     name: "Cargo Crate",
+    serial: "CARGO",
     type: "rifle",
     model: () => new CargoCrate()
 }, { 
     id: 176,
     name: "Cargo Crate",
+    serial: "CARGO",
     type: "rifle",
     model: () => new CargoCrate()
 }, { 
     id: 154,
     name: "Hisec Cargo Crate",
+    serial: "CARGO",
     type: "rifle",
     model: () => new HisecCargoCrate()
 }, { 
     id: 155,
     name: "Hisec Cargo Crate",
+    serial: "CARGO",
     type: "rifle",
     model: () => new HisecCargoCrate()
 }, { 
     id: 148,
     name: "Cryo",
+    serial: "CRYO",
     type: "rifle",
     model: () => new Cryo()
 }, { 
     id: 173,
     name: "Collection Case",
+    serial: "COLLECTION_CASE",
     type: "rifle",
     model: () => new CollectionCase()
 }, { 
     id: 168,
     name: "Data Cube",
+    serial: "DATA_CUBE",
     type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 165,
     name: "Data Cube",
+    serial: "DATA_CUBE",
     type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 179,
     name: "Data Cube",
+    serial: "DATA_CUBE",
     type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 178,
     name: "Data Cube",
+    serial: "DATA_CUBE",
     type: "rifle",
     model: () => new DataCube()
 }, { 
     id: 146,
     name: "Bulkhead Key",
+    serial: "BULKHEAD_KEY",
     type: "rifle",
     model: () => new BulkheadKey()
 }, { 
     id: 27,
     name: "Key Red",
+    serial: "KEY_RED",
     type: "rifle",
     model: () => new Keycard(0xff0000)
 }, { 
     id: 85,
     name: "Key Blue",
+    serial: "KEY_BLUE",
     type: "rifle",
     model: () => new Keycard(0x0000ff)
 }, { 
     id: 86,
     name: "Key Green",
+    serial: "KEY_GREEN",
     type: "rifle",
     model: () => new Keycard(0x00ff00)
 }, { 
     id: 87,
     name: "Key Yellow",
+    serial: "KEY_YELLOW",
     type: "rifle",
     model: () => new Keycard(0xffff00)
 }, { 
     id: 88,
     name: "Key White",
+    serial: "KEY_WHITE",
     type: "rifle",
     model: () => new Keycard(0xffffff)
 }, { 
     id: 89,
     name: "Key Black",
+    serial: "KEY_BLACK",
     type: "rifle",
     model: () => new Keycard(0x444444)
 }, { 
     id: 90,
     name: "Key Grey",
+    serial: "KEY_GREY",
     type: "rifle",
     model: () => new Keycard(0xaaaaaa)
 }, { 
     id: 91,
     name: "Key Orange",
+    serial: "KEY_ORANGE",
     type: "rifle",
     model: () => new Keycard(0xff8800)
 }, { 
     id: 92,
     name: "Key Purple",
+    serial: "KEY_PURPLE",
     type: "rifle",
     model: () => new Keycard(0xb300ff)
 }, { 
     id: 128,
     name: "Personnel Id",
+    serial: "PID",
     type: "rifle",
     model: () => new PID()
 }, { 
     id: 129,
     name: "Partial Decoder",
+    serial: "PD",
     type: "rifle",
     model: () => new PartialDecoder()
 }, { 
@@ -1714,16 +1754,19 @@ const _item: Equippable<number>[] = [{
 }, { 
     id: 149,
     name: "GLP",
+    serial: "GLP",
     type: "rifle",
     model: () => new GLP1()
 }, { 
     id: 150,
     name: "OSIP",
+    serial: "OSIP",
     type: "rifle",
     model: () => new OSIP()
 }, { 
     id: 169,
     name: "GLP",
+    serial: "GLP",
     type: "rifle",
     model: () => new GLP2()
 }, { 

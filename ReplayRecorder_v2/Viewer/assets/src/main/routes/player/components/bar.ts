@@ -2,6 +2,7 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../../../global/components/atoms/icons/index.js";
 import { player } from "../index.js";
+import { finder } from "./finder.js";
 import { info } from "./info.js";
 import { settings } from "./settings.js";
 import { stats } from "./stats.js";
@@ -91,6 +92,7 @@ declare module "@/rhu/macro.js" {
 const settingsPage = document.createMacro(settings);
 const infoPage = document.createMacro(info);
 const statsPage = document.createMacro(stats);
+const finderPage = document.createMacro(finder);
 
 export const bar = Macro((() => {
     const bar = function(this: bar) {
@@ -120,12 +122,16 @@ export const bar = Macro((() => {
         this.stats.onclick = () => {
             load(statsPage, this.stats);
         };
+        this.finder.onclick = () => {
+            load(finderPage, this.finder);
+        };
     } as Constructor<bar>;
 
     bar.prototype.update = function() {
         if (this.player.loadedNode === settingsPage) settingsPage.update();
         if (this.player.loadedNode === infoPage) infoPage.update();
         if (this.player.loadedNode === statsPage) statsPage.update();
+        if (this.player.loadedNode === finderPage) finderPage.update();
     };
 
     bar.prototype.init = function(player) {
@@ -134,12 +140,14 @@ export const bar = Macro((() => {
         settingsPage.init(player);
         infoPage.init(player);
         statsPage.init(player);
+        finderPage.init(player);
     };
 
     bar.prototype.reset = function() {
         settingsPage.reset();
         infoPage.reset();
         statsPage.reset();
+        finderPage.reset();
     };
 
     return bar;
