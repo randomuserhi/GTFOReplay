@@ -2,7 +2,8 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
 import { player } from "..";
-import { Typemap } from "../../../../replay/moduleloader";
+import { Typemap } from "../../../../replay/moduleloader.js";
+import { dropdown } from "./dropdown.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -84,12 +85,13 @@ export interface settings extends HTMLDivElement {
     search: HTMLInputElement;
     body: HTMLDivElement;
 
-    features: [node: Node, key: string, update?: () => void][];
-    fuse: Fuse<[node: Node, key: string, update?: () => void]>;
+    features: [node: Node, key: string, update?: () => void, reset?: () => void][];
+    fuse: Fuse<[node: Node, key: string, update?: () => void, reset?: () => void]>;
 
     player: player;
     init(player: player): void;
     update(): void;
+    reset(): void;
 }
 
 declare module "@/rhu/macro.js" {
@@ -119,7 +121,7 @@ function setInputFilter(textbox: Element, inputFilter: (value: string) => boolea
     });
 }
 
-const _features: ((parent: settings) => [node: Node, key: string, update?: () => void])[] = [
+const _features: ((parent: settings) => [node: Node, key: string, update?: () => void, reset?: () => void])[] = [
     (parent) => {
         const [frag, node] = Macro.anon<{
             text: HTMLInputElement;
@@ -176,33 +178,33 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
     },
     (parent) => {
         const [frag, node] = Macro.anon<{
-            text: HTMLInputElement;
+            dropdown: dropdown;
         }>(/*html*/`
             <div class="${style.row}" style="
-            flex-direction: row;
-            gap: 20px;
-            align-items: center;
+            gap: 10px;
             ">
                 <span style="flex: 1; padding-top: 1px;">Dimension</span>
-                <input rhu-id="text" style="
-                width: 50px;
-                " class="${style.search}" type="text" spellcheck="false" autocomplete="false" value="0"/>
+                ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
             </div>
             `);
-
-        frag.text.addEventListener("keyup", () => {
-            parent.player.renderer.set("Dimension", parseInt(frag.text.value));
-        });
-    
-        const update = () => {
-            if (document.activeElement !== frag.text) {
-                frag.text.value = parent.player.renderer.getOrDefault("Dimension", () => 0).toString();
-            }
+            
+        frag.dropdown.onSet = function(value) {
+            parent.player.renderer.set("Dimension", value);
         };
 
-        setInputFilter(frag.text, function(value) { return /^-?\d*$/.test(value); });
+        const reset = () => {
+            if (parent.player.replay === undefined) return;
 
-        return [node.children[0], "Dimension", update];
+            const dimensions = parent.player.replay.getOrDefault("Vanilla.Map.Geometry", () => new Map());
+            frag.dropdown.clear();
+            for (const index of dimensions.keys()) {
+                frag.dropdown.add(index, `${index === 0 ? "Reality" : `Dimension ${index}`}`);
+            }
+
+            frag.dropdown.set(parent.player.renderer.getOrDefault("Dimension", () => 0));
+        };
+
+        return [node.children[0], "Dimension", undefined, reset];
     },
     (parent) => {
         const [frag, node] = Macro.anon<{
@@ -296,8 +298,14 @@ export const settings = Macro((() => {
     };
 
     settings.prototype.update = function() { 
-        for (const [node, key, update] of this.features) {
+        for (const [node, key, update, reset] of this.features) {
             if (update !== undefined) update();
+        }
+    };
+
+    settings.prototype.reset = function() {
+        for (const [node, key, update, reset] of this.features) {
+            if (reset !== undefined) reset();
         }
     };
 

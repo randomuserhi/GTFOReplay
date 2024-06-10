@@ -77,6 +77,7 @@ export interface bar extends HTMLDivElement {
 
     init(player: player): void;
     update(): void;
+    reset(): void;
 }
 
 declare module "@/rhu/macro.js" {
@@ -119,6 +120,10 @@ export const bar = Macro((() => {
         this.player = player;
 
         settingsPage.init(player);
+    };
+
+    bar.prototype.reset = function() {
+        settingsPage.reset();
     };
 
     return bar;

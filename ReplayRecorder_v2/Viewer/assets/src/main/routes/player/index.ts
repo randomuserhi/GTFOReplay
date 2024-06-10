@@ -1,5 +1,6 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
+import { ReplayApi } from "../../../replay/moduleloader.js";
 import { Parser } from "../../../replay/parser.js";
 import { Renderer } from "../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../replay/replay.js";
@@ -63,6 +64,17 @@ const style = Style(({ style }) => {
     overflow-x: hidden;
     `;
 
+    const empty = style.class`
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    `;
+
     return {
         wrapper,
         body,
@@ -70,7 +82,8 @@ const style = Style(({ style }) => {
         mount,
         scoreboardMount,
         bar,
-        window
+        window,
+        empty
     };
 });
 
@@ -93,6 +106,7 @@ export interface player extends HTMLDivElement {
     live: boolean;
     time: number;
     snapshot: Snapshot | undefined;
+    api: ReplayApi | undefined;
     timescale: number;
     lerp: number;
     prevTime: number;
@@ -191,6 +205,7 @@ export const player = Macro((() => {
     
             if (this.replay === undefined) return;
 
+            this.bar.reset();
             this.ready = true;
             this.renderer.init(this.replay);
             this.canvas.focus();
@@ -274,11 +289,11 @@ export const player = Macro((() => {
             }
 
             if (this.snapshot !== undefined) {
-                const api = this.replay.api(this.snapshot);
-                this.renderer.render(dt / 1000, api);
+                this.api = this.replay.api(this.snapshot);
+                this.renderer.render(dt / 1000, this.api);
 
                 if (this.scoreboardMount.style.display !== "none") {
-                    this.scoreboard.update(api);
+                    this.scoreboard.update(this.api);
                 }
             }
 
@@ -302,6 +317,14 @@ export const player = Macro((() => {
     <div rhu-id="window" class="${style.window}" style="display: none;">
     </div>
     <div class="${style.body}">
+        <div rhu-id="cover" class="${style.empty}">
+            <video style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
+                <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">
+            </video>   
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                <button rhu-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
+            </div>
+        </div>
         <canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>
         <div rhu-id="mount" class="${style.mount}" style="display: none">
             ${seeker`rhu-id="seeker"`}
