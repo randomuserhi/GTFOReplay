@@ -57,9 +57,12 @@ const style = Style(({ style }) => {
     --color: #7169ce;
     border-color: var(--color);
     background-color: transparent;
-    transition: all ease-in-out 200ms;
+    transition: all ease-in-out 100ms;
     `;
     style`
+    ${toggle}:hover {
+        --color: #bfb9eb;
+    }
     ${toggle}${active} {
     background-color: var(--color);
     }
@@ -170,6 +173,50 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
         setInputFilter(frag.text, function(value) { return /^-?\d*[.,]?\d*$/.test(value); });
 
         return [node.children[0], "Timescale", update];
+    },
+    (parent) => {
+        const [frag, node] = Macro.anon<{
+            dropdown: dropdown;
+        }>(/*html*/`
+            <div class="${style.row}" style="
+            gap: 10px;
+            ">
+                <span style="flex: 1; padding-top: 1px;">Follow Player</span>
+                ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
+            </div>
+            `);
+            
+        frag.dropdown.onSet = function(value) {
+            const controls = parent.player.renderer.get("CameraControls");
+            if (controls !== undefined) {
+                controls.targetSlot = value;
+            }
+        };
+
+        const reset = () => {
+            if (parent.player.replay === undefined) return;
+            frag.dropdown.clear();
+        };
+
+        const update = () => {
+            frag.dropdown.set(parent.player.renderer.get("CameraControls")!.targetSlot, false);
+
+            const api = parent.player.api;
+            if (api !== undefined) {
+                const all = api.get("Vanilla.Player");
+                if (all === undefined) {
+                    frag.dropdown.clear();
+                } else {
+                    const players: [any, string][] = [];
+                    for (const player of all.values()) {
+                        players.push([player.slot, player.nickname]);
+                    }
+                    frag.dropdown.update(players);
+                }
+            }
+        };
+
+        return [node.children[0], "Follow Player", update, reset];
     },
     (parent) => {
         const [frag, node] = Macro.anon<{

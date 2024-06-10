@@ -455,6 +455,7 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.scene.add(light.target);
 
             camera.position.set(0, 0, -10);
+            camera.rotation.set(0, 180 * Math.deg2rad, 0);
             const fakeCamera = camera.clone();
             r.set("FakeCamera", fakeCamera);
             const controls = new OrbitControls(fakeCamera, r.renderer.domElement);

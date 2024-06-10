@@ -54,9 +54,12 @@ const style = Style(({ style }) => {
     --color: #7169ce;
     border-color: var(--color);
     background-color: transparent;
-    transition: all ease-in-out 200ms;
+    transition: all ease-in-out 100ms;
     `;
     style`
+    ${toggle}:hover {
+        --color: #bfb9eb;
+    }
     ${toggle}${active} {
     background-color: var(--color);
     }
@@ -82,6 +85,9 @@ export interface info extends HTMLDivElement {
     isMaster: HTMLSpanElement;
     isMasterText: HTMLDivElement;
     isNotMasterText: HTMLDivElement;
+
+    version: HTMLSpanElement;
+    versionText: HTMLDivElement;
 }
 
 declare module "@/rhu/macro.js" {
@@ -89,6 +95,9 @@ declare module "@/rhu/macro.js" {
         "routes/player.info": info;
     }
 }
+
+const versionInfo = new Map<string, string>();
+versionInfo.set("0.0.1", `Initial Release`);
 
 export const info = Macro((() => {
     const info = function(this: info) {
@@ -115,6 +124,10 @@ export const info = Macro((() => {
             this.isNotMasterText.style.display = "block";
             this.isMasterText.style.display = "none";
         }
+
+        this.version.innerText = `${header.version}`;
+        const versionText = versionInfo.get(header.version);
+        if (versionText !== undefined) this.versionText.innerText = versionText;
     };
 
     return info;
@@ -156,6 +169,21 @@ export const info = Macro((() => {
                     <li>- No player stat tracking</li>
                     <li>- No alert blame </li>
                 </ul>
+            </div>
+        </div>
+        <div class="${style.row}">
+            <div class="${style.row}" style="
+            flex-direction: row;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 20px;
+            ">
+                <span>Version</span>
+                <div style="flex: 1"></div>
+                <span rhu-id="version"></span>
+            </div>
+            <div rhu-id="versionText" style="margin-left: 10px;">
             </div>
         </div>
     </div>

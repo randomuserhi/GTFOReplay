@@ -58,9 +58,12 @@ const style = Style(({ style }) => {
     --color: #7169ce;
     border-color: var(--color);
     background-color: transparent;
-    transition: all ease-in-out 200ms;
+    transition: all ease-in-out 100ms;
     `;
     style`
+    ${toggle}:hover {
+        --color: #bfb9eb;
+    }
     ${toggle}${active} {
     background-color: var(--color);
     }
