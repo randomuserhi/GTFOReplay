@@ -1,5 +1,0 @@
-# Node build directory
-build/
-
-# Electron Forge Output directory
-electron/out/

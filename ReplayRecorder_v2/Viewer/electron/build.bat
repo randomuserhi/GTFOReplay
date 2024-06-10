@@ -1,1 +1,0 @@
-npm run build && npm run build-assets && electron .
