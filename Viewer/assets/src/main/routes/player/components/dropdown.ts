@@ -36,6 +36,10 @@ const style = Style(({ style }) => {
     `;
 
     style`
+    ${wrapper}${active} {
+        z-index: 1000;
+    }
+
     ${body}::-webkit-scrollbar-track {
         background-color: #12121a;
         border-style: none;
