@@ -72,6 +72,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             const item = items.get(id)!;
             Pod.Vec.copy(item.position, data.position);
             Pod.Quat.copy(item.rotation, data.rotation);
+            item.dimension = data.dimension;
             item.onGround = data.onGround;
             item.linkedToMachine = data.linkedToMachine;
             item.serialNumber = data.serialNumber;
