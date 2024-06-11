@@ -2190,6 +2190,21 @@ const _enemies: EnemySpecification[] = [{
         z: 1.1
     },
     scale: _shooter_scale
+}, {
+    id: 62,
+    name: "Potatoe",
+    maxHealth: 161,
+    armScale: {
+        x: 0.2,
+        y: 0.2,
+        z: 0.2
+    },
+    headScale: {
+        x: 0.1,
+        y: 0.1,
+        z: 0.1
+    },
+    scale: _shooter_scale
 }];
 
 export class Specification {

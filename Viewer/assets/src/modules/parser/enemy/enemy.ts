@@ -300,10 +300,13 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
         
             if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
             const datablock = specification.getEnemy(data.type);
-            if (datablock === undefined) throw new Error(`Could not find enemy datablock of type '${data.type}'.`);
+            let health = Infinity;
+            if (datablock !== undefined) {
+                health = datablock.maxHealth;
+            }
             enemies.set(id, { 
                 id, ...data,
-                health: datablock.maxHealth,
+                health,
                 head: true,
                 players: new Set(),
                 tagged: false,
