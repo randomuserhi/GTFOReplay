@@ -99,7 +99,10 @@ export class EnemyModel {
     }
 
     public cull(position: Vector3Like, radius: number, camera: Camera, frustum: Frustum, renderDistance: number) {
-        if (radius === Infinity) return false;
+        if (radius === Infinity) {
+            this.culled = false;
+            return false;
+        }
 
         sphere.center.copy(position);
         sphere.radius = radius;
@@ -321,11 +324,12 @@ export class HumanoidEnemyModel extends EnemyModel {
     }
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
-        if (this.cull(enemy.position, anim.state === "ScoutDetection" ? Infinity : 2, camera, frustum, renderDistance)) return;
+        const cull = this.cull(enemy.position, anim.state === "ScoutDetection" ? Infinity : 2, camera, frustum, renderDistance);
+        this.updateTmp(enemy, anim, camera, this.visual.joints.spine1);
+        if (cull) return;
 
         this.animate(dt, time, enemy, anim);
         this.computeMatrices(dt, enemy);
-        this.updateTmp(enemy, anim, camera, this.visual.joints.spine1);
 
         if (this.datablock?.transparent === true) {
             this.render(enemy, "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
