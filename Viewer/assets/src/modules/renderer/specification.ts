@@ -987,7 +987,7 @@ const _enemyAnimHandles: EnemyAnimHandle[] = [{
 
 export interface EnemySpecification {
     id: number;
-    maxHealth: number;
+    maxHealth?: number;
     transparent?: boolean;
     color?: ColorRepresentation;
     name?: string;
@@ -2197,6 +2197,21 @@ const _enemies: EnemySpecification[] = [{
     id: 62,
     name: "Potatoe",
     maxHealth: 640,
+    armScale: {
+        x: 0.2,
+        y: 0.2,
+        z: 0.2
+    },
+    headScale: {
+        x: 0,
+        y: 0,
+        z: 0
+    },
+    scale: _shooter_scale
+}, {
+    id: 63,
+    name: "Nightmare Baby",
+    maxHealth: 5,
     armScale: {
         x: 0.2,
         y: 0.2,

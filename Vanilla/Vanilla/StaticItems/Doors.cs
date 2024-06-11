@@ -235,8 +235,14 @@ namespace Vanilla.StaticItems {
             _lock1 = lock1;
 
             BitHelper.WriteBytes(prevHealth, buffer);
-            BitHelper.WriteBytes(_lock0, buffer);
-            BitHelper.WriteBytes(_lock1, buffer);
+
+            if (door.m_weakLocks[0].transform.localPosition.x < 0) {
+                BitHelper.WriteBytes(_lock0, buffer);
+                BitHelper.WriteBytes(_lock1, buffer);
+            } else {
+                BitHelper.WriteBytes(_lock1, buffer);
+                BitHelper.WriteBytes(_lock0, buffer);
+            }
         }
 
         public override void Spawn(ByteBuffer buffer) {

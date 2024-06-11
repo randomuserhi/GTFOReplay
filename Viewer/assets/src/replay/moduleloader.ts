@@ -51,24 +51,24 @@ export interface HeaderApi {
     has<T extends keyof Typemap.Headers>(typename: T): boolean;
 }
 
-interface DynamicParser<T extends Typemap.DynamicNames> {
+export interface DynamicParser<T extends Typemap.DynamicNames> {
     parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Dynamics[T]["parse"]>;
     exec(id: number, data: Typemap.Dynamics[T]["parse"], snapshot: ReplayApi, lerp: number): void;
 }
-interface DynamicSpawner<T extends Typemap.DynamicNames> {
+export interface DynamicSpawner<T extends Typemap.DynamicNames> {
     parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Dynamics[T]["spawn"]>;
     exec(id: number, data: Typemap.Dynamics[T]["spawn"], snapshot: ReplayApi): void;
 }
-interface DynamicDespawner<T extends Typemap.DynamicNames> {
+export interface DynamicDespawner<T extends Typemap.DynamicNames> {
     parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Dynamics[T]["despawn"]>;
     exec(id: number, data: Typemap.Dynamics[T]["despawn"], snapshot: ReplayApi): void;
 }
 
-interface EventParser<T extends Typemap.EventNames> {
+export interface EventParser<T extends Typemap.EventNames> {
     parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Events[T]>;
     exec(data: Typemap.Events[T], snapshot: ReplayApi): void;
 }
-interface HeaderParser {
+export interface HeaderParser {
     parse(bytes: ByteStream, header: ReplayApi["header"]): Promise<void>;
 }
 
@@ -77,7 +77,7 @@ export namespace ModuleLoader {
     }
     interface EventModule<T extends Typemap.EventNames = never> extends EventParser<T> {
     }
-    interface DynamicModule<T extends Typemap.DynamicNames = never> { 
+    export interface DynamicModule<T extends Typemap.DynamicNames = never> { 
         main: DynamicParser<T>;
         spawn: DynamicSpawner<T>;
         despawn: DynamicDespawner<T>;

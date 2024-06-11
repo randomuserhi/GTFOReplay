@@ -1,5 +1,5 @@
 import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { DynamicSpawner, ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../../parser/replayrecorder.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
@@ -29,6 +29,7 @@ declare module "../../../replay/moduleloader.js" {
                     animHandle?: AnimHandles.Flags;
                     scale: number;
                     type: Identifier;
+                    maxHealth: number;
                 };
                 despawn: void;
             };
@@ -263,7 +264,25 @@ export namespace AnimHandles {
     export const EnemyPouncer = 0x800;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
+const enemySpawnExec: DynamicSpawner<"Vanilla.Enemy">["exec"] = (id, data, snapshot) => {
+    const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+
+    if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
+    const datablock = specification.getEnemy(data.type);
+    let health = data.maxHealth;
+    if (health === Infinity && datablock?.maxHealth !== undefined) {
+        health = datablock.maxHealth;
+    }
+    enemies.set(id, { 
+        id, ...data,
+        health,
+        head: true,
+        players: new Set(),
+        tagged: false,
+        consumedPlayerSlotIndex: 255,
+    });
+};
+const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
     main: {
         parse: async (data) => {
             const transform = await DynamicTransform.parse(data);
@@ -292,27 +311,11 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
                 animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
                 scale: await BitHelper.readHalf(data),
                 type: await Identifier.parse(IdentifierData(snapshot), data),
+                maxHealth: Infinity
             };
             return result;
         },
-        exec: (id, data, snapshot) => {
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-        
-            if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
-            const datablock = specification.getEnemy(data.type);
-            let health = Infinity;
-            if (datablock !== undefined) {
-                health = datablock.maxHealth;
-            }
-            enemies.set(id, { 
-                id, ...data,
-                health,
-                head: true,
-                players: new Set(),
-                tagged: false,
-                consumedPlayerSlotIndex: 255,
-            });
-        }
+        exec: enemySpawnExec
     },
     despawn: {
         parse: async () => {
@@ -390,6 +393,24 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
             }
         }
     }
+};
+ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", enemyParser);
+ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.2", {
+    ...enemyParser,
+    spawn: {
+        parse: async (data, snapshot) => {
+            const spawn = await DynamicTransform.parseSpawn(data);
+            const result = {
+                ...spawn,
+                animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
+                scale: await BitHelper.readHalf(data),
+                type: await Identifier.parse(IdentifierData(snapshot), data),
+                maxHealth: await BitHelper.readHalf(data)
+            };
+            return result;
+        },
+        exec: enemySpawnExec
+    },
 });
 
 const cacheClearTime = 1000;

@@ -65,7 +65,7 @@ namespace Vanilla.Enemy {
         }
     }
 
-    [ReplayData("Vanilla.Enemy", "0.0.1")]
+    [ReplayData("Vanilla.Enemy", "0.0.2")]
     internal class rEnemy : DynamicTransform {
         public EnemyAgent agent;
 
@@ -107,6 +107,7 @@ namespace Vanilla.Enemy {
             BitHelper.WriteBytes((ushort)agent.Locomotion.AnimHandleName, buffer);
             BitHelper.WriteHalf(agent.SizeMultiplier, buffer);
             BitHelper.WriteBytes(Identifier.From(agent), buffer);
+            BitHelper.WriteHalf(agent.Damage.HealthMax, buffer);
         }
     }
 }

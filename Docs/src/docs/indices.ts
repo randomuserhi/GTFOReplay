@@ -53,6 +53,28 @@ declare namespace RHU {
             });
         })(docs.create("1.0.0", "About"));
 
+        ((docs: Docs) => {
+            const stack: string[] = [];
+            const dir = (dir: string, func: (docs: (path: string, page?: string, index?: number) => string) => void) => {
+                stack.push(dir);
+                const current = [...stack];
+                let prio = 0;
+                const d = (path: string, page?: string) => {
+                    docs.set(`${[...current, ...path.split("/")].join("/")}`, page, prio++);
+                    return path;
+                };
+                func(d);
+                stack.pop();
+            };
+            let prio = 0;
+            const set = (path: string, page?: string) => {
+                docs.set(path, page, prio++);
+                return path;
+            };
+
+            set("About", "About.js");
+        })(docs.create("2.0.0", "About"));
+
         return {
             DOCUSCRIPT_ROOT
         };
