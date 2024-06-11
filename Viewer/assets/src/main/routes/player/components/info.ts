@@ -98,8 +98,12 @@ declare module "@/rhu/macro.js" {
 
 const versionInfo = new Map<string, string>();
 versionInfo.set("0.0.1", `Initial Release`);
-versionInfo.set("0.0.2", `- Fix door locks sometimes being on the wrong side
+versionInfo.set("0.0.2", `- Added Squid Boss Tumours`);
+versionInfo.set("0.0.3", `- Fix door locks sometimes being on the wrong side
 - Enemy max health is now recorded instead of being hard coded for better modded support`);
+versionInfo.set("0.0.4", `- Fixed items being in the wrong dimension
+- Added dimension filter to item search
+- Teleporting to an item now also brings you to the right dimension`);    
 
 export const info = Macro((() => {
     const info = function(this: info) {

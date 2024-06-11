@@ -5,7 +5,7 @@ using ReplayRecorder.API.Attributes;
 namespace Vanilla.Metadata {
     [ReplayData("Vanilla.Metadata", "0.0.1")]
     internal class Metadata : ReplayHeader {
-        const string Version = "0.0.2";
+        const string Version = "0.0.4";
 
         [ReplayInit]
         private static void Init() {
