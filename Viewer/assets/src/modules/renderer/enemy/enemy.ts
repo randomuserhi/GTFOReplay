@@ -239,7 +239,7 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
         this.tmp.fontSize = 0.2;
-        this.tmp.position.y = (this.datablock?.height === undefined ? 2 : this.datablock.height) * scale;
+        this.tmp.position.y = (this.datablock?.height === undefined ? 2.5 : this.datablock.height) * scale;
         this.tmp.textAlign = "center";
         this.tmp.anchorX = "center";
         this.tmp.anchorY = "bottom";

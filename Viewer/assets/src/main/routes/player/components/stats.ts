@@ -304,9 +304,9 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
             frag.estaggerDamage.innerText = `${estaggerDamage}`;
             frag.esentryStaggerDamage.innerText = `${esentryStaggerDamage}`;
 
-            frag.pbulletDamage.innerText = `${pbulletDamage}`;
-            frag.psentryDamage.innerText = `${psentryDamage}`;
-            frag.pexplosiveDamage.innerText = `${pexplosiveDamage}`;
+            frag.pbulletDamage.innerText = `${Math.round(pbulletDamage / specification.player.maxHealth * 1000) / 10}%`;
+            frag.psentryDamage.innerText = `${Math.round(psentryDamage / specification.player.maxHealth * 1000) / 10}%`;
+            frag.pexplosiveDamage.innerText = `${Math.round(pexplosiveDamage / specification.player.maxHealth * 1000) / 10}%`;
         };
 
         return [node.children[0], "Damage Dealt", update];

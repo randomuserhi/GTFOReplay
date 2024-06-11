@@ -148,7 +148,8 @@ export const finder = Macro((() => {
         let i = 0;
         for (const item of items) {
             const key = item.key;
-            if (key === "Unknown" && !this.includeUnknownItems && !item.onGround) continue;
+            if (key === "Unknown" && !this.includeUnknownItems) continue;
+            if (!item.onGround) continue;
             let li: { frag: { root: HTMLElement, name: HTMLSpanElement, item: Item }, key: string };
             if (i < this.items.length) {
                 this.items[i].key = key;

@@ -5,6 +5,7 @@ import { Parser } from "../../../replay/parser.js";
 import { Renderer } from "../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../replay/replay.js";
 import { FileHandle } from "../../../replay/stream.js";
+import { __version__ } from "../../appinfo.js";
 import { bar } from "./components/bar.js";
 import { scoreboard } from "./components/scoreboard.js";
 import { seeker } from "./components/seeker.js";
@@ -104,6 +105,16 @@ const style = Style(({ style }) => {
     }
     `;
 
+    const watermark = style.class`
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 10000;
+    `;
+
     return {
         wrapper,
         body,
@@ -113,7 +124,8 @@ const style = Style(({ style }) => {
         bar,
         window,
         empty,
-        loader
+        loader,
+        watermark
     };
 });
 
@@ -361,6 +373,7 @@ export const player = Macro((() => {
     </div>
     <div class="${style.body}">
         <div rhu-id="cover" class="${style.empty}">
+            <div class="${style.watermark}">${__version__}</div>
             <video style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
                 <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">
             </video>   

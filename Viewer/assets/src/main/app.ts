@@ -34,23 +34,24 @@ export const theme = Theme(({ theme }) => {
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
-        font-family: Oxanium;
+    font-family: Oxanium;
 
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 
-        background-color: black;
+    background-color: black;
 
-        overflow: hidden;
-        `;
+    overflow: hidden;
+    `;
     const body = style.class`
-        flex: 1;
-        `;
+    flex: 1;
+    `;
+
     return {
         wrapper,
-        body,
+        body
     };
 });
 
