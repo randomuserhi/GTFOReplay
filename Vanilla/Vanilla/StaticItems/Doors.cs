@@ -202,7 +202,7 @@ namespace Vanilla.StaticItems {
             LG_WeakLock weakLock = door.m_weakLocks[slot];
 
             LockType type = LockType.None;
-            if (weakLock != null && weakLock.IsLocked()) {
+            if (weakLock != null && weakLock.m_stateReplicator.State.status != eWeakLockStatus.Unlocked) {
                 switch (weakLock.m_lockType) {
                 case eWeakLockType.Melee:
                     type = LockType.Melee;
@@ -236,7 +236,7 @@ namespace Vanilla.StaticItems {
 
             BitHelper.WriteBytes(prevHealth, buffer);
 
-            if (door.m_weakLocks[0].transform.localPosition.x < 0) {
+            if (door.m_buttonAligns[0].transform.localPosition.z < 0) {
                 BitHelper.WriteBytes(_lock0, buffer);
                 BitHelper.WriteBytes(_lock1, buffer);
             } else {
@@ -251,7 +251,7 @@ namespace Vanilla.StaticItems {
 
             BitHelper.WriteHalf(door.m_healthMax, buffer);
 
-            if (door.m_weakLocks[0].transform.localPosition.x < 0) {
+            if (door.m_buttonAligns[0].transform.localPosition.z < 0) {
                 BitHelper.WriteBytes(_lock0, buffer);
                 BitHelper.WriteBytes(_lock1, buffer);
             } else {
