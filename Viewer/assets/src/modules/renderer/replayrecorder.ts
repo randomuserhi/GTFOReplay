@@ -328,9 +328,9 @@ class CameraControls {
         const camera = renderer.get("Camera")!;
 
         const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-        const slots = [...players.values()];
+        const slots = new Map([...players.values()].map(p => [p.slot, p]));
         if (this.targetSlot !== undefined) {
-            const followTarget = slots[Math.clamp(this.targetSlot, 0, 3)];
+            const followTarget = slots.get(this.targetSlot);
             if (followTarget !== undefined) {
                 this.slot = this.targetSlot;
             }
@@ -348,7 +348,7 @@ class CameraControls {
                 this.targetSlot = undefined;
             } else {
                 const models = renderer.getOrDefault("Players", () => new Map());
-                const first = slots[this.slot];
+                const first = slots.get(this.slot);
                 if (first !== undefined) {
                     renderer.set("Dimension", first.dimension);
                     
