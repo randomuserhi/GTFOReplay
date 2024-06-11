@@ -272,6 +272,8 @@ class CameraControls {
         window.addEventListener("keydown", this.keydown);
         window.addEventListener("keyup", this.keyup);
         this.mousedown = (e: MouseEvent) => {
+            this.focus = true;
+            
             //e.preventDefault();
             if (e.button === 0)
                 mouse.left = true;
