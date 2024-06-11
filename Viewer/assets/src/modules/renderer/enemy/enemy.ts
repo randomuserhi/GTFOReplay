@@ -99,6 +99,8 @@ export class EnemyModel {
     }
 
     public cull(position: Vector3Like, radius: number, camera: Camera, frustum: Frustum, renderDistance: number) {
+        if (radius === Infinity) return false;
+
         sphere.center.copy(position);
         sphere.radius = radius;
         if (camera.getWorldPosition(diff).sub(position).lengthSq() > renderDistance * renderDistance ||
@@ -113,7 +115,7 @@ export class EnemyModel {
     public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, tagTarget: Object3D) {
         if (this.tmp === undefined || this.tag === undefined) return;
         
-        if (this.culled) {
+        if (!this.isVisible()) {
             this.tmp.visible = false;
             this.tag.visible = false;
             return;
@@ -319,7 +321,7 @@ export class HumanoidEnemyModel extends EnemyModel {
     }
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
-        if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
+        if (this.cull(enemy.position, anim.state === "ScoutDetection" ? Infinity : 2, camera, frustum, renderDistance)) return;
 
         this.animate(dt, time, enemy, anim);
         this.computeMatrices(dt, enemy);
