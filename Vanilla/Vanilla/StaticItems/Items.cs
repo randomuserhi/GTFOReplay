@@ -1,5 +1,4 @@
-﻿using AIGraph;
-using Gear;
+﻿using Gear;
 using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
@@ -33,15 +32,7 @@ namespace Vanilla.StaticItems {
             linkedToMachine != _linkedToMachine ||
             serialNumber != _serialNumber;
 
-        private byte dimensionIndex {
-            get {
-                if (item.m_stateReplicator.State.placement.node.TryGet(out AIG_CourseNode node)) {
-                    return (byte)node.m_dimension.DimensionIndex;
-                } else {
-                    return MapUtils.PositionToDimension(position);
-                }
-            }
-        }
+        private byte dimensionIndex => MapUtils.PositionToDimension(position);
         private byte _dimensionIndex = 0;
         private Vector3 position => item.m_stateReplicator.State.placement.position;
         private Vector3 _position;
