@@ -1,17 +1,12 @@
-import { Camera, EulerOrder, Frustum, Group, Mesh, MeshPhongMaterial, Vector3 } from "three";
+import { Camera, EulerOrder, Frustum, Group, Mesh, MeshPhongMaterial, Object3D } from "three";
 //import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { Text } from "troika-three-text";
 import * as Pod from "../../../replay/pod.js";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
 import { loadGLTF } from "../modeloader.js";
 import { EnemyModel } from "./enemy.js";
 
-const tmpPos = new Vector3();
-const camPos = new Vector3();
-
 export class SquidModel extends EnemyModel {
     anchor: Group = new Group();
-    tmp?: Text; 
 
     eye: Group = new Group();
 
@@ -23,45 +18,27 @@ export class SquidModel extends EnemyModel {
         });
 
         loadGLTF("../js3party/models/based_squid.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
-        this.eye.scale.set(1, 1, 1);
+        let scale = enemy.scale;
+        if (this.datablock?.scale !== undefined) {
+            scale *= this.datablock?.scale;
+        }
+        this.eye.scale.set(scale, scale, scale);
         this.eye.rotateY(15 * Math.deg2rad);
         
         this.anchor.add(this.eye);
         this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
         this.root.add(this.anchor);
-
-        this.tmp = new Text();
-        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
-        this.tmp.fontSize = 0.2;
-        this.tmp.position.y = 2;
-        this.tmp.textAlign = "center";
-        this.tmp.anchorX = "center";
-        this.tmp.anchorY = "bottom";
-        this.tmp.color = 0xffffff;
-        this.tmp.visible = false;
-        this.anchor.add(this.tmp);
     }
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
         if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
 
         this.animate(dt, time, enemy, anim, camera);
+        this.updateTmp(enemy, anim, camera, this.eye);
         this.render(dt, enemy);
     }
 
     public animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
-        if (this.tmp === undefined) return;
-
-        //this.tmp.text = `flyer`;
-
-        this.tmp.visible = false;
-
-        this.tmp.getWorldPosition(tmpPos);
-        camera.getWorldPosition(camPos);
-
-        const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
-        this.tmp.fontSize = lerp * 0.3 + 0.05;
-        this.tmp.lookAt(camPos);
     }
 
     public render(dt: number, enemy: Enemy): void {
@@ -77,7 +54,6 @@ export class SquidModel extends EnemyModel {
 
 export class FlyerModel extends EnemyModel {
     anchor: Group = new Group();
-    tmp?: Text; 
 
     eye: Group = new Group();
     spikes: Group[] = new Array(6);
@@ -107,21 +83,15 @@ export class FlyerModel extends EnemyModel {
         const scale = enemy.scale * 1.3;
         this.anchor.scale.set(scale, scale, scale);
         this.root.add(this.anchor);
+    }
 
-        this.tmp = new Text();
-        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
-        this.tmp.fontSize = 0.2;
-        this.tmp.position.y = 2;
-        this.tmp.textAlign = "center";
-        this.tmp.anchorX = "center";
-        this.tmp.anchorY = "bottom";
-        this.tmp.color = 0xffffff;
-        this.tmp.visible = false;
-        this.anchor.add(this.tmp);
+    public addToLimb(obj: Object3D) {
+        obj.visible = false;
     }
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         this.animate(dt, time, enemy, anim, camera);
+        this.updateTmp(enemy, anim, camera, this.eye);
         this.render(dt, enemy);
     }
 
@@ -160,19 +130,6 @@ export class FlyerModel extends EnemyModel {
 
         this.spikes[5].position.set(-0.2, -0.2, 0);
         this.spikes[5].rotation.set(this.left + z, 0, (max + y) * Math.deg2rad, order);
-        
-        if (this.tmp === undefined) return;
-
-        //this.tmp.text = `flyer`;
-
-        this.tmp.visible = false;
-
-        this.tmp.getWorldPosition(tmpPos);
-        camera.getWorldPosition(camPos);
-
-        const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
-        this.tmp.fontSize = lerp * 0.3 + 0.05;
-        this.tmp.lookAt(camPos);
     }
 
     public render(dt: number, enemy: Enemy): void {
@@ -187,9 +144,6 @@ export class FlyerModel extends EnemyModel {
 }
 
 export class BigFlyerModel extends EnemyModel {
-    anchor: Group = new Group();
-    tmp?: Text; 
-
     eye: Group = new Group();
     spikes: Group[] = new Array(6);
     corners: Group[] = new Array(4);
@@ -250,21 +204,15 @@ export class BigFlyerModel extends EnemyModel {
         this.anchor.add(this.eye, ...this.spikes, ...this.corners);
         this.anchor.scale.set(enemy.scale, enemy.scale, enemy.scale);
         this.root.add(this.anchor);
+    }
 
-        this.tmp = new Text();
-        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
-        this.tmp.fontSize = 0.2;
-        this.tmp.position.y = 2;
-        this.tmp.textAlign = "center";
-        this.tmp.anchorX = "center";
-        this.tmp.anchorY = "bottom";
-        this.tmp.color = 0xffffff;
-        this.tmp.visible = false;
-        this.anchor.add(this.tmp);
+    public addToLimb(obj: Object3D) {
+        obj.visible = false;
     }
 
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
         this.animate(dt, time, enemy, anim, camera);
+        this.updateTmp(enemy, anim, camera, this.eye);
         this.render(dt, enemy);
     }
 
@@ -308,19 +256,6 @@ export class BigFlyerModel extends EnemyModel {
         this.corners[1].rotation.set(this.open, this.open, 0, order);
         this.corners[2].rotation.set(this.open, -this.open, 0, order);
         this.corners[3].rotation.set(-this.open, this.open, 0, order);
-        
-        if (this.tmp === undefined) return;
-
-        //this.tmp.text = `flyer`;
-
-        this.tmp.visible = false;
-
-        this.tmp.getWorldPosition(tmpPos);
-        camera.getWorldPosition(camPos);
-
-        const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
-        this.tmp.fontSize = lerp * 0.3 + 0.05;
-        this.tmp.lookAt(camPos);
     }
 
     public render(dt: number, enemy: Enemy): void {

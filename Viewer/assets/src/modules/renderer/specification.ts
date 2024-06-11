@@ -2084,6 +2084,7 @@ const _enemies: EnemySpecification[] = [{
     id: 42,
     name: "Flyer",
     maxHealth: 16.2,
+    height: 1,
     model: (enemy) => new FlyerModel(enemy),
 }, {
     id: 45,
@@ -2094,11 +2095,13 @@ const _enemies: EnemySpecification[] = [{
     id: 43,
     name: "Squid",
     maxHealth: 6000,
+    scale: 10,
     model: (enemy) => new SquidModel(enemy),
 }, {
     id: 44,
     name: "Squid Boss",
     maxHealth: 6000,
+    scale: 10,
     model: (enemy) => new SquidModel(enemy),
 }, {
     id: 53,

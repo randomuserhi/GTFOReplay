@@ -19,9 +19,7 @@ namespace Vanilla.Enemy {
                     if (limbCustom != null) {
                         Bone bone = default;
                         Transform? boneTransform = GetBone(limbCustom, ref bone);
-                        if (boneTransform != null) {
-                            Replay.Spawn(new rLimbCustom(limbCustom, bone, boneTransform));
-                        }
+                        Replay.Spawn(new rLimbCustom(limbCustom, bone));
                     }
                 }
             }
@@ -152,7 +150,6 @@ namespace Vanilla.Enemy {
         private Dam_EnemyDamageLimb_Custom limb;
         private Collider col;
         private Bone bone;
-        private Transform boneTransform;
 
         private Vector3 offset {
             get {
@@ -165,11 +162,10 @@ namespace Vanilla.Enemy {
         public override bool IsDirty => col.enabled != oldEnabled;
         private bool oldEnabled = true;
 
-        public rLimbCustom(Dam_EnemyDamageLimb_Custom limb, Bone bone, Transform boneTransform) : base(limb.GetInstanceID()) {
+        public rLimbCustom(Dam_EnemyDamageLimb_Custom limb, Bone bone) : base(limb.GetInstanceID()) {
             this.limb = limb;
             col = limb.GetComponent<Collider>();
             this.bone = bone;
-            this.boneTransform = boneTransform;
         }
 
         public override void Write(ByteBuffer buffer) {

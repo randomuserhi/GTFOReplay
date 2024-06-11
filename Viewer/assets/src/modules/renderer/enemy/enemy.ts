@@ -48,13 +48,54 @@ const sM = new Vector3(radius, radius, radius);
 const scale = new Vector3(radius, radius, radius);
 
 export class EnemyModel {
-    root: Object3D;
+    root: Group;
+    anchor: Group;
     culled: boolean;
+
+    tmp?: Text;
+    tmpHeight: number;
+    tag?: Text;
+
+    datablock?: EnemySpecification;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(enemy: Enemy) {
         this.root = new Group();
+        this.anchor = new Group();
         this.culled = false;
+
+        this.datablock = specification.getEnemy(enemy.type);
+
+        this.tmp = new Text();
+        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.tmp.fontSize = 0.2;
+        this.tmp.textAlign = "center";
+        this.tmp.anchorX = "center";
+        this.tmp.anchorY = "bottom";
+        this.tmp.color = 0xffffff;
+        this.tmp.visible = false;
+        this.tmpHeight = (this.datablock?.height === undefined ? 2.2 : this.datablock.height) * enemy.scale;
+        this.tmp.position.y = this.tmpHeight;
+        this.root.add(this.tmp);
+
+        this.tag = new Text();
+        this.tag.font = "./fonts/oxanium/Oxanium-ExtraBold.ttf";
+        this.tag.fontSize = 0.2;
+        this.tag.textAlign = "center";
+        this.tag.anchorX = "center";
+        this.tag.anchorY = "bottom";
+        this.tag.color = 0xffffff;
+        this.tag.visible = false;
+        this.tag.text = `Δ
+·`;
+        this.tag.colorRanges = {
+            0: 0xff0000,
+            1: 0xffffff,
+        };
+        this.tag.material.depthTest = false;
+        this.tag.material.depthWrite = false;
+        this.tag.renderOrder = Infinity;
+        this.root.add(this.tag);
     }
 
     public cull(position: Vector3Like, radius: number, camera: Camera, frustum: Frustum, renderDistance: number) {
@@ -67,6 +108,36 @@ export class EnemyModel {
         }
         this.culled = false;
         return false;
+    }
+
+    public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, tagTarget: Object3D) {
+        if (this.tmp === undefined || this.tag === undefined) return;
+        
+        this.tag.visible = enemy.tagged;
+        this.tag.position.copy(tagTarget.position);
+        this.tag.position.y += 1;
+
+        this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
+State: ${anim.state}
+HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A if client replay
+
+        this.tmp.visible = showInfo;
+
+        this.orientateText(this.tmp, camera, 0.3, 0.05);
+        this.orientateText(this.tag, camera, 0.5, 0.1);
+    }
+
+    private orientateText(tmp: Text, camera: Camera, scale: number, min: number) {
+        tmp.getWorldPosition(tmpPos);
+        camera.getWorldPosition(camPos);
+
+        const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
+        tmp.fontSize = lerp * scale + min;
+        tmp.lookAt(camPos);
+    }
+
+    public addToLimb(obj: Object3D, limb: HumanJoints) {
+        this.anchor.add(obj);
     }
 
     public addToScene(scene: Scene) {
@@ -110,7 +181,6 @@ for (let i = 0; i < _points.length; ++i) {
 const sphere = new Sphere();
 const diff = new Vector3();
 export class HumanoidEnemyModel extends EnemyModel {
-    anchor: Object3D;
     pivot: Object3D;
     
     skeleton: HumanSkeleton;
@@ -121,13 +191,9 @@ export class HumanoidEnemyModel extends EnemyModel {
     head: Matrix4;
     neck: Matrix4;
 
-    datablock?: EnemySpecification;
     animHandle?: EnemyAnimHandle;
 
     offset: number;
-
-    tmp?: Text;
-    tag?: Text;
 
     private construct(skeleton: HumanSkeleton) {
         skeleton.joints.hip.add(
@@ -172,14 +238,12 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.head = new Matrix4();
         this.neck = new Matrix4();
 
-        this.datablock = specification.getEnemy(enemy.type);
         if (enemy.animHandle !== undefined) {
             this.animHandle = specification.enemyAnimHandles.get(enemy.animHandle);
         }
 
         this.color = new Color(0xff0000);
 
-        this.anchor = new Group();
         this.pivot = new Group();
         this.anchor.add(this.pivot);
         this.root.add(this.anchor);
@@ -235,40 +299,10 @@ export class HumanoidEnemyModel extends EnemyModel {
             this.visual.joints[joint].updateWorldMatrix(true, false);
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
         }
-    
-        this.tmp = new Text();
-        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
-        this.tmp.fontSize = 0.2;
-        this.tmp.position.y = (this.datablock?.height === undefined ? 2.5 : this.datablock.height) * scale;
-        this.tmp.textAlign = "center";
-        this.tmp.anchorX = "center";
-        this.tmp.anchorY = "bottom";
-        this.tmp.color = 0xffffff;
-        this.tmp.visible = false;
-        this.root.add(this.tmp);
-
-        this.tag = new Text();
-        this.tag.font = "./fonts/oxanium/Oxanium-ExtraBold.ttf";
-        this.tag.fontSize = 0.2;
-        this.tag.textAlign = "center";
-        this.tag.anchorX = "center";
-        this.tag.anchorY = "bottom";
-        this.tag.color = 0xffffff;
-        this.tag.visible = false;
-        this.tag.text = `Δ
-·`;
-        this.tag.colorRanges = {
-            0: 0xff0000,
-            1: 0xffffff,
-        };
-        this.tag.material.depthTest = false;
-        this.tag.material.depthWrite = false;
-        this.tag.renderOrder = Infinity;
-        this.root.add(this.tag);
     }
 
     // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
-    public addToLimb(limb: HumanJoints, obj: Object3D) {
+    public addToLimb(obj: Object3D, limb: HumanJoints) {
         this.visual.joints[limb].add(obj);
         obj.applyMatrix4(this.inverseMatrix[limb]);
     }
@@ -278,7 +312,7 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         this.animate(dt, time, enemy, anim);
         this.computeMatrices(dt, enemy);
-        this.updateTmp(enemy, anim, camera);
+        this.updateTmp(enemy, anim, camera, this.visual.joints.spine1);
 
         if (this.datablock?.transparent === true) {
             this.render(enemy, "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
@@ -477,32 +511,6 @@ export class HumanoidEnemyModel extends EnemyModel {
         }
     }
 
-    private updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
-        if (this.tmp === undefined || this.tag === undefined) return;
-        
-        this.tag.visible = enemy.tagged;
-        this.tag.position.copy(this.visual.joints.spine1.position);
-        this.tag.position.y += 1;
-
-        this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
-State: ${anim.state}
-HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A if client replay
-
-        this.tmp.visible = showInfo;
-
-        this.orientateText(this.tmp, camera, 0.3, 0.05);
-        this.orientateText(this.tag, camera, 0.5, 0.1);
-    }
-
-    private orientateText(tmp: Text, camera: Camera, scale: number, min: number) {
-        tmp.getWorldPosition(tmpPos);
-        camera.getWorldPosition(camPos);
-
-        const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
-        tmp.fontSize = lerp * scale + min;
-        tmp.lookAt(camPos);
-    }
-
     public computeMatrices(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
@@ -657,8 +665,6 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             for (const [id, limb] of limbs) {
                 if (!skeletons.has(limb.owner)) continue;
                 const skeleton = skeletons.get(limb.owner)!;
-                if (!Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, skeleton)) continue;
-                const human: HumanoidEnemyModel = skeleton as HumanoidEnemyModel;
 
                 if (!models.has(id)) {
                     const material = new MeshPhongMaterial({
@@ -667,16 +673,16 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     material.transparent = true;
                     material.opacity = 0.8;
                     material.depthWrite = false;
-            
+        
                     const geometry = new SphereGeometry(1, 10, 10);
-            
+        
                     const mesh = new Mesh(geometry, material);
-                    
+                
                     models.set(id, { mesh, material });
                     renderer.scene.add(mesh);
                 }
                 const model = models.get(id)!;
-                if (!human.isVisible()) {
+                if (!skeleton.isVisible()) {
                     model.mesh.visible = false;
                     continue;
                 }
@@ -687,7 +693,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 model.mesh.scale.set(limb.scale, limb.scale, limb.scale);
                 model.mesh.quaternion.set(0, 0, 0, 1);
                 model.mesh.position.set(limb.offset.x, limb.offset.y, limb.offset.z);
-                human.addToLimb(limb.bone, model.mesh);
+                skeleton.addToLimb(model.mesh, limb.bone);
             }
 
             for (const [id, model] of [...models.entries()]) {

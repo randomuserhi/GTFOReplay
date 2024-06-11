@@ -1,7 +1,7 @@
-import { ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
+import { ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, SphereGeometry } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
-import { Enemy } from "../../parser/enemy/enemy.js";
 import { playerColors } from "../player/renderer.js";
+import { EnemyModel } from "./enemy.js";
 
 declare module "../../../replay/moduleloader.js" {
     namespace Typemap {
@@ -41,22 +41,13 @@ class AlertModel {
         this.group.scale.set(1.5, 1.5, 1.5);
     }
 
-    public update(enemy: Enemy) {
-        this.group.position.copy(enemy.position);
-        const height = 2;
-        this.group.position.add({ x: 0, y: height, z: 0 });
+    public update(enemy: EnemyModel) {
+        enemy.root.add(this.group);
+        this.group.position.set(0, enemy.tmpHeight + 1, 0);
     }
 
-    public setVisible(visible: boolean) {
-        this.group.visible = visible;
-    }
-
-    public addToScene(scene: Scene) {
-        scene.add(this.group);
-    }
-
-    public removeFromScene(scene: Scene) {
-        scene.remove(this.group);
+    public remove() {
+        this.group.removeFromParent();
     }
 }
 
@@ -67,7 +58,7 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
             const _models: AlertModel[] = [];
             const models = renderer.getOrDefault("Vanilla.Enemy.Alerts", () => []);
             const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", () => []);
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+            const enemies = renderer.getOrDefault("Enemies", () => new Map());
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
             for (const alert of alerts) {
                 if (!enemies.has(alert.enemy)) continue;
@@ -76,7 +67,6 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
                 const i = _models.length;
                 if (models[i] === undefined) {
                     const model = new AlertModel(0xffffff);
-                    model.addToScene(renderer.scene);
                     models[i] = model;
                 }
                 const model = models[i];
@@ -88,12 +78,11 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
                 model.material.color.set(color);
 
                 model.update(enemy);
-                model.setVisible(enemy.dimension === renderer.get("Dimension"));
 
                 _models.push(model);
             }
             for (let i = _models.length; i < models.length; ++i) {
-                models[i].removeFromScene(renderer.scene);
+                models[i].remove();
             }
             renderer.set("Vanilla.Enemy.Alerts", _models);
         } 
