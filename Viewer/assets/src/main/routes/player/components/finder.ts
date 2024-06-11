@@ -221,7 +221,7 @@ export const finder = Macro((() => {
     ">
         <input rhu-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
         <div class="${style.row}" style="
-        gap: 10px;
+        margin-top: 20px;
         ">
             ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
         </div>
