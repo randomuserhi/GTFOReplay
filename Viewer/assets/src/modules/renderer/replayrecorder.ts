@@ -323,6 +323,7 @@ class CameraControls {
         
         camera.parent = this.renderer.scene;
         tp_temp.copy(position).sub(camera.position).normalize().multiplyScalar(3);
+        tp_temp.y -= 1;
         camera.position.copy(position).sub(tp_temp);
         camera.lookAt(tp_temp.copy(position));
     }
