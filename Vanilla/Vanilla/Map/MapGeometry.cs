@@ -16,8 +16,20 @@ namespace Vanilla.Map {
         }
     }
 
-    public static class MapBounds {
+    public static class MapUtils {
         public static Dictionary<byte, float> lowestPoint { get; internal set; } = new Dictionary<byte, float>();
+
+        public static byte PositionToDimension(Vector3 position) {
+            byte dimension = 0;
+            float height = float.NegativeInfinity;
+            foreach (var kvp in lowestPoint) {
+                if (position.y > kvp.Value && kvp.Value > height) {
+                    height = kvp.Value;
+                    dimension = kvp.Key;
+                }
+            }
+            return dimension;
+        }
     }
 
     [HarmonyPatch]
@@ -59,7 +71,7 @@ namespace Vanilla.Map {
         private static void Init() {
             processed.Clear();
             Patches.dimensions = null;
-            MapBounds.lowestPoint.Clear();
+            MapUtils.lowestPoint.Clear();
         }
 
         // private collection that maintains which dimensions have been processed
@@ -268,8 +280,8 @@ namespace Vanilla.Map {
                 return;
             }
 
-            if (!MapBounds.lowestPoint.ContainsKey((byte)dimension.DimensionIndex)) {
-                MapBounds.lowestPoint.Add((byte)dimension.DimensionIndex, float.PositiveInfinity);
+            if (!MapUtils.lowestPoint.ContainsKey((byte)dimension.DimensionIndex)) {
+                MapUtils.lowestPoint.Add((byte)dimension.DimensionIndex, float.PositiveInfinity);
             }
 
             // subdivide mesh and fix poor positions
@@ -282,8 +294,8 @@ namespace Vanilla.Map {
 
                 surface.mesh.RecalculateBounds();
                 float low = surface.mesh!.bounds.center.y - surface.mesh!.bounds.extents.y;
-                if (low < MapBounds.lowestPoint[(byte)dimension.DimensionIndex]) {
-                    MapBounds.lowestPoint[(byte)dimension.DimensionIndex] = low;
+                if (low < MapUtils.lowestPoint[(byte)dimension.DimensionIndex]) {
+                    MapUtils.lowestPoint[(byte)dimension.DimensionIndex] = low;
                 }
 
                 Replay.Trigger(new rMapGeometry((byte)dimension.DimensionIndex, surface));

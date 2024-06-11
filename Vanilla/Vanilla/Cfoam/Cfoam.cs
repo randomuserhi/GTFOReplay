@@ -63,7 +63,7 @@ namespace Vanilla.Cfoam {
                 int id = __instance.GetInstanceID();
                 if (!Replay.Has<rCfoam>(id)) return;
                 rCfoam foam = Replay.Get<rCfoam>(__instance.GetInstanceID());
-                if (__instance.transform.position.y < MapBounds.lowestPoint[foam.transform.dimensionIndex]) {
+                if (__instance.transform.position.y < MapUtils.lowestPoint[foam.transform.dimensionIndex]) {
                     APILogger.Debug("Removed foam since it fell too far.");
                     Replay.Despawn(foam);
                 }
