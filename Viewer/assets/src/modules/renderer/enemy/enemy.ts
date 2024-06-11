@@ -114,8 +114,7 @@ export class EnemyModel {
         if (this.tmp === undefined || this.tag === undefined) return;
         
         this.tag.visible = enemy.tagged;
-        this.tag.position.copy(tagTarget.position);
-        this.tag.position.y += 1;
+        this.tag.position.copy(tagTarget.getWorldPosition(tagPos).sub(this.root.position));
 
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
 State: ${anim.state}
@@ -167,6 +166,7 @@ HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A i
 
 const tmpPos = new Vector3();
 const camPos = new Vector3();
+const tagPos = new Vector3();
 
 const _parts: Matrix4[] = new Array(9);
 const _points: Matrix4[] = new Array(14);
