@@ -270,22 +270,43 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
             if (parent.dropdown.value === undefined) return;
             const snet = parent.dropdown.value as bigint;
 
+            let ebulletDamage = 0;
+            let emeleeDamage = 0;
+            let esentryDamage = 0;
+            let eexplosiveDamage = 0;
+            let estaggerDamage = 0;
+            let esentryStaggerDamage = 0;
+            let pbulletDamage = 0;
+            let psentryDamage = 0;
+            let pexplosiveDamage = 0;
+
             const api = parent.player.api;
-            if (api === undefined) return;
+            if (api !== undefined) {
+                const stats = api.getOrDefault("Vanilla.StatTracker", StatTracker).players.get(snet);
+                if (stats !== undefined) {
+                    ebulletDamage = Math.round([...stats.enemyDamage.bulletDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10;
+                    emeleeDamage = Math.round([...stats.enemyDamage.meleeDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10;
+                    esentryDamage = Math.round([...stats.enemyDamage.sentryDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10;
+                    eexplosiveDamage = Math.round([...stats.enemyDamage.explosiveDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10;
+                    estaggerDamage = Math.round([...stats.enemyDamage.staggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10;
+                    esentryStaggerDamage = Math.round([...stats.enemyDamage.sentryStaggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10;
 
-            const stats = api.getOrDefault("Vanilla.StatTracker", StatTracker).players.get(snet);
-            if (stats === undefined) return;
+                    pbulletDamage = Math.round([...stats.playerDamage.bulletDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10;
+                    psentryDamage = Math.round([...stats.playerDamage.sentryDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10;
+                    pexplosiveDamage = Math.round([...stats.playerDamage.explosiveDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10;
+                }
+            }
 
-            frag.ebulletDamage.innerText = `${Math.round([...stats.enemyDamage.bulletDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`;
-            frag.emeleeDamage.innerText = `${Math.round([...stats.enemyDamage.meleeDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`;
-            frag.esentryDamage.innerText = `${Math.round([...stats.enemyDamage.sentryDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`;
-            frag.eexplosiveDamage.innerText = `${Math.round([...stats.enemyDamage.explosiveDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`;
-            frag.estaggerDamage.innerText = `${Math.round([...stats.enemyDamage.staggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`;
-            frag.esentryStaggerDamage.innerText = `${Math.round([...stats.enemyDamage.sentryStaggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`;
+            frag.ebulletDamage.innerText = `${ebulletDamage}`;
+            frag.emeleeDamage.innerText = `${emeleeDamage}`;
+            frag.esentryDamage.innerText = `${esentryDamage}`;
+            frag.eexplosiveDamage.innerText = `${eexplosiveDamage}`;
+            frag.estaggerDamage.innerText = `${estaggerDamage}`;
+            frag.esentryStaggerDamage.innerText = `${esentryStaggerDamage}`;
 
-            frag.pbulletDamage.innerText = `${Math.round([...stats.playerDamage.bulletDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10}`;
-            frag.psentryDamage.innerText = `${Math.round([...stats.playerDamage.sentryDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10}`;
-            frag.pexplosiveDamage.innerText = `${Math.round([...stats.playerDamage.explosiveDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10}`;
+            frag.pbulletDamage.innerText = `${pbulletDamage}`;
+            frag.psentryDamage.innerText = `${psentryDamage}`;
+            frag.pexplosiveDamage.innerText = `${pexplosiveDamage}`;
         };
 
         return [node.children[0], "Damage Dealt", update];

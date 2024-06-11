@@ -71,6 +71,8 @@ const style = Style(({ style }) => {
 });
 
 export interface bar extends HTMLDivElement {
+    buttons: HTMLButtonElement[];
+
     gear: HTMLButtonElement;
     stats: HTMLButtonElement;
     finder: HTMLButtonElement;
@@ -81,6 +83,7 @@ export interface bar extends HTMLDivElement {
     init(player: player): void;
     update(): void;
     reset(): void;
+    clear(): void;
 }
 
 declare module "@/rhu/macro.js" {
@@ -96,7 +99,7 @@ const finderPage = document.createMacro(finder);
 
 export const bar = Macro((() => {
     const bar = function(this: bar) {
-        const buttons = [
+        this.buttons = [
             this.gear,
             this.stats,
             this.finder,
@@ -105,7 +108,7 @@ export const bar = Macro((() => {
 
         const load = (node: Node, button: HTMLButtonElement) => {
             this.player.load(node);
-            for (const b of buttons) {
+            for (const b of this.buttons) {
                 b.classList.remove(`${style.selected}`);
             }
             if (this.player.loadedNode === node) {
@@ -141,6 +144,12 @@ export const bar = Macro((() => {
         infoPage.init(player);
         statsPage.init(player);
         finderPage.init(player);
+    };
+
+    bar.prototype.clear = function() {
+        for (const b of this.buttons) {
+            b.classList.remove(`${style.selected}`);
+        }
     };
 
     bar.prototype.reset = function() {

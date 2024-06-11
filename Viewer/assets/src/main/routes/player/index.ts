@@ -225,7 +225,7 @@ export const player = Macro((() => {
     };
 
     player.prototype.open = async function(path: string) {
-        // TODO(randomuserhi): Loading screen prior map loads
+        this.load();
 
         this.cover.style.display = "flex";
         this.loadButton.style.display = "none";
@@ -240,7 +240,7 @@ export const player = Macro((() => {
         if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
         this.replay = undefined;
-        this.load();
+        this.bar.clear();
         this.parser.addEventListener("eoh", () => {
             console.log("ready");
     
