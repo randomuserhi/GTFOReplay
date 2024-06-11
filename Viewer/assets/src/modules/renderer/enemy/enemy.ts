@@ -113,6 +113,12 @@ export class EnemyModel {
     public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, tagTarget: Object3D) {
         if (this.tmp === undefined || this.tag === undefined) return;
         
+        if (this.culled) {
+            this.tmp.visible = false;
+            this.tag.visible = false;
+            return;
+        }
+        
         this.tag.visible = enemy.tagged;
         this.tag.position.copy(tagTarget.getWorldPosition(tagPos).sub(this.root.position));
 
