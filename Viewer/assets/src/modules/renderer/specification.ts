@@ -2193,16 +2193,16 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 62,
     name: "Potatoe",
-    maxHealth: 161,
+    maxHealth: 640,
     armScale: {
         x: 0.2,
         y: 0.2,
         z: 0.2
     },
     headScale: {
-        x: 0.1,
-        y: 0.1,
-        z: 0.1
+        x: 0,
+        y: 0,
+        z: 0
     },
     scale: _shooter_scale
 }];
