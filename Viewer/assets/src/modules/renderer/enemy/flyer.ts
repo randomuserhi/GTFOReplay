@@ -45,11 +45,6 @@ export class SquidModel extends EnemyModel {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
     }
-
-    public dispose() {
-        this.tmp?.dispose();
-        this.tmp = undefined;
-    }
 }
 
 export class FlyerModel extends EnemyModel {
@@ -135,11 +130,6 @@ export class FlyerModel extends EnemyModel {
     public render(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
-    }
-
-    public dispose() {
-        this.tmp?.dispose();
-        this.tmp = undefined;
     }
 }
 
@@ -261,10 +251,5 @@ export class BigFlyerModel extends EnemyModel {
     public render(dt: number, enemy: Enemy): void {
         this.root.position.copy(enemy.position);
         this.anchor.quaternion.copy(enemy.rotation);
-    }
-
-    public dispose() {
-        this.tmp?.dispose();
-        this.tmp = undefined;
     }
 }

@@ -160,7 +160,12 @@ HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A i
     public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
     }
 
-    public dispose() {
+    public dispose(): void {
+        this.tag?.dispose();
+        this.tag = undefined;
+
+        this.tmp?.dispose();
+        this.tmp = undefined;
     }
 }
 
@@ -601,14 +606,6 @@ export class HumanoidEnemyModel extends EnemyModel {
         _points[j++].compose(worldPos.rightUpperLeg, zeroQ, sM);
         _points[j++].compose(worldPos.rightLowerLeg, zeroQ, sM);
         _points[j++].compose(worldPos.rightFoot, zeroQ, sM);
-    }
-
-    public dispose(): void {
-        this.tag?.dispose();
-        this.tag = undefined;
-
-        this.tmp?.dispose();
-        this.tmp = undefined;
     }
 }
 
