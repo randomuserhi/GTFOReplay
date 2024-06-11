@@ -3,6 +3,7 @@ import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
 import { Item } from "../../../../modules/parser/map/item.js";
 import { player } from "../index.js";
+import { dropdown } from "./dropdown.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -90,10 +91,12 @@ const style = Style(({ style }) => {
 
 export interface finder extends HTMLDivElement {
     search: HTMLInputElement;
+    dropdown: dropdown;
     body: HTMLDivElement;
 
     includeUnknown: HTMLButtonElement;
     includeUnknownItems: boolean;
+    dimension?: number;
 
     items: { frag: { root: HTMLElement, name: HTMLSpanElement, item: Item }, key: string }[];
     fuse: Fuse<Item>;
@@ -123,6 +126,11 @@ export const finder = Macro((() => {
             if (this.includeUnknownItems) this.includeUnknown.classList.add(`${style.active}`);
             else this.includeUnknown.classList.remove(`${style.active}`);
         });
+
+        this.dimension = undefined;
+        this.dropdown.onSet = (value) => {
+            this.dimension = value;
+        };
     } as Constructor<finder>;
 
     finder.prototype.init = function(player) {
@@ -150,6 +158,7 @@ export const finder = Macro((() => {
             const key = item.key;
             if (key === "Unknown" && !this.includeUnknownItems) continue;
             if (!item.onGround) continue;
+            if (item.dimension !== this.dimension) continue;
             let li: { frag: { root: HTMLElement, name: HTMLSpanElement, item: Item }, key: string };
             if (i < this.items.length) {
                 this.items[i].key = key;
@@ -169,7 +178,7 @@ export const finder = Macro((() => {
                 frag.item = item;
                 li = { frag, key };
                 frag.root.addEventListener("click", () => {
-                    this.player.renderer.get("CameraControls")!.tp(frag.item.position);
+                    this.player.renderer.get("CameraControls")!.tp(frag.item.position, frag.item.dimension);
                 });
                 this.body.append(frag.root);
             }
@@ -185,6 +194,15 @@ export const finder = Macro((() => {
     finder.prototype.reset = function() {
         this.items = [];
         this.body.replaceChildren();
+
+        if (this.player.replay === undefined) return;
+
+        const dimensions = this.player.replay.getOrDefault("Vanilla.Map.Geometry", () => new Map());
+        this.dropdown.clear();
+        for (const index of dimensions.keys()) {
+            this.dropdown.add(index, `${index === 0 ? "Reality" : `Dimension ${index}`}`);
+        }
+        this.dropdown.set(0);
     };
 
     return finder;
@@ -202,6 +220,11 @@ export const finder = Macro((() => {
     margin-bottom: 10px;
     ">
         <input rhu-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+        <div class="${style.row}" style="
+        gap: 10px;
+        ">
+            ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
+        </div>
         <div class="${style.row}" style="
         flex-direction: row;
         align-items: center;

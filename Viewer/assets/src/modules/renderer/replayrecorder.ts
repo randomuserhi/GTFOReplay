@@ -98,6 +98,7 @@ declare module "../../replay/moduleloader.js" {
 // TODO(randomuserhi): make better
 // TODO(randomuserhi): fix bug related to event listeners stacking up
 const move: Vector3 = new Vector3();
+const tp_temp: Vector3 = new Vector3();
 
 class CameraControls {
     slot?: number;
@@ -314,13 +315,15 @@ class CameraControls {
         canvas.addEventListener("mouseup", this.mouseup);
     }
 
-    public tp(position: Vector3Like) {
+    public tp(position: Vector3Like, dimension: number) {
         const camera = this.renderer.get("Camera")!;
+        this.renderer.set("Dimension", dimension);
 
         this.targetSlot = undefined;
         
         camera.parent = this.renderer.scene;
-        camera.position.copy(position);
+        camera.position.copy(position).sub(tp_temp.copy(camera.position).sub(position).normalize().multiplyScalar(3));
+        camera.lookAt(tp_temp.copy(position));
     }
 
     public update(snapshot: ReplayApi, dt: number) {
