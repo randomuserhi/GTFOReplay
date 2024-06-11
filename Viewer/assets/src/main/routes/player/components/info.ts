@@ -98,6 +98,8 @@ declare module "@/rhu/macro.js" {
 
 const versionInfo = new Map<string, string>();
 versionInfo.set("0.0.1", `Initial Release`);
+versionInfo.set("0.0.2", `- Fix door locks sometimes being on the wrong side
+- Enemy max health is now recorded instead of being hard coded for better modded support`);
 
 export const info = Macro((() => {
     const info = function(this: info) {
@@ -125,8 +127,11 @@ export const info = Macro((() => {
             this.isMasterText.style.display = "none";
         }
 
-        this.version.innerText = `${header.version}`;
-        const versionText = versionInfo.get(header.version);
+        const metadata = replay.get("Vanilla.Metadata");
+        let version = "0.0.1";
+        if (metadata !== undefined) version = metadata.version;
+        this.version.innerText = `${version}`;
+        const versionText = versionInfo.get(version);
         if (versionText !== undefined) this.versionText.innerText = versionText;
     };
 
