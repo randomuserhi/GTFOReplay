@@ -30,7 +30,7 @@ ModuleLoader.registerRender("Enemy.Tendril", (name, api) => {
                 const owner = enemies.get(tendril.owner);
                 const anim = anims.get(tendril.owner);
                 if (anim === undefined || owner === undefined || owner.dimension !== renderer.get("Dimension")) continue;
-                if (anim.state !== "ScoutDetection" && anim.state !== "ScoutScream") continue;
+                if (anim.state !== "StuckInGlue" && anim.state !== "ScoutDetection" && anim.state !== "ScoutScream") continue;
                 const enemyModel = enemyModels.get(owner.id);
                 if (enemyModel !== undefined && !enemyModel.isVisible()) continue;
 
