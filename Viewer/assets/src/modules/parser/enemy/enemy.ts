@@ -819,7 +819,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.BigFlyerCharge", "0.0.1", {
         if (!anims.has(id)) throw new AnimNotFound(`EnemyAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
         anim.lastBigFlyerCharge = snapshot.time();
-        anim.bigFlyerCharge = data.charge;
+        anim.bigFlyerCharge = data.charge + 0.5;
     }
 });
 

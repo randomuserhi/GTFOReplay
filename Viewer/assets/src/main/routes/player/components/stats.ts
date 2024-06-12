@@ -136,7 +136,11 @@ function createTypeTable<T>(parent: stats, title: string, all: (stats: PlayerSta
         if (api === undefined) return;
 
         const stats = api.getOrDefault("Vanilla.StatTracker", StatTracker).players.get(snet);
-        if (stats === undefined) return;
+        if (stats === undefined) {
+            frag.empty.style.display = "block";
+            frag.list.style.display = "none";
+            return;
+        }
 
         const counts = all(stats);
         let total = 0;
@@ -383,7 +387,11 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
             if (api === undefined) return;
 
             const stats = api.getOrDefault("Vanilla.StatTracker", StatTracker).players.get(snet);
-            if (stats === undefined) return;
+            if (stats === undefined) {
+                frag.fallDamage.innerText = `0%`;
+                frag.revives.innerText = `0`;
+                return;
+            }
 
             frag.fallDamage.innerText = `${Math.round(stats.fallDamage / specification.player.maxHealth / 10) * 10}%`;
             frag.revives.innerText = `${stats.revives}`;

@@ -1,10 +1,10 @@
-﻿using AIGraph;
-using HarmonyLib;
+﻿using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using UnityEngine;
+using Vanilla.Map;
 
 namespace Vanilla.StaticItems {
     internal class rTerminal {
@@ -32,10 +32,16 @@ namespace Vanilla.StaticItems {
     internal class rTerminals : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
-            [HarmonyPatch(typeof(AIG_CourseNode), nameof(AIG_CourseNode.RegisterComputerTerminal))]
+            [HarmonyPatch(typeof(LG_ComputerTerminal), nameof(LG_ComputerTerminal.Setup))]
             [HarmonyPostfix]
-            private static void Terminal_Setup(AIG_CourseNode __instance, LG_ComputerTerminal terminal) {
-                terminals.Add(new rTerminal((byte)__instance.m_dimension.DimensionIndex, terminal));
+            private static void Terminal_Setup(LG_ComputerTerminal __instance) {
+                int id = __instance.GetInstanceID();
+                if (terminals.ContainsKey(id)) return;
+                if (__instance.SpawnNode == null) {
+                    terminals.Add(id, new rTerminal(MapUtils.PositionToDimension(__instance.transform.position), __instance));
+                } else {
+                    terminals.Add(id, new rTerminal((byte)__instance.SpawnNode.m_dimension.DimensionIndex, __instance));
+                }
             }
         }
 
@@ -49,13 +55,13 @@ namespace Vanilla.StaticItems {
             terminals.Clear();
         }
 
-        internal static List<rTerminal> terminals = new List<rTerminal>();
+        internal static Dictionary<int, rTerminal> terminals = new Dictionary<int, rTerminal>();
 
         public override void Write(ByteBuffer buffer) {
             // TODO(randomuserhi): Throw error on too many ladders
             BitHelper.WriteBytes((ushort)terminals.Count, buffer);
 
-            foreach (rTerminal terminal in terminals) {
+            foreach (rTerminal terminal in terminals.Values) {
                 BitHelper.WriteBytes(terminal.id, buffer);
                 BitHelper.WriteBytes(terminal.dimension, buffer);
                 BitHelper.WriteBytes(terminal.position, buffer);
