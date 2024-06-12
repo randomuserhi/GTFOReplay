@@ -6,6 +6,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
+using System.Collections;
 using System.Diagnostics;
 using System.Net;
 using UnityEngine;
@@ -50,7 +51,7 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
-        private class DynamicCollection {
+        private class DynamicCollection : IEnumerable<ReplayDynamic> {
             public Type Type { get; private set; }
             public ushort Id { get; private set; }
 
@@ -76,6 +77,16 @@ namespace ReplayRecorder.Snapshot {
                 if (!SnapshotManager.types.Contains(type)) throw new ReplayTypeDoesNotExist($"Could not create DynamicCollection of type '{type.FullName}'.");
                 Type = type;
                 Id = SnapshotManager.types[type];
+            }
+
+            public IEnumerator<ReplayDynamic> GetEnumerator() {
+                foreach (ReplayDynamic dynamic in mapOfDynamics.Values) {
+                    yield return dynamic;
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return GetEnumerator();
             }
 
             [HideFromIl2Cpp]
@@ -153,10 +164,22 @@ namespace ReplayRecorder.Snapshot {
                         if (!dynamic.remove || tickRate == 1) { // check that we only write removal sync if the tick rate matches event rate.
                             if (active && (dynamic.IsDirty/* || !dynamic.init*/)) {
                                 if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
-                                ++numWritten;
-                                //dynamic.init = true;
-                                dynamic._Write(buffer);
-                                dynamic.Write(buffer);
+
+                                int writeIndex = buffer.count; // Store write point to restore back to if dynamic fails to write
+
+                                try {
+                                    //dynamic.init = true;
+                                    dynamic._Write(buffer);
+                                    dynamic.Write(buffer);
+                                    ++numWritten;
+                                } catch (Exception ex) {
+                                    // Restore buffer write point
+                                    buffer.count = writeIndex;
+                                    instance.Despawn(dynamic);
+                                    APILogger.Warn($"[DynamicCollection] Error Despawn {Type} {dynamic.id}");
+
+                                    APILogger.Error($"Unexpected error occured whilst trying to write Dynamic[{Type}]({dynamic.id}) at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
+                                }
                             }
                         }
                     }
@@ -245,8 +268,12 @@ namespace ReplayRecorder.Snapshot {
                 bs.Reserve(sizeof(ushort), true);
 
                 foreach (DynamicCollection collection in dynamics.Values) {
-                    if (collection.Write(bs) > 0) {
-                        ++numWritten;
+                    try {
+                        if (collection.Write(bs) > 0) {
+                            ++numWritten;
+                        }
+                    } catch (Exception ex) {
+                        APILogger.Error($"Unexpected error occured whilst trying to write DynamicCollection[{collection.Type}] at [{now}ms]:\n{ex}\n{ex.StackTrace}");
                     }
                 }
 
@@ -369,8 +396,12 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayEvent e) {
-            EventWrapper ev = new EventWrapper(Now, e, pool.Checkout());
-            state.events.Add(ev);
+            try {
+                EventWrapper ev = new EventWrapper(Now, e, pool.Checkout());
+                state.events.Add(ev);
+            } catch (Exception ex) {
+                APILogger.Error($"Unexpected error occured whilst trying to write Event[{e.GetType()}] at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
+            }
         }
 
         [HideFromIl2Cpp]
@@ -392,6 +423,14 @@ namespace ReplayRecorder.Snapshot {
         internal ReplayDynamic Get(Type type, int id) {
             if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
             return state.dynamics[type].Get(id);
+        }
+
+        [HideFromIl2Cpp]
+        internal void Clear(Type type) {
+            if (!state.dynamics.ContainsKey(type)) throw new ReplayTypeDoesNotExist($"Type '{type.FullName}' does not exist.");
+            foreach (ReplayDynamic dynamic in state.dynamics[type]) {
+                Despawn(dynamic);
+            }
         }
 
         [HideFromIl2Cpp]

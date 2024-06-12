@@ -155,6 +155,13 @@ namespace ReplayRecorder {
         }
 
         /// <summary>
+        /// Triggers despawn events for all dynamics in the given collection.
+        /// </summary>
+        /// 
+        [HideFromIl2Cpp]
+        public static void Clear<T>() where T : ReplayDynamic => SnapshotManager.GetInstance().Clear(typeof(T));
+
+        /// <summary>
         /// Triggers a spawn event for a given dynamic, and begins tracking it.
         /// </summary>
         /// <param name="dynamic">Dynamic to spawn and track.</param>
