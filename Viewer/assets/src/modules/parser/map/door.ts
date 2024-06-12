@@ -65,6 +65,7 @@ export interface DoorState extends Dynamic {
 export interface WeakDoor extends Dynamic {
     maxHealth: number;
     health: number;
+    lastHealthChange: number;
     lock0: LockType;
     lock1: LockType;
 }
@@ -150,7 +151,11 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
     
             if (!weakDoors.has(id)) throw new DoorNotFound(`WeakDoor of id '${id}' was not found.`);
             const weakDoor = weakDoors.get(id)!;
-            weakDoor.health = (data.health / 255) * weakDoor.maxHealth;
+            const health = (data.health / 255) * weakDoor.maxHealth;
+            if (weakDoor.health !== health) {
+                weakDoor.health = health;
+                weakDoor.lastHealthChange = snapshot.time();
+            }
             weakDoor.lock0 = data.lock0;
             weakDoor.lock1 = data.lock1;
         }
@@ -169,6 +174,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
             if (weakDoors.has(id)) throw new DuplicateDoor(`WeakDoor of id '${id}' already exists.`);
             weakDoors.set(id, { 
                 id, ...data,
+                lastHealthChange: -Infinity,
                 health: data.maxHealth
             });
         }

@@ -83,7 +83,7 @@ namespace Vanilla.Player {
             }
 
             private static void HandleThrowState(PlayerAgent player, pPlayerThrowStatus.StatusEnum status) {
-                if (!Replay.TryGet(player.GlobalID, out rPlayerAnimation? _anim)) return;
+                if (!Replay.TryGet(player.GlobalID, out rPlayerAnimation _anim)) return;
                 rPlayerAnimation anim = _anim!;
 
                 switch (status) {
@@ -100,7 +100,7 @@ namespace Vanilla.Player {
             [HarmonyPatch(typeof(MWS_ChargeUp), nameof(MWS_ChargeUp.Enter))]
             [HarmonyPostfix]
             private static void Postfix_MWS_ChargeUp(MWS_ChargeUp __instance) {
-                if (!Replay.TryGet(__instance.m_weapon.Owner.GlobalID, out rPlayerAnimation? _anim)) return;
+                if (!Replay.TryGet(__instance.m_weapon.Owner.GlobalID, out rPlayerAnimation _anim)) return;
                 rPlayerAnimation anim = _anim!;
 
                 anim._chargingMelee = true;
@@ -109,7 +109,7 @@ namespace Vanilla.Player {
             [HarmonyPatch(typeof(MWS_ChargeUp), nameof(MWS_ChargeUp.Exit))]
             [HarmonyPostfix]
             private static void Postfix_ReceiveClassItemSync(MWS_ChargeUp __instance) {
-                if (!Replay.TryGet(__instance.m_weapon.Owner.GlobalID, out rPlayerAnimation? _anim)) return;
+                if (!Replay.TryGet(__instance.m_weapon.Owner.GlobalID, out rPlayerAnimation _anim)) return;
                 rPlayerAnimation anim = _anim!;
 
                 anim._chargingMelee = false;
@@ -139,7 +139,7 @@ namespace Vanilla.Player {
             [HarmonyPatch(typeof(MeleeWeaponThirdPerson), nameof(MeleeWeaponThirdPerson.OnWield))]
             [HarmonyPrefix]
             private static void Prefix_ReceiveClassItemSync(MeleeWeaponThirdPerson __instance) {
-                if (!Replay.TryGet(__instance.Owner.GlobalID, out rPlayerAnimation? _anim)) return;
+                if (!Replay.TryGet(__instance.Owner.GlobalID, out rPlayerAnimation _anim)) return;
                 rPlayerAnimation anim = _anim!;
                 anim.meleeWeaponThirdPerson = __instance;
 
@@ -149,7 +149,7 @@ namespace Vanilla.Player {
             [HarmonyPatch(typeof(MeleeWeaponThirdPerson), nameof(MeleeWeaponThirdPerson.ReceiveClassItemSync))]
             [HarmonyPrefix]
             private static void Prefix_ReceiveClassItemSync(MeleeWeaponThirdPerson __instance, PlayerInventoryBase.pSimpleItemSyncData data) {
-                if (!Replay.TryGet(__instance.Owner.GlobalID, out rPlayerAnimation? _anim)) return;
+                if (!Replay.TryGet(__instance.Owner.GlobalID, out rPlayerAnimation _anim)) return;
                 rPlayerAnimation anim = _anim!;
                 anim.meleeWeaponThirdPerson = __instance;
 

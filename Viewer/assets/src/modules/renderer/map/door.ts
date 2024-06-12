@@ -1,4 +1,4 @@
-import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene } from "three";
+import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene, Vector3 } from "three";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
 import { Bezier } from "../../renderer/bezier.js";
@@ -80,6 +80,9 @@ class DoorModel {
     lock0: LockModel;
     lock1: LockModel;
 
+    shake: number[][];
+    private position: Vector3;
+
     constructor(width: number, height: number, color: Color) {
         this.group = new Group();
 
@@ -142,6 +145,13 @@ class DoorModel {
         this.lock1.anchor.position.set(width / 2 - 0.1, -height / 6, 0.5);
         this.lock1.anchor.rotation.set(0, 0, 0);
         this.lock1.anchor.scale.set(0.4, 0.4, 0.4);
+
+        const shakeAmount = 1;
+        this.shake = new Array(10);
+        for (let i = 0; i < 10; ++i) {
+            this.shake[i] = [-(shakeAmount/2) + Math.random() * shakeAmount, -(shakeAmount/2) + Math.random() * shakeAmount];
+        }
+        this.position = new Vector3();
     }
 
     private static bezier = Bezier(0.5, 0.0, 0.5, 1);
@@ -184,6 +194,17 @@ class DoorModel {
         if (isWeak) {
             this.lock0.update(weakDoor.lock0);
             this.lock1.update(weakDoor.lock1);
+
+            const shakeDuration = 150;
+            const shakeTime = (t - weakDoor.lastHealthChange) / shakeDuration;
+            if (shakeTime > 0.1 && shakeTime < 1) {
+                const idx = Math.round(shakeTime * (this.shake.length - 1));
+                this.group.position.copy(this.position);
+                this.group.position.x += this.shake[idx][0] * (1 - shakeTime);
+                this.group.position.z += this.shake[idx][1] * (1 - shakeTime);
+            } else {
+                this.group.position.copy(this.position);
+            }
         }
     }
 
@@ -196,7 +217,8 @@ class DoorModel {
     }    
 
     public setPosition(x: number, y: number, z: number) {
-        this.group.position.set(x, y + this.height / 2, z);
+        this.position.set(x, y + this.height / 2, z);
+        this.group.position.copy(this.position);
     }
     public setRotation(x: number, y: number, z: number, w: number) {
         this.group.setRotationFromQuaternion(new Quaternion(x, y, z, w));

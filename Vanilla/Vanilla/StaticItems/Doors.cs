@@ -4,6 +4,7 @@ using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using SNetwork;
 
 
 namespace Vanilla.StaticItems {
@@ -163,6 +164,15 @@ namespace Vanilla.StaticItems {
                 DoorReplayManager.weakDoors.Add(new rWeakDoor(__instance));
             }
 
+            [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorGotDamage))]
+            [HarmonyPostfix]
+            private static void WeakDoor_Damage_Client(LG_WeakDoor __instance, float damageDelta, float totalDamageTaken, bool sourceZPos, bool isDropin, SNet_Player instigatorPlayer) {
+                if (SNet.IsMaster) return;
+                if (Replay.TryGet(__instance.Gate.GetInstanceID(), out rWeakDoor door)) {
+                    door.internalHealth = door.door.m_healthMax - totalDamageTaken;
+                }
+            }
+
             [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.Setup))]
             [HarmonyPostfix]
             private static void SecurityDoor_Setup(LG_SecurityDoor __instance, LG_Gate gate) {
@@ -191,7 +201,16 @@ namespace Vanilla.StaticItems {
         public override bool Active => door != null;
         public override bool IsDirty => health != prevHealth || _lock0 != lock0 || _lock1 != lock1;
 
-        private byte health => (byte)(byte.MaxValue * destruction.m_health / door.m_healthMax);
+        private float internalHealth = 0;
+        private byte health {
+            get {
+                if (SNet.IsMaster) {
+                    return (byte)(byte.MaxValue * destruction.m_health / door.m_healthMax);
+                } else {
+                    return (byte)(byte.MaxValue * internalHealth / door.m_healthMax);
+                }
+            }
+        }
         private byte prevHealth = byte.MaxValue;
 
         private LockType GetLockType(int slot) {
@@ -223,6 +242,7 @@ namespace Vanilla.StaticItems {
 
         public rWeakDoor(LG_WeakDoor door) : base(door.Gate.GetInstanceID()) {
             this.door = door;
+            internalHealth = door.m_healthMax;
 
             LG_WeakDoor_Destruction? _d = door.m_destruction.TryCast<LG_WeakDoor_Destruction>();
             if (_d == null) throw new NoDoorDestructionComp($"Failed to get 'LG_WeakDoor_Destruction'.");

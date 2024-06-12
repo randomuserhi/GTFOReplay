@@ -63,6 +63,7 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
             for (const alert of alerts) {
                 if (!enemies.has(alert.enemy)) continue;
                 const enemy = enemies.get(alert.enemy)!;
+                if (!enemy.isVisible()) continue;
 
                 const i = _models.length;
                 if (models[i] === undefined) {
