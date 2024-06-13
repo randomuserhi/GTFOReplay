@@ -196,7 +196,7 @@ class DoorModel {
             this.lock1.update(weakDoor.lock1);
 
             const shakeDuration = 150;
-            const shakeTime = (t - weakDoor.lastHealthChange) / shakeDuration;
+            const shakeTime = (t - weakDoor.lastPunch) / shakeDuration;
             if (shakeTime > 0.1 && shakeTime < 1) {
                 const idx = Math.round(shakeTime * (this.shake.length - 1));
                 this.group.position.copy(this.position);

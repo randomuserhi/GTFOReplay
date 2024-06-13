@@ -44,6 +44,7 @@ class DynamicInstanceManager {
             }
             instance.count = this.mesh.count;
             this.mesh.count = 0;
+            this.mesh.dispose();
 
             this.mesh = instance;
             this.capacity = newCapacity;

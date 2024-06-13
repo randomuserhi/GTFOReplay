@@ -101,6 +101,10 @@ namespace Vanilla.StaticItems {
                 if (smallItem != null) {
                     return (ushort)smallItem.m_serialNumber1;
                 }
+                KeyItemPickup_Core? key = item.item.TryCast<KeyItemPickup_Core>();
+                if (key != null) {
+                    return (ushort)key.m_keyItem.m_keyNum;
+                }
                 return ushort.MaxValue;
             }
         }

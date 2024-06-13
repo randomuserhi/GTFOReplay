@@ -115,6 +115,8 @@ class CameraControls {
 
     private readonly renderer: Renderer;
 
+    webglcontextlost: () => void;
+
     private wheel: (e: WheelEvent) => void;
 
     private keydown: (e: KeyboardEvent) => void;
@@ -160,6 +162,11 @@ class CameraControls {
             this.forward = false;
             this.backward = false;
         });
+
+        this.webglcontextlost = () => {
+            // TODO: ...
+        };
+        this.canvas.addEventListener("webglcontextlost", this.webglcontextlost);
 
         this.keyup = (e) => {
             if (!this.focus) return;
@@ -411,6 +418,7 @@ class CameraControls {
         this.canvas.removeEventListener("mousedown", this.mousedown);
         this.canvas.removeEventListener("mouseup", this.mouseup);
         this.canvas.removeEventListener("mousemove", this.mousemove);
+        this.canvas.removeEventListener("webglcontextlost", this.webglcontextlost);
     }
 }
 

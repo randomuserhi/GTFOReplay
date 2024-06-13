@@ -65,7 +65,7 @@ export interface DoorState extends Dynamic {
 export interface WeakDoor extends Dynamic {
     maxHealth: number;
     health: number;
-    lastHealthChange: number;
+    lastPunch: number;
     lock0: LockType;
     lock1: LockType;
 }
@@ -83,6 +83,7 @@ declare module "../../../replay/moduleloader.js" {
 
         interface Events {
             "Vanilla.Map.DoorStatusChange": DoorStatusChange;
+            "Vanilla.Map.WeakDoor.Punch": { id: number };
         }
 
         interface Dynamics {
@@ -151,11 +152,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
     
             if (!weakDoors.has(id)) throw new DoorNotFound(`WeakDoor of id '${id}' was not found.`);
             const weakDoor = weakDoors.get(id)!;
-            const health = (data.health / 255) * weakDoor.maxHealth;
-            if (weakDoor.health !== health) {
-                weakDoor.health = health;
-                weakDoor.lastHealthChange = snapshot.time();
-            }
+            weakDoor.health = (data.health / 255) * weakDoor.maxHealth;
             weakDoor.lock0 = data.lock0;
             weakDoor.lock1 = data.lock1;
         }
@@ -174,7 +171,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
             if (weakDoors.has(id)) throw new DuplicateDoor(`WeakDoor of id '${id}' already exists.`);
             weakDoors.set(id, { 
                 id, ...data,
-                lastHealthChange: -Infinity,
+                lastPunch: -Infinity,
                 health: data.maxHealth
             });
         }
@@ -188,6 +185,21 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
             if (!weakDoors.has(id)) throw new DoorNotFound(`WeakDoor of id '${id}' did not exist.`);
             weakDoors.delete(id);
         }
+    }
+});
+
+ModuleLoader.registerEvent("Vanilla.Map.WeakDoor.Punch", "0.0.1", {
+    parse: async (data) => {
+        return {
+            id: await BitHelper.readInt(data)
+        };
+    },
+    exec: (data, snapshot) => {
+        const weakDoors = snapshot.getOrDefault("Vanilla.Map.WeakDoor", () => new Map());
+        const id = data.id;
+        if (!weakDoors.has(id)) throw new DoorNotFound(`WeakDoor of id '${id}' was not found.`);
+        const weakDoor = weakDoors.get(id)!;
+        weakDoor.lastPunch = snapshot.time();
     }
 });
 
@@ -205,12 +217,10 @@ ModuleLoader.registerEvent("Vanilla.Map.DoorStatusChange", "0.0.1", {
         const exists = doors.has(id);
         if (!exists) doors.set(id, { id, status });
         const door = doors.get(id)!;
-        if (door.status !== status) {
-            if (door.status !== "Glued") {
-                door.change = snapshot.time();
-            }
-            door.status = status;
+        if (door.status !== "Glued") {
+            door.change = snapshot.time();
         }
+        door.status = status;
     }
 });
 

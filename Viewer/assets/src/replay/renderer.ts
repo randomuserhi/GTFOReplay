@@ -71,6 +71,20 @@ export class Renderer {
         this.dispatchEvent = node.dispatchEvent.bind(node);
     }
 
+    public refresh(canvas?: HTMLCanvasElement, replay?: Replay) {
+        if (canvas !== undefined) {
+            this.canvas = canvas;
+        }
+
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
+        this.composer = new EffectComposer(this.renderer);
+
+        if (replay !== undefined) {
+            this.init(replay);
+        }
+    }
+
     private static isEventListener = function (callback: EventListenerOrEventListenerObject): callback is EventListener {
         return callback instanceof Function;
     };

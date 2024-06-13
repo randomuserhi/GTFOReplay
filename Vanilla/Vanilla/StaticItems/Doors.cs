@@ -5,7 +5,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using SNetwork;
-
+using UnityEngine;
 
 namespace Vanilla.StaticItems {
     internal class rDoor {
@@ -153,6 +153,24 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
+    [ReplayData("Vanilla.Map.WeakDoor.Punch", "0.0.1")]
+    internal class rDoorPunch : Id {
+        [HarmonyPatch]
+        private static class Patches {
+            [HarmonyPatch(typeof(LG_WeakDoor_Destruction), nameof(LG_WeakDoor_Destruction.TriggerPunchEffect))]
+            [HarmonyPostfix]
+            private static void WeakDoor_Punch(LG_WeakDoor_Destruction __instance) {
+                LG_WeakDoor? weakDoor = __instance.m_core.TryCast<LG_WeakDoor>();
+                if (weakDoor == null) return;
+                Replay.Trigger(new rDoorPunch(weakDoor.Gate.GetInstanceID()));
+            }
+        }
+
+        public rDoorPunch(int id) : base(id) {
+        }
+    }
+
+    [HarmonyPatch]
     [ReplayData("Vanilla.Map.WeakDoor", "0.0.1")]
     internal class rWeakDoor : ReplayDynamic {
         [HarmonyPatch]
@@ -162,15 +180,6 @@ namespace Vanilla.StaticItems {
             private static void WeakDoor_Setup(LG_WeakDoor __instance, LG_Gate gate) {
                 DoorReplayManager.doors.Add(new rDoor(rDoor.Type.WeakDoor, gate, __instance, __instance.m_serialNumber, __instance.IsCheckpointDoor));
                 DoorReplayManager.weakDoors.Add(new rWeakDoor(__instance));
-            }
-
-            [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.OnSyncDoorGotDamage))]
-            [HarmonyPostfix]
-            private static void WeakDoor_Damage_Client(LG_WeakDoor __instance, float damageDelta, float totalDamageTaken, bool sourceZPos, bool isDropin, SNet_Player instigatorPlayer) {
-                if (SNet.IsMaster) return;
-                if (Replay.TryGet(__instance.Gate.GetInstanceID(), out rWeakDoor door)) {
-                    door.internalHealth = door.door.m_healthMax - totalDamageTaken;
-                }
             }
 
             [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.Setup))]
@@ -201,13 +210,13 @@ namespace Vanilla.StaticItems {
         public override bool Active => door != null;
         public override bool IsDirty => health != prevHealth || _lock0 != lock0 || _lock1 != lock1;
 
-        private float internalHealth = 0;
+        private float damageTaken = 0;
         private byte health {
             get {
                 if (SNet.IsMaster) {
                     return (byte)(byte.MaxValue * destruction.m_health / door.m_healthMax);
                 } else {
-                    return (byte)(byte.MaxValue * internalHealth / door.m_healthMax);
+                    return (byte)(byte.MaxValue * (Mathf.Max(door.m_healthMax - damageTaken, 0)) / door.m_healthMax);
                 }
             }
         }
@@ -242,7 +251,7 @@ namespace Vanilla.StaticItems {
 
         public rWeakDoor(LG_WeakDoor door) : base(door.Gate.GetInstanceID()) {
             this.door = door;
-            internalHealth = door.m_healthMax;
+            damageTaken = door.m_healthMax;
 
             LG_WeakDoor_Destruction? _d = door.m_destruction.TryCast<LG_WeakDoor_Destruction>();
             if (_d == null) throw new NoDoorDestructionComp($"Failed to get 'LG_WeakDoor_Destruction'.");

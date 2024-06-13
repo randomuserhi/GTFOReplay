@@ -130,7 +130,8 @@ const style = Style(({ style }) => {
 });
 
 export interface player extends HTMLDivElement {
-    canvas: HTMLCanvasElement;
+    canvasMount: HTMLDivElement;
+    canvas?: HTMLCanvasElement;
     mount: HTMLDivElement;
     seeker: seeker;
     bar: bar;
@@ -168,6 +169,8 @@ export interface player extends HTMLDivElement {
 
     loadedNode?: Node;
     load(node?: Node): void;
+
+    refresh(): void;
 }
 
 declare module "@/rhu/macro.js" {
@@ -178,7 +181,9 @@ declare module "@/rhu/macro.js" {
 
 export const player = Macro((() => {
     const player = function(this: player) {
-        this.renderer = new Renderer(this.canvas);
+        this.refresh();
+
+        this.renderer = new Renderer(this.canvas!);
         this.ready = false;
 
         this.bar.init(this);
@@ -186,7 +191,7 @@ export const player = Macro((() => {
         this.seeker.trigger = (value) => {
             if (this.replay === undefined) return;
             this.time = value * this.seekLength;
-            requestAnimationFrame(() => this.canvas.focus());
+            requestAnimationFrame(() => this.canvasMount.focus());
         };
         this.seeker.live.onclick = () => {
             if (this.live) {
@@ -194,12 +199,12 @@ export const player = Macro((() => {
             } else {
                 this.goLive();
             }
-            this.canvas.focus();
+            this.canvasMount.focus();
         };
         this.seeker.pause.onclick = () => {
             this.pause = !this.pause;
             this.seeker.setPause(this.pause);
-            this.canvas.focus();
+            this.canvasMount.focus();
         };
 
         this.loadButton.onclick = () => {
@@ -207,7 +212,7 @@ export const player = Macro((() => {
         };
 
         this.resize = () => {
-            const computed = getComputedStyle(this.canvas);
+            const computed = getComputedStyle(this.canvasMount);
             const width = parseInt(computed.width);
             const height = parseInt(computed.height);
             this.renderer.resize(width, height);
@@ -229,7 +234,7 @@ export const player = Macro((() => {
             this.window.replaceChildren(node);
             this.window.style.display = "block";
         } else {
-            this.canvas.focus();
+            this.canvasMount.focus();
             this.window.replaceChildren();
             this.window.style.display = "none";
         }
@@ -262,7 +267,7 @@ export const player = Macro((() => {
 
             this.bar.reset();
             this.renderer.init(this.replay);
-            this.canvas.focus();
+            this.canvasMount.focus();
             
             this.ready = true;
             this.pause = false;
@@ -365,6 +370,17 @@ export const player = Macro((() => {
         requestAnimationFrame(() => this.update());
     };
 
+    // Refresh canvas to handle Webgl context lost
+    player.prototype.refresh = function() {
+        const [macro, frag] = Macro.anon<{ canvas: HTMLCanvasElement }>(/*html*/`<canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>`);
+        this.canvasMount.replaceChildren(frag);
+        this.canvas = macro.canvas;
+
+        if (this.renderer === undefined) return;
+        this.renderer.refresh(this.canvas, this.replay);
+        this.resize();
+    };
+
     return player;
 })(), "routes/player", //html
 `
@@ -382,7 +398,7 @@ export const player = Macro((() => {
                 <div rhu-id="loading" style="display: none;" class="${style.loader}"></div>
             </div>
         </div>
-        <canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>
+        <div style="width: 100%; height: 100%;" rhu-id="canvasMount"></div>
         <div rhu-id="mount" class="${style.mount}" style="display: none">
             ${seeker`rhu-id="seeker"`}
         </div>
