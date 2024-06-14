@@ -31,6 +31,12 @@ namespace ReplayRecorder.BepInEx {
                 "replayFilename",
                 "{0} {1:yyyy-MM-dd HH-mm}",
                 "Filename format of stored replays. Follows C# string format syntax with (0: Rundown + Level, 1: Date). If filename is invalid (contains invalid characters etc...) default name of 'replay' is used.");
+
+            separateByRundown = configFile.Bind(
+                "Settings",
+                "separateByRundown",
+                false,
+                "Will create a new folder for each rundown. E.g R1A1 replay will be stored in path/to/replay/folder/R1/R1A1");
         }
 
         public static bool Debug {
@@ -57,5 +63,11 @@ namespace ReplayRecorder.BepInEx {
             set { replayFilename.Value = value; }
         }
         private static ConfigEntry<string> replayFilename;
+
+        public static bool SeparateByRundown {
+            get { return separateByRundown.Value; }
+            set { separateByRundown.Value = value; }
+        }
+        private static ConfigEntry<bool> separateByRundown;
     }
 }

@@ -16,7 +16,7 @@ declare module "../../../replay/moduleloader.js" {
 
 const geometry = new SphereGeometry(1, 10, 10);
 const bodyMaterial = new MeshPhongMaterial({
-    color: 0xe0ebb2
+    color: 0xc3ebb7
 });
 const dimpleMaterial = new MeshPhongMaterial({
     color: 0x1b70ff

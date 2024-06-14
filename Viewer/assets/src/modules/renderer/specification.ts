@@ -1457,12 +1457,12 @@ const _item: Equippable<number>[] = [{
 }, {
     id: 101,
     type: "consumable",
-    serial: "AMMO_PACK",
+    serial: "AMMOPACK",
     model: () => new Pack(0x00ff00)
 }, {
     id: 127,
     type: "consumable",
-    serial: "TOOL_REFILL_PACK",
+    serial: "TOOL_REFILL",
     model: () => new Pack(0x0000ff)
 }, {
     id: 132,

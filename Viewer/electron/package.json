@@ -12,7 +12,7 @@
     "build": "del-cli build/**/* !build/assets && npm run transpile && copyfiles -u 1 forge/package.json build",
     "start": "electron-forge start ./build",
     "package": "electron-forge package ./build",
-    "make": "electron-forge make ./build"
+    "make": "electron-forge make ./build && npm install --prefix build/out/viewer-win32-x64/resources/app --omit=dev"
   },
   "repository": {
     "type": "git",

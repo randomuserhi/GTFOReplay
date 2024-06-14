@@ -4,7 +4,6 @@ using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using UnityEngine;
-using Vanilla.Map;
 
 namespace Vanilla.StaticItems {
     internal class rTerminal {
@@ -38,7 +37,7 @@ namespace Vanilla.StaticItems {
                 int id = __instance.GetInstanceID();
                 if (terminals.ContainsKey(id)) return;
                 if (__instance.SpawnNode == null) {
-                    terminals.Add(id, new rTerminal(MapUtils.PositionToDimension(__instance.transform.position), __instance));
+                    terminals.Add(id, new rTerminal((byte)Dimension.GetDimensionFromPos(__instance.transform.position).DimensionIndex, __instance));
                 } else {
                     terminals.Add(id, new rTerminal((byte)__instance.SpawnNode.m_dimension.DimensionIndex, __instance));
                 }

@@ -101,8 +101,9 @@ namespace ReplayRecorder {
         /// Triggers an event to be written next tick.
         /// </summary>
         /// <param name="e"></param>
+        /// <returns>True if the event was succesfully triggered, otherwise false.</returns>
         [HideFromIl2Cpp]
-        public static void Trigger(ReplayEvent e) => SnapshotManager.GetInstance().Trigger(e);
+        public static bool Trigger(ReplayEvent e) => SnapshotManager.GetInstance().Trigger(e);
 
         /// <summary>
         /// Triggers a header to be written.

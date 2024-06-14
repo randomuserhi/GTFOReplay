@@ -1,8 +1,6 @@
-﻿using API;
-using ChainedPuzzles;
+﻿using ChainedPuzzles;
 using HarmonyLib;
 using LevelGeneration;
-using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -72,8 +70,7 @@ namespace Vanilla.ChainedPuzzles {
                 if (splineDimensions.ContainsKey(id)) {
                     dimensionIndex = splineDimensions[id];
                 } else {
-                    APILogger.Warn("Could not get holopath dimension, falling back to player dimension.");
-                    dimensionIndex = (byte)PlayerManager.GetLocalPlayerAgent().DimensionIndex;
+                    dimensionIndex = (byte)Dimension.GetDimensionFromPos(holopath.transform.position).DimensionIndex;
                 }
 
                 Replay.Spawn(new rHolopath(holopath, dimensionIndex));

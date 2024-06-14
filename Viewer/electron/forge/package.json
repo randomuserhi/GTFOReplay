@@ -8,6 +8,12 @@
         "@electron-forge/cli": "^7.4.0",
         "electron": "^31.0.1"
     },
+    "dependencies": {
+        "@types/ws": "^8.5.4",
+        "chokidar": "^3.6.0",
+        "electron-squirrel-startup": "^1.0.1",
+        "ws": "^8.13.0"
+    },
     "config": {
         "forge": "../forge/forge.config.cjs"
     }

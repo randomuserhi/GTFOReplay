@@ -318,15 +318,21 @@ namespace ReplayRecorder.Snapshot {
 
             string filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
             string path = ConfigManager.ReplayFolder;
-            if (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) {
-                filename = "replay";
-            }
+            filename = Utils.RemoveInvalidCharacters(filename);
             if (!Directory.Exists(path)) {
                 path = "./";
             }
-            fullpath = Path.Combine(path, filename);
+            string dirPath;
+            if (ConfigManager.SeparateByRundown) {
+                dirPath = Path.Combine(path, Utils.RemoveInvalidCharacters(data.name));
+                fullpath = Path.Combine(dirPath, filename);
+            } else {
+                dirPath = Utils.RemoveInvalidCharacters(path);
+                fullpath = Path.Combine(dirPath, filename);
+            }
 
             try {
+                Directory.CreateDirectory(dirPath);
                 fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
             } catch (Exception ex) {
                 APILogger.Error($"Failed to create filestream, falling back to 'replay.gtfo': {ex.Message}");
@@ -395,13 +401,15 @@ namespace ReplayRecorder.Snapshot {
         }
 
         [HideFromIl2Cpp]
-        internal void Trigger(ReplayEvent e) {
+        internal bool Trigger(ReplayEvent e) {
             try {
                 EventWrapper ev = new EventWrapper(Now, e, pool.Checkout());
                 state.events.Add(ev);
+                return true;
             } catch (Exception ex) {
                 APILogger.Error($"Unexpected error occured whilst trying to write Event[{e.GetType()}] at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
             }
+            return false;
         }
 
         [HideFromIl2Cpp]
@@ -438,7 +446,10 @@ namespace ReplayRecorder.Snapshot {
             Type dynType = dynamic.GetType();
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
-            Trigger(new ReplaySpawn(dynamic));
+            if (!Trigger(new ReplaySpawn(dynamic))) {
+                APILogger.Error($"Unable to spawn '{dynType}' as spawn event failed.");
+                return;
+            }
             state.dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
         [HideFromIl2Cpp]
@@ -446,7 +457,10 @@ namespace ReplayRecorder.Snapshot {
             Type dynType = dynamic.GetType();
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
-            Trigger(new ReplayDespawn(dynamic));
+            if (!Trigger(new ReplayDespawn(dynamic))) {
+                APILogger.Error($"Unable to despawn '{dynType}' as despawn event failed.");
+                return;
+            }
             state.dynamics[dynType].Remove(dynamic.id, errorOnNotFound);
         }
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AIGraph;
+using UnityEngine;
 
 namespace Vanilla.Map {
     internal static class MeshUtils {
@@ -171,6 +172,61 @@ namespace Vanilla.Map {
                 }
             }
             return closest;
+        }
+
+        // Credit to Flowaria CConsole NavCheat
+        public static int[] ClearInaccessibleTriangles(eDimensionIndex dimensionIndex, Vector3[] triangles, int[] indices) {
+            List<int> newIndices = new List<int>();
+
+            for (int i = 0; i < indices.Length; i += 3) {
+                var a = indices[i + 0];
+                var b = indices[i + 1];
+                var c = indices[i + 2];
+
+                var pa = triangles[a];
+                var pb = triangles[b];
+                var pc = triangles[c];
+                CalcTriangleProps(pa, pb, pc, out var pAvg, out var heightDiff);
+
+                var tolerance = Mathf.Max(1.5f, heightDiff * 1.5f);
+                if (IsPositionValid(dimensionIndex, pAvg, tolerance)) {
+                    newIndices.Add(a);
+                    newIndices.Add(b);
+                    newIndices.Add(c);
+                }
+            }
+
+            return newIndices.ToArray();
+        }
+
+        private static void CalcTriangleProps(Vector3 p1, Vector3 p2, Vector3 p3, out Vector3 center, out float heightDifference) {
+            center = (p1 + p2 + p3) * 0.333333f;
+
+            var lowest = Mathf.Min(p1.y, p2.y, p3.y);
+            var highest = Mathf.Max(p1.y, p2.y, p3.y);
+
+            heightDifference = highest - lowest;
+        }
+
+        private static bool IsPositionValid(eDimensionIndex dimensionIndex, Vector3 position, float voxelSearchTolerance) {
+            if (!AIG_GeomorphNodeVolume.TryGetGeomorphVolume(0, dimensionIndex, position, out var gnv)) {
+                return false;
+            }
+
+            if (!gnv.m_voxelNodeVolume.TryGetPillar(position, out var vnp)) {
+                return false;
+            }
+
+            var height = position.y;
+            if (!vnp.TryGetVoxelNode(height - voxelSearchTolerance, height + voxelSearchTolerance, out var iNode)) {
+                return false;
+            }
+
+            if (!AIG_NodeCluster.TryGetNodeCluster(iNode.ClusterID, out _)) {
+                return false;
+            }
+
+            return true;
         }
 
         // Merge vertices that are within a threshhold of each other

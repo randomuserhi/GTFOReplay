@@ -18,18 +18,6 @@ namespace Vanilla.Map {
 
     public static class MapUtils {
         public static Dictionary<byte, float> lowestPoint { get; internal set; } = new Dictionary<byte, float>();
-
-        public static byte PositionToDimension(Vector3 position) {
-            byte dimension = 0;
-            float height = float.NegativeInfinity;
-            foreach (var kvp in lowestPoint) {
-                if (position.y > kvp.Value && kvp.Value > height) {
-                    height = kvp.Value;
-                    dimension = kvp.Key;
-                }
-            }
-            return dimension;
-        }
     }
 
     [HarmonyPatch]
@@ -37,7 +25,7 @@ namespace Vanilla.Map {
         [HarmonyPatch]
         private static class Patches {
             // Get number of dimensions that need loading
-            public static Il2CppSystem.Collections.Generic.List<Dimension>? dimensions;
+
 
             [HarmonyPatch(typeof(LG_SetupFloor), nameof(LG_SetupFloor.Build))]
             [HarmonyPostfix]
@@ -47,30 +35,24 @@ namespace Vanilla.Map {
             }
 
             // Called when a dimension's navmesh is building
-            private static int dimensionsLoaded = 0;
             [HarmonyPatch(typeof(LG_BuildUnityGraphJob), nameof(LG_BuildUnityGraphJob.Build))]
             [HarmonyPostfix]
             private static void OnNavmeshDone(LG_BuildUnityGraphJob __instance) {
                 // Check if the navmesh has finished
                 if (__instance.m_dimension.NavmeshOperation.isDone) {
-                    if (dimensions == null) {
-                        APILogger.Error("No dimensions found, this should not happen.");
-                        return;
-                    }
-
                     ++dimensionsLoaded; // Update number of dimensions that have finished loading
-                    if (dimensionsLoaded == dimensions.Count) {
-                        // When all have finished loading, finalize
-                        MapGeometryReplayManager.GenerateMapInfo(dimensions);
-                    }
                 }
             }
         }
 
+        private static int dimensionsLoaded = 0;
+        private static Il2CppSystem.Collections.Generic.List<Dimension>? dimensions;
+
         [ReplayInit]
         private static void Init() {
             processed.Clear();
-            Patches.dimensions = null;
+            dimensions = null;
+            dimensionsLoaded = 0;
             MapUtils.lowestPoint.Clear();
         }
 
@@ -136,19 +118,6 @@ namespace Vanilla.Map {
             return (vertices.ToArray(), indices.ToArray());
         }
 
-        private static Vector3 ClosestVertex(Vector3 position, Mesh mesh) {
-            Vector3 closest = mesh.vertices[0];
-            float dist = (position - closest).sqrMagnitude;
-            for (int i = 1; i < mesh.vertices.Length; ++i) {
-                float d = (position - mesh.vertices[i]).sqrMagnitude;
-                if (d < dist) {
-                    closest = mesh.vertices[i];
-                    dist = d;
-                }
-            }
-            return closest;
-        }
-
         private static void GenerateMeshSurfaces(Dimension dimension) {
             NavMeshTriangulation triangulation = NavMesh.CalculateTriangulation();
 
@@ -162,6 +131,7 @@ namespace Vanilla.Map {
 
             Vector3[] vertices = triangulation.vertices;
             int[] indices = triangulation.indices;
+            indices = MeshUtils.ClearInaccessibleTriangles(dimension.DimensionIndex, vertices, indices);
             (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.25f, 2f);
 
             APILogger.Debug($"Splitting navmesh...");
@@ -181,6 +151,7 @@ namespace Vanilla.Map {
                 meshes[i] = surfaceBuffer[i].ToMesh();
                 meshes[i].RecalculateBounds();
             }
+
             meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 5).ToArray(); // Cull meshes that are too small
 
             /// This works since each dimension has Layer information containing:
@@ -292,7 +263,7 @@ namespace Vanilla.Map {
                 surface.mesh.vertices = vertices;
                 surface.mesh.triangles = indices;
 
-                surface.mesh.RecalculateBounds();
+                surface.mesh!.RecalculateBounds();
                 float low = surface.mesh!.bounds.center.y - surface.mesh!.bounds.extents.y;
                 if (low < MapUtils.lowestPoint[(byte)dimension.DimensionIndex]) {
                     MapUtils.lowestPoint[(byte)dimension.DimensionIndex] = low;
@@ -304,7 +275,17 @@ namespace Vanilla.Map {
             }
         }
 
-        public static void GenerateMapInfo(Il2CppSystem.Collections.Generic.List<Dimension> dimensions) {
+        [ReplayOnElevatorStop]
+        private static void GenerateMapInfo() {
+            if (dimensions == null) {
+                APILogger.Error("No dimensions found, this should not happen.");
+                return;
+            }
+
+            if (dimensionsLoaded != dimensions.Count) {
+                APILogger.Error("Elevator has stopped, but not all dimensions have been loaded?");
+            }
+
             APILogger.Debug($"Generating map navmesh...");
 
             for (int i = 0; i < dimensions.Count; ++i) {

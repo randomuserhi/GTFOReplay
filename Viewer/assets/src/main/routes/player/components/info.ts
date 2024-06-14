@@ -103,7 +103,10 @@ versionInfo.set("0.0.3", `- Fix door locks sometimes being on the wrong side
 - Enemy max health is now recorded instead of being hard coded for better modded support`);
 versionInfo.set("0.0.4", `- Fixed items being in the wrong dimension
 - Added dimension filter to item search
-- Teleporting to an item now also brings you to the right dimension`);    
+- Teleporting to an item now also brings you to the right dimension`);   
+versionInfo.set("0.0.5", `- Fixed bulkhead keys not having serial numbers
+- Added door punch effect
+- Fixed checkpoints sometimes bricking replays`);    
 
 export const info = Macro((() => {
     const info = function(this: info) {

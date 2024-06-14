@@ -7,7 +7,6 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using SNetwork;
 using UnityEngine;
-using Vanilla.Map;
 
 namespace Vanilla.StaticItems {
     [HarmonyPatch]
@@ -38,7 +37,7 @@ namespace Vanilla.StaticItems {
                 if (item.m_stateReplicator.State.placement.node.TryGet(out AIG_CourseNode node)) {
                     return (byte)node.m_dimension.DimensionIndex;
                 }
-                return MapUtils.PositionToDimension(position);
+                return (byte)Dimension.GetDimensionFromPos(position).DimensionIndex;
             }
         }
         private byte _dimensionIndex = 0;
@@ -102,7 +101,7 @@ namespace Vanilla.StaticItems {
                     return (ushort)smallItem.m_serialNumber1;
                 }
                 KeyItemPickup_Core? key = item.item.TryCast<KeyItemPickup_Core>();
-                if (key != null) {
+                if (key != null && key.m_keyItem != null) {
                     return (ushort)key.m_keyItem.m_keyNum;
                 }
                 return ushort.MaxValue;
