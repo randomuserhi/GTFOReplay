@@ -188,7 +188,7 @@ namespace Vanilla.Map {
                 var pc = triangles[c];
                 CalcTriangleProps(pa, pb, pc, out var pAvg, out var heightDiff);
 
-                var tolerance = Mathf.Max(1.5f, heightDiff * 1.5f);
+                var tolerance = Mathf.Max(2f, heightDiff * 2f);
                 if (IsPositionValid(dimensionIndex, pAvg, tolerance)) {
                     newIndices.Add(a);
                     newIndices.Add(b);
@@ -199,7 +199,7 @@ namespace Vanilla.Map {
             return newIndices.ToArray();
         }
 
-        private static void CalcTriangleProps(Vector3 p1, Vector3 p2, Vector3 p3, out Vector3 center, out float heightDifference) {
+        public static void CalcTriangleProps(Vector3 p1, Vector3 p2, Vector3 p3, out Vector3 center, out float heightDifference) {
             center = (p1 + p2 + p3) * 0.333333f;
 
             var lowest = Mathf.Min(p1.y, p2.y, p3.y);

@@ -59,7 +59,7 @@ namespace Vanilla.Map {
         // private collection that maintains which dimensions have been processed
         private static HashSet<eDimensionIndex> processed = new HashSet<eDimensionIndex>();
 
-        private static int GetNewVertex(Dictionary<uint, int> newVectices, List<Vector3> vertices, int i1, int i2) {
+        private static int GetNewVertex(Dictionary<uint, int> newVectices, List<Vector3> vertices, int i1, int i2, float min, float max) {
             if (i1 > ushort.MaxValue) throw new Exception("Only supports 16 bit indices.");
             if (i2 > ushort.MaxValue) throw new Exception("Only supports 16 bit indices.");
 
@@ -77,9 +77,7 @@ namespace Vanilla.Map {
 
             // calculate new vertex
             Vector3 pos = (vertices[i1] + vertices[i2]) * 0.5f;
-            if (NavMesh.Raycast(pos + Vector3.up, pos + Vector3.down, out var hit, 1)) {
-                pos = hit.position;
-            } else if (NavMesh.SamplePosition(pos, out var hit2, 5, 1)) {
+            if (NavMesh.SamplePosition(pos, out var hit2, 3, 1)) {
                 pos = hit2.position;
             }
             vertices.Add(pos);
@@ -98,9 +96,12 @@ namespace Vanilla.Map {
                 int i2 = mesh.triangles[i + 1];
                 int i3 = mesh.triangles[i + 2];
 
-                int a = GetNewVertex(newVectices, vertices, i1, i2);
-                int b = GetNewVertex(newVectices, vertices, i2, i3);
-                int c = GetNewVertex(newVectices, vertices, i3, i1);
+                float min = Mathf.Min(vertices[i1].y, vertices[i2].y, vertices[i3].y);
+                float max = Mathf.Max(vertices[i1].y, vertices[i2].y, vertices[i3].y);
+
+                int a = GetNewVertex(newVectices, vertices, i1, i2, min, max);
+                int b = GetNewVertex(newVectices, vertices, i2, i3, min, max);
+                int c = GetNewVertex(newVectices, vertices, i3, i1, min, max);
                 indices.Add(i1);
                 indices.Add(a);
                 indices.Add(c);
@@ -132,7 +133,7 @@ namespace Vanilla.Map {
             Vector3[] vertices = triangulation.vertices;
             int[] indices = triangulation.indices;
             indices = MeshUtils.ClearInaccessibleTriangles(dimension.DimensionIndex, vertices, indices);
-            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.1f, 2f);
+            (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.25f, 2f);
 
             APILogger.Debug($"Splitting navmesh...");
             MeshUtils.Surface[] surfaceBuffer = MeshUtils.SplitNavmesh(vertices, indices);
