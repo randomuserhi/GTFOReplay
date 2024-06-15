@@ -41,6 +41,27 @@
                 set("Replay Binary Format", "Dev/BinaryFormat.js");
             });
         })(docs.create("1.0.0", "About"));
+        ((docs) => {
+            const stack = [];
+            const dir = (dir, func) => {
+                stack.push(dir);
+                const current = [...stack];
+                let prio = 0;
+                const d = (path, page) => {
+                    docs.set(`${[...current, ...path.split("/")].join("/")}`, page, prio++);
+                    return path;
+                };
+                func(d);
+                stack.pop();
+            };
+            let prio = 0;
+            const set = (path, page) => {
+                docs.set(path, page, prio++);
+                return path;
+            };
+            set("About", "About.js");
+            set("Viewer", "Viewer.js");
+        })(docs.create("2.0.0", "About"));
         return {
             DOCUSCRIPT_ROOT
         };
