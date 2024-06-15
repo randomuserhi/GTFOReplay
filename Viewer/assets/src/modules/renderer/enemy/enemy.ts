@@ -129,6 +129,7 @@ export class EnemyModel {
 
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
 State: ${anim.state}
+Anim: ${enemy.animHandle}
 HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A if client replay
 
         this.tmp.visible = showInfo;
