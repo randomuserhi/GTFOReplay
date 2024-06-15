@@ -5,7 +5,7 @@ namespace ReplayRecorder {
     internal static class Utils {
         public const BindingFlags AnyBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
 
-        public static string RemoveInvalidCharacters(string content, char replace = '_', bool doNotReplaceBackslashes = false) {
+        public static string RemoveInvalidCharacters(string content, char replace = '_') {
             if (string.IsNullOrEmpty(content))
                 return content;
 
@@ -14,7 +14,7 @@ namespace ReplayRecorder {
             if (idx >= 0) {
                 var sb = new StringBuilder(content);
                 while (idx >= 0) {
-                    if (sb[idx] != '\\' || !doNotReplaceBackslashes)
+                    if (sb[idx] != '\\' && sb[idx] != '/')
                         sb[idx] = replace;
                     idx = content.IndexOfAny(invalidCharacters, idx + 1);
                 }
