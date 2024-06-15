@@ -73,6 +73,7 @@ declare namespace RHU {
             };
 
             set("About", "About.js");
+            set("Viewer", "Viewer.js");
         })(docs.create("2.0.0", "About"));
 
         return {
