@@ -2166,7 +2166,8 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 47,
     name: "Immortal Tank",
-    maxHealth: Infinity
+    maxHealth: Infinity,
+    scale: 1.5,
 }, {
     id: 42,
     name: "Flyer",
