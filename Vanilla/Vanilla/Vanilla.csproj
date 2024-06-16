@@ -28,9 +28,6 @@
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Common.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Runtime.dll" Private="false" />
 		<Reference Include="$(BepInEx)\interop\*.dll" Private="false" />
-		<Compile Remove="HeavyItem\**" />
-		<EmbeddedResource Remove="HeavyItem\**" />
-		<None Remove="HeavyItem\**" />
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 
