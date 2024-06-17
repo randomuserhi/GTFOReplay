@@ -1076,6 +1076,7 @@ export interface EnemySpecification {
     name?: string;
     model?: (data: any) => EnemyModel;
     height?: number;
+    headType?: "spikey";
     rotOffset?: Vector3Like;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;
@@ -2088,6 +2089,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 33,
     name: "Hybrid",
+    headType: "spikey",
     maxHealth: 150,
     scale: _shooter_scale,
     armScale: {

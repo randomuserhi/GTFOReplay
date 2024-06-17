@@ -332,17 +332,26 @@ export class HumanoidEnemyModel extends EnemyModel {
         this.animate(dt, time, enemy, anim);
         this.computeMatrices(dt, enemy);
 
+        // TODO(randomuserhi): Change the mechanism to make more maintainable for different head types
         if (this.datablock?.transparent === true) {
-            this.render(enemy, "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
-            this.render(enemy, "Sphere.MeshPhong.HalfTransparency", "Cylinder.MeshPhong.HalfTransparency");
+            this.render(enemy, "Sphere.Spikey.MeshPhong.HalfTransparency.Mask", "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
+            this.render(enemy, "Sphere.Spikey.MeshPhong.HalfTransparency", "Sphere.MeshPhong.HalfTransparency", "Cylinder.MeshPhong.HalfTransparency");
         } else {
-            this.render(enemy, "Sphere.MeshPhong", "Cylinder.MeshPhong");
+            this.render(enemy, "Sphere.Spikey.MeshPhong", "Sphere.MeshPhong", "Cylinder.MeshPhong");
         }
     }
 
-    private render(enemy: Enemy, sphere: keyof InstanceTypes, cylinder: keyof InstanceTypes) {
+    // TODO(randomuserhi): Change the mechanism to make more maintainable for different head types
+    private render(enemy: Enemy, spikey: keyof InstanceTypes, sphere: keyof InstanceTypes, cylinder: keyof InstanceTypes) {
         if (enemy.head) {
-            consume(sphere, this.head, this.color);
+            switch (this.datablock?.headType) {
+            case "spikey":
+                consume(spikey, this.head, this.color);
+                break;
+            default:
+                consume(sphere, this.head, this.color);
+                break;
+            }
         }
 
         for (let i = 0; i < _points.length; ++i) {

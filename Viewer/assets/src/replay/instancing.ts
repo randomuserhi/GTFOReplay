@@ -67,12 +67,12 @@ export function createInstance(type: keyof InstanceTypes, geometry: BufferGeomet
 }
 
 export function getInstance(type: keyof InstanceTypes) {
-    if (!_instances.has(type)) throw new Error(`Instance type '${type}' does not exist.`);
+    if (!_instances.has(type)) return undefined;
     return _instances.get(type)!.mesh;
 }
 
 export function consume(type: keyof InstanceTypes, matrix: Matrix4, color: Color): number {
-    if (!_instances.has(type)) throw new Error(`Instance type '${type}' does not exist.`);
+    if (!_instances.has(type)) return -1;
     const manager = _instances.get(type)!;
     return manager.consume(matrix, color);
 }

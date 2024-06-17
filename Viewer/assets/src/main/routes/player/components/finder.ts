@@ -160,9 +160,10 @@ export const finder = Macro((() => {
             if (!item.onGround) continue;
             if (item.dimension !== this.dimension) continue;
             let li: { frag: { root: HTMLElement, name: HTMLSpanElement, item: Item }, key: string };
+            const displayName = key === "Unknown" ? `${item.itemID.hash}` : key;
             if (i < this.items.length) {
                 this.items[i].key = key;
-                this.items[i].frag.name.innerText = key;
+                this.items[i].frag.name.innerText = displayName;
                 this.items[i].frag.item = item;
                 li = this.items[i];
             } else {
@@ -172,7 +173,7 @@ export const finder = Macro((() => {
                     item: Item,
                 }>(/*html*/`
                     <div rhu-id="root" class="${style.item}">
-                        <span rhu-id="name">${key}</span>
+                        <span rhu-id="name">${displayName}</span>
                     </div>
                     `);
                 frag.item = item;

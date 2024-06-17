@@ -4,17 +4,21 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { createInstance } from "../../replay/instancing.js";
 import { ModuleLoader, ReplayApi } from "../../replay/moduleloader.js";
 import { Renderer } from "../../replay/renderer.js";
+import { loadGLTF } from "./modeloader.js";
 
 declare module "../../replay/instancing.js" {
     interface InstanceTypes {
         "Cylinder.MeshPhong": void;
         "Sphere.MeshPhong": void;
+        "Sphere.Spikey.MeshPhong": void;
 
         // https://stackoverflow.com/questions/36947704/rendering-a-transparent-shell
         "Cylinder.MeshPhong.HalfTransparency.Mask": void;
         "Sphere.MeshPhong.HalfTransparency.Mask": void;
+        "Sphere.Spikey.MeshPhong.HalfTransparency.Mask": void;
         "Cylinder.MeshPhong.HalfTransparency": void;
         "Sphere.MeshPhong.HalfTransparency": void;
+        "Sphere.Spikey.MeshPhong.HalfTransparency": void;
     } 
 }
 
@@ -36,6 +40,13 @@ declare module "../../replay/instancing.js" {
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
         mesh.renderOrder = order;
     });
+
+    loadGLTF("../js3party/models/hybrid_head.glb").then((geometry) => createInstance("Sphere.Spikey.MeshPhong.HalfTransparency.Mask", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
 })();
 
 (() => {
@@ -56,6 +67,13 @@ declare module "../../replay/instancing.js" {
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
         mesh.renderOrder = order;
     });
+
+    loadGLTF("../js3party/models/hybrid_head.glb").then((geometry) => createInstance("Sphere.Spikey.MeshPhong.HalfTransparency", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
 })();
 
 (() => {
@@ -74,6 +92,14 @@ declare module "../../replay/instancing.js" {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
     });
+
+    loadGLTF("../js3party/models/hybrid_head.glb").then((geometry) => createInstance("Sphere.Spikey.MeshPhong", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
+    
 })();
 
 declare module "../../replay/moduleloader.js" {
