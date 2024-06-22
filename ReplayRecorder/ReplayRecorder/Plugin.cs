@@ -28,7 +28,7 @@ public class Plugin : BasePlugin {
         if (instance.Ready) {
             ByteBuffer packet = new ByteBuffer();
             BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
-            BitHelper.WriteBytes(instance.fullpath, packet);
+            BitHelper.WriteBytes(instance.filename, packet);
 
             _ = server.SendTo(packet.Array, endPoint);
         }

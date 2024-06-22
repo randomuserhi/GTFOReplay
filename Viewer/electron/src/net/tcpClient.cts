@@ -149,7 +149,7 @@ export class TcpClient {
                                     (recvBuffer[3] << 24);
                         }
                         if (msgSize > 0) { // Transition to reading state when there is a message
-                            //console.log(`msgSize: ${msgSize}`);
+                            console.log(`msgSize: ${msgSize}`);
                             state = "reading";
                         }
                     }
@@ -167,7 +167,7 @@ export class TcpClient {
                             recvBuffer[read] = buffer[totalRead];
                         }
                     }
-                    //console.log(`Received: ${read}/${msgSize}`);
+                    console.log(`Received: ${read}/${msgSize}`);
                     
                     if (read >= msgSize) {
                         // Decode message and trigger "message" event

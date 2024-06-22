@@ -18,6 +18,7 @@ class File {
         callback: (bytes?: ArrayBufferLike) => void;
     }[];
 
+    private static cyclicMaxSize: number = 1073741824;
     private cyclicBuffer: Uint8Array;
     private cyclicStart?: { index: number, offset: number };
     private cyclicEnd: { index: number, offset: number };
@@ -35,17 +36,6 @@ class File {
 
     public receiveLiveBytes(data: { offset: number, bytes: Uint8Array }) {
         const { offset, bytes } = data;
-        //console.log(`${offset} | ${bytes.byteLength}`);
-        if (this.cyclicBuffer.length < bytes.byteLength * 2) {
-            // If cyclicBuffer is too small, clear cache and resize
-            this.cyclicBuffer = new Uint8Array(bytes.byteLength * 2);
-            // TODO(randomuserhi): refactor into a function called `clearCache`
-            this.cyclicStart = undefined;
-            this.cyclicEnd = {
-                index: 0,
-                offset: 0
-            };
-        }
         let empty = false;
         if (this.cyclicStart === undefined) {
             empty = true;
@@ -53,6 +43,7 @@ class File {
                 index: 0,
                 offset: offset
             };
+            this.cyclicEnd.index = 0;
             this.cyclicEnd.offset = offset;
         }
         if (offset !== this.cyclicEnd.offset) return; // Desynced data stream
@@ -61,9 +52,18 @@ class File {
                 this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicBuffer.length; 
                 this.cyclicStart.offset += 1;
             }
-            this.cyclicBuffer[this.cyclicEnd.index] = bytes[i];
-            this.cyclicEnd.index = (this.cyclicEnd.index + 1) % this.cyclicBuffer.length; 
-            this.cyclicEnd.offset += 1;
+            this.cyclicBuffer[this.cyclicEnd.index++] = bytes[i];
+            console.log(`i: ${this.cyclicEnd.index}, ${this.cyclicBuffer.length}`);
+            if (this.cyclicBuffer.length < File.cyclicMaxSize && this.cyclicEnd.index === this.cyclicBuffer.length) {
+                console.log("resize");
+                const capacity = Math.min(this.cyclicBuffer.length * 2, File.cyclicMaxSize);
+                const buffer = new Uint8Array(capacity);
+                buffer.set(this.cyclicBuffer);
+                this.cyclicBuffer = buffer;
+            } else {
+                this.cyclicEnd.index = this.cyclicEnd.index % this.cyclicBuffer.length; 
+            }
+            ++this.cyclicEnd.offset;
             empty = false;
         }
 

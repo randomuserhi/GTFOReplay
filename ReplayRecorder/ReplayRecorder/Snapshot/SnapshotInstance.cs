@@ -306,6 +306,7 @@ namespace ReplayRecorder.Snapshot {
         private HashSet<Type> unwrittenHeaders = new HashSet<Type>();
 
         internal string fullpath = "replay.gtfo";
+        internal string filename = "replay.gtfo";
         internal void Init() {
             if (fs != null) throw new ReplaySnapshotAlreadyInitialized();
 
@@ -316,7 +317,7 @@ namespace ReplayRecorder.Snapshot {
             string shortName = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex).GetShortName(expedition.expeditionIndex);
             DateTime now = DateTime.Now;
 
-            string filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
+            filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
             string path = ConfigManager.ReplayFolder;
             filename = Utils.RemoveInvalidCharacters(filename);
             if (!Directory.Exists(path)) {
