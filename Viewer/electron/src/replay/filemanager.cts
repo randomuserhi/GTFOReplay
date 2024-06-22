@@ -35,10 +35,10 @@ class File {
 
     public receiveLiveBytes(data: { offset: number, bytes: Uint8Array }) {
         const { offset, bytes } = data;
-        console.log(`${offset} | ${bytes.byteLength}`);
-        if (this.cyclicBuffer.length < bytes.byteLength) {
+        //console.log(`${offset} | ${bytes.byteLength}`);
+        if (this.cyclicBuffer.length < bytes.byteLength * 2) {
             // If cyclicBuffer is too small, clear cache and resize
-            this.cyclicBuffer = new Uint8Array(bytes.byteLength);
+            this.cyclicBuffer = new Uint8Array(bytes.byteLength * 2);
             // TODO(randomuserhi): refactor into a function called `clearCache`
             this.cyclicStart = undefined;
             this.cyclicEnd = {

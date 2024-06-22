@@ -112,11 +112,11 @@ export class TcpClient {
             // TODO(randomuserhi): Handle integer overflow with socket.bytesRead
             const bytesRead = socket.bytesRead - prevBytesRead;
             prevBytesRead = socket.bytesRead;
-            console.log(`bytes received: ${bytesRead} > state: ${state}`);
+            //console.log(`bytes received: ${bytesRead} > state: ${state}`);
             
             let totalRead: number = 0;
             while (totalRead < bytesRead) {
-                console.log(`remaining: ${bytesRead - totalRead}`);
+                //console.log(`remaining: ${bytesRead - totalRead}`);
 
                 switch(state) {
                 case "waiting":
@@ -149,7 +149,7 @@ export class TcpClient {
                                     (recvBuffer[3] << 24);
                         }
                         if (msgSize > 0) { // Transition to reading state when there is a message
-                            console.log(`msgSize: ${msgSize}`);
+                            //console.log(`msgSize: ${msgSize}`);
                             state = "reading";
                         }
                     }
@@ -167,7 +167,7 @@ export class TcpClient {
                             recvBuffer[read] = buffer[totalRead];
                         }
                     }
-                    console.log(`Received: ${read}/${msgSize}`);
+                    //console.log(`Received: ${read}/${msgSize}`);
                     
                     if (read >= msgSize) {
                         // Decode message and trigger "message" event
