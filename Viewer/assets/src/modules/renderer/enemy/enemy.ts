@@ -195,6 +195,8 @@ for (let i = 0; i < _points.length; ++i) {
     _points[i] = new Matrix4();
 }
 
+const _temp_headRot = new Quaternion();
+
 const sphere = new Sphere();
 const diff = new Vector3();
 export class HumanoidEnemyModel extends EnemyModel {
@@ -334,19 +336,25 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         // TODO(randomuserhi): Change the mechanism to make more maintainable for different head types
         if (this.datablock?.transparent === true) {
-            this.render(enemy, "Sphere.Spikey.MeshPhong.HalfTransparency.Mask", "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
-            this.render(enemy, "Sphere.Spikey.MeshPhong.HalfTransparency", "Sphere.MeshPhong.HalfTransparency", "Cylinder.MeshPhong.HalfTransparency");
+            this.render(enemy, "Sphere.Bumpy.MeshPhong.HalfTransparency.Mask", "Sphere.Charger.MeshPhong.HalfTransparency.Mask", "Sphere.Spikey.MeshPhong.HalfTransparency.Mask", "Sphere.MeshPhong.HalfTransparency.Mask", "Cylinder.MeshPhong.HalfTransparency.Mask");
+            this.render(enemy, "Sphere.Bumpy.MeshPhong.HalfTransparency", "Sphere.Charger.MeshPhong.HalfTransparency", "Sphere.Spikey.MeshPhong.HalfTransparency", "Sphere.MeshPhong.HalfTransparency", "Cylinder.MeshPhong.HalfTransparency");
         } else {
-            this.render(enemy, "Sphere.Spikey.MeshPhong", "Sphere.MeshPhong", "Cylinder.MeshPhong");
+            this.render(enemy, "Sphere.Bumpy.MeshPhong", "Sphere.Charger.MeshPhong", "Sphere.Spikey.MeshPhong", "Sphere.MeshPhong", "Cylinder.MeshPhong");
         }
     }
 
     // TODO(randomuserhi): Change the mechanism to make more maintainable for different head types
-    private render(enemy: Enemy, spikey: keyof InstanceTypes, sphere: keyof InstanceTypes, cylinder: keyof InstanceTypes) {
+    private render(enemy: Enemy, shooter: keyof InstanceTypes, charger: keyof InstanceTypes, spikey: keyof InstanceTypes, sphere: keyof InstanceTypes, cylinder: keyof InstanceTypes) {
         if (enemy.head) {
             switch (this.datablock?.headType) {
             case "spikey":
                 consume(spikey, this.head, this.color);
+                break;
+            case "charger":
+                consume(charger, this.head, this.color);
+                break;
+            case "bumpy":
+                consume(shooter, this.head, this.color);
                 break;
             default:
                 consume(sphere, this.head, this.color);
@@ -556,7 +564,7 @@ export class HumanoidEnemyModel extends EnemyModel {
 
         headScale.set(0.15, 0.15, 0.15);
         if(this.datablock?.headScale !== undefined) headScale.multiply(this.datablock.headScale);
-        this.head.compose(worldPos.head, zeroQ, headScale);
+        this.head.compose(worldPos.head, this.visual.joints.head.getWorldQuaternion(_temp_headRot), headScale);
 
         let i = 0;
         let j = 0;

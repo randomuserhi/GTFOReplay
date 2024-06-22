@@ -1076,7 +1076,7 @@ export interface EnemySpecification {
     name?: string;
     model?: (data: any) => EnemyModel;
     height?: number;
-    headType?: "spikey";
+    headType?: "spikey" | "charger" | "bumpy";
     rotOffset?: Vector3Like;
     neckScale?: Vector3Like;
     headScale?: Vector3Like;
@@ -1878,6 +1878,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 20,
     name: "Scout",
+    headType: "bumpy",
     maxHealth: 42,
     headScale: {
         x: 1.3,
@@ -1914,6 +1915,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 41,
     name: "Charger Scout",
+    headType: "charger",
     maxHealth: 60,
     headScale: {
         x: 1.3,
@@ -2054,21 +2056,25 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 26,
     name: "Shooter",
+    headType: "bumpy",
     maxHealth: 30,
     scale: _shooter_scale,
 }, {
     id: 51,
     name: "Shooter",
+    headType: "bumpy",
     maxHealth: 30,
     scale: _shooter_scale,
 }, {
     id: 11,
     name: "Shooter",
+    headType: "bumpy",
     maxHealth: 30,
     scale: _shooter_scale,
 }, {
     id: 18,
     name: "Big Shooter",
+    headType: "bumpy",
     maxHealth: 150,
     scale: _shooter_scale,
     headScale: {
@@ -2110,6 +2116,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 30,
     name: "Charger",
+    headType: "charger",
     maxHealth: 30,
     armScale: {
         x: 1.3,
@@ -2120,6 +2127,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 39,
     name: "Big Charger",
+    headType: "charger",
     maxHealth: 120,
     armScale: {
         x: 1.2,
@@ -2127,9 +2135,9 @@ const _enemies: EnemySpecification[] = [{
         z: 1.2
     },
     headScale: {
-        x: 0.7,
-        y: 0.7,
-        z: 0.7
+        x: 1,
+        y: 1,
+        z: 1
     },
     color: 0x880000
 }, {
@@ -2236,6 +2244,7 @@ const _enemies: EnemySpecification[] = [{
 }, {
     id: 54,
     name: "Zoomer Scout",
+    headType: "bumpy",
     height: 1,
     maxHealth: 42,
     headScale: {

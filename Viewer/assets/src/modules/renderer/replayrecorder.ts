@@ -11,14 +11,21 @@ declare module "../../replay/instancing.js" {
         "Cylinder.MeshPhong": void;
         "Sphere.MeshPhong": void;
         "Sphere.Spikey.MeshPhong": void;
+        "Sphere.Charger.MeshPhong": void;
+        "Sphere.Bumpy.MeshPhong": void;
 
         // https://stackoverflow.com/questions/36947704/rendering-a-transparent-shell
         "Cylinder.MeshPhong.HalfTransparency.Mask": void;
         "Sphere.MeshPhong.HalfTransparency.Mask": void;
         "Sphere.Spikey.MeshPhong.HalfTransparency.Mask": void;
+        "Sphere.Charger.MeshPhong.HalfTransparency.Mask": void;
+        "Sphere.Bumpy.MeshPhong.HalfTransparency.Mask": void;
+
         "Cylinder.MeshPhong.HalfTransparency": void;
         "Sphere.MeshPhong.HalfTransparency": void;
         "Sphere.Spikey.MeshPhong.HalfTransparency": void;
+        "Sphere.Charger.MeshPhong.HalfTransparency": void;
+        "Sphere.Bumpy.MeshPhong.HalfTransparency": void;
     } 
 }
 
@@ -42,6 +49,20 @@ declare module "../../replay/instancing.js" {
     });
 
     loadGLTF("../js3party/models/hybrid_head.glb").then((geometry) => createInstance("Sphere.Spikey.MeshPhong.HalfTransparency.Mask", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
+
+    loadGLTF("../js3party/models/charger_head.glb").then((geometry) => createInstance("Sphere.Charger.MeshPhong.HalfTransparency.Mask", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
+
+    loadGLTF("../js3party/models/shooter_head.glb").then((geometry) => createInstance("Sphere.Bumpy.MeshPhong.HalfTransparency.Mask", geometry, material, 100, (mesh) => {
         mesh.frustumCulled = false;
         mesh.instanceMatrix.setUsage( DynamicDrawUsage );
         mesh.castShadow = true;
@@ -74,6 +95,20 @@ declare module "../../replay/instancing.js" {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
     }));
+
+    loadGLTF("../js3party/models/charger_head.glb").then((geometry) => createInstance("Sphere.Charger.MeshPhong.HalfTransparency", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
+    
+    loadGLTF("../js3party/models/shooter_head.glb").then((geometry) => createInstance("Sphere.Bumpy.MeshPhong.HalfTransparency", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
 })();
 
 (() => {
@@ -99,7 +134,20 @@ declare module "../../replay/instancing.js" {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
     }));
-    
+
+    loadGLTF("../js3party/models/charger_head.glb").then((geometry) => createInstance("Sphere.Charger.MeshPhong", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
+
+    loadGLTF("../js3party/models/shooter_head.glb").then((geometry) => createInstance("Sphere.Bumpy.MeshPhong", geometry, material, 100, (mesh) => {
+        mesh.frustumCulled = false;
+        mesh.instanceMatrix.setUsage( DynamicDrawUsage );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    }));
 })();
 
 declare module "../../replay/moduleloader.js" {

@@ -46,7 +46,7 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                 }
 
                 const enemyModel = enemyModels.get(owner.id);
-                if (tongue.dimension !== renderer.get("Dimension")) {
+                if (tongue.dimension !== renderer.get("Dimension") || (enemyModel !== undefined && !enemyModel.isVisible())) {
                     model.mesh.visible = false;
                     continue;
                 }
