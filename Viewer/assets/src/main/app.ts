@@ -72,6 +72,12 @@ Macro((() => {
     const app = function(this: app) {
         __main__();
         this.player = document.createMacro(player);
+
+        window.api.on("startGame", () => {
+            console.log("LIVE VIEW OPEN GAME");
+            this.player.open();
+        }); // Temporary for live viewing games
+
         this.load(this.player);
     } as any as Constructor<app>;
 

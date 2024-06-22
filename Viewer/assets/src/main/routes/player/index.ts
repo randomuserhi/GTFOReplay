@@ -164,7 +164,7 @@ export interface player extends HTMLDivElement {
     link(ip: string, port: number): Promise<void>;
     goLive(): void;
     unlink(): void;
-    open(path: string): Promise<void>;
+    open(path?: string): Promise<void>;
 
     loadedNode?: Node;
     load(node?: Node): void;
@@ -236,7 +236,7 @@ export const player = Macro((() => {
         this.resize();
     };
 
-    player.prototype.open = async function(path: string) {
+    player.prototype.open = async function(path?: string) {
         this.load();
 
         this.cover.style.display = "flex";
@@ -278,6 +278,13 @@ export const player = Macro((() => {
         this.parser.addEventListener("end", () => {
             window.api.send("close", file);
         });
+
+        if (path !== undefined) {
+            this.unlink(); // Unlink if loading a regular file.
+        } else {
+            this.goLive(); // Acknowledge awaiting for bytes from game
+        }
+
         this.replay = await this.parser.parse(file);
     };
 
@@ -286,17 +293,18 @@ export const player = Macro((() => {
         window.api.send("close");
     };
 
-    player.prototype.link = async function(port) {
-        const resp: string | undefined = await window.api.invoke("link", port);
+    player.prototype.link = async function(ip, port) {
+        const resp: string | undefined = await window.api.invoke("link", ip, port);
         if (resp !== undefined) {
             // TODO(randomuserhi)
             console.error(`Failed to link: ${resp}`);
+            return;
         }
+        window.api.send("goLive");
     };
 
     player.prototype.goLive = function() {
-        if (this.parser === undefined || this.path === undefined) return;
-        window.api.send("goLive", this.path);
+        if (this.parser === undefined) return;
         this.live = true;
     };
 

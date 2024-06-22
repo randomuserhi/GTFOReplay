@@ -25,6 +25,7 @@ let replay: Replay | undefined = undefined;
         
         // Cache as much available data
         await fs.cacheAllBytes();
+        await fs.cacheNetworkBuffer();
 
         const getModule = async (bytes: ByteStream | FileStream): Promise<[ModuleDesc, number]> => {
             if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);

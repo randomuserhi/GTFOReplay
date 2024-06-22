@@ -1,4 +1,3 @@
-import { resolve } from "path";
 import Program from "../main.cjs";
 import * as BitHelper from "../net/bitHelper.cjs";
 import { ByteStream } from "../net/stream.cjs";
@@ -22,6 +21,7 @@ export class GTFOManager {
         this.client.addEventListener("startGame", (bytes) => {
             const path = BitHelper.readString(bytes);
             Program.post("console.log", `game started: ${path}`);
+            Program.post("startGame");
             // TODO(randomuserhi)
         });
 
@@ -40,8 +40,7 @@ export class GTFOManager {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
-        ipc.handle("link", async (_, port: number) => {
-            const ip = "127.0.0.1";
+        ipc.handle("link", async (_, ip: string, port: number) => {
             try {
                 await this.client.connect(ip, port);
                 return undefined;
@@ -49,11 +48,9 @@ export class GTFOManager {
                 return `${ip}(${port}): ${err.message}`;
             }
         });
-        ipc.on("goLive", (_, path: string) => {
+        ipc.on("goLive", () => {
             if (!this.client.active()) return;
-            const stream = new ByteStream();
-            BitHelper.writeString(resolve(path), stream);
-            this.client.send("acknowledgement", stream);
+            this.client.send("acknowledgement", new ByteStream());
         });
         ipc.on("unlink", () => {
             this.client.disconnect();

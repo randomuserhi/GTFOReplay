@@ -385,6 +385,23 @@ namespace ReplayRecorder.Snapshot {
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
             eoh.Write(buffer);
 
+            // TODO(randomuserhi): Turn into function `NetSendBuffer` or something (reused from `Tick()`) 
+            APILogger.Debug($"Acknowledged Clients: {Plugin.acknowledged.Count}");
+            if (Plugin.acknowledged.Count > 0) {
+                ByteBuffer packet = pool.Checkout();
+                // Header
+                const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
+                APILogger.Debug($"Msg Size: {sizeOfHeader + buffer.count}");
+                BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // type
+                BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // type
+                                                                                 // Content
+                BitHelper.WriteBytes(0, packet); // offset
+                BitHelper.WriteBytes(sizeof(int) + buffer.count, packet); // number of bytes to read
+                BitHelper.WriteBytes(buffer.Array, packet); // file-bytes
+
+                APILogger.Debug($"Sent Header to {Plugin.acknowledged.Count} clients.");
+                _ = Send(packet);
+            }
             byteOffset = sizeof(int) + buffer.count;
             buffer.Flush(fs);
             buffer.Shrink();
@@ -514,7 +531,7 @@ namespace ReplayRecorder.Snapshot {
                 if (Plugin.acknowledged.Count > 0) {
                     ByteBuffer packet = pool.Checkout();
                     // Header
-                    const int sizeOfHeader = sizeof(int) + sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
+                    const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
                     BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // type
                     BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // type
                     // Content

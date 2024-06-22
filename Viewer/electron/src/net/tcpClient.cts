@@ -112,9 +112,12 @@ export class TcpClient {
             // TODO(randomuserhi): Handle integer overflow with socket.bytesRead
             const bytesRead = socket.bytesRead - prevBytesRead;
             prevBytesRead = socket.bytesRead;
+            console.log(`bytes received: ${bytesRead} > state: ${state}`);
             
-            let slice: number = 0;
-            while (slice < bytesRead) {
+            let totalRead: number = 0;
+            while (totalRead < bytesRead) {
+                console.log(`remaining: ${bytesRead - totalRead}`);
+
                 switch(state) {
                 case "waiting":
                     // Waiting for message header
@@ -124,13 +127,14 @@ export class TcpClient {
 
                     if (read < headerSize) {
                         // Read message header from buffer
-                        for (let i = 0; i < headerSize && i < bytesRead; ++i, ++read) {
-                            recvBuffer[read] = buffer[slice + i];
+                        for (; read < headerSize && totalRead < bytesRead; ++read, ++totalRead) {
+                            recvBuffer[read] = buffer[totalRead];
                         }
-                    } else {
+                    }
+
+                    if (read >= headerSize) {
                         // Decode message header and transition to next state when applicable
 
-                        slice += read;
                         read = 0;
 
                         if (os.endianness() !== "LE") {
@@ -145,6 +149,7 @@ export class TcpClient {
                                     (recvBuffer[3] << 24);
                         }
                         if (msgSize > 0) { // Transition to reading state when there is a message
+                            console.log(`msgSize: ${msgSize}`);
                             state = "reading";
                         }
                     }
@@ -152,18 +157,21 @@ export class TcpClient {
                 case "reading":
                     // Reading message
 
-                    if (recvBuffer.byteLength < msgSize)
+                    if (recvBuffer.byteLength < msgSize) {
                         recvBuffer = new Uint8Array(msgSize);
+                    }
 
                     if (read < msgSize) {
                         // Read message from buffer
-                        for (let i = 0; i < msgSize && i < bytesRead; ++i, ++read) {
-                            recvBuffer[read] = buffer[slice + i];
+                        for (; read < msgSize && totalRead < bytesRead; ++totalRead, ++read) {
+                            recvBuffer[read] = buffer[totalRead];
                         }
-                    } else {
+                    }
+                    console.log(`Received: ${read}/${msgSize}`);
+                    
+                    if (read >= msgSize) {
                         // Decode message and trigger "message" event
 
-                        slice += read;
                         read = 0;
 
                         const recvStream = new ByteStream(recvBuffer);

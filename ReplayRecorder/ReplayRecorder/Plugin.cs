@@ -50,14 +50,8 @@ public class Plugin : BasePlugin {
         APILogger.Debug($"Received message of type '{type}'.");
         switch (type) {
         case Net.MessageType.Acknowledgement: {
-            if (SnapshotManager.instance == null) return;
-            SnapshotInstance instance = SnapshotManager.instance;
-
-            string path = BitHelper.ReadString(buffer, ref index);
-            APILogger.Debug($"path: '{path}' -> {instance.fullpath}.");
-            if (string.Equals(Path.GetFullPath(path), Path.GetFullPath(instance.fullpath), StringComparison.OrdinalIgnoreCase)) {
-                acknowledged.Add(endPoint);
-            }
+            APILogger.Debug($"Acknowledged: {endPoint}");
+            acknowledged.Add(endPoint);
             break;
         }
         }
@@ -82,7 +76,7 @@ public class Plugin : BasePlugin {
     /// <summary>
     /// Send a "game has started" message to acknowledged clients.
     /// </summary>
-    [ReplayOnHeaderCompletion]
+    [ReplayInit]
     internal static void TriggerGameStart() {
         ByteBuffer packet = new ByteBuffer();
         BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
@@ -100,8 +94,6 @@ public class Plugin : BasePlugin {
         BitHelper.WriteBytes((ushort)Net.MessageType.EndGame, packet);
 
         _ = server.Send(packet.Array);
-
-        acknowledged.Clear();
     }
 
     public override void Load() {

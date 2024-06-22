@@ -1,7 +1,7 @@
 import { Ipc } from "./ipc";
 
 export interface FileHandle {
-    path: string;
+    path?: string;
     finite?: boolean;
 }
 
@@ -12,9 +12,8 @@ export class FileStream {
     ipc: Ipc;
 
     // NOTE(randomuserhi): If the filestream is finite then when EndOfFile is reached, it will terminate.
+    // NOTE(randomuserhi): If the file has no path, then its a network based connection
     constructor(ipc: Ipc, file: FileHandle) {
-        if (file.path === undefined) throw new SyntaxError("File must have a path.");
-
         this.file = file;
         this.index = 0;
         this.finite = file.finite !== undefined ? file.finite : false;
