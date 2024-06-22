@@ -25,13 +25,13 @@ public class Plugin : BasePlugin {
 
         if (SnapshotManager.instance == null) return;
         SnapshotInstance instance = SnapshotManager.instance;
-        if (instance.Ready) {
+        /*if (instance.Ready) {
             ByteBuffer packet = new ByteBuffer();
             BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
             BitHelper.WriteBytes(instance.filename, packet);
 
             _ = server.SendTo(packet.Array, endPoint);
-        }
+        }*/
     }
 
     /// <summary>
