@@ -2,6 +2,7 @@
 using GameData;
 using Globals;
 using Il2CppInterop.Runtime.Attributes;
+using Player;
 using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
@@ -341,6 +342,8 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
+            alertedPlayers.Clear();
+            alertedPlayers.Add(PlayerManager.GetLocalPlayerAgent().Owner.Lookup);
             pool = new BufferPool();
 
             byteOffset = 0;
@@ -562,6 +565,9 @@ namespace ReplayRecorder.Snapshot {
             Destroy(gameObject);
         }
 
+        // NOTE(randomuserhi): Keeps track of players aware that live view is in use
+        private HashSet<ulong> alertedPlayers = new HashSet<ulong>();
+
         public float tickRate = 1f / 20f;
         private float timer = 0;
         private void Update() {
@@ -590,6 +596,34 @@ namespace ReplayRecorder.Snapshot {
             timer += Time.deltaTime;
             if (timer > tickRate) {
                 timer = 0;
+
+                // Check if all players are alerted of live view
+                if (Plugin.acknowledged.Count > 0 && PlayerManager.PlayerAgentsInLevel.Count > 1) {
+                    bool allAlerted = true;
+                    foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
+                        if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {
+                            allAlerted = false;
+                            break;
+                        }
+                    }
+
+                    if (!allAlerted) {
+                        foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
+                            if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {
+                                alertedPlayers.Add(player.Owner.Lookup);
+                            }
+                        }
+
+                        const int maxLen = 50;
+                        string message = "GTFOReplay Live View is in use. This allows the spectating user to see all item and enemy locations which may be considered cheating.";
+                        while (message.Length > maxLen) {
+                            PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
+                            message = message.Substring(maxLen).Trim();
+                        }
+                        PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
+                    }
+                }
+
                 Tick();
             }
         }
