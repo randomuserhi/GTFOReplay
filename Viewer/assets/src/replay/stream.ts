@@ -50,7 +50,6 @@ export class FileStream {
         const result = await this.ipc.invoke("getNetBytes", this.index);
         if (result === undefined) return false;
         this.cache = result.cache;
-        //console.log(`net cached: ${this.cache.byteLength} bytes!`);
         this.cacheStart = result.cacheStart;
         this.cacheEnd = result.cacheEnd;
         return true;
@@ -58,7 +57,7 @@ export class FileStream {
 
     public async getBytes(numBytes: number): Promise<ByteStream> {
         let result: ByteStream; 
-        if (this.cache !== undefined && this.index > this.cacheStart && this.index + numBytes < this.cacheEnd) {
+        if (this.cache !== undefined && this.index >= this.cacheStart && this.index + numBytes <= this.cacheEnd) {
             result = new ByteStream(new Uint8Array(this.cache.buffer, this.cache.byteOffset + this.index - this.cacheStart, numBytes));
         } else {
             result = await this.peekBytes(numBytes);
@@ -66,7 +65,7 @@ export class FileStream {
         this.index += numBytes;
         
         // clear cache if index exceeds its bounds
-        if (this.cache !== undefined && this.index >= this.cacheEnd) {
+        if (this.cache !== undefined && this.index > this.cacheEnd) {
             this.cache = undefined;
             this.cacheStart = 0;
             this.cacheEnd = 0;

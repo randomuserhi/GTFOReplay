@@ -18,8 +18,7 @@ class File {
         callback: (bytes?: ArrayBufferLike) => void;
     }[];
 
-    private static cyclicMaxSize: number = 1073741824;
-    private cyclicBuffer: Uint8Array;
+    private cyclicQueue: Uint8Array;
     private cyclicStart?: { index: number, offset: number };
     private cyclicEnd: { index: number, offset: number };
 
@@ -27,7 +26,7 @@ class File {
         this.path = path;
         this.requests = [];
 
-        this.cyclicBuffer = new Uint8Array(32768);
+        this.cyclicQueue = new Uint8Array(32768);
         this.cyclicEnd = {
             index: 0,
             offset: 0
@@ -36,9 +35,7 @@ class File {
 
     public receiveLiveBytes(data: { offset: number, bytes: Uint8Array }) {
         const { offset, bytes } = data;
-        let empty = false;
         if (this.cyclicStart === undefined) {
-            empty = true;
             this.cyclicStart = {
                 index: 0,
                 offset: offset
@@ -48,23 +45,18 @@ class File {
         }
         if (offset !== this.cyclicEnd.offset) return; // Desynced data stream
         for (let i = 0; i < bytes.length; ++i) {
-            if (!empty && this.cyclicEnd.index === this.cyclicStart.index) {
-                this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicBuffer.length; 
-                this.cyclicStart.offset += 1;
-            }
-            this.cyclicBuffer[this.cyclicEnd.index++] = bytes[i];
-            console.log(`i: ${this.cyclicEnd.index}, ${this.cyclicBuffer.length}`);
-            if (this.cyclicBuffer.length < File.cyclicMaxSize && this.cyclicEnd.index === this.cyclicBuffer.length) {
-                console.log("resize");
-                const capacity = Math.min(this.cyclicBuffer.length * 2, File.cyclicMaxSize);
+            this.cyclicQueue[this.cyclicEnd.index++] = bytes[i];
+            const cycle = this.cyclicEnd.index % this.cyclicQueue.length;
+            if (cycle === this.cyclicStart.index) {
+                const capacity = this.cyclicQueue.length * 2;
                 const buffer = new Uint8Array(capacity);
-                buffer.set(this.cyclicBuffer);
-                this.cyclicBuffer = buffer;
+                buffer.set(this.cyclicQueue);
+                this.cyclicQueue = buffer;
+                console.log(`resized queue to ${this.cyclicQueue.length}`);
             } else {
-                this.cyclicEnd.index = this.cyclicEnd.index % this.cyclicBuffer.length; 
+                this.cyclicEnd.index = cycle;
             }
             ++this.cyclicEnd.offset;
-            empty = false;
         }
 
         this.doAllRequests();
@@ -122,10 +114,13 @@ class File {
         if (this.cyclicStart !== undefined && start >= this.cyclicStart.offset) {
             const numBytes = this.cyclicEnd.offset - start;
             const bytes = new Uint8Array(numBytes);
-            const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
+            const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicQueue.length;
             for (let i = 0; i < numBytes; ++i) {
-                const index = (readHead + i) % this.cyclicBuffer.length;
-                bytes[i] = this.cyclicBuffer[index];
+                const index = (readHead + i) % this.cyclicQueue.length;
+                bytes[i] = this.cyclicQueue[index];
+
+                this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicQueue.length;
+                ++this.cyclicStart.offset;
             }
             return {
                 cache: bytes,
@@ -138,13 +133,16 @@ class File {
 
     private getBytesImpl(start: number, end: number, numBytes: number): Promise<ArrayBufferLike> {
         return new Promise((resolve, reject) => {
-            if (this.cyclicStart !== undefined && numBytes < this.cyclicBuffer.length &&
+            if (this.cyclicStart !== undefined && numBytes < this.cyclicQueue.length &&
                 start >= this.cyclicStart.offset && (end + 1) <= this.cyclicEnd.offset) {
                 const bytes = new Uint8Array(numBytes);
-                const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicBuffer.length;
+                const readHead = (this.cyclicStart.index + (start - this.cyclicStart.offset)) % this.cyclicQueue.length;
                 for (let i = 0; i < numBytes; ++i) {
-                    const index = (readHead + i) % this.cyclicBuffer.length;
-                    bytes[i] = this.cyclicBuffer[index];
+                    const index = (readHead + i) % this.cyclicQueue.length;
+                    bytes[i] = this.cyclicQueue[index];
+
+                    this.cyclicStart.index = (this.cyclicStart.index + 1) % this.cyclicQueue.length;
+                    ++this.cyclicStart.offset;
                 }
                 resolve(bytes);
             } else if (this.path !== undefined) {
