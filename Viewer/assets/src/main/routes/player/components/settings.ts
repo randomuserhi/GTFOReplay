@@ -176,6 +176,60 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
     },
     (parent) => {
         const [frag, node] = Macro.anon<{
+            text: HTMLInputElement;
+            slider: HTMLInputElement;
+        }>(/*html*/`
+            <div class="${style.row}" style="
+            gap: 10px;
+            ">
+                <span>Render Distance</span>
+                <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <input rhu-id="slider" style="
+                    flex: 1;
+                    " type="range" min="50" max="500" value="100" step="10" />
+                    <input rhu-id="text" style="
+                    width: 50px;
+                    " class="${style.search}" type="text" spellcheck="false" autocomplete="false" value="1"/>
+                </div>
+            </div>
+            `);
+
+        let active = false;
+        frag.slider.addEventListener("mousedown", () => {
+            active = true;
+        });
+        window.addEventListener("mouseup", () => {
+            active = false;
+        });
+        frag.slider.addEventListener("mousemove", () => {
+            if (!active) return;
+            frag.text.value = frag.slider.value;
+            parent.player.renderer.set("RenderDistance", parseFloat(frag.slider.value));
+        });
+
+        frag.text.addEventListener("keyup", () => {
+            frag.slider.value = frag.text.value;
+            parent.player.renderer.set("RenderDistance", parseFloat(frag.text.value));
+        });
+
+        const update = () => {
+            if (document.activeElement !== frag.text && document.activeElement !== frag.slider) {
+                const value = parent.player.renderer.getOrDefault("RenderDistance", () => 100).toString();
+                frag.text.value = value;
+                frag.slider.value = value;
+            }
+        };
+
+        setInputFilter(frag.text, function(value) { return /^-?\d*[.,]?\d*$/.test(value); });
+
+        return [node.children[0], "Render Distance", update];
+    },
+    (parent) => {
+        const [frag, node] = Macro.anon<{
             dropdown: dropdown;
         }>(/*html*/`
             <div class="${style.row}" style="

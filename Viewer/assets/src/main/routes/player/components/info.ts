@@ -107,7 +107,9 @@ versionInfo.set("0.0.4", `- Fixed items being in the wrong dimension
 versionInfo.set("0.0.5", `- Fixed bulkhead keys not having serial numbers
 - Added door punch effect
 - Fixed checkpoints sometimes bricking replays`);    
-versionInfo.set("0.0.6", `- Improved algorithm for generating map navmesh`);    
+versionInfo.set("0.0.6", `- Improved algorithm for generating map navmesh
+- Hybrids now have spikey heads for visual clarity
+- Configurable render distance for enemies`);    
 
 export const info = Macro((() => {
     const info = function(this: info) {
