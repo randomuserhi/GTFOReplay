@@ -332,6 +332,7 @@ namespace ReplayRecorder.Snapshot {
                 fullpath = Path.Combine(dirPath, filename);
             }
 
+            APILogger.Warn($"REPLAY LOCATION: {fullpath}");
             try {
                 Directory.CreateDirectory(dirPath);
                 fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
@@ -342,6 +343,7 @@ namespace ReplayRecorder.Snapshot {
 
             pool = new BufferPool();
 
+            byteOffset = 0;
             buffer.Clear();
             SnapshotManager.types.Write(buffer);
 
@@ -379,6 +381,21 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
+        private void SendBufferOverNetwork(ByteBuffer buffer) {
+            if (Plugin.acknowledged.Count > 0) {
+                ByteBuffer packet = pool.Checkout();
+                // Header
+                const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
+                BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // message size in bytes
+                BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                BitHelper.WriteBytes(byteOffset, packet); // offset
+                BitHelper.WriteBytes(sizeof(int) + buffer.count, packet); // number of bytes to read
+                BitHelper.WriteBytes(buffer.Array, packet); // file-bytes
+                _ = Send(packet);
+            }
+            byteOffset += sizeof(int) + buffer.count;
+        }
+
         private void OnHeaderComplete() {
             if (fs == null) throw new ReplaySnapshotNotInitialized();
 
@@ -386,24 +403,8 @@ namespace ReplayRecorder.Snapshot {
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
             eoh.Write(buffer);
 
-            // TODO(randomuserhi): Turn into function `NetSendBuffer` or something (reused from `Tick()`) 
             APILogger.Debug($"Acknowledged Clients: {Plugin.acknowledged.Count}");
-            if (Plugin.acknowledged.Count > 0) {
-                ByteBuffer packet = pool.Checkout();
-                // Header
-                const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
-                APILogger.Debug($"Msg Size: {sizeOfHeader + buffer.count}");
-                BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // type
-                BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // type
-                                                                                 // Content
-                BitHelper.WriteBytes(0, packet); // offset
-                BitHelper.WriteBytes(sizeof(int) + buffer.count, packet); // number of bytes to read
-                BitHelper.WriteBytes(buffer.Array, packet); // file-bytes
-
-                APILogger.Debug($"Sent Header to {Plugin.acknowledged.Count} clients.");
-                _ = Send(packet);
-            }
-            byteOffset = sizeof(int) + buffer.count;
+            SendBufferOverNetwork(buffer);
             buffer.Flush(fs);
             buffer.Shrink();
 
@@ -529,21 +530,7 @@ namespace ReplayRecorder.Snapshot {
             }
 
             if (success) {
-                if (Plugin.acknowledged.Count > 0) {
-                    ByteBuffer packet = pool.Checkout();
-                    // Header
-                    const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
-                    BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // type
-                    BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // type
-                    // Content
-                    BitHelper.WriteBytes(byteOffset, packet); // offset
-                    BitHelper.WriteBytes(sizeof(int) + buffer.count, packet); // number of bytes to read
-                    BitHelper.WriteBytes(buffer.Array, packet); // file-bytes
-
-                    _ = Send(packet);
-                }
-                byteOffset += sizeof(int) + buffer.count;
-
+                SendBufferOverNetwork(buffer);
                 float startWait = stopwatch.ElapsedMilliseconds;
                 if (writeTask != null) {
                     writeTask.Wait();

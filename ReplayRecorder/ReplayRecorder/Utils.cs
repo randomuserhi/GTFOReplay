@@ -14,7 +14,7 @@ namespace ReplayRecorder {
             if (idx >= 0) {
                 var sb = new StringBuilder(content);
                 while (idx >= 0) {
-                    if (sb[idx] != '\\' && sb[idx] != '/')
+                    if (sb[idx] != ':' && sb[idx] != '\\' && sb[idx] != '/')
                         sb[idx] = replace;
                     idx = content.IndexOfAny(invalidCharacters, idx + 1);
                 }
