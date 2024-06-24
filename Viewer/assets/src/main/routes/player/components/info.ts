@@ -85,6 +85,7 @@ export interface info extends HTMLDivElement {
     isMaster: HTMLSpanElement;
     isMasterText: HTMLDivElement;
     isNotMasterText: HTMLDivElement;
+    compatibilityText: HTMLDivElement;
 
     version: HTMLSpanElement;
     versionText: HTMLDivElement;
@@ -109,7 +110,10 @@ versionInfo.set("0.0.5", `- Fixed bulkhead keys not having serial numbers
 - Fixed checkpoints sometimes bricking replays`);    
 versionInfo.set("0.0.6", `- Improved algorithm for generating map navmesh
 - Hybrids now have spikey heads for visual clarity
-- Configurable render distance for enemies`);    
+- Configurable render distance for enemies`); 
+versionInfo.set("0.0.7", `- OldBulkheadSounds compatibility layer
+- Chargers and Shooters now have custom heads for visual clarity
+- Lockout 2 compatibility layer for custom weapon systems`);    
 
 export const info = Macro((() => {
     const info = function(this: info) {
@@ -143,6 +147,23 @@ export const info = Macro((() => {
         this.version.innerText = `${version}`;
         const versionText = versionInfo.get(version);
         if (versionText !== undefined) this.versionText.innerText = versionText;
+
+        // TODO(randomuserhi): Make more maintainable
+        const compatability: Node[] = [];
+        if (metadata !== undefined) {
+            if (metadata.compatibility_OldBulkheadSound === true) {
+                const [_, frag] = Macro.anon(/*html*/`
+                    <a href="https://thunderstore.io/c/gtfo/p/DarkEmperor/OldBulkheadSound/">OldBulkheadSounds</a>
+                    <ul style="margin-left: 10px;">
+                        <li>- Alert blame may be incorrect for sound events triggered on security doors opening</li>
+                        <li>- Can't patch 'LG_SecurityDoor.OnDoorIsOpened' due to NativeDetour vs Harmony</li>
+                    </ul>
+                    `);
+                compatability.push(frag);
+            }
+        }
+        if (compatability.length === 0) this.compatibilityText.innerHTML = "None";
+        else this.compatibilityText.replaceChildren(...compatability);
     };
 
     return info;
@@ -199,6 +220,19 @@ export const info = Macro((() => {
                 <span rhu-id="version"></span>
             </div>
             <div rhu-id="versionText" style="margin-left: 10px;">
+            </div>
+        </div>
+        <div class="${style.row}">
+            <div class="${style.row}" style="
+            flex-direction: row;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 20px;
+            ">
+                <span>Compatibility</span>
+            </div>
+            <div rhu-id="compatibilityText" style="margin-left: 10px;">
             </div>
         </div>
     </div>

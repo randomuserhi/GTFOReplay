@@ -2,7 +2,7 @@
 using System.Text;
 
 namespace ReplayRecorder {
-    internal static class Utils {
+    public static class Utils {
         public const BindingFlags AnyBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
 
         public static string RemoveInvalidCharacters(string content, char replace = '_') {

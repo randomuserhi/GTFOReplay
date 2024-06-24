@@ -7,7 +7,12 @@ using ReplayRecorder;
 namespace Vanilla.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
+[BepInDependency(OldBulkheadSoundGUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BasePlugin {
+    // TODO(randomuserhi): Create a better API for handling compatability
+    // NOTE(randomuserhi): Compatability issue with LG_SecurityDoor.OnDoorIsOpened
+    private const string OldBulkheadSoundGUID = "OldBulkheadSound.GUID";
+
     public override void Load() {
         APILogger.Log("Plugin is loaded!");
         harmony = new Harmony(Module.GUID);
@@ -16,6 +21,8 @@ public class Plugin : BasePlugin {
         Replay.RegisterAll();
 
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
+
+        Noises.Noises.OldBulkheadSound_Compatability(harmony, OldBulkheadSoundGUID);
     }
 
     private static Harmony? harmony;

@@ -117,6 +117,32 @@ textarea
     box-shadow: none;
 }
 
+/* === link styles === */
+
+/* unvisited link */
+a:link 
+{
+    color: inherit;
+}
+
+/* visited link */
+a:visited 
+{
+    color: inherit;
+}
+
+/* mouse over link */
+a:hover 
+{
+    color: inherit;
+}
+
+/* selected link */
+a:active 
+{
+    color: inherit;
+}
+
 /* === gtfo button === */
 .gtfo-button {
     --color: #e11900;

@@ -1,4 +1,6 @@
 ﻿using AIGraph;
+using API;
+using BepInEx.Unity.IL2CPP;
 using GameData;
 using Gear;
 using HarmonyLib;
@@ -6,6 +8,8 @@ using LevelGeneration;
 using Player;
 using ReplayRecorder.SNetUtils;
 using SNetwork;
+using System.Reflection;
+using Vanilla.Metadata;
 
 namespace Vanilla.Noises {
     [HarmonyPatch]
@@ -82,9 +86,33 @@ namespace Vanilla.Noises {
             }
         }
 
+        internal static void OldBulkheadSound_Compatability(Harmony harmony, string OldBulkheadSoundGUID) {
+            rMetadata.OldBulkheadSound_Compatability = true;
+
+            if (IL2CPPChainloader.Instance.Plugins.TryGetValue(OldBulkheadSoundGUID, out _)) {
+                APILogger.Warn("Replay mod is incompatible with DarkEmperor-OldBulkheadSound due to a patch to 'LG_SecurityDoor.OnDoorIsOpened'. This compatability layer disables that patch, possible causing incorrect alert blame.");
+                return;
+            }
+
+            MethodInfo? SecurityDoor_OnDoorIsOpened = typeof(LG_SecurityDoor).GetMethod(nameof(LG_SecurityDoor.OnDoorIsOpened));
+            if (SecurityDoor_OnDoorIsOpened == null) {
+                APILogger.Error("[OldBulkheadSound_Compatability] Failed to patch - Method 'LG_SecurityDoor.OnDoorIsOpened' was not found.");
+                return;
+            }
+
+            rMetadata.OldBulkheadSound_Compatability = false;
+            harmony.Patch(
+                SecurityDoor_OnDoorIsOpened,
+                prefix: new HarmonyMethod(typeof(Noises).GetMethod(nameof(Prefix_SecurityDoor_OnDoorIsOpened), ReplayRecorder.Utils.AnyBindingFlags))
+                );
+        }
+
         // SecDoorEvent => Pretty hacky method used here to try and match noise made with door
-        [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnDoorIsOpened))]
-        [HarmonyPrefix]
+        //
+        // NOTE(randomuserhi): Compatability issue with "DarkEmperor-OldBulkheadSound" as it uses NativeDetour on this method
+        //
+        //[HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnDoorIsOpened))]
+        //[HarmonyPrefix]
         private static void Prefix_SecurityDoor_OnDoorIsOpened(LG_SecurityDoor __instance) {
             if (!SNet.IsMaster) return;
 

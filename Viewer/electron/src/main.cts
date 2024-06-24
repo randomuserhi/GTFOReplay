@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, ipcMain, shell } from "electron";
 import * as path from "path";
 import { FileManager } from "./replay/filemanager.cjs";
 import { GTFOManager } from "./replay/gtfomanager.cjs";
@@ -59,6 +59,10 @@ export default class Program {
                 contextIsolation: true, // protect against prototype pollution - (https://www.electronjs.org/docs/latest/tutorial/context-isolation)
                 preload: path.join(__dirname, "preload.cjs") // use a preload script
             }
+        });
+        Program.win.webContents.setWindowOpenHandler((details) => {
+            shell.openExternal(details.url);
+            return { action: "deny" };
         });
         Program.win.on("closed", Program.onClose);
         Program.win.loadFile(path.join(__dirname, "assets/main/main.html")); // load the main page
