@@ -1,5 +1,6 @@
 ﻿using Gear;
 using HarmonyLib;
+using LevelGeneration;
 using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
@@ -241,8 +242,6 @@ namespace Vanilla.Events {
 
                 // NOTE(randomuserhi): glushot is used to ignore cfoam since it also uses weapon ray cast
                 if (__result && !glueShot) {
-                    if (owner == null) throw new NullReferenceException("Owner of gunshot was not found.");
-
                     Replay.Trigger(new rGunshot(owner, damage, originPos, weaponRayData.rayHit.point, sentry));
                 }
             }
@@ -254,11 +253,12 @@ namespace Vanilla.Events {
         private Vector3 end;
         private bool sentry;
 
-        public rGunshot(PlayerAgent source, float damage, Vector3 start, Vector3 end, bool sentry) : base(source.GlobalID) {
-            dimension = (byte)source.DimensionIndex;
+        // NOTE(randomuserhi): If no source is provided, record with ID of -1
+        public rGunshot(PlayerAgent? source, float damage, Vector3 start, Vector3 end, bool sentry) : base(source == null ? -1 : source.GlobalID) {
+            dimension = source == null ? (byte)Dimension.GetDimensionFromPos(start).DimensionIndex : (byte)source.DimensionIndex;
             this.damage = damage;
             this.start = start;
-            if (!sentry && source.IsLocallyOwned && !source.Owner.IsBot) {
+            if (!sentry && source != null && source.IsLocallyOwned && !source.Owner.IsBot) {
                 // NOTE(randomuserhi): Check start is within player, otherwise its from penetration and does not need adjusting
                 Vector3 a = source.transform.position; a.y = 0;
                 Vector3 b = this.start; b.y = 0;
