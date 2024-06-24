@@ -247,7 +247,8 @@ namespace ReplayRecorder.Snapshot {
                     long delta = now - e.now;
                     if (delta < 0) delta = 0;
                     if (delta > ushort.MaxValue) {
-                        throw new ReplayInvalidDeltaTime($"Delta time of {delta}ms is invalid. Max is {ushort.MaxValue}ms.");
+                        APILogger.Warn($"Delta time of {delta}ms is invalid. Max is {ushort.MaxValue}ms.");
+                        delta = ushort.MaxValue;
                     }
 
                     // Event header

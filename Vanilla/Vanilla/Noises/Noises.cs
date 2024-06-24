@@ -81,6 +81,7 @@ namespace Vanilla.Noises {
                 NoiseTracker.TrackNextNoise(new NoiseInfo());
             }
         }
+
         // SecDoorEvent => Pretty hacky method used here to try and match noise made with door
         [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnDoorIsOpened))]
         [HarmonyPrefix]

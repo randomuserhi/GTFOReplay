@@ -117,7 +117,8 @@ let replay: Replay | undefined = undefined;
 
                 state.time = now;
 
-                return events.sort((a, b) => b.delta - a.delta);
+                //return events.sort((a, b) => b.delta - a.delta);
+                return events; // NOTE(randomuserhi): Should be written sorted by game
             };
             const parseDynamicCollection = async (bytes: ByteStream): Promise<[Timeline.Dynamic[], number]> => {
                 const dynamics: Timeline.Dynamic[] = [];
