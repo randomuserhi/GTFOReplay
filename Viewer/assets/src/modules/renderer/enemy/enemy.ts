@@ -1,13 +1,15 @@
-import { Camera, Color, Frustum, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, Sphere, SphereGeometry, Vector3, Vector3Like } from "three";
+import { Camera, Color, ColorRepresentation, Frustum, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, Sphere, SphereGeometry, Vector3, Vector3Like } from "three";
 import { Text } from "troika-three-text";
 import { InstanceTypes, consume } from "../../../replay/instancing.js";
 import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
+import { Player } from "../../parser/player/player.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
 import { animCrouch, animDetection, animVelocity, enemyAnimations, playerAnimations } from "../animations/assets.js";
 import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanPose, defaultHumanStructure } from "../animations/human.js";
 import { upV, zeroQ, zeroV } from "../constants.js";
+import { playerColors } from "../player/renderer.js";
 import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
 
 declare module "../../../replay/moduleloader.js" {
@@ -115,7 +117,7 @@ export class EnemyModel {
         return false;
     }
 
-    public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, tagTarget: Object3D) {
+    public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, tagTarget: Object3D, players: (Player | undefined)[]) {
         if (this.tmp === undefined || this.tag === undefined) return;
         
         if (!this.isVisible()) {
@@ -126,11 +128,25 @@ export class EnemyModel {
         
         this.tag.visible = enemy.tagged;
         this.tag.position.copy(tagTarget.getWorldPosition(tagPos).sub(this.root.position));
+        
+        let target = "Unknown";
+        let color: ColorRepresentation = 0xffffff;
+        const player = players[enemy.targetPlayerSlotIndex];
+        if (player !== undefined) {
+            target = player.nickname;
+            color = playerColors[player.slot]; 
+        }
 
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
 State: ${anim.state}
 Anim: ${enemy.animHandle}
-HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A if client replay
+HP: ${Math.round(enemy.health * 10) / 10}
+Target: `;
+        this.tmp.colorRanges = {
+            0: 0xffffff,
+            [this.tmp.text.length]: color,
+        };
+        this.tmp.text += target;
 
         this.tmp.visible = showInfo;
 
@@ -169,7 +185,7 @@ HP: ${Math.round(enemy.health * 10) / 10}`; // TODO(randomuserhi): Display N/A i
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number, players: (Player | undefined)[]) {
     }
 
     public dispose(): void {
@@ -326,9 +342,9 @@ export class HumanoidEnemyModel extends EnemyModel {
         obj.applyMatrix4(this.inverseMatrix[limb]);
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number, players: (Player | undefined)[]) {
         const cull = this.cull(enemy.position, anim.state === "ScoutDetection" ? Infinity : 2, camera, frustum, renderDistance);
-        this.updateTmp(enemy, anim, camera, this.visual.joints.spine1);
+        this.updateTmp(enemy, anim, camera, this.visual.joints.spine1, players);
         if (cull) return;
 
         this.animate(dt, time, enemy, anim);
@@ -652,6 +668,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const camera = renderer.get("Camera")!;
             const frustum = renderer.get("Frustum")!;
             const renderDistance = renderer.get("RenderDistance")!;
+            const players = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
                     const modelFactory = specification.getEnemy(enemy.type)?.model;
@@ -671,7 +688,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 if (model.root.visible) {
                     if (anims.has(id)) {
                         const anim = anims.get(id)!;
-                        model.update(dt, time, enemy, anim, camera, frustum, renderDistance);
+                        model.update(dt, time, enemy, anim, camera, frustum, renderDistance, players);
                     }
                 }
             }

@@ -1,6 +1,7 @@
 ﻿using Agents;
 using Enemies;
 using HarmonyLib;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -65,7 +66,7 @@ namespace Vanilla.Enemy {
         }
     }
 
-    [ReplayData("Vanilla.Enemy", "0.0.2")]
+    [ReplayData("Vanilla.Enemy", "0.0.3")]
     internal class rEnemy : DynamicTransform {
         public EnemyAgent agent;
 
@@ -76,6 +77,16 @@ namespace Vanilla.Enemy {
 
         private bool _tagged => agent.IsTagged;
         private bool tagged = false;
+
+        private byte _target {
+            get {
+                if (agent.AI == null || agent.AI.m_target == null || agent.AI.m_target.m_agent == null) return byte.MaxValue;
+                PlayerAgent? player = agent.AI.m_target.m_agent.TryCast<PlayerAgent>();
+                if (player == null) return byte.MaxValue;
+                return (byte)player.PlayerSlotIndex;
+            }
+        }
+        private byte target = byte.MaxValue;
 
         private PouncerBehaviour? pouncer;
         // NOTE(randomuserhi): For snatcher, unused for regular enemies
@@ -88,7 +99,11 @@ namespace Vanilla.Enemy {
         }
         private byte consumedPlayer;
 
-        public override bool IsDirty => base.IsDirty || consumedPlayer != _consumedPlayer || tagged != _tagged;
+        public override bool IsDirty =>
+            base.IsDirty ||
+            consumedPlayer != _consumedPlayer ||
+            tagged != _tagged ||
+            target != _target;
 
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
@@ -98,6 +113,9 @@ namespace Vanilla.Enemy {
 
             consumedPlayer = _consumedPlayer;
             BitHelper.WriteBytes(consumedPlayer, buffer);
+
+            target = _target;
+            BitHelper.WriteBytes(target, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

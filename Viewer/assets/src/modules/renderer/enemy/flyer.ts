@@ -2,6 +2,7 @@ import { Camera, EulerOrder, Frustum, Group, Mesh, MeshPhongMaterial, Object3D }
 //import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as Pod from "../../../replay/pod.js";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
+import { Player } from "../../parser/player/player.js";
 import { loadGLTF } from "../modeloader.js";
 import { EnemyModel } from "./enemy.js";
 
@@ -30,11 +31,11 @@ export class SquidModel extends EnemyModel {
         this.root.add(this.anchor);
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number, players: (Player | undefined)[]) {
         if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
 
         this.animate(dt, time, enemy, anim, camera);
-        this.updateTmp(enemy, anim, camera, this.eye);
+        this.updateTmp(enemy, anim, camera, this.eye, players);
         this.render(dt, enemy);
     }
 
@@ -84,9 +85,11 @@ export class FlyerModel extends EnemyModel {
         obj.visible = false;
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number, players: (Player | undefined)[]) {
+        if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
+
         this.animate(dt, time, enemy, anim, camera);
-        this.updateTmp(enemy, anim, camera, this.eye);
+        this.updateTmp(enemy, anim, camera, this.eye, players);
         this.render(dt, enemy);
     }
 
@@ -200,9 +203,11 @@ export class BigFlyerModel extends EnemyModel {
         obj.visible = false;
     }
 
-    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera) {
+    public update(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState, camera: Camera, frustum: Frustum, renderDistance: number, players: (Player | undefined)[]) {
+        if (this.cull(enemy.position, 2, camera, frustum, renderDistance)) return;
+
         this.animate(dt, time, enemy, anim, camera);
-        this.updateTmp(enemy, anim, camera, this.eye);
+        this.updateTmp(enemy, anim, camera, this.eye, players);
         this.render(dt, enemy);
     }
 

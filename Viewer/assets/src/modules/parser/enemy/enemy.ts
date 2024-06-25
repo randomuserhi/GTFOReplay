@@ -1,5 +1,5 @@
 import * as BitHelper from "../../../replay/bithelper.js";
-import { DynamicSpawner, ModuleLoader } from "../../../replay/moduleloader.js";
+import { DynamicParser, DynamicSpawner, ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../../parser/replayrecorder.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
@@ -21,6 +21,7 @@ declare module "../../../replay/moduleloader.js" {
                     rotation: Pod.Quaternion;
                     tagged: boolean;
                     consumedPlayerSlotIndex: number;
+                    targetPlayerSlotIndex: number;
                 };
                 spawn: {
                     dimension: number;
@@ -219,6 +220,7 @@ export interface Enemy extends DynamicTransform {
     lastHit?: Damage;
     lastHitTime?: number;
     tagged: boolean;
+    targetPlayerSlotIndex: number;
     consumedPlayerSlotIndex: number;
 }
 
@@ -264,6 +266,7 @@ export namespace AnimHandles {
     export const EnemyPouncer = 0x800;
 }
 
+// TODO(randomuserhi): Make more maintainable...
 const enemySpawnExec: DynamicSpawner<"Vanilla.Enemy">["exec"] = (id, data, snapshot) => {
     const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
 
@@ -280,7 +283,18 @@ const enemySpawnExec: DynamicSpawner<"Vanilla.Enemy">["exec"] = (id, data, snaps
         players: new Set(),
         tagged: false,
         consumedPlayerSlotIndex: 255,
+        targetPlayerSlotIndex: 255
     });
+};
+const enemyParseExec: DynamicParser<"Vanilla.Enemy">["exec"] = (id, data, snapshot, lerp) => {
+    const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+
+    if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
+    const enemy = enemies.get(id)!;
+    DynamicTransform.lerp(enemy, data, lerp);
+    enemy.tagged = data.tagged;
+    enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
+    enemy.targetPlayerSlotIndex = data.targetPlayerSlotIndex;
 };
 const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
     main: {
@@ -289,19 +303,12 @@ const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
             const result = {
                 ...transform,
                 tagged: await BitHelper.readBool(data),
-                consumedPlayerSlotIndex: await BitHelper.readByte(data)
+                consumedPlayerSlotIndex: await BitHelper.readByte(data),
+                targetPlayerSlotIndex: 255,
             };
             return result;
         }, 
-        exec: (id, data, snapshot, lerp) => {
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-    
-            if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
-            const enemy = enemies.get(id)!;
-            DynamicTransform.lerp(enemy, data, lerp);
-            enemy.tagged = data.tagged;
-            enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
-        }
+        exec: enemyParseExec
     },
     spawn: {
         parse: async (data, snapshot) => {
@@ -397,6 +404,36 @@ const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", enemyParser);
 ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.2", {
     ...enemyParser,
+    spawn: {
+        parse: async (data, snapshot) => {
+            const spawn = await DynamicTransform.parseSpawn(data);
+            const result = {
+                ...spawn,
+                animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
+                scale: await BitHelper.readHalf(data),
+                type: await Identifier.parse(IdentifierData(snapshot), data),
+                maxHealth: await BitHelper.readHalf(data)
+            };
+            return result;
+        },
+        exec: enemySpawnExec
+    },
+});
+ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.3", {
+    ...enemyParser,
+    main: {
+        parse: async (data) => {
+            const transform = await DynamicTransform.parse(data);
+            const result = {
+                ...transform,
+                tagged: await BitHelper.readBool(data),
+                consumedPlayerSlotIndex: await BitHelper.readByte(data),
+                targetPlayerSlotIndex: await BitHelper.readByte(data),
+            };
+            return result;
+        },
+        exec: enemyParseExec
+    },
     spawn: {
         parse: async (data, snapshot) => {
             const spawn = await DynamicTransform.parseSpawn(data);
