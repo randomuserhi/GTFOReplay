@@ -124,18 +124,21 @@ export namespace ModuleLoader {
             library.header.set(typename as string, new Map());
         }
         library.header.get(typename as string)!.set(version, parser);
+        return parser;
     }
     export function registerEvent<T extends Typemap.EventNames>(typename: T, version: string, parser: EventModule<T>) {
         if (!library.event.has(typename as string)) {
             library.event.set(typename as string, new Map());
         }
         library.event.get(typename as string)!.set(version, parser as any);
+        return parser;
     }
     export function registerDynamic<T extends Typemap.DynamicNames>(typename: T, version: string, parser: DynamicModule<T>) {
         if (!library.dynamic.has(typename as string)) {
             library.dynamic.set(typename as string, new Map());
         }
         library.dynamic.get(typename as string)!.set(version, parser as any);
+        return parser;
     }
 
     export function registerRender<T extends Typemap.RenderPassNames>(name: T, func: RenderModule) {
