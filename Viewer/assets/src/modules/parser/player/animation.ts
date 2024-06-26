@@ -165,6 +165,12 @@ ModuleLoader.registerDynamic("Vanilla.Player.Animation", "0.0.1", {
                 anim.isReloading = data.isReloading;
                 anim.lastReloadTransition = t;
             }
+
+            // Safety net for isDowned in case there is a mismatch (common around checkpoints):
+            const minimumDownedTime = 1000; // in ms
+            if (anim.state !== "downed" && anim.isDowned && t - anim.lastDowned > minimumDownedTime) {
+                anim.isDowned = false;
+            }
         }
     },
     spawn: {

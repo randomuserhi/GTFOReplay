@@ -434,7 +434,7 @@ export const stats = Macro((() => {
     stats.prototype.update = function() {
         const api = this.player.api;
         if (api !== undefined) {
-            const all = api.get("Vanilla.AllPlayers");
+            const all = api.get("Vanilla.Player.Snet");
             if (all === undefined) {
                 this.dropdown.clear();
             } else {

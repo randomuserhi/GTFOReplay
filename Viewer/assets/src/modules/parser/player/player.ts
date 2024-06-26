@@ -28,7 +28,7 @@ declare module "../../../replay/moduleloader.js" {
         }
 
         interface Data {
-            "Vanilla.AllPlayers": Map<bigint, PlayerInfo>;
+            "Vanilla.Player.Snet": Map<bigint, PlayerInfo>;
             "Vanilla.Player": Map<number, Player>;
             "Vanilla.Player.Slots": (Player | undefined)[];
         }
@@ -82,7 +82,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
         },
         exec: (id, data, snapshot) => {
             const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-            const all = snapshot.getOrDefault("Vanilla.AllPlayers", () => new Map());
+            const all = snapshot.getOrDefault("Vanilla.Player.Snet", () => new Map());
             const slots = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
         
             const { snet } = data;
