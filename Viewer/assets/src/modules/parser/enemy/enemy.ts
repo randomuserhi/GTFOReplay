@@ -1,5 +1,5 @@
 import * as BitHelper from "../../../replay/bithelper.js";
-import { DynamicParser, DynamicSpawner, ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "../../../replay/moduleloader.js";
 import * as Pod from "../../../replay/pod.js";
 import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../../parser/replayrecorder.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
@@ -266,37 +266,7 @@ export namespace AnimHandles {
     export const EnemyPouncer = 0x800;
 }
 
-// TODO(randomuserhi): Make more maintainable...
-const enemySpawnExec: DynamicSpawner<"Vanilla.Enemy">["exec"] = (id, data, snapshot) => {
-    const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-
-    if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
-    const datablock = specification.getEnemy(data.type);
-    let health = data.maxHealth;
-    if (health === Infinity && datablock?.maxHealth !== undefined) {
-        health = datablock.maxHealth;
-    }
-    enemies.set(id, { 
-        id, ...data,
-        health,
-        head: true,
-        players: new Set(),
-        tagged: false,
-        consumedPlayerSlotIndex: 255,
-        targetPlayerSlotIndex: 255
-    });
-};
-const enemyParseExec: DynamicParser<"Vanilla.Enemy">["exec"] = (id, data, snapshot, lerp) => {
-    const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-
-    if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
-    const enemy = enemies.get(id)!;
-    DynamicTransform.lerp(enemy, data, lerp);
-    enemy.tagged = data.tagged;
-    enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
-    enemy.targetPlayerSlotIndex = data.targetPlayerSlotIndex;
-};
-const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
+let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
         parse: async (data) => {
             const transform = await DynamicTransform.parse(data);
@@ -308,7 +278,16 @@ const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
             };
             return result;
         }, 
-        exec: enemyParseExec
+        exec: (id, data, snapshot, lerp) => {
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+        
+            if (!enemies.has(id)) throw new EnemyNotFound(`Enemy of id '${id}' was not found.`);
+            const enemy = enemies.get(id)!;
+            DynamicTransform.lerp(enemy, data, lerp);
+            enemy.tagged = data.tagged;
+            enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
+            enemy.targetPlayerSlotIndex = data.targetPlayerSlotIndex;
+        }
     },
     spawn: {
         parse: async (data, snapshot) => {
@@ -322,7 +301,25 @@ const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
             };
             return result;
         },
-        exec: enemySpawnExec
+        exec: (id, data, snapshot) => {
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+        
+            if (enemies.has(id)) throw new DuplicateEnemy(`Enemy of id '${id}' already exists.`);
+            const datablock = specification.getEnemy(data.type);
+            let health = data.maxHealth;
+            if (health === Infinity && datablock?.maxHealth !== undefined) {
+                health = datablock.maxHealth;
+            }
+            enemies.set(id, { 
+                id, ...data,
+                health,
+                head: true,
+                players: new Set(),
+                tagged: false,
+                consumedPlayerSlotIndex: 255,
+                targetPlayerSlotIndex: 255
+            });
+        }
     },
     despawn: {
         parse: async () => {
@@ -400,11 +397,11 @@ const enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = {
             }
         }
     }
-};
-ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", enemyParser);
-ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.2", {
+});
+enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.2", {
     ...enemyParser,
     spawn: {
+        ...enemyParser.spawn,
         parse: async (data, snapshot) => {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
@@ -415,13 +412,13 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.2", {
                 maxHealth: await BitHelper.readHalf(data)
             };
             return result;
-        },
-        exec: enemySpawnExec
+        }
     },
 });
-ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.3", {
+enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.3", {
     ...enemyParser,
     main: {
+        ...enemyParser.main,
         parse: async (data) => {
             const transform = await DynamicTransform.parse(data);
             const result = {
@@ -431,23 +428,8 @@ ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.3", {
                 targetPlayerSlotIndex: await BitHelper.readByte(data),
             };
             return result;
-        },
-        exec: enemyParseExec
-    },
-    spawn: {
-        parse: async (data, snapshot) => {
-            const spawn = await DynamicTransform.parseSpawn(data);
-            const result = {
-                ...spawn,
-                animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
-                scale: await BitHelper.readHalf(data),
-                type: await Identifier.parse(IdentifierData(snapshot), data),
-                maxHealth: await BitHelper.readHalf(data)
-            };
-            return result;
-        },
-        exec: enemySpawnExec
-    },
+        }
+    }
 });
 
 const cacheClearTime = 1000;

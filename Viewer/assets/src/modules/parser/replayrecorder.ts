@@ -56,7 +56,7 @@ export class DuplicateDynamic extends Error {
     }
 }
 
-export type Id<T> = T & { id: number }; 
+export type Id<T, V = number> = T & { id: V }; 
 
 export interface DynamicParse {
     dimension: number;
