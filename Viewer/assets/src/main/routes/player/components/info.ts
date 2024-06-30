@@ -114,6 +114,7 @@ versionInfo.set("0.0.6", `- Improved algorithm for generating map navmesh
 versionInfo.set("0.0.7", `- OldBulkheadSounds compatibility layer
 - Chargers and Shooters now have custom heads for visual clarity
 - Lockout 2 compatibility layer for custom weapon systems`);    
+versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support`);    
 
 export const info = Macro((() => {
     const info = function(this: info) {
