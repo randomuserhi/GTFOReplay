@@ -2378,3 +2378,5 @@ specification.item = new Map(_item.map(g => [g.id, {...g, id: Identifier.create(
 specification.gear = new Map(_gear.map(g => [g.id, {...g, id: Identifier.create("Gear", undefined, g.id)}]));
 specification.enemies = new Map(_enemies.map(e => [e.id, e]));
 specification.enemyAnimHandles = new Map(_enemyAnimHandles.map(e => [e.name, e]));
+
+if (globalThis !== undefined) (globalThis as any).specification = specification;

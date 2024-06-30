@@ -173,6 +173,14 @@ namespace Vanilla {
             return identifier;
         }
 
+        public static Identifier From(pItemData item) {
+            Identifier identifier = new Identifier();
+            identifier.type = Type.Item;
+            identifier.id = (ushort)item.itemID_gearCRC;
+
+            return identifier;
+        }
+
         public static Identifier From(EnemyAgent enemy) {
             Identifier identifier = new Identifier();
             identifier.type = Type.Enemy;

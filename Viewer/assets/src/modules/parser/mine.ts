@@ -2,6 +2,7 @@ import * as BitHelper from "../../replay/bithelper.js";
 import { ModuleLoader } from "../../replay/moduleloader.js";
 import * as Pod from "../../replay/pod.js";
 import { DynamicTransform } from "../parser/replayrecorder.js";
+import { Identifier, IdentifierData } from "./identifier.js";
 
 declare module "../../replay/moduleloader.js" {
     namespace Typemap {
@@ -18,7 +19,7 @@ declare module "../../replay/moduleloader.js" {
                     dimension: number;
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
-                    type: MineType;
+                    item: Identifier;
                     owner: number;
                 };
                 despawn: void;
@@ -40,18 +41,14 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
-export type MineType = 
-    "Explosive" |
-    "Cfoam" |
-    "ConsumableExplosive";
-const mineTypemap: MineType[] = [
-    "Explosive",
-    "Cfoam",
-    "ConsumableExplosive"
+const mineTypemap: number[] = [
+    125,
+    144,
+    139
 ];
 
 export interface Mine extends DynamicTransform {
-    type: MineType;
+    item: Identifier;
     owner: number;
     snet: bigint;
     length: number;
@@ -64,7 +61,7 @@ export interface MineDetonate {
     shot: boolean;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
+let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
     main: {
         parse: async (data) => {
             const result = await DynamicTransform.parse(data);
@@ -87,7 +84,7 @@ ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
             const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
-                type: mineTypemap[await BitHelper.readByte(data)],
+                item: Identifier.create("Item", mineTypemap[await BitHelper.readByte(data)]),
                 owner: await BitHelper.readUShort(data)
             };
             return result;
@@ -110,6 +107,22 @@ ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
 
             if (!mines.has(id)) throw new MineNotFound(`Mine of id '${id}' did not exist.`);
             mines.delete(id);
+        }
+    }
+});
+mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
+    ...mineDynamicParser,
+    spawn: {
+        ...mineDynamicParser.spawn,
+        parse: async (data, snapshot) => {
+            const spawn = await DynamicTransform.parseSpawn(data);
+            const result = {
+                ...spawn,
+                item: await Identifier.parse(IdentifierData(snapshot), data),
+                owner: await BitHelper.readUShort(data)
+            };
+            if (result.item.type !== "Item") throw new Error(`Mine had an incompatible identifier of ${result.item.hash}`);
+            return result;
         }
     }
 });

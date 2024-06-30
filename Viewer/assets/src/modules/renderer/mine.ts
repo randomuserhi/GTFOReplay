@@ -1,6 +1,7 @@
 import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "three";
 import { ModuleLoader } from "../../replay/moduleloader.js";
-import { Mine, MineType } from "../parser/mine.js";
+import { Identifier } from "../parser/identifier.js";
+import { Mine } from "../parser/mine.js";
 import { loadGLTF } from "./modeloader.js";
 
 declare module "../../replay/moduleloader.js" {
@@ -23,7 +24,7 @@ class MineModel {
     readonly base: Group;
     readonly laser: Mesh;
     
-    constructor(color: Color, type: MineType) {
+    constructor(color: Color, item: Identifier) {
         this.group = new Group();
 
         const material = new MeshPhongMaterial({ color });
@@ -36,10 +37,10 @@ class MineModel {
         this.base = new Group();
         this.group.add(this.base);
         const apply = (model: BufferGeometry) => this.base.add(new Mesh(model, material));
-        switch(type) {
-        case "Explosive": loadGLTF("../js3party/models/Consumables/depmine.glb").then(apply); break;
-        case "Cfoam": loadGLTF("../js3party/models/Consumables/ctrip.glb").then(apply); break;
-        case "ConsumableExplosive": loadGLTF("../js3party/models/Consumables/emine.glb").then(apply); break;
+        switch(item.id) {
+        case 144: loadGLTF("../js3party/models/Consumables/ctrip.glb").then(apply); break;
+        case 139: loadGLTF("../js3party/models/Consumables/emine.glb").then(apply); break;
+        default: loadGLTF("../js3party/models/Consumables/depmine.glb").then(apply); break;
         }
         this.base.scale.set(0.05, 0.05, 0.05);
         this.base.rotateX(90 * Math.deg2rad);
@@ -77,11 +78,11 @@ ModuleLoader.registerRender("Mine", (name, api) => {
             for (const [id, mine] of mines) {
                 if (!models.has(id)) {
                     let color: ColorRepresentation;
-                    switch(mine.type) {
-                    case "Cfoam": color = 0x0000ff; break;
+                    switch(mine.item.id) {
+                    case 144: color = 0x0000ff; break;
                     default: color = 0xff0000; break;
                     }
-                    const model = new MineModel(new Color(color), mine.type);
+                    const model = new MineModel(new Color(color), mine.item);
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

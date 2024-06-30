@@ -32,7 +32,7 @@ namespace Vanilla.Mines {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Mine", "0.0.1")]
+    [ReplayData("Vanilla.Mine", "0.0.2")]
     public class rMine : DynamicTransform {
         [HarmonyPatch]
         private static class Patches {
@@ -44,17 +44,8 @@ namespace Vanilla.Mines {
                 if (spawnData.owner.TryGetPlayer(out player)) {
                     PlayerAgent owner = player.PlayerAgent.Cast<PlayerAgent>();
                     APILogger.Debug($"Mine Spawn ID - {spawnData.itemData.itemID_gearCRC}");
-                    switch (spawnData.itemData.itemID_gearCRC) {
-                    case 125: // Mine deployer mine
-                        Replay.Spawn(new rMine(owner, __instance, rMine.Type.Explosive));
-                        break;
-                    case 139: // Consumable mine
-                        Replay.Spawn(new rMine(owner, __instance, rMine.Type.ConsumableExplosive));
-                        break;
-                    case 144: // Cfoam mine
-                        Replay.Spawn(new rMine(owner, __instance, rMine.Type.Cfoam));
-                        break;
-                    }
+                    Identifier item = Identifier.From(spawnData.itemData);
+                    Replay.Spawn(new rMine(owner, __instance, item));
                 }
             }
 
@@ -124,13 +115,6 @@ namespace Vanilla.Mines {
             }
         }
 
-        public enum Type {
-            Explosive,
-            Cfoam,
-            ConsumableExplosive,
-        }
-        private Type type;
-
         public bool shot = false;
         public PlayerAgent trigger;
         public PlayerAgent owner;
@@ -142,10 +126,12 @@ namespace Vanilla.Mines {
         private float length => laser == null ? 0 : laser.DetectionRange;
         private float oldLength = 0;
 
-        public rMine(PlayerAgent player, MineDeployerInstance mine, Type type) : base(mine.gameObject.GetInstanceID(), new MineTransform(mine)) {
+        private Identifier item = Identifier.unknown;
+
+        public rMine(PlayerAgent player, MineDeployerInstance mine, Identifier item) : base(mine.gameObject.GetInstanceID(), new MineTransform(mine)) {
             this.instance = mine;
             laser = mine.m_detection.TryCast<MineDeployerInstance_Detect_Laser>();
-            this.type = type;
+            this.item = item;
             this.owner = player;
             this.trigger = player;
         }
@@ -159,7 +145,7 @@ namespace Vanilla.Mines {
 
         public override void Spawn(ByteBuffer buffer) {
             base.Spawn(buffer);
-            BitHelper.WriteBytes((byte)type, buffer);
+            BitHelper.WriteBytes(item, buffer);
             BitHelper.WriteBytes(owner.GlobalID, buffer);
         }
     }

@@ -385,6 +385,7 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
+        [HideFromIl2Cpp]
         private void SendBufferOverNetwork(ByteBuffer buffer) {
             if (Plugin.acknowledged.Count > 0) {
                 ByteBuffer packet = pool.Checkout();
