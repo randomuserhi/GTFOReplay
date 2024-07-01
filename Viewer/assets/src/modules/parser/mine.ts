@@ -41,6 +41,7 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
+// NOTE(randomuserhi): Converts old mine types to their item IDs for backwards compatability
 const mineTypemap: number[] = [
     125,
     144,
