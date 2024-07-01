@@ -1,21 +1,32 @@
-export interface Rest {
-    fetch<T>(options: Rest.Options<T, Rest.ParserFunc>): Rest.FetchFunc<T, Rest.ParserFunc>;
-    fetch<T, P extends (...params: any[]) => Rest.Payload>(options: Rest.Options<T, P>): Rest.FetchFunc<T, P>;
-    fetchJSON<T>(options: Rest.Options<T, Rest.ParserFunc>): Rest.FetchFunc<T, Rest.ParserFunc>;
-    fetchJSON<T, P extends (...params: any[]) => Rest.Payload>(options: Rest.Options<T, P>): Rest.FetchFunc<T, P>;
-}
 export declare namespace Rest {
-    type ParserFunc = (payload: Rest.Payload) => Rest.Payload;
-    type FetchFunc<T, P extends (...params: any[]) => Rest.Payload> = (...params: Parameters<P>) => Promise<T>;
-    interface Options<T, P extends (...params: any[]) => Rest.Payload> {
-        url: URL | string;
-        fetch: RequestInit;
+    type RequestFunc<P extends any[] = []> = (...params: P) => Promise<RequestInit> | RequestInit;
+    type UrlFunc<P extends any[] = []> = (...params: P) => Promise<URL | string> | URL | string;
+    type ParserFunc<P extends any[] = []> = (...params: P) => Promise<Payload> | Payload;
+    type FetchFunc<T, P extends any[] = []> = (...params: P) => Promise<T>;
+    interface Options<T, P extends any[] = []> {
+        parser?: ParserFunc<P>;
+        fetch: RequestFunc<P>;
+        url: UrlFunc<P>;
         callback: (result: Response) => Promise<T>;
-        parser?: P;
     }
     interface Payload {
         urlParams?: Record<string, string>;
-        body?: BodyInit | null;
+        body?: BodyInit;
     }
+    export function fetch<T, P extends any[] = []>(options: Options<T, P>): FetchFunc<T, P>;
+    export function fetchJSON<T, P extends any[] = []>(options: Options<T, P>): FetchFunc<T, P>;
+    export {};
 }
-export declare const rest: Rest;
+export type Cookie = {
+    name: string;
+    value: string;
+    expires?: Date;
+    maxAge?: number;
+    secure?: boolean;
+    httpOnly?: boolean;
+    sameSite?: string;
+} & Record<string, string>;
+export declare namespace Cookie {
+    function jar(...cookies: Cookie[]): string;
+    function parseSetCookie(setCookie: string): Cookie;
+}

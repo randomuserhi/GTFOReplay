@@ -1,12 +1,15 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
+import { AsyncScriptLoader } from "../replay/async-script-loader.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
 import { winNav } from "./global/components/organisms/winNav.js";
 import { player } from "./routes/player/index.js";
 
 async function __main__() {
     window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
+
+    AsyncScriptLoader.load("../replay/script-loader-test.js");
 
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
         ModuleLoader.loadScriptModule(p);
