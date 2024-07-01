@@ -158,7 +158,8 @@ export namespace ModuleLoader {
     }
 
     export function loadScriptModule(path: string) {
-        console.log("path");
+
+        
 
         const script = document.createElement("script");
         script.setAttribute("type", "module");

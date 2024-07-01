@@ -1,4 +1,4 @@
-import { ThemeVariable } from "./theme";
+import { ThemeVariable } from "./theme.js";
 export type ClassName<T extends {} = {}> = {
     [Symbol.toPrimitive]: () => string;
     name: string;
