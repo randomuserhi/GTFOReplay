@@ -333,7 +333,7 @@ export interface ASLModule_Exports {
 
 }
 
-export type Require = <T extends keyof ASLModule_Exports>(path: string) => ASLModule_Exports[T];
+export type Require = <T extends keyof ASLModule_Exports | undefined>(path: string, type?: T) => T extends keyof ASLModule_Exports ? ASLModule_Exports[T] : any;
 export type Exports = {
     exports: any
 };

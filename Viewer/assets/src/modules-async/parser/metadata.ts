@@ -60,5 +60,8 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
     }
 });
 
+const bezier = await require("../renderer/bezier.js", "renderer/bezier");
+console.log(bezier);
+
 const exports = {};
 module.exports = {};
