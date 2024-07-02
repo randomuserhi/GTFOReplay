@@ -10,7 +10,8 @@
     "copy-assets": "copyfiles -u 1 assets/**/*.* build/",
     "copy-js3party": "del-cli build/js3party/**/* && copyfiles -u 1 js3party/**/*.* build/js3party/ && copyfiles -u 3 node_modules/fuse.js/dist/fuse.min.mjs build/js3party/fuse && copyfiles -u 2 node_modules/three/**/* build/js3party/three && copyfiles -u 2 node_modules/troika-three-text/**/* build/js3party/troika-three-text && copyfiles -u 3 node_modules/troika-three-utils/src/**/* build/js3party/troika-three-utils && copyfiles -u 3 node_modules/troika-worker-utils/src/**/* build/js3party/troika-worker-utils && copyfiles -u 3 node_modules/webgl-sdf-generator/dist/**/* build/js3party/webgl-sdf-generator && copyfiles -u 3 node_modules/bidi-js/dist/**/* build/js3party/bidi-js",
     "build-animations": "npm run --prefix ../animations build && npm run --prefix ../animations offload",
-    "build": "del-cli build/**/* !build/js3party && npm run transpile && npm run copy-files && npm run copy-assets",
+    "build": "del-cli build/**/* !build/js3party && npm run transpile && npm run copy-files && npm run copy-assets && npm run asl-transpile",
+    "asl-transpile": "del-cli asl-js && copyfiles -u 2 build/modules-async/**/*.js ./asl-js && del-cli build/modules-async/**/*.js && babel asl-js --out-dir build/modules-async --config-file ./asl-babel.config.js",
     "offload": "del-cli -f ../electron/build/assets/**/* !../electron/build/assets/js3party && copyfiles -u 1 -e build/js3party/**/* build/**/*.* ../electron/build/assets/",
     "offload-js3party": "del-cli -f ../electron/build/assets/js3party/**/* && copyfiles -u 2 build/js3party/**/*.* ../electron/build/assets/js3party/"
   },
@@ -21,6 +22,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.24.7",
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/template": "^7.24.7",
     "@types/three": "^0.161.2",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",

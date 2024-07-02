@@ -108,15 +108,15 @@ export class Renderer {
         if (!this.data.has(typename)) this.data.set(typename, def());
         return this.data.get(typename) as any;
     }
-    public get<T extends keyof Typemap.RenderData>(typename: T): Typemap.RenderData[T] | undefined {
+    public get<T extends keyof Typemap.RenderData | string & {}>(typename: T): (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.data.get(typename) as any;
     }
-    public set<T extends keyof Typemap.RenderData>(typename: T, value: Typemap.RenderData[T]): void {
+    public set<T extends keyof Typemap.RenderData | string & {}>(typename: T, value: (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any)): void {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         this.data.set(typename, value);
     }
-    public has<T extends keyof Typemap.RenderData>(typename: T): boolean{
+    public has<T extends keyof Typemap.RenderData | string & {}>(typename: T): boolean{
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.data.has(typename);
     }

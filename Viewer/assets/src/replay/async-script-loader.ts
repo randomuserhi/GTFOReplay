@@ -1,17 +1,8 @@
-import { Macro } from "@/rhu/macro.js";
 import { Rest } from "@/rhu/rest.js";
-import * as THREE from "three";
-import * as TROIKA from "troika-three-text";
 import * as BitHelper from "./bithelper.js";
-import { ModuleLoader } from "./moduleloader.js";
 
 // TODO(randomuserhi): Documentation & Refactor => code is a mess
-
-export type ASLModule_THREE = typeof THREE;
-export type ASLModule_troika = typeof TROIKA;
-export type ASLModule_ModuleLoader = typeof ModuleLoader;
 export type ASLModule_BitHelper = typeof BitHelper;
-export type ASLModule_Macro = typeof Macro;
 
 export interface ASLModule {
     readonly src: string;
@@ -25,8 +16,8 @@ class _ASLModuleError extends Error {
     }
 }
 
-type ASLExec = (__ASLModule__: ASLModule, require: Require, exports: {}, moduleLoader: ASLModule_ModuleLoader, three: ASLModule_THREE, troika: ASLModule_troika, bithelper: ASLModule_BitHelper, macro: ASLModule_Macro) => Promise<void>;
-class _ASLModule implements ASLModule {
+type ASLExec = (__ASLModule__: ASLModule, require: Require, module: Exports) => Promise<void>;
+class _ASLModule implements ASLModule, Exports {
     readonly src: string;
     exec?: ASLExec;
     
@@ -152,15 +143,23 @@ export namespace AsyncScriptCache {
             }
         });
         const __asl__: ASLModule = module.__asl__;
-        const _require = async (_path: string) => {
-            const m = await fetchModule(_path, module.src, module);
-            if (m === module) throw new Error("Cannot 'require()' self.");
-            Archetype.traverse(module!, m.src);
-            return m.exports;
+        const _require = async (_path: string, type: ASLRequireType = "asl") => {
+            switch (type) {
+            case "asl": {
+                const m = await fetchModule(_path, module.src, module);
+                if (m === module) throw new Error("Cannot 'require()' self.");
+                Archetype.traverse(module!, m.src);
+                return m.exports;
+            }
+            case "esm": {
+                return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
+            }
+            default: throw new Error(`Invalid ASLRequireType '${type}'`);
+            }
         };
 
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        await module.exec.call(undefined, __asl__, _require, __module__, ModuleLoader, THREE, TROIKA, BitHelper, Macro);
+        await module.exec(__asl__, _require, __module__);
         
         module.__asl__ = __asl__;
         finalize(module);
@@ -273,12 +272,10 @@ function typescriptModuleSupport(code: string) {
     const match = "export {};";
     const lastIndex = code.lastIndexOf(match);
     
-    // If the match is not found, return the original string
     if (lastIndex === -1) {
         return code;
     }
-  
-    // Slice the string into two parts and remove the matched substring
+
     return code.substring(0, lastIndex) + code.substring(lastIndex + match.length);
 }
 
@@ -288,13 +285,13 @@ const fetchScript = Rest.fetch<_ASLModule["exec"], [url: URL]>({
         method: "GET"
     }),
     callback: async (resp) => {
-        return (new Function(`const __code__ = async function(__ASLModule__, require, module, ModuleLoader, THREE, troika, BitHelper, Macro) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
+        return (new Function(`const __code__ = async function(__ASLModule__, require, esm, module) { ${typescriptModuleSupport(await resp.text())} }; return __code__.bind(undefined);`))();
     }
 });
 
 function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise<_ASLModule> {
     if (path === "") throw new Error("Cannot use 'require()' on a blank string.");
-    const url = new URL(path, baseURI);
+    const url = new URL(path, path.startsWith(".") ? baseURI : undefined);
     path = url.toString();
     if (AsyncScriptCache.has(path)) {
         //console.log(`cached ${url}.`);
@@ -329,11 +326,8 @@ export namespace AsyncScriptLoader {
     }
 }
 
-export interface ASLModule_Exports {
-
-}
-
-export type Require = <T extends keyof ASLModule_Exports | undefined>(path: string, type?: T) => T extends keyof ASLModule_Exports ? ASLModule_Exports[T] : any;
+export type ASLRequireType = "asl" | "esm";
+export type Require = <T>(path: string, mode?: ASLRequireType) => Promise<T>;
 export type Exports = {
-    exports: any
+    exports?: any
 };
