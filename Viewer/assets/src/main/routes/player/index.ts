@@ -165,6 +165,7 @@ export interface player extends HTMLDivElement {
     goLive(): void;
     unlink(): void;
     open(path?: string): Promise<void>;
+    refresh(): void;
 
     loadedNode?: Node;
     load(node?: Node): void;
@@ -324,6 +325,10 @@ export const player = Macro((() => {
         
         return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
     }
+
+    player.prototype.refresh = function() {
+        this.renderer.refresh(this.canvas, this.replay);
+    };
 
     player.prototype.update = function() {
         if (this.time < 0) this.time = 0;

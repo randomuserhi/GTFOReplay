@@ -12,7 +12,7 @@ async function __main__() {
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
         AsyncScriptLoader.load(p);
         ModuleLoader.registerScriptModule(p); 
-        
+
         // TODO(randomuserhi): Trigger re-parse of current file
     }));
     window.api.on("loadRendererModules", (paths: string[]) => paths.forEach(p => AsyncScriptLoader.load(p)));
@@ -20,7 +20,7 @@ async function __main__() {
     (await window.api.invoke("loadParserModules")).forEach((p: string) => {
         AsyncScriptLoader.load(p);
         const player: player = (window as any).player;
-        player.renderer.refresh(player.canvas, player.replay);
+        player.refresh();
     });
     (await window.api.invoke("loadRendererModules")).forEach((p: string) => AsyncScriptLoader.load(p));
 }
