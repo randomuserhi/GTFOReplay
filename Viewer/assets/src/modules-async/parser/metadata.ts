@@ -5,7 +5,7 @@ import type { ASLModule, ASLModule_BitHelper, ASLModule_Macro, ASLModule_ModuleL
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const require: Require;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-declare const exports: Exports;
+declare const exports: Exports<exports>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const __ASLModule__: ASLModule;
 
@@ -19,6 +19,10 @@ declare const ModuleLoader: ASLModule_ModuleLoader;
 declare const BitHelper: ASLModule_BitHelper;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const Macro: ASLModule_Macro;
+
+export type exports = {
+    
+};
 
 /// === END TYPESCRIPT BOILERPLATE ===
 

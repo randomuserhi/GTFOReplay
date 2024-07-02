@@ -347,5 +347,5 @@ export namespace AsyncScriptLoader {
     }
 }
 
-export type Require = (path: string) => any;
-export type Exports = any;
+export type Require = <T = unknown>(path: string) => T;
+export type Exports<T extends Record<any, any>> = T;
