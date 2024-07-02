@@ -1,15 +1,17 @@
+import { Macro } from "@/rhu/macro.js";
 import { Rest } from "@/rhu/rest.js";
 import * as THREE from "three";
 import * as TROIKA from "troika-three-text";
 import * as BitHelper from "./bithelper.js";
 import { ModuleLoader } from "./moduleloader.js";
 
-// TODO(randomuserhi): Documentation => code is a mess
+// TODO(randomuserhi): Documentation & Refactor => code is a mess
 
 export type ASLModule_THREE = typeof THREE;
 export type ASLModule_troika = typeof TROIKA;
 export type ASLModule_ModuleLoader = typeof ModuleLoader;
 export type ASLModule_BitHelper = typeof BitHelper;
+export type ASLModule_Macro = typeof Macro;
 
 export interface ASLModule {
     readonly src: string;
@@ -23,7 +25,7 @@ class _ASLModuleError extends Error {
     }
 }
 
-type ASLExec = (__ASLModule__: ASLModule, require: Require, exports: {}, moduleLoader: ASLModule_ModuleLoader, three: ASLModule_THREE, troika: ASLModule_troika, bithelper: ASLModule_BitHelper) => Promise<void>;
+type ASLExec = (__ASLModule__: ASLModule, require: Require, exports: {}, moduleLoader: ASLModule_ModuleLoader, three: ASLModule_THREE, troika: ASLModule_troika, bithelper: ASLModule_BitHelper, macro: ASLModule_Macro) => Promise<void>;
 class _ASLModule implements ASLModule {
     readonly src: string;
     exec?: ASLExec;
@@ -51,7 +53,13 @@ class _ASLModule implements ASLModule {
                 if (target.exports === undefined) return undefined;
                 return Reflect.get(target.exports, property, receiver);
             },
-            set() { return false; }
+            set(target, property, value, receiver) { 
+                if (target.isReady && !(value in target.exports)) {
+                    throw new Error(`Cannot export from the finalized module '${target.src}'.`);
+                }
+                Reflect.set(target.exports, property, value, receiver);
+                return true; 
+            }
         });
         this.proxy = proxy;
         this.revoke = revoke;
@@ -163,14 +171,14 @@ export namespace AsyncScriptCache {
         });
         const __asl__: ASLModule = module.__asl__;
         const _require = async (_path: string) => {
-            const m = await AsyncScriptLoader.require(_path, module.src, module);
+            const m = await fetchModule(_path, module.src, module);
             if (m === module) throw new Error("Cannot 'require()' self.");
             Archetype.traverse(module!, m.src);
             return m.proxy;
         };
 
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        await module.exec.call(undefined, __asl__, _require, exports, ModuleLoader, THREE, TROIKA, BitHelper);
+        await module.exec.call(undefined, __asl__, _require, exports, ModuleLoader, THREE, TROIKA, BitHelper, Macro);
         
         module.__asl__ = __asl__;
         finalize(module);
@@ -264,6 +272,14 @@ export namespace AsyncScriptCache {
         }
         console.log(`Modules waiting to finalize:\n${waiting.map((entry) => `[${entry[0].src}]\n\t- ${entry[1].join("\n\t- ")}`).join("\n")}`);
     }
+
+    export function reset() {
+        for (const module of _cache.values()) {
+            invalidate(module.src);
+        }
+
+        _getList = [];
+    }
 }
 
 // NOTE(randomuserhi): Exposed for debugging purposes
@@ -283,51 +299,51 @@ function typescriptModuleSupport(code: string) {
     // Slice the string into two parts and remove the matched substring
     return code.substring(0, lastIndex) + code.substring(lastIndex + match.length);
 }
-  
-export namespace AsyncScriptLoader {
-    const fetchScript = Rest.fetch<_ASLModule["exec"], [url: URL]>({
-        url: (url) => url,
-        fetch: async () => ({
-            method: "GET"
-        }),
-        callback: async (resp) => {
-            return (new Function(`const __code__ = async function(__ASLModule__, require, exports, ModuleLoader, THREE, troika, BitHelper) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
-        }
-    });
 
-    export function require(path: string, baseURI?: string, root?: _ASLModule): Promise<_ASLModule> {
-        if (path === "") throw new Error("Cannot use 'require()' on a blank string.");
-        const url = new URL(path, baseURI);
-        path = url.toString();
-        if (AsyncScriptCache.has(path)) {
-            //console.log(`cached ${url}.`);
-            return AsyncScriptCache.get(path, root);
-        }
+const fetchScript = Rest.fetch<_ASLModule["exec"], [url: URL]>({
+    url: (url) => url,
+    fetch: async () => ({
+        method: "GET"
+    }),
+    callback: async (resp) => {
+        return (new Function(`const __code__ = async function(__ASLModule__, require, exports, ModuleLoader, THREE, troika, BitHelper, Macro) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
+    }
+});
 
-        return new Promise((resolve, reject) => {
-            const module = new _ASLModule(path);
-            AsyncScriptCache.cache(module);
-            try {
-                //console.log(`fetching ${url}.`);
-                if (root !== undefined) AsyncScriptCache.watch(root, module, resolve);
-                fetchScript(url).then((exec) => {
-                    module.exec = exec;
-                    return AsyncScriptCache.exec(module);
-                }).then(() => resolve(module)).catch((e) => {
-                    module.raise(e);
-                    reject(new Error("Unreachable"));
-                });
-            } catch(e) {
-                module.raise(e);
-                reject(new Error("Unreachable"));
-            }
-        });
+function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise<_ASLModule> {
+    if (path === "") throw new Error("Cannot use 'require()' on a blank string.");
+    const url = new URL(path, baseURI);
+    path = url.toString();
+    if (AsyncScriptCache.has(path)) {
+        //console.log(`cached ${url}.`);
+        return AsyncScriptCache.get(path, root);
     }
 
+    return new Promise((resolve, reject) => {
+        const module = new _ASLModule(path);
+        AsyncScriptCache.cache(module);
+        try {
+            //console.log(`fetching ${url}.`);
+            if (root !== undefined) AsyncScriptCache.watch(root, module, resolve);
+            fetchScript(url).then((exec) => {
+                module.exec = exec;
+                return AsyncScriptCache.exec(module);
+            }).then(() => resolve(module)).catch((e) => {
+                module.raise(e);
+                reject(new Error("Unreachable"));
+            });
+        } catch(e) {
+            module.raise(e);
+            reject(new Error("Unreachable"));
+        }
+    });
+}
+
+export namespace AsyncScriptLoader {
     export async function load(path: string) {
         path = new URL(path, document.baseURI).toString();
         AsyncScriptCache.invalidate(path);
-        await require(path);
+        await fetchModule(path);
     }
 }
 

@@ -1,6 +1,6 @@
 /// === START TYPESCRIPT BOILERPLATE ===
 
-import type { ASLModule, ASLModule_BitHelper, ASLModule_ModuleLoader, ASLModule_THREE, ASLModule_troika, Exports, Require } from "../../replay/async-script-loader.js";
+import type { ASLModule, ASLModule_BitHelper, ASLModule_Macro, ASLModule_ModuleLoader, ASLModule_THREE, ASLModule_troika, Exports, Require } from "../../replay/async-script-loader.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const require: Require;
@@ -17,6 +17,8 @@ declare const troika: ASLModule_troika;
 declare const ModuleLoader: ASLModule_ModuleLoader;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const BitHelper: ASLModule_BitHelper;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare const Macro: ASLModule_Macro;
 
 /// === END TYPESCRIPT BOILERPLATE ===
 
