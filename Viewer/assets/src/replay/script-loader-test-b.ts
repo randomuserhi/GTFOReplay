@@ -11,11 +11,11 @@ declare const __ASLModule__: ASLModule;
 
 /// === END TYPESCRIPT BOILERPLATE ===
 
-const { c } = await require("./script-loader-test-c.js");
-console.log(`a ${c}`);
 const { d } = await require("./script-loader-test-d.js");
-console.log(`a ${d}`);
+console.log(`b ${d}`);
+const { c } = await require("./script-loader-test-c.js");
+console.log(`b ${c}`);
 
 __ASLModule__.destructor = () => {
-    console.log("destruct a");
+    console.log("destruct b");
 };

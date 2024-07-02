@@ -10,8 +10,10 @@ async function __main__() {
     window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
     AsyncScriptLoader.load("../replay/script-loader-test.js");
+    (window as any).test = () => AsyncScriptLoader.load("../replay/script-loader-test-b.js");
 
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
+        // TODO(randomuserhi): Trigger re-parse of current file
         ModuleLoader.loadScriptModule(p);
         ModuleLoader.registerScriptModule(p); 
     }));
