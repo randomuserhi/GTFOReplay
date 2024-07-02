@@ -1,6 +1,15 @@
 import { Rest } from "@/rhu/rest.js";
+import * as THREE from "three";
+import * as TROIKA from "troika-three-text";
+import * as BitHelper from "./bithelper.js";
+import { ModuleLoader } from "./moduleloader.js";
 
 // TODO(randomuserhi): Documentation => code is a mess
+
+export type ASLModule_THREE = typeof THREE;
+export type ASLModule_troika = typeof TROIKA;
+export type ASLModule_ModuleLoader = typeof ModuleLoader;
+export type ASLModule_BitHelper = typeof BitHelper;
 
 export interface ASLModule {
     readonly src: string;
@@ -14,7 +23,7 @@ class _ASLModuleError extends Error {
     }
 }
 
-type ASLExec = (__ASLModule__: ASLModule, require: Require, exports: {}) => Promise<void>;
+type ASLExec = (__ASLModule__: ASLModule, require: Require, exports: {}, moduleLoader: ASLModule_ModuleLoader, three: ASLModule_THREE, troika: ASLModule_troika, bithelper: ASLModule_BitHelper) => Promise<void>;
 class _ASLModule implements ASLModule {
     readonly src: string;
     exec?: ASLExec;
@@ -161,7 +170,7 @@ export namespace AsyncScriptCache {
         };
 
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        await module.exec.call(undefined, __asl__, _require, exports);
+        await module.exec.call(undefined, __asl__, _require, exports, ModuleLoader, THREE, TROIKA, BitHelper);
         
         module.__asl__ = __asl__;
         finalize(module);
@@ -282,7 +291,7 @@ export namespace AsyncScriptLoader {
             method: "GET"
         }),
         callback: async (resp) => {
-            return (new Function(`const __code__ = async function(__ASLModule__, require, exports) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
+            return (new Function(`const __code__ = async function(__ASLModule__, require, exports, ModuleLoader, THREE, troika, BitHelper) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
         }
     });
 
@@ -318,7 +327,7 @@ export namespace AsyncScriptLoader {
     export async function load(path: string) {
         path = new URL(path, document.baseURI).toString();
         AsyncScriptCache.invalidate(path);
-        require(path);
+        await require(path);
     }
 }
 

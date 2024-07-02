@@ -38,10 +38,10 @@ export default class Program {
     private static onReady(): void {
         Program.setupIPC();
 
-        this.parserModuleLoader = new ModuleLoader("loadParserModules", Program.post, path.join(__dirname, "assets/modules/parser"));
+        this.parserModuleLoader = new ModuleLoader("loadParserModules", Program.post, path.join(__dirname, "assets/modules-async/parser"));
         this.parserModuleLoader.setupIPC(ipcMain);
 
-        this.rendererModuleLoader = new ModuleLoader("loadRendererModules", Program.post, path.join(__dirname, "assets/modules/renderer"));
+        this.rendererModuleLoader = new ModuleLoader("loadRendererModules", Program.post, path.join(__dirname, "assets/modules-async/renderer"));
         this.rendererModuleLoader.setupIPC(ipcMain);
 
         this.fileManager = new FileManager();

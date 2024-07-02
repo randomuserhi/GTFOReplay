@@ -1,3 +1,4 @@
+import { AsyncScriptLoader } from "./async-script-loader.js";
 import * as BitHelper from "./bithelper.js";
 import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
@@ -13,7 +14,7 @@ let replay: Replay | undefined = undefined;
         send: self.postMessage.bind(self)
     });
     ipc.on("init", async (file: FileHandle, links: string[]) => {
-        await Promise.all(links.map(link => import(link)));
+        await Promise.all(links.map(async link => await AsyncScriptLoader.load(link)));
         parse(file);
     });
 

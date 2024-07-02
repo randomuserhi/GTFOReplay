@@ -156,19 +156,6 @@ export namespace ModuleLoader {
     export function registerScriptModule(path: string) {
         links.add(path);
     }
-
-    export function loadScriptModule(path: string) {
-        const script = document.createElement("script");
-        script.setAttribute("type", "module");
-        script.addEventListener("load", () => {
-            script.replaceWith();
-        });
-        script.addEventListener("error", () => {
-            script.replaceWith();
-        });
-        script.src = path;
-        document.head.append(script);
-    }
 }
 
 export class NoExecFunc extends Error {
