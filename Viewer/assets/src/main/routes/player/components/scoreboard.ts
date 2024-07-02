@@ -2,9 +2,52 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Player } from "../../../../modules/parser/player/player.js";
 import { PlayerStats } from "../../../../modules/parser/player/playerstats.js";
-import { PlayerStats as PlayerStatTracker, StatTracker, getPlayerStats } from "../../../../modules/parser/stattracker/stats.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
 import { MedalDescriptor, getMedals, medal } from "./medal.js";
+
+// TODO(randomuserhi): Grabs information from ASL which is not really a thing...
+function PlayerDamage() {
+    return {
+        explosiveDamage: new Map(),
+        bulletDamage: new Map(),
+        sentryDamage: new Map()
+    };
+}
+function EnemyDamage() {
+    return {
+        explosiveDamage: new Map(),
+        bulletDamage: new Map(),
+        sentryDamage: new Map(),
+        meleeDamage: new Map(),
+        staggerDamage: new Map(),
+        sentryStaggerDamage: new Map(),
+    };
+}
+const StatTracker = () => ({ players: new Map() });
+const PlayerStatTracker = (snet: bigint) => {
+    return {
+        snet,
+        enemyDamage: EnemyDamage(),
+        playerDamage: PlayerDamage(),
+        revives: 0,
+        packsUsed: new Map(),
+        packsGiven: new Map(),
+        timeSpentDowned: 0,
+        kills: new Map(),
+        mineKills: new Map(),
+        sentryKills: new Map(),
+        assists: new Map(),
+        fallDamage: 0,
+        tongueDodges: new Map(),
+        _downedTimeStamp: undefined,
+    };
+}
+function getPlayerStats(snet: bigint, tracker: ReturnType<typeof StatTracker>): ReturnType<typeof PlayerStatTracker> {
+    if (!tracker.players.has(snet)) {
+        tracker.players.set(snet, PlayerStatTracker(snet));
+    }
+    return tracker.players.get(snet)!;
+}
 
 declare module "@/rhu/macro.js" {
     interface TemplateMap {
@@ -50,7 +93,7 @@ export interface slot extends HTMLDivElement {
     playerId: number;
     medals: Map<number, medal>;
 
-    update(player: Player, status: PlayerStats, stats: PlayerStatTracker, medals?: MedalDescriptor[]): void;
+    update(player: Player, status: PlayerStats, stats: ReturnType<typeof PlayerStatTracker>, medals?: MedalDescriptor[]): void;
 
     name: HTMLSpanElement;
     kills: HTMLSpanElement;

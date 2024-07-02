@@ -9,10 +9,11 @@ module.exports = function ( { types: t } ) {
                 let source = path.node.source.value;
                 const specifiers = path.node.specifiers;
   
-                const esm = source.startsWith("@esm");
+                const esmIdentifier = "@esm";
+                const esm = source.startsWith(esmIdentifier);
                 const type = esm ? "esm" : "asl";
                 if (esm) {
-                    source = source.slice("@esm/".length);
+                    source = source.slice(esmIdentifier.length + 1);
                 }
 
                 const defaultSpecifiers = [];

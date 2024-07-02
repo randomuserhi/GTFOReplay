@@ -1,4 +1,4 @@
-import { Color, Quaternion, Vector3 } from "three";
+import { Color, Quaternion, Vector3 } from "@esm/three";
 
 export const zeroQ = new Quaternion();
 export const zeroS = new Vector3(1, 1, 1);

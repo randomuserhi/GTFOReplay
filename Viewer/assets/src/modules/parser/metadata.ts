@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { specification } from "../renderer/specification";
 
 export interface Metadata {
     version: string;
@@ -10,6 +11,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Metadata": Metadata;
+            "Specification": typeof specification;
         }
     }
 }
@@ -21,6 +23,8 @@ let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
             version: await BitHelper.readString(data),
             compatibility_OldBulkheadSound: false
         });
+
+        header.set("Specification", specification);
     }
 });
 metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {

@@ -2,9 +2,11 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
 import { PlayerStats } from "../../../../modules/parser/stattracker/stats.js";
-import { specification } from "../../../../modules/renderer/specification.js";
 import { player } from "../index.js";
 import { dropdown } from "./dropdown.js";
+
+// TODO(randomuserhi): Grabs information from ASL which is not really a thing...
+const StatTracker = () => ({ players: new Map() });
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -310,40 +312,50 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
             frag.estaggerDamage.innerText = `${estaggerDamage}`;
             frag.esentryStaggerDamage.innerText = `${esentryStaggerDamage}`;
 
-            frag.pbulletDamage.innerText = `${Math.round(pbulletDamage / specification.player.maxHealth * 1000) / 10}%`;
-            frag.psentryDamage.innerText = `${Math.round(psentryDamage / specification.player.maxHealth * 1000) / 10}%`;
-            frag.pexplosiveDamage.innerText = `${Math.round(pexplosiveDamage / specification.player.maxHealth * 1000) / 10}%`;
+            if (api !== undefined) {
+                const specification = api!.header.get("Specification");
+                if (specification !== undefined) {
+                    frag.pbulletDamage.innerText = `${Math.round(pbulletDamage / specification.player.maxHealth * 1000) / 10}%`;
+                    frag.psentryDamage.innerText = `${Math.round(psentryDamage / specification.player.maxHealth * 1000) / 10}%`;
+                    frag.pexplosiveDamage.innerText = `${Math.round(pexplosiveDamage / specification.player.maxHealth * 1000) / 10}%`;
+                }
+            }
         };
 
         return [node.children[0], "Damage Dealt", update];
     },
     (parent) => {
         return createTypeTable(parent, "Kills", (stats) => [...stats.kills.values()], (data) => {
-            const spec = specification.getEnemy(data.type);
+            const api = parent.player.api;
+            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Sentry Kills", (stats) => [...stats.sentryKills.values()], (data) => {
-            const spec = specification.getEnemy(data.type);
+            const api = parent.player.api;
+            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Mine Kills", (stats) => [...stats.mineKills.values()], (data) => {
-            const spec = specification.getEnemy(data.type);
+            const api = parent.player.api;
+            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Assists", (stats) => [...stats.assists.values()], (data) => {
-            const spec = specification.getEnemy(data.type);
+            const api = parent.player.api;
+            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Tongues Dodged", (stats) => [...stats.tongueDodges.values()], (data) => {
-            const spec = specification.getEnemy(data.type);
+            const api = parent.player.api;
+            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
@@ -357,7 +369,6 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
         // TODO(randomuserhi): Nicer visualisations
 
         const [frag, node] = Macro.anon<{
-            fallDamage: HTMLSpanElement;
             revives: HTMLSpanElement;
         }>(/*html*/`
             <div class="${style.row}" style="
@@ -369,11 +380,6 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
                         <span>Revives</span>
                         <div style="flex: 1"></div>
                         <span rhu-id="revives"></span>
-                    </li>
-                    <li style="display: flex">
-                        <span>Fall Damage</span>
-                        <div style="flex: 1"></div>
-                        <span rhu-id="fallDamage"></span>
                     </li>
                 </ul>
             </div>
@@ -390,12 +396,10 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
 
             const stats = api.getOrDefault("Vanilla.StatTracker", StatTracker).players.get(snet);
             if (stats === undefined) {
-                frag.fallDamage.innerText = `0%`;
                 frag.revives.innerText = `0`;
                 return;
             }
 
-            frag.fallDamage.innerText = `${Math.round(stats.fallDamage / specification.player.maxHealth / 10) * 10}%`;
             frag.revives.innerText = `${stats.revives}`;
         };
 

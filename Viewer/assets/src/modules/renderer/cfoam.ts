@@ -1,6 +1,6 @@
-import { Color, DynamicDrawUsage, Matrix4, MeshPhongMaterial, SphereGeometry, Vector3 } from "three";
-import { consume, createInstance } from "../../replay/instancing.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
+import { consume, createInstance } from "@esm/@root/replay/instancing.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Color, DynamicDrawUsage, Matrix4, MeshPhongMaterial, SphereGeometry, Vector3 } from "@esm/three";
 import { Cfoam } from "../parser/cfoam.js";
 import { zeroQ } from "./constants.js";
 

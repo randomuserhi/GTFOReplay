@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { specification } from "../renderer/specification";
 let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
     parse: async (data, header) => {
         if (header.has("Vanilla.Metadata"))
@@ -8,6 +9,7 @@ let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
             version: await BitHelper.readString(data),
             compatibility_OldBulkheadSound: false
         });
+        header.set("Specification", specification);
     }
 });
 metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {

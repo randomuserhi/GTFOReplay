@@ -1,8 +1,50 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
-import { StatTracker, getPlayerStats } from "../../../../modules/parser/stattracker/stats.js";
-import { specification } from "../../../../modules/renderer/specification.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
+
+// TODO(randomuserhi): Grabs information from ASL which is not really a thing...
+function PlayerDamage() {
+    return {
+        explosiveDamage: new Map(),
+        bulletDamage: new Map(),
+        sentryDamage: new Map()
+    };
+}
+function EnemyDamage() {
+    return {
+        explosiveDamage: new Map(),
+        bulletDamage: new Map(),
+        sentryDamage: new Map(),
+        meleeDamage: new Map(),
+        staggerDamage: new Map(),
+        sentryStaggerDamage: new Map(),
+    };
+}
+const StatTracker = () => ({ players: new Map() });
+const PlayerStats = (snet: bigint) => {
+    return {
+        snet,
+        enemyDamage: EnemyDamage(),
+        playerDamage: PlayerDamage(),
+        revives: 0,
+        packsUsed: new Map(),
+        packsGiven: new Map(),
+        timeSpentDowned: 0,
+        kills: new Map(),
+        mineKills: new Map(),
+        sentryKills: new Map(),
+        assists: new Map(),
+        fallDamage: 0,
+        tongueDodges: new Map(),
+        _downedTimeStamp: undefined,
+    };
+}
+function getPlayerStats(snet: bigint, tracker: ReturnType<typeof StatTracker>): ReturnType<typeof PlayerStats> {
+    if (!tracker.players.has(snet)) {
+        tracker.players.set(snet, PlayerStats(snet));
+    }
+    return tracker.players.get(snet)!;
+}
 
 declare module "@/rhu/macro.js" {
     interface TemplateMap {
@@ -96,6 +138,9 @@ const medalRequirements: MedalRequirement[] = [
             const players = [...snapshot.getOrDefault("Vanilla.Player", () => new Map()).values()];
 
             if (players.length === 0) return;
+            
+            const specification = snapshot.header.get("Specification");
+            if (specification === undefined) return;
 
             let chosen: bigint[] = [];
             let maxDamage = 0;
