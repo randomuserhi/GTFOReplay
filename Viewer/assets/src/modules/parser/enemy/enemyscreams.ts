@@ -1,8 +1,8 @@
-import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { AnimNotFound } from "./enemy.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Events {
             "Vanilla.Enemy.Animation.Scream": {

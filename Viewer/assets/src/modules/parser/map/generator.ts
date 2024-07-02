@@ -1,6 +1,6 @@
-import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
 
 export interface Generator {
     id: number;
@@ -22,7 +22,7 @@ export const lockType = [
 ] as const;
 export type LockType = typeof lockType[number];
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Map.Generators": Map<number, Generator>;

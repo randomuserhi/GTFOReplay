@@ -1,10 +1,10 @@
-import { Color, Matrix4, Quaternion, Vector3 } from "three";
-import { consume } from "../../../replay/instancing.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
+import { consume } from "@esm/@root/replay/instancing.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Color, Matrix4, Quaternion, Vector3 } from "@esm/three";
 import { upV, zeroV } from "../constants.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Enemy.Tendril": void;

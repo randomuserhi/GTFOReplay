@@ -1,6 +1,6 @@
-import { Camera, EulerOrder, Frustum, Group, Mesh, MeshPhongMaterial, Object3D } from "three";
+import { Camera, EulerOrder, Frustum, Group, Mesh, MeshPhongMaterial, Object3D } from "@esm/three";
 //import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import * as Pod from "../../../replay/pod.js";
+import * as Pod from "@esm/@root/replay/pod.js";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
 import { Player } from "../../parser/player/player.js";
 import { loadGLTF } from "../modeloader.js";

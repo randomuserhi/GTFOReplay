@@ -1,4 +1,4 @@
-import { Object3D, Quaternion, Vector3 } from "three";
+import { Object3D, Quaternion, Vector3 } from "@esm/three";
 
 const _Point_ones = new Vector3(1, 1, 1);
 export class Point {

@@ -1,8 +1,8 @@
-import { ModuleLoader, ReplayApi } from "../../../replay/moduleloader.js";
-import { ByteStream } from "../../../replay/stream.js";
+import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import { ByteStream } from "@esm/@root/replay/stream.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Player.Backpack": {

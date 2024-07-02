@@ -1,12 +1,12 @@
-import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 
 export interface MapGeometry {
     vertices: Float32Array;
     indices: number[];
 }
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Map.Geometry": Map<number, MapGeometry[]>;

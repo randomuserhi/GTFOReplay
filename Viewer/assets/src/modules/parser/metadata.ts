@@ -1,12 +1,12 @@
-import * as BitHelper from "../../replay/bithelper.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 
 export interface Metadata {
     version: string;
     compatibility_OldBulkheadSound: boolean; 
 }
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Metadata": Metadata;
@@ -14,9 +14,7 @@ declare module "../../replay/moduleloader.js" {
     }
 }
 
-// TODO(randomuserhi): Refactor to be more maintainable
-
-ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
+let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
     parse: async (data, header) => {
         if (header.has("Vanilla.Metadata")) throw new Error("Metadata was already written.");
         header.set("Vanilla.Metadata", {
@@ -25,12 +23,11 @@ ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
         });
     }
 });
-
-ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
+metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
     parse: async (data, header) => {
-        if (header.has("Vanilla.Metadata")) throw new Error("Metadata was already written.");
+        metadataParser.parse(data, header);
         header.set("Vanilla.Metadata", {
-            version: await BitHelper.readString(data),
+            ...header.get("Vanilla.Metadata")!,
             compatibility_OldBulkheadSound: await BitHelper.readBool(data)
         });
     }

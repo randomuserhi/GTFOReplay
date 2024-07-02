@@ -1,8 +1,8 @@
-import * as BitHelper from "../../replay/bithelper.js";
-import { ReplayApi } from "../../replay/moduleloader.js";
-import { ByteStream } from "../../replay/stream";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import { ByteStream } from "@esm/@root/replay/stream";
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Data {
             "IdentifierData": IdentifierData;

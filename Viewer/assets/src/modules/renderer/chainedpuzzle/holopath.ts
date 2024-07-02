@@ -1,9 +1,9 @@
-import { Mesh, MeshPhongMaterial, Vector3 } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
-import { DynamicSplineGeometry } from "../../renderer/dynamicspline.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Mesh, MeshPhongMaterial, Vector3 } from "@esm/three";
+import { DynamicSplineGeometry } from "../dynamicspline.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Holopath": void;

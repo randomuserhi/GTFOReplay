@@ -1,5 +1,5 @@
-import { exists } from "@/rhu/rhu.js";
-import { Object3D, Quaternion, Vector3 } from "three";
+import { exists } from "@esm/@/rhu/rhu.js";
+import { Object3D, Quaternion, Vector3 } from "@esm/three";
 import { Bone, IKSolverHeuristic, vectorSlerp } from "./rootmotion.js";
 
 // TODO(randomuserhi): Calculate worldPosition and worldRotation once, and reuse

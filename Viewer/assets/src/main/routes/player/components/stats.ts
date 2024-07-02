@@ -1,7 +1,7 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
-import { PlayerStats, StatTracker } from "../../../../modules/parser/stattracker/stats.js";
+import { PlayerStats } from "../../../../modules/parser/stattracker/stats.js";
 import { specification } from "../../../../modules/renderer/specification.js";
 import { player } from "../index.js";
 import { dropdown } from "./dropdown.js";
@@ -135,7 +135,9 @@ function createTypeTable<T>(parent: stats, title: string, all: (stats: PlayerSta
         const api = parent.player.api;
         if (api === undefined) return;
 
-        const stats = api.getOrDefault("Vanilla.StatTracker", StatTracker).players.get(snet);
+        const tracker = api.get("Vanilla.StatTracker");
+        if (tracker === undefined) return;
+        const stats = tracker.players.get(snet);
         if (stats === undefined) {
             frag.empty.style.display = "block";
             frag.list.style.display = "none";

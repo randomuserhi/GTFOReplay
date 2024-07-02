@@ -1,5 +1,5 @@
-import { Object3D, Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "three";
-import * as Pod from "../../../replay/pod.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Object3D, Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "@esm/three";
 
 // TODO(randomuserhi): Split the file up into multiple files
 

@@ -1,8 +1,8 @@
-import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "@esm/three";
 import { Bioscan, BioscanStatus } from "../../parser/chainedpuzzle/bioscan.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Bioscan": void;

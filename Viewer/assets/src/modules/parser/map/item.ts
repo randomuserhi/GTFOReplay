@@ -1,6 +1,6 @@
-import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
 import { specification } from "../../renderer/specification.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 
@@ -17,7 +17,7 @@ export interface Item {
     key: string;
 }
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Map.Items":  {

@@ -1,9 +1,9 @@
-import { ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, SphereGeometry } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, SphereGeometry } from "@esm/three";
 import { playerColors } from "../player/renderer.js";
 import { EnemyModel } from "./enemy.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Enemy.Alerts": void;

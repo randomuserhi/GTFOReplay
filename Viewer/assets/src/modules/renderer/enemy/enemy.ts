@@ -1,8 +1,8 @@
-import { Camera, Color, ColorRepresentation, Frustum, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, Sphere, SphereGeometry, Vector3, Vector3Like } from "three";
-import { Text } from "troika-three-text";
-import { InstanceTypes, consume } from "../../../replay/instancing.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
+import { InstanceTypes, consume } from "@esm/@root/replay/instancing.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Camera, Color, ColorRepresentation, Frustum, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Scene, Sphere, SphereGeometry, Vector3, Vector3Like } from "@esm/three";
+import { Text } from "@esm/troika-three-text";
 import { Enemy, EnemyAnimState } from "../../parser/enemy/enemy.js";
 import { Player } from "../../parser/player/player.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../animations/animation.js";
@@ -12,7 +12,7 @@ import { upV, zeroQ, zeroV } from "../constants.js";
 import { playerColors } from "../player/renderer.js";
 import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Enemies": void;

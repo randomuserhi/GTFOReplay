@@ -1,8 +1,8 @@
-import { Vector3, Vector3Like } from "three";
-import * as BitHelper from "../../replay/bithelper.js";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import { Quat, Quaternion, Vec, Vector } from "../../replay/pod.js";
-import { ByteStream } from "../../replay/stream.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Quat, Quaternion, Vec, Vector } from "@esm/@root/replay/pod.js";
+import { ByteStream } from "@esm/@root/replay/stream.js";
+import { Vector3, Vector3Like } from "@esm/three";
 
 // NOTE(randomuserhi): Create an overload to support Pod Vector3 type
 declare module "three" {
@@ -11,7 +11,7 @@ declare module "three" {
     }
 }
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "ReplayRecorder.Header": {

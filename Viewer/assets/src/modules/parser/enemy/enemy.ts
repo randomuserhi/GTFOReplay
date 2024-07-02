@@ -1,16 +1,16 @@
-import * as BitHelper from "../../../replay/bithelper.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
-import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../../parser/replayrecorder.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
 import { specification } from "../../renderer/specification.js";
 import { createDeathCross } from "../deathcross.js";
 import { Identifier, IdentifierData } from "../identifier.js";
+import { DuplicateDynamic, DynamicNotFound, DynamicTransform } from "../replayrecorder.js";
 import { Damage } from "../stattracker/damage.js";
 import { StatTracker, getPlayerStats, isPlayer } from "../stattracker/stats.js";
 import { ScreamType } from "./enemyscreams.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy": {

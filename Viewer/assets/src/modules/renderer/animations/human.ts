@@ -1,4 +1,4 @@
-import { QuaternionLike } from "three";
+import { QuaternionLike } from "@esm/three";
 import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkeleton, AvatarStructure } from "./animation.js";
 
 export const HumanJoints = [

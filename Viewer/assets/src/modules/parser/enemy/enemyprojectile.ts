@@ -1,8 +1,8 @@
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
-import { DynamicParse, DynamicSpawn, DynamicTransform } from "../../parser/replayrecorder.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { DynamicParse, DynamicSpawn, DynamicTransform } from "../replayrecorder.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Enemy.Projectile": {

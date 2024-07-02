@@ -1,9 +1,9 @@
-import { Vector3Like } from "three";
-import { ModuleLoader, ReplayApi } from "../../replay/moduleloader.js";
-import * as Pod from "../../replay/pod.js";
-import { xor } from "../parser/random.js";
+import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Vector3Like } from "@esm/three";
+import { xor } from "./random.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Data {
             "Vanilla.DeathCross": DeathCross[]
