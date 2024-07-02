@@ -19,7 +19,7 @@
       "troika-three-text": ["./@types/troika-three-text"],
 
       // @esm aliases for babel support for the modules folder
-      "@esm/@root/*": ["../assets/src/main/*"],
+      "@esm/@root/*": ["../assets/src/*"],
       "@esm/@/*": ["./@types/*"],
       "@esm/@anim/*": ["./src/modules/renderer/animations/*"],
       "@esm/troika-three-text": ["./@types/troika-three-text"]

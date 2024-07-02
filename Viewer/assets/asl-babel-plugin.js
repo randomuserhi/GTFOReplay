@@ -44,8 +44,6 @@ module.exports = function ( { types: t } ) {
                 const exports = [];
                 path.traverse({
                     ExportDeclaration(path) {
-                        console.log(path.node);
-
                         switch(path.node.type) {
                         case "ExportNamedDeclaration": {
                             const declaration = path.node.declaration;

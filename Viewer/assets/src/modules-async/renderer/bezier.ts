@@ -84,6 +84,3 @@ export function Bezier(x0: number = 0, y0: number = 0, x1: number = 0, y1: numbe
         return calcBezier(getTForX(x), y0, y1);
     };
 }
-
-export const moduleasd = 10;
-export const requireasd = 10;

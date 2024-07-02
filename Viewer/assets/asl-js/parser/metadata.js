@@ -1,5 +1,5 @@
-import * as BitHelper from "@esm/@root/../replay/bithelper.js";
-import { ModuleLoader } from "@esm/@root/../replay/moduleloader.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
     parse: async (data, header) => {
         if (header.has("Vanilla.Metadata"))
@@ -19,3 +19,5 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
         });
     }
 });
+import { Bezier } from "../renderer/bezier";
+console.log(Bezier);

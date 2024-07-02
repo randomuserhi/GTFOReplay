@@ -70,5 +70,3 @@ export function Bezier(x0 = 0, y0 = 0, x1 = 0, y1 = 0) {
         return calcBezier(getTForX(x), y0, y1);
     };
 }
-export const moduleasd = 10;
-export const requireasd = 10;

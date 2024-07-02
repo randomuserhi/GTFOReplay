@@ -1,12 +1,12 @@
-import * as BitHelper from "@esm/@root/../replay/bithelper.js";
-import { ModuleLoader } from "@esm/@root/../replay/moduleloader.js";
+import * as BitHelper from "@esm/@root/replay/bithelper.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 
 export interface Metadata {
     version: string;
     compatibility_OldBulkheadSound: boolean; 
 }
 
-declare module "@esm/@root/../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Headers {
             "Vanilla.Metadata": Metadata;
@@ -32,3 +32,6 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
         });
     }
 });
+
+import { Bezier } from "../renderer/bezier";
+console.log(Bezier);
