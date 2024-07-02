@@ -6,10 +6,14 @@ module.exports = function ( { types: t } ) {
     return {
         visitor: {
             ImportDeclaration(path) {
-                const source = path.node.source.value;
+                let source = path.node.source.value;
                 const specifiers = path.node.specifiers;
   
-                const type = source.startsWith("@esm") ? "esm" : "asl";
+                const esm = source.startsWith("@esm");
+                const type = esm ? "esm" : "asl";
+                if (esm) {
+                    source = source.slice("@esm/".length);
+                }
 
                 const defaultSpecifiers = [];
                 const importSpecifiers = [];

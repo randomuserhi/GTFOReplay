@@ -32,6 +32,3 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
         });
     }
 });
-
-import { Bezier } from "../renderer/bezier";
-console.log(Bezier);

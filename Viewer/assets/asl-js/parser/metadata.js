@@ -19,5 +19,5 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
         });
     }
 });
-import { Bezier } from "../renderer/bezier";
+import { Bezier } from "../renderer/bezier.js";
 console.log(Bezier);

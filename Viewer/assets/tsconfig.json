@@ -13,7 +13,7 @@
     "removeComments": true,
     "sourceMap": false,
     "paths": {
-      "@root/*": ["../assets/src/main/*"],
+      "@root/*": ["../assets/src/*"],
       "@/*": ["./@types/*"],
       "@anim/*": ["./src/modules/renderer/animations/*"],
       "troika-three-text": ["./@types/troika-three-text"],
