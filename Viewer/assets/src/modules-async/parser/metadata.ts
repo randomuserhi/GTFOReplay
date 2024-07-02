@@ -5,7 +5,7 @@ import type { ASLModule, ASLModule_BitHelper, ASLModule_Macro, ASLModule_ModuleL
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const require: Require;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-declare const exports: Exports<exports>;
+declare const module: Exports;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const __ASLModule__: ASLModule;
 
@@ -20,9 +20,11 @@ declare const BitHelper: ASLModule_BitHelper;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const Macro: ASLModule_Macro;
 
-export type exports = {
-    
-};
+declare module "../../replay/async-script-loader.js" {
+    interface ASLModule_Exports {
+        "parser/metadata": typeof exports;
+    }
+}
 
 /// === END TYPESCRIPT BOILERPLATE ===
 
@@ -57,3 +59,6 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
         });
     }
 });
+
+const exports = {};
+module.exports = {};

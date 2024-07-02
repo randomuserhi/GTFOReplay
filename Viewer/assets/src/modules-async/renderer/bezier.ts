@@ -1,11 +1,11 @@
 /// === START TYPESCRIPT BOILERPLATE ===
 
-import type { ASLModule, ASLModule_ModuleLoader, ASLModule_THREE, ASLModule_troika, Exports, Require } from "../../replay/async-script-loader.js";
+import type { ASLModule, ASLModule_BitHelper, ASLModule_Macro, ASLModule_ModuleLoader, ASLModule_THREE, ASLModule_troika, Exports, Require } from "../../replay/async-script-loader.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const require: Require;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-declare const exports: Exports;
+declare const module: Exports;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const __ASLModule__: ASLModule;
 
@@ -15,6 +15,16 @@ declare const THREE: ASLModule_THREE;
 declare const troika: ASLModule_troika;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const ModuleLoader: ASLModule_ModuleLoader;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare const BitHelper: ASLModule_BitHelper;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare const Macro: ASLModule_Macro;
+
+declare module "../../replay/async-script-loader.js" {
+    interface ASLModule_Exports {
+        "renderer/bezier": typeof exports;
+    }
+}
 
 /// === END TYPESCRIPT BOILERPLATE ===
 
@@ -63,7 +73,7 @@ const newtonRaphsonIterate = function(aX: number, aGuessT: number, mX1: number, 
 
 const LinearEasing = function(x: number) { return x; };
 
-exports.Bezier = function(x0: number = 0, y0: number = 0, x1: number = 0, y1: number = 0) {
+function Bezier(x0: number = 0, y0: number = 0, x1: number = 0, y1: number = 0) {
     if (x0 < 0) x0 = 0;
     else if (x0 > 1) x0 = 1;
     if (x1 < 0) x1 = 0;
@@ -98,9 +108,14 @@ exports.Bezier = function(x0: number = 0, y0: number = 0, x1: number = 0, y1: nu
     };
 
     return function(x: number) {
-        // Because JavaScript number are imprecise, we should guarantee the extremes are right.
+    // Because JavaScript number are imprecise, we should guarantee the extremes are right.
         if (x === 0 || x === 1)
             return x;
         return calcBezier(getTForX(x), y0, y1);
     };
+}
+
+const exports = {
+    Bezier
 };
+module.exports = exports;

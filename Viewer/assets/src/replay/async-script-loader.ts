@@ -34,35 +34,16 @@ class _ASLModule implements ASLModule {
     destructed: boolean = false;
 
     exports?: any;
-    readonly proxy: any;
-    private readonly revoke: () => void;
     destructor?: () => void;
 
     public destruct() {
         if (this.destructor !== undefined) this.destructor();
-        this.revoke();  
         this.destructed = true;
     }
 
     constructor(url: string, exec?: ASLExec) {
         this.src = url;
         this.exec = exec;
-        const { proxy, revoke } = Proxy.revocable(this, {
-            get(target, property, receiver) {
-                if (target.isReady === false) throw new Error(`Accessing partially prepared module '${target.src}'.`);
-                if (target.exports === undefined) return undefined;
-                return Reflect.get(target.exports, property, receiver);
-            },
-            set(target, property, value, receiver) { 
-                if (target.isReady && !(value in target.exports)) {
-                    throw new Error(`Cannot export from the finalized module '${target.src}'.`);
-                }
-                Reflect.set(target.exports, property, value, receiver);
-                return true; 
-            }
-        });
-        this.proxy = proxy;
-        this.revoke = revoke;
     }
     
     public ready() {
@@ -162,11 +143,12 @@ export namespace AsyncScriptCache {
     }
 
     export async function exec(module: _ASLModule) {
-        module.exports = {};
-        const exports = new Proxy(module, {
+        module.exports = undefined;
+        const __module__ = new Proxy(module, {
             set: (module: _ASLModule, prop, receiver) => {
+                if (prop !== "exports") module.raise(new Error(`Invalid operation '${prop.toString()}'.`));
                 if (module.isReady) module.raise(new Error("You cannot create exports once a module has loaded."));
-                return Reflect.set(module.exports, prop, receiver);
+                return Reflect.set(module, prop, receiver);
             }
         });
         const __asl__: ASLModule = module.__asl__;
@@ -174,11 +156,11 @@ export namespace AsyncScriptCache {
             const m = await fetchModule(_path, module.src, module);
             if (m === module) throw new Error("Cannot 'require()' self.");
             Archetype.traverse(module!, m.src);
-            return m.proxy;
+            return m.exports;
         };
 
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        await module.exec.call(undefined, __asl__, _require, exports, ModuleLoader, THREE, TROIKA, BitHelper, Macro);
+        await module.exec.call(undefined, __asl__, _require, __module__, ModuleLoader, THREE, TROIKA, BitHelper, Macro);
         
         module.__asl__ = __asl__;
         finalize(module);
@@ -306,7 +288,7 @@ const fetchScript = Rest.fetch<_ASLModule["exec"], [url: URL]>({
         method: "GET"
     }),
     callback: async (resp) => {
-        return (new Function(`const __code__ = async function(__ASLModule__, require, exports, ModuleLoader, THREE, troika, BitHelper, Macro) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
+        return (new Function(`const __code__ = async function(__ASLModule__, require, module, ModuleLoader, THREE, troika, BitHelper, Macro) { ${typescriptModuleSupport(await resp.text())} }; return __code__;`))();
     }
 });
 
@@ -347,5 +329,11 @@ export namespace AsyncScriptLoader {
     }
 }
 
-export type Require = <T = unknown>(path: string) => T;
-export type Exports<T extends Record<any, any>> = T;
+export interface ASLModule_Exports {
+
+}
+
+export type Require = <T extends keyof ASLModule_Exports>(path: string) => ASLModule_Exports[T];
+export type Exports = {
+    exports: any
+};
