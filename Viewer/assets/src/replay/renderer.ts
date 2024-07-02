@@ -1,5 +1,5 @@
 import { CreateEvent } from "@/rhu";
-import { Scene, WebGLRenderer } from "three";
+import { Scene, Vector3, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { _instances } from "./instancing.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
@@ -76,12 +76,21 @@ export class Renderer {
             this.canvas = canvas;
         }
 
+        const lastCameraPos = new Vector3();
+        if (this.has("Camera")) {
+            this.get("Camera")!.getWorldPosition(lastCameraPos);
+        }
+
         this.scene = new Scene();
         this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.composer = new EffectComposer(this.renderer);
 
         if (replay !== undefined) {
             this.init(replay);
+        }
+
+        if (this.has("Camera")) {
+            this.get("Camera")!.position.copy(lastCameraPos);
         }
     }
 

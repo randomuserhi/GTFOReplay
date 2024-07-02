@@ -10,15 +10,17 @@ async function __main__() {
     window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
-        // TODO(randomuserhi): Trigger re-parse of current file
         AsyncScriptLoader.load(p);
         ModuleLoader.registerScriptModule(p); 
+        
+        // TODO(randomuserhi): Trigger re-parse of current file
     }));
     window.api.on("loadRendererModules", (paths: string[]) => paths.forEach(p => AsyncScriptLoader.load(p)));
     
     (await window.api.invoke("loadParserModules")).forEach((p: string) => {
         AsyncScriptLoader.load(p);
-        ModuleLoader.registerScriptModule(p); 
+        const player: player = (window as any).player;
+        player.renderer.refresh(player.canvas, player.replay);
     });
     (await window.api.invoke("loadRendererModules")).forEach((p: string) => AsyncScriptLoader.load(p));
 }
@@ -74,6 +76,7 @@ Macro((() => {
     const app = function(this: app) {
         __main__();
         this.player = document.createMacro(player);
+        
 
         window.api.on("startGame", () => {
             console.log("LIVE VIEW OPEN GAME");
