@@ -25,6 +25,14 @@ let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
         });
 
         header.set("Specification", specification);
+
+        const module = 2; // test
+        const obj = {
+            module: 1
+        }; // test
+
+        console.log(module); // test
+        console.log(obj.module); // test
     }
 });
 metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
@@ -34,5 +42,22 @@ metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
             ...header.get("Vanilla.Metadata")!,
             compatibility_OldBulkheadSound: await BitHelper.readBool(data)
         });
+
+        console.log(module); // test
+        console.log(obj.module); // test
+
+        hello();
     }
 });
+
+export function module() {} // test
+export const obj = {
+    module: 1
+}; // test
+
+console.log(module); // test
+console.log(obj.module); // test
+
+export function hello() {
+    console.log("hello");
+}

@@ -134,7 +134,7 @@ export namespace AsyncScriptCache {
     }
 
     export async function exec(module: _ASLModule) {
-        module.exports = undefined;
+        module.exports = {};
         const __module__ = new Proxy(module, {
             set: (module: _ASLModule, prop, receiver) => {
                 if (prop !== "exports") module.raise(new Error(`Invalid operation '${prop.toString()}'.`));
