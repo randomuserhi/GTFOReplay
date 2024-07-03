@@ -224,10 +224,6 @@ export interface Enemy extends DynamicTransform {
     consumedPlayerSlotIndex: number;
 }
 
-const a = 10;
-const b = 10;
-export { a, b };
-
 export namespace AnimHandles {
     export type Flags = 
         "unspecified" |
