@@ -46,28 +46,36 @@ module.exports = function ( { types: t } ) {
                         path.replaceWith(template.statement.ast`${statements.join(";\n")}`);
                     }
                 });
-
                 
-                // Rename `module` and `require` as they are default to ASL
+                // Manage renaming `module` and `require` as they are default to ASL
                 const identifiersToRename = [];
                 path.traverse({
                     Identifier(path) {
                         if (path.node.name === "module") {
                             identifiersToRename.push(path);
                         }
-                    }
+                    },
                 });
 
                 // Handle exports
                 path.traverse({
                     ExportDeclaration(path) {
                         const rebind = (name) => {
-                            path.scope.bindings[name].referencePaths.forEach(refPath => {
+                            path.scope.bindings[name].referencePaths.forEach((refPath) => {
                                 if (refPath === path) return;
                                 refPath.replaceWith(t.memberExpression(
                                     t.identifier('module.exports'),
                                     t.identifier(name)
                                 ));
+                            });
+                            path.scope.bindings[name].constantViolations.forEach((refPath) => {
+                                if (refPath === path) return;
+                                if (t.isAssignmentExpression(refPath)) {
+                                    refPath.get("left").replaceWith(t.memberExpression(
+                                        t.identifier('module.exports'),
+                                        t.identifier(name)
+                                    ));
+                                }
                             });
                         };
 
@@ -76,27 +84,27 @@ module.exports = function ( { types: t } ) {
                             const declaration = path.node.declaration;
                             if (t.isFunctionDeclaration(declaration)) {
                                 const { id, params, body, generator, async } = declaration;
-                                path.replaceWith(t.assignmentExpression(
+                                path.replaceWith(t.expressionStatement(t.assignmentExpression(
                                     '=',
                                     t.memberExpression(t.identifier('module.exports'), t.identifier(id.name)),
                                     t.functionExpression(t.identifier(""), params, body, generator, async)
-                                ));
+                                )));
 
                                 rebind(declaration.id.name);
                             } else if (t.isVariableDeclaration(declaration)) {
                                 path.replaceWithMultiple(declaration.declarations.map((declarator) => {
                                     if (declarator.init) {
-                                        return t.assignmentExpression(
+                                        return t.expressionStatement(t.assignmentExpression(
                                             '=',
                                             t.memberExpression(t.identifier('module.exports'), t.identifier(declarator.id.name)),
                                             declarator.init
-                                        );
+                                        ));
                                     }
-                                    return t.assignmentExpression(
+                                    return t.expressionStatement(t.assignmentExpression(
                                         '=',
                                         t.memberExpression(t.identifier('module.exports'), t.identifier(declarator.id.name)),
                                         t.identifier('undefined')
-                                    );
+                                    ));
                                 }));
 
                                 declaration.declarations.forEach((declarator) => {
@@ -108,11 +116,11 @@ module.exports = function ( { types: t } ) {
                                 path.replaceWithMultiple(specifiers.map((specifier) => {
                                     switch(specifier.type) {
                                     case "ExportSpecifier": {
-                                        return t.assignmentExpression(
+                                        return t.expressionStatement(t.assignmentExpression(
                                             '=',
                                             t.memberExpression(t.identifier('module.exports'), specifier.exported),
                                             specifier.local
-                                        );
+                                        ));
                                     }
                                     default: throw new Error(`[ExportNamedDeclaration] Unknown specifier '${specifier.type}'`);
                                     }
