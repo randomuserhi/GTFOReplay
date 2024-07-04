@@ -111,7 +111,7 @@ export class Parser {
             });
 
             // Start parsing
-            ipc.send("init", file, [...ModuleLoader.links.values()]);
+            ipc.send("init", file, [...ModuleLoader.links.values()], document.baseURI);
         });
         const importMap = document.querySelector('script[type="importmap"]')?.textContent;
         if (importMap === undefined) throw new Error("Could not start web worker as no importMap was found.");

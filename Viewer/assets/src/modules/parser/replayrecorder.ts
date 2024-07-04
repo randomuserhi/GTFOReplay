@@ -5,7 +5,7 @@ import { ByteStream } from "@esm/@root/replay/stream.js";
 import { Vector3, Vector3Like } from "@esm/three";
 
 // NOTE(randomuserhi): Create an overload to support Pod Vector3 type
-declare module "three" {
+declare module "@esm/three" {
     interface Matrix4 {
         compose(translation: Vector3Like, rotation: Quaternion, scale: Vector3): this;
     }

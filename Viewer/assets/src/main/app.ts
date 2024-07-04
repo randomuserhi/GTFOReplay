@@ -10,19 +10,28 @@ async function __main__() {
     window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
-        AsyncScriptLoader.load(p);
+        //AsyncScriptLoader.load(p);
         ModuleLoader.registerASLModule(p); 
 
         // TODO(randomuserhi): Trigger re-parse of current file
     }));
-    window.api.on("loadRendererModules", (paths: string[]) => paths.forEach(p => AsyncScriptLoader.load(p)));
-    
-    (await window.api.invoke("loadParserModules")).forEach((p: string) => {
+    window.api.on("loadRendererModules", (paths: string[]) => paths.forEach(p => {
         AsyncScriptLoader.load(p);
         const player: player = (window as any).player;
         player.refresh();
+    }));
+    
+    (await window.api.invoke("loadParserModules")).forEach((p: string) => {
+        //AsyncScriptLoader.load(p);
+        ModuleLoader.registerASLModule(p);
+
+        // TODO(randomuserhi): Trigger re-parse of current file
     });
-    (await window.api.invoke("loadRendererModules")).forEach((p: string) => AsyncScriptLoader.load(p));
+    (await window.api.invoke("loadRendererModules")).forEach((p: string) => {
+        AsyncScriptLoader.load(p); 
+        const player: player = (window as any).player;
+        player.refresh();
+    });
 }
 
 export const theme = Theme(({ theme }) => {

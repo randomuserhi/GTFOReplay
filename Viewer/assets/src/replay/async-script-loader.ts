@@ -247,7 +247,7 @@ export namespace AsyncScriptCache {
 }
 
 // NOTE(randomuserhi): Exposed for debugging purposes
-(window as any).waiting = AsyncScriptCache.logWaiting;
+(globalThis as any).waiting = AsyncScriptCache.logWaiting;
 
 // NOTE(randomuserhi): Trim the automatically placed 'export {};' from typescript at the end.
 //                     This is done as a hack for my module-esc use of types :P
@@ -295,8 +295,10 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
 }
 
 export namespace AsyncScriptLoader {
+    // eslint-disable-next-line prefer-const
+    export let baseURI: string | undefined = document?.baseURI; 
     export async function load(path: string) {
-        path = new URL(path, document.baseURI).toString();
+        path = new URL(path, baseURI).toString();
         AsyncScriptCache.invalidate(path);
         await fetchModule(path);
     }

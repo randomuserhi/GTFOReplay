@@ -13,7 +13,8 @@ let replay: Replay | undefined = undefined;
         on: (callback) => self.addEventListener("message", (e) => { callback(e.data); }),
         send: self.postMessage.bind(self)
     });
-    ipc.on("init", async (file: FileHandle, links: string[]) => {
+    ipc.on("init", async (file: FileHandle, links: string[], baseURI?: string) => {
+        AsyncScriptLoader.baseURI = baseURI;
         await Promise.all(links.map(async link => await AsyncScriptLoader.load(link)));
         parse(file);
     });
