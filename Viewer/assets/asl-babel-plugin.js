@@ -87,10 +87,10 @@ module.exports = function ( { types: t } ) {
                                 path.replaceWith(t.expressionStatement(t.assignmentExpression(
                                     '=',
                                     t.memberExpression(t.identifier('module.exports'), t.identifier(id.name)),
-                                    t.functionExpression(t.identifier(""), params, body, generator, async)
+                                    t.functionExpression(undefined, params, body, generator, async)
                                 )));
 
-                                rebind(declaration.id.name);
+                                rebind(id.name);
                             } else if (t.isVariableDeclaration(declaration)) {
                                 path.replaceWithMultiple(declaration.declarations.map((declarator) => {
                                     if (declarator.init) {
@@ -110,6 +110,16 @@ module.exports = function ( { types: t } ) {
                                 declaration.declarations.forEach((declarator) => {
                                     rebind(declarator.id.name);
                                 });
+                            } else if (t.isClassDeclaration(declaration)) {
+                                const { id, superClass, body, decorators } = declaration;
+
+                                path.replaceWith(t.expressionStatement(t.assignmentExpression(
+                                    '=',
+                                    t.memberExpression(t.identifier('module.exports'), t.identifier(id.name)),
+                                    t.classExpression(undefined, superClass, body, decorators)
+                                )));
+
+                                rebind(id.name);
                             } else {
                                 const specifiers = path.node.specifiers;
 

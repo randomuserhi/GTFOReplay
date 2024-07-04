@@ -4,20 +4,14 @@ import * as BitHelper from "./bithelper.js";
 // TODO(randomuserhi): Documentation & Refactor => code is a mess
 export type ASLModule_BitHelper = typeof BitHelper;
 
-export interface ASLModule {
-    readonly src: string;
-    destructor?: () => void;
-    ready: () => void;
-}
-
 class _ASLModuleError extends Error {
     constructor(message?: string) {
         super(message);
     }
 }
 
-type ASLExec = (__ASLModule__: ASLModule, require: Require, module: Exports) => Promise<void>;
-class _ASLModule implements ASLModule, Exports {
+type ASLExec = (require: Require, module: Exports) => Promise<void>;
+class _ASLModule implements Exports {
     readonly src: string;
     exec?: ASLExec;
     
@@ -44,21 +38,6 @@ class _ASLModule implements ASLModule, Exports {
     public raise(e: Error) {
         if (Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e)) throw e;
         else throw new _ASLModuleError(`[${this.src}]:\n\t${e}`);
-    }
-
-    get __asl__(): ASLModule {
-        const result = {
-            destructor: this.destructor,
-            ready: () => this.ready(),
-        };
-        Object.defineProperty(result, "url", {
-            value: this.src,
-            writable: false
-        });
-        return result as ASLModule;
-    }
-    set __asl__(value: ASLModule) {
-        this.destructor = value.destructor;
     }
 
     _archetype: Archetype = AsyncScriptCache.archetype;
@@ -133,16 +112,21 @@ export namespace AsyncScriptCache {
         _cache.set(url, module);
     }
 
+    const setProps: (string | symbol)[] = ["exports", "destructor"];
+    const getProps: (string | symbol)[] = [...setProps, "ready", "src", "isReady"];
     export async function exec(module: _ASLModule) {
         module.exports = {};
         const __module__ = new Proxy(module, {
-            set: (module: _ASLModule, prop, receiver) => {
-                if (prop !== "exports") module.raise(new Error(`Invalid operation '${prop.toString()}'.`));
+            set: (module, prop, newValue, receiver) => {
+                if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
                 if (module.isReady) module.raise(new Error("You cannot create exports once a module has loaded."));
-                return Reflect.set(module, prop, receiver);
+                return Reflect.set(module, prop, newValue, receiver);
+            },
+            get: (module, prop, receiver) => {
+                if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
+                return Reflect.get(module, prop, receiver);
             }
         });
-        const __asl__: ASLModule = module.__asl__;
         const _require = async (_path: string, type: ASLRequireType = "asl") => {
             switch (type) {
             case "asl": {
@@ -159,9 +143,8 @@ export namespace AsyncScriptCache {
         };
 
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        await module.exec(__asl__, _require, __module__);
+        await module.exec(_require, __module__);
         
-        module.__asl__ = __asl__;
         finalize(module);
     }
 
