@@ -81,7 +81,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
         GetPositionString(sb, "root", leftHand); sb.Append(",");
 
         sb.Append("\"joints\":{");
-        GetRotationString(sb, "fold", fold); sb.Append(",");
+        GetRotationString(sb, "fold", fold);
 
         sb.Append("}}");
 
