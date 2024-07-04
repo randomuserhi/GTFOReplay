@@ -1,17 +1,27 @@
 import { Rest } from "@/rhu/rest.js";
-import * as BitHelper from "./bithelper.js";
 
 // TODO(randomuserhi): Documentation & Refactor => code is a mess
-export type ASLModule_BitHelper = typeof BitHelper;
 
+function isASLModuleError(e: Error): e is _ASLModuleError {
+    return Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e);
+}
 class _ASLModuleError extends Error {
     constructor(message?: string, e?: Error) {
         super(`${message}\n\t${e !== undefined ? e.toString().split("\n").join("\n\t") : ""}`);
     }
 }
 
+export interface ASLModule {
+    readonly src: string;
+    readonly isReady: boolean;
+    destructor?: () => void;
+    ready(): void;
+    exports?: any;
+    readonly baseURI: string | undefined;
+}
+
 type ASLExec = (require: Require, module: Exports) => Promise<void>;
-class _ASLModule implements Exports {
+class _ASLModule implements ASLModule, Exports {
     readonly src: string;
     exec?: ASLExec;
     
@@ -36,7 +46,7 @@ class _ASLModule implements Exports {
     }
 
     public raise(e: Error) {
-        if (Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e)) throw e;
+        if (isASLModuleError(e)) throw e;
         else throw new _ASLModuleError(`[${this.src}]:`, e);
     }
 
@@ -46,6 +56,10 @@ class _ASLModule implements Exports {
     }
     get archetype() {
         return this._archetype;
+    }
+
+    get baseURI() {
+        return AsyncScriptLoader.baseURI;
     }
 }
 
@@ -113,7 +127,7 @@ export namespace AsyncScriptCache {
     }
 
     const setProps: (string | symbol)[] = ["exports", "destructor"];
-    const getProps: (string | symbol)[] = [...setProps, "ready", "src", "isReady"];
+    const getProps: (string | symbol)[] = [...setProps, "ready", "src", "isReady", "baseURI"];
     export async function exec(module: _ASLModule) {
         module.exports = {};
         const __module__ = new Proxy(module, {
@@ -128,23 +142,32 @@ export namespace AsyncScriptCache {
             }
         });
         const _require = async (_path: string, type: ASLRequireType = "asl") => {
-            switch (type) {
-            case "asl": {
-                const m = await fetchModule(_path, module.src, module);
-                if (m === module) throw new Error("Cannot 'require()' self.");
-                Archetype.traverse(module!, m.src);
-                return m.exports;
-            }
-            case "esm": {
-                return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
-            }
-            default: throw new Error(`Invalid ASLRequireType '${type}'`);
+            try {
+                switch (type) {
+                case "asl": {
+                    const m = await fetchModule(_path, module.src, module);
+                    if (m === module) throw new Error("Cannot 'require()' self.");
+                    Archetype.traverse(module!, m.src);
+                    return m.exports;
+                }
+                case "esm": {
+                    return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
+                }
+                default: throw new Error(`Invalid ASLRequireType '${type}'`);
+                }
+            } catch (e) {
+                throw new _ASLModuleError(`[${module.src}] Failed to require('${_path}', ${type}):`, e);
             }
         };
 
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        await module.exec(_require, __module__);
         
+        try {
+            await module.exec(_require, __module__);
+        } catch(e) {
+            throw new _ASLModuleError(`Failed to execute module [${module.src}]:`, e);    
+        }
+
         finalize(module);
     }
 
@@ -289,7 +312,8 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
             module.exec = exec;
             return AsyncScriptCache.exec(module);
         }).then(() => resolve(module)).catch((e) => {
-            reject(new _ASLModuleError(`Error whilst fetching [${url}]:`, e));
+            if (isASLModuleError(e)) reject(e);
+            else throw new _ASLModuleError(`Error whilst fetching [${url}] in [${root === undefined ? "@root" : root.src}]:`, e);
         });
     });
 }

@@ -8,6 +8,8 @@ module.exports = function ( { types: t } ) {
         visitor: {
             Program(path) {
                 // Ammend imports
+                let usedDynamicImport = false;
+
                 path.traverse({
                     ImportDeclaration(path) {
                         let source = path.node.source.value;
@@ -44,8 +46,18 @@ module.exports = function ( { types: t } ) {
                         if (importSpecifiers.length > 0) statements.push(`const { ${importSpecifiers.join(",")} } = await require("${source}", "${type}")`);
                         if (namespaceSpecifiers.length > 0) statements.push(namespaceSpecifiers.join(";\n"));
                         path.replaceWith(template.statement.ast`${statements.join(";\n")}`);
-                    }
+                    },
+                    CallExpression(path) {
+                        if (t.isImport(path.node.callee)) { 
+                            usedDynamicImport = true;
+                            path.replaceWith(
+                                t.callExpression(t.identifier("require"), path.node.arguments)
+                            );
+                        }
+                    },
                 });
+
+                if (usedDynamicImport) console.warn("NOTE: The babel compiler for ASL only supports dynamic imports to non-esm modules.");
                 
                 // Manage renaming `module` and `require` as they are default to ASL
                 const identifiersToRename = [];

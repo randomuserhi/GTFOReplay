@@ -1,907 +1,265 @@
-import { Bat_Equip } from "@esm/@/animations/Bat_Equip.js";
-import { ConsumablePack_Equip } from "@esm/@/animations/ConsumablePack_Equip.js";
-import { Consumable_Throw_Equip } from "@esm/@/animations/Consumable_Throw_Equip.js";
-import { Crouch_Idle } from "@esm/@/animations/Crouch_Idle.js";
-import { Crouch_WalkBwd_new } from "@esm/@/animations/Crouch_WalkBwd_new.js";
-import { Crouch_WalkFwd_new } from "@esm/@/animations/Crouch_WalkFwd_new.js";
-import { Crouch_WalkLt135_new } from "@esm/@/animations/Crouch_WalkLt135_new.js";
-import { Crouch_WalkLt45_new } from "@esm/@/animations/Crouch_WalkLt45_new.js";
-import { Crouch_WalkLt_new } from "@esm/@/animations/Crouch_WalkLt_new.js";
-import { Crouch_WalkRt135_new } from "@esm/@/animations/Crouch_WalkRt135_new.js";
-import { Crouch_WalkRt45_new } from "@esm/@/animations/Crouch_WalkRt45_new.js";
-import { Crouch_WalkRt_new } from "@esm/@/animations/Crouch_WalkRt_new.js";
-import { Equip_Generic } from "@esm/@/animations/Equip_Generic.js";
-import { Equip_Melee } from "@esm/@/animations/Equip_Melee.js";
-import { Equip_Primary } from "@esm/@/animations/Equip_Primary.js";
-import { Equip_Secondary } from "@esm/@/animations/Equip_Secondary.js";
-import { Equip_Tool } from "@esm/@/animations/Equip_Tool.js";
-import { Idle_1 } from "@esm/@/animations/Idle_1.js";
-import { Pistol_AO_C } from "@esm/@/animations/Pistol_AO_C.js";
-import { Pistol_AO_D } from "@esm/@/animations/Pistol_AO_D.js";
-import { Pistol_AO_L } from "@esm/@/animations/Pistol_AO_L.js";
-import { Pistol_AO_LD } from "@esm/@/animations/Pistol_AO_LD.js";
-import { Pistol_AO_LU } from "@esm/@/animations/Pistol_AO_LU.js";
-import { Pistol_AO_R } from "@esm/@/animations/Pistol_AO_R.js";
-import { Pistol_AO_RD } from "@esm/@/animations/Pistol_AO_RD.js";
-import { Pistol_AO_RU } from "@esm/@/animations/Pistol_AO_RU.js";
-import { Pistol_AO_U } from "@esm/@/animations/Pistol_AO_U.js";
-import { Pistol_CrouchLoop } from "@esm/@/animations/Pistol_CrouchLoop.js";
-import { Pistol_Crouch_Turn90L } from "@esm/@/animations/Pistol_Crouch_Turn90L.js";
-import { Pistol_Crouch_Turn90R } from "@esm/@/animations/Pistol_Crouch_Turn90R.js";
-import { Pistol_Crouch_WalkBwd } from "@esm/@/animations/Pistol_Crouch_WalkBwd.js";
-import { Pistol_Crouch_WalkFwd } from "@esm/@/animations/Pistol_Crouch_WalkFwd.js";
-import { Pistol_Crouch_WalkLt } from "@esm/@/animations/Pistol_Crouch_WalkLt.js";
-import { Pistol_Crouch_WalkRt } from "@esm/@/animations/Pistol_Crouch_WalkRt.js";
-import { Pistol_Fall } from "@esm/@/animations/Pistol_Fall.js";
-import { Pistol_Idle } from "@esm/@/animations/Pistol_Idle.js";
-import { Pistol_Jog_Backward } from "@esm/@/animations/Pistol_Jog_Backward.js";
-import { Pistol_Jog_BackwardLeft } from "@esm/@/animations/Pistol_Jog_BackwardLeft.js";
-import { Pistol_Jog_BackwardRight } from "@esm/@/animations/Pistol_Jog_BackwardRight.js";
-import { Pistol_Jog_Forward } from "@esm/@/animations/Pistol_Jog_Forward.js";
-import { Pistol_Jog_ForwardLeft } from "@esm/@/animations/Pistol_Jog_ForwardLeft.js";
-import { Pistol_Jog_ForwardRight } from "@esm/@/animations/Pistol_Jog_ForwardRight.js";
-import { Pistol_Jog_Left } from "@esm/@/animations/Pistol_Jog_Left.js";
-import { Pistol_Jog_Right } from "@esm/@/animations/Pistol_Jog_Right.js";
-import { Pistol_Jump } from "@esm/@/animations/Pistol_Jump.js";
-import { Pistol_Land } from "@esm/@/animations/Pistol_Land.js";
-import { Pistol_RunBwdLoop } from "@esm/@/animations/Pistol_RunBwdLoop.js";
-import { Pistol_SprintFwdLoop } from "@esm/@/animations/Pistol_SprintFwdLoop.js";
-import { Pistol_StrafeLeft135Loop } from "@esm/@/animations/Pistol_StrafeLeft135Loop.js";
-import { Pistol_StrafeLeft45Loop } from "@esm/@/animations/Pistol_StrafeLeft45Loop.js";
-import { Pistol_StrafeLeftLoop } from "@esm/@/animations/Pistol_StrafeLeftLoop.js";
-import { Pistol_StrafeRight135Loop } from "@esm/@/animations/Pistol_StrafeRight135Loop.js";
-import { Pistol_StrafeRight45Loop } from "@esm/@/animations/Pistol_StrafeRight45Loop.js";
-import { Pistol_StrafeRightLoop } from "@esm/@/animations/Pistol_StrafeRightLoop.js";
-import { Pistol_StrafeRun135LeftLoop } from "@esm/@/animations/Pistol_StrafeRun135LeftLoop.js";
-import { Pistol_StrafeRun135RightLoop } from "@esm/@/animations/Pistol_StrafeRun135RightLoop.js";
-import { Pistol_StrafeRun45LeftLoop } from "@esm/@/animations/Pistol_StrafeRun45LeftLoop.js";
-import { Pistol_StrafeRun45RightLoop } from "@esm/@/animations/Pistol_StrafeRun45RightLoop.js";
-import { Pistol_StrafeRunLeftLoop } from "@esm/@/animations/Pistol_StrafeRunLeftLoop.js";
-import { Pistol_StrafeRunRightLoop } from "@esm/@/animations/Pistol_StrafeRunRightLoop.js";
-import { Pistol_TurnL_90 } from "@esm/@/animations/Pistol_TurnL_90.js";
-import { Pistol_TurnR_90 } from "@esm/@/animations/Pistol_TurnR_90.js";
-import { Pistol_WalkBwdLoop } from "@esm/@/animations/Pistol_WalkBwdLoop.js";
-import { Pistol_WalkFwdLoop } from "@esm/@/animations/Pistol_WalkFwdLoop.js";
-import { Player_Melee_Movement_Walk_Bwd_Left_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Bwd_Left_Stand_A.js";
-import { Player_Melee_Movement_Walk_Bwd_Right_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Bwd_Right_Stand_A.js";
-import { Player_Melee_Movement_Walk_Bwd_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Bwd_Stand_A.js";
-import { Player_Melee_Movement_Walk_Fwd_Left_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Fwd_Left_Stand_A.js";
-import { Player_Melee_Movement_Walk_Fwd_Right_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Fwd_Right_Stand_A.js";
-import { Player_Melee_Movement_Walk_Fwd_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Fwd_Stand_A.js";
-import { Player_Melee_Movement_Walk_Left_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Left_Stand_A.js";
-import { Player_Melee_Movement_Walk_Right_Stand_A } from "@esm/@/animations/Player_Melee_Movement_Walk_Right_Stand_A.js";
-import { Rifle_AO_C } from "@esm/@/animations/Rifle_AO_C.js";
-import { Rifle_AO_D } from "@esm/@/animations/Rifle_AO_D.js";
-import { Rifle_AO_L } from "@esm/@/animations/Rifle_AO_L.js";
-import { Rifle_AO_LD } from "@esm/@/animations/Rifle_AO_LD.js";
-import { Rifle_AO_LU } from "@esm/@/animations/Rifle_AO_LU.js";
-import { Rifle_AO_R } from "@esm/@/animations/Rifle_AO_R.js";
-import { Rifle_AO_RD } from "@esm/@/animations/Rifle_AO_RD.js";
-import { Rifle_AO_RU } from "@esm/@/animations/Rifle_AO_RU.js";
-import { Rifle_AO_U } from "@esm/@/animations/Rifle_AO_U.js";
-import { Rifle_CrouchLoop } from "@esm/@/animations/Rifle_CrouchLoop.js";
-import { Rifle_Crouch_Turn90L } from "@esm/@/animations/Rifle_Crouch_Turn90L.js";
-import { Rifle_Crouch_Turn90R } from "@esm/@/animations/Rifle_Crouch_Turn90R.js";
-import { Rifle_Crouch_WalkBwd } from "@esm/@/animations/Rifle_Crouch_WalkBwd.js";
-import { Rifle_Crouch_WalkFwd } from "@esm/@/animations/Rifle_Crouch_WalkFwd.js";
-import { Rifle_Crouch_WalkLt } from "@esm/@/animations/Rifle_Crouch_WalkLt.js";
-import { Rifle_Crouch_WalkRt } from "@esm/@/animations/Rifle_Crouch_WalkRt.js";
-import { Rifle_Fall } from "@esm/@/animations/Rifle_Fall.js";
-import { Rifle_Idle } from "@esm/@/animations/Rifle_Idle.js";
-import { Rifle_Jog_Backward } from "@esm/@/animations/Rifle_Jog_Backward.js";
-import { Rifle_Jog_BackwardLeft } from "@esm/@/animations/Rifle_Jog_BackwardLeft.js";
-import { Rifle_Jog_BackwardRight } from "@esm/@/animations/Rifle_Jog_BackwardRight.js";
-import { Rifle_Jog_Forward } from "@esm/@/animations/Rifle_Jog_Forward.js";
-import { Rifle_Jog_ForwardLeft } from "@esm/@/animations/Rifle_Jog_ForwardLeft.js";
-import { Rifle_Jog_ForwardRight } from "@esm/@/animations/Rifle_Jog_ForwardRight.js";
-import { Rifle_Jog_Left } from "@esm/@/animations/Rifle_Jog_Left.js";
-import { Rifle_Jog_Right } from "@esm/@/animations/Rifle_Jog_Right.js";
-import { Rifle_Jump } from "@esm/@/animations/Rifle_Jump.js";
-import { Rifle_Land } from "@esm/@/animations/Rifle_Land.js";
-import { Rifle_RunBwdLoop } from "@esm/@/animations/Rifle_RunBwdLoop.js";
-import { Rifle_SprintFwdLoop } from "@esm/@/animations/Rifle_SprintFwdLoop.js";
-import { Rifle_SprintFwdLoop_Left } from "@esm/@/animations/Rifle_SprintFwdLoop_Left.js";
-import { Rifle_SprintFwdLoop_Right } from "@esm/@/animations/Rifle_SprintFwdLoop_Right.js";
-import { Rifle_StrafeLeft135Loop } from "@esm/@/animations/Rifle_StrafeLeft135Loop.js";
-import { Rifle_StrafeLeft45Loop } from "@esm/@/animations/Rifle_StrafeLeft45Loop.js";
-import { Rifle_StrafeLeftLoop } from "@esm/@/animations/Rifle_StrafeLeftLoop.js";
-import { Rifle_StrafeRight135Loop } from "@esm/@/animations/Rifle_StrafeRight135Loop.js";
-import { Rifle_StrafeRight45Loop } from "@esm/@/animations/Rifle_StrafeRight45Loop.js";
-import { Rifle_StrafeRightLoop } from "@esm/@/animations/Rifle_StrafeRightLoop.js";
-import { Rifle_StrafeRun135LeftLoop } from "@esm/@/animations/Rifle_StrafeRun135LeftLoop.js";
-import { Rifle_StrafeRun135LeftLoop_0 } from "@esm/@/animations/Rifle_StrafeRun135LeftLoop_0.js";
-import { Rifle_StrafeRun45LeftLoop } from "@esm/@/animations/Rifle_StrafeRun45LeftLoop.js";
-import { Rifle_StrafeRun45RightLoop } from "@esm/@/animations/Rifle_StrafeRun45RightLoop.js";
-import { Rifle_StrafeRunLeftLoop } from "@esm/@/animations/Rifle_StrafeRunLeftLoop.js";
-import { Rifle_StrafeRunRightLoop } from "@esm/@/animations/Rifle_StrafeRunRightLoop.js";
-import { Rifle_TurnL_90 } from "@esm/@/animations/Rifle_TurnL_90.js";
-import { Rifle_TurnR_90 } from "@esm/@/animations/Rifle_TurnR_90.js";
-import { Rifle_WalkBwdLoop } from "@esm/@/animations/Rifle_WalkBwdLoop.js";
-import { Rifle_WalkFwdLoop } from "@esm/@/animations/Rifle_WalkFwdLoop.js";
-import { RunBwdLoop } from "@esm/@/animations/RunBwdLoop.js";
-import { RunFwdLoop } from "@esm/@/animations/RunFwdLoop.js";
-import { RunLtLoop } from "@esm/@/animations/RunLtLoop.js";
-import { RunRtLoop } from "@esm/@/animations/RunRtLoop.js";
-import { RunStrafeLeft135Loop } from "@esm/@/animations/RunStrafeLeft135Loop.js";
-import { RunStrafeLeft45Loop } from "@esm/@/animations/RunStrafeLeft45Loop.js";
-import { RunStrafeRight135Loop } from "@esm/@/animations/RunStrafeRight135Loop.js";
-import { RunStrafeRight45Loop } from "@esm/@/animations/RunStrafeRight45Loop.js";
-import { SledgeHammer_Crouch_WalkBwd } from "@esm/@/animations/SledgeHammer_Crouch_WalkBwd.js";
-import { SledgeHammer_Crouch_WalkFwd } from "@esm/@/animations/SledgeHammer_Crouch_WalkFwd.js";
-import { SledgeHammer_Crouch_WalkLt } from "@esm/@/animations/SledgeHammer_Crouch_WalkLt.js";
-import { SledgeHammer_Crouch_WalkRt } from "@esm/@/animations/SledgeHammer_Crouch_WalkRt.js";
-import { SledgeHammer_Fall } from "@esm/@/animations/SledgeHammer_Fall.js";
-import { SledgeHammer_Jog_Backward } from "@esm/@/animations/SledgeHammer_Jog_Backward.js";
-import { SledgeHammer_Jog_BackwardLeft } from "@esm/@/animations/SledgeHammer_Jog_BackwardLeft.js";
-import { SledgeHammer_Jog_BackwardRight } from "@esm/@/animations/SledgeHammer_Jog_BackwardRight.js";
-import { SledgeHammer_Jog_Forward } from "@esm/@/animations/SledgeHammer_Jog_Forward.js";
-import { SledgeHammer_Jog_ForwardLeft } from "@esm/@/animations/SledgeHammer_Jog_ForwardLeft.js";
-import { SledgeHammer_Jog_ForwardRight } from "@esm/@/animations/SledgeHammer_Jog_ForwardRight.js";
-import { SledgeHammer_Jog_Left } from "@esm/@/animations/SledgeHammer_Jog_Left.js";
-import { SledgeHammer_Jog_Right } from "@esm/@/animations/SledgeHammer_Jog_Right.js";
-import { SledgeHammer_Jump } from "@esm/@/animations/SledgeHammer_Jump.js";
-import { SledgeHammer_Land } from "@esm/@/animations/SledgeHammer_Land.js";
-import { SledgeHammer_SprintFwdLoop } from "@esm/@/animations/SledgeHammer_SprintFwdLoop.js";
-import { Sledgehammer_Crouch_Idle } from "@esm/@/animations/Sledgehammer_Crouch_Idle.js";
-import { Sledgehammer_Stand_Idle } from "@esm/@/animations/Sledgehammer_Stand_Idle.js";
-import { Spear_Equip } from "@esm/@/animations/Spear_Equip.js";
-import { StrafeLeft135Loop } from "@esm/@/animations/StrafeLeft135Loop.js";
-import { StrafeLeft45Loop } from "@esm/@/animations/StrafeLeft45Loop.js";
-import { StrafeLeftLoop } from "@esm/@/animations/StrafeLeftLoop.js";
-import { StrafeRight135Loop } from "@esm/@/animations/StrafeRight135Loop.js";
-import { StrafeRight45Loop } from "@esm/@/animations/StrafeRight45Loop.js";
-import { StrafeRightLoop } from "@esm/@/animations/StrafeRightLoop.js";
-import { WalkBwdLoop } from "@esm/@/animations/WalkBwdLoop.js";
-import { WalkFwdLoop } from "@esm/@/animations/WalkFwdLoop.js";
-
-import { Ability_Fire_0_Start } from "@esm/@/animations/Ability_Fire_0_Start.js";
-import { Ability_Fire_2_Start } from "@esm/@/animations/Ability_Fire_2_Start.js";
-import { Bat_Crouch_ChargeRelease } from "@esm/@/animations/Bat_Crouch_ChargeRelease.js";
-import { Bat_Crouch_Chargeup } from "@esm/@/animations/Bat_Crouch_Chargeup.js";
-import { Bat_Crouch_Shove } from "@esm/@/animations/Bat_Crouch_Shove.js";
-import { Bat_Crouch_SwingRight } from "@esm/@/animations/Bat_Crouch_SwingRight.js";
-import { Bat_Stand_ChargeRelease } from "@esm/@/animations/Bat_Stand_ChargeRelease.js";
-import { Bat_Stand_Chargeup } from "@esm/@/animations/Bat_Stand_Chargeup.js";
-import { Bat_Stand_ChargeupIdle } from "@esm/@/animations/Bat_Stand_ChargeupIdle.js";
-import { Bat_Stand_Shove } from "@esm/@/animations/Bat_Stand_Shove.js";
-import { Bat_Stand_SwingRight } from "@esm/@/animations/Bat_Stand_SwingRight.js";
-import { CA_Ability_Fire_In_A } from "@esm/@/animations/CA_Ability_Fire_In_A.js";
-import { CA_Ability_Fire_In_B } from "@esm/@/animations/CA_Ability_Fire_In_B.js";
-import { CA_Ability_Use_In_A } from "@esm/@/animations/CA_Ability_Use_In_A.js";
-import { CA_Ability_Use_Loop_A } from "@esm/@/animations/CA_Ability_Use_Loop_A.js";
-import { CA_Ability_Use_Out_A } from "@esm/@/animations/CA_Ability_Use_Out_A.js";
-import { CA_Hibernate_Detect_Loop } from "@esm/@/animations/CA_Hibernate_Detect_Loop.js";
-import { CA_Hibernate_Heartbeat_A } from "@esm/@/animations/CA_Hibernate_Heartbeat_A.js";
-import { CA_Hibernate_Heartbeat_B } from "@esm/@/animations/CA_Hibernate_Heartbeat_B.js";
-import { CA_Hibernate_Heartbeat_C } from "@esm/@/animations/CA_Hibernate_Heartbeat_C.js";
-import { CA_Hibernate_Heartbeat_D } from "@esm/@/animations/CA_Hibernate_Heartbeat_D.js";
-import { CA_Hibernate_Heartbeat_E } from "@esm/@/animations/CA_Hibernate_Heartbeat_E.js";
-import { CA_Hibernate_In } from "@esm/@/animations/CA_Hibernate_In.js";
-import { CA_Hibernate_Loop_A } from "@esm/@/animations/CA_Hibernate_Loop_A.js";
-import { CA_Hibernate_Wakeup_A } from "@esm/@/animations/CA_Hibernate_Wakeup_A.js";
-import { CA_Hibernate_Wakeup_Turn_A } from "@esm/@/animations/CA_Hibernate_Wakeup_Turn_A.js";
-import { CA_Hit_Heavy_Bwd_A } from "@esm/@/animations/CA_Hit_Heavy_Bwd_A.js";
-import { CA_Hit_Heavy_Fwd_B } from "@esm/@/animations/CA_Hit_Heavy_Fwd_B.js";
-import { CA_Hit_Heavy_Fwd_C } from "@esm/@/animations/CA_Hit_Heavy_Fwd_C.js";
-import { CA_Hit_Heavy_Lt_A } from "@esm/@/animations/CA_Hit_Heavy_Lt_A.js";
-import { CA_Hit_Heavy_Lt_B } from "@esm/@/animations/CA_Hit_Heavy_Lt_B.js";
-import { CA_Hit_Heavy_Rt_A } from "@esm/@/animations/CA_Hit_Heavy_Rt_A.js";
-import { CA_Hit_Heavy_Rt_B } from "@esm/@/animations/CA_Hit_Heavy_Rt_B.js";
-import { CA_Hit_Light_Bwd_A } from "@esm/@/animations/CA_Hit_Light_Bwd_A.js";
-import { CA_Hit_Light_Bwd_B } from "@esm/@/animations/CA_Hit_Light_Bwd_B.js";
-import { CA_Hit_Light_Fwd_A } from "@esm/@/animations/CA_Hit_Light_Fwd_A.js";
-import { CA_Hit_Light_Fwd_B } from "@esm/@/animations/CA_Hit_Light_Fwd_B.js";
-import { CA_Hit_Light_Lt_A } from "@esm/@/animations/CA_Hit_Light_Lt_A.js";
-import { CA_Hit_Light_Lt_B } from "@esm/@/animations/CA_Hit_Light_Lt_B.js";
-import { CA_Hit_Light_Rt_A } from "@esm/@/animations/CA_Hit_Light_Rt_A.js";
-import { CA_Hit_Light_Rt_B } from "@esm/@/animations/CA_Hit_Light_Rt_B.js";
-import { CA_Idle_A } from "@esm/@/animations/CA_Idle_A.js";
-import { CA_Jump_Air } from "@esm/@/animations/CA_Jump_Air.js";
-import { CA_Jump_Land } from "@esm/@/animations/CA_Jump_Land.js";
-import { CA_Jump_Start } from "@esm/@/animations/CA_Jump_Start.js";
-import { CA_Scream_A } from "@esm/@/animations/CA_Scream_A.js";
-import { CA_Scream_B } from "@esm/@/animations/CA_Scream_B.js";
-import { CA_Walk_Bwd_A } from "@esm/@/animations/CA_Walk_Bwd_A.js";
-import { CA_Walk_Fwd_A } from "@esm/@/animations/CA_Walk_Fwd_A.js";
-import { CA_Walk_Lt_A } from "@esm/@/animations/CA_Walk_Lt_A.js";
-import { CA_Walk_Rt_A } from "@esm/@/animations/CA_Walk_Rt_A.js";
-import { CF_Ability_Fire_In_A } from "@esm/@/animations/CF_Ability_Fire_In_A.js";
-import { CF_Ability_Fire_In_B } from "@esm/@/animations/CF_Ability_Fire_In_B.js";
-import { CF_Ability_Use_In_A } from "@esm/@/animations/CF_Ability_Use_In_A.js";
-import { CF_Ability_Use_Loop_A } from "@esm/@/animations/CF_Ability_Use_Loop_A.js";
-import { CF_Ability_Use_Out_A } from "@esm/@/animations/CF_Ability_Use_Out_A.js";
-import { CF_Birther_Heartbeat } from "@esm/@/animations/CF_Birther_Heartbeat.js";
-import { CF_Birther_Hibernate_In } from "@esm/@/animations/CF_Birther_Hibernate_In.js";
-import { CF_Birther_Hibernate_Loop } from "@esm/@/animations/CF_Birther_Hibernate_Loop.js";
-import { CF_Hibernate_Detect_Loop } from "@esm/@/animations/CF_Hibernate_Detect_Loop.js";
-import { CF_Hibernate_Heartbeat_A } from "@esm/@/animations/CF_Hibernate_Heartbeat_A.js";
-import { CF_Hibernate_Heartbeat_B } from "@esm/@/animations/CF_Hibernate_Heartbeat_B.js";
-import { CF_Hibernate_Heartbeat_C } from "@esm/@/animations/CF_Hibernate_Heartbeat_C.js";
-import { CF_Hibernate_Heartbeat_D } from "@esm/@/animations/CF_Hibernate_Heartbeat_D.js";
-import { CF_Hibernate_Heartbeat_E } from "@esm/@/animations/CF_Hibernate_Heartbeat_E.js";
-import { CF_Hibernate_In } from "@esm/@/animations/CF_Hibernate_In.js";
-import { CF_Hibernate_Loop_A } from "@esm/@/animations/CF_Hibernate_Loop_A.js";
-import { CF_Hibernate_Wakeup_A } from "@esm/@/animations/CF_Hibernate_Wakeup_A.js";
-import { CF_Hibernate_Wakeup_Turn_A } from "@esm/@/animations/CF_Hibernate_Wakeup_Turn_A.js";
-import { CF_Hit_Light_A } from "@esm/@/animations/CF_Hit_Light_A.js";
-import { CF_Hit_Light_B } from "@esm/@/animations/CF_Hit_Light_B.js";
-import { CF_Idle_A } from "@esm/@/animations/CF_Idle_A.js";
-import { CF_Jump_Air } from "@esm/@/animations/CF_Jump_Air.js";
-import { CF_Jump_Land } from "@esm/@/animations/CF_Jump_Land.js";
-import { CF_Jump_Start } from "@esm/@/animations/CF_Jump_Start.js";
-import { CF_Scream } from "@esm/@/animations/CF_Scream.js";
-import { CF_Walk_Bwd_A } from "@esm/@/animations/CF_Walk_Bwd_A.js";
-import { CF_Walk_Fwd_A } from "@esm/@/animations/CF_Walk_Fwd_A.js";
-import { CF_Walk_Lt_A } from "@esm/@/animations/CF_Walk_Lt_A.js";
-import { CF_Walk_Rt_A } from "@esm/@/animations/CF_Walk_Rt_A.js";
-import { CR_Ability_Fire_In_A } from "@esm/@/animations/CR_Ability_Fire_In_A.js";
-import { CR_Ability_Fire_In_B } from "@esm/@/animations/CR_Ability_Fire_In_B.js";
-import { CR_Ability_Fire_In_C } from "@esm/@/animations/CR_Ability_Fire_In_C.js";
-import { CR_Ability_Use_In_A } from "@esm/@/animations/CR_Ability_Use_In_A.js";
-import { CR_Ability_Use_Loop_A } from "@esm/@/animations/CR_Ability_Use_Loop_A.js";
-import { CR_Ability_Use_Out_A } from "@esm/@/animations/CR_Ability_Use_Out_A.js";
-import { CR_Hibernate_Detect_Loop } from "@esm/@/animations/CR_Hibernate_Detect_Loop.js";
-import { CR_Hibernate_Heartbeat_A } from "@esm/@/animations/CR_Hibernate_Heartbeat_A.js";
-import { CR_Hibernate_Heartbeat_B } from "@esm/@/animations/CR_Hibernate_Heartbeat_B.js";
-import { CR_Hibernate_Heartbeat_C } from "@esm/@/animations/CR_Hibernate_Heartbeat_C.js";
-import { CR_Hibernate_Heartbeat_D } from "@esm/@/animations/CR_Hibernate_Heartbeat_D.js";
-import { CR_Hibernate_Heartbeat_E } from "@esm/@/animations/CR_Hibernate_Heartbeat_E.js";
-import { CR_Hibernate_In } from "@esm/@/animations/CR_Hibernate_In.js";
-import { CR_Hibernate_Loop } from "@esm/@/animations/CR_Hibernate_Loop.js";
-import { CR_Hibernate_Wakeup_A } from "@esm/@/animations/CR_Hibernate_Wakeup_A.js";
-import { CR_Hibernate_Wakeup_B } from "@esm/@/animations/CR_Hibernate_Wakeup_B.js";
-import { CR_Hibernate_Wakeup_C } from "@esm/@/animations/CR_Hibernate_Wakeup_C.js";
-import { CR_Hibernate_Wakeup_D } from "@esm/@/animations/CR_Hibernate_Wakeup_D.js";
-import { CR_Hibernate_Wakeup_Turn_A } from "@esm/@/animations/CR_Hibernate_Wakeup_Turn_A.js";
-import { CR_Hit_Heavy_Bwd_A_Turn } from "@esm/@/animations/CR_Hit_Heavy_Bwd_A_Turn.js";
-import { CR_Hit_Heavy_Bwd_B } from "@esm/@/animations/CR_Hit_Heavy_Bwd_B.js";
-import { CR_Hit_Heavy_Bwd_C_Turn } from "@esm/@/animations/CR_Hit_Heavy_Bwd_C_Turn.js";
-import { CR_Hit_Heavy_Bwd_D } from "@esm/@/animations/CR_Hit_Heavy_Bwd_D.js";
-import { CR_Hit_Heavy_Bwd_D_0 } from "@esm/@/animations/CR_Hit_Heavy_Bwd_D_0.js";
-import { CR_Hit_Heavy_Fwd_A } from "@esm/@/animations/CR_Hit_Heavy_Fwd_A.js";
-import { CR_Hit_Heavy_Fwd_B } from "@esm/@/animations/CR_Hit_Heavy_Fwd_B.js";
-import { CR_Hit_Heavy_Fwd_C } from "@esm/@/animations/CR_Hit_Heavy_Fwd_C.js";
-import { CR_Hit_Heavy_Lt_A } from "@esm/@/animations/CR_Hit_Heavy_Lt_A.js";
-import { CR_Hit_Heavy_Lt_B } from "@esm/@/animations/CR_Hit_Heavy_Lt_B.js";
-import { CR_Hit_Heavy_Lt_C } from "@esm/@/animations/CR_Hit_Heavy_Lt_C.js";
-import { CR_Hit_Heavy_Rt_A } from "@esm/@/animations/CR_Hit_Heavy_Rt_A.js";
-import { CR_Hit_Heavy_Rt_B } from "@esm/@/animations/CR_Hit_Heavy_Rt_B.js";
-import { CR_Hit_Heavy_Rt_C } from "@esm/@/animations/CR_Hit_Heavy_Rt_C.js";
-import { CR_Hit_Heavy_Rt_C_0 } from "@esm/@/animations/CR_Hit_Heavy_Rt_C_0.js";
-import { CR_Hit_Light_Bwd_A } from "@esm/@/animations/CR_Hit_Light_Bwd_A.js";
-import { CR_Hit_Light_Bwd_B } from "@esm/@/animations/CR_Hit_Light_Bwd_B.js";
-import { CR_Hit_Light_Bwd_C } from "@esm/@/animations/CR_Hit_Light_Bwd_C.js";
-import { CR_Hit_Light_Bwd_D } from "@esm/@/animations/CR_Hit_Light_Bwd_D.js";
-import { CR_Hit_Light_Fwd_A } from "@esm/@/animations/CR_Hit_Light_Fwd_A.js";
-import { CR_Hit_Light_Fwd_B } from "@esm/@/animations/CR_Hit_Light_Fwd_B.js";
-import { CR_Hit_Light_Fwd_C } from "@esm/@/animations/CR_Hit_Light_Fwd_C.js";
-import { CR_Hit_Light_Lt_A } from "@esm/@/animations/CR_Hit_Light_Lt_A.js";
-import { CR_Hit_Light_Lt_B } from "@esm/@/animations/CR_Hit_Light_Lt_B.js";
-import { CR_Hit_Light_Lt_C } from "@esm/@/animations/CR_Hit_Light_Lt_C.js";
-import { CR_Hit_Light_Rt_A } from "@esm/@/animations/CR_Hit_Light_Rt_A.js";
-import { CR_Hit_Light_Rt_B } from "@esm/@/animations/CR_Hit_Light_Rt_B.js";
-import { CR_Hit_Light_Rt_C } from "@esm/@/animations/CR_Hit_Light_Rt_C.js";
-import { CR_Idle_A } from "@esm/@/animations/CR_Idle_A.js";
-import { CR_Jump_Air } from "@esm/@/animations/CR_Jump_Air.js";
-import { CR_Jump_Land } from "@esm/@/animations/CR_Jump_Land.js";
-import { CR_Jump_Start } from "@esm/@/animations/CR_Jump_Start.js";
-import { CR_Run_Bwd } from "@esm/@/animations/CR_Run_Bwd.js";
-import { CR_Run_Fwd } from "@esm/@/animations/CR_Run_Fwd.js";
-import { CR_Run_Lt } from "@esm/@/animations/CR_Run_Lt.js";
-import { CR_Run_Rt } from "@esm/@/animations/CR_Run_Rt.js";
-import { CR_Scream_A } from "@esm/@/animations/CR_Scream_A.js";
-import { CR_Scream_B } from "@esm/@/animations/CR_Scream_B.js";
-import { CR_Scream_C } from "@esm/@/animations/CR_Scream_C.js";
-import { CR_Walk_Bwd } from "@esm/@/animations/CR_Walk_Bwd.js";
-import { CR_Walk_Fwd } from "@esm/@/animations/CR_Walk_Fwd.js";
-import { CR_Walk_Lt } from "@esm/@/animations/CR_Walk_Lt.js";
-import { CR_Walk_Rt } from "@esm/@/animations/CR_Walk_Rt.js";
-import { ConsumablePack_Idle } from "@esm/@/animations/ConsumablePack_Idle.js";
-import { Consumable_Throw } from "@esm/@/animations/Consumable_Throw.js";
-import { Consumable_Throw_Charge } from "@esm/@/animations/Consumable_Throw_Charge.js";
-import { Consumable_Throw_Charge_Idle } from "@esm/@/animations/Consumable_Throw_Charge_Idle.js";
-import { Dead } from "@esm/@/animations/Dead.js";
-import { Die } from "@esm/@/animations/Die.js";
-import { Enemy_Big_Detect_Front_A } from "@esm/@/animations/Enemy_Big_Detect_Front_A.js";
-import { Enemy_Big_Detect_Front_B } from "@esm/@/animations/Enemy_Big_Detect_Front_B.js";
-import { Enemy_Big_Fire_In_A } from "@esm/@/animations/Enemy_Big_Fire_In_A.js";
-import { Enemy_Big_Fire_In_B } from "@esm/@/animations/Enemy_Big_Fire_In_B.js";
-import { Enemy_Big_Hibernate_Heartbeat_1_A } from "@esm/@/animations/Enemy_Big_Hibernate_Heartbeat_1_A.js";
-import { Enemy_Big_Hibernate_Heartbeat_2_A } from "@esm/@/animations/Enemy_Big_Hibernate_Heartbeat_2_A.js";
-import { Enemy_Big_Hibernate_Heartbeat_3_A } from "@esm/@/animations/Enemy_Big_Hibernate_Heartbeat_3_A.js";
-import { Enemy_Big_Hibernate_Heartbeat_4_A } from "@esm/@/animations/Enemy_Big_Hibernate_Heartbeat_4_A.js";
-import { Enemy_Big_Hibernate_Heartbeat_5_A } from "@esm/@/animations/Enemy_Big_Hibernate_Heartbeat_5_A.js";
-import { Enemy_Big_Hibernate_In_A } from "@esm/@/animations/Enemy_Big_Hibernate_In_A.js";
-import { Enemy_Big_Hibernate_Loop_A } from "@esm/@/animations/Enemy_Big_Hibernate_Loop_A.js";
-import { Enemy_Big_Hibernate_Wakeup_180_B } from "@esm/@/animations/Enemy_Big_Hibernate_Wakeup_180_B.js";
-import { Enemy_Big_Hibernate_Wakeup_A } from "@esm/@/animations/Enemy_Big_Hibernate_Wakeup_A.js";
-import { Enemy_Big_Hit_Back_A } from "@esm/@/animations/Enemy_Big_Hit_Back_A.js";
-import { Enemy_Big_Hit_Back_B } from "@esm/@/animations/Enemy_Big_Hit_Back_B.js";
-import { Enemy_Big_Hit_Front_A } from "@esm/@/animations/Enemy_Big_Hit_Front_A.js";
-import { Enemy_Big_Hit_Front_B } from "@esm/@/animations/Enemy_Big_Hit_Front_B.js";
-import { Enemy_Big_Hit_Left_A } from "@esm/@/animations/Enemy_Big_Hit_Left_A.js";
-import { Enemy_Big_Hit_Left_B } from "@esm/@/animations/Enemy_Big_Hit_Left_B.js";
-import { Enemy_Big_Hit_Right_A } from "@esm/@/animations/Enemy_Big_Hit_Right_A.js";
-import { Enemy_Big_Hit_Right_B } from "@esm/@/animations/Enemy_Big_Hit_Right_B.js";
-import { Enemy_Big_Idle_A } from "@esm/@/animations/Enemy_Big_Idle_A.js";
-import { Enemy_Big_Jump_Land_A } from "@esm/@/animations/Enemy_Big_Jump_Land_A.js";
-import { Enemy_Big_Jump_Loop_A } from "@esm/@/animations/Enemy_Big_Jump_Loop_A.js";
-import { Enemy_Big_Jump_Start_A } from "@esm/@/animations/Enemy_Big_Jump_Start_A.js";
-import { Enemy_Big_Run_Bwd_A } from "@esm/@/animations/Enemy_Big_Run_Bwd_A.js";
-import { Enemy_Big_Run_Bwd_Left_A } from "@esm/@/animations/Enemy_Big_Run_Bwd_Left_A.js";
-import { Enemy_Big_Run_Bwd_Right_A } from "@esm/@/animations/Enemy_Big_Run_Bwd_Right_A.js";
-import { Enemy_Big_Run_Fwd_A } from "@esm/@/animations/Enemy_Big_Run_Fwd_A.js";
-import { Enemy_Big_Run_Fwd_Left_A } from "@esm/@/animations/Enemy_Big_Run_Fwd_Left_A.js";
-import { Enemy_Big_Run_Fwd_Right_A } from "@esm/@/animations/Enemy_Big_Run_Fwd_Right_A.js";
-import { Enemy_Big_Run_Left_A } from "@esm/@/animations/Enemy_Big_Run_Left_A.js";
-import { Enemy_Big_Run_Right_A } from "@esm/@/animations/Enemy_Big_Run_Right_A.js";
-import { Enemy_Big_Walk_Bwd_A } from "@esm/@/animations/Enemy_Big_Walk_Bwd_A.js";
-import { Enemy_Big_Walk_Bwd_Left_A } from "@esm/@/animations/Enemy_Big_Walk_Bwd_Left_A.js";
-import { Enemy_Big_Walk_Bwd_Right_A } from "@esm/@/animations/Enemy_Big_Walk_Bwd_Right_A.js";
-import { Enemy_Big_Walk_Fwd_A } from "@esm/@/animations/Enemy_Big_Walk_Fwd_A.js";
-import { Enemy_Big_Walk_Fwd_Left_A } from "@esm/@/animations/Enemy_Big_Walk_Fwd_Left_A.js";
-import { Enemy_Big_Walk_Fwd_Right_A } from "@esm/@/animations/Enemy_Big_Walk_Fwd_Right_A.js";
-import { Enemy_Big_Walk_Left_A } from "@esm/@/animations/Enemy_Big_Walk_Left_A.js";
-import { Enemy_Big_Walk_Right_A } from "@esm/@/animations/Enemy_Big_Walk_Right_A.js";
-import { FD_Ability_Fire_In_A } from "@esm/@/animations/FD_Ability_Fire_In_A.js";
-import { FD_Ability_Fire_In_B } from "@esm/@/animations/FD_Ability_Fire_In_B.js";
-import { FD_Ability_Use_In_A } from "@esm/@/animations/FD_Ability_Use_In_A.js";
-import { FD_Ability_Use_Loop_A } from "@esm/@/animations/FD_Ability_Use_Loop_A.js";
-import { FD_Ability_Use_Out_A } from "@esm/@/animations/FD_Ability_Use_Out_A.js";
-import { FD_Hibernate_Detect_Loop } from "@esm/@/animations/FD_Hibernate_Detect_Loop.js";
-import { FD_Hibernate_Heartbeat_A } from "@esm/@/animations/FD_Hibernate_Heartbeat_A.js";
-import { FD_Hibernate_Heartbeat_B } from "@esm/@/animations/FD_Hibernate_Heartbeat_B.js";
-import { FD_Hibernate_Heartbeat_C } from "@esm/@/animations/FD_Hibernate_Heartbeat_C.js";
-import { FD_Hibernate_Heartbeat_D } from "@esm/@/animations/FD_Hibernate_Heartbeat_D.js";
-import { FD_Hibernate_Heartbeat_E } from "@esm/@/animations/FD_Hibernate_Heartbeat_E.js";
-import { FD_Hibernate_In } from "@esm/@/animations/FD_Hibernate_In.js";
-import { FD_Hibernate_Loop } from "@esm/@/animations/FD_Hibernate_Loop.js";
-import { FD_Hibernate_Wakeup_A } from "@esm/@/animations/FD_Hibernate_Wakeup_A.js";
-import { FD_Hibernate_Wakeup_B } from "@esm/@/animations/FD_Hibernate_Wakeup_B.js";
-import { FD_Hibernate_Wakeup_C } from "@esm/@/animations/FD_Hibernate_Wakeup_C.js";
-import { FD_Hibernate_Wakeup_Turn_A } from "@esm/@/animations/FD_Hibernate_Wakeup_Turn_A.js";
-import { FD_Hit_Heavy_Bwd_A } from "@esm/@/animations/FD_Hit_Heavy_Bwd_A.js";
-import { FD_Hit_Heavy_Bwd_B } from "@esm/@/animations/FD_Hit_Heavy_Bwd_B.js";
-import { FD_Hit_Heavy_Bwd_C } from "@esm/@/animations/FD_Hit_Heavy_Bwd_C.js";
-import { FD_Hit_Heavy_Fwd_A } from "@esm/@/animations/FD_Hit_Heavy_Fwd_A.js";
-import { FD_Hit_Heavy_Fwd_B } from "@esm/@/animations/FD_Hit_Heavy_Fwd_B.js";
-import { FD_Hit_Heavy_Fwd_C } from "@esm/@/animations/FD_Hit_Heavy_Fwd_C.js";
-import { FD_Hit_Heavy_Lt_A } from "@esm/@/animations/FD_Hit_Heavy_Lt_A.js";
-import { FD_Hit_Heavy_Lt_B } from "@esm/@/animations/FD_Hit_Heavy_Lt_B.js";
-import { FD_Hit_Heavy_Lt_C } from "@esm/@/animations/FD_Hit_Heavy_Lt_C.js";
-import { FD_Hit_Heavy_Rt_A } from "@esm/@/animations/FD_Hit_Heavy_Rt_A.js";
-import { FD_Hit_Heavy_Rt_B } from "@esm/@/animations/FD_Hit_Heavy_Rt_B.js";
-import { FD_Hit_Heavy_Rt_C } from "@esm/@/animations/FD_Hit_Heavy_Rt_C.js";
-import { FD_Hit_Light_Bwd_A } from "@esm/@/animations/FD_Hit_Light_Bwd_A.js";
-import { FD_Hit_Light_Bwd_B } from "@esm/@/animations/FD_Hit_Light_Bwd_B.js";
-import { FD_Hit_Light_Bwd_C } from "@esm/@/animations/FD_Hit_Light_Bwd_C.js";
-import { FD_Hit_Light_Fwd_A } from "@esm/@/animations/FD_Hit_Light_Fwd_A.js";
-import { FD_Hit_Light_Fwd_B } from "@esm/@/animations/FD_Hit_Light_Fwd_B.js";
-import { FD_Hit_Light_Fwd_C } from "@esm/@/animations/FD_Hit_Light_Fwd_C.js";
-import { FD_Hit_Light_Lt_A } from "@esm/@/animations/FD_Hit_Light_Lt_A.js";
-import { FD_Hit_Light_Lt_B } from "@esm/@/animations/FD_Hit_Light_Lt_B.js";
-import { FD_Hit_Light_Lt_C } from "@esm/@/animations/FD_Hit_Light_Lt_C.js";
-import { FD_Hit_Light_Rt_A } from "@esm/@/animations/FD_Hit_Light_Rt_A.js";
-import { FD_Hit_Light_Rt_B } from "@esm/@/animations/FD_Hit_Light_Rt_B.js";
-import { FD_Hit_Light_Rt_C } from "@esm/@/animations/FD_Hit_Light_Rt_C.js";
-import { FD_Idle_A } from "@esm/@/animations/FD_Idle_A.js";
-import { FD_Jump_Air } from "@esm/@/animations/FD_Jump_Air.js";
-import { FD_Jump_Land } from "@esm/@/animations/FD_Jump_Land.js";
-import { FD_Jump_Start } from "@esm/@/animations/FD_Jump_Start.js";
-import { FD_Run_Bwd_A } from "@esm/@/animations/FD_Run_Bwd_A.js";
-import { FD_Run_Fwd_A } from "@esm/@/animations/FD_Run_Fwd_A.js";
-import { FD_Run_Lt_A } from "@esm/@/animations/FD_Run_Lt_A.js";
-import { FD_Run_Rt_A } from "@esm/@/animations/FD_Run_Rt_A.js";
-import { FD_Scream_A } from "@esm/@/animations/FD_Scream_A.js";
-import { FD_Scream_B } from "@esm/@/animations/FD_Scream_B.js";
-import { FD_Scream_C } from "@esm/@/animations/FD_Scream_C.js";
-import { FD_Walk_Bwd_A } from "@esm/@/animations/FD_Walk_Bwd_A.js";
-import { FD_Walk_Fwd_A } from "@esm/@/animations/FD_Walk_Fwd_A.js";
-import { FD_Walk_Lt_B } from "@esm/@/animations/FD_Walk_Lt_B.js";
-import { FD_Walk_Rt_A } from "@esm/@/animations/FD_Walk_Rt_A.js";
-import { Fogrepeller_Throw } from "@esm/@/animations/Fogrepeller_Throw.js";
-import { Fogrepeller_Throw_Charge } from "@esm/@/animations/Fogrepeller_Throw_Charge.js";
-import { Fogrepeller_Throw_Charge_Idle } from "@esm/@/animations/Fogrepeller_Throw_Charge_Idle.js";
-import { Fogrepeller_Throw_Equip } from "@esm/@/animations/Fogrepeller_Throw_Equip.js";
-import { Front_AutoShotgun_1_animation_reload_0 } from "@esm/@/animations/Front_AutoShotgun_1_animation_reload_0.js";
-import { Front_AutoShotgun_2_Parts_Reload } from "@esm/@/animations/Front_AutoShotgun_2_Parts_Reload.js";
-import { Front_AutoShotgun_3_reload_0 } from "@esm/@/animations/Front_AutoShotgun_3_reload_0.js";
-import { Front_Precision_1_reload_1 } from "@esm/@/animations/Front_Precision_1_reload_1.js";
-import { Front_Precision_2_reload_1 } from "@esm/@/animations/Front_Precision_2_reload_1.js";
-import { Front_Precision_3_Parts_Reload } from "@esm/@/animations/Front_Precision_3_Parts_Reload.js";
-import { Front_Revolver_1_reload } from "@esm/@/animations/Front_Revolver_1_reload.js";
-import { Front_Revolver_2_Reload } from "@esm/@/animations/Front_Revolver_2_Reload.js";
-import { Front_Revolver_2_Reload_0 } from "@esm/@/animations/Front_Revolver_2_Reload_0.js";
-import { Front_Shotgun_1_animation_reload_1 } from "@esm/@/animations/Front_Shotgun_1_animation_reload_1.js";
-import { Front_Shotgun_3_reload_0 } from "@esm/@/animations/Front_Shotgun_3_reload_0.js";
-import { Giant_Jump_Start } from "@esm/@/animations/Giant_Jump_Start.js";
-import { Idle_Active } from "@esm/@/animations/Idle_Active.js";
-import { Knife_Crouch_ChargeRelease } from "@esm/@/animations/Knife_Crouch_ChargeRelease.js";
-import { Knife_Crouch_Chargeup } from "@esm/@/animations/Knife_Crouch_Chargeup.js";
-import { Knife_Crouch_Idle } from "@esm/@/animations/Knife_Crouch_Idle.js";
-import { Knife_Crouch_SwingRight } from "@esm/@/animations/Knife_Crouch_SwingRight.js";
-import { Knife_Crouch_WalkBwd } from "@esm/@/animations/Knife_Crouch_WalkBwd.js";
-import { Knife_Crouch_WalkFwd } from "@esm/@/animations/Knife_Crouch_WalkFwd.js";
-import { Knife_Crouch_WalkLt } from "@esm/@/animations/Knife_Crouch_WalkLt.js";
-import { Knife_Crouch_WalkRt } from "@esm/@/animations/Knife_Crouch_WalkRt.js";
-import { Knife_Fall } from "@esm/@/animations/Knife_Fall.js";
-import { Knife_Idle_0 } from "@esm/@/animations/Knife_Idle_0.js";
-import { Knife_Jog_Backward } from "@esm/@/animations/Knife_Jog_Backward.js";
-import { Knife_Jog_BackwardLeft } from "@esm/@/animations/Knife_Jog_BackwardLeft.js";
-import { Knife_Jog_BackwardRight } from "@esm/@/animations/Knife_Jog_BackwardRight.js";
-import { Knife_Jog_Forward } from "@esm/@/animations/Knife_Jog_Forward.js";
-import { Knife_Jog_ForwardLeft } from "@esm/@/animations/Knife_Jog_ForwardLeft.js";
-import { Knife_Jog_ForwardRight } from "@esm/@/animations/Knife_Jog_ForwardRight.js";
-import { Knife_Jog_Left } from "@esm/@/animations/Knife_Jog_Left.js";
-import { Knife_Jog_Right } from "@esm/@/animations/Knife_Jog_Right.js";
-import { Knife_Jump } from "@esm/@/animations/Knife_Jump.js";
-import { Knife_Land } from "@esm/@/animations/Knife_Land.js";
-import { Knife_SprintFwdLoop } from "@esm/@/animations/Knife_SprintFwdLoop.js";
-import { Knife_Stand_ChargeRelease } from "@esm/@/animations/Knife_Stand_ChargeRelease.js";
-import { Knife_Stand_Chargeup } from "@esm/@/animations/Knife_Stand_Chargeup.js";
-import { Knife_Stand_ChargeupIdle } from "@esm/@/animations/Knife_Stand_ChargeupIdle.js";
-import { Knife_Stand_SwingRight } from "@esm/@/animations/Knife_Stand_SwingRight.js";
-import { LO_Ability_Fire_In_A } from "@esm/@/animations/LO_Ability_Fire_In_A.js";
-import { LO_Ability_Fire_In_B } from "@esm/@/animations/LO_Ability_Fire_In_B.js";
-import { LO_Ability_Fire_In_C } from "@esm/@/animations/LO_Ability_Fire_In_C.js";
-import { LO_Ability_Use_In_A } from "@esm/@/animations/LO_Ability_Use_In_A.js";
-import { LO_Ability_Use_Loop_A } from "@esm/@/animations/LO_Ability_Use_Loop_A.js";
-import { LO_Ability_Use_Out_A } from "@esm/@/animations/LO_Ability_Use_Out_A.js";
-import { LO_Hibernate_Detect_Loop } from "@esm/@/animations/LO_Hibernate_Detect_Loop.js";
-import { LO_Hibernate_Heartbeat_A } from "@esm/@/animations/LO_Hibernate_Heartbeat_A.js";
-import { LO_Hibernate_Heartbeat_B } from "@esm/@/animations/LO_Hibernate_Heartbeat_B.js";
-import { LO_Hibernate_Heartbeat_C } from "@esm/@/animations/LO_Hibernate_Heartbeat_C.js";
-import { LO_Hibernate_Heartbeat_D } from "@esm/@/animations/LO_Hibernate_Heartbeat_D.js";
-import { LO_Hibernate_Heartbeat_E } from "@esm/@/animations/LO_Hibernate_Heartbeat_E.js";
-import { LO_Hibernate_In_A } from "@esm/@/animations/LO_Hibernate_In_A.js";
-import { LO_Hibernate_Loop } from "@esm/@/animations/LO_Hibernate_Loop.js";
-import { LO_Hibernate_Wakeup_A } from "@esm/@/animations/LO_Hibernate_Wakeup_A.js";
-import { LO_Hibernate_Wakeup_B } from "@esm/@/animations/LO_Hibernate_Wakeup_B.js";
-import { LO_Hibernate_Wakeup_Fwd_C } from "@esm/@/animations/LO_Hibernate_Wakeup_Fwd_C.js";
-import { LO_Hibernate_Wakeup_Fwd_D } from "@esm/@/animations/LO_Hibernate_Wakeup_Fwd_D.js";
-import { LO_Hibernate_Wakeup_Turn_A } from "@esm/@/animations/LO_Hibernate_Wakeup_Turn_A.js";
-import { LO_Hit_Heavy_Bwd_A } from "@esm/@/animations/LO_Hit_Heavy_Bwd_A.js";
-import { LO_Hit_Heavy_Fwd_A } from "@esm/@/animations/LO_Hit_Heavy_Fwd_A.js";
-import { LO_Hit_Heavy_Fwd_B } from "@esm/@/animations/LO_Hit_Heavy_Fwd_B.js";
-import { LO_Hit_Heavy_Fwd_C } from "@esm/@/animations/LO_Hit_Heavy_Fwd_C.js";
-import { LO_Hit_Heavy_Lt_A } from "@esm/@/animations/LO_Hit_Heavy_Lt_A.js";
-import { LO_Hit_Heavy_Lt_B } from "@esm/@/animations/LO_Hit_Heavy_Lt_B.js";
-import { LO_Hit_Heavy_Lt_C } from "@esm/@/animations/LO_Hit_Heavy_Lt_C.js";
-import { LO_Hit_Heavy_Rt_A } from "@esm/@/animations/LO_Hit_Heavy_Rt_A.js";
-import { LO_Hit_Heavy_Rt_B } from "@esm/@/animations/LO_Hit_Heavy_Rt_B.js";
-import { LO_Hit_Heavy_Rt_C } from "@esm/@/animations/LO_Hit_Heavy_Rt_C.js";
-import { LO_Hit_Light_Bwd_A } from "@esm/@/animations/LO_Hit_Light_Bwd_A.js";
-import { LO_Hit_Light_Bwd_C } from "@esm/@/animations/LO_Hit_Light_Bwd_C.js";
-import { LO_Hit_Light_Bwd_Turn_A } from "@esm/@/animations/LO_Hit_Light_Bwd_Turn_A.js";
-import { LO_Hit_Light_Bwd_b } from "@esm/@/animations/LO_Hit_Light_Bwd_b.js";
-import { LO_Hit_Light_Fwd_A } from "@esm/@/animations/LO_Hit_Light_Fwd_A.js";
-import { LO_Hit_Light_Fwd_B } from "@esm/@/animations/LO_Hit_Light_Fwd_B.js";
-import { LO_Hit_Light_Fwd_C } from "@esm/@/animations/LO_Hit_Light_Fwd_C.js";
-import { LO_Hit_Light_Lt_A } from "@esm/@/animations/LO_Hit_Light_Lt_A.js";
-import { LO_Hit_Light_Lt_B } from "@esm/@/animations/LO_Hit_Light_Lt_B.js";
-import { LO_Hit_Light_Lt_C } from "@esm/@/animations/LO_Hit_Light_Lt_C.js";
-import { LO_Hit_Light_Rt_A } from "@esm/@/animations/LO_Hit_Light_Rt_A.js";
-import { LO_Hit_Light_Rt_B } from "@esm/@/animations/LO_Hit_Light_Rt_B.js";
-import { LO_Hit_Light_Rt_C } from "@esm/@/animations/LO_Hit_Light_Rt_C.js";
-import { LO_Hit_Light_Rt_D } from "@esm/@/animations/LO_Hit_Light_Rt_D.js";
-import { LO_Idle_A } from "@esm/@/animations/LO_Idle_A.js";
-import { LO_Jump_Air } from "@esm/@/animations/LO_Jump_Air.js";
-import { LO_Jump_Land } from "@esm/@/animations/LO_Jump_Land.js";
-import { LO_Jump_Start } from "@esm/@/animations/LO_Jump_Start.js";
-import { LO_Run_Bwd_A } from "@esm/@/animations/LO_Run_Bwd_A.js";
-import { LO_Run_Fwd_A } from "@esm/@/animations/LO_Run_Fwd_A.js";
-import { LO_Run_Lt_A } from "@esm/@/animations/LO_Run_Lt_A.js";
-import { LO_Run_Rt_A } from "@esm/@/animations/LO_Run_Rt_A.js";
-import { LO_Scream_A } from "@esm/@/animations/LO_Scream_A.js";
-import { LO_Scream_B } from "@esm/@/animations/LO_Scream_B.js";
-import { LO_Scream_C } from "@esm/@/animations/LO_Scream_C.js";
-import { LO_Walk_Bwd_A } from "@esm/@/animations/LO_Walk_Bwd_A.js";
-import { LO_Walk_Fwd_A } from "@esm/@/animations/LO_Walk_Fwd_A.js";
-import { LO_Walk_Lt_A } from "@esm/@/animations/LO_Walk_Lt_A.js";
-import { LO_Walk_Rt_A } from "@esm/@/animations/LO_Walk_Rt_A.js";
-import { Melee_Sequence_Fwd } from "@esm/@/animations/Melee_Sequence_Fwd.js";
-import { Monster_Attack_06_shortened } from "@esm/@/animations/Monster_Attack_06_shortened.js";
-import { Monster_Attack_180_L } from "@esm/@/animations/Monster_Attack_180_L.js";
-import { Monster_Fall_Landing_01 } from "@esm/@/animations/Monster_Fall_Landing_01.js";
-import { Monster_Hit_Back_01 } from "@esm/@/animations/Monster_Hit_Back_01.js";
-import { Monster_Hit_Back_02 } from "@esm/@/animations/Monster_Hit_Back_02.js";
-import { Monster_Hit_Back_04 } from "@esm/@/animations/Monster_Hit_Back_04.js";
-import { Monster_Hit_Front_01 } from "@esm/@/animations/Monster_Hit_Front_01.js";
-import { Monster_Hit_Front_02 } from "@esm/@/animations/Monster_Hit_Front_02.js";
-import { Monster_Hit_Front_03 } from "@esm/@/animations/Monster_Hit_Front_03.js";
-import { Monster_Hit_Front_04 } from "@esm/@/animations/Monster_Hit_Front_04.js";
-import { Monster_Hit_Leg_01 } from "@esm/@/animations/Monster_Hit_Leg_01.js";
-import { Monster_Hit_Leg_02 } from "@esm/@/animations/Monster_Hit_Leg_02.js";
-import { Monster_Hit_Leg_03 } from "@esm/@/animations/Monster_Hit_Leg_03.js";
-import { Monster_Hit_Right_01 } from "@esm/@/animations/Monster_Hit_Right_01.js";
-import { Monster_Idle_01 } from "@esm/@/animations/Monster_Idle_01.js";
-import { Monster_Taunt_01 } from "@esm/@/animations/Monster_Taunt_01.js";
-import { Monster_TentacleStart } from "@esm/@/animations/Monster_TentacleStart.js";
-import { Monster_Turn_Left_180 } from "@esm/@/animations/Monster_Turn_Left_180.js";
-import { Monster_Walk_Bwd } from "@esm/@/animations/Monster_Walk_Bwd.js";
-import { Monster_Walk_Fwd } from "@esm/@/animations/Monster_Walk_Fwd.js";
-import { Monster_Walk_Left } from "@esm/@/animations/Monster_Walk_Left.js";
-import { Monster_Walk_Left_135 } from "@esm/@/animations/Monster_Walk_Left_135.js";
-import { Monster_Walk_Left_45 } from "@esm/@/animations/Monster_Walk_Left_45.js";
-import { Monster_Walk_Right } from "@esm/@/animations/Monster_Walk_Right.js";
-import { Monster_Walk_Right_135 } from "@esm/@/animations/Monster_Walk_Right_135.js";
-import { Monster_Walk_Right_45 } from "@esm/@/animations/Monster_Walk_Right_45.js";
-import { PO_ConsumeAttack } from "@esm/@/animations/PO_ConsumeAttack.js";
-import { PO_ConsumeEnd } from "@esm/@/animations/PO_ConsumeEnd.js";
-import { PO_ConsumeLoop } from "@esm/@/animations/PO_ConsumeLoop.js";
-import { PO_ConsumeStart } from "@esm/@/animations/PO_ConsumeStart.js";
-import { PO_IdleCombat } from "@esm/@/animations/PO_IdleCombat.js";
-import { PO_JogBwd } from "@esm/@/animations/PO_JogBwd.js";
-import { PO_JogFwd } from "@esm/@/animations/PO_JogFwd.js";
-import { PO_JogLeft } from "@esm/@/animations/PO_JogLeft.js";
-import { PO_JogRight } from "@esm/@/animations/PO_JogRight.js";
-import { PO_RunFwd } from "@esm/@/animations/PO_RunFwd.js";
-import { PO_SpitOut } from "@esm/@/animations/PO_SpitOut.js";
-import { PO_WalkBwd } from "@esm/@/animations/PO_WalkBwd.js";
-import { PO_WalkFwd } from "@esm/@/animations/PO_WalkFwd.js";
-import { PO_WalkLeft } from "@esm/@/animations/PO_WalkLeft.js";
-import { PO_WalkRight } from "@esm/@/animations/PO_WalkRight.js";
-import { Pistol_Recoil } from "@esm/@/animations/Pistol_Recoil.js";
-import { Player_Climb_Ladder_Down_A } from "@esm/@/animations/Player_Climb_Ladder_Down_A.js";
-import { Player_Climb_Ladder_Idle_A } from "@esm/@/animations/Player_Climb_Ladder_Idle_A.js";
-import { Player_Climb_Ladder_Up_A } from "@esm/@/animations/Player_Climb_Ladder_Up_A.js";
-import { Player_Reviving_Upperbody_Loop } from "@esm/@/animations/Player_Reviving_Upperbody_Loop.js";
-import { RU_Ability_Use_In_a } from "@esm/@/animations/RU_Ability_Use_In_a.js";
-import { RU_Ability_Use_Loop_a } from "@esm/@/animations/RU_Ability_Use_Loop_a.js";
-import { RU_Ability_Use_Out_a } from "@esm/@/animations/RU_Ability_Use_Out_a.js";
-import { RU_Hibernate_Heartbeat_A } from "@esm/@/animations/RU_Hibernate_Heartbeat_A.js";
-import { RU_Hibernate_Heartbeat_A_0 } from "@esm/@/animations/RU_Hibernate_Heartbeat_A_0.js";
-import { RU_Hibernate_Heartbeat_B } from "@esm/@/animations/RU_Hibernate_Heartbeat_B.js";
-import { RU_Hibernate_Heartbeat_B_0 } from "@esm/@/animations/RU_Hibernate_Heartbeat_B_0.js";
-import { RU_Hibernate_Heartbeat_C } from "@esm/@/animations/RU_Hibernate_Heartbeat_C.js";
-import { RU_Hibernate_Heartbeat_C_0 } from "@esm/@/animations/RU_Hibernate_Heartbeat_C_0.js";
-import { RU_Hibernate_Heartbeat_D } from "@esm/@/animations/RU_Hibernate_Heartbeat_D.js";
-import { RU_Hibernate_Heartbeat_D_0 } from "@esm/@/animations/RU_Hibernate_Heartbeat_D_0.js";
-import { RU_Hibernate_Heartbeat_E } from "@esm/@/animations/RU_Hibernate_Heartbeat_E.js";
-import { RU_Hibernate_Heartbeat_E_0 } from "@esm/@/animations/RU_Hibernate_Heartbeat_E_0.js";
-import { RU_Hibernate_In } from "@esm/@/animations/RU_Hibernate_In.js";
-import { RU_Hibernate_Loop_0 } from "@esm/@/animations/RU_Hibernate_Loop_0.js";
-import { RU_Hibernate_Wakeup_A } from "@esm/@/animations/RU_Hibernate_Wakeup_A.js";
-import { RU_Hibernate_Wakeup_A_0 } from "@esm/@/animations/RU_Hibernate_Wakeup_A_0.js";
-import { RU_Hibernate_Wakeup_B } from "@esm/@/animations/RU_Hibernate_Wakeup_B.js";
-import { RU_Hibernate_Wakeup_B_0 } from "@esm/@/animations/RU_Hibernate_Wakeup_B_0.js";
-import { RU_Hibernate_Wakeup_C } from "@esm/@/animations/RU_Hibernate_Wakeup_C.js";
-import { RU_Hibernate_Wakeup_C_0 } from "@esm/@/animations/RU_Hibernate_Wakeup_C_0.js";
-import { RU_Hibernate_Wakeup_Turn_A } from "@esm/@/animations/RU_Hibernate_Wakeup_Turn_A.js";
-import { RU_Hit_Heavy_Bwd_A } from "@esm/@/animations/RU_Hit_Heavy_Bwd_A.js";
-import { RU_Hit_Heavy_Bwd_B } from "@esm/@/animations/RU_Hit_Heavy_Bwd_B.js";
-import { RU_Hit_Heavy_Bwd_C } from "@esm/@/animations/RU_Hit_Heavy_Bwd_C.js";
-import { RU_Hit_Heavy_Bwd_Turn_A } from "@esm/@/animations/RU_Hit_Heavy_Bwd_Turn_A.js";
-import { RU_Hit_Heavy_Fwd_A } from "@esm/@/animations/RU_Hit_Heavy_Fwd_A.js";
-import { RU_Hit_Heavy_Fwd_B } from "@esm/@/animations/RU_Hit_Heavy_Fwd_B.js";
-import { RU_Hit_Heavy_Fwd_C } from "@esm/@/animations/RU_Hit_Heavy_Fwd_C.js";
-import { RU_Hit_Heavy_Lt_A } from "@esm/@/animations/RU_Hit_Heavy_Lt_A.js";
-import { RU_Hit_Heavy_Lt_B } from "@esm/@/animations/RU_Hit_Heavy_Lt_B.js";
-import { RU_Hit_Heavy_Lt_C } from "@esm/@/animations/RU_Hit_Heavy_Lt_C.js";
-import { RU_Hit_Heavy_Rt_A } from "@esm/@/animations/RU_Hit_Heavy_Rt_A.js";
-import { RU_Hit_Heavy_Rt_B } from "@esm/@/animations/RU_Hit_Heavy_Rt_B.js";
-import { RU_Hit_Heavy_Rt_C } from "@esm/@/animations/RU_Hit_Heavy_Rt_C.js";
-import { RU_Hit_Light_Bwd_A } from "@esm/@/animations/RU_Hit_Light_Bwd_A.js";
-import { RU_Hit_Light_Bwd_B } from "@esm/@/animations/RU_Hit_Light_Bwd_B.js";
-import { RU_Hit_Light_Bwd_C } from "@esm/@/animations/RU_Hit_Light_Bwd_C.js";
-import { RU_Hit_Light_Fwd_A } from "@esm/@/animations/RU_Hit_Light_Fwd_A.js";
-import { RU_Hit_Light_Fwd_B } from "@esm/@/animations/RU_Hit_Light_Fwd_B.js";
-import { RU_Hit_Light_Fwd_C } from "@esm/@/animations/RU_Hit_Light_Fwd_C.js";
-import { RU_Hit_Light_Lt_A } from "@esm/@/animations/RU_Hit_Light_Lt_A.js";
-import { RU_Hit_Light_Lt_B } from "@esm/@/animations/RU_Hit_Light_Lt_B.js";
-import { RU_Hit_Light_Lt_C } from "@esm/@/animations/RU_Hit_Light_Lt_C.js";
-import { RU_Hit_Light_Rt_A } from "@esm/@/animations/RU_Hit_Light_Rt_A.js";
-import { RU_Hit_Light_Rt_B } from "@esm/@/animations/RU_Hit_Light_Rt_B.js";
-import { RU_Hit_Light_Rt_C } from "@esm/@/animations/RU_Hit_Light_Rt_C.js";
-import { RU_Jump_Air_TimeBlend } from "@esm/@/animations/RU_Jump_Air_TimeBlend.js";
-import { RU_Jump_In } from "@esm/@/animations/RU_Jump_In.js";
-import { RU_Jump_Out } from "@esm/@/animations/RU_Jump_Out.js";
-import { RU_Melee_Sequence_A } from "@esm/@/animations/RU_Melee_Sequence_A.js";
-import { RU_Run_Bwd } from "@esm/@/animations/RU_Run_Bwd.js";
-import { RU_Run_Fwd } from "@esm/@/animations/RU_Run_Fwd.js";
-import { RU_Run_Lt } from "@esm/@/animations/RU_Run_Lt.js";
-import { RU_Run_Rt } from "@esm/@/animations/RU_Run_Rt.js";
-import { RU_Scream_A } from "@esm/@/animations/RU_Scream_A.js";
-import { RU_Scream_B } from "@esm/@/animations/RU_Scream_B.js";
-import { RU_Scream_C } from "@esm/@/animations/RU_Scream_C.js";
-import { RU_Walk_Bwd } from "@esm/@/animations/RU_Walk_Bwd.js";
-import { RU_Walk_Fwd } from "@esm/@/animations/RU_Walk_Fwd.js";
-import { RU_Walk_Lt } from "@esm/@/animations/RU_Walk_Lt.js";
-import { RU_Walk_Rt } from "@esm/@/animations/RU_Walk_Rt.js";
-import { Revive } from "@esm/@/animations/Revive.js";
-import { Revolver_Front_1_Reload_1 } from "@esm/@/animations/Revolver_Front_1_Reload_1.js";
-import { Rifle1_Reload } from "@esm/@/animations/Rifle1_Reload.js";
-import { Rifle_Recoil } from "@esm/@/animations/Rifle_Recoil.js";
-import { Ru_Hibernate_Detect_Loop_0 } from "@esm/@/animations/Ru_Hibernate_Detect_Loop_0.js";
-import { SMG_Front_4_Reload_1 } from "@esm/@/animations/SMG_Front_4_Reload_1.js";
-import { Sledgehammer_Crouch_Shove } from "@esm/@/animations/Sledgehammer_Crouch_Shove.js";
-import { Sledgehammer_Crouch_SwingLeft_Charge } from "@esm/@/animations/Sledgehammer_Crouch_SwingLeft_Charge.js";
-import { Sledgehammer_Crouch_SwingLeft_Charge_Release } from "@esm/@/animations/Sledgehammer_Crouch_SwingLeft_Charge_Release.js";
-import { Sledgehammer_Stand_Shove } from "@esm/@/animations/Sledgehammer_Stand_Shove.js";
-import { Sledgehammer_Stand_SwingLeft_Charge } from "@esm/@/animations/Sledgehammer_Stand_SwingLeft_Charge.js";
-import { Sledgehammer_Stand_SwingLeft_Charge_Idle } from "@esm/@/animations/Sledgehammer_Stand_SwingLeft_Charge_Idle.js";
-import { Sledgehammer_Stand_SwingLeft_Charge_Release } from "@esm/@/animations/Sledgehammer_Stand_SwingLeft_Charge_Release.js";
-import { Spear_Crouch_Charge } from "@esm/@/animations/Spear_Crouch_Charge.js";
-import { Spear_Crouch_ChargeRelease } from "@esm/@/animations/Spear_Crouch_ChargeRelease.js";
-import { Spear_Crouch_Idle } from "@esm/@/animations/Spear_Crouch_Idle.js";
-import { Spear_Crouch_Shove } from "@esm/@/animations/Spear_Crouch_Shove.js";
-import { Spear_Crouch_SwingRight } from "@esm/@/animations/Spear_Crouch_SwingRight.js";
-import { Spear_Crouch_WalkBwd } from "@esm/@/animations/Spear_Crouch_WalkBwd.js";
-import { Spear_Crouch_WalkFwd } from "@esm/@/animations/Spear_Crouch_WalkFwd.js";
-import { Spear_Crouch_WalkLt } from "@esm/@/animations/Spear_Crouch_WalkLt.js";
-import { Spear_Crouch_WalkRt } from "@esm/@/animations/Spear_Crouch_WalkRt.js";
-import { Spear_Fall } from "@esm/@/animations/Spear_Fall.js";
-import { Spear_Idle } from "@esm/@/animations/Spear_Idle.js";
-import { Spear_Jog_Backward } from "@esm/@/animations/Spear_Jog_Backward.js";
-import { Spear_Jog_BackwardLeft } from "@esm/@/animations/Spear_Jog_BackwardLeft.js";
-import { Spear_Jog_BackwardRight } from "@esm/@/animations/Spear_Jog_BackwardRight.js";
-import { Spear_Jog_Forward } from "@esm/@/animations/Spear_Jog_Forward.js";
-import { Spear_Jog_ForwardLeft } from "@esm/@/animations/Spear_Jog_ForwardLeft.js";
-import { Spear_Jog_ForwardRight } from "@esm/@/animations/Spear_Jog_ForwardRight.js";
-import { Spear_Jog_Left } from "@esm/@/animations/Spear_Jog_Left.js";
-import { Spear_Jog_Right } from "@esm/@/animations/Spear_Jog_Right.js";
-import { Spear_Jump } from "@esm/@/animations/Spear_Jump.js";
-import { Spear_Land } from "@esm/@/animations/Spear_Land.js";
-import { Spear_SprintFwdLoop } from "@esm/@/animations/Spear_SprintFwdLoop.js";
-import { Spear_Stand_Charge } from "@esm/@/animations/Spear_Stand_Charge.js";
-import { Spear_Stand_ChargeIdle } from "@esm/@/animations/Spear_Stand_ChargeIdle.js";
-import { Spear_Stand_ChargeRelease } from "@esm/@/animations/Spear_Stand_ChargeRelease.js";
-import { Spear_Stand_Shove } from "@esm/@/animations/Spear_Stand_Shove.js";
-import { Spear_Stand_SwingRight } from "@esm/@/animations/Spear_Stand_SwingRight.js";
-import { Stock_Pistol_1_reload } from "@esm/@/animations/Stock_Pistol_1_reload.js";
-import { Stock_Pistol_1_reload_1 } from "@esm/@/animations/Stock_Pistol_1_reload_1.js";
-import { TerminalConsole_Idle } from "@esm/@/animations/TerminalConsole_Idle.js";
-import { AnimBlend, ScaledAnim, mergeAnims } from "./animation.js";
+import { Anim, AnimBlend, mergeAnims, ScaledAnim } from "./animation.js";
+import { GearFoldJoints } from "./gearfold.js";
 import { HumanJoints } from "./human.js";
+import { loadAnimFromJson } from "./loaders.js";
 
-export const playerAnimationClips = {
-    Rifle_AO_C, 
-    Rifle_AO_D,
-    Rifle_AO_L,
-    Rifle_AO_LD,
-    Rifle_AO_LU,
-    Rifle_AO_R,
-    Rifle_AO_RD,
-    Rifle_AO_RU,
-    Rifle_AO_U,
-    Rifle_CrouchLoop,
-    Rifle_Crouch_WalkBwd,
-    Rifle_Crouch_WalkFwd,
-    Rifle_Crouch_WalkLt,
-    Rifle_Crouch_WalkRt,
-    Rifle_Idle,
-    Rifle_Jog_Backward,
-    Rifle_Jog_BackwardLeft,
-    Rifle_Jog_BackwardRight,
-    Rifle_Jog_Forward,
-    Rifle_Jog_ForwardLeft,
-    Rifle_Jog_ForwardRight,
-    Rifle_Jog_Left,
-    Rifle_Jog_Right,
-    Rifle_RunBwdLoop,
-    Rifle_SprintFwdLoop,
-    Rifle_SprintFwdLoop_Left,
-    Rifle_SprintFwdLoop_Right,
-    Rifle_StrafeLeft135Loop,
-    Rifle_StrafeLeft45Loop,
-    Rifle_StrafeLeftLoop,
-    Rifle_StrafeRight135Loop,
-    Rifle_StrafeRight45Loop,
-    Rifle_StrafeRightLoop,
-    Rifle_StrafeRun135LeftLoop,
-    Rifle_StrafeRun135LeftLoop_0,
-    Rifle_StrafeRun45LeftLoop,
-    Rifle_StrafeRun45RightLoop,
-    Rifle_StrafeRunLeftLoop,
-    Rifle_StrafeRunRightLoop,
-    Rifle_WalkBwdLoop,
-    Rifle_WalkFwdLoop,
-    Pistol_AO_C, 
-    Pistol_AO_D,
-    Pistol_AO_L,
-    Pistol_AO_LD,
-    Pistol_AO_LU,
-    Pistol_AO_R,
-    Pistol_AO_RD,
-    Pistol_AO_RU,
-    Pistol_AO_U,
-    Pistol_CrouchLoop,
-    Pistol_Crouch_WalkBwd,
-    Pistol_Crouch_WalkFwd,
-    Pistol_Crouch_WalkLt,
-    Pistol_Crouch_WalkRt,
-    Pistol_Idle,
-    Pistol_Jog_Backward,
-    Pistol_Jog_BackwardLeft,
-    Pistol_Jog_BackwardRight,
-    Pistol_Jog_Forward,
-    Pistol_Jog_ForwardLeft,
-    Pistol_Jog_ForwardRight,
-    Pistol_Jog_Left,
-    Pistol_Jog_Right,
-    Pistol_RunBwdLoop,
-    Pistol_SprintFwdLoop,
-    Pistol_StrafeLeft135Loop,
-    Pistol_StrafeLeft45Loop,
-    Pistol_StrafeLeftLoop,
-    Pistol_StrafeRight135Loop,
-    Pistol_StrafeRight45Loop,
-    Pistol_StrafeRightLoop,
-    Pistol_StrafeRun135LeftLoop,
-    Pistol_StrafeRun135RightLoop,
-    Pistol_StrafeRun45LeftLoop,
-    Pistol_StrafeRun45RightLoop,
-    Pistol_StrafeRunLeftLoop,
-    Pistol_StrafeRunRightLoop,
-    Pistol_WalkBwdLoop,
-    Pistol_WalkFwdLoop,
-    Pistol_TurnL_90,
-    Pistol_TurnR_90,
-    Pistol_Crouch_Turn90L,
-    Pistol_Crouch_Turn90R,
-    Rifle_TurnL_90,
-    Rifle_TurnR_90,
-    Rifle_Crouch_Turn90L,
-    Rifle_Crouch_Turn90R,
-    Idle_1,
-    RunFwdLoop,
-    RunBwdLoop,
-    RunRtLoop,
-    RunLtLoop,
-    RunStrafeRight45Loop,
-    RunStrafeRight135Loop,
-    RunStrafeLeft45Loop,
-    RunStrafeLeft135Loop,
-    WalkFwdLoop,
-    WalkBwdLoop,
-    StrafeRightLoop,
-    StrafeRight45Loop,
-    StrafeRight135Loop,
-    StrafeLeftLoop,
-    StrafeLeft45Loop,
-    StrafeLeft135Loop,
-    Crouch_Idle,
-    Crouch_WalkFwd_new,
-    Crouch_WalkBwd_new,
-    Crouch_WalkLt_new,
-    Crouch_WalkRt_new,
-    Crouch_WalkLt45_new,
-    Crouch_WalkLt135_new,
-    Crouch_WalkRt45_new,
-    Crouch_WalkRt135_new,
-    Equip_Generic,
-    Equip_Melee,
-    Equip_Primary,
-    Equip_Tool,
-    Equip_Secondary,
-    Bat_Equip,
-    Spear_Equip,
-    ConsumablePack_Equip,
-    Consumable_Throw_Equip,
-    Sledgehammer_Stand_Idle,
-    SledgeHammer_Jog_Backward,
-    SledgeHammer_Jog_BackwardLeft,
-    SledgeHammer_Jog_BackwardRight,
-    SledgeHammer_Jog_Forward,
-    SledgeHammer_Jog_ForwardLeft,
-    SledgeHammer_Jog_ForwardRight,
-    SledgeHammer_Jog_Left,
-    SledgeHammer_Jog_Right,
-    SledgeHammer_SprintFwdLoop,
-    Player_Melee_Movement_Walk_Bwd_Left_Stand_A,
-    Player_Melee_Movement_Walk_Bwd_Right_Stand_A,
-    Player_Melee_Movement_Walk_Bwd_Stand_A,
-    Player_Melee_Movement_Walk_Fwd_Left_Stand_A,
-    Player_Melee_Movement_Walk_Fwd_Right_Stand_A,
-    Player_Melee_Movement_Walk_Fwd_Stand_A,
-    Player_Melee_Movement_Walk_Left_Stand_A,
-    Player_Melee_Movement_Walk_Right_Stand_A,
-    Sledgehammer_Crouch_Idle,
-    SledgeHammer_Crouch_WalkBwd,
-    SledgeHammer_Crouch_WalkFwd,
-    SledgeHammer_Crouch_WalkLt,
-    SledgeHammer_Crouch_WalkRt,
-    Pistol_Jump,
-    Pistol_Fall,
-    Pistol_Land,
-    Rifle_Jump,
-    Rifle_Fall,
-    Rifle_Land,
-    SledgeHammer_Jump,
-    SledgeHammer_Fall,
-    SledgeHammer_Land,
-    Sledgehammer_Stand_SwingLeft_Charge,
-    Sledgehammer_Crouch_SwingLeft_Charge,
-    Sledgehammer_Stand_SwingLeft_Charge_Idle,
-    Sledgehammer_Stand_SwingLeft_Charge_Release,
-    Sledgehammer_Crouch_SwingLeft_Charge_Release,
-    Sledgehammer_Stand_Shove,
-    Sledgehammer_Crouch_Shove,
-    Consumable_Throw,
-    Consumable_Throw_Charge,
-    Consumable_Throw_Charge_Idle,
-    Fogrepeller_Throw,
-    Fogrepeller_Throw_Charge,
-    Fogrepeller_Throw_Charge_Idle,
-    Fogrepeller_Throw_Equip,
-    Pistol_Recoil,
-    Rifle_Recoil,
-    Stock_Pistol_1_reload,
-    Front_Revolver_1_reload,
-    Front_Revolver_2_Reload,
-    TerminalConsole_Idle,
-    Player_Climb_Ladder_Idle_A,
-    Player_Climb_Ladder_Down_A,
-    Player_Climb_Ladder_Up_A,
-    Revive,
-    Die,
-    Dead,
-    Player_Reviving_Upperbody_Loop,
-    Rifle1_Reload,
-    ConsumablePack_Idle,
-    Knife_Idle_0,
-    Knife_Jog_Forward,
-    Knife_Jog_Backward,
-    Knife_Jog_Right,
-    Knife_Jog_Left,
-    Knife_Jog_ForwardLeft,
-    Knife_Jog_ForwardRight,
-    Knife_Jog_BackwardLeft,
-    Knife_Jog_BackwardRight,
-    Knife_SprintFwdLoop,
-    Knife_Crouch_Idle,
-    Knife_Crouch_WalkLt,
-    Knife_Crouch_WalkRt,
-    Knife_Crouch_WalkFwd,
-    Knife_Crouch_WalkBwd,
-    Spear_Idle,
-    Spear_Jog_Forward,
-    Spear_Jog_Backward,
-    Spear_Jog_Right,
-    Spear_Jog_Left,
-    Spear_Jog_ForwardLeft,
-    Spear_Jog_ForwardRight,
-    Spear_Jog_BackwardLeft,
-    Spear_Jog_BackwardRight,
-    Spear_SprintFwdLoop,
-    Spear_Crouch_Idle,
-    Spear_Crouch_WalkLt,
-    Spear_Crouch_WalkRt,
-    Spear_Crouch_WalkFwd,
-    Spear_Crouch_WalkBwd,
-    Spear_Crouch_ChargeRelease,
-    Spear_Crouch_Charge,
-    Spear_Crouch_Shove,
-    Spear_Crouch_SwingRight,
-    Spear_Stand_ChargeRelease,
-    Spear_Stand_Charge,
-    Spear_Stand_ChargeIdle,
-    Spear_Stand_Shove,
-    Spear_Stand_SwingRight,
-    Bat_Crouch_ChargeRelease,
-    Bat_Crouch_Chargeup,
-    Bat_Crouch_Shove,
-    Bat_Crouch_SwingRight,
-    Bat_Stand_ChargeRelease,
-    Bat_Stand_Chargeup,
-    Bat_Stand_ChargeupIdle,
-    Bat_Stand_Shove,
-    Bat_Stand_SwingRight,
-    Knife_Crouch_ChargeRelease,
-    Knife_Crouch_Chargeup,
-    Knife_Crouch_SwingRight,
-    Knife_Stand_ChargeRelease,
-    Knife_Stand_Chargeup,
-    Knife_Stand_ChargeupIdle,
-    Knife_Stand_SwingRight,
-    Spear_Jump,
-    Spear_Land,
-    Spear_Fall,
-    Knife_Jump,
-    Knife_Land,
-    Knife_Fall,
-} as const;
-export type PlayerAnimationClip = keyof typeof playerAnimationClips;
+async function loadAllClips<T extends string = string, Joints extends string = string>(joints: ReadonlyArray<Joints>, clips: ReadonlyArray<T> | T[]): Promise<Record<T, Anim<Joints>>> {
+    const collection: Record<T, Anim<Joints>> = {} as any;
+    for (const clip of clips) {
+        collection[clip] = await loadAnimFromJson(joints, `../js3party/animations/${clip}.json`);
+    }
+    return collection;
+}
+
+const playerAnimationClipNames = [
+    "Rifle_AO_C", 
+    "Rifle_AO_D",
+    "Rifle_AO_L",
+    "Rifle_AO_LD",
+    "Rifle_AO_LU",
+    "Rifle_AO_R",
+    "Rifle_AO_RD",
+    "Rifle_AO_RU",
+    "Rifle_AO_U",
+    "Rifle_CrouchLoop",
+    "Rifle_Crouch_WalkBwd",
+    "Rifle_Crouch_WalkFwd",
+    "Rifle_Crouch_WalkLt",
+    "Rifle_Crouch_WalkRt",
+    "Rifle_Idle",
+    "Rifle_Jog_Backward",
+    "Rifle_Jog_BackwardLeft",
+    "Rifle_Jog_BackwardRight",
+    "Rifle_Jog_Forward",
+    "Rifle_Jog_ForwardLeft",
+    "Rifle_Jog_ForwardRight",
+    "Rifle_Jog_Left",
+    "Rifle_Jog_Right",
+    "Rifle_RunBwdLoop",
+    "Rifle_SprintFwdLoop",
+    "Rifle_SprintFwdLoop_Left",
+    "Rifle_SprintFwdLoop_Right",
+    "Rifle_StrafeLeft135Loop",
+    "Rifle_StrafeLeft45Loop",
+    "Rifle_StrafeLeftLoop",
+    "Rifle_StrafeRight135Loop",
+    "Rifle_StrafeRight45Loop",
+    "Rifle_StrafeRightLoop",
+    "Rifle_StrafeRun135LeftLoop",
+    "Rifle_StrafeRun135LeftLoop_0",
+    "Rifle_StrafeRun45LeftLoop",
+    "Rifle_StrafeRun45RightLoop",
+    "Rifle_StrafeRunLeftLoop",
+    "Rifle_StrafeRunRightLoop",
+    "Rifle_WalkBwdLoop",
+    "Rifle_WalkFwdLoop",
+    "Pistol_AO_C", 
+    "Pistol_AO_D",
+    "Pistol_AO_L",
+    "Pistol_AO_LD",
+    "Pistol_AO_LU",
+    "Pistol_AO_R",
+    "Pistol_AO_RD",
+    "Pistol_AO_RU",
+    "Pistol_AO_U",
+    "Pistol_CrouchLoop",
+    "Pistol_Crouch_WalkBwd",
+    "Pistol_Crouch_WalkFwd",
+    "Pistol_Crouch_WalkLt",
+    "Pistol_Crouch_WalkRt",
+    "Pistol_Idle",
+    "Pistol_Jog_Backward",
+    "Pistol_Jog_BackwardLeft",
+    "Pistol_Jog_BackwardRight",
+    "Pistol_Jog_Forward",
+    "Pistol_Jog_ForwardLeft",
+    "Pistol_Jog_ForwardRight",
+    "Pistol_Jog_Left",
+    "Pistol_Jog_Right",
+    "Pistol_RunBwdLoop",
+    "Pistol_SprintFwdLoop",
+    "Pistol_StrafeLeft135Loop",
+    "Pistol_StrafeLeft45Loop",
+    "Pistol_StrafeLeftLoop",
+    "Pistol_StrafeRight135Loop",
+    "Pistol_StrafeRight45Loop",
+    "Pistol_StrafeRightLoop",
+    "Pistol_StrafeRun135LeftLoop",
+    "Pistol_StrafeRun135RightLoop",
+    "Pistol_StrafeRun45LeftLoop",
+    "Pistol_StrafeRun45RightLoop",
+    "Pistol_StrafeRunLeftLoop",
+    "Pistol_StrafeRunRightLoop",
+    "Pistol_WalkBwdLoop",
+    "Pistol_WalkFwdLoop",
+    "Pistol_TurnL_90",
+    "Pistol_TurnR_90",
+    "Pistol_Crouch_Turn90L",
+    "Pistol_Crouch_Turn90R",
+    "Rifle_TurnL_90",
+    "Rifle_TurnR_90",
+    "Rifle_Crouch_Turn90L",
+    "Rifle_Crouch_Turn90R",
+    "Idle_1",
+    "RunFwdLoop",
+    "RunBwdLoop",
+    "RunRtLoop",
+    "RunLtLoop",
+    "RunStrafeRight45Loop",
+    "RunStrafeRight135Loop",
+    "RunStrafeLeft45Loop",
+    "RunStrafeLeft135Loop",
+    "WalkFwdLoop",
+    "WalkBwdLoop",
+    "StrafeRightLoop",
+    "StrafeRight45Loop",
+    "StrafeRight135Loop",
+    "StrafeLeftLoop",
+    "StrafeLeft45Loop",
+    "StrafeLeft135Loop",
+    "Crouch_Idle",
+    "Crouch_WalkFwd_new",
+    "Crouch_WalkBwd_new",
+    "Crouch_WalkLt_new",
+    "Crouch_WalkRt_new",
+    "Crouch_WalkLt45_new",
+    "Crouch_WalkLt135_new",
+    "Crouch_WalkRt45_new",
+    "Crouch_WalkRt135_new",
+    "Equip_Generic",
+    "Equip_Melee",
+    "Equip_Primary",
+    "Equip_Tool",
+    "Equip_Secondary",
+    "Bat_Equip",
+    "Spear_Equip",
+    "ConsumablePack_Equip",
+    "Consumable_Throw_Equip",
+    "Sledgehammer_Stand_Idle",
+    "SledgeHammer_Jog_Backward",
+    "SledgeHammer_Jog_BackwardLeft",
+    "SledgeHammer_Jog_BackwardRight",
+    "SledgeHammer_Jog_Forward",
+    "SledgeHammer_Jog_ForwardLeft",
+    "SledgeHammer_Jog_ForwardRight",
+    "SledgeHammer_Jog_Left",
+    "SledgeHammer_Jog_Right",
+    "SledgeHammer_SprintFwdLoop",
+    "Player_Melee_Movement_Walk_Bwd_Left_Stand_A",
+    "Player_Melee_Movement_Walk_Bwd_Right_Stand_A",
+    "Player_Melee_Movement_Walk_Bwd_Stand_A",
+    "Player_Melee_Movement_Walk_Fwd_Left_Stand_A",
+    "Player_Melee_Movement_Walk_Fwd_Right_Stand_A",
+    "Player_Melee_Movement_Walk_Fwd_Stand_A",
+    "Player_Melee_Movement_Walk_Left_Stand_A",
+    "Player_Melee_Movement_Walk_Right_Stand_A",
+    "Sledgehammer_Crouch_Idle",
+    "SledgeHammer_Crouch_WalkBwd",
+    "SledgeHammer_Crouch_WalkFwd",
+    "SledgeHammer_Crouch_WalkLt",
+    "SledgeHammer_Crouch_WalkRt",
+    "Pistol_Jump",
+    "Pistol_Fall",
+    "Pistol_Land",
+    "Rifle_Jump",
+    "Rifle_Fall",
+    "Rifle_Land",
+    "SledgeHammer_Jump",
+    "SledgeHammer_Fall",
+    "SledgeHammer_Land",
+    "Sledgehammer_Stand_SwingLeft_Charge",
+    "Sledgehammer_Crouch_SwingLeft_Charge",
+    "Sledgehammer_Stand_SwingLeft_Charge_Idle",
+    "Sledgehammer_Stand_SwingLeft_Charge_Release",
+    "Sledgehammer_Crouch_SwingLeft_Charge_Release",
+    "Sledgehammer_Stand_Shove",
+    "Sledgehammer_Crouch_Shove",
+    "Consumable_Throw",
+    "Consumable_Throw_Charge",
+    "Consumable_Throw_Charge_Idle",
+    "Fogrepeller_Throw",
+    "Fogrepeller_Throw_Charge",
+    "Fogrepeller_Throw_Charge_Idle",
+    "Fogrepeller_Throw_Equip",
+    "Pistol_Recoil",
+    "Rifle_Recoil",
+    "Stock_Pistol_1_reload",
+    "Front_Revolver_1_reload",
+    "Front_Revolver_2_Reload",
+    "TerminalConsole_Idle",
+    "Player_Climb_Ladder_Idle_A",
+    "Player_Climb_Ladder_Down_A",
+    "Player_Climb_Ladder_Up_A",
+    "Revive",
+    "Die",
+    "Dead",
+    "Player_Reviving_Upperbody_Loop",
+    "Rifle1_Reload",
+    "ConsumablePack_Idle",
+    "Knife_Idle_0",
+    "Knife_Jog_Forward",
+    "Knife_Jog_Backward",
+    "Knife_Jog_Right",
+    "Knife_Jog_Left",
+    "Knife_Jog_ForwardLeft",
+    "Knife_Jog_ForwardRight",
+    "Knife_Jog_BackwardLeft",
+    "Knife_Jog_BackwardRight",
+    "Knife_SprintFwdLoop",
+    "Knife_Crouch_Idle",
+    "Knife_Crouch_WalkLt",
+    "Knife_Crouch_WalkRt",
+    "Knife_Crouch_WalkFwd",
+    "Knife_Crouch_WalkBwd",
+    "Spear_Idle",
+    "Spear_Jog_Forward",
+    "Spear_Jog_Backward",
+    "Spear_Jog_Right",
+    "Spear_Jog_Left",
+    "Spear_Jog_ForwardLeft",
+    "Spear_Jog_ForwardRight",
+    "Spear_Jog_BackwardLeft",
+    "Spear_Jog_BackwardRight",
+    "Spear_SprintFwdLoop",
+    "Spear_Crouch_Idle",
+    "Spear_Crouch_WalkLt",
+    "Spear_Crouch_WalkRt",
+    "Spear_Crouch_WalkFwd",
+    "Spear_Crouch_WalkBwd",
+    "Spear_Crouch_ChargeRelease",
+    "Spear_Crouch_Charge",
+    "Spear_Crouch_Shove",
+    "Spear_Crouch_SwingRight",
+    "Spear_Stand_ChargeRelease",
+    "Spear_Stand_Charge",
+    "Spear_Stand_ChargeIdle",
+    "Spear_Stand_Shove",
+    "Spear_Stand_SwingRight",
+    "Bat_Crouch_ChargeRelease",
+    "Bat_Crouch_Chargeup",
+    "Bat_Crouch_Shove",
+    "Bat_Crouch_SwingRight",
+    "Bat_Stand_ChargeRelease",
+    "Bat_Stand_Chargeup",
+    "Bat_Stand_ChargeupIdle",
+    "Bat_Stand_Shove",
+    "Bat_Stand_SwingRight",
+    "Knife_Crouch_ChargeRelease",
+    "Knife_Crouch_Chargeup",
+    "Knife_Crouch_SwingRight",
+    "Knife_Stand_ChargeRelease",
+    "Knife_Stand_Chargeup",
+    "Knife_Stand_ChargeupIdle",
+    "Knife_Stand_SwingRight",
+    "Spear_Jump",
+    "Spear_Land",
+    "Spear_Fall",
+    "Knife_Jump",
+    "Knife_Land",
+    "Knife_Fall",
+] as const;
+export type PlayerAnimationClip = typeof playerAnimationClipNames[number];
+export const playerAnimationClips = await loadAllClips(HumanJoints, playerAnimationClipNames);
 
 export const animVelocity = {
     x: 0,
@@ -1273,441 +631,422 @@ export const playerAnimations = {
 } as const;
 export type PlayerAnimation = keyof typeof playerAnimations;
 
-export const gearFoldAnimations = {
-    Revolver_Front_1_Reload_1,
-    Front_Revolver_2_Reload_0,
-    Stock_Pistol_1_reload_1,
-    SMG_Front_4_Reload_1,
-    Front_AutoShotgun_1_animation_reload_0,
-    Front_AutoShotgun_2_Parts_Reload,
-    Front_AutoShotgun_3_reload_0,
-    Front_Precision_1_reload_1,
-    Front_Precision_2_reload_1,
-    Front_Precision_3_Parts_Reload,
-    Front_Shotgun_1_animation_reload_1,
-    Front_Shotgun_3_reload_0,
-} as const;
-export type GearFoldAnimation = keyof typeof gearFoldAnimations;
+const gearFoldAnimationNames = [
+    "Revolver_Front_1_Reload_1",
+    "Front_Revolver_2_Reload_0",
+    "Stock_Pistol_1_reload_1",
+    "SMG_Front_4_Reload_1",
+    "Front_AutoShotgun_1_animation_reload_0",
+    "Front_AutoShotgun_2_Parts_Reload",
+    "Front_AutoShotgun_3_reload_0",
+    "Front_Precision_1_reload_1",
+    "Front_Precision_2_reload_1",
+    "Front_Precision_3_Parts_Reload",
+    "Front_Shotgun_1_animation_reload_1",
+    "Front_Shotgun_3_reload_0",
+] as const;
+export type GearFoldAnimation = typeof gearFoldAnimationNames[number];
+export const gearFoldAnimations = await loadAllClips(GearFoldJoints, gearFoldAnimationNames);
 
-export const enemyAnimationClips = {
-    RU_Walk_Bwd,
-    RU_Walk_Fwd,
-    RU_Walk_Lt,
-    RU_Walk_Rt,
-    RU_Run_Bwd,
-    RU_Run_Fwd,
-    RU_Run_Lt,
-    RU_Run_Rt,
-    Idle_Active,
-    LO_Walk_Bwd_A,
-    LO_Walk_Fwd_A,
-    LO_Walk_Lt_A,
-    LO_Walk_Rt_A,
-    LO_Run_Bwd_A,
-    LO_Run_Fwd_A,
-    LO_Run_Lt_A,
-    LO_Run_Rt_A,
-    LO_Idle_A,
-    FD_Walk_Bwd_A,
-    FD_Walk_Fwd_A,
-    FD_Walk_Lt_B,
-    FD_Walk_Rt_A,
-    FD_Run_Bwd_A,
-    FD_Run_Fwd_A,
-    FD_Run_Lt_A,
-    FD_Run_Rt_A,
-    FD_Idle_A,
-    CA_Walk_Bwd_A,
-    CA_Walk_Fwd_A,
-    CA_Walk_Lt_A,
-    CA_Walk_Rt_A,
-    CA_Idle_A,
-    CF_Walk_Bwd_A,
-    CF_Walk_Fwd_A,
-    CF_Walk_Lt_A,
-    CF_Walk_Rt_A,
-    CF_Idle_A,
-    CR_Walk_Bwd,
-    CR_Walk_Fwd,
-    CR_Walk_Lt,
-    CR_Walk_Rt,
-    CR_Run_Bwd,
-    CR_Run_Fwd,
-    CR_Run_Lt,
-    CR_Run_Rt,
-    CR_Idle_A,
-    Enemy_Big_Idle_A,
-    Enemy_Big_Run_Bwd_A,
-    Enemy_Big_Run_Bwd_Left_A,
-    Enemy_Big_Run_Bwd_Right_A,
-    Enemy_Big_Run_Fwd_A,
-    Enemy_Big_Run_Fwd_Left_A,
-    Enemy_Big_Run_Fwd_Right_A,
-    Enemy_Big_Run_Left_A,
-    Enemy_Big_Run_Right_A,
-    Enemy_Big_Walk_Bwd_A,
-    Enemy_Big_Walk_Bwd_Left_A,
-    Enemy_Big_Walk_Bwd_Right_A,
-    Enemy_Big_Walk_Fwd_A,
-    Enemy_Big_Walk_Fwd_Left_A,
-    Enemy_Big_Walk_Fwd_Right_A,
-    Enemy_Big_Walk_Left_A,
-    Enemy_Big_Walk_Right_A,
-    Monster_Walk_Bwd,
-    Monster_Walk_Fwd,
-    Monster_Walk_Left,
-    Monster_Walk_Left_135,
-    Monster_Walk_Left_45,
-    Monster_Walk_Right,
-    Monster_Walk_Right_135,
-    Monster_Walk_Right_45,
-    Monster_Idle_01,
-    PO_WalkBwd,
-    PO_WalkFwd,
-    PO_WalkLeft,
-    PO_WalkRight,
-    PO_JogBwd,
-    PO_JogFwd,
-    PO_JogLeft,
-    PO_JogRight,
-    PO_RunFwd,
-    PO_IdleCombat,
-    LO_Ability_Fire_In_A,
-    LO_Ability_Fire_In_B,
-    LO_Ability_Fire_In_C,
-    CA_Ability_Fire_In_A,
-    CA_Ability_Fire_In_B,
-    CF_Ability_Fire_In_A,
-    CF_Ability_Fire_In_B,
-    FD_Ability_Fire_In_A,
-    FD_Ability_Fire_In_B,
-    CR_Ability_Fire_In_A,
-    CR_Ability_Fire_In_B,
-    CR_Ability_Fire_In_C,
-    Ability_Fire_0_Start,
-    Ability_Fire_2_Start,
-    Enemy_Big_Fire_In_A,
-    Enemy_Big_Fire_In_B,
-    Monster_TentacleStart,
-    /*LO_Ability_Fire_Out_A,
-    LO_Ability_Fire_Out_B,
-    LO_Ability_Fire_Out_C,
-    CA_Ability_Fire_Out_A,
-    CA_Ability_Fire_Out_B,
-    CF_Ability_Fire_Out_A,
-    CF_Ability_Fire_Out_B,
-    FD_Ability_Fire_Out_A,
-    FD_Ability_Fire_Out_B,
-    CR_Ability_Fire_Out_A,
-    CR_Ability_Fire_Out_B,
-    CR_Ability_Fire_Out_C,
-    Ability_Fire_0_End,
-    Ability_Fire_2_End,
-    Enemy_Big_Fire_End_A,
-    Enemy_Big_Fire_End_B,
-    Monster_TentacleEnd,*/
-    /*LO_TwitchLeft,
-    LO_TwitchRight,
-    RU_Twitch_Left,
-    RU_Twitch_Right,*/
-    RU_Hit_Heavy_Bwd_A,
-    RU_Hit_Heavy_Bwd_B,
-    RU_Hit_Heavy_Bwd_C,
-    RU_Hit_Heavy_Bwd_Turn_A,
-    RU_Hit_Heavy_Fwd_A,
-    RU_Hit_Heavy_Fwd_B,
-    RU_Hit_Heavy_Fwd_C,
-    RU_Hit_Heavy_Lt_A,
-    RU_Hit_Heavy_Lt_B,
-    RU_Hit_Heavy_Lt_C,
-    RU_Hit_Heavy_Rt_A,
-    RU_Hit_Heavy_Rt_B,
-    RU_Hit_Heavy_Rt_C,
-    RU_Hit_Light_Bwd_A,
-    RU_Hit_Light_Bwd_B,
-    RU_Hit_Light_Bwd_C,
-    RU_Hit_Light_Fwd_A,
-    RU_Hit_Light_Fwd_B,
-    RU_Hit_Light_Fwd_C,
-    RU_Hit_Light_Lt_A,
-    RU_Hit_Light_Lt_B,
-    RU_Hit_Light_Lt_C,
-    RU_Hit_Light_Rt_A,
-    RU_Hit_Light_Rt_B,
-    RU_Hit_Light_Rt_C,
-    LO_Hit_Heavy_Bwd_A,
-    LO_Hit_Heavy_Fwd_A,
-    LO_Hit_Heavy_Fwd_B,
-    LO_Hit_Heavy_Fwd_C,
-    LO_Hit_Heavy_Lt_A,
-    LO_Hit_Heavy_Lt_B,
-    LO_Hit_Heavy_Lt_C,
-    LO_Hit_Heavy_Rt_A,
-    LO_Hit_Heavy_Rt_B,
-    LO_Hit_Heavy_Rt_C,
-    LO_Hit_Light_Bwd_A,
-    LO_Hit_Light_Bwd_b,
-    LO_Hit_Light_Bwd_C,
-    LO_Hit_Light_Bwd_Turn_A,
-    LO_Hit_Light_Fwd_A,
-    LO_Hit_Light_Fwd_B,
-    LO_Hit_Light_Fwd_C,
-    LO_Hit_Light_Lt_A,
-    LO_Hit_Light_Lt_B,
-    LO_Hit_Light_Lt_C,
-    LO_Hit_Light_Rt_A,
-    LO_Hit_Light_Rt_B,
-    LO_Hit_Light_Rt_C,
-    LO_Hit_Light_Rt_D, 
-    CR_Hit_Heavy_Bwd_A_Turn,
-    CR_Hit_Heavy_Bwd_B,
-    CR_Hit_Heavy_Bwd_C_Turn,
-    CR_Hit_Heavy_Bwd_D_0,
-    CR_Hit_Heavy_Bwd_D,
-    CR_Hit_Heavy_Fwd_A,
-    CR_Hit_Heavy_Fwd_B,
-    CR_Hit_Heavy_Fwd_C,
-    CR_Hit_Heavy_Lt_A,
-    CR_Hit_Heavy_Lt_B,
-    CR_Hit_Heavy_Lt_C,
-    CR_Hit_Heavy_Rt_A,
-    CR_Hit_Heavy_Rt_B,
-    CR_Hit_Heavy_Rt_C,
-    CR_Hit_Heavy_Rt_C_0,
-    CR_Hit_Light_Bwd_A,
-    CR_Hit_Light_Bwd_B,
-    CR_Hit_Light_Bwd_C,
-    CR_Hit_Light_Bwd_D,
-    CR_Hit_Light_Fwd_A,
-    CR_Hit_Light_Fwd_B,
-    CR_Hit_Light_Fwd_C,
-    CR_Hit_Light_Lt_A,
-    CR_Hit_Light_Lt_B,
-    CR_Hit_Light_Lt_C,
-    CR_Hit_Light_Rt_A,
-    CR_Hit_Light_Rt_B,
-    CR_Hit_Light_Rt_C,
-    FD_Hit_Heavy_Bwd_A,
-    FD_Hit_Heavy_Bwd_B,
-    FD_Hit_Heavy_Bwd_C,
-    FD_Hit_Heavy_Fwd_A,
-    FD_Hit_Heavy_Fwd_B,
-    FD_Hit_Heavy_Fwd_C,
-    FD_Hit_Heavy_Lt_A,
-    FD_Hit_Heavy_Lt_B,
-    FD_Hit_Heavy_Lt_C,
-    FD_Hit_Heavy_Rt_A,
-    FD_Hit_Heavy_Rt_B,
-    FD_Hit_Heavy_Rt_C,
-    FD_Hit_Light_Bwd_A,
-    FD_Hit_Light_Bwd_B,
-    FD_Hit_Light_Bwd_C,
-    FD_Hit_Light_Fwd_A,
-    FD_Hit_Light_Fwd_B,
-    FD_Hit_Light_Fwd_C,
-    FD_Hit_Light_Lt_A,
-    FD_Hit_Light_Lt_B,
-    FD_Hit_Light_Lt_C,
-    FD_Hit_Light_Rt_A,
-    FD_Hit_Light_Rt_B,
-    FD_Hit_Light_Rt_C,
-    CA_Hit_Heavy_Bwd_A,
-    CA_Hit_Heavy_Fwd_B,
-    CA_Hit_Heavy_Fwd_C,
-    CA_Hit_Heavy_Lt_A,
-    CA_Hit_Heavy_Lt_B,
-    CA_Hit_Heavy_Rt_A,
-    CA_Hit_Heavy_Rt_B,
-    CA_Hit_Light_Bwd_A,
-    CA_Hit_Light_Bwd_B,
-    CA_Hit_Light_Fwd_A,
-    CA_Hit_Light_Fwd_B,
-    CA_Hit_Light_Lt_A,
-    CA_Hit_Light_Lt_B,
-    CA_Hit_Light_Rt_A,
-    CA_Hit_Light_Rt_B,
-    CF_Hit_Light_A,
-    CF_Hit_Light_B,
-    Enemy_Big_Hit_Back_A,
-    Enemy_Big_Hit_Back_B,
-    Enemy_Big_Hit_Front_A,
-    Enemy_Big_Hit_Front_B,
-    Enemy_Big_Hit_Left_A,
-    Enemy_Big_Hit_Left_B,
-    Enemy_Big_Hit_Right_A,
-    Enemy_Big_Hit_Right_B,
-    Monster_Hit_Back_01,
-    Monster_Hit_Back_02,
-    Monster_Hit_Back_04,
-    Monster_Hit_Front_01,
-    Monster_Hit_Front_02,
-    Monster_Hit_Front_03,
-    Monster_Hit_Front_04,
-    Monster_Hit_Leg_01,
-    Monster_Hit_Leg_02,
-    Monster_Hit_Leg_03,
-    Monster_Hit_Right_01,
-    Melee_Sequence_Fwd,
-    RU_Melee_Sequence_A,
-    Monster_Attack_06_shortened,
-    Monster_Attack_180_L,
-    RU_Jump_In,
-    RU_Jump_Air_TimeBlend,
-    RU_Jump_Out,
-    CA_Jump_Start,
-    CA_Jump_Air,
-    CA_Jump_Land,
-    CR_Jump_Start,
-    CR_Jump_Air,
-    CR_Jump_Land,
-    CF_Jump_Start,
-    CF_Jump_Air,
-    CF_Jump_Land,
-    FD_Jump_Start,
-    FD_Jump_Air,
-    FD_Jump_Land,
-    LO_Jump_Start,
-    LO_Jump_Air,
-    LO_Jump_Land,
-    Enemy_Big_Jump_Start_A,
-    Enemy_Big_Jump_Loop_A,
-    Enemy_Big_Jump_Land_A,
-    Giant_Jump_Start,
-    Monster_Fall_Landing_01,
-    RU_Scream_A,
-    RU_Scream_B,
-    RU_Scream_C,
-    CA_Scream_A,
-    CA_Scream_B,
-    CR_Scream_A,
-    CR_Scream_B,
-    CR_Scream_C,
-    CF_Scream,
-    FD_Scream_A,
-    FD_Scream_B,
-    FD_Scream_C,
-    Monster_Taunt_01,
-    LO_Scream_A,
-    LO_Scream_B,
-    LO_Scream_C,
-    Enemy_Big_Detect_Front_A,
-    Enemy_Big_Detect_Front_B,
-    Enemy_Big_Hibernate_In_A,
-    Enemy_Big_Hibernate_Loop_A,
-    CA_Hibernate_In,
-    CA_Hibernate_Detect_Loop,
-    CA_Hibernate_Loop_A,
-    CR_Hibernate_In,
-    CR_Hibernate_Detect_Loop,
-    CR_Hibernate_Loop,
-    CF_Hibernate_In,
-    CF_Hibernate_Detect_Loop,
-    CF_Hibernate_Loop_A,
-    FD_Hibernate_In,
-    FD_Hibernate_Detect_Loop,
-    FD_Hibernate_Loop,
-    LO_Hibernate_In_A,
-    LO_Hibernate_Detect_Loop,
-    LO_Hibernate_Loop,
-    RU_Hibernate_In,
-    Ru_Hibernate_Detect_Loop_0,
-    RU_Hibernate_Loop_0,
-    CF_Birther_Hibernate_In,
-    CF_Birther_Hibernate_Loop,
-    Enemy_Big_Hibernate_Heartbeat_1_A,
-    Enemy_Big_Hibernate_Heartbeat_2_A,
-    Enemy_Big_Hibernate_Heartbeat_3_A,
-    Enemy_Big_Hibernate_Heartbeat_4_A,
-    Enemy_Big_Hibernate_Heartbeat_5_A,
-    CA_Hibernate_Heartbeat_A,
-    CA_Hibernate_Heartbeat_B,
-    CA_Hibernate_Heartbeat_C,
-    CA_Hibernate_Heartbeat_D,
-    CA_Hibernate_Heartbeat_E,
-    CR_Hibernate_Heartbeat_A,
-    CR_Hibernate_Heartbeat_B,
-    CR_Hibernate_Heartbeat_C,
-    CR_Hibernate_Heartbeat_D,
-    CR_Hibernate_Heartbeat_E,
-    CF_Hibernate_Heartbeat_A,
-    CF_Hibernate_Heartbeat_B,
-    CF_Hibernate_Heartbeat_C,
-    CF_Hibernate_Heartbeat_D,
-    CF_Hibernate_Heartbeat_E,
-    FD_Hibernate_Heartbeat_A,
-    FD_Hibernate_Heartbeat_B,
-    FD_Hibernate_Heartbeat_C,
-    FD_Hibernate_Heartbeat_D,
-    FD_Hibernate_Heartbeat_E,
-    LO_Hibernate_Heartbeat_A,
-    LO_Hibernate_Heartbeat_B,
-    LO_Hibernate_Heartbeat_C,
-    LO_Hibernate_Heartbeat_D,
-    LO_Hibernate_Heartbeat_E,
-    RU_Hibernate_Heartbeat_A,
-    RU_Hibernate_Heartbeat_A_0,
-    RU_Hibernate_Heartbeat_B,
-    RU_Hibernate_Heartbeat_B_0,
-    RU_Hibernate_Heartbeat_C,
-    RU_Hibernate_Heartbeat_C_0,
-    RU_Hibernate_Heartbeat_D,
-    RU_Hibernate_Heartbeat_D_0,
-    RU_Hibernate_Heartbeat_E,
-    RU_Hibernate_Heartbeat_E_0,
-    CF_Birther_Heartbeat,
-    CR_Hibernate_Wakeup_A,
-    CR_Hibernate_Wakeup_B,
-    CR_Hibernate_Wakeup_C,
-    CR_Hibernate_Wakeup_D,
-    CR_Hibernate_Wakeup_Turn_A,
-    LO_Hibernate_Wakeup_A,
-    LO_Hibernate_Wakeup_B,
-    LO_Hibernate_Wakeup_Fwd_C,
-    LO_Hibernate_Wakeup_Fwd_D,
-    LO_Hibernate_Wakeup_Turn_A,
-    CA_Hibernate_Wakeup_A,
-    CA_Hibernate_Wakeup_Turn_A,
-    RU_Hibernate_Wakeup_A_0,
-    RU_Hibernate_Wakeup_B_0,
-    RU_Hibernate_Wakeup_C_0,
-    RU_Hibernate_Wakeup_Turn_A,
-    CF_Hibernate_Wakeup_A,
-    CF_Hibernate_Wakeup_Turn_A,
-    Monster_Turn_Left_180,
-    Enemy_Big_Hibernate_Wakeup_180_B,
-    Enemy_Big_Hibernate_Wakeup_A,
-    FD_Hibernate_Wakeup_A,
-    FD_Hibernate_Wakeup_B,
-    FD_Hibernate_Wakeup_C,
-    FD_Hibernate_Wakeup_Turn_A,
-    RU_Hibernate_Wakeup_A,
-    RU_Hibernate_Wakeup_B,
-    RU_Hibernate_Wakeup_C,
-    PO_ConsumeAttack,
-    PO_ConsumeStart,
-    PO_ConsumeEnd,
-    PO_ConsumeLoop,
-    PO_SpitOut,
-    CA_Ability_Use_In_A,
-    CA_Ability_Use_Loop_A,
-    CA_Ability_Use_Out_A,
-    RU_Ability_Use_In_a,
-    RU_Ability_Use_Loop_a,
-    RU_Ability_Use_Out_a,
-    LO_Ability_Use_In_A,
-    LO_Ability_Use_Loop_A,
-    LO_Ability_Use_Out_A,
-    CR_Ability_Use_In_A,
-    CR_Ability_Use_Loop_A,
-    CR_Ability_Use_Out_A,
-    CF_Ability_Use_In_A,
-    CF_Ability_Use_Loop_A,
-    CF_Ability_Use_Out_A,
-    FD_Ability_Use_In_A,
-    FD_Ability_Use_Loop_A,
-    FD_Ability_Use_Out_A,
-} as const;
-export type EnemyAnimationClips = keyof typeof enemyAnimationClips;
+const enemyAnimationClipNames = [
+    "RU_Walk_Bwd",
+    "RU_Walk_Fwd",
+    "RU_Walk_Lt",
+    "RU_Walk_Rt",
+    "RU_Run_Bwd",
+    "RU_Run_Fwd",
+    "RU_Run_Lt",
+    "RU_Run_Rt",
+    "Idle_Active",
+    "LO_Walk_Bwd_A",
+    "LO_Walk_Fwd_A",
+    "LO_Walk_Lt_A",
+    "LO_Walk_Rt_A",
+    "LO_Run_Bwd_A",
+    "LO_Run_Fwd_A",
+    "LO_Run_Lt_A",
+    "LO_Run_Rt_A",
+    "LO_Idle_A",
+    "FD_Walk_Bwd_A",
+    "FD_Walk_Fwd_A",
+    "FD_Walk_Lt_B",
+    "FD_Walk_Rt_A",
+    "FD_Run_Bwd_A",
+    "FD_Run_Fwd_A",
+    "FD_Run_Lt_A",
+    "FD_Run_Rt_A",
+    "FD_Idle_A",
+    "CA_Walk_Bwd_A",
+    "CA_Walk_Fwd_A",
+    "CA_Walk_Lt_A",
+    "CA_Walk_Rt_A",
+    "CA_Idle_A",
+    "CF_Walk_Bwd_A",
+    "CF_Walk_Fwd_A",
+    "CF_Walk_Lt_A",
+    "CF_Walk_Rt_A",
+    "CF_Idle_A",
+    "CR_Walk_Bwd",
+    "CR_Walk_Fwd",
+    "CR_Walk_Lt",
+    "CR_Walk_Rt",
+    "CR_Run_Bwd",
+    "CR_Run_Fwd",
+    "CR_Run_Lt",
+    "CR_Run_Rt",
+    "CR_Idle_A",
+    "Enemy_Big_Idle_A",
+    "Enemy_Big_Run_Bwd_A",
+    "Enemy_Big_Run_Bwd_Left_A",
+    "Enemy_Big_Run_Bwd_Right_A",
+    "Enemy_Big_Run_Fwd_A",
+    "Enemy_Big_Run_Fwd_Left_A",
+    "Enemy_Big_Run_Fwd_Right_A",
+    "Enemy_Big_Run_Left_A",
+    "Enemy_Big_Run_Right_A",
+    "Enemy_Big_Walk_Bwd_A",
+    "Enemy_Big_Walk_Bwd_Left_A",
+    "Enemy_Big_Walk_Bwd_Right_A",
+    "Enemy_Big_Walk_Fwd_A",
+    "Enemy_Big_Walk_Fwd_Left_A",
+    "Enemy_Big_Walk_Fwd_Right_A",
+    "Enemy_Big_Walk_Left_A",
+    "Enemy_Big_Walk_Right_A",
+    "Monster_Walk_Bwd",
+    "Monster_Walk_Fwd",
+    "Monster_Walk_Left",
+    "Monster_Walk_Left_135",
+    "Monster_Walk_Left_45",
+    "Monster_Walk_Right",
+    "Monster_Walk_Right_135",
+    "Monster_Walk_Right_45",
+    "Monster_Idle_01",
+    "PO_WalkBwd",
+    "PO_WalkFwd",
+    "PO_WalkLeft",
+    "PO_WalkRight",
+    "PO_JogBwd",
+    "PO_JogFwd",
+    "PO_JogLeft",
+    "PO_JogRight",
+    "PO_RunFwd",
+    "PO_IdleCombat",
+    "LO_Ability_Fire_In_A",
+    "LO_Ability_Fire_In_B",
+    "LO_Ability_Fire_In_C",
+    "CA_Ability_Fire_In_A",
+    "CA_Ability_Fire_In_B",
+    "CF_Ability_Fire_In_A",
+    "CF_Ability_Fire_In_B",
+    "FD_Ability_Fire_In_A",
+    "FD_Ability_Fire_In_B",
+    "CR_Ability_Fire_In_A",
+    "CR_Ability_Fire_In_B",
+    "CR_Ability_Fire_In_C",
+    "Ability_Fire_0_Start",
+    "Ability_Fire_2_Start",
+    "Enemy_Big_Fire_In_A",
+    "Enemy_Big_Fire_In_B",
+    "Monster_TentacleStart",
+    "RU_Hit_Heavy_Bwd_A",
+    "RU_Hit_Heavy_Bwd_B",
+    "RU_Hit_Heavy_Bwd_C",
+    "RU_Hit_Heavy_Bwd_Turn_A",
+    "RU_Hit_Heavy_Fwd_A",
+    "RU_Hit_Heavy_Fwd_B",
+    "RU_Hit_Heavy_Fwd_C",
+    "RU_Hit_Heavy_Lt_A",
+    "RU_Hit_Heavy_Lt_B",
+    "RU_Hit_Heavy_Lt_C",
+    "RU_Hit_Heavy_Rt_A",
+    "RU_Hit_Heavy_Rt_B",
+    "RU_Hit_Heavy_Rt_C",
+    "RU_Hit_Light_Bwd_A",
+    "RU_Hit_Light_Bwd_B",
+    "RU_Hit_Light_Bwd_C",
+    "RU_Hit_Light_Fwd_A",
+    "RU_Hit_Light_Fwd_B",
+    "RU_Hit_Light_Fwd_C",
+    "RU_Hit_Light_Lt_A",
+    "RU_Hit_Light_Lt_B",
+    "RU_Hit_Light_Lt_C",
+    "RU_Hit_Light_Rt_A",
+    "RU_Hit_Light_Rt_B",
+    "RU_Hit_Light_Rt_C",
+    "LO_Hit_Heavy_Bwd_A",
+    "LO_Hit_Heavy_Fwd_A",
+    "LO_Hit_Heavy_Fwd_B",
+    "LO_Hit_Heavy_Fwd_C",
+    "LO_Hit_Heavy_Lt_A",
+    "LO_Hit_Heavy_Lt_B",
+    "LO_Hit_Heavy_Lt_C",
+    "LO_Hit_Heavy_Rt_A",
+    "LO_Hit_Heavy_Rt_B",
+    "LO_Hit_Heavy_Rt_C",
+    "LO_Hit_Light_Bwd_A",
+    "LO_Hit_Light_Bwd_b",
+    "LO_Hit_Light_Bwd_C",
+    "LO_Hit_Light_Bwd_Turn_A",
+    "LO_Hit_Light_Fwd_A",
+    "LO_Hit_Light_Fwd_B",
+    "LO_Hit_Light_Fwd_C",
+    "LO_Hit_Light_Lt_A",
+    "LO_Hit_Light_Lt_B",
+    "LO_Hit_Light_Lt_C",
+    "LO_Hit_Light_Rt_A",
+    "LO_Hit_Light_Rt_B",
+    "LO_Hit_Light_Rt_C",
+    "LO_Hit_Light_Rt_D",
+    "CR_Hit_Heavy_Bwd_A_Turn",
+    "CR_Hit_Heavy_Bwd_B",
+    "CR_Hit_Heavy_Bwd_C_Turn",
+    "CR_Hit_Heavy_Bwd_D_0",
+    "CR_Hit_Heavy_Bwd_D",
+    "CR_Hit_Heavy_Fwd_A",
+    "CR_Hit_Heavy_Fwd_B",
+    "CR_Hit_Heavy_Fwd_C",
+    "CR_Hit_Heavy_Lt_A",
+    "CR_Hit_Heavy_Lt_B",
+    "CR_Hit_Heavy_Lt_C",
+    "CR_Hit_Heavy_Rt_A",
+    "CR_Hit_Heavy_Rt_B",
+    "CR_Hit_Heavy_Rt_C",
+    "CR_Hit_Heavy_Rt_C_0",
+    "CR_Hit_Light_Bwd_A",
+    "CR_Hit_Light_Bwd_B",
+    "CR_Hit_Light_Bwd_C",
+    "CR_Hit_Light_Bwd_D",
+    "CR_Hit_Light_Fwd_A",
+    "CR_Hit_Light_Fwd_B",
+    "CR_Hit_Light_Fwd_C",
+    "CR_Hit_Light_Lt_A",
+    "CR_Hit_Light_Lt_B",
+    "CR_Hit_Light_Lt_C",
+    "CR_Hit_Light_Rt_A",
+    "CR_Hit_Light_Rt_B",
+    "CR_Hit_Light_Rt_C",
+    "FD_Hit_Heavy_Bwd_A",
+    "FD_Hit_Heavy_Bwd_B",
+    "FD_Hit_Heavy_Bwd_C",
+    "FD_Hit_Heavy_Fwd_A",
+    "FD_Hit_Heavy_Fwd_B",
+    "FD_Hit_Heavy_Fwd_C",
+    "FD_Hit_Heavy_Lt_A",
+    "FD_Hit_Heavy_Lt_B",
+    "FD_Hit_Heavy_Lt_C",
+    "FD_Hit_Heavy_Rt_A",
+    "FD_Hit_Heavy_Rt_B",
+    "FD_Hit_Heavy_Rt_C",
+    "FD_Hit_Light_Bwd_A",
+    "FD_Hit_Light_Bwd_B",
+    "FD_Hit_Light_Bwd_C",
+    "FD_Hit_Light_Fwd_A",
+    "FD_Hit_Light_Fwd_B",
+    "FD_Hit_Light_Fwd_C",
+    "FD_Hit_Light_Lt_A",
+    "FD_Hit_Light_Lt_B",
+    "FD_Hit_Light_Lt_C",
+    "FD_Hit_Light_Rt_A",
+    "FD_Hit_Light_Rt_B",
+    "FD_Hit_Light_Rt_C",
+    "CA_Hit_Heavy_Bwd_A",
+    "CA_Hit_Heavy_Fwd_B",
+    "CA_Hit_Heavy_Fwd_C",
+    "CA_Hit_Heavy_Lt_A",
+    "CA_Hit_Heavy_Lt_B",
+    "CA_Hit_Heavy_Rt_A",
+    "CA_Hit_Heavy_Rt_B",
+    "CA_Hit_Light_Bwd_A",
+    "CA_Hit_Light_Bwd_B",
+    "CA_Hit_Light_Fwd_A",
+    "CA_Hit_Light_Fwd_B",
+    "CA_Hit_Light_Lt_A",
+    "CA_Hit_Light_Lt_B",
+    "CA_Hit_Light_Rt_A",
+    "CA_Hit_Light_Rt_B",
+    "CF_Hit_Light_A",
+    "CF_Hit_Light_B",
+    "Enemy_Big_Hit_Back_A",
+    "Enemy_Big_Hit_Back_B",
+    "Enemy_Big_Hit_Front_A",
+    "Enemy_Big_Hit_Front_B",
+    "Enemy_Big_Hit_Left_A",
+    "Enemy_Big_Hit_Left_B",
+    "Enemy_Big_Hit_Right_A",
+    "Enemy_Big_Hit_Right_B",
+    "Monster_Hit_Back_01",
+    "Monster_Hit_Back_02",
+    "Monster_Hit_Back_04",
+    "Monster_Hit_Front_01",
+    "Monster_Hit_Front_02",
+    "Monster_Hit_Front_03",
+    "Monster_Hit_Front_04",
+    "Monster_Hit_Leg_01",
+    "Monster_Hit_Leg_02",
+    "Monster_Hit_Leg_03",
+    "Monster_Hit_Right_01",
+    "Melee_Sequence_Fwd",
+    "RU_Melee_Sequence_A",
+    "Monster_Attack_06_shortened",
+    "Monster_Attack_180_L",
+    "RU_Jump_In",
+    "RU_Jump_Air_TimeBlend",
+    "RU_Jump_Out",
+    "CA_Jump_Start",
+    "CA_Jump_Air",
+    "CA_Jump_Land",
+    "CR_Jump_Start",
+    "CR_Jump_Air",
+    "CR_Jump_Land",
+    "CF_Jump_Start",
+    "CF_Jump_Air",
+    "CF_Jump_Land",
+    "FD_Jump_Start",
+    "FD_Jump_Air",
+    "FD_Jump_Land",
+    "LO_Jump_Start",
+    "LO_Jump_Air",
+    "LO_Jump_Land",
+    "Enemy_Big_Jump_Start_A",
+    "Enemy_Big_Jump_Loop_A",
+    "Enemy_Big_Jump_Land_A",
+    "Giant_Jump_Start",
+    "Monster_Fall_Landing_01",
+    "RU_Scream_A",
+    "RU_Scream_B",
+    "RU_Scream_C",
+    "CA_Scream_A",
+    "CA_Scream_B",
+    "CR_Scream_A",
+    "CR_Scream_B",
+    "CR_Scream_C",
+    "CF_Scream",
+    "FD_Scream_A",
+    "FD_Scream_B",
+    "FD_Scream_C",
+    "Monster_Taunt_01",
+    "LO_Scream_A",
+    "LO_Scream_B",
+    "LO_Scream_C",
+    "Enemy_Big_Detect_Front_A",
+    "Enemy_Big_Detect_Front_B",
+    "Enemy_Big_Hibernate_In_A",
+    "Enemy_Big_Hibernate_Loop_A",
+    "CA_Hibernate_In",
+    "CA_Hibernate_Detect_Loop",
+    "CA_Hibernate_Loop_A",
+    "CR_Hibernate_In",
+    "CR_Hibernate_Detect_Loop",
+    "CR_Hibernate_Loop",
+    "CF_Hibernate_In",
+    "CF_Hibernate_Detect_Loop",
+    "CF_Hibernate_Loop_A",
+    "FD_Hibernate_In",
+    "FD_Hibernate_Detect_Loop",
+    "FD_Hibernate_Loop",
+    "LO_Hibernate_In_A",
+    "LO_Hibernate_Detect_Loop",
+    "LO_Hibernate_Loop",
+    "RU_Hibernate_In",
+    "Ru_Hibernate_Detect_Loop_0",
+    "RU_Hibernate_Loop_0",
+    "CF_Birther_Hibernate_In",
+    "CF_Birther_Hibernate_Loop",
+    "Enemy_Big_Hibernate_Heartbeat_1_A",
+    "Enemy_Big_Hibernate_Heartbeat_2_A",
+    "Enemy_Big_Hibernate_Heartbeat_3_A",
+    "Enemy_Big_Hibernate_Heartbeat_4_A",
+    "Enemy_Big_Hibernate_Heartbeat_5_A",
+    "CA_Hibernate_Heartbeat_A",
+    "CA_Hibernate_Heartbeat_B",
+    "CA_Hibernate_Heartbeat_C",
+    "CA_Hibernate_Heartbeat_D",
+    "CA_Hibernate_Heartbeat_E",
+    "CR_Hibernate_Heartbeat_A",
+    "CR_Hibernate_Heartbeat_B",
+    "CR_Hibernate_Heartbeat_C",
+    "CR_Hibernate_Heartbeat_D",
+    "CR_Hibernate_Heartbeat_E",
+    "CF_Hibernate_Heartbeat_A",
+    "CF_Hibernate_Heartbeat_B",
+    "CF_Hibernate_Heartbeat_C",
+    "CF_Hibernate_Heartbeat_D",
+    "CF_Hibernate_Heartbeat_E",
+    "FD_Hibernate_Heartbeat_A",
+    "FD_Hibernate_Heartbeat_B",
+    "FD_Hibernate_Heartbeat_C",
+    "FD_Hibernate_Heartbeat_D",
+    "FD_Hibernate_Heartbeat_E",
+    "LO_Hibernate_Heartbeat_A",
+    "LO_Hibernate_Heartbeat_B",
+    "LO_Hibernate_Heartbeat_C",
+    "LO_Hibernate_Heartbeat_D",
+    "LO_Hibernate_Heartbeat_E",
+    "RU_Hibernate_Heartbeat_A",
+    "RU_Hibernate_Heartbeat_A_0",
+    "RU_Hibernate_Heartbeat_B",
+    "RU_Hibernate_Heartbeat_B_0",
+    "RU_Hibernate_Heartbeat_C",
+    "RU_Hibernate_Heartbeat_C_0",
+    "RU_Hibernate_Heartbeat_D",
+    "RU_Hibernate_Heartbeat_D_0",
+    "RU_Hibernate_Heartbeat_E",
+    "RU_Hibernate_Heartbeat_E_0",
+    "CF_Birther_Heartbeat",
+    "CR_Hibernate_Wakeup_A",
+    "CR_Hibernate_Wakeup_B",
+    "CR_Hibernate_Wakeup_C",
+    "CR_Hibernate_Wakeup_D",
+    "CR_Hibernate_Wakeup_Turn_A",
+    "LO_Hibernate_Wakeup_A",
+    "LO_Hibernate_Wakeup_B",
+    "LO_Hibernate_Wakeup_Fwd_C",
+    "LO_Hibernate_Wakeup_Fwd_D",
+    "LO_Hibernate_Wakeup_Turn_A",
+    "CA_Hibernate_Wakeup_A",
+    "CA_Hibernate_Wakeup_Turn_A",
+    "RU_Hibernate_Wakeup_A_0",
+    "RU_Hibernate_Wakeup_B_0",
+    "RU_Hibernate_Wakeup_C_0",
+    "RU_Hibernate_Wakeup_Turn_A",
+    "CF_Hibernate_Wakeup_A",
+    "CF_Hibernate_Wakeup_Turn_A",
+    "Monster_Turn_Left_180",
+    "Enemy_Big_Hibernate_Wakeup_180_B",
+    "Enemy_Big_Hibernate_Wakeup_A",
+    "FD_Hibernate_Wakeup_A",
+    "FD_Hibernate_Wakeup_B",
+    "FD_Hibernate_Wakeup_C",
+    "FD_Hibernate_Wakeup_Turn_A",
+    "RU_Hibernate_Wakeup_A",
+    "RU_Hibernate_Wakeup_B",
+    "RU_Hibernate_Wakeup_C",
+    "PO_ConsumeAttack",
+    "PO_ConsumeStart",
+    "PO_ConsumeEnd",
+    "PO_ConsumeLoop",
+    "PO_SpitOut",
+    "CA_Ability_Use_In_A",
+    "CA_Ability_Use_Loop_A",
+    "CA_Ability_Use_Out_A",
+    "RU_Ability_Use_In_a",
+    "RU_Ability_Use_Loop_a",
+    "RU_Ability_Use_Out_a",
+    "LO_Ability_Use_In_A",
+    "LO_Ability_Use_Loop_A",
+    "LO_Ability_Use_Out_A",
+    "CR_Ability_Use_In_A",
+    "CR_Ability_Use_Loop_A",
+    "CR_Ability_Use_Out_A",
+    "CF_Ability_Use_In_A",
+    "CF_Ability_Use_Loop_A",
+    "CF_Ability_Use_Out_A",
+    "FD_Ability_Use_In_A",
+    "FD_Ability_Use_Loop_A",
+    "FD_Ability_Use_Out_A",
+] as const;
+export type EnemyAnimationClips = typeof enemyAnimationClipNames[number];
+export const enemyAnimationClips = await loadAllClips(HumanJoints, enemyAnimationClipNames);
 
 export const enemyRunnerMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.RU_Walk_Fwd, x: 0, y: 2.2 },

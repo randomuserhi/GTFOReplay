@@ -40,12 +40,12 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
                 const geometry = BufferGeometryUtils.mergeGeometries(geometries);
                 loadedGLTF.set(path, geometry);
                 resolve(geometry);
-            } catch(e) {
-                console.error(`Failed to load ${path}: ${e}`);
-                reject(e);
+            } catch(error) {
+                console.log(`Failed to load GLTF '${path}': ${error}`);
+                reject(error);
             }
         }, undefined, function (error) {
-            console.error(error);
+            console.log(`Failed to load GLTF '${path}': ${error}`);
             reject(error);
         });
     });
