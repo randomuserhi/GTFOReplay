@@ -9,7 +9,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
     private Animator animator;
     private AnimatorOverrideController overrideController;
 
-    private string filePath = "E:\\Git\\GTFOReplay\\animations";
+    private string filePath = "E:\\Git\\GTFOReplay\\Viewer\\assets\\js3party\\animations";
 
     public Transform fold;
     public Transform leftHand;
@@ -47,7 +47,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
 
             sb.Clear();
             SaveCurrentFrame(sb);
-            sb.Append(",");
+            if (i < captures - 1) sb.Append(",");
             fs.WriteLine(sb.ToString());
             current += rate;
         }
