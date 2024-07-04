@@ -9,7 +9,7 @@ public class AnimationClipRecorder : MonoBehaviour {
     private Animator animator;
     private AnimatorOverrideController overrideController;
 
-    private string filePath = "E:\\Git\\GTFOReplay\\ReplayRecorder_v2\\Viewer\\animations\\src";
+    private string filePath = "E:\\Git\\GTFOReplay\\animations";
 
     public Transform hip;
 
@@ -58,7 +58,7 @@ public class AnimationClipRecorder : MonoBehaviour {
         const float rate = 1f / 20f;
         int captures = Mathf.CeilToInt(duration / rate) + 1;
 
-        string fullpath = Path.Combine(filePath, $"{clip.name}.ts");
+        string fullpath = Path.Combine(filePath, $"{clip.name}.json");
         StreamWriter fs = new StreamWriter(fullpath, false, Encoding.UTF8);
         StringBuilder sb = new StringBuilder();
 
@@ -67,7 +67,7 @@ public class AnimationClipRecorder : MonoBehaviour {
         fs.Dispose();
         return;*/
 
-        fs.WriteLine($"import {{ Anim }} from \"@anim/animation.js\";\nimport {{ HumanAnim, HumanJoints }} from \"@anim/human.js\";\n\nexport const {clip.name}: HumanAnim = new Anim(HumanJoints, {rate}, {duration}, [");
+        fs.WriteLine($"{{ \"rate\": {rate}, \"duration\": {duration}, \"frames\": [");
 
         float current = 0;
         for (int i = 0; i < captures; ++i) {
@@ -81,7 +81,7 @@ public class AnimationClipRecorder : MonoBehaviour {
             current += rate;
         }
 
-        fs.Write("]);");
+        fs.Write("] }");
 
         fs.Dispose();
 
@@ -89,17 +89,19 @@ public class AnimationClipRecorder : MonoBehaviour {
     }
 
     private void GetTransformString(StringBuilder sb, string name, Transform transform) {
-        sb.Append($"{name}:{{position:{{x:{-transform.localPosition.x},y:{transform.localPosition.y},z:{transform.localPosition.z}}},rotation:{{x:{transform.localRotation.x},y:{transform.localRotation.y},z:{transform.localRotation.z},w:{transform.localRotation.w}}}}}");
+        sb.Append($"\"{name}\":{{\"position\":{{\"x\":{-transform.localPosition.x},\"y\":{transform.localPosition.y},\"z\":{transform.localPosition.z}}},\"rotation\":{{\"x\":{transform.localRotation.x},\"y\":{transform.localRotation.y},\"z\":{transform.localRotation.z},\"w\":{transform.localRotation.w}}}}}");
     }
 
     private void GetPositionString(StringBuilder sb, string name, Transform transform) {
-        sb.Append($"{name}:{{x:{-transform.localPosition.x},y:{transform.localPosition.y},z:{transform.localPosition.z}}}");
+        Vector3 localPosition = transform.localPosition;
+        localPosition = transform.rotation * localPosition;
+        sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
     }
 
     private void GetRotationString(StringBuilder sb, string name, Transform transform) {
         Quaternion rot = transform.localRotation;
         rot.Normalize();
-        sb.Append($"{name}:{{x:{rot.x},y:{-rot.y},z:{-rot.z},w:{rot.w}}}");
+        sb.Append($"\"{name}\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}");
     }
 
     private StringBuilder SaveCurrentFrame(StringBuilder sb) {
@@ -107,7 +109,7 @@ public class AnimationClipRecorder : MonoBehaviour {
 
         GetPositionString(sb, "root", hip); sb.Append(",");
 
-        sb.Append("joints:{");
+        sb.Append("\"joints\":{");
         GetRotationString(sb, "hip", hip); sb.Append(",");
 
         GetRotationString(sb, "leftUpperLeg", leftUpperLeg); sb.Append(",");

@@ -9,7 +9,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
     private Animator animator;
     private AnimatorOverrideController overrideController;
 
-    private string filePath = "E:\\Git\\GTFOReplay\\ReplayRecorder_v2\\Viewer\\animations\\src";
+    private string filePath = "E:\\Git\\GTFOReplay\\animations";
 
     public Transform fold;
     public Transform leftHand;
@@ -34,11 +34,11 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
         const float rate = 1f / 20f;
         int captures = Mathf.CeilToInt(duration / rate) + 1;
 
-        string fullpath = Path.Combine(filePath, $"{clip.name}.ts");
+        string fullpath = Path.Combine(filePath, $"{clip.name}.json");
         StreamWriter fs = new StreamWriter(fullpath, false, Encoding.UTF8);
         StringBuilder sb = new StringBuilder();
 
-        fs.WriteLine($"import {{ Anim }} from \"@anim/animation.js\";\nimport {{ GearFoldAnim, GearFoldJoints }} from \"@anim/gearfold.js\";\n\nexport const {clip.name}: GearFoldAnim = new Anim(GearFoldJoints, {rate}, {duration}, [");
+        fs.WriteLine($"{{ \"rate\": {rate}, \"duration\": {duration}, \"frames\": [");
 
         float current = 0;
         for (int i = 0; i < captures; ++i) {
@@ -52,7 +52,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
             current += rate;
         }
 
-        fs.Write("]);");
+        fs.Write("] }");
 
         fs.Dispose();
 
@@ -60,19 +60,19 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
     }
 
     private void GetTransformString(StringBuilder sb, string name, Transform transform) {
-        sb.Append($"{name}:{{position:{{x:{-transform.localPosition.x},y:{transform.localPosition.y},z:{transform.localPosition.z}}},rotation:{{x:{transform.localRotation.x},y:{transform.localRotation.y},z:{transform.localRotation.z},w:{transform.localRotation.w}}}}}");
+        sb.Append($"\"{name}\":{{\"position\":{{\"x\":{-transform.localPosition.x},\"y\":{transform.localPosition.y},\"z\":{transform.localPosition.z}}},\"rotation\":{{\"x\":{transform.localRotation.x},\"y\":{transform.localRotation.y},\"z\":{transform.localRotation.z},\"w\":{transform.localRotation.w}}}}}");
     }
 
     private void GetPositionString(StringBuilder sb, string name, Transform transform) {
         Vector3 localPosition = transform.localPosition;
         localPosition = transform.rotation * localPosition;
-        sb.Append($"{name}:{{x:{-localPosition.x},y:{localPosition.y},z:{localPosition.z}}}");
+        sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
     }
 
     private void GetRotationString(StringBuilder sb, string name, Transform transform) {
         Quaternion rot = transform.localRotation;
         rot.Normalize();
-        sb.Append($"{name}:{{x:{rot.x},y:{-rot.y},z:{-rot.z},w:{rot.w}}}");
+        sb.Append($"\"{name}\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}");
     }
 
     private StringBuilder SaveCurrentFrame(StringBuilder sb) {
@@ -80,7 +80,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
 
         GetPositionString(sb, "root", leftHand); sb.Append(",");
 
-        sb.Append("joints:{");
+        sb.Append("\"joints\":{");
         GetRotationString(sb, "fold", fold); sb.Append(",");
 
         sb.Append("}}");
