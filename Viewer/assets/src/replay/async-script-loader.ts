@@ -296,7 +296,7 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
 
 export namespace AsyncScriptLoader {
     // eslint-disable-next-line prefer-const
-    export let baseURI: string | undefined = document?.baseURI; 
+    export let baseURI: string | undefined = document === undefined ? undefined : document.baseURI; 
     export async function load(path: string) {
         path = new URL(path, baseURI).toString();
         AsyncScriptCache.invalidate(path);
