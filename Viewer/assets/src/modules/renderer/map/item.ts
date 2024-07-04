@@ -1,8 +1,8 @@
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Model } from "../Equippable/equippable.js";
 import { specification } from "../specification.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Items": void;

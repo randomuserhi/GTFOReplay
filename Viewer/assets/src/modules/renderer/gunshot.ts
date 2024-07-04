@@ -1,10 +1,10 @@
-import { ColorRepresentation, CylinderGeometry, LineBasicMaterial, Mesh, MeshStandardMaterial } from "three";
-import { ModuleLoader } from "../../replay/moduleloader.js";
-import * as Pod from "../../replay/pod.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { ColorRepresentation, CylinderGeometry, LineBasicMaterial, Mesh, MeshStandardMaterial } from "@esm/three";
 import { duration } from "../parser/gunshot.js";
 import { playerColors } from "./player/renderer.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Player.Gunshots": void;

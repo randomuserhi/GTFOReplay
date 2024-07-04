@@ -5,8 +5,8 @@ import * as BitHelper from "./bithelper.js";
 export type ASLModule_BitHelper = typeof BitHelper;
 
 class _ASLModuleError extends Error {
-    constructor(message?: string) {
-        super(message);
+    constructor(message?: string, e?: Error) {
+        super(`${message}\n\t${e !== undefined ? e.toString().split("\n").join("\n\t") : ""}`);
     }
 }
 
@@ -37,7 +37,7 @@ class _ASLModule implements Exports {
 
     public raise(e: Error) {
         if (Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e)) throw e;
-        else throw new _ASLModuleError(`[${this.src}]:\n\t${e}`);
+        else throw new _ASLModuleError(`[${this.src}]:`, e);
     }
 
     _archetype: Archetype = AsyncScriptCache.archetype;
@@ -268,13 +268,13 @@ const fetchScript = Rest.fetch<_ASLModule["exec"], [url: URL]>({
         method: "GET"
     }),
     callback: async (resp) => {
-        return (new Function(`const __code__ = async function(__ASLModule__, require, module) { ${typescriptModuleSupport(await resp.text())} }; return __code__.bind(undefined);`))();
+        return (new Function(`const __code__ = async function(require, module) { ${typescriptModuleSupport(await resp.text())} }; return __code__.bind(undefined);`))();
     }
 });
 
 function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise<_ASLModule> {
     if (path === "") throw new Error("Cannot use 'require()' on a blank string.");
-    const url = new URL(path, path.startsWith(".") ? baseURI : undefined);
+    const url = new URL(path, path.startsWith(".") ? baseURI : undefined); // TODO(randomuserhi): On error => log what the url was (path)
     path = url.toString();
     if (AsyncScriptCache.has(path)) {
         //console.log(`cached ${url}.`);
@@ -284,20 +284,13 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
     return new Promise((resolve, reject) => {
         const module = new _ASLModule(path);
         AsyncScriptCache.cache(module);
-        try {
-            //console.log(`fetching ${url}.`);
-            if (root !== undefined) AsyncScriptCache.watch(root, module, resolve);
-            fetchScript(url).then((exec) => {
-                module.exec = exec;
-                return AsyncScriptCache.exec(module);
-            }).then(() => resolve(module)).catch((e) => {
-                module.raise(e);
-                reject(new Error("Unreachable"));
-            });
-        } catch(e) {
-            module.raise(e);
-            reject(new Error("Unreachable"));
-        }
+        if (root !== undefined) AsyncScriptCache.watch(root, module, resolve);
+        fetchScript(url).then((exec) => {
+            module.exec = exec;
+            return AsyncScriptCache.exec(module);
+        }).then(() => resolve(module)).catch((e) => {
+            reject(new _ASLModuleError(`Error whilst fetching [${url}]:`, e));
+        });
     });
 }
 

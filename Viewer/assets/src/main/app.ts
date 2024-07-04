@@ -11,7 +11,7 @@ async function __main__() {
 
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
         AsyncScriptLoader.load(p);
-        ModuleLoader.registerScriptModule(p); 
+        ModuleLoader.registerASLModule(p); 
 
         // TODO(randomuserhi): Trigger re-parse of current file
     }));

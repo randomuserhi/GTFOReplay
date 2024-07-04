@@ -1,8 +1,8 @@
-import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3 } from "three";
-import { Text } from "troika-three-text";
-import { consume } from "../../../replay/instancing.js";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
-import * as Pod from "../../../replay/pod.js";
+import { consume } from "@esm/@root/replay/instancing.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Camera, Color, ColorRepresentation, Group, Matrix4, Object3D, Quaternion, Scene, Vector3 } from "@esm/three";
+import { Text } from "@esm/troika-three-text";
 import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { Player } from "../../parser/player/player.js";
@@ -18,7 +18,7 @@ import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../constants.js";
 import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Players": void;

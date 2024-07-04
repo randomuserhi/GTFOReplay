@@ -1,4 +1,4 @@
-import { Group, Object3D, QuaternionLike, Vector3Like } from "three";
+import { Group, Object3D, QuaternionLike, Vector3Like } from "@esm/three";
 import { GearFoldAvatar } from "../../renderer/animations/gearfold";
 
 export abstract class Model {

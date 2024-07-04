@@ -1,9 +1,9 @@
-import { BoxGeometry, Group, Mesh, MeshPhongMaterial } from "three";
-import { ModuleLoader } from "../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { BoxGeometry, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { duration } from "../parser/deathcross.js";
 import { Bezier } from "./bezier.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.DeathCross": void;

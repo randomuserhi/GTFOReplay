@@ -1,9 +1,9 @@
-import { BoxGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "three";
-import { ModuleLoader } from "../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { BoxGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "@esm/three";
 import { Sentry } from "../parser/sentry.js";
 import { playerColors } from "./player/renderer.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Sentry": void;

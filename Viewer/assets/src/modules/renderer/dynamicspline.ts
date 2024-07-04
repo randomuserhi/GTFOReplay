@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, CatmullRomCurve3, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, CatmullRomCurve3, Vector3 } from "@esm/three";
 
 export class DynamicSplineGeometry extends BufferGeometry {
     radius: number;

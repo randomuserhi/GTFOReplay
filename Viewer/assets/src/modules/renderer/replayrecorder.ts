@@ -1,12 +1,12 @@
-import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, PointLight, SphereGeometry, VSMShadowMap, Vector3, Vector3Like } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { createInstance } from "../../replay/instancing.js";
-import { ModuleLoader, ReplayApi } from "../../replay/moduleloader.js";
-import { Renderer } from "../../replay/renderer.js";
+import { createInstance } from "@esm/@root/replay/instancing.js";
+import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import { Renderer } from "@esm/@root/replay/renderer.js";
+import { ACESFilmicToneMapping, AmbientLight, Camera, Color, CylinderGeometry, DirectionalLight, DynamicDrawUsage, FogExp2, Frustum, Matrix4, MeshPhongMaterial, PerspectiveCamera, PointLight, SphereGeometry, VSMShadowMap, Vector3, Vector3Like } from "@esm/three";
+import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
+import { RenderPass } from "@esm/three/examples/jsm/postprocessing/RenderPass.js";
 import { loadGLTF } from "./modeloader.js";
 
-declare module "../../replay/instancing.js" {
+declare module "@esm/@root/replay/instancing.js" {
     interface InstanceTypes {
         "Cylinder.MeshPhong": void;
         "Sphere.MeshPhong": void;

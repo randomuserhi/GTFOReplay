@@ -1,6 +1,6 @@
-import { BufferGeometry, Mesh } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { BufferGeometry, Mesh } from '@esm/three';
+import { GLTFLoader } from '@esm/three/examples/jsm/loaders/GLTFLoader.js';
+import * as BufferGeometryUtils from '@esm/three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const loadedGLTF = new Map<string, BufferGeometry>();
 const loadingGLTF = new Map<string, Promise<BufferGeometry>>();

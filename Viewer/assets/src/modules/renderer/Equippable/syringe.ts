@@ -1,4 +1,4 @@
-import { Color, Group, Mesh, MeshPhongMaterial } from "three";
+import { Color, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { loadGLTF } from "../modeloader.js";
 import { Model } from "./equippable.js";
 

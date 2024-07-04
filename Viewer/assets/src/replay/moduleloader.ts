@@ -88,6 +88,7 @@ export namespace ModuleLoader {
 
     export const links = new Set<string>();
     export const library: {
+        init: Set<(header: ReplayApi["header"]) => void>,
         header: ModuleLibrary<HeaderModule>
         event: ModuleLibrary<EventModule>
         dynamic: ModuleLibrary<DynamicModule>
@@ -95,6 +96,7 @@ export namespace ModuleLoader {
         tick: Set<(snapshot: ReplayApi) => void>
         dispose: Set<(renderer: Renderer) => void>
     } = {
+        init: new Set(),
         header: new Map(),
         event: new Map(),
         dynamic: new Map(),
@@ -102,6 +104,16 @@ export namespace ModuleLoader {
         tick: new Set(),
         dispose: new Set(),
     };
+
+    export function clear() {
+        library.init.clear();
+        library.header.clear();
+        library.event.clear();
+        library.dynamic.clear();
+        library.render.clear();
+        library.tick.clear();
+        library.dispose.clear();
+    }
 
     export function getHeader<T extends Typemap.HeaderNames>({ typename, version }: ModuleDesc<T>): HeaderModule {
         const result = library.header.get(typename as string)?.get(version);
@@ -153,7 +165,11 @@ export namespace ModuleLoader {
         library.dispose.add(func);
     }
 
-    export function registerScriptModule(path: string) {
+    export function registerInit(func: (header: ReplayApi["header"]) => void) {
+        library.init.add(func);
+    }
+
+    export function registerASLModule(path: string) {
         links.add(path);
     }
 }

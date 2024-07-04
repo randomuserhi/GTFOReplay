@@ -1,4 +1,4 @@
-import { Color, ColorRepresentation, Vector3, Vector3Like } from "three";
+import { Color, ColorRepresentation, Vector3, Vector3Like } from "@esm/three";
 import { AnimHandles, MeleeType } from "../parser/enemy/enemy.js";
 import { Identifier, IdentifierData } from "../parser/identifier.js";
 import { AssaultRifle } from "./Equippable/assaultrifle.js";

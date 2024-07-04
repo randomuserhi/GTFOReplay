@@ -1,11 +1,11 @@
-import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene, Vector3 } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Scene, Vector3 } from "@esm/three";
 import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
 import { Bezier } from "../../renderer/bezier.js";
 import { black, white } from "../constants.js";
 import { loadGLTF } from "../modeloader.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Doors": void;

@@ -1,8 +1,8 @@
-import { BufferAttribute, BufferGeometry, DoubleSide, LineBasicMaterial, LineSegments, Mesh, MeshPhongMaterial } from "three";
-import { HeaderApi, ModuleLoader } from "../../../replay/moduleloader.js";
-import { Renderer } from "../../../replay/renderer.js";
+import { HeaderApi, ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Renderer } from "@esm/@root/replay/renderer.js";
+import { BufferAttribute, BufferGeometry, DoubleSide, LineBasicMaterial, LineSegments, Mesh, MeshPhongMaterial } from "@esm/three";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Map": void;

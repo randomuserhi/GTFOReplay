@@ -1,4 +1,4 @@
-import { BoxGeometry, ColorRepresentation, Group, Mesh, MeshPhongMaterial } from "three";
+import { BoxGeometry, ColorRepresentation, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { Model } from "./equippable.js";
 
 const frontGeom = new BoxGeometry(0.2, 0.05, 0.1);

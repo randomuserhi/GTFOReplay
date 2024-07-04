@@ -46,17 +46,25 @@ let replay: Replay | undefined = undefined;
             }
             await Internal.parsers[typeMapVersion](bytes, replay);
 
+            // Grab headerApi
+            const headerApi = {
+                getOrDefault: Replay.prototype.getOrDefault.bind(replay),
+                get: Replay.prototype.get.bind(replay),
+                set: Replay.prototype.set.bind(replay),
+                has: Replay.prototype.has.bind(replay)
+            };
+
+            // Initialise
+            for (const init of ModuleLoader.library.init) {
+                init(headerApi);
+            }
+
             // Parse Headers
             let [module] = await getModule(bytes);
             while (module?.typename !== "ReplayRecorder.EndOfHeader") {
                 const func = ModuleLoader.getHeader(module as any);
                 if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                await func.parse(bytes, {
-                    getOrDefault: Replay.prototype.getOrDefault.bind(replay),
-                    get: Replay.prototype.get.bind(replay),
-                    set: Replay.prototype.set.bind(replay),
-                    has: Replay.prototype.has.bind(replay)
-                });
+                await func.parse(bytes, headerApi);
                 [module] = await getModule(bytes);
             }
 

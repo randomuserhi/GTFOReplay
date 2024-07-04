@@ -1,10 +1,10 @@
-import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "three";
-import { ModuleLoader } from "../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "@esm/three";
 import { Identifier } from "../parser/identifier.js";
 import { Mine } from "../parser/mine.js";
 import { loadGLTF } from "./modeloader.js";
 
-declare module "../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Mine": void;

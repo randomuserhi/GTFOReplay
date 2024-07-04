@@ -1,8 +1,8 @@
-import { Group, Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Group, Mesh, MeshPhongMaterial, Scene, SphereGeometry } from "@esm/three";
 import { Spitter, SpitterState } from "../../parser/map/spitters.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Enemy.Spitters": void;

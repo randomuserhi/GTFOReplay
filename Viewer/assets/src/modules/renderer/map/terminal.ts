@@ -1,8 +1,8 @@
-import { BoxGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { BoxGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "@esm/three";
 import { Terminal } from "../../parser/map/terminal.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Terminals": void;

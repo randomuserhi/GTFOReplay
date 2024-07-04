@@ -1,9 +1,9 @@
-import { Group, Mesh, MeshPhongMaterial, Scene } from "three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Group, Mesh, MeshPhongMaterial, Scene } from "@esm/three";
 import { Generator, GeneratorState } from "../../parser/map/generator.js";
 import { loadGLTF } from "../modeloader.js";
 
-declare module "../../../replay/moduleloader.js" {
+declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface RenderPasses {
             "Vanilla.Generators": void;

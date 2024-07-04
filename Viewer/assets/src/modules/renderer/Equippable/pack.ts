@@ -1,4 +1,4 @@
-import { BoxGeometry, ColorRepresentation, Mesh, MeshPhongMaterial } from "three";
+import { BoxGeometry, ColorRepresentation, Mesh, MeshPhongMaterial } from "@esm/three";
 import { Model } from "./equippable.js";
 
 const geometry = new BoxGeometry(0.25, 0.3, 0.1);
