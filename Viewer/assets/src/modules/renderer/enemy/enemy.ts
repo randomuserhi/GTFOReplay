@@ -10,7 +10,6 @@ import { animCrouch, animDetection, animVelocity, enemyAnimations, playerAnimati
 import { HumanAnimation, HumanJoints, HumanSkeleton, defaultHumanPose, defaultHumanStructure } from "../animations/human.js";
 import { upV, zeroQ, zeroV } from "../constants.js";
 import { playerColors } from "../player/renderer.js";
-import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -654,6 +653,10 @@ export class HumanoidEnemyModel extends EnemyModel {
         _points[j++].compose(worldPos.rightFoot, zeroQ, sM);
     }
 }
+
+module.ready();
+// eslint-disable-next-line sort-imports
+import { EnemyAnimHandle, EnemySpecification, specification } from "../specification.js";
 
 ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();

@@ -16,7 +16,6 @@ import { IKSolverAim } from "../animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../animations/inversekinematics/limbsolver.js";
 import { Bone } from "../animations/inversekinematics/rootmotion.js";
 import { upV, zeroQ, zeroV } from "../constants.js";
-import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -769,6 +768,10 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
         this.tmp = undefined;
     }
 }
+
+module.ready();
+// eslint-disable-next-line sort-imports
+import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 
 export const playerColors: ColorRepresentation[] = [
     0xc21f4e,

@@ -1,4 +1,6 @@
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Color, ColorRepresentation, Vector3, Vector3Like } from "@esm/three";
+import { Renderer } from "../../replay/renderer.js";
 import { AnimHandles, MeleeType } from "../parser/enemy/enemy.js";
 import { Identifier, IdentifierData } from "../parser/identifier.js";
 import { AssaultRifle } from "./Equippable/assaultrifle.js";
@@ -2379,4 +2381,24 @@ specification.gear = new Map(_gear.map(g => [g.id, {...g, id: Identifier.create(
 specification.enemies = new Map(_enemies.map(e => [e.id, e]));
 specification.enemyAnimHandles = new Map(_enemyAnimHandles.map(e => [e.name, e]));
 
-if (globalThis !== undefined) (globalThis as any).specification = specification;
+declare module "@esm/@root/replay/moduleloader.js" {
+    namespace Typemap {
+        interface RenderPasses {
+            "Specification.Init": void;
+        }
+
+        interface RenderData {
+            "Specification": Specification;
+        }
+    }
+}
+
+ModuleLoader.registerRender("Specification.Init", (name, api) => {
+    const init = api.getInitPasses();
+    const pass = { 
+        name, pass: (r: Renderer) => {
+            r.set("Specification", specification);
+        } 
+    };
+    api.setInitPasses([pass, ...init]);
+});

@@ -360,8 +360,9 @@ export const player = Macro((() => {
                 this.api = this.replay.api(this.snapshot);
                 this.renderer.render(dt / 1000, this.api);
 
-                if (this.scoreboardMount.style.display !== "none") {
-                    this.scoreboard.update(this.api);
+                const spec = this.renderer.get("Specification");
+                if (this.scoreboardMount.style.display !== "none" && spec !== undefined) {
+                    this.scoreboard.update(this.api, spec);
                 }
             }
 

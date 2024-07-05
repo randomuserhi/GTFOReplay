@@ -2,6 +2,7 @@ import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Player } from "../../../../modules/parser/player/player.js";
 import { PlayerStats } from "../../../../modules/parser/player/playerstats.js";
+import type { Specification } from "../../../../modules/renderer/specification.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
 import { MedalDescriptor, getMedals, medal } from "./medal.js";
 
@@ -41,7 +42,7 @@ const PlayerStatTracker = (snet: bigint) => {
         tongueDodges: new Map(),
         _downedTimeStamp: undefined,
     };
-}
+};
 function getPlayerStats(snet: bigint, tracker: ReturnType<typeof StatTracker>): ReturnType<typeof PlayerStatTracker> {
     if (!tracker.players.has(snet)) {
         tracker.players.set(snet, PlayerStatTracker(snet));
@@ -218,7 +219,7 @@ const style = Style(({ style }) => {
 
 export interface scoreboard extends HTMLDivElement {
     slots: Map<bigint, slot>;
-    update(snapshot: ReplayApi): void;
+    update(snapshot: ReplayApi, specification: Specification): void;
 }
 
 export const scoreboard = Macro((() => {
@@ -226,12 +227,12 @@ export const scoreboard = Macro((() => {
         this.slots = new Map();
     } as Constructor<scoreboard>;
 
-    scoreboard.prototype.update = function(snapshot) {
+    scoreboard.prototype.update = function(snapshot, specification) {
         const statTracker = snapshot.getOrDefault("Vanilla.StatTracker", StatTracker);
         const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
         const playerStats = snapshot.getOrDefault("Vanilla.Player.Stats", () => new Map());
 
-        const medals = getMedals(snapshot);
+        const medals = getMedals(snapshot, specification);
 
         for (const player of players.values()) {
             const stats = getPlayerStats(player.snet, statTracker);

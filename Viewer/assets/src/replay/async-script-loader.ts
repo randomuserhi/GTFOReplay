@@ -138,7 +138,11 @@ export namespace AsyncScriptCache {
             },
             get: (module, prop, receiver) => {
                 if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
-                return Reflect.get(module, prop, receiver);
+                const value = Reflect.get(module, prop, receiver);
+                if (typeof value === "function") {
+                    return value.bind(module);
+                }
+                return value;
             }
         });
         const _require = async (_path: string, type: ASLRequireType = "asl") => {
@@ -257,7 +261,7 @@ export namespace AsyncScriptCache {
             console.log("No modules are waiting to finalize.");
             return;
         }
-        console.log(`Modules waiting to finalize:\n${waiting.map((entry) => `[${entry[0].src}]\n\t- ${entry[1].join("\n\t- ")}`).join("\n")}`);
+        console.log(`Modules waiting to finalize:\n${waiting.map((entry) => `[${entry[0].src}]\n\t- ${entry[1].join("\n\t- ")}`).join("\n\n")}`);
     }
 
     export function reset() {
@@ -320,7 +324,7 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
 
 export namespace AsyncScriptLoader {
     // eslint-disable-next-line prefer-const
-    export let baseURI: string | undefined = document === undefined ? undefined : document.baseURI; 
+    export let baseURI: string | undefined = globalThis.document === undefined ? undefined : globalThis.document.baseURI; 
     export async function load(path: string) {
         path = new URL(path, baseURI).toString();
         AsyncScriptCache.invalidate(path);

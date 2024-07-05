@@ -1,5 +1,6 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
+import type { Specification } from "../../../../modules/renderer/specification.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
 
 // TODO(randomuserhi): Grabs information from ASL which is not really a thing...
@@ -38,7 +39,7 @@ const PlayerStats = (snet: bigint) => {
         tongueDodges: new Map(),
         _downedTimeStamp: undefined,
     };
-}
+};
 function getPlayerStats(snet: bigint, tracker: ReturnType<typeof StatTracker>): ReturnType<typeof PlayerStats> {
     if (!tracker.players.has(snet)) {
         tracker.players.set(snet, PlayerStats(snet));
@@ -61,7 +62,7 @@ export interface MedalDescriptor {
 
 interface MedalRequirement {
     id: number;
-    award: (medals: Map<bigint, MedalDescriptor[]>, snapshot: ReplayApi) => void;
+    award: (medals: Map<bigint, MedalDescriptor[]>, snapshot: ReplayApi, specification: Specification) => void;
 }
 
 function msToString(time: number): string {
@@ -133,14 +134,11 @@ const medalRequirements: MedalRequirement[] = [
     },
     {
         id: id++,
-        award(medals, snapshot: ReplayApi) {
+        award(medals, snapshot, specification) {
             const statTracker = snapshot.getOrDefault("Vanilla.StatTracker", StatTracker);
             const players = [...snapshot.getOrDefault("Vanilla.Player", () => new Map()).values()];
 
             if (players.length === 0) return;
-            
-            const specification = snapshot.header.get("Specification");
-            if (specification === undefined) return;
 
             let chosen: bigint[] = [];
             let maxDamage = 0;
@@ -559,11 +557,11 @@ const medalRequirements: MedalRequirement[] = [
     },
 ]; 
 
-export function getMedals(snapshot: ReplayApi): Map<bigint, MedalDescriptor[]> {
+export function getMedals(snapshot: ReplayApi, specification: Specification): Map<bigint, MedalDescriptor[]> {
     const medals: Map<bigint, MedalDescriptor[]> = new Map();
 
     for (const requirement of medalRequirements) {
-        requirement.award(medals, snapshot);
+        requirement.award(medals, snapshot, specification);
     }
 
     return medals;

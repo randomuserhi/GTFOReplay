@@ -10,7 +10,7 @@ async function __main__() {
     window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
     window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
-        //AsyncScriptLoader.load(p);
+        AsyncScriptLoader.load(p);
         ModuleLoader.registerASLModule(p); 
 
         // TODO(randomuserhi): Trigger re-parse of current file
@@ -22,7 +22,7 @@ async function __main__() {
     }));
     
     (await window.api.invoke("loadParserModules")).forEach((p: string) => {
-        //AsyncScriptLoader.load(p);
+        AsyncScriptLoader.load(p);
         ModuleLoader.registerASLModule(p);
 
         // TODO(randomuserhi): Trigger re-parse of current file

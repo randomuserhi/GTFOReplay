@@ -312,13 +312,11 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
             frag.estaggerDamage.innerText = `${estaggerDamage}`;
             frag.esentryStaggerDamage.innerText = `${esentryStaggerDamage}`;
 
-            if (api !== undefined) {
-                const specification = api!.header.get("Specification");
-                if (specification !== undefined) {
-                    frag.pbulletDamage.innerText = `${Math.round(pbulletDamage / specification.player.maxHealth * 1000) / 10}%`;
-                    frag.psentryDamage.innerText = `${Math.round(psentryDamage / specification.player.maxHealth * 1000) / 10}%`;
-                    frag.pexplosiveDamage.innerText = `${Math.round(pexplosiveDamage / specification.player.maxHealth * 1000) / 10}%`;
-                }
+            const specification = parent.player.renderer.get("Specification");
+            if (specification !== undefined) {
+                frag.pbulletDamage.innerText = `${Math.round(pbulletDamage / specification.player.maxHealth * 1000) / 10}%`;
+                frag.psentryDamage.innerText = `${Math.round(psentryDamage / specification.player.maxHealth * 1000) / 10}%`;
+                frag.pexplosiveDamage.innerText = `${Math.round(pexplosiveDamage / specification.player.maxHealth * 1000) / 10}%`;
             }
         };
 
@@ -326,36 +324,31 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
     },
     (parent) => {
         return createTypeTable(parent, "Kills", (stats) => [...stats.kills.values()], (data) => {
-            const api = parent.player.api;
-            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
+            const spec = parent.player.renderer.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Sentry Kills", (stats) => [...stats.sentryKills.values()], (data) => {
-            const api = parent.player.api;
-            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
+            const spec = parent.player.renderer.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Mine Kills", (stats) => [...stats.mineKills.values()], (data) => {
-            const api = parent.player.api;
-            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
+            const spec = parent.player.renderer.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Assists", (stats) => [...stats.assists.values()], (data) => {
-            const api = parent.player.api;
-            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
+            const spec = parent.player.renderer.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
     (parent) => {
         return createTypeTable(parent, "Tongues Dodged", (stats) => [...stats.tongueDodges.values()], (data) => {
-            const api = parent.player.api;
-            const spec = api?.header?.get("Specification")?.getEnemy(data.type);
+            const spec = parent.player.renderer.get("Specification")?.getEnemy(data.type);
             return [spec?.name === undefined ? "Unknown" : spec.name, data.value];
         });
     },
