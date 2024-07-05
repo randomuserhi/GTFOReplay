@@ -130,10 +130,10 @@ export namespace AsyncScriptCache {
     const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI"];
     export async function exec(module: _ASLModule) {
         module.exports = {};
-        const exports = new Proxy(module, {
-            set(module, prop, newValue, receiver) {
+        const exports = new Proxy(module.exports, {
+            set(exports, prop, newValue, receiver) {
                 if (module.isReady) module.raise(new Error(`You cannot add exports once a module has loaded.`));
-                return Reflect.set(module.exports, prop, newValue, receiver);
+                return Reflect.set(exports, prop, newValue, receiver);
             }
         });
         const __module__ = new Proxy(module, {
