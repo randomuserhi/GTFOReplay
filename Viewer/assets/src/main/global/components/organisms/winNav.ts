@@ -124,8 +124,6 @@ export const winNav = Macro((() => {
             }
         });
         (window as any)._file = this._file;
-
-        (window as any).winTitle = this.winTitle;
     } as Constructor<winNav>;
 
     return winNav;
