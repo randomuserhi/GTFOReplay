@@ -1,4 +1,5 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
+import { computed, signal, Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
@@ -76,8 +77,11 @@ export interface winNav extends HTMLDivElement {
     close: HTMLButtonElement;
     max: HTMLButtonElement;
     min: HTMLButtonElement;
+    winTitleDiv: HTMLDivElement;
     file: HTMLButtonElement;
     _file: HTMLInputElement;
+
+    winTitle: Signal<string>;
 }
 
 declare module "@/rhu/macro.js" {
@@ -120,6 +124,15 @@ export const winNav = Macro((() => {
             }
         });
         (window as any)._file = this._file;
+
+        const text = document.createTextNode("");
+        this.winTitleDiv.replaceChildren(text);
+        this.winTitle = signal("GTFO Replay Viewer");
+        this.winTitle.on((value) => text.nodeValue = value);
+        (window as any).winTitle = this.winTitle;
+
+        const counter = signal(0);
+        const counter2 = computed(() => counter() * 2, [counter]);
     } as Constructor<winNav>;
 
     return winNav;
@@ -134,7 +147,7 @@ export const winNav = Macro((() => {
     <div rhu-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
         ${icons.line}
     </div>
-    <div class="${style.text}">
+    <div rhu-id="winTitleDiv" class="${style.text}">
         GTFO Replay Viewer
     </div>
     <div rhu-id="file" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">

@@ -1,16 +1,28 @@
-import { WeakCollection } from "./weak";
-const isDirty = Symbol("isDirty");
+import { WeakCollection } from "./weak.js";
+const _isDirty = Symbol("isDirty");
+const _callbacks = Symbol("callbacks");
 const proto = {};
 const dependencyMap = new WeakMap();
-function markDirty(signal) {
+const dirtySet = new Set();
+function markDirty(signal, root = true) {
     const dependencies = dependencyMap.get(signal);
     if (dependencies === undefined)
         return;
     for (const computed of dependencies) {
-        computed[isDirty] = true;
-        markDirty(computed);
+        computed[_isDirty] = true;
+        dirtySet.add(computed);
+        markDirty(computed, false);
+    }
+    if (root) {
+        for (const dirty of dirtySet) {
+            for (const callback of dirty[_callbacks]) {
+                callback(dirty());
+            }
+        }
+        dirtySet.clear();
     }
 }
+globalThis.signals = dependencyMap;
 export function isSignalType(obj) {
     return Object.prototype.isPrototypeOf.call(proto, obj);
 }
@@ -24,13 +36,19 @@ export function signal(value, equality) {
             if ((equality === undefined && ref.value !== value) ||
                 (equality !== undefined && !equality(ref.value, value))) {
                 ref.value = value;
+                for (const callback of callbacks) {
+                    callback(ref.value);
+                }
                 markDirty(signal);
             }
         }
         return ref.value;
     };
     signal.on = function (callback) {
-        callbacks.add(callback);
+        if (!callbacks.has(callback)) {
+            callback(ref.value);
+            callbacks.add(callback);
+        }
         return callback;
     };
     signal.off = function (callback) {
@@ -49,13 +67,17 @@ export function computed(expression, dependencies, equality) {
     const ref = { value: undefined };
     const callbacks = new Set();
     const computed = function () {
-        if (computed[isDirty]) {
+        if (computed[_isDirty]) {
             ref.value = expression();
+            computed[_isDirty] = false;
         }
         return ref.value;
     };
     computed.on = function (callback) {
-        callbacks.add(callback);
+        if (!callbacks.has(callback)) {
+            callback(computed());
+            callbacks.add(callback);
+        }
         return callback;
     };
     computed.off = function (callback) {
@@ -67,7 +89,8 @@ export function computed(expression, dependencies, equality) {
         }
         return equality(ref.value, other);
     };
-    computed[isDirty] = false;
+    computed[_isDirty] = true;
+    computed[_callbacks] = callbacks;
     Object.setPrototypeOf(computed, proto);
     for (const signal of dependencies) {
         if (!dependencyMap.has(signal)) {

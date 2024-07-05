@@ -4,7 +4,7 @@ interface SignalEvent<T = any> {
     on(callback: Callback<T>): Callback<T>;
     off(handle: Callback<T>): boolean;
 }
-interface Signal<T = any> extends SignalEvent<T> {
+export interface Signal<T = any> extends SignalEvent<T> {
     (): T;
     (value: T): T;
 }
@@ -13,7 +13,7 @@ type Equality<T = any> = (a: T, b: T) => boolean;
 export declare function isSignalType<T = any>(obj: any): obj is SignalEvent<T>;
 export declare const always: Equality;
 export declare function signal<T = any>(value: T, equality?: Equality<T>): Signal<T>;
-interface Computed<T = any> extends SignalEvent<T> {
+export interface Computed<T = any> extends SignalEvent<T> {
     (): T;
     [isDirty]: boolean;
 }
