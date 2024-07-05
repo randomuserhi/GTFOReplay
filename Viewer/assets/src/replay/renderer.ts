@@ -1,5 +1,5 @@
 import { CreateEvent } from "@/rhu";
-import { Scene, Vector3, WebGLRenderer } from "three";
+import { Quaternion, Scene, Vector3, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { _instances } from "./instancing.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
@@ -77,8 +77,11 @@ export class Renderer {
         }
 
         const lastCameraPos = new Vector3();
+        const lastCameraRot = new Quaternion();
         if (this.has("Camera")) {
-            this.get("Camera")!.getWorldPosition(lastCameraPos);
+            const camera = this.get("Camera")!;
+            camera.getWorldPosition(lastCameraPos);
+            camera.getWorldQuaternion(lastCameraRot);
         }
 
         this.scene = new Scene();
@@ -90,7 +93,9 @@ export class Renderer {
         }
 
         if (this.has("Camera")) {
-            this.get("Camera")!.position.copy(lastCameraPos);
+            const camera = this.get("Camera")!;
+            camera.position.copy(lastCameraPos);
+            camera.quaternion.copy(lastCameraRot);
         }
     }
 

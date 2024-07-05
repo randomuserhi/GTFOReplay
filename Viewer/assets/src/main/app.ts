@@ -15,22 +15,22 @@ async function __main__() {
 
         // TODO(randomuserhi): Trigger re-parse of current file
     }));
-    window.api.on("loadRendererModules", (paths: string[]) => paths.forEach(p => {
-        AsyncScriptLoader.load(p);
+    window.api.on("loadRendererModules", async (paths: string[]) => {
+        const promises: Promise<void>[] = [];
+        for (const p of paths) {
+            promises.push(AsyncScriptLoader.load(p));
+        }
+        await Promise.all(promises);
         const player: player = (window as any).player;
         player.refresh();
-    }));
+    });
     
     (await window.api.invoke("loadParserModules")).forEach((p: string) => {
         AsyncScriptLoader.load(p);
         ModuleLoader.registerASLModule(p);
-
-        // TODO(randomuserhi): Trigger re-parse of current file
     });
     (await window.api.invoke("loadRendererModules")).forEach((p: string) => {
-        AsyncScriptLoader.load(p); 
-        const player: player = (window as any).player;
-        player.refresh();
+        AsyncScriptLoader.load(p);
     });
 }
 
