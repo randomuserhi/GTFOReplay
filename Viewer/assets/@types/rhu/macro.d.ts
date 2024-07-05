@@ -26,6 +26,7 @@ interface MacroObject {
     anon<T extends {} = {}>(source: string): [T, DocumentFragment];
     parse(element: Element, type?: string & {} | Templates | undefined | null, force?: boolean): void;
     observe(target: Node): void;
+    signal(name: string, initial?: string): string;
 }
 type Macro = HTMLElement | {};
 declare global {

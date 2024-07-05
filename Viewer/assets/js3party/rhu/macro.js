@@ -1,5 +1,6 @@
-import { WeakCollection, WeakRefMap } from "./weak.js";
 import * as RHU from "./rhu.js";
+import { signal } from "./signal.js";
+import { WeakCollection, WeakRefMap } from "./weak.js";
 const symbols = {
     macro: Symbol("macro"),
     constructed: Symbol("macro constructed"),
@@ -179,9 +180,20 @@ const _anon = function (source, parseStack, donor, root = false) {
                 const identifier = Element_getAttribute(el, "rhu-id");
                 Element.prototype.removeAttribute.call(el, "rhu-id");
                 checkProperty(identifier);
-                RHU.definePublicAccessor(properties, identifier, {
-                    get: function () { return el[symbols.macro]; }
-                });
+                if (el.tagName === "RHU-SIGNAL") {
+                    const textNode = document.createTextNode(RHU.exists(el.textContent) ? el.textContent : "");
+                    el.replaceWith(textNode);
+                    const prop = signal(textNode.nodeValue);
+                    prop.on((value) => textNode.nodeValue = value);
+                    RHU.definePublicAccessor(properties, identifier, {
+                        get: function () { return prop; }
+                    });
+                }
+                else {
+                    RHU.definePublicAccessor(properties, identifier, {
+                        get: function () { return el[symbols.macro]; }
+                    });
+                }
             }
             try {
                 _parse(el, type, parseStack);
@@ -210,9 +222,20 @@ const _anon = function (source, parseStack, donor, root = false) {
         const identifier = Element_getAttribute(el, "rhu-id");
         Element.prototype.removeAttribute.call(el, "rhu-id");
         checkProperty(identifier);
-        RHU.definePublicAccessor(properties, identifier, {
-            get: function () { return el[symbols.macro]; }
-        });
+        if (el.tagName === "RHU-SIGNAL") {
+            const textNode = document.createTextNode(RHU.exists(el.textContent) ? el.textContent : "");
+            el.replaceWith(textNode);
+            const prop = signal(textNode.nodeValue);
+            prop.on((value) => textNode.nodeValue = value);
+            RHU.definePublicAccessor(properties, identifier, {
+                get: function () { return prop; }
+            });
+        }
+        else {
+            RHU.definePublicAccessor(properties, identifier, {
+                get: function () { return el[symbols.macro]; }
+            });
+        }
     }
     for (const el of doc.querySelectorAll("*[rhu-macro]")) {
         if (el === donor)
@@ -239,6 +262,9 @@ const _anon = function (source, parseStack, donor, root = false) {
 };
 Macro.anon = function (source) {
     return _anon(source, [], undefined, true);
+};
+Macro.signal = function (name, initial = "") {
+    return `<rhu-signal rhu-id="${name}">${initial}</rhu-signal>`;
 };
 const clonePrototypeChain = function (prototype, last) {
     const next = Object.getPrototypeOf(prototype);

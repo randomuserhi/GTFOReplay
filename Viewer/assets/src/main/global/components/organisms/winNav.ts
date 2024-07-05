@@ -1,5 +1,5 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
-import { Signal, signal } from "@/rhu/signal.js";
+import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
@@ -125,10 +125,6 @@ export const winNav = Macro((() => {
         });
         (window as any)._file = this._file;
 
-        const text = document.createTextNode("");
-        this.winTitleDiv.replaceChildren(text);
-        this.winTitle = signal("GTFO Replay Viewer");
-        this.winTitle.on((value) => text.nodeValue = value);
         (window as any).winTitle = this.winTitle;
     } as Constructor<winNav>;
 
@@ -144,8 +140,8 @@ export const winNav = Macro((() => {
     <div rhu-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
         ${icons.line}
     </div>
-    <div rhu-id="winTitleDiv" class="${style.text}">
-        GTFO Replay Viewer
+    <div class="${style.text}">
+        ${Macro.signal("winTitle", "GTFO Replay Viewer")}
     </div>
     <div rhu-id="file" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
         ${icons.rug}
