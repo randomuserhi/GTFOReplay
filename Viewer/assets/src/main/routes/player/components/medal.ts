@@ -1,4 +1,5 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
+import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import type { Specification } from "../../../../modules/renderer/specification.js";
 import { ReplayApi } from "../../../../replay/moduleloader.js";
@@ -609,7 +610,7 @@ export interface medal extends HTMLDivElement {
 
     medalId: number;
     icon: HTMLImageElement;
-    name: HTMLSpanElement;
+    name: Signal<string>;
     desc: HTMLSpanElement;
 }
 
@@ -620,7 +621,7 @@ export const medal = Macro((() => {
     medal.prototype.update = function(descriptor: MedalDescriptor) {
         this.medalId = descriptor.id;
         this.icon.src = descriptor.icon;
-        this.name.childNodes.item(0).textContent = descriptor.title;
+        this.name(descriptor.title);
         this.desc.innerHTML = descriptor.text;
     };
 
@@ -629,10 +630,10 @@ export const medal = Macro((() => {
 `
     <img rhu-id="icon"/>
     <div class="${style.mount}">
-        <span rhu-id="name" style="
+        <span style="
             font-size: 20px;
             margin-bottom: 0.4rem;
-        ">Surprise!</span>
+        ">${Macro.signal("name", "Surprise!")}</span>
         <span rhu-id="desc" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;"></span>
     </div>
     `, {
