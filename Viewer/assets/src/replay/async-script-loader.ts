@@ -302,7 +302,7 @@ const fetchScript = Rest.fetch<_ASLModule["exec"], [url: URL]>({
         method: "GET"
     }),
     callback: async (resp) => {
-        return (new Function(`const __code__ = async function(require, module) { ${typescriptModuleSupport(await resp.text())} }; return __code__.bind(undefined);`))();
+        return (new Function(`const __code__ = async function(require, module, exports) { ${typescriptModuleSupport(await resp.text())} }; return __code__.bind(undefined);`))();
     }
 });
 
