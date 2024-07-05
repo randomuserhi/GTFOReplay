@@ -80,6 +80,7 @@ class _ASLModule implements ASLModule, Exports {
 class Archetype {
     static all: Archetype[] = [];
     static allMap = new Map<string, Archetype>();
+    static typemap: Archetype[][] = []; // Maps a type to all archetypes that contain said type
 
     type: number[]; // The dependencies for the given modules in this archetype
     modules: Map<string, _ASLModule> = new Map();
@@ -90,6 +91,12 @@ class Archetype {
 
         Archetype.all.push(this);
         Archetype.allMap.set(this.type.join(","), this);
+        for (const t of type) {
+            if (Archetype.typemap[t] === undefined) {
+                Archetype.typemap[t] = [];
+            }
+            Archetype.typemap[t].push(this);
+        }
     }
 
     public add(module: _ASLModule) {
@@ -220,8 +227,9 @@ export namespace AsyncScriptCache {
 
         _getList = _getList.filter((i) => i.root.src !== module.src);
 
-        for (const archetype of Archetype.all) {
-            if (archetype.type.indexOf(type) !== -1) {
+        const archetypesContainingModule = Archetype.typemap[type];
+        if (archetypesContainingModule !== undefined) {
+            for (const archetype of archetypesContainingModule) {
                 for (const module of archetype.modules.values()) {
                     if (invalidate(module.src)) {
                         const m = new _ASLModule(module.src, module.exec);
