@@ -25,7 +25,7 @@ let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
 });
 metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
     parse: async (data, header) => {
-        ModuleLoader.getHeader({ typename: "Vanilla.Metadata", version: "0.0.1" }).parse(data, header);
+        ModuleLoader.getHeader(["Vanilla.Metadata", "0.0.1"]).parse(data, header);
         header.set("Vanilla.Metadata", {
             ...header.get("Vanilla.Metadata")!,
             compatibility_OldBulkheadSound: await BitHelper.readBool(data)

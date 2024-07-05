@@ -1,5 +1,5 @@
 import * as BitHelper from "./bithelper.js";
-import { ModuleLoader, ModuleNotFound, NoExecFunc, ReplayApi } from "./moduleloader.js";
+import { ModuleDesc, ModuleLoader, ModuleNotFound, NoExecFunc, ReplayApi } from "./moduleloader.js";
 import { Replay } from "./replay.js";
 import { ByteStream } from "./stream.js";
 
@@ -11,10 +11,12 @@ export namespace Internal {
                 const type = await BitHelper.readUShort(data);
                 const typename = await BitHelper.readString(data);
                 const version = await BitHelper.readString(data);
-                replay.typemap.set(type, {
-                    typename,
-                    version
-                });
+                
+                const moduleDesc: ModuleDesc<string> = [typename, version] as ModuleDesc<string>;
+                moduleDesc.typename = typename;
+                moduleDesc.version = version;
+                
+                replay.typemap.set(type, moduleDesc);
                 replay.types.set(`${typename}(${version})`, type);
             }
         }

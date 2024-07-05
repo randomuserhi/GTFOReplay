@@ -29,10 +29,7 @@ export declare namespace Typemap {
     type RenderPassNames = keyof RenderPasses;
 }
 
-export interface ModuleDesc<T extends Typemap.AllNames | string & {} = string> {
-    typename: T;
-    version: string;
-}
+export type ModuleDesc<T extends Typemap.AllNames | string & {} = string> = [typename: T, version: string] & { typename: T, version: string };
 
 export interface ReplayApi {
     time(): number;
@@ -115,17 +112,44 @@ export namespace ModuleLoader {
         library.dispose.clear();
     }
 
-    export function getHeader<T extends Typemap.HeaderNames>({ typename, version }: ModuleDesc<T>): HeaderModule {
+    export function getHeader<T extends Typemap.HeaderNames>(module: [typename: T, version: string] | { typename: T, version: string }): HeaderModule {
+        let typename: T;
+        let version: string;
+        if (Array.isArray(module)) {
+            [typename, version] = module;
+        } else {
+            typename = module.typename;
+            version = module.version;
+        }
+        
         const result = library.header.get(typename as string)?.get(version);
         if (result === undefined) throw new ModuleNotFound(`No module of type '${typename}(${version})' was found.`);
         return result;
     }
-    export function getEvent<T extends Typemap.EventNames>({ typename, version }: ModuleDesc<T>): EventModule {
+    export function getEvent<T extends Typemap.EventNames>(module: [typename: T, version: string] | { typename: T, version: string }): EventModule {
+        let typename: T;
+        let version: string;
+        if (Array.isArray(module)) {
+            [typename, version] = module;
+        } else {
+            typename = module.typename;
+            version = module.version;
+        }
+
         const result = library.event.get(typename as string)?.get(version);
         if (result === undefined) throw new ModuleNotFound(`No module of type '${typename}(${version})' was found.`);
         return result;
     }
-    export function getDynamic<T extends Typemap.DynamicNames>({ typename, version }: ModuleDesc<T>): DynamicModule {
+    export function getDynamic<T extends Typemap.DynamicNames>(module: [typename: T, version: string] | { typename: T, version: string }): DynamicModule {
+        let typename: T;
+        let version: string;
+        if (Array.isArray(module)) {
+            [typename, version] = module;
+        } else {
+            typename = module.typename;
+            version = module.version;
+        }
+
         const result = library.dynamic.get(typename as string)?.get(version);
         if (result === undefined) throw new ModuleNotFound(`No module of type '${typename}(${version})' was found.`);
         return result;
