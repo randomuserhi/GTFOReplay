@@ -29,13 +29,13 @@ module.exports = function ( { types: t } ) {
                             const localName = specifier.local.name;
                             switch(specifier.type) {
                             case "ImportDefaultSpecifier": {
-                                defaultSpecifiers.push(`const ${localName} = (await require("${source}", "${type}")).default`);
+                                defaultSpecifiers.push(`let ${localName} = (await require("${source}", "${type}")).default`);
                             } break;
                             case "ImportSpecifier": {
                                 importSpecifiers.push(localName);
                             } break;
                             case "ImportNamespaceSpecifier": {
-                                namespaceSpecifiers.push(`const ${localName} = await require("${source}", "${type}")`);
+                                namespaceSpecifiers.push(`let ${localName} = await require("${source}", "${type}")`);
                             } break;
                             default: throw new Error(`Unknown specifier '${specifier.type}'`);
                             }
@@ -43,7 +43,7 @@ module.exports = function ( { types: t } ) {
           
                         const statements = [];
                         if (defaultSpecifiers.length > 0) statements.push(defaultSpecifiers.join(";\n"));
-                        if (importSpecifiers.length > 0) statements.push(`const { ${importSpecifiers.join(",")} } = await require("${source}", "${type}")`);
+                        if (importSpecifiers.length > 0) statements.push(`let { ${importSpecifiers.join(",")} } = await require("${source}", "${type}")`);
                         if (namespaceSpecifiers.length > 0) statements.push(namespaceSpecifiers.join(";\n"));
                         path.replaceWith(template.statement.ast`${statements.join(";\n")}`);
                     },
