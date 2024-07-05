@@ -769,16 +769,16 @@ ${(tool !== undefined && tool.name !== undefined ? tool.name : "Tool")}: ${Math.
     }
 }
 
-module.ready();
-// eslint-disable-next-line sort-imports
-import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
-
 export const playerColors: ColorRepresentation[] = [
     0xc21f4e,
     0x18935e,
     0x20558c,
     0x7a1a8e
 ];
+
+module.ready();
+// eslint-disable-next-line sort-imports
+import { Archetype, ConsumableArchetype, Equippable, GearArchetype, MeleeArchetype, hammerArchetype, specification } from "../specification.js";
 
 ModuleLoader.registerRender("Players", (name, api) => {
     const renderLoop = api.getRenderLoop();
