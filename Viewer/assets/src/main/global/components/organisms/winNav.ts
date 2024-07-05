@@ -133,6 +133,7 @@ export const winNav = Macro((() => {
 
         const counter = signal(0);
         const counter2 = computed(() => counter() * 2, [counter]);
+        // Should be garbage collected (when viewing debug weakref `window.signals`) should be blank after some while
     } as Constructor<winNav>;
 
     return winNav;
