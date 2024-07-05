@@ -13,7 +13,7 @@ namespace Vanilla.StaticItems {
         private LG_ComputerTerminal terminal;
 
         public Vector3 position {
-            get => terminal.m_position;
+            get => terminal.transform.position;
         }
         public Quaternion rotation {
             get => terminal.transform.rotation;

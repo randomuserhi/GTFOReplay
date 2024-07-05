@@ -1,14 +1,16 @@
-import { WeakCollection } from "./weak.js";
+import { WeakCollectionMap } from "./weak.js";
 const _isDirty = Symbol("isDirty");
 const _callbacks = Symbol("callbacks");
 const proto = {};
-const dependencyMap = new WeakMap();
+const dependencyMap = new WeakCollectionMap();
 const dirtySet = new Set();
 function markDirty(signal, root = true) {
     const dependencies = dependencyMap.get(signal);
     if (dependencies === undefined)
         return;
     for (const computed of dependencies) {
+        if (computed[_isDirty])
+            continue;
         computed[_isDirty] = true;
         dirtySet.add(computed);
         markDirty(computed, false);
@@ -93,11 +95,7 @@ export function computed(expression, dependencies, equality) {
     computed[_callbacks] = callbacks;
     Object.setPrototypeOf(computed, proto);
     for (const signal of dependencies) {
-        if (!dependencyMap.has(signal)) {
-            dependencyMap.set(signal, new WeakCollection());
-        }
-        const dependencies = dependencyMap.get(signal);
-        dependencies.add(computed);
+        dependencyMap.set(signal, computed);
     }
     return computed;
 }

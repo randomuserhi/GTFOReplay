@@ -1,5 +1,5 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
-import { computed, signal, Signal } from "@/rhu/signal.js";
+import { Signal, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
@@ -130,10 +130,6 @@ export const winNav = Macro((() => {
         this.winTitle = signal("GTFO Replay Viewer");
         this.winTitle.on((value) => text.nodeValue = value);
         (window as any).winTitle = this.winTitle;
-
-        const counter = signal(0);
-        const counter2 = computed(() => counter() * 2, [counter]);
-        // Should be garbage collected (when viewing debug weakref `window.signals`) should be blank after some while
     } as Constructor<winNav>;
 
     return winNav;
