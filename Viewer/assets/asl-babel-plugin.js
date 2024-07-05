@@ -63,7 +63,7 @@ module.exports = function ( { types: t } ) {
                 const identifiersToRename = [];
                 path.traverse({
                     Identifier(path) {
-                        if (path.node.name === "module") {
+                        if (path.node.name === "module" || path.node.name === "exports") {
                             identifiersToRename.push(path);
                         }
                     },
@@ -76,7 +76,7 @@ module.exports = function ( { types: t } ) {
                             path.scope.bindings[name].referencePaths.forEach((refPath) => {
                                 if (refPath === path) return;
                                 refPath.replaceWith(t.memberExpression(
-                                    t.identifier('module.exports'),
+                                    t.identifier('exports'),
                                     t.identifier(name)
                                 ));
                             });
@@ -84,7 +84,7 @@ module.exports = function ( { types: t } ) {
                                 if (refPath === path) return;
                                 if (t.isAssignmentExpression(refPath)) {
                                     refPath.get("left").replaceWith(t.memberExpression(
-                                        t.identifier('module.exports'),
+                                        t.identifier('exports'),
                                         t.identifier(name)
                                     ));
                                 }
@@ -98,7 +98,7 @@ module.exports = function ( { types: t } ) {
                                 const { id, params, body, generator, async } = declaration;
                                 path.replaceWith(t.expressionStatement(t.assignmentExpression(
                                     '=',
-                                    t.memberExpression(t.identifier('module.exports'), t.identifier(id.name)),
+                                    t.memberExpression(t.identifier('exports'), t.identifier(id.name)),
                                     t.functionExpression(undefined, params, body, generator, async)
                                 )));
 
@@ -108,13 +108,13 @@ module.exports = function ( { types: t } ) {
                                     if (declarator.init) {
                                         return t.expressionStatement(t.assignmentExpression(
                                             '=',
-                                            t.memberExpression(t.identifier('module.exports'), t.identifier(declarator.id.name)),
+                                            t.memberExpression(t.identifier('exports'), t.identifier(declarator.id.name)),
                                             declarator.init
                                         ));
                                     }
                                     return t.expressionStatement(t.assignmentExpression(
                                         '=',
-                                        t.memberExpression(t.identifier('module.exports'), t.identifier(declarator.id.name)),
+                                        t.memberExpression(t.identifier('exports'), t.identifier(declarator.id.name)),
                                         t.identifier('undefined')
                                     ));
                                 }));
@@ -127,7 +127,7 @@ module.exports = function ( { types: t } ) {
 
                                 path.replaceWith(t.expressionStatement(t.assignmentExpression(
                                     '=',
-                                    t.memberExpression(t.identifier('module.exports'), t.identifier(id.name)),
+                                    t.memberExpression(t.identifier('exports'), t.identifier(id.name)),
                                     t.classExpression(undefined, superClass, body, decorators)
                                 )));
 
@@ -140,7 +140,7 @@ module.exports = function ( { types: t } ) {
                                     case "ExportSpecifier": {
                                         return t.expressionStatement(t.assignmentExpression(
                                             '=',
-                                            t.memberExpression(t.identifier('module.exports'), specifier.exported),
+                                            t.memberExpression(t.identifier('exports'), specifier.exported),
                                             specifier.local
                                         ));
                                     }
@@ -149,13 +149,16 @@ module.exports = function ( { types: t } ) {
                                 }));
                             }
                         } break;
-                        default: throw new Error(`Unknown specifier '${path.node.type}'`);
+                        default: throw new Error(`Unsupported export type '${path.node.type}'`);
                         }
                     }
                 });
 
                 // Perform rename => done after handling exports to prevent renaming `module.exports.module` from `export const module = ...;` since this is fine
-                identifiersToRename.forEach((path) => path.scope.rename("module"));
+                identifiersToRename.forEach((path) => {
+                    path.scope.rename("module");
+                    path.scope.rename("exports");
+                });
             }
         },
     };

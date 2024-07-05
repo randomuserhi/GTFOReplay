@@ -16,11 +16,11 @@ export interface ASLModule {
     readonly isReady: boolean;
     destructor?: () => void;
     ready(): void;
-    exports?: any;
+    exports: Record<PropertyKey, any>;
     readonly baseURI: string | undefined;
 }
 
-type ASLExec = (require: Require, module: Exports) => Promise<void>;
+type ASLExec = (require: Require, module: ASLModule, exports: Record<PropertyKey, any>) => Promise<void>;
 class _ASLModule implements ASLModule, Exports {
     readonly src: string;
     exec?: ASLExec;
@@ -28,7 +28,7 @@ class _ASLModule implements ASLModule, Exports {
     isReady: boolean = false;
     destructed: boolean = false;
 
-    exports?: any;
+    exports: Record<PropertyKey, any> = {};
     destructor?: () => void;
 
     public destruct() {
@@ -126,18 +126,25 @@ export namespace AsyncScriptCache {
         _cache.set(url, module);
     }
 
-    const setProps: (string | symbol)[] = ["exports", "destructor"];
-    const getProps: (string | symbol)[] = [...setProps, "ready", "src", "isReady", "baseURI"];
+    const setProps: (string | symbol)[] = ["destructor"];
+    const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI"];
     export async function exec(module: _ASLModule) {
         module.exports = {};
+        const exports = new Proxy(module, {
+            set(module, prop, newValue, receiver) {
+                if (module.isReady) module.raise(new Error(`You cannot add exports once a module has loaded.`));
+                return Reflect.set(module.exports, prop, newValue, receiver);
+            }
+        });
         const __module__ = new Proxy(module, {
             set: (module, prop, newValue, receiver) => {
                 if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
-                if (module.isReady) module.raise(new Error("You cannot create exports once a module has loaded."));
+                if (module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
                 return Reflect.set(module, prop, newValue, receiver);
             },
             get: (module, prop, receiver) => {
                 if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
+                if (prop === "exports") return exports;
                 const value = Reflect.get(module, prop, receiver);
                 if (typeof value === "function") {
                     return value.bind(module);
@@ -167,7 +174,7 @@ export namespace AsyncScriptCache {
         if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
         
         try {
-            await module.exec(_require, __module__);
+            await module.exec(_require, __module__, exports);
         } catch(e) {
             throw new _ASLModuleError(`Failed to execute module [${module.src}]:`, e);    
         }
