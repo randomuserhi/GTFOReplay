@@ -143,6 +143,7 @@ export const info = Macro((() => {
         }
 
         const metadata = replay.get("Vanilla.Metadata");
+        console.log(metadata);
         let version = "0.0.1";
         if (metadata !== undefined) version = metadata.version;
         this.version.innerText = `${version}`;
