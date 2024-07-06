@@ -1,4 +1,5 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
+import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../../../global/components/atoms/icons/index.js";
 
@@ -89,7 +90,7 @@ export interface seeker extends HTMLDivElement {
     pause: HTMLButtonElement;
     live: HTMLButtonElement;
     dot: HTMLSpanElement;
-    time: HTMLDivElement;
+    time: Signal<string>;
     interact: HTMLDivElement;
     bar: HTMLDivElement;
     progress: HTMLDivElement;
@@ -168,7 +169,7 @@ export const seeker = Macro((() => {
         <button rhu-id="pause" class="${style.button}" style="padding: 0 5px;">
             ${icons.pause}
         </button>
-        <div rhu-id="time" class="${style.time}">1:00 / 2:00</div>
+        <div class="${style.time}">${Macro.signal("time", "00:00 / 00:00")}</div>
         <div style="flex: 1; user-drag: none; user-select: none;"></div>
         <button rhu-id="live" class="${style.button}">
             <span rhu-id="dot" style="

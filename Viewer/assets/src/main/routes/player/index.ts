@@ -367,7 +367,7 @@ export const player = Macro((() => {
             }
 
             this.seeker.setValue(this.time / this.seekLength);
-            this.seeker.time.childNodes.item(0).textContent = `${msToTime(this.time)} / ${msToTime(this.seekLength)}`; //${(this.seeker.seeking ? `(${msToTime(this.replay.length())})` : "")}
+            this.seeker.time(`${msToTime(this.time)} / ${msToTime(this.seekLength)}`); //${(this.seeker.seeking ? `(${msToTime(this.replay.length())})` : "")}
 
             this.seeker.dot.style.backgroundColor = this.live ? "red" : "#eee";
         

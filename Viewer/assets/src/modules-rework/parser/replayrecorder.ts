@@ -10,20 +10,6 @@ declare module "@esm/three" {
     }
 }
 
-export class DynamicNotFound extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}
-
-export class DuplicateDynamic extends Error {
-    constructor(message?: string) {
-        super(message);
-    }
-}
-
-export type Id<T, V = number> = T & { id: V }; 
-
 export interface DynamicParse {
     dimension: number;
     absolute: boolean;

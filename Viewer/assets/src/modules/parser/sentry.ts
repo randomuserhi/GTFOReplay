@@ -61,7 +61,7 @@ ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
             const sentries = snapshot.getOrDefault("Vanilla.Sentry", () => new Map());
         
             if (sentries.has(id)) throw new DuplicateSentry(`Sentry of id '${id}' already exists.`);
-            sentries.set(id, { id, ...data, baseRot: data.rotation });
+            sentries.set(id, { id, ...data, baseRot: { ...data.rotation } });
         }
     },
     despawn: {
