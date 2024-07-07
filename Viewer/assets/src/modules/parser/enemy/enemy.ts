@@ -4,7 +4,7 @@ import * as Pod from "@esm/@root/replay/pod.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
-import { DeathCross } from "../../renderer/deathcross.js";
+import { DeathCross } from "../deathcross.js";
 import { Damage } from "../events/damage.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 import { StatTracker } from "../stattracker/stattracker.js";
