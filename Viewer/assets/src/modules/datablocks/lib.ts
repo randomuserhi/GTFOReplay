@@ -6,6 +6,11 @@ export class Datablock<K, V> {
         this.hash = hash;
     }
 
+    public delete(key: K) {
+        if (this.hash !== undefined) key = this.hash(key);
+        return this.map.delete(key);
+    }
+
     public set(key: K, value: V) {
         if (this.hash !== undefined) key = this.hash(key);
         return this.map.set(key, value);
