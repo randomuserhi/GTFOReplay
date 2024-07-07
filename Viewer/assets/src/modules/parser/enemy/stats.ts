@@ -1,7 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { ByteStream } from "@esm/@root/replay/stream.js";
-import { Factory } from "../../library/factory";
+import { Factory } from "../../library/factory.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

@@ -1,7 +1,7 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Factory } from "../../library/factory";
-import { DynamicTransform } from "../../library/helpers";
+import { Factory } from "../../library/factory.js";
+import { DynamicTransform } from "../../library/helpers.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

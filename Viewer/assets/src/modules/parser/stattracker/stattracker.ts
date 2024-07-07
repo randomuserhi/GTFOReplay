@@ -1,7 +1,7 @@
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
-import { Factory } from "../../library/factory";
-import { PackType } from "../events/packuse";
-import { Identifier, IdentifierHash } from "../identifier";
+import { Factory } from "../../library/factory.js";
+import { PackType } from "../events/packuse.js";
+import { Identifier, IdentifierHash } from "../identifier.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

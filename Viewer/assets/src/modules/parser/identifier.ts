@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
-import { ByteStream } from "@esm/@root/replay/stream";
+import { ByteStream } from "@esm/@root/replay/stream.js";
+import { Factory } from "../library/factory.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -26,11 +27,17 @@ export interface IdentifierData {
     gearTable: Map<number, string>;
 }
 
-const _IdentifierData = () => ({
+declare module "../library/factory.js" {
+    interface Typemap {
+        "IdentifierDatabase": IdentifierData;
+    }
+}
+
+Factory.register("IdentifierDatabase", () => ({
     gearTable: new Map()
-});
+}));
 export function IdentifierData(api: ReplayApi): IdentifierData {
-    return api.getOrDefault("IdentifierData", _IdentifierData);
+    return api.getOrDefault("IdentifierData", Factory("IdentifierDatabase"));
 }
 
 export interface Identifier {

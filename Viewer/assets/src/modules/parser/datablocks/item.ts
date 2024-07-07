@@ -1,5 +1,5 @@
-import { ItemDatablock } from "../../datablocks/equippable/item";
-import { Identifier } from "../identifier";
+import { ItemDatablock } from "../../datablocks/equippable/item.js";
+import { Identifier } from "../identifier.js";
 
 ItemDatablock.set(Identifier.create("Item", 102), {
     type: "consumable",

@@ -1,8 +1,8 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Factory } from "../../library/factory";
-import { ScreamType } from "./scream";
+import { Factory } from "../../library/factory.js";
+import { ScreamType } from "./scream.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

@@ -1,5 +1,5 @@
-import { Identifier } from "../../parser/identifier";
-import { Datablock } from "../lib";
+import { Identifier } from "../../parser/identifier.js";
+import { Datablock } from "../lib.js";
 
 export type Archetype = 
     "melee" |

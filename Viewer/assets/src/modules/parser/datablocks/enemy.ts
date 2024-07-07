@@ -1,5 +1,5 @@
-import { EnemyDatablock } from "../../datablocks/enemy/enemy";
-import { Identifier } from "../identifier";
+import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
+import { Identifier } from "../identifier.js";
 
 EnemyDatablock.set(Identifier.create("Enemy", 0), {
     name: "Unknown",
