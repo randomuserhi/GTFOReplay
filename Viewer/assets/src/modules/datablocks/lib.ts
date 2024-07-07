@@ -21,6 +21,11 @@ export class Datablock<K, V> {
         return this.map.get(key);
     }
 
+    public has(key: K): boolean {
+        if (this.hash !== undefined) key = this.hash(key); 
+        return this.map.has(key);
+    }
+
     public entries() {
         return this.map.entries();
     }
