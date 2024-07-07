@@ -1,17 +1,24 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Factory } from "../../library/factory.js";
-import { DynamicTransform } from "../../library/helpers.js";
+import * as Pod from "@esm/@root/replay/pod.js";
 import { Identifier, IdentifierData } from "../identifier.js";
+import { DynamicTransform } from "../replayrecorder.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Player": {
-                parse: DynamicTransform.Parse & {
+                parse: {
+                    dimension: number;
+                    absolute: boolean;
+                    position: Pod.Vector;
+                    rotation: Pod.Quaternion;
                     equippedId: Identifier;
                 };
-                spawn: DynamicTransform.Spawn & {
+                spawn: {
+                    dimension: number;
+                    position: Pod.Vector;
+                    rotation: Pod.Quaternion;
                     snet: bigint;
                     slot: number;
                     nickname: string;
@@ -21,15 +28,19 @@ declare module "@esm/@root/replay/moduleloader.js" {
         }
 
         interface Data {
+            "Vanilla.Player.Snet": Map<bigint, PlayerInfo>;
             "Vanilla.Player": Map<number, Player>;
             "Vanilla.Player.Slots": (Player | undefined)[];
-            "Vanilla.Player.Snet": Map<bigint, Player>;
         }
     }
 }
 
-export interface Player extends DynamicTransform.Type {
-    id: number;
+export interface PlayerInfo {
+    snet: bigint;
+    nickname: string;
+}
+
+export interface Player extends DynamicTransform {
     snet: bigint;
     slot: number;
     nickname: string;
@@ -47,12 +58,12 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
     
-            if (!players.has(id)) throw new Error(`Player of id '${id}' was not found.`);
+            if (!players.has(id)) throw new PlayerNotFound(`Dynamic of id '${id}' was not found.`);
             const player = players.get(id)!;
             DynamicTransform.lerp(player, data, lerp);
-            if (!Identifier.equals(IdentifierData(snapshot), player.equippedId, data.equippedId)) {
+            if (!Identifier.equals(player.equippedId, IdentifierData(snapshot), data.equippedId)) {
                 Identifier.copy(player.equippedId, data.equippedId);
                 player.lastEquippedTime = snapshot.time();
             }
@@ -60,7 +71,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     },
     spawn: {
         parse: async (data) => {
-            const spawn = await DynamicTransform.spawn(data);
+            const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
                 snet: await BitHelper.readULong(data),
@@ -70,32 +81,49 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             return result;
         },
         exec: (id, data, snapshot) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-            const snet = snapshot.getOrDefault("Vanilla.Player.Snet", Factory("Map"));
-            const slots = snapshot.getOrDefault("Vanilla.Player.Slots", Factory("Array"));
+            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const all = snapshot.getOrDefault("Vanilla.Player.Snet", () => new Map());
+            const slots = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
         
-            if (players.has(id)) throw new Error(`Player of id '${id}(${data.snet})' already exists.`);
+            const { snet } = data;
+        
+            if (players.has(id)) throw new DuplicatePlayer(`Player of id '${id}(${snet})' already exists.`);
             const player = { 
                 id, ...data,
                 equippedId: Identifier.create(),
                 lastEquippedTime: 0
             };
-
             players.set(id, player);
             slots[data.slot] = player;
-            snet.set(data.snet, player);
+
+            all.set(snet, {
+                snet,
+                nickname: data.nickname
+            });
         }
     },
     despawn: {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-            const slots = snapshot.getOrDefault("Vanilla.Player.Slots", Factory("Array"));
+            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+            const slots = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
 
-            if (!players.has(id)) throw new Error(`Player of id '${id}' did not exist.`);
+            if (!players.has(id)) throw new PlayerNotFound(`Player of id '${id}' did not exist.`);
             slots[players.get(id)!.slot] = undefined;
             players.delete(id);
         }
     }
 });
+
+export class PlayerNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+export class DuplicatePlayer extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}

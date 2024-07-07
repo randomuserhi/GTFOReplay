@@ -14,7 +14,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
     }
 }
 
-let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
+ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
     parse: async (data, header) => {
         if (header.has("Vanilla.Metadata")) throw new Error("Metadata was already written.");
         header.set("Vanilla.Metadata", {
@@ -23,7 +23,7 @@ let metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
         });
     }
 });
-metadataParser = ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
+ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.2", {
     parse: async (data, header) => {
         await ModuleLoader.getHeader(["Vanilla.Metadata", "0.0.1"]).parse(data, header);
         header.set("Vanilla.Metadata", {

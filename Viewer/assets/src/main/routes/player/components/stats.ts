@@ -1,7 +1,7 @@
 import { Constructor, Macro } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
-import { PlayerStats } from "../../../../modules/parser/stattracker/stats.js";
+import { PlayerStats } from "../../../../modules/parser/stattracker/stattracker.js";
 import { player } from "../index.js";
 import { dropdown } from "./dropdown.js";
 

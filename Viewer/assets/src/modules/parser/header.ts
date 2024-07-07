@@ -12,7 +12,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
     }
 }
 
-const headerParser = ModuleLoader.registerHeader("ReplayRecorder.Header", "0.0.1", { 
+ModuleLoader.registerHeader("ReplayRecorder.Header", "0.0.1", { 
     parse: async (data, header) => {
         if (header.has("ReplayRecorder.Header")) throw new Error("Replay header was already written.");
         header.set("ReplayRecorder.Header", {

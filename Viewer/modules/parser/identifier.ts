@@ -69,25 +69,25 @@ export namespace Identifier {
         return self.type !== "Unknown";
     }
 
-    export function equals(database: IdentifierData, a?: Identifier, b?: Identifier) {
-        if (b === undefined || a === undefined) return false;
+    export function equals(self: Identifier, database: IdentifierData, other?: Identifier) {
+        if (other === undefined) return false;
         const gearTable = database.gearTable;
-        switch (a.type) {
-        case "Unknown": return b.type === "Unknown";
+        switch (self.type) {
+        case "Unknown": return other.type === "Unknown";
         case "Gear": {
-            if (b.type === "Gear") {
-                return a.stringKey === b.stringKey;
+            if (other.type === "Gear") {
+                return self.stringKey === other.stringKey;
             }
-            return gearTable.get(b.id) === a.stringKey;
+            return gearTable.get(other.id) === self.stringKey;
         }
         case "Alias_Gear": {
-            if (b.type === "Alias_Gear") {
-                return a.id === b.id;
+            if (other.type === "Alias_Gear") {
+                return self.id === other.id;
             }
-            return gearTable.get(a.id) === b.stringKey;
+            return gearTable.get(self.id) === other.stringKey;
         }
         case "Enemy":
-        case "Item": return a.type == b.type && a.id == b.id;
+        case "Item": return self.type == other.type && self.id == other.id;
         default: throw new Error("Not yet implemented.");
         }
     }

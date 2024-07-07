@@ -1,9 +1,8 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Factory } from "../library/factory.js";
-import { DynamicTransform } from "../library/helpers.js";
 import { Identifier, IdentifierData } from "./identifier.js";
+import { DynamicTransform } from "./replayrecorder.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -49,12 +48,18 @@ const mineTypemap: number[] = [
     139
 ];
 
-export interface Mine extends DynamicTransform.Type {
-    id: number;
+export interface Mine extends DynamicTransform {
     item: Identifier;
     owner: number;
     snet: bigint;
     length: number;
+}
+
+export interface MineDetonate {
+    id: number;
+    time: number;
+    trigger: number;
+    shot: boolean;
 }
 
 let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
@@ -67,9 +72,9 @@ let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
+            const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
     
-            if (!mines.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
+            if (!mines.has(id)) throw new MineNotFound(`Dynamic of id '${id}' was not found.`);
             const mine = mines.get(id)!;
             DynamicTransform.lerp(mine, data, lerp);
             mine.length = data.length;
@@ -77,7 +82,7 @@ let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
     },
     spawn: {
         parse: async (data) => {
-            const spawn = await DynamicTransform.spawn(data);
+            const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
                 item: Identifier.create("Item", mineTypemap[await BitHelper.readByte(data)]),
@@ -86,10 +91,10 @@ let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
             return result;
         },
         exec: (id, data, snapshot) => {
-            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
-            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
+            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
         
-            if (mines.has(id)) throw new Error(`Mine of id '${id}' already exists.`);
+            if (mines.has(id)) throw new DuplicateMine(`Mine of id '${id}' already exists.`);
             if (!players.has(data.owner)) throw new Error(`Mine owner, '${data.owner}', does not exist.`);
             const player = players.get(data.owner)!;
             mines.set(id, { id, ...data, snet: player.snet, length: 0 });
@@ -99,9 +104,9 @@ let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
+            const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
 
-            if (!mines.has(id)) throw new Error(`Mine of id '${id}' did not exist.`);
+            if (!mines.has(id)) throw new MineNotFound(`Mine of id '${id}' did not exist.`);
             mines.delete(id);
         }
     }
@@ -111,7 +116,7 @@ mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
     spawn: {
         ...mineDynamicParser.spawn,
         parse: async (data, snapshot) => {
-            const spawn = await DynamicTransform.spawn(data);
+            const spawn = await DynamicTransform.parseSpawn(data);
             const result = {
                 ...spawn,
                 item: await Identifier.parse(IdentifierData(snapshot), data),
@@ -123,13 +128,6 @@ mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
     }
 });
 
-export interface MineDetonate {
-    id: number;
-    time: number;
-    trigger: number;
-    shot: boolean;
-}
-
 ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
     parse: async (bytes) => {
         return {
@@ -139,10 +137,10 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+        const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
         
         const { id } = data;
-        if (detonations.has(id)) throw new Error(`Mine Detonation of id '${id}' already exist.`);
+        if (detonations.has(id)) throw new DuplicateMine(`Mine Detonation of id '${id}' already exist.`);
         detonations.set(id, { ...data, time: snapshot.time() });
     }
 });
@@ -150,10 +148,22 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
 // NOTE(randomuserhi): Keep detonation events around for 1 second to watch for explosion damage events that may reference it
 const detonateClearTime = 1000;
 ModuleLoader.registerTick((snapshot) => {
-    const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+    const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
     for (const [id, item] of [...detonations.entries()]) {
         if (snapshot.time() - item.time > detonateClearTime) {
             detonations.delete(id);
         }
     }
 });
+
+export class MineNotFound extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
+export class DuplicateMine extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
