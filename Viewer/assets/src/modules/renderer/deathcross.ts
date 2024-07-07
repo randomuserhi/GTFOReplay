@@ -2,6 +2,7 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { Bezier } from "../library/bezier.js";
+import { Factory } from "../library/factory.js";
 import { duration } from "../parser/deathcross.js";
 import { Box } from "./models/primitives.js";
 
@@ -67,8 +68,8 @@ ModuleLoader.registerRender("Vanilla.DeathCross", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const time = snapshot.time();
             const _models: Model[] = [];
-            const models = renderer.getOrDefault("Vanilla.DeathCross", () => []);
-            const deathCrosses = snapshot.getOrDefault("Vanilla.DeathCross", () => []);
+            const models = renderer.getOrDefault("Vanilla.DeathCross", Factory("Array"));
+            const deathCrosses = snapshot.getOrDefault("Vanilla.DeathCross", Factory("Array"));
             for (const cross of deathCrosses) {
                 const i = _models.length;
                 if (models[i] === undefined) {

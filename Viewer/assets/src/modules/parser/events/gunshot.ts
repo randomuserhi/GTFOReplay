@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../../library/factory";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -43,10 +44,10 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", () => []);
+        const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", Factory("Array"));
         gunshots.push({ time: snapshot.time(), ...data });
 
-        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         if (anims.has(data.owner)) { 
             anims.get(data.owner)!.lastShot = snapshot.time();
         }
@@ -56,6 +57,6 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
 const duration = 200;
 ModuleLoader.registerTick((snapshot) => {
     const t = snapshot.time();
-    const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", () => []);
+    const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", Factory("Array"));
     snapshot.set("Vanilla.Player.Gunshots", gunshots.filter((p) => (t - p.time) < duration));
 });

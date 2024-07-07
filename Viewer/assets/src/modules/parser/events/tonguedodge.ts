@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory";
 import { StatTracker } from "../stattracker/stattracker";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -23,8 +24,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.TongueDodge", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-        const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+        const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         const statTracker = StatTracker.from(snapshot);
 
         const { source, target } = data;

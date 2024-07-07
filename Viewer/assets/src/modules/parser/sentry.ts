@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../library/factory.js";
 import { DynamicRotation, DynamicTransform } from "../library/helpers.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -34,7 +35,7 @@ ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const sentries = snapshot.getOrDefault("Vanilla.Sentry", () => new Map());
+            const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
     
             if (!sentries.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
             const sentry = sentries.get(id)!;
@@ -51,7 +52,7 @@ ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
             return result;
         },
         exec: (id, data, snapshot) => {
-            const sentries = snapshot.getOrDefault("Vanilla.Sentry", () => new Map());
+            const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
         
             if (sentries.has(id)) throw new Error(`Sentry of id '${id}' already exists.`);
             sentries.set(id, { id, ...data, baseRot: { ...data.rotation } });
@@ -61,7 +62,7 @@ ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const sentries = snapshot.getOrDefault("Vanilla.Sentry", () => new Map());
+            const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
 
             if (!sentries.has(id)) throw new Error(`Sentry of id '${id}' did not exist.`);
             sentries.delete(id);

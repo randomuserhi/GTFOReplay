@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -34,7 +35,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Scream", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.enemy;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);

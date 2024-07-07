@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../library/factory";
 import { DynamicPosition } from "../library/helpers";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -37,7 +38,7 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const collection = snapshot.getOrDefault("Vanilla.Cfoam", () => new Map());
+            const collection = snapshot.getOrDefault("Vanilla.Cfoam", Factory("Map"));
     
             if (!collection.has(id)) throw new Error(`Cfoam of id '${id}' was not found.`);
             const cfoam = collection.get(id)!;
@@ -55,7 +56,7 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
             return result;
         },
         exec: (id, data, snapshot) => {
-            const collection = snapshot.getOrDefault("Vanilla.Cfoam", () => new Map());
+            const collection = snapshot.getOrDefault("Vanilla.Cfoam", Factory("Map"));
         
             if (collection.has(id)) throw new Error(`Cfoam of id '${id}' already exists.`);
             collection.set(id, { id, ...data });
@@ -65,7 +66,7 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const collection = snapshot.getOrDefault("Vanilla.Cfoam", () => new Map());
+            const collection = snapshot.getOrDefault("Vanilla.Cfoam", Factory("Map"));
 
             if (!collection.has(id)) throw new Error(`Cfoam of id '${id}' did not exist.`);
             collection.delete(id);

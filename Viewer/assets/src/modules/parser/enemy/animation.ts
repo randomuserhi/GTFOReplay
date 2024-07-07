@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../../library/factory";
 import { ScreamType } from "./scream";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -228,7 +229,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
 
             if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
             const anim = anims.get(id)!;
@@ -259,7 +260,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             };
         },
         exec: (id, data, snapshot) => {
-            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
 
             if (anims.has(id)) throw new Error(`EnemyAnim of id '${id}' already exists.`);
             anims.set(id, { 
@@ -299,7 +300,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
 
             if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' did not exist.`);
             anims.delete(id);
@@ -315,7 +316,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -338,7 +339,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         // NOTE(randomuserhi): for some reason backend reports hitreacts post-enemy death - skip error checking simply for backwards compatability
@@ -366,7 +367,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Melee", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -388,7 +389,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Jump", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -406,7 +407,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Heartbeat", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -425,7 +426,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Wakeup", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -443,7 +444,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerGrab", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -460,7 +461,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerSpit", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
@@ -478,7 +479,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.ScoutScream", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         // NOTE(randomuserhi): for some reason backend reports screams post-enemy death - skip error checking simply for backwards compatability
@@ -498,7 +499,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.BigFlyerCharge", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+        const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);

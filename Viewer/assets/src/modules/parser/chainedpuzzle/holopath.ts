@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../../library/factory";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -38,7 +39,7 @@ ModuleLoader.registerDynamic("Vanilla.Holopath", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const holpaths = snapshot.getOrDefault("Vanilla.Holopath", () => new Map());
+            const holpaths = snapshot.getOrDefault("Vanilla.Holopath", Factory("Map"));
     
             if (!holpaths.has(id)) throw new Error(`Holopath of id '${id}' was not found.`);
             
@@ -63,7 +64,7 @@ ModuleLoader.registerDynamic("Vanilla.Holopath", "0.0.1", {
             };
         },
         exec: (id, data, snapshot) => {
-            const holopaths = snapshot.getOrDefault("Vanilla.Holopath", () => new Map());
+            const holopaths = snapshot.getOrDefault("Vanilla.Holopath", Factory("Map"));
         
             if (holopaths.has(id)) throw new Error(`Holopath of id '${id}' already exists.`);
             holopaths.set(id, { id, ...data, progress: 0 });
@@ -73,7 +74,7 @@ ModuleLoader.registerDynamic("Vanilla.Holopath", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const holopaths = snapshot.getOrDefault("Vanilla.Holopath", () => new Map());
+            const holopaths = snapshot.getOrDefault("Vanilla.Holopath", Factory("Map"));
 
             if (!holopaths.has(id)) throw new Error(`Holopath of id '${id}' did not exist.`);
             holopaths.delete(id);

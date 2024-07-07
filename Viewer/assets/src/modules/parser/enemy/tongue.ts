@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../../library/factory";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -61,7 +62,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Tongue", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
+            const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", Factory("Map"));
     
             if (!tongues.has(id)) throw new Error(`Tongue of id '${id}' was not found.`);
             
@@ -90,7 +91,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Tongue", "0.0.1", {
             };
         },
         exec: (id, data, snapshot) => {
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy.Tongue", Factory("Map"));
         
             if (enemies.has(id)) throw new Error(`Tongue of id '${id}' already exists.`);
             enemies.set(id, { id, ...data });
@@ -100,7 +101,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Tongue", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
+            const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", Factory("Map"));
 
             if (!tongues.has(id)) throw new Error(`Tongue of id '${id}' did not exist.`);
             tongues.delete(id);
@@ -125,7 +126,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.TongueEvent", "0.0.1", {
         };
     }, 
     exec: (data, snapshot) => {
-        const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", () => new Map());
+        const tongues = snapshot.getOrDefault("Vanilla.Enemy.Tongue", Factory("Map"));
 
         const { id } = data;
         if (!tongues.has(id)) return; // enemy died

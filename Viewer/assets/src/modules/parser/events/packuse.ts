@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory";
 import { StatTracker } from "../stattracker/stattracker";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -34,7 +35,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Pack", "0.0.1", {
     },
     exec: async (data, snapshot) => {
         const statTracker = StatTracker.from(snapshot);
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
 
         const source = players.get(data.source);
         if (source === undefined) throw new Error(`${data.source} does not exist.`);

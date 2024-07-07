@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { ByteStream } from "@esm/@root/replay/stream.js";
+import { Factory } from "../../library/factory";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -32,7 +33,7 @@ const parse = async (data: ByteStream): Promise<Omit<EnemyStats, "id">> => {
 ModuleLoader.registerDynamic("Vanilla.Enemy.Stats", "0.0.1", {
     main: {
         parse, exec: (id, data, snapshot) => {
-            const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", () => new Map());
+            const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", Factory("Map"));
     
             if (!stats.has(id)) throw new Error(`PlayerStats of id '${id}' was not found.`);
             const enemy = stats.get(id)!;
@@ -41,7 +42,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Stats", "0.0.1", {
     },
     spawn: {
         parse, exec: (id, data, snapshot) => {
-            const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", () => new Map());
+            const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", Factory("Map"));
         
             if (stats.has(id)) throw new Error(`EnemyStats of id '${id}' already exists.`);
             stats.set(id, { 
@@ -53,7 +54,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Stats", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", () => new Map());
+            const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", Factory("Map"));
 
             if (!stats.has(id)) throw new Error(`EnemyStats of id '${id}' did not exist.`);
             stats.delete(id);

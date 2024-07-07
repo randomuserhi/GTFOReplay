@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 import { StatTracker } from "../stattracker/stattracker.js";
 
@@ -45,8 +46,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-        const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+        const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         const statTracker = StatTracker.from(snapshot);
 
         const { type, source, target, damage, staggerDamage, sentry } = data;
@@ -57,8 +58,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
 
             let sourceSnet = players.get(source)?.snet;
             if (type === "Explosive") {
-                const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
-                const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
+                const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+                const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
 
                 const detonation = detonations.get(source);
                 if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
@@ -124,8 +125,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
         } else if (type === "Tongue") {
             // TODO(randomuserhi): Damage Taken Stats
         } else if (type === "Explosive") {
-            const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", () => new Map());
-            const mines = snapshot.getOrDefault("Vanilla.Mine", () => new Map());
+            const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
 
             const detonation = detonations.get(source);
             if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");

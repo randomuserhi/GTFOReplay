@@ -1,5 +1,6 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../../library/factory";
 import { DynamicTransform } from "../../library/helpers";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -36,13 +37,13 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", () => new Map());
+            const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", Factory("Map"));
     
             if (!projectiles.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
             const projectile = projectiles.get(id)!;
             DynamicTransform.lerp(projectile, data, lerp);
 
-            const trails = snapshot.getOrDefault("Vanilla.Enemy.Projectile.Trails", () => new Map());
+            const trails = snapshot.getOrDefault("Vanilla.Enemy.Projectile.Trails", Factory("Map"));
             if (!trails.has(id)) trails.set(id, {
                 points: [],
                 dimension: data.dimension,
@@ -60,7 +61,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
             return result;
         },
         exec: (id, data, snapshot) => {
-            const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", () => new Map());
+            const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", Factory("Map"));
         
             if (projectiles.has(id)) throw new Error(`Dynamic of id '${id}' already exists.`);
             projectiles.set(id, { id, ...data });
@@ -70,7 +71,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", () => new Map());
+            const projectiles = snapshot.getOrDefault("Vanilla.Enemy.Projectile", Factory("Map"));
 
             if (!projectiles.has(id)) throw new Error(`Dynamic of id '${id}' did not exist.`);
             projectiles.delete(id);
@@ -80,7 +81,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
 
 ModuleLoader.registerTick((snapshot) => {
     const t = snapshot.time();
-    const trails = snapshot.getOrDefault("Vanilla.Enemy.Projectile.Trails", () => new Map());
+    const trails = snapshot.getOrDefault("Vanilla.Enemy.Projectile.Trails", Factory("Map"));
     for (const [id, trail] of [...trails.entries()]) {
         trail.points = trail.points.filter((p) => (t - p.time) < trail.duration);
         if (trail.points.length === 0) {

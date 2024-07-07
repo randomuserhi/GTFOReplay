@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory.js";
 import { DynamicPosition } from "../../library/helpers.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -50,7 +51,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan", "0.0.1", {
             return result;
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const scans = snapshot.getOrDefault("Vanilla.Bioscan", () => new Map());
+            const scans = snapshot.getOrDefault("Vanilla.Bioscan", Factory("Map"));
     
             if (!scans.has(id)) throw new Error(`Bioscan of id '${id}' was not found.`);
             const scan = scans.get(id)!;
@@ -67,7 +68,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan", "0.0.1", {
             return result;
         },
         exec: (id, data, snapshot) => {
-            const scans = snapshot.getOrDefault("Vanilla.Bioscan", () => new Map());
+            const scans = snapshot.getOrDefault("Vanilla.Bioscan", Factory("Map"));
         
             if (scans.has(id)) throw new Error(`Bioscan of id '${id}' already exists.`);
             scans.set(id, { id, ...data });
@@ -77,7 +78,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const scans = snapshot.getOrDefault("Vanilla.Bioscan", () => new Map());
+            const scans = snapshot.getOrDefault("Vanilla.Bioscan", Factory("Map"));
 
             if (!scans.has(id)) throw new Error(`Bioscan of id '${id}' did not exist.`);
             scans.delete(id);
@@ -96,7 +97,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const scans = snapshot.getOrDefault("Vanilla.Bioscan.Status", () => new Map());
+            const scans = snapshot.getOrDefault("Vanilla.Bioscan.Status", Factory("Map"));
     
             const { progress, r, g, b } = data;
             if (!scans.has(id)) throw new Error(`Bioscan status of id '${id}' was not found.`);
@@ -115,7 +116,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
             };
         },
         exec: (id, data, snapshot) => {
-            const scans = snapshot.getOrDefault("Vanilla.Bioscan.Status", () => new Map());
+            const scans = snapshot.getOrDefault("Vanilla.Bioscan.Status", Factory("Map"));
         
             const { progress, r, g, b } = data;
             const color = (r << 16) | (g << 8) | b;
@@ -129,7 +130,7 @@ ModuleLoader.registerDynamic("Vanilla.Bioscan.Status", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const scans = snapshot.getOrDefault("Vanilla.Bioscan.Status", () => new Map());
+            const scans = snapshot.getOrDefault("Vanilla.Bioscan.Status", Factory("Map"));
 
             if (!scans.has(id)) throw new Error(`Bioscan status of id '${id}' did not exist.`);
             scans.delete(id);
