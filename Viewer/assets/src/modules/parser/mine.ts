@@ -1,6 +1,5 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import * as Pod from "@esm/@root/replay/pod.js";
 import { Factory } from "../library/factory.js";
 import { DynamicTransform } from "../library/helpers.js";
 import { Identifier, IdentifierData } from "./identifier.js";
@@ -9,17 +8,10 @@ declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
             "Vanilla.Mine": {
-                parse: {
-                    dimension: number; 
-                    absolute: boolean;
-                    position: Pod.Vector;
-                    rotation: Pod.Quaternion;
+                parse: DynamicTransform.Parse & {
                     length: number;
                 };
-                spawn: {
-                    dimension: number;
-                    position: Pod.Vector;
-                    rotation: Pod.Quaternion;
+                spawn: DynamicTransform.Spawn & {
                     item: Identifier;
                     owner: number;
                 };
