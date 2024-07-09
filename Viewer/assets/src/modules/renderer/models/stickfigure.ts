@@ -99,7 +99,6 @@ export interface StickFigureSettings {
     structure?: Partial<AvatarStructure<HumanJoints, Vector3>>;
 
     points?: StickModelType;
-
     parts?: Partial<{
         head: { type?: StickModelType };
         body: { scale?: number, type?: StickModelType };
@@ -226,6 +225,12 @@ export class StickFigure extends Model {
         skeleton.setRot(defaultHumanPose);
     }
 
+    // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
+    public addToLimb(obj: Object3D, limb: HumanJoints) {
+        this.visual.joints[limb].add(obj);
+        obj.applyMatrix4(this.inverseMatrix[limb]);
+    }
+
     constructor() {
         super();
 
@@ -238,7 +243,9 @@ export class StickFigure extends Model {
         this.applySettings();
     }
 
-    public draw(color: Color) {
+    public draw(dt: number, position: Vector3, rotation: Quaternion, color: Color) {
+        this.computeMatrices(dt, position, rotation);
+
         if (this.settings.transparent) {
             this.drawCall(transparentMaskedParts, color);
             this.drawCall(transparentParts, color);
@@ -246,7 +253,6 @@ export class StickFigure extends Model {
             this.drawCall(parts, color);
         }
     }
-
     private drawCall(instancing: Map<StickModelType, DynamicInstanceManager>, color: Color) {
         const { parts, points } = this;
 
@@ -311,12 +317,6 @@ export class StickFigure extends Model {
         getInstanceOrDefault(instancing, this.settings.parts?.rightLowerLeg?.type, "Cylinder").consume(parts[i++], color);
     }
 
-    // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
-    public addToLimb(obj: Object3D, limb: HumanJoints) {
-        this.visual.joints[limb].add(obj);
-        obj.applyMatrix4(this.inverseMatrix[limb]);
-    }
-
     public head: Matrix4 = new Matrix4();
     public neck: Matrix4 = new Matrix4();
 
@@ -332,7 +332,7 @@ export class StickFigure extends Model {
         pscale: new Vector3(),
         rot: new Quaternion(),
     } as const;
-    private computeMatrices(dt: number, position: Vector3, rotation: Quaternion, rotOffset?: Vector3): void {
+    private computeMatrices(dt: number, position: Vector3, rotation: Quaternion): void {
         const { bodyTop, bodyBottom, temp, scale, pscale, rot, headRot } = StickFigure.FUNC_computeMatrices;
         const { parts, points } = this;
 
@@ -341,10 +341,10 @@ export class StickFigure extends Model {
 
         this.root.position.copy(position);
         this.anchor.quaternion.copy(rotation);
-        if (rotOffset !== undefined) {
-            this.anchor.rotateY(rotOffset.y);
-            this.anchor.rotateX(rotOffset.x);
-            this.anchor.rotateZ(rotOffset.z);
+        if (this.settings.rotOffset !== undefined) {
+            this.anchor.rotateY(this.settings.rotOffset.y);
+            this.anchor.rotateX(this.settings.rotOffset.x);
+            this.anchor.rotateZ(this.settings.rotOffset.z);
         }
 
         const blendFactor = Math.clamp01(dt * 50);
