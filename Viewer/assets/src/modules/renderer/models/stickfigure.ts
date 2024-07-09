@@ -129,7 +129,6 @@ function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: 
     return worldPos;
 }
 
-// TODO(randomuserhi): Cleanup
 export class StickFigure extends Model {
     private worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
 
@@ -243,7 +242,9 @@ export class StickFigure extends Model {
         this.applySettings();
     }
 
-    public draw(dt: number, position: Vector3, rotation: Quaternion, color: Color) {
+    protected draw(dt: number, position: Vector3, rotation: Quaternion, color: Color) {
+        if (this.root.visible === false) return;
+
         this.computeMatrices(dt, position, rotation);
 
         if (this.settings.transparent) {
