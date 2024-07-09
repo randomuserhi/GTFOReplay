@@ -12,7 +12,7 @@ export class Model<T = any> extends ObjectWrapper<Group> {
         this.root = new Group();
     }
 
-    protected render(dt: number, time: number, metadata: T) {
+    public render(dt: number, time: number, metadata: T) {
         
     }
 
