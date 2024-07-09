@@ -1,5 +1,5 @@
 export class Datablock<K, V> {
-    private map = new Map();
+    private map = new Map<K, V>();
     private hash?: (key: K) => any;
 
     constructor(hash?: (key: K) => any) {

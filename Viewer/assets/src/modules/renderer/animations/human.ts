@@ -1,5 +1,5 @@
 import { QuaternionLike } from "@esm/three";
-import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkeleton, AvatarStructure } from "./lib.js";
+import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkeleton, AvatarStructure } from "../../library/animations/lib.js";
 
 export const HumanJoints = [
     "hip",

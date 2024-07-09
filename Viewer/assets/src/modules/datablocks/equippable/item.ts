@@ -13,7 +13,7 @@ export interface ItemDatablock {
     serial?: string,
 }
 
-export const ItemDatablock: Datablock<Identifier, ItemDatablock> = new Datablock((identifier) => {
+export const ItemDatablock = new Datablock<Identifier, ItemDatablock>((identifier) => {
     if (identifier.type !== "Item") throw new Error(`Identifier did not represent an item: ${identifier.hash}`);
     return identifier.id;
 });

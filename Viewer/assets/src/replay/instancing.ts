@@ -3,10 +3,7 @@ import { BufferGeometry, Color, InstancedMesh, Material, Matrix4, NormalBufferAt
 export interface InstanceTypes {
 }
 
-const mat = new Matrix4();
-const temp = new Color();
-
-class DynamicInstanceManager {
+export class DynamicInstanceManager {
     mesh: InstancedMesh;
     capacity: number;
     material: Material | Material[];
@@ -25,7 +22,13 @@ class DynamicInstanceManager {
         this.capacity = capacity;
     }
 
+    private static FUNC_consume = {
+        mat: new Matrix4(),
+        temp: new Color()
+    } as const;
     public consume(matrix: Matrix4, color: Color): number {
+        const { mat, temp } = DynamicInstanceManager.FUNC_consume;
+
         if (this.mesh.count >= this.capacity) {
             const newCapacity = this.capacity * 2;
             
@@ -59,11 +62,11 @@ class DynamicInstanceManager {
 
 export const _instances = new Map<keyof InstanceTypes, DynamicInstanceManager>(); 
 
-export function createInstance(type: keyof InstanceTypes, geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], maximumCount: number, init?: (mesh: InstancedMesh) => void): InstancedMesh {
-    if (_instances.has(type)) return _instances.get(type)!.mesh;
+export function createInstance(type: keyof InstanceTypes, geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], maximumCount: number, init?: (mesh: InstancedMesh) => void): DynamicInstanceManager {
+    if (_instances.has(type)) return _instances.get(type)!;
     const manager = new DynamicInstanceManager(geometry, material, maximumCount, init);
     _instances.set(type, manager);
-    return manager.mesh;
+    return manager;
 }
 
 export function getInstance(type: keyof InstanceTypes) {

@@ -3,8 +3,8 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { Bezier } from "../library/bezier.js";
 import { Factory } from "../library/factory.js";
+import { Box } from "../library/models/primitives.js";
 import { duration } from "../parser/deathcross.js";
-import { Box } from "./models/primitives.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

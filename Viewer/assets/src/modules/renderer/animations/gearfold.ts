@@ -1,4 +1,4 @@
-import { Anim, AnimBlend, Avatar, AvatarLike, AvatarMask, AvatarSkeleton } from "./lib.js";
+import { Anim, AnimBlend, Avatar, AvatarLike, AvatarMask, AvatarSkeleton } from "../../library/animations/lib.js";
 
 export const GearFoldJoints = [
     "fold",

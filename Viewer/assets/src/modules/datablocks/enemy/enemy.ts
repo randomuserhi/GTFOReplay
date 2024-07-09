@@ -6,7 +6,7 @@ export interface EnemyDatablock {
     name?: string;
 }
 
-export const EnemyDatablock: Datablock<Identifier, EnemyDatablock> = new Datablock((identifier) => {
+export const EnemyDatablock = new Datablock<Identifier, EnemyDatablock>((identifier) => {
     if (identifier.type !== "Enemy") throw new Error(`Identifier did not represent an enemy: ${identifier.hash}`);
     return identifier.id;
 });

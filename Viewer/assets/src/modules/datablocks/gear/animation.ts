@@ -1,6 +1,6 @@
+import { Anim, AnimFunc } from "../../library/animations/lib.js";
+import { loadAnimFromJson } from "../../library/animations/loaders.js";
 import { GearFoldJoints } from "../../renderer/animations/gearfold.js";
-import { Anim, AnimFunc } from "../../renderer/animations/lib.js";
-import { loadAnimFromJson } from "../../renderer/animations/loaders.js";
 import { Datablock } from "../lib.js";
 
 async function loadAllClips<T extends string = string, Joints extends string = string>(joints: ReadonlyArray<Joints>, clips: ReadonlyArray<T> | T[]): Promise<Record<T, Anim<Joints>>> {
@@ -12,7 +12,7 @@ async function loadAllClips<T extends string = string, Joints extends string = s
     return collection;
 }
 
-export const GearAnimDatablock: Datablock<GearFoldAnimations, AnimFunc<GearFoldJoints>> = new Datablock();
+export const GearAnimDatablock = new Datablock<GearFoldAnimations, AnimFunc<GearFoldJoints>>();
 
 const gearFoldAnimationNames = [
     "Revolver_Front_1_Reload_1",

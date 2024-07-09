@@ -45,3 +45,12 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
     loadingAnims.set(path, promise);
     return promise;
 }
+
+export async function loadAllClips<T extends string = string, Joints extends string = string>(joints: ReadonlyArray<Joints>, clips: ReadonlyArray<T> | T[]): Promise<Record<T, Anim<Joints>>> {
+    const collection: Record<T, Anim<Joints>> = {} as any;
+    for (const clip of clips) {
+        if (clip in collection) throw new Error(`Duplicate clip '${clip}' being loaded.`);
+        collection[clip] = await loadAnimFromJson(joints, `../js3party/animations/${clip}.json`);
+    }
+    return collection;
+}

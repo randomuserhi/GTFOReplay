@@ -1,5 +1,5 @@
 import { CreateEvent } from "@/rhu";
-import { Quaternion, Scene, Vector3, WebGLRenderer } from "three";
+import { Scene, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { _instances } from "./instancing.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
@@ -28,6 +28,13 @@ export interface RenderPass<T extends Typemap.RenderPassNames | unknown = unknow
     pass: (renderer: Renderer, snapshot: ReplayApi, dt: number) => void;
 }
 
+interface RendererEventMap {
+    "resize": { 
+        width: number;
+        height: number;
+    };
+}
+
 export class Renderer {
     canvas: HTMLCanvasElement;
 
@@ -52,7 +59,7 @@ export class Renderer {
         this.listeners = new Map();
         const node = document.createTextNode("");
         const addEventListener = node.addEventListener.bind(node);
-        this.addEventListener = function (type, callback, options) {
+        this.addEventListener = function (type, callback: (...args: any[]) => void, options) {
             if (!this.listeners.has(type)) this.listeners.set(type, new Map());
             const collection = this.listeners.get(type)!;
             if (collection.has(callback)) return;
@@ -71,17 +78,10 @@ export class Renderer {
         this.dispatchEvent = node.dispatchEvent.bind(node);
     }
 
+    // TODO(randomuserhi): add events that can be hooked into
     public refresh(canvas?: HTMLCanvasElement, replay?: Replay) {
         if (canvas !== undefined) {
             this.canvas = canvas;
-        }
-
-        const lastCameraPos = new Vector3();
-        const lastCameraRot = new Quaternion();
-        if (this.has("Camera")) {
-            const camera = this.get("Camera")!;
-            camera.getWorldPosition(lastCameraPos);
-            camera.getWorldQuaternion(lastCameraRot);
         }
 
         this.scene = new Scene();
@@ -91,12 +91,6 @@ export class Renderer {
         if (replay !== undefined) {
             this.init(replay);
         }
-
-        if (this.has("Camera")) {
-            const camera = this.get("Camera")!;
-            camera.position.copy(lastCameraPos);
-            camera.quaternion.copy(lastCameraRot);
-        }
     }
 
     private static isEventListener = function (callback: EventListenerOrEventListenerObject): callback is EventListener {
@@ -104,8 +98,8 @@ export class Renderer {
     };
 
     private listeners: Map<string, Map<EventListenerOrEventListenerObject, (e: CustomEvent) => void>>;
-    public addEventListener: (type: string, callback: (data: any) => void, options?: boolean | AddEventListenerOptions | undefined) => void;
-    public removeEventListener: (type: string, callback: (data: any) => void, options?: EventListenerOptions | boolean) => void;
+    public addEventListener: <T extends keyof RendererEventMap | string & {}>(type: T, callback: (data: T extends keyof RendererEventMap ? RendererEventMap[T] : unknown) => void, options?: boolean | AddEventListenerOptions | undefined) => void;
+    public removeEventListener: <T extends keyof RendererEventMap | string & {}>(type: T, callback: (data: T extends keyof RendererEventMap ? RendererEventMap[T] : unknown) => void, options?: EventListenerOptions | boolean) => void;
     private dispatchEvent: (event: Event) => boolean;
 
     public getOrDefault<T extends keyof Typemap.RenderData>(typename: T, def: () => Typemap.RenderData[T]): Typemap.RenderData[T] {
