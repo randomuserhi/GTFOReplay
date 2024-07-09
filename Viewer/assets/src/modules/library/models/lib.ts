@@ -16,6 +16,10 @@ export class Model<T = any> extends ObjectWrapper<Group> {
         
     }
 
+    public dispose() {
+        
+    }
+
     public addToScene(scene: Scene): void {
         super.addToScene(scene);
         Model.all.add(this);
