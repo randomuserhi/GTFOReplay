@@ -1,11 +1,8 @@
-import { WeakCollection } from "@esm/@/rhu/weak.js";
-import { Group, Scene, Sphere, Vector3, Vector3Like } from "@esm/three";
+import { Group, Sphere, Vector3, Vector3Like } from "@esm/three";
 import { ObjectWrapper } from "../../renderer/objectwrapper.js";
 import { Camera } from "../../renderer/renderer.js";
 
 export class Model<T = any> extends ObjectWrapper<Group> {
-    public static all = new WeakCollection<Model>();
-    
     constructor() {
         super();
 
@@ -20,14 +17,8 @@ export class Model<T = any> extends ObjectWrapper<Group> {
         
     }
 
-    public addToScene(scene: Scene): void {
-        super.addToScene(scene);
-        Model.all.add(this);
-    }
-
-    public removeFromScene(scene: Scene): void {
-        super.removeFromScene(scene);
-        Model.all.delete(this);
+    public isVisible() {
+        return this.root.visible;
     }
 }
 

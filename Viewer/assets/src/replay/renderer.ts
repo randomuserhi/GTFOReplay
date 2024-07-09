@@ -1,7 +1,7 @@
 import { CreateEvent } from "@/rhu";
 import { Scene, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { _instances } from "./instancing.js";
+import { DynamicInstanceManager } from "./instancing.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
 import { Replay } from "./replay.js";
 
@@ -176,15 +176,15 @@ export class Renderer {
     }
 
     public render(dt: number, snapshot: ReplayApi) {
-        for (const manager of _instances.values()) {
+        for (const manager of DynamicInstanceManager.all) {
             manager.mesh.count = 0;
             this.scene.add(manager.mesh);
         }
         for (const func of this.renderLoop.values()) {
             func.pass(this, snapshot, dt);
         }
-        for (const manager of _instances.values()) {
-            manager. mesh.instanceMatrix.needsUpdate = true;
+        for (const manager of DynamicInstanceManager.all) {
+            manager.mesh.instanceMatrix.needsUpdate = true;
             if (manager.mesh.instanceColor !== null) manager.mesh.instanceColor.needsUpdate = true;
         }
         this.composer.render();

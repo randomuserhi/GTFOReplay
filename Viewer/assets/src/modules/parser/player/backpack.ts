@@ -32,7 +32,7 @@ export const inventorySlots = [
     "hackingTool"
 ] as const;
 export type InventorySlot = typeof inventorySlots[number];
-export const inventorySlotMap: Map<InventorySlot, number> = new Map([...inventorySlots.entries()].map(e => [e[1], e[0]]));
+export const inventorySlotMap: Record<InventorySlot, number> = Object.fromEntries([...inventorySlots.entries()].map(e => [e[1], e[0]])) as any;
 
 export interface PlayerBackpack {
     slots: Identifier[];

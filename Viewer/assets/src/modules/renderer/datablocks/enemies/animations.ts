@@ -1,7 +1,7 @@
-import { EnemyAnimDatablock } from "../../../datablocks/enemy/animation";
-import { AnimBlend, mergeAnims, ScaledAnim } from "../../../library/animations/lib";
-import { loadAllClips } from "../../../library/animations/loaders";
-import { HumanJoints } from "../../animations/human";
+import { EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
+import { AnimBlend, mergeAnims, ScaledAnim } from "../../../library/animations/lib.js";
+import { loadAllClips } from "../../../library/animations/loaders.js";
+import { HumanJoints } from "../../animations/human.js";
 
 export const animVelocity = {
     x: 0,

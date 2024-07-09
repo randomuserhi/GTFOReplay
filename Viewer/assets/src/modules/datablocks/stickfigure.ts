@@ -1,6 +1,6 @@
 import { BufferGeometry } from "@esm/three";
-import { Datablock } from "../../datablocks/lib";
-import { StickModelType } from "../../renderer/datablocks/stickfigure";
+import { StickModelType } from "../renderer/datablocks/stickfigure";
+import { Datablock } from "./lib";
 
 export interface StickModelDatablock {
     path?: string;

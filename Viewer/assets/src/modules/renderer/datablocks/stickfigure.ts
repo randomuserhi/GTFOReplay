@@ -1,5 +1,5 @@
-import { StickModelDatablock } from "../../datablocks/models/stickfigure";
-import { Cylinder, Sphere } from "../../library/models/primitives";
+import { StickModelDatablock } from "../../datablocks/stickfigure.js";
+import { Cylinder, Sphere } from "../../library/models/primitives.js";
 
 export type StickModelType = 
     "Sphere" |

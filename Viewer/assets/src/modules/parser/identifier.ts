@@ -3,6 +3,8 @@ import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { ByteStream } from "@esm/@root/replay/stream.js";
 import { Factory } from "../library/factory.js";
 
+// NOTE(randomuserhi): Identifiers should be treated as immutable - mutating them causes issues.
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Data {

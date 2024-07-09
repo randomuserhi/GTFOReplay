@@ -1,7 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { ItemDatablock } from "../../datablocks/equippable/item.js";
+import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
 import { Identifier, IdentifierData } from "../identifier.js";

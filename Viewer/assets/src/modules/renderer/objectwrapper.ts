@@ -3,6 +3,10 @@ import { Object3D, Scene } from "@esm/three";
 export abstract class ObjectWrapper<T extends Object3D> {
     public root: T;
 
+    public removeFromParent() {
+        this.root.removeFromParent();
+    }
+
     public addToScene(scene: Scene) {
         scene.add(this.root);
     }

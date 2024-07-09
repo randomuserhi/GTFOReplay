@@ -118,6 +118,7 @@ export interface AnimFunc<T extends string> {
     joints: ReadonlyArray<T>;
     sample(t: number, timescale?: number): Avatar<T>;
     duration: number;
+    first(): AvatarLike<T>;
 }
 
 export function mergeAnims<T extends string>(...anims: Anim<T>[]): Anim<T> {
@@ -166,6 +167,10 @@ export class Anim<T extends string = string> implements AnimFunc<T> {
         this.frames = frames;
 
         this.cache = new Avatar(this.joints);
+    }
+
+    public first(): AvatarLike<T> {
+        return this.frames[0];
     }
 
     public sample(t: number, timescale?: number): Avatar<T> {
@@ -218,6 +223,10 @@ export class ScaledAnim<T extends string = string> implements AnimFunc<T> {
         this.scale = scale;
         this.anim = anim;
         this.duration = this.anim.duration / this.scale;
+    }
+
+    public first(): AvatarLike<T> {
+        return this.anim.first();
     }
 
     public sample(t: number, timescale?: number): Avatar<T> {
@@ -274,6 +283,10 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
         this.buffer = [];
         this.states = [];
         this.numStates = 0;
+    }
+
+    public first(): AvatarLike<T> {
+        return this.sample(0);
     }
 
     private weights(): { anim: AnimFunc<T>, weight: number, timescale?: number }[] {

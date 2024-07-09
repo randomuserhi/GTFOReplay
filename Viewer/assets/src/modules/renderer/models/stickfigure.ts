@@ -1,13 +1,13 @@
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, SphereGeometry, Vector3, Vector3Like } from "@esm/three";
-import { StickModelDatablock } from "../../datablocks/models/stickfigure";
-import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../library/animations/lib";
-import { upV, zeroQ, zeroV } from "../../library/constants";
-import { loadGLTF } from "../../library/modelloader";
-import { Model } from "../../library/models/lib";
-import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } from "../animations/human";
-import { StickModelType } from "../datablocks/stickfigure";
+import { Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, SphereGeometry, Vector3, Vector3Like } from "@esm/three";
+import { StickModelDatablock } from "../../datablocks/stickfigure.js";
+import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../library/animations/lib.js";
+import { upV, zeroQ, zeroV } from "../../library/constants.js";
+import { loadGLTF } from "../../library/modelloader.js";
+import { Model } from "../../library/models/lib.js";
+import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } from "../animations/human.js";
+import { StickModelType } from "../datablocks/stickfigure.js";
 
 const transparentMaskedParts = new Map<StickModelType, DynamicInstanceManager>();
 const transparentParts = new Map<StickModelType, DynamicInstanceManager>();
@@ -129,7 +129,7 @@ function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: 
     return worldPos;
 }
 
-export class StickFigure extends Model {
+export class StickFigure<T = any> extends Model<T> {
     private worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
 
     public skeleton: HumanSkeleton = new AvatarSkeleton(HumanJoints, "hip");
@@ -242,9 +242,7 @@ export class StickFigure extends Model {
         this.applySettings();
     }
 
-    protected draw(dt: number, position: Vector3, rotation: Quaternion, color: Color) {
-        if (this.root.visible === false) return;
-
+    protected draw(dt: number, position: Vector3Like, rotation: QuaternionLike, color: Color) {
         this.computeMatrices(dt, position, rotation);
 
         if (this.settings.transparent) {
@@ -333,7 +331,7 @@ export class StickFigure extends Model {
         pscale: new Vector3(),
         rot: new Quaternion(),
     } as const;
-    private computeMatrices(dt: number, position: Vector3, rotation: Quaternion): void {
+    private computeMatrices(dt: number, position: Vector3Like, rotation: QuaternionLike): void {
         const { bodyTop, bodyBottom, temp, scale, pscale, rot, headRot } = StickFigure.FUNC_computeMatrices;
         const { parts, points } = this;
 

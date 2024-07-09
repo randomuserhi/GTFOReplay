@@ -1,15 +1,20 @@
+import { WeakCollection } from "@/rhu/weak.js";
 import { BufferGeometry, Color, InstancedMesh, Material, Matrix4, NormalBufferAttributes } from "three";
 
 export interface InstanceTypes {
 }
 
 export class DynamicInstanceManager {
+    static all: WeakCollection<DynamicInstanceManager>;
+
     mesh: InstancedMesh;
     capacity: number;
     material: Material | Material[];
     init?: (mesh: InstancedMesh) => void;
 
     constructor(geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], capacity: number, init?: (mesh: InstancedMesh) => void) {
+        DynamicInstanceManager.all.add(this);
+        
         this.init = init;
         this.material = material;
         
@@ -60,7 +65,7 @@ export class DynamicInstanceManager {
     }
 }
 
-export const _instances = new Map<keyof InstanceTypes, DynamicInstanceManager>(); 
+const _instances = new Map<keyof InstanceTypes, DynamicInstanceManager>;
 
 export function createInstance(type: keyof InstanceTypes, geometry: BufferGeometry<NormalBufferAttributes>, material: Material | Material[], maximumCount: number, init?: (mesh: InstancedMesh) => void): DynamicInstanceManager {
     if (_instances.has(type)) return _instances.get(type)!;

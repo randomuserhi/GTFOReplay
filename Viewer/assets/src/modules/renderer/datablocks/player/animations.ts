@@ -1,7 +1,7 @@
-import { PlayerAnimDatablock } from "../../../datablocks/player/animation";
-import { AnimBlend } from "../../../library/animations/lib";
-import { loadAllClips } from "../../../library/animations/loaders";
-import { HumanJoints } from "../../animations/human";
+import { PlayerAnimDatablock } from "../../../datablocks/player/animation.js";
+import { AnimBlend } from "../../../library/animations/lib.js";
+import { loadAllClips } from "../../../library/animations/loaders.js";
+import { HumanJoints } from "../../animations/human.js";
 
 export const animVelocity = {
     x: 0,
