@@ -1,6 +1,6 @@
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, SphereGeometry, Vector3, Vector3Like } from "@esm/three";
+import { Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, Vector3, Vector3Like } from "@esm/three";
 import { StickModelDatablock, StickModelType } from "../../datablocks/stickfigure.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../library/animations/lib.js";
 import { upV, zeroQ, zeroV } from "../../library/constants.js";
@@ -40,7 +40,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         }
         
         if (datablock.geometry !== undefined) {
-            transparentMaskedParts.set(key, new DynamicInstanceManager(new SphereGeometry(1, 10, 10), material, 100, instancedMeshInit));
+            transparentMaskedParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, instancedMeshInit));
         } else if (datablock.path !== undefined) {
             loadGLTF(datablock.path).then((geometry) => transparentMaskedParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
         } else {
@@ -62,7 +62,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         }
         
         if (datablock.geometry !== undefined) {
-            transparentParts.set(key, new DynamicInstanceManager(new SphereGeometry(1, 10, 10), material, 100, instancedMeshInit));
+            transparentParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, instancedMeshInit));
         } else if (datablock.path !== undefined) {
             loadGLTF(datablock.path).then((geometry) => transparentParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
         } else {
@@ -80,7 +80,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         }
         
         if (datablock.geometry !== undefined) {
-            parts.set(key, new DynamicInstanceManager(new SphereGeometry(1, 10, 10), material, 100, instancedMeshInit));
+            parts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, instancedMeshInit));
         } else if (datablock.path !== undefined) {
             loadGLTF(datablock.path).then((geometry) => parts.set(key, new DynamicInstanceManager(geometry, material, 100, instancedMeshInit)));
         } else {
