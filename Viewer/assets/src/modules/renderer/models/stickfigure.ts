@@ -128,6 +128,10 @@ function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: 
     return worldPos;
 }
 
+function valueOrUndefined(obj: any, value: any): boolean {
+    return (obj === undefined || obj === value);
+}
+
 export class StickFigure<T extends any[] = []> extends Model<T> {
     private worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
 
@@ -258,48 +262,48 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
 
         const point = getInstanceOrDefault(instancing, this.settings.points, "Sphere");
 
-        if (this.settings.parts?.body?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.body?.type, "Cylinder")) {
             point.consume(points[0], color);
             point.consume(points[1], color);
         }
 
-        if (this.settings.parts?.leftUpperArm?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder")) {
             point.consume(points[2], color);
         }
-        if (this.settings.parts?.leftUpperArm?.type === "Cylinder" || this.settings.parts?.leftLowerArm?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder") || valueOrUndefined(this.settings.parts?.leftLowerArm?.type , "Cylinder")) {
             point.consume(points[3], color);
         }
-        if (this.settings.parts?.leftLowerArm?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.leftLowerArm?.type, "Cylinder")) {
             point.consume(points[4], color);
         }
 
-        if (this.settings.parts?.rightUpperArm?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.rightUpperArm?.type, "Cylinder")) {
             point.consume(points[5], color);
         }
-        if (this.settings.parts?.rightUpperArm?.type === "Cylinder" || this.settings.parts?.rightLowerArm?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.rightUpperArm?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
             point.consume(points[6], color);
         }
-        if (this.settings.parts?.rightLowerArm?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
             point.consume(points[7], color);
         }
 
-        if (this.settings.parts?.leftUpperLeg?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder")) {
             point.consume(points[8], color);
         }
-        if (this.settings.parts?.leftUpperLeg?.type === "Cylinder" || this.settings.parts?.leftLowerLeg?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
             point.consume(points[9], color);
         }
-        if (this.settings.parts?.leftLowerLeg?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
             point.consume(points[10], color);
         }
 
-        if (this.settings.parts?.rightUpperLeg?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder")) {
             point.consume(points[11], color);
         }
-        if (this.settings.parts?.rightUpperLeg?.type === "Cylinder" || this.settings.parts?.rightLowerLeg?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
             point.consume(points[12], color);
         }
-        if (this.settings.parts?.rightLowerLeg?.type === "Cylinder") {
+        if (valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
             point.consume(points[13], color);
         }
         

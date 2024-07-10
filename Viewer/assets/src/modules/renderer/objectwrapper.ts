@@ -12,6 +12,6 @@ export abstract class ObjectWrapper<T extends Object3D> {
     }
 
     public removeFromScene(scene: Scene) {
-        scene.add(this.root);
+        scene.remove(this.root);
     }
 }
