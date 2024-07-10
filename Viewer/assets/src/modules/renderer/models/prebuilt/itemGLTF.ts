@@ -1,6 +1,6 @@
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
-import { loadGLTF } from "../../../library/modelloader";
-import { ItemModel } from "../items";
+import { loadGLTF } from "../../../library/modelloader.js";
+import { ItemModel } from "../items.js";
 
 export class ItemGLTFModel extends ItemModel {
     gltf: Group;

@@ -1,10 +1,10 @@
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Color, Group, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
-import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
+import { GearDatablock, GunArchetype, hammerArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemDatablock } from "../../datablocks/items/item.js";
 import { ItemArchetype, ItemModelDatablock } from "../../datablocks/items/models.js";
-import { PlayerAnimDatablock } from "../../datablocks/player/animation.js";
+import { animCrouch, animVelocity, PlayerAnimDatablock } from "../../datablocks/player/animation.js";
 import { IKSolverAim } from "../../library/animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../../library/animations/inversekinematics/limbsolver.js";
 import { Bone } from "../../library/animations/inversekinematics/rootmotion.js";
@@ -15,7 +15,6 @@ import { InventorySlot, inventorySlotMap, inventorySlots, PlayerBackpack } from 
 import { Player } from "../../parser/player/player.js";
 import { PlayerStats } from "../../parser/player/stats.js";
 import { HumanAnimation, HumanJoints, HumanMask } from "../animations/human.js";
-import { animCrouch, animVelocity } from "../datablocks/player/animations.js";
 import { GearModel } from "../models/gear.js";
 import { ItemModel } from "../models/items.js";
 import { StickFigure } from "../models/stickfigure.js";
@@ -143,7 +142,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private backpackAligns: Group[] = new Array(inventorySlots.length);
 
     private lastArchetype: Archetype;
-    private meleeArchetype: MeleeArchetype;
+    private meleeArchetype: MeleeArchetype = hammerArchetype;
     private itemArchetype: ItemArchetype;
     private gunArchetype: GunArchetype;
 

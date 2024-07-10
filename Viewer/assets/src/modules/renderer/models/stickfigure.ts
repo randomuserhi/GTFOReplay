@@ -1,13 +1,12 @@
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, SphereGeometry, Vector3, Vector3Like } from "@esm/three";
-import { StickModelDatablock } from "../../datablocks/stickfigure.js";
+import { StickModelDatablock, StickModelType } from "../../datablocks/stickfigure.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../library/animations/lib.js";
 import { upV, zeroQ, zeroV } from "../../library/constants.js";
 import { loadGLTF } from "../../library/modelloader.js";
 import { Model } from "../../library/models/lib.js";
 import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } from "../animations/human.js";
-import { StickModelType } from "../datablocks/stickfigure.js";
 
 const transparentMaskedParts = new Map<StickModelType, DynamicInstanceManager>();
 const transparentParts = new Map<StickModelType, DynamicInstanceManager>();
@@ -319,8 +318,8 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
     public head: Matrix4 = new Matrix4();
     public neck: Matrix4 = new Matrix4();
 
-    private parts: Matrix4[] = new Array(9).map(() => new Matrix4());
-    private points: Matrix4[] = new Array(14).map(() => new Matrix4());
+    private parts: Matrix4[] = new Array(9).fill(undefined).map(() => new Matrix4());
+    private points: Matrix4[] = new Array(14).fill(undefined).map(() => new Matrix4());
 
     private static FUNC_computeMatrices = {
         headRot: new Quaternion(),

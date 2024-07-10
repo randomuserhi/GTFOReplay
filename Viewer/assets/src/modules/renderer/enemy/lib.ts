@@ -1,16 +1,16 @@
 import { ColorRepresentation, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
-import { EnemyAnimHandle, EnemyAnimHandlesDatablock } from "../../datablocks/enemy/animation";
-import { EnemyDatablock } from "../../datablocks/enemy/enemy";
-import { EnemyModelDatablock } from "../../datablocks/enemy/model";
-import { playerColors } from "../../datablocks/player/player";
-import { Model } from "../../library/models/lib";
-import { EnemyAnimState } from "../../parser/enemy/animation";
-import { Enemy } from "../../parser/enemy/enemy";
-import { Player } from "../../parser/player/player";
-import { HumanJoints } from "../animations/human";
-import { Camera } from "../renderer";
-import { HumanoidEnemyModel } from "./models/humanoid";
+import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
+import { EnemyAnimHandle, EnemyAnimHandlesDatablock } from "../../datablocks/enemy/handles.js";
+import { EnemyModelDatablock } from "../../datablocks/enemy/model.js";
+import { playerColors } from "../../datablocks/player/player.js";
+import { Model } from "../../library/models/lib.js";
+import { EnemyAnimState } from "../../parser/enemy/animation.js";
+import { Enemy } from "../../parser/enemy/enemy.js";
+import { Player } from "../../parser/player/player.js";
+import { HumanJoints } from "../animations/human.js";
+import { Camera } from "../renderer.js";
+import { HumanoidEnemyModel } from "./models/humanoid.js";
 
 export class EnemyModel {
     model: Model<[enemy: Enemy, anim: EnemyAnimState]>;

@@ -1,5 +1,5 @@
 import { Object3D, QuaternionLike, Vector3Like } from "@esm/three";
-import { Model } from "../../library/models/lib";
+import { Model } from "../../library/models/lib.js";
 
 export class ItemModel extends Model {
     offsetPos: Vector3Like;

@@ -48,7 +48,7 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
 
 export async function loadAllClips<T extends string = string, Joints extends string = string>(joints: ReadonlyArray<Joints>, clips: ReadonlyArray<T> | T[]): Promise<Record<T, Anim<Joints>>> {
     const collection: Record<T, Anim<Joints>> = {} as any;
-    const promises: Promise<void>[] = [];
+    const promises: Promise<any>[] = [];
     for (const clip of clips) {
         promises.push(loadAnimFromJson(joints, `../js3party/animations/${clip}.json`).then((anim) => {
             if (clip in collection) throw new Error(`Duplicate clip '${clip}' being loaded.`);

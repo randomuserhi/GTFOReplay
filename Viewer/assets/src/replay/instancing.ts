@@ -5,7 +5,7 @@ export interface InstanceTypes {
 }
 
 export class DynamicInstanceManager {
-    static all: WeakCollection<DynamicInstanceManager>;
+    static all = new WeakCollection<DynamicInstanceManager>();
 
     mesh: InstancedMesh;
     capacity: number;

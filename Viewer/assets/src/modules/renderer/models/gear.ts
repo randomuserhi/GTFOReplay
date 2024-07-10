@@ -1,6 +1,6 @@
 import { Group, QuaternionLike } from "@esm/three";
-import { GearFoldAvatar } from "../animations/gearfold";
-import { ItemModel } from "./items";
+import { GearFoldAvatar } from "../animations/gearfold.js";
+import { ItemModel } from "./items.js";
 
 
 export class GearModel extends ItemModel {

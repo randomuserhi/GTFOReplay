@@ -1,6 +1,33 @@
-import { EnemyAnimDatablock, EnemyAnimHandlesDatablock } from "../../../datablocks/enemy/animation";
-import { mergeAnims, ScaledAnim } from "../../../library/animations/lib";
-import { HumanAnim, HumanJoints } from "../../animations/human";
+import { mergeAnims, ScaledAnim } from "../../library/animations/lib.js";
+import { AnimHandles, MeleeType } from "../../parser/enemy/animation.js";
+import { HumanAnim, HumanAnimation, HumanJoints } from "../../renderer/animations/human.js";
+import { Datablock } from "../lib.js";
+import { EnemyAnimDatablock } from "./animation.js";
+
+export interface EnemyAnimHandle {
+    movement: HumanAnimation;
+    abilityFire: HumanAnimation[];
+    hitLightFwd: HumanAnimation[];
+    hitLightBwd: HumanAnimation[];
+    hitLightLt: HumanAnimation[];
+    hitLightRt: HumanAnimation[];
+    hitHeavyFwd: HumanAnimation[];
+    hitHeavyBwd: HumanAnimation[];
+    hitHeavyLt: HumanAnimation[];
+    hitHeavyRt: HumanAnimation[];
+    melee?: { [K in MeleeType]: HumanAnimation[] }
+    ladderClimb: HumanAnimation;
+    jump: [HumanAnimation, HumanAnimation]; // NOTE(randomuserhi): Jump start, Jump end
+    screams: HumanAnimation[];
+    blend?: number;
+    hibernateIn: HumanAnimation;
+    hibernateLoop: HumanAnimation;
+    heartbeats: HumanAnimation[];
+    wakeup: HumanAnimation[];
+    wakeupTurns: HumanAnimation[];
+    abilityUse?: [HumanAnimation, HumanAnimation, HumanAnimation] // NOTE(randomuserhi): in, loop, out
+}
+export const EnemyAnimHandlesDatablock = new Datablock<AnimHandles.Flags, EnemyAnimHandle>();
 
 const enemyAnimations = EnemyAnimDatablock.obj();
 

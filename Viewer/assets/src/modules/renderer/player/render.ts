@@ -1,8 +1,8 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Color } from "@esm/three";
-import { playerColors } from "../../datablocks/player/player";
-import { IdentifierData } from "../../parser/identifier";
-import { PlayerModel } from "./model";
+import { playerColors } from "../../datablocks/player/player.js";
+import { IdentifierData } from "../../parser/identifier.js";
+import { PlayerModel } from "./model.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

@@ -1,10 +1,9 @@
 import { Color } from "@esm/three";
-import { EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
+import { animCrouch, animDetection, animVelocity, EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
 import { PlayerAnimDatablock } from "../../../datablocks/player/animation.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation.js";
 import { Enemy } from "../../../parser/enemy/enemy.js";
 import { HumanAnimation } from "../../animations/human.js";
-import { animCrouch, animDetection, animVelocity } from "../../datablocks/enemies/animations.js";
 import { StickFigure } from "../../models/stickfigure.js";
 import { EnemyModel } from "../lib.js";
 

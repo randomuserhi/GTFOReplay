@@ -1,8 +1,8 @@
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Mesh, MeshPhongMaterial } from "@esm/three";
-import { ModuleLoader } from "../../../replay/moduleloader.js";
 import { isCulled } from "../../library/models/lib.js";
 import { Sphere } from "../../library/models/primitives.js";
-import { EnemyModel } from "./lib";
+import { EnemyModel } from "./lib.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

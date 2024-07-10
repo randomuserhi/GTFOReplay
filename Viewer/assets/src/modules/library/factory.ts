@@ -17,3 +17,6 @@ export const Factory = (<T extends keyof Typemap>(type: T): () => Typemap[T] => 
 Factory.register = (type, factory) => {
     factories.set(type, factory);
 };
+
+Factory.register("Map", () => new Map());
+Factory.register("Array", () => []);

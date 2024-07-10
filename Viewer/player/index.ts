@@ -6,6 +6,8 @@ import { Renderer } from "../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../replay/replay.js";
 import { FileHandle } from "../../../replay/stream.js";
 import { __version__ } from "../../appinfo.js";
+import { bar } from "./components/bar.js";
+import { scoreboard } from "./components/scoreboard.js";
 import { seeker } from "./components/seeker.js";
 
 const style = Style(({ style }) => {
@@ -119,6 +121,7 @@ const style = Style(({ style }) => {
         canvas,
         mount,
         scoreboardMount,
+        bar,
         window,
         empty,
         loader,
@@ -130,8 +133,10 @@ export interface player extends HTMLDivElement {
     canvas: HTMLCanvasElement;
     mount: HTMLDivElement;
     seeker: seeker;
+    bar: bar;
     window: HTMLDivElement;
     scoreboardMount: HTMLDivElement;
+    scoreboard: scoreboard;
     loadButton: HTMLButtonElement;
     loading: HTMLDivElement;
     cover: HTMLDivElement;
@@ -176,6 +181,8 @@ export const player = Macro((() => {
     const player = function(this: player) {
         this.renderer = new Renderer(this.canvas);
         this.ready = false;
+
+        this.bar.init(this);
 
         this.seeker.trigger = (value) => {
             if (this.replay === undefined) return;
@@ -246,6 +253,7 @@ export const player = Macro((() => {
         if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
         this.replay = undefined;
+        this.bar.clear();
         this.parser.addEventListener("eoh", () => {
             console.log("ready");
     
@@ -253,6 +261,7 @@ export const player = Macro((() => {
 
             this.cover.style.display = "none";
 
+            this.bar.reset();
             this.renderer.init(this.replay);
             this.canvas.focus();
             
@@ -350,12 +359,19 @@ export const player = Macro((() => {
             if (this.snapshot !== undefined) {
                 this.api = this.replay.api(this.snapshot);
                 this.renderer.render(dt / 1000, this.api);
+
+                const spec = this.renderer.get("Specification");
+                if (this.scoreboardMount.style.display !== "none" && spec !== undefined) {
+                    this.scoreboard.update(this.api, spec);
+                }
             }
 
             this.seeker.setValue(this.time / this.seekLength);
             this.seeker.time(`${msToTime(this.time)} / ${msToTime(this.seekLength)}`); //${(this.seeker.seeking ? `(${msToTime(this.replay.length())})` : "")}
 
             this.seeker.dot.style.backgroundColor = this.live ? "red" : "#eee";
+        
+            if (this.ready) this.bar.update();
         }
         this.frameRate = 1000 / dt;
 
@@ -366,6 +382,7 @@ export const player = Macro((() => {
     return player;
 })(), "routes/player", //html
 `
+    ${bar`rhu-id="bar"`}
     <div rhu-id="window" class="${style.window}" style="display: none;">
     </div>
     <div class="${style.body}">
@@ -382,6 +399,9 @@ export const player = Macro((() => {
         <canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>
         <div rhu-id="mount" class="${style.mount}" style="display: none">
             ${seeker`rhu-id="seeker"`}
+        </div>
+        <div rhu-id="scoreboardMount" class="${style.scoreboardMount}" style="display: none">
+            ${scoreboard`rhu-id="scoreboard"`}
         </div>
     </div>
     `, {

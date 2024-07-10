@@ -57,7 +57,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Projectile", "0.0.1", {
     },
     spawn: {
         parse: async (data) => {
-            const result = await DynamicTransform.parse(data);
+            const result = await DynamicTransform.spawn(data);
             return result;
         },
         exec: (id, data, snapshot) => {

@@ -1,7 +1,7 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Renderer } from "@esm/@root/replay/renderer.js";
 import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, PointLight, Vector3, VSMShadowMap } from "@esm/three";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { RenderPass } from "@esm/three/examples/jsm/postprocessing/RenderPass.js";
 import { ObjectWrapper } from "./objectwrapper.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -21,10 +21,10 @@ export class Camera extends ObjectWrapper<PerspectiveCamera> {
     public frustum: Frustum = new Frustum();
     public renderDistance: number;
     
-    constructor(fov: number, width: number, height: number, near: number = 0.1, far: number = 1000, renderDistance: number = 100) {
+    constructor(fov: number, aspect: number, near: number = 0.1, far: number = 1000, renderDistance: number = 100) {
         super();
         
-        this.root = new PerspectiveCamera(fov, width / height, near, far);
+        this.root = new PerspectiveCamera(fov, aspect, near, far);
         this.root.rotation.order = "YXZ";
 
         this.renderDistance = renderDistance;
@@ -58,8 +58,10 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.scene.add(new AmbientLight(0xFFFFFF, 0.5));
 
             const camera = new Camera(75, r.canvas.width / r.canvas.height, 0.1, 1000);
-            r.composer.addPass(new RenderPass(r.scene, camera.root));
             camera.addToScene(r.scene);
+            r.composer.addPass(new RenderPass(r.scene, camera.root));
+            camera.root.position.set(0, 0, -10);
+            camera.root.rotation.set(0, 180 * Math.deg2rad, 0);
 
             r.set("Camera", camera);
             r.addEventListener("resize", ({ width, height }) => {

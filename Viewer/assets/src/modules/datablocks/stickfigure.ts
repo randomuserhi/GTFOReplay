@@ -1,6 +1,6 @@
 import { BufferGeometry } from "@esm/three";
-import { StickModelType } from "../renderer/datablocks/stickfigure";
-import { Datablock } from "./lib";
+import { Cylinder, Sphere } from "../library/models/primitives.js";
+import { Datablock } from "./lib.js";
 
 export interface StickModelDatablock {
     path?: string;
@@ -8,3 +8,16 @@ export interface StickModelDatablock {
 }
 
 export const StickModelDatablock = new Datablock<StickModelType, StickModelDatablock>();
+
+export type StickModelType = 
+    "Sphere" |
+    "Cylinder" |
+    "Shooter" |
+    "Hybrid" |
+    "Charger";
+
+StickModelDatablock.set("Sphere", { geometry: Sphere });
+StickModelDatablock.set("Shooter", { path: "../js3party/models/shooter_head.glb" });
+StickModelDatablock.set("Hybrid", { path: "../js3party/models/hybrid_head.glb" });
+StickModelDatablock.set("Charger", { path: "../js3party/models/charger_head.glb" });
+StickModelDatablock.set("Cylinder", { geometry: Cylinder });
