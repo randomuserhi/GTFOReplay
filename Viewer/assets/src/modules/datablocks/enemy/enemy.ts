@@ -1,11 +1,9 @@
-import { ColorRepresentation } from "@esm/three";
 import { Identifier } from "../../parser/identifier.js";
 import { Datablock } from "../lib.js";
 
 export interface EnemyDatablock {
     maxHealth?: number;
     name?: string;
-    color?: ColorRepresentation;
 }
 
 export const EnemyDatablock = new Datablock<Identifier, EnemyDatablock>((identifier) => {

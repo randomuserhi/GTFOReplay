@@ -1,6 +1,6 @@
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Color, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, Vector3, Vector3Like } from "@esm/three";
+import { Color, ColorRepresentation, DynamicDrawUsage, Group, InstancedMesh, Matrix4, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, Vector3, Vector3Like } from "@esm/three";
 import { StickModelDatablock, StickModelType } from "../../datablocks/stickfigure.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../library/animations/lib.js";
 import { upV, zeroQ, zeroV } from "../../library/constants.js";
@@ -118,6 +118,8 @@ export interface StickFigureSettings {
     legScale?: Vector3Like;
 
     scale?: number;
+
+    color?: ColorRepresentation;
 }
 
 function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: HumanSkeleton): AvatarStructure<HumanJoints, Vector3> {  
@@ -141,6 +143,8 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
 
     protected anchor: Group = new Group();
     protected offset: Group = new Group();
+
+    public color: Color = new Color();
 
     public settings: StickFigureSettings = {};
     public applySettings(settings?: StickFigureSettings) {
@@ -190,6 +194,10 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
                     this.visual.joints[joint].position.copy(position);
                 }
             }
+        }
+
+        if (this.settings.color !== undefined) {
+            this.color.set(this.settings.color);
         }
 
         for (const joint of HumanJoints) {
@@ -245,78 +253,78 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         this.applySettings();
     }
 
-    protected draw(dt: number, position: Vector3Like, rotation: QuaternionLike, color: Color) {
+    protected draw(dt: number, position: Vector3Like, rotation: QuaternionLike) {
         this.computeMatrices(dt, position, rotation);
 
         if (this.settings.transparent) {
-            this.drawCall(transparentMaskedParts, color);
-            this.drawCall(transparentParts, color);
+            this.drawCall(transparentMaskedParts);
+            this.drawCall(transparentParts);
         } else {
-            this.drawCall(parts, color);
+            this.drawCall(parts);
         }
     }
-    private drawCall(instancing: Map<StickModelType, DynamicInstanceManager>, color: Color) {
+    private drawCall(instancing: Map<StickModelType, DynamicInstanceManager>) {
         const { parts, points } = this;
 
-        getInstanceOrDefault(instancing, this.settings.parts?.head?.type, "Sphere").consume(this.head, color);
+        getInstanceOrDefault(instancing, this.settings.parts?.head?.type, "Sphere").consume(this.head, this.color);
 
         const point = getInstanceOrDefault(instancing, this.settings.points, "Sphere");
 
         if (valueOrUndefined(this.settings.parts?.body?.type, "Cylinder")) {
-            point.consume(points[0], color);
-            point.consume(points[1], color);
+            point.consume(points[0], this.color);
+            point.consume(points[1], this.color);
         }
 
         if (valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder")) {
-            point.consume(points[2], color);
+            point.consume(points[2], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder") || valueOrUndefined(this.settings.parts?.leftLowerArm?.type , "Cylinder")) {
-            point.consume(points[3], color);
+            point.consume(points[3], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.leftLowerArm?.type, "Cylinder")) {
-            point.consume(points[4], color);
+            point.consume(points[4], this.color);
         }
 
         if (valueOrUndefined(this.settings.parts?.rightUpperArm?.type, "Cylinder")) {
-            point.consume(points[5], color);
+            point.consume(points[5], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.rightUpperArm?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
-            point.consume(points[6], color);
+            point.consume(points[6], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
-            point.consume(points[7], color);
+            point.consume(points[7], this.color);
         }
 
         if (valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder")) {
-            point.consume(points[8], color);
+            point.consume(points[8], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
-            point.consume(points[9], color);
+            point.consume(points[9], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
-            point.consume(points[10], color);
+            point.consume(points[10], this.color);
         }
 
         if (valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder")) {
-            point.consume(points[11], color);
+            point.consume(points[11], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
-            point.consume(points[12], color);
+            point.consume(points[12], this.color);
         }
         if (valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
-            point.consume(points[13], color);
+            point.consume(points[13], this.color);
         }
         
         let i = 0;
-        getInstanceOrDefault(instancing, this.settings.parts?.body?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftUpperArm?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftLowerArm?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightUpperArm?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightLowerArm?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftUpperLeg?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftLowerLeg?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightUpperLeg?.type, "Cylinder").consume(parts[i++], color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightLowerLeg?.type, "Cylinder").consume(parts[i++], color);
+        getInstanceOrDefault(instancing, this.settings.parts?.body?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.leftUpperArm?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.leftLowerArm?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.rightUpperArm?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.rightLowerArm?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.leftUpperLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.leftLowerLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.rightUpperLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        getInstanceOrDefault(instancing, this.settings.parts?.rightLowerLeg?.type, "Cylinder").consume(parts[i++], this.color);
     }
 
     public head: Matrix4 = new Matrix4();

@@ -2,7 +2,7 @@ import { Group, Sphere, Vector3, Vector3Like } from "@esm/three";
 import { ObjectWrapper } from "../../renderer/objectwrapper.js";
 import { Camera } from "../../renderer/renderer.js";
 
-export class Model<T extends any[] = []> extends ObjectWrapper<Group> {
+export class Model<T extends any[] = any[]> extends ObjectWrapper<Group> {
     constructor() {
         super();
 

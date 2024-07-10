@@ -1,5 +1,4 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Color } from "@esm/three";
 import { playerColors } from "../../datablocks/player/player.js";
 import { IdentifierData } from "../../parser/identifier.js";
 import { PlayerModel } from "./model.js";
@@ -30,7 +29,8 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", () => new Map());
             for (const [id, player] of players) {
                 if (!models.has(id)) {
-                    const model = new PlayerModel(new Color(playerColors[player.slot]));
+                    const model = new PlayerModel();
+                    model.applySettings({ color: playerColors[player.slot] });
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

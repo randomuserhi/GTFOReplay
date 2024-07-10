@@ -114,7 +114,7 @@ Macro((() => {
 // Load app
 const __load__ = () => {
     const app = document.createMacro("app");
-    document.body.append(app);
+    document.body.replaceChildren(app);
 };
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", __load__);

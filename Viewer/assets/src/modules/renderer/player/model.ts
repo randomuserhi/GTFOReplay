@@ -1,5 +1,5 @@
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Color, Group, Object3D, Vector3 } from "@esm/three";
+import { Group, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { GearDatablock, GunArchetype, hammerArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemDatablock } from "../../datablocks/items/item.js";
@@ -124,8 +124,6 @@ class EquippedItem {
 }
 
 export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack]> {
-    private color: Color;
-    
     private aimIK: IKSolverAim = new IKSolverAim();
     private aimTarget: Object3D;
     
@@ -150,10 +148,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
     private tmp?: Text;
 
-    constructor(color: Color) {
+    constructor() {
         super();
-
-        this.color = color;
 
         // Setup tmp
         this.tmp = new Text();
@@ -243,7 +239,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.animate(time, player, anim);
         
         this.visual.joints.rightHand.add(this.handAttachment);
-        this.draw(dt, player.position, player.rotation, this.color);
+        this.draw(dt, player.position, player.rotation);
     
         this.updateTmp(player, camera, stats, backpack);
     }

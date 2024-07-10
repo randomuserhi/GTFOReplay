@@ -1,4 +1,3 @@
-import { Color } from "@esm/three";
 import { animCrouch, animDetection, animVelocity, EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
 import { PlayerAnimDatablock } from "../../../datablocks/player/animation.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation.js";
@@ -11,8 +10,6 @@ const playerAnimations = PlayerAnimDatablock.obj();
 const enemyAnimations = EnemyAnimDatablock.obj();
 
 export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAnimState]> {
-    private color: Color = new Color();
-    
     private readonly wrapper: EnemyModel;
     private animOffset: number = Math.random() * 10;
 
@@ -25,15 +22,15 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
         if (!this.isVisible()) return;
 
         this.animate(dt, time, anim);
-        this.draw(dt, enemy.position, enemy.rotation, this.color);
+        this.draw(dt, enemy.position, enemy.rotation);
     }
 
     private animate(dt: number, time: number, anim: EnemyAnimState) {
         const { animHandle } = this.wrapper;
         
         this.color.set(0xff0000);
-        if (this.wrapper.datablock?.color !== undefined) {
-            this.color.set(this.wrapper.datablock.color);
+        if (this.settings.color !== undefined) {
+            this.color.set(this.settings.color);
         }
 
         this.offset.rotation.set(0, 0, 0);
