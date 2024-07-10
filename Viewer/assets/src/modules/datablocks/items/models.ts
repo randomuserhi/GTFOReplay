@@ -12,7 +12,7 @@ export interface ItemArchetype {
 
 export interface ItemModelDatablock {
     model: () => ItemModel;
-    archetype: ItemArchetype;
+    archetype?: ItemArchetype;
 }
 
 export const ItemModelDatablock = new Datablock<Identifier, ItemModelDatablock>((identifier) => {

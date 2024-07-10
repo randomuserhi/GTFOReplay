@@ -21,7 +21,7 @@ export interface MeleeArchetype {
 
 export interface GunArchetype {
     gunFoldAnim: GearFoldAnimation;
-    offset: Vector3Like;
+    offset?: Vector3Like;
 }
 
 
