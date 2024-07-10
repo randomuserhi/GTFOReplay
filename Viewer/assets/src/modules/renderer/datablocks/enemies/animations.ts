@@ -540,7 +540,7 @@ const enemyPouncerMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.PO_WalkRight, x: 1.2, y: 0 },
 ], animVelocity);
 
-const animDetection = { x: 0, y: 0 };
+export const animDetection = { x: 0, y: 0 };
 
 const CA_HibernateDetect = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.CA_Hibernate_Loop_A, x: 0, y: 0 },

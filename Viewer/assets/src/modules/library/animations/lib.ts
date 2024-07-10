@@ -128,7 +128,8 @@ export function mergeAnims<T extends string>(...anims: Anim<T>[]): Anim<T> {
     let duration = 0;
     const frames: AvatarLike<T>[] = [];
     for (const anim of anims) {
-        if (anim.rate !== rate) throw new Error("All animations must have the same rate to merge them.");     
+        if (anim.rate !== rate) throw new Error("All animations must have the same rate to merge them.");   
+        if (!isAnim(anim)) throw new Error("Can only merge raw animations, blends and scaled animations are not allowed.");  
         duration += anim.duration;
         frames.push(...anim.frames);
     }
@@ -219,6 +220,8 @@ export class ScaledAnim<T extends string = string> implements AnimFunc<T> {
     joints: readonly T[];
 
     constructor(joints: ReadonlyArray<T>, anim: Anim<T>, scale: number) {
+        if (!isAnim(anim)) throw new Error("Scaled anims only apply to raw animations.");
+
         this.joints = joints;
         this.scale = scale;
         this.anim = anim;
@@ -235,7 +238,11 @@ export class ScaledAnim<T extends string = string> implements AnimFunc<T> {
     }
 }
 
-export function isAnimBlend<T extends string>(obj: Anim<T> | AnimBlend<T>): obj is AnimBlend<T> {
+export function isAnim<T extends string>(obj: AnimFunc<T>): obj is Anim<T> {
+    return Object.prototype.isPrototypeOf.call(Anim.prototype, obj);
+}
+
+export function isAnimBlend<T extends string>(obj: AnimFunc<T>): obj is AnimBlend<T> {
     return Object.prototype.isPrototypeOf.call(AnimBlend.prototype, obj);
 }
 

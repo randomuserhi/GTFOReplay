@@ -2,14 +2,14 @@ import { Group, Sphere, Vector3, Vector3Like } from "@esm/three";
 import { ObjectWrapper } from "../../renderer/objectwrapper.js";
 import { Camera } from "../../renderer/renderer.js";
 
-export class Model<T = any> extends ObjectWrapper<Group> {
+export class Model<T extends any[] = []> extends ObjectWrapper<Group> {
     constructor() {
         super();
 
         this.root = new Group();
     }
 
-    public render(dt: number, time: number, metadata: T) {
+    public render(dt: number, time: number, ...params: T) {
         
     }
 
@@ -19,6 +19,10 @@ export class Model<T = any> extends ObjectWrapper<Group> {
 
     public isVisible() {
         return this.root.visible;
+    }
+
+    public setVisible(visibility: boolean) {
+        this.root.visible = visibility;
     }
 }
 

@@ -1,8 +1,9 @@
 import { Vector3Like } from "@esm/three";
-import { Model } from "../../library/models/lib.js";
 import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../../renderer/animations/gearfold.js";
 import { HumanAnimation } from "../../renderer/animations/human.js";
+import { GearModel } from "../../renderer/models/gear.js";
+import { Archetype } from "../items/item.js";
 import { Datablock } from "../lib.js";
 
 export interface MeleeArchetype {
@@ -24,13 +25,15 @@ export interface GunArchetype {
 }
 
 
-export interface GearModelDatablock {
-    model: () => Model;
+export interface GearDatablock {
+    model: (gearJSON: string) => GearModel;
+    type?: Archetype;
+    name?: string;
     meleeArchetype?: MeleeArchetype;
     gunArchetype?: GunArchetype;
 }
 
-export const GearModelDatablock = new Datablock<Identifier, GearModelDatablock>((identifier) => {
+export const GearDatablock = new Datablock<Identifier, GearDatablock>((identifier) => {
     if (identifier.type === "Unknown") return undefined;
     if (identifier.type !== "Gear") throw new Error(`Identifier did not represent gear: ${identifier.hash}`);
     return identifier.stringKey;

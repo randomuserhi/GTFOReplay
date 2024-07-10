@@ -1,6 +1,6 @@
-import { Model } from "../../library/models/lib.js";
 import { Identifier } from "../../parser/identifier.js";
 import { HumanAnimation } from "../../renderer/animations/human.js";
+import { ItemModel } from "../../renderer/models/items.js";
 import { Datablock } from "../lib.js";
 
 export interface ItemArchetype {
@@ -11,7 +11,7 @@ export interface ItemArchetype {
 }
 
 export interface ItemModelDatablock {
-    model: () => Model;
+    model: () => ItemModel;
     archetype: ItemArchetype;
 }
 

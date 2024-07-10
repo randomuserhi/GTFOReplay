@@ -1,6 +1,7 @@
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Color, Group, Object3D, Vector3 } from "@esm/three";
-import { GearModelDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
+import { Text } from "@esm/troika-three-text";
+import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemDatablock } from "../../datablocks/items/item.js";
 import { ItemArchetype, ItemModelDatablock } from "../../datablocks/items/models.js";
 import { PlayerAnimDatablock } from "../../datablocks/player/animation.js";
@@ -12,11 +13,13 @@ import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { InventorySlot, inventorySlotMap, inventorySlots, PlayerBackpack } from "../../parser/player/backpack.js";
 import { Player } from "../../parser/player/player.js";
+import { PlayerStats } from "../../parser/player/stats.js";
 import { HumanAnimation, HumanJoints, HumanMask } from "../animations/human.js";
 import { animCrouch, animVelocity } from "../datablocks/player/animations.js";
 import { GearModel } from "../models/gear.js";
 import { ItemModel } from "../models/items.js";
 import { StickFigure } from "../models/stickfigure.js";
+import { Camera } from "../renderer.js";
 
 const animations = PlayerAnimDatablock.obj();
 
@@ -54,19 +57,74 @@ const aimOffset = new AnimBlend(HumanJoints, [
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_C.first())), x: 0, y: 0 },
 ]);
 
-interface PlayerModelData {
-    player: Player;
-    anim: PlayerAnimState;
-}
-
-interface EquippedItem {
+class EquippedItem {
     id?: Identifier;
-    datablock?: ItemDatablock;
-    modelDatablock?: ItemModelDatablock | GearModelDatablock;
+    itemDatablock?: ItemDatablock;
+    itemModelDatablock?: ItemModelDatablock;
+    gearDatablock?: GearDatablock;
     model?: ItemModel | GearModel;
+
+    public get(id: Identifier) {
+        switch (id.type) {
+        case "Unknown": {
+            this.itemDatablock = undefined;
+            this.itemModelDatablock = undefined;
+            this.gearDatablock = undefined;
+            this.model = undefined;
+        } break;
+        case "Gear": {
+            this.itemDatablock = undefined;
+            this.gearDatablock = GearDatablock.get(id);
+            this.model = this.gearDatablock?.model(id.stringKey);
+        } break;
+        case "Item": {
+            this.gearDatablock = undefined;
+            this.itemDatablock = ItemDatablock.get(id);
+            this.itemModelDatablock = ItemModelDatablock.get(id);
+            this.model = this.itemModelDatablock?.model();
+        } break;
+        default: throw new Error(`Could not get equipped item ${id}`);
+        }
+        this.id = id;
+
+        return this;
+    }
+
+    get name(): string | undefined {
+        switch (this.id?.type) {
+        case "Gear": return this.gearDatablock?.name;
+        case "Item": return this.itemDatablock?.name;
+        default: return undefined;
+        }
+    }
+
+    get type(): Archetype {
+        let type: Archetype | undefined = undefined;
+        switch (this.id?.type) {
+        case "Gear": type = this.gearDatablock?.type; break;
+        case "Item": type = this.itemDatablock?.type; break;
+        }
+        if (type === undefined) return "rifle";
+        return type;
+    }
+
+    get meleeArchetype(): MeleeArchetype | undefined {
+        if (this.id?.type !== "Gear") return undefined;
+        return this.gearDatablock?.meleeArchetype;
+    }
+
+    get gunArchetype(): GunArchetype | undefined {
+        if (this.id?.type !== "Gear") return undefined;
+        return this.gearDatablock?.gunArchetype;
+    }
+
+    get itemArchetype(): ItemArchetype | undefined {
+        if (this.id?.type !== "Item") return undefined;
+        return this.itemModelDatablock?.archetype;
+    }
 }
 
-export class PlayerModel extends StickFigure<PlayerModelData> {
+export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack]> {
     private color: Color;
     
     private aimIK: IKSolverAim = new IKSolverAim();
@@ -79,7 +137,6 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
     private equipped: Group = new Group();
     private equippedItem?: EquippedItem;
     private equippedSlot?: InventorySlot;
-    private lastEquipped: number = 0;
 
     private slots: EquippedItem[];
     private backpack: Group = new Group();
@@ -90,12 +147,26 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
     private itemArchetype: ItemArchetype;
     private gunArchetype: GunArchetype;
 
-    private animOffset: number = 0;
+    private animOffset: number = Math.random() * 10;
+
+    private tmp?: Text;
 
     constructor(color: Color) {
         super();
 
         this.color = color;
+
+        // Setup tmp
+        this.tmp = new Text();
+        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.tmp.fontSize = 0.2;
+        this.tmp.position.y = 2;
+        this.tmp.textAlign = "center";
+        this.tmp.anchorX = "center";
+        this.tmp.anchorY = "bottom";
+        this.tmp.color = 0xffffff;
+        this.tmp.visible = false;
+        this.anchor.add(this.tmp);
 
         // Setup backpack
         this.visual.joints.spine1.add(this.backpack);
@@ -104,7 +175,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         this.backpackAligns = new Array(inventorySlots.length);
         this.equippedItem = undefined;
         for (let i = 0; i < inventorySlots.length; ++i) {
-            this.slots[i] = {};
+            this.slots[i] = new EquippedItem();
 
             this.backpackAligns[i] = new Group();
             this.backpack.add(this.backpackAligns[i]);
@@ -165,12 +236,15 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         this.leftIK.initiate(this.leftIK.root);
     }
 
-    public render(dt: number, time: number, metadata: PlayerModelData) {
+    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack) {
         if (!this.isVisible()) return;
 
-        const { player, anim } = metadata;
+        this.updateBackpack(database, player, backpack);
+
         this.animate(time, player, anim);
         this.draw(dt, player.position, player.rotation, this.color);
+    
+        this.updateTmp(player, camera, stats, backpack);
     }
 
     private static FUNC_animate = {
@@ -197,13 +271,13 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
         }
         
-        if (this.lastArchetype !== this.equippedItem?.spec?.type) {
+        if (this.lastArchetype !== this.equippedItem?.type) {
             const blend = Math.clamp01(equipTime / 0.2);
-            if (blend === 1 && this.equippedItem?.spec !== undefined) {
-                this.lastArchetype = this.equippedItem.spec?.type;
+            if (blend === 1 && this.equippedItem !== undefined) {
+                this.lastArchetype = this.equippedItem?.type;
             }
 
-            switch (this.equippedItem?.spec?.type) {
+            switch (this.equippedItem?.type) {
             case "pistol": this.skeleton.blend(animations.pistolMovement.sample(offsetTime), blend); break;
             case "rifle": this.skeleton.blend(animations.rifleMovement.sample(offsetTime), blend); break;
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;
@@ -231,7 +305,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         const stateTime = time - (anim.lastStateTransition / 1000);
         switch(anim.state) {
         case "jump": {
-            switch (this.equippedItem?.spec?.type) {
+            switch (this.equippedItem?.type) {
             case "pistol": this.skeleton.override(animations.Pistol_Jump.sample(stateTime)); break;
             case "rifle": this.skeleton.override(animations.Rifle_Jump.sample(stateTime)); break;
             default: this.skeleton.override(this.meleeArchetype.jumpAnim.sample(stateTime)); break;
@@ -239,7 +313,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         } break;
         case "fall": {
             const blendWeight = Math.clamp01(stateTime / 0.2);
-            switch (this.equippedItem?.spec?.type) {
+            switch (this.equippedItem?.type) {
             case "pistol": this.skeleton.blend(animations.Pistol_Fall.sample(stateTime), blendWeight); break;
             case "rifle": this.skeleton.blend(animations.Rifle_Fall.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.fallAnim.sample(stateTime), blendWeight);  break;
@@ -248,7 +322,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         case "land": {
             const isSlow = (Math.abs(anim.velocity.x) < 0.08 && Math.abs(anim.velocity.z) < 0.08);
             const blendWeight = 1 - Math.clamp01(stateTime / (isSlow ? 1 : 0.5));
-            switch (this.equippedItem?.spec?.type) {
+            switch (this.equippedItem?.type) {
             case "pistol": this.skeleton.blend(animations.Pistol_Land.sample(stateTime), blendWeight); break;
             case "rifle": this.skeleton.blend(animations.Rifle_Land.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.landAnim.sample(stateTime), blendWeight);  break;
@@ -266,7 +340,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
         }
 
         const shoveTime = time - (anim.lastShoveTime / 1000);
-        const shoveDuration = this.equippedItem?.spec?.type === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
+        const shoveDuration = this.equippedItem?.type === "melee" ? this.meleeArchetype.shoveAnim.duration : this.meleeArchetype.shoveAnim.duration * 0.6;
         const isShoving = shoveTime < shoveDuration;
         if (isShoving) {
             this.equipped.visible = true;
@@ -352,7 +426,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
                 this.aimTarget.position.y += anim.targetLookDir.y * dist;
                 this.aimTarget.position.z += anim.targetLookDir.z * dist;
 
-                switch (this.equippedItem.spec?.type) {
+                switch (this.equippedItem.type) {
                 case "pistol":
                 case "rifle": {
                     this.aimIK.update();
@@ -360,8 +434,13 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
                     const reloadTime = time - (anim.lastReloadTransition / 1000);
                     if (this.gunArchetype !== undefined && anim.isReloading && reloadTime < anim.reloadDurationInSeconds) {
                         if (this.gunArchetype.gunFoldAnim !== undefined && this.equippedItem.model !== undefined) {
-                            this.equippedItem.model.update(this.gunArchetype.gunFoldAnim.sample(reloadTime / anim.reloadDurationInSeconds * this.gunArchetype.gunFoldAnim.duration));
-
+                            if (this.equippedItem.model.type === "Gear") {
+                                const model = this.equippedItem.model as GearModel;
+                                model.animate(this.gunArchetype.gunFoldAnim.sample(reloadTime / anim.reloadDurationInSeconds * this.gunArchetype.gunFoldAnim.duration));
+                            } else {
+                                throw new Error(`Tried to perform reload animation on a ItemModel, expected a GearModel instead.`);
+                            }
+                            
                             if (this.equippedItem.model.leftHand !== undefined) {
                                 if (this.gunArchetype.offset !== undefined) {
                                     this.equippedItem.model.leftHand.position.add(this.gunArchetype.offset);
@@ -372,7 +451,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
                         }
                     } else {
                         const shotTime = time - (anim.lastShot / 1000);
-                        const recoilAnim = this.equippedItem.spec?.type === "pistol" ? animations.Pistol_Recoil : animations.Rifle_Recoil;
+                        const recoilAnim = this.equippedItem?.type === "pistol" ? animations.Pistol_Recoil : animations.Rifle_Recoil;
                         if (shotTime < recoilAnim.duration) {
                             this.skeleton.additive(difference(tempAvatar, recoilAnim.first(), recoilAnim.sample(shotTime)), 1, upperBodyMask);
                         }
@@ -479,8 +558,7 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
             }
 
             if (item.model === undefined || !Identifier.equals(database, backpack.slots[i], item.id)) {
-                item.spec = specification.getEquippable(backpack.slots[i]);
-                item.model = item.spec?.model();
+                item.get(backpack.slots[i]);
             }
 
             if (item.model !== undefined) {
@@ -489,42 +567,99 @@ export class PlayerModel extends StickFigure<PlayerModelData> {
                     this.equippedItem = item;
                     this.equippedSlot = inventorySlots[i];
 
-                    if (item.spec !== undefined) {
-                        switch (item.spec.type) {
-                        case "melee": {
-                            const spec = specification.getEquippable(item.spec.id);
-                            if (spec?.meleeArchetype !== undefined) {
-                                const archetype = spec.meleeArchetype!;
-                                this.meleeArchetype = archetype;
-                            }
-                        } break;
-                        case "consumable": {
-                            const spec = specification.getEquippable(item.spec.id);
-                            if (spec?.consumableArchetype !== undefined) {
-                                this.itemArchetype = spec.consumableArchetype!;
-                            }
-                        } break;
-                        case "pistol":
-                        case "rifle": {
-                            const spec = specification.getEquippable(item.spec.id);
-                            if (spec?.gearArchetype !== undefined) {
-                                const archetype = spec.gearArchetype!;
-                                this.gunArchetype = archetype;
-                            }
-                        } break;
+                    switch (item.type) {
+                    case "melee": {
+                        const archetype = item.meleeArchetype;
+                        if (archetype !== undefined) {
+                            this.meleeArchetype = archetype;
                         }
+                    } break;
+                    case "consumable": {
+                        const archetype = item.itemArchetype;
+                        if (archetype !== undefined) {
+                            this.itemArchetype = archetype;
+                        }
+                    } break;
+                    case "pistol":
+                    case "rifle": {
+                        const archetype = item.gunArchetype;
+                        if (archetype !== undefined) {
+                            this.gunArchetype = archetype;
+                        }
+                    } break;
                     }
 
-                    this.equipped.add(item.model.group);
-                    item.model.group.position.copy(item.model.equipOffsetPos);
-                    item.model.group.quaternion.copy(item.model.equipOffsetRot);
+                    this.equipped.add(item.model.root);
+                    item.model.root.position.copy(item.model.equipOffsetPos);
+                    item.model.root.quaternion.copy(item.model.equipOffsetRot);
                 } else {
-                    this.backpackAligns[i].add(item.model.group);
-                    item.model.group.position.copy(item.model.offsetPos);
-                    item.model.group.quaternion.copy(item.model.offsetRot);
+                    this.backpackAligns[i].add(item.model.root);
+                    item.model.root.position.copy(item.model.offsetPos);
+                    item.model.root.quaternion.copy(item.model.offsetRot);
                 }
             }
         }
+    }
+
+    private static FUNC_updateTmp = {
+        tmpPos: new Vector3(),
+        camPos: new Vector3(),
+        equippable: new EquippedItem(),
+    } as const;
+    private updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {
+        if (this.tmp !== undefined) {
+            const { tmpPos, camPos, equippable } = PlayerModel.FUNC_updateTmp;
+
+            if (stats === undefined) {
+                this.tmp.visible = false;   
+                return;
+            }
+            
+            const nickname = player.nickname;
+            const health = `Health: ${Math.round(stats.health * 100).toString().padStart(3)}%`;
+            const infectionValue = Math.round(stats.infection * 100);
+            const infection = `${(infectionValue >= 10 ? ` (${infectionValue.toString().padStart(3)}%)` : "")}`;
+            if (backpack === undefined) {
+                this.tmp.text = `${nickname}
+${health}${infection}
+Main: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
+Special: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
+Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+                this.tmp.colorRanges = {
+                    0: this.color,
+                    [nickname.length]: 0xffffff,
+                };
+            } else {
+                const main = equippable.get(backpack.slots[inventorySlotMap.main]).name;
+                const special = equippable.get(backpack.slots[inventorySlotMap.special]).name;
+                const tool = equippable.get(backpack.slots[inventorySlotMap.tool]).name;
+                this.tmp.text = `${nickname}
+${health}${infection}
+${(main !== undefined ? main : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
+${(special !== undefined ? special : "Special")}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
+${(tool !== undefined ? tool : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+                this.tmp.colorRanges = {
+                    0: this.color,
+                    [nickname.length]: 0xffffff,
+                    [nickname.length + health.length + 1]: 0x03e8fc, 
+                    [nickname.length + health.length + 1 + infection.length]: 0xffffff
+                };
+            }
+            this.tmp.visible = true;
+
+            this.tmp.getWorldPosition(tmpPos);
+            camera.root.getWorldPosition(camPos);
+
+            const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
+            this.tmp.fontSize = lerp * 0.3 + 0.05;
+            this.tmp.lookAt(camPos);
+        }
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this.tmp?.dispose();
+        this.tmp = undefined;
     }
 }
 

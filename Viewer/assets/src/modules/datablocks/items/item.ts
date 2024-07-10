@@ -8,7 +8,7 @@ export type Archetype =
     "consumable";
 
 export interface ItemDatablock {
-    type: Archetype,
+    type?: Archetype,
     name?: string;
     serial?: string,
 }

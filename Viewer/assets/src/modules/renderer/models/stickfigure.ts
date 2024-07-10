@@ -129,14 +129,14 @@ function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: 
     return worldPos;
 }
 
-export class StickFigure<T = any> extends Model<T> {
+export class StickFigure<T extends any[] = []> extends Model<T> {
     private worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
 
     public skeleton: HumanSkeleton = new AvatarSkeleton(HumanJoints, "hip");
     public visual: HumanSkeleton = new AvatarSkeleton(HumanJoints, "hip");
     private inverseMatrix: AvatarStructure<HumanJoints, Matrix4> = createAvatarStruct(HumanJoints, () => new Matrix4());
 
-    private anchor: Group = new Group();
+    protected anchor: Group = new Group();
     protected offset: Group = new Group();
 
     public settings: StickFigureSettings = {};
