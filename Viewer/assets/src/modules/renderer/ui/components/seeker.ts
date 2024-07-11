@@ -92,8 +92,10 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
     
     value = signal(0);
     
-    constructor(element: HTMLDivElement, bindings: any) {
+    constructor(element: HTMLDivElement, bindings: any, children: Node[]) {
         super(element, bindings);
+
+        this.mount.append(...children);
 
         this.value.guard = (value) => Math.clamp01(value);
         this.value.on((value) => this.progress.style.width = `${Math.clamp01(value) * 100}%`);

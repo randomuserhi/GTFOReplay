@@ -96,7 +96,9 @@ Macro(UI, "ui", //html
     `
     <div rhu-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">
-        ${seeker`rhu-id="seeker"`}
+        ${seeker.open`rhu-id="seeker"`}
+            <div>crazy</div>
+        ${seeker.close}
     </div>
     `, {
         element: //html
