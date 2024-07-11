@@ -5,17 +5,6 @@ interface Template<T extends Templates> {
     (first: TemplateStringsArray, ...interpolations: (string | {
         [Symbol.toPrimitive]: (...args: any[]) => string;
     })[]): string;
-    open: {
-        (first: TemplateStringsArray, ...interpolations: (string | {
-            [Symbol.toPrimitive]: (...args: any[]) => string;
-        })[]): string;
-        toString: () => string;
-        [Symbol.toPrimitive]: () => string;
-    };
-    close: {
-        [Symbol.toPrimitive]: () => string;
-        toString: () => string;
-    };
     type: T;
     toString: () => T;
     [Symbol.toPrimitive]: () => string;

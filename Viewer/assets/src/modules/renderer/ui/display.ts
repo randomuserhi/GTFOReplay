@@ -86,9 +86,7 @@ export const display = Macro(Display, "ui.display", //html
     `
     <div rhu-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">
-        ${seeker.open`rhu-id="seeker"`}
-            <div>crazy</div>
-        ${seeker.close}
+        ${seeker`rhu-id="seeker"`}
     </div>
     `, {
         element: //html

@@ -71,14 +71,6 @@ RHU.definePublicAccessor(Element.prototype, "rhuMacro", {
         Macro.parse(this, value);
     }
 });
-const closure = {
-    toString() {
-        return "</rhu-macro>";
-    },
-    [Symbol.toPrimitive]() {
-        return "</rhu-macro>";
-    }
-};
 const Template = function (type) {
     const template = function (first, ...interpolations) {
         let generatedCode = `<rhu-macro rhu-type="${type}" ${first[0]}`;
@@ -90,19 +82,6 @@ const Template = function (type) {
         generatedCode += `></rhu-macro>`;
         return generatedCode;
     };
-    template.open = function (first, ...interpolations) {
-        let generatedCode = `<rhu-macro rhu-type="${type}" ${first[0]}`;
-        for (let i = 0; i < interpolations.length; ++i) {
-            const interpolation = interpolations[i];
-            generatedCode += interpolation;
-            generatedCode += first[i + 1];
-        }
-        generatedCode += `>`;
-        return generatedCode;
-    };
-    template.open.toString = () => `<rhu-macro rhu-type="${type}">`;
-    template.open[Symbol.toPrimitive] = () => `<rhu-macro rhu-type="${type}">`;
-    template.close = closure;
     template.type = type;
     template.toString = () => type,
         template[Symbol.toPrimitive] = () => `<rhu-macro rhu-type="${type}"></rhu-macro>`;
@@ -162,7 +141,6 @@ Macro.parseDomString = function (str) {
     template.innerHTML = str;
     return template.content;
 };
-const childMap = new Map();
 const _anon = function (source, parseStack, donor, root = false) {
     let doc;
     if (RHU.exists(donor)) {
@@ -190,7 +168,6 @@ const _anon = function (source, parseStack, donor, root = false) {
         if (!RHU.exists(definition))
             throw new TypeError(`Could not expand <rhu-macro> of type '${type}'. Macro definition does not exist.`);
         const options = definition.options;
-        const children = [...el.childNodes];
         if (!RHU.exists(options.element)) {
             if (Element_hasAttribute(el, "rhu-id")) {
                 const identifier = Element_getAttribute(el, "rhu-id");
@@ -212,7 +189,7 @@ const _anon = function (source, parseStack, donor, root = false) {
                 }
             }
             try {
-                _parse(el, type, children, parseStack);
+                _parse(el, type, parseStack);
             }
             catch (e) {
                 errorHandle("parser", type, e, root);
@@ -228,7 +205,6 @@ const _anon = function (source, parseStack, donor, root = false) {
                     macro.setAttribute(el.attributes[i].name, el.attributes[i].value);
                 el.replaceWith(macro);
                 Element_setAttribute(macro, "rhu-macro", type);
-                childMap.set(macro, children);
             }
         }
     }
@@ -258,16 +234,12 @@ const _anon = function (source, parseStack, donor, root = false) {
         if (el === donor)
             continue;
         const type = Element_getAttribute(el, "rhu-macro");
-        let children = childMap.get(el);
-        if (children === undefined)
-            children = [];
         try {
-            _parse(el, type, children, parseStack);
+            _parse(el, type, parseStack);
         }
         catch (e) {
             errorHandle("parser", type, e, root);
         }
-        childMap.delete(el);
     }
     const tempContainer = document.createElement("div");
     Element_append(tempContainer, ...doc.childNodes);
@@ -301,14 +273,13 @@ const errorHandle = function (type, macro, e, root) {
     }
 };
 const watching = new Map();
-const _parse = function (element, type, children, parseStack, root = false, force = false) {
+const _parse = function (element, type, parseStack, root = false, force = false) {
     if (!RHU.exists(type))
         type = "";
     if (element.tagName === "RHU-MACRO") {
         const definition = templates.get(type);
         if (!RHU.exists(definition))
             return;
-        children.push(...element.childNodes);
         const options = definition.options;
         const doc = RHU.exists(options.element) ? Macro.parseDomString(options.element) : document.createElement("div");
         const macro = doc.children[0];
@@ -358,7 +329,7 @@ const _parse = function (element, type, children, parseStack, root = false, forc
     }
     let obj = undefined;
     try {
-        obj = new constructor(RHU.exists(options.element) ? element : undefined, properties, children);
+        obj = new constructor(RHU.exists(options.element) ? element : undefined, properties);
     }
     catch (e) {
         errorHandle("constructor", type, e, root);
@@ -398,7 +369,7 @@ const _parse = function (element, type, children, parseStack, root = false, forc
     parseStack.pop();
 };
 Macro.parse = function (element, type, force = false) {
-    _parse(element, type, [], [], true, force);
+    _parse(element, type, [], true, force);
 };
 const load = function () {
     const expand = [...document.getElementsByTagName("rhu-macro")];
