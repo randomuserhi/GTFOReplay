@@ -51,6 +51,8 @@ class UI extends MacroWrapper<HTMLDivElement> {
     public init(view: TemplateMap["routes/player.view"]) {
         this.mount.replaceChildren(view.element);
         
+        // TODO(randomuserhi): don't update length of replay on seeker bar during seeking (makes seeking annoying) => basically reimplement old behaviour 
+
         view.time.on((time) => {
             if (view.replay === undefined) return;
             const length = view.replay.length();
