@@ -7,36 +7,6 @@ import { winNav } from "./global/components/organisms/winNav.js";
 import { main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
 
-async function __main__() {
-    window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
-
-    window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
-        AsyncScriptLoader.load(p);
-        ModuleLoader.registerASLModule(p); 
-
-        // TODO(randomuserhi): Trigger re-parse of current file
-    }));
-    window.api.on("loadRendererModules", async (paths: string[]) => {
-        const promises: Promise<void>[] = [];
-        for (const p of paths) {
-            promises.push(AsyncScriptLoader.load(p));
-        }
-        await Promise.all(promises);
-
-        // TODO(randomuserhi):
-        //const player: player = (window as any).player;
-        //player.refresh();
-    });
-    
-    (await window.api.invoke("loadParserModules")).forEach((p: string) => {
-        AsyncScriptLoader.load(p);
-        ModuleLoader.registerASLModule(p);
-    });
-    (await window.api.invoke("loadRendererModules")).forEach((p: string) => {
-        AsyncScriptLoader.load(p);
-    });
-}
-
 export const theme = Theme(({ theme }) => {
     return {
         defaultColor: theme`rgba(255, 255, 255, 0.8)`,
@@ -88,7 +58,7 @@ class App extends MacroWrapper<HTMLDivElement> {
 
     constructor(element: HTMLDivElement, bindings: any) {
         super(element, bindings);
-        __main__();
+        this.init();
 
         this.file.addEventListener("change", (e: any) => {
             try {
@@ -112,6 +82,36 @@ class App extends MacroWrapper<HTMLDivElement> {
         this.nav.icon.addEventListener("click", () => this.file.click());
 
         this.load(this.main.element);
+    }
+
+    private async init() {
+        window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
+
+        window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
+            AsyncScriptLoader.load(p);
+            ModuleLoader.registerASLModule(p); 
+
+            // TODO(randomuserhi): Trigger re-parse of current file
+        }));
+        window.api.on("loadRendererModules", async (paths: string[]) => {
+            const promises: Promise<void>[] = [];
+            for (const p of paths) {
+                promises.push(AsyncScriptLoader.load(p));
+            }
+            await Promise.all(promises);
+
+            // TODO(randomuserhi): refresh internal renderer
+            //const player: player = (window as any).player;
+            //player.refresh();
+        });
+    
+        (await window.api.invoke("loadParserModules")).forEach((p: string) => {
+            AsyncScriptLoader.load(p);
+            ModuleLoader.registerASLModule(p);
+        });
+        (await window.api.invoke("loadRendererModules")).forEach((p: string) => {
+            AsyncScriptLoader.load(p);
+        });
     }
 
     public load(node: Node) {

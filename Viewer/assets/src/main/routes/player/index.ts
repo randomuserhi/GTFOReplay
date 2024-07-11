@@ -44,13 +44,15 @@ class Player extends MacroWrapper<HTMLDivElement> {
         super(element, bindings);
     }
 
-    public render() {
+    private render() {
         const frag = new DocumentFragment();
         domFunc(frag, this.view);
-        this.element.replaceWith(frag);
+        this.element.replaceChildren(frag);
     }
 
     public async open(path?: string) {
+        this.render();
+
         const file: FileHandle = {
             path, finite: false
         };
@@ -83,6 +85,6 @@ let domFunc: (doc: DocumentFragment, view: TemplateMap["routes/player.view"]) =>
     doc.append(view.element);
 };
 
-export function UI(func: (doc: DocumentFragment, view: TemplateMap["routes/player.view"]) => void) {
+export function Render(func: (doc: DocumentFragment, view: TemplateMap["routes/player.view"]) => void) {
     domFunc = func;
 }

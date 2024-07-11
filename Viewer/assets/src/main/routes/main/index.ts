@@ -80,7 +80,6 @@ declare module "@/rhu/macro.js" {
 class Main extends MacroWrapper<HTMLDivElement> {
     private loadingWidget: HTMLDivElement;
     private loadButton: HTMLButtonElement;
-    private cover: HTMLDivElement;
 
     public loading = signal(false);
 
@@ -100,7 +99,7 @@ class Main extends MacroWrapper<HTMLDivElement> {
 
 export const main = Macro(Main, "routes/main", //html
     `
-    <div rhu-id="cover" class="${style.empty}">
+    <div class="${style.empty}">
         <div class="${style.watermark}">${__version__}</div>
         <video style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
             <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">

@@ -32,7 +32,8 @@ module.exports = function ( { types: t } ) {
                                 defaultSpecifiers.push(`const ${localName} = (await require("${source}", "${type}")).default`);
                             } break;
                             case "ImportSpecifier": {
-                                importSpecifiers.push(localName);
+                                const importName = specifier.imported.name;
+                                importSpecifiers.push(importName === localName ? localName : `${importName}: ${localName}`);
                             } break;
                             case "ImportNamespaceSpecifier": {
                                 namespaceSpecifiers.push(`const ${localName} = await require("${source}", "${type}")`);
@@ -43,7 +44,7 @@ module.exports = function ( { types: t } ) {
           
                         const statements = [];
                         if (defaultSpecifiers.length > 0) statements.push(defaultSpecifiers.join(";\n"));
-                        if (importSpecifiers.length > 0) statements.push(`const { ${importSpecifiers.join(",")} } = await require("${source}", "${type}")`);
+                        if (importSpecifiers.length > 0) statements.push(`const { ${importSpecifiers.join(", ")} } = await require("${source}", "${type}")`);
                         if (namespaceSpecifiers.length > 0) statements.push(namespaceSpecifiers.join(";\n"));
                         path.replaceWith(template.statement.ast`${statements.join(";\n")}`);
                     },

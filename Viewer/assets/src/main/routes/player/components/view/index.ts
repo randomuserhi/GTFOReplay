@@ -40,15 +40,7 @@ class View extends MacroWrapper<HTMLCanvasElement> {
         window.addEventListener("resize", () => this.resize());
         this.element.addEventListener("mount", () => this.resize());
 
-        this.time.guard = (time) => {
-            if (this.replay === undefined) return 0;
-            if (time < 0) time = 0;
-            else {
-                const length = this.replay.length();
-                if (time > length) time = length;
-            }
-            return time;
-        };
+        this.time.guard = (time) => Math.clamp(time, 0, this.replay !== undefined ? this.replay.length() : 0);
         this.update();
     }
 
@@ -89,7 +81,7 @@ class View extends MacroWrapper<HTMLCanvasElement> {
         this.frameRate(1000 / dt);
         if (this.replay !== undefined) {
             const time = this.time(this.time() + dt * this.timescale());
-            
+
             if (this.snapshot?.time !== time) {
                 this.snapshot = this.replay.getSnapshot(time);
             }
