@@ -4,6 +4,7 @@ import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptLoader } from "../replay/async-script-loader.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
 import { winNav } from "./global/components/organisms/winNav.js";
+import { main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
 
 async function __main__() {
@@ -70,6 +71,7 @@ const style = Style(({ style }) => {
 
 export interface app extends HTMLElement {
     player: player;
+    main: main;
 
     body: HTMLDivElement;
     load(node: Node): void;
@@ -84,15 +86,15 @@ declare module "@/rhu/macro.js" {
 Macro((() => {
     const app = function(this: app) {
         __main__();
+        this.main = document.createMacro(main);
         this.player = document.createMacro(player);
         
-
         window.api.on("startGame", () => {
             console.log("LIVE VIEW OPEN GAME");
             this.player.open();
         }); // Temporary for live viewing games
 
-        this.load(this.player);
+        this.load(this.main);
     } as any as Constructor<app>;
 
     app.prototype.load = function(node) {
