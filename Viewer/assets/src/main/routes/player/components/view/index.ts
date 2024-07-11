@@ -51,6 +51,10 @@ class View extends MacroWrapper<HTMLCanvasElement> {
         this.renderer.resize(width, height);
     }
 
+    public refresh() {
+        this.renderer.refresh(this.element, this.replay);
+    }
+
     public ready() {
         if (this.replay === undefined) throw new Error("Received 'eoh', but no replay was present.");
         
@@ -62,6 +66,7 @@ class View extends MacroWrapper<HTMLCanvasElement> {
 
     time = signal(0);
     timescale = signal(1);
+    pause = signal(false);
     frameRate = signal(0);
 
     private reset() {
@@ -80,7 +85,8 @@ class View extends MacroWrapper<HTMLCanvasElement> {
         this.prevTime = now;
         this.frameRate(1000 / dt);
         if (this.replay !== undefined) {
-            const time = this.time(this.time() + dt * this.timescale());
+            if (!this.pause()) this.time(this.time() + dt * this.timescale());
+            const time = this.time();
 
             if (this.snapshot?.time !== time) {
                 this.snapshot = this.replay.getSnapshot(time);

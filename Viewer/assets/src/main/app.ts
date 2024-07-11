@@ -100,9 +100,7 @@ class App extends MacroWrapper<HTMLDivElement> {
             }
             await Promise.all(promises);
 
-            // TODO(randomuserhi): refresh internal renderer
-            //const player: player = (window as any).player;
-            //player.refresh();
+            this.player.refresh();
         });
     
         (await window.api.invoke("loadParserModules")).forEach((p: string) => {

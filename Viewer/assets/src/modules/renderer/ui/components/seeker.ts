@@ -53,12 +53,6 @@ const style = Style(({ style }) => {
     user-drag: none;
     `;
 
-    const time = style.class`
-    align-items: center;
-    display: flex;
-    padding: 0 10px;
-    `;
-
     const button = style.class`
     color: white;
     padding: 0 15px;
@@ -87,11 +81,8 @@ declare module "@esm/@/rhu/macro.js" {
 }
 
 class Seeker extends MacroWrapper<HTMLDivElement> {
-    private _seeking: boolean;
-    private _hovering: boolean;
-    
-    get seeking() { return this._seeking; }
-    get hovering() { return this._hovering; }
+    public seeking = signal(false);
+    public hovering = signal(false);
 
     public mount: HTMLDivElement;
     private interact: HTMLDivElement;
@@ -107,35 +98,33 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
         this.value.on((value) => this.progress.style.width = `${Math.clamp01(value) * 100}%`);
 
         const doSeek = (x: number) => {
-            if (this._seeking) {
+            if (this.seeking()) {
                 const rect = this.interact.getBoundingClientRect();
                 this.value((x - rect.left) / this.bar.clientWidth);
             }
         };
         
-        this._seeking = false;
         window.addEventListener("mousedown", (evt) => {
             const rect = this.interact.getBoundingClientRect();
             if (evt.button === 0 && 
                 evt.clientX > rect.left && evt.clientX < rect.left + this.interact.clientWidth &&
                 evt.clientY > rect.top && evt.clientY < rect.top + this.interact.clientHeight) {
-                this._seeking = true;
+                this.seeking(true);
                 doSeek(evt.clientX);
             }
         });
         window.addEventListener("mouseup", (evt) => { 
             if (evt.button === 0) {
-                this._seeking = false;
+                this.seeking(false);
                 doSeek(evt.clientX);
             }
         });
 
-        this._hovering = false;
         this.interact.addEventListener("mouseover", () => {
-            this._hovering = true;
+            this.hovering(true);
         });
         this.interact.addEventListener("mouseout", () => {
-            this._hovering = false;
+            this.hovering(false);
         });
 
         window.addEventListener("mousemove", (evt) => {

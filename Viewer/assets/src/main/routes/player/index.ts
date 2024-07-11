@@ -38,7 +38,7 @@ declare module "@/rhu/macro.js" {
 class Player extends MacroWrapper<HTMLDivElement> {
     parser?: Parser;
 
-    view: TemplateMap["routes/player.view"];
+    private view: TemplateMap["routes/player.view"];
 
     constructor(element: HTMLDivElement, bindings: any) {
         super(element, bindings);
@@ -48,6 +48,11 @@ class Player extends MacroWrapper<HTMLDivElement> {
         const frag = new DocumentFragment();
         domFunc(frag, this.view);
         this.element.replaceChildren(frag);
+    }
+
+    public refresh() {
+        this.render();
+        this.view.refresh();
     }
 
     public async open(path?: string) {

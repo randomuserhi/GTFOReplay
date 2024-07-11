@@ -1,4 +1,5 @@
 import { Macro, MacroWrapper, TemplateMap } from "@esm/@/rhu/macro.js";
+import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { Render } from "@esm/@root/main/routes/player/index.js";
 import { seeker } from "./components/seeker.js";
@@ -48,24 +49,34 @@ class UI extends MacroWrapper<HTMLDivElement> {
         super(element, bindings);
     }
 
+    private length = signal(0);
+
     public init(view: TemplateMap["routes/player.view"]) {
         this.mount.replaceChildren(view.element);
-        
-        // TODO(randomuserhi): don't update length of replay on seeker bar during seeking (makes seeking annoying) => basically reimplement old behaviour 
 
         view.time.on((time) => {
             if (view.replay === undefined) return;
-            const length = view.replay.length();
             
-            if (!this.seeker.seeking) this.seeker.value(time / length);
+            if (!this.seeker.seeking()) {
+                this.seeker.value(time / this.length(view.replay.length()));
+            }
         });
         
         this.seeker.value.on((value) => {
             if (view.replay === undefined) return;
-            const length = view.replay.length();
 
-            if (this.seeker.seeking) view.time(value * length);
+            if (this.seeker.seeking()) {
+                view.time(value * this.length());
+            }
         });
+
+        this.seeker.seeking.on((seeking) => {
+            view.pause(seeking);
+        });
+
+        const text = document.createTextNode("");
+        this.length.on((value) => text.nodeValue = `${value}`);
+        this.seeker.mount.append(text);
     }
 }
 
