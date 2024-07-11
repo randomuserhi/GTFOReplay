@@ -77,7 +77,7 @@ const style = Style(({ style }) => {
 
 declare module "@esm/@/rhu/macro.js" {
     interface TemplateMap {
-        "ui.seeker": Seeker;
+        "ui.display.seeker": Seeker;
     }
 }
 
@@ -134,7 +134,7 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
     }
 }
 
-export const seeker = Macro(Seeker, "ui.seeker", //html
+export const seeker = Macro(Seeker, "ui.display.seeker", //html
     `
     <div rhu-id="interact" class="${style.bar}">
         <div rhu-id="bar" class="${style.visualBar}">
