@@ -1,6 +1,7 @@
 import { Macro, MacroWrapper } from "@esm/@/rhu/macro.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
+import { dispose } from "../main.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -103,7 +104,6 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
                 this.value((x - rect.left) / this.bar.clientWidth);
             }
         };
-        
         window.addEventListener("mousedown", (evt) => {
             const rect = this.interact.getBoundingClientRect();
             if (evt.button === 0 && 
@@ -112,23 +112,22 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
                 this.seeking(true);
                 doSeek(evt.clientX);
             }
-        });
+        }, { signal: dispose.signal });
         window.addEventListener("mouseup", (evt) => { 
             if (evt.button === 0) {
                 this.seeking(false);
                 doSeek(evt.clientX);
             }
-        });
+        }, { signal: dispose.signal });
+        window.addEventListener("mousemove", (evt) => {
+            doSeek(evt.clientX);
+        }, { signal: dispose.signal });
 
         this.interact.addEventListener("mouseover", () => {
             this.hovering(true);
         });
         this.interact.addEventListener("mouseout", () => {
             this.hovering(false);
-        });
-
-        window.addEventListener("mousemove", (evt) => {
-            doSeek(evt.clientX);
         });
     }
 }

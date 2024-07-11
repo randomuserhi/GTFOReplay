@@ -1,7 +1,6 @@
 import { ReflectConstruct } from "./rhu.js";
 export interface WeakRefMap<K, V> extends Map<K, V> {
     prototype: WeakRefMap<K, V>;
-    _registry: FinalizationRegistry<K>;
 }
 interface WeakRefMapConstructor extends ReflectConstruct<MapConstructor, WeakRefMapConstructor> {
     new (): WeakRefMap<any, any>;
@@ -10,7 +9,6 @@ interface WeakRefMapConstructor extends ReflectConstruct<MapConstructor, WeakRef
 }
 export interface WeakCollection<T extends object> extends WeakSet<T> {
     prototype: WeakCollection<T>;
-    _registry: FinalizationRegistry<T>;
     _collection: WeakRef<T>[];
     __collection: WeakRef<T>[];
     add(item: T): this;
@@ -26,10 +24,6 @@ interface WeakCollectionConstructor extends ReflectConstruct<WeakSetConstructor,
 }
 export interface WeakCollectionMap<K, V extends object> {
     prototype: WeakCollectionMap<K, V>;
-    _registry: FinalizationRegistry<{
-        key: K;
-        collection: WeakCollection<V>;
-    }>;
     delete(key: K): boolean;
     clear(): void;
     set(key: K, value: V): WeakCollectionMap<K, V>;

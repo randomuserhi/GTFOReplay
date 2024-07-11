@@ -37,7 +37,9 @@ class View extends MacroWrapper<HTMLCanvasElement> {
     
         this.renderer = new Renderer(this.element);
 
-        window.addEventListener("resize", () => this.resize());
+        window.addEventListener("resize", () => {
+            this.resize();
+        });
         this.element.addEventListener("mount", () => this.resize());
 
         this.time.guard = (time) => Math.clamp(time, 0, this.replay !== undefined ? this.replay.length() : 0);

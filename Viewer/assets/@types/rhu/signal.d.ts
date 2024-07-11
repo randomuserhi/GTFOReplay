@@ -3,7 +3,9 @@ declare const _callbacks: unique symbol;
 interface SignalEvent<T = any> {
     (): T;
     equals(other: T): boolean;
-    on(callback: Callback<T>): Callback<T>;
+    on(callback: Callback<T>, options?: {
+        signal?: AbortSignal;
+    }): Callback<T>;
     off(handle: Callback<T>): boolean;
 }
 export interface Signal<T = any> extends SignalEvent<T> {

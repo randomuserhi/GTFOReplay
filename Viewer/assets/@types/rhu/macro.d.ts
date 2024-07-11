@@ -11,6 +11,7 @@ interface Template<T extends Templates> {
 }
 export declare class MacroWrapper<T extends Element | undefined = undefined> {
     element: T;
+    readonly weak: WeakRef<this>["deref"];
     constructor(element: T, bindings: any, target?: any);
 }
 interface Options {

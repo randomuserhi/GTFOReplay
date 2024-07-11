@@ -49,10 +49,13 @@ export function signal(value, equality) {
         }
         return ref.value;
     };
-    signal.on = function (callback) {
+    signal.on = function (callback, options) {
         if (!callbacks.has(callback)) {
             callback(ref.value);
             callbacks.add(callback);
+            if (options?.signal !== undefined) {
+                options.signal.addEventListener("abort", () => callbacks.delete(callback), { once: true });
+            }
         }
         return callback;
     };
@@ -78,10 +81,13 @@ export function computed(expression, dependencies, equality) {
         }
         return ref.value;
     };
-    computed.on = function (callback) {
+    computed.on = function (callback, options) {
         if (!callbacks.has(callback)) {
             callback(computed());
             callbacks.add(callback);
+            if (options?.signal !== undefined) {
+                options.signal.addEventListener("abort", () => callbacks.delete(callback), { once: true });
+            }
         }
         return callback;
     };

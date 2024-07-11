@@ -3,13 +3,13 @@ const Map_set = Map.prototype.set;
 const Map_keys = Map.prototype.keys;
 const Map_get = Map.prototype.get;
 const Map_has = Map.prototype.has;
+const weakRefMapRegistry = new FinalizationRegistry(({ map, key }) => {
+    map.delete(key);
+});
 export const WeakRefMap = reflectConstruct(Map, "WeakRefMap", function () {
-    this._registry = new FinalizationRegistry((key) => {
-        this.delete(key);
-    });
 });
 WeakRefMap.prototype.set = function (key, value) {
-    this._registry.register(value, key);
+    weakRefMapRegistry.register(value, { map: this, key });
     return Map_set.call(this, key, new WeakRef(value));
 };
 WeakRefMap.prototype.get = function (key) {
@@ -42,31 +42,31 @@ WeakRefMap.prototype[Symbol.iterator] = function* () {
 inherit(WeakRefMap, Map);
 const WeakSet_add = WeakSet.prototype.add;
 const WeakSet_delete = WeakSet.prototype.delete;
+const weakCollectionRegistry = new FinalizationRegistry((map) => {
+    const collection = map._collection;
+    map._collection = map.__collection;
+    for (const ref of collection) {
+        if (exists(ref.deref()))
+            map._collection.push(ref);
+    }
+    map.__collection = collection;
+    map.__collection.length = 0;
+});
 export const WeakCollection = reflectConstruct(WeakSet, "WeakCollection", function () {
     this._collection = [];
     this.__collection = [];
-    this._registry = new FinalizationRegistry(() => {
-        const collection = this._collection;
-        this._collection = this.__collection;
-        for (const ref of collection) {
-            if (exists(ref.deref()))
-                this._collection.push(ref);
-        }
-        this.__collection = collection;
-        this.__collection.length = 0;
-    });
 });
 WeakCollection.prototype.add = function (...items) {
     if (items.length === 1) {
         this._collection.push(new WeakRef(items[0]));
-        this._registry.register(items[0], undefined);
+        weakCollectionRegistry.register(items[0], this);
         return WeakSet_add.call(this, items[0]);
     }
     for (const item of items) {
         if (!this.has(item)) {
             this._collection.push(new WeakRef(item));
             WeakSet_add.call(this, item);
-            this._registry.register(item, undefined);
+            weakCollectionRegistry.register(item, this);
         }
     }
 };
@@ -114,11 +114,11 @@ WeakCollection.prototype.size = function () {
     return count;
 };
 inherit(WeakCollection, WeakSet);
+const weakCollectionMapRegistry = new FinalizationRegistry(({ map, key, collection }) => {
+    if (collection.size() === 0)
+        map.delete(key);
+});
 export const WeakCollectionMap = reflectConstruct(Map, "WeakCollectionMap", function () {
-    this._registry = new FinalizationRegistry(({ key, collection }) => {
-        if (collection.size() === 0)
-            this.delete(key);
-    });
 });
 WeakCollectionMap.prototype.set = function (key, value) {
     if (!Map_has.call(this, key)) {
@@ -126,7 +126,7 @@ WeakCollectionMap.prototype.set = function (key, value) {
     }
     const collection = Map_get.call(this, key);
     collection.add(value);
-    this._registry.register(value, { key, collection });
+    weakCollectionMapRegistry.register(value, { map: this, key, collection });
     return Map_set.call(this, key, collection);
 };
 WeakCollectionMap.prototype.add = WeakCollectionMap.prototype.set;

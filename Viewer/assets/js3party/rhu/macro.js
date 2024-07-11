@@ -3,6 +3,8 @@ import { signal } from "./signal.js";
 import { WeakCollection } from "./weak.js";
 export class MacroWrapper {
     constructor(element, bindings, target) {
+        const weak = new WeakRef(this);
+        this.weak = weak.deref.bind(weak);
         this.element = element;
         if (RHU.exists(target)) {
             Object.assign(target, bindings);

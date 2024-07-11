@@ -1,7 +1,17 @@
 import { Macro, MacroWrapper, TemplateMap } from "@esm/@/rhu/macro.js";
-import { signal } from "@esm/@/rhu/signal.js";
+import { computed, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { Render } from "@esm/@root/main/routes/player/index.js";
+
+let disposeController = new AbortController();
+export const dispose = {
+    get signal() {
+        return disposeController.signal;
+    } 
+};
+module.ready();
+
+/* eslint-disable sort-imports */
 import { seeker } from "./components/seeker.js";
 
 declare module "@esm/@/rhu/macro.js" {
@@ -48,8 +58,9 @@ class UI extends MacroWrapper<HTMLDivElement> {
     constructor(element: HTMLDivElement, bindings: any) {
         super(element, bindings);
     }
-
+    
     private length = signal(0);
+    private test = computed(() => this.length() + 1, [this.length]);
 
     public init(view: TemplateMap["routes/player.view"]) {
         this.mount.replaceChildren(view.element);
@@ -61,8 +72,10 @@ class UI extends MacroWrapper<HTMLDivElement> {
             if (!this.seeker.seeking()) {
                 this.seeker.value(time / this.length(view.replay.length()));
             }
-        });
+        }, { signal: dispose.signal });
         
+        this.test.on((value) => { this.mount.setAttribute("a", value.toString()); });
+
         // Update time when seeker changes
         this.seeker.value.on((value) => {
             if (view.replay === undefined) return;
@@ -79,7 +92,7 @@ class UI extends MacroWrapper<HTMLDivElement> {
     }
 }
 
-export const ui = Macro(UI, "ui", //html
+Macro(UI, "ui", //html
     `
     <div rhu-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">
@@ -91,6 +104,9 @@ export const ui = Macro(UI, "ui", //html
     });
 
 Render((doc, view) => {
+    if (disposeController !== undefined) disposeController.abort();
+    disposeController = new AbortController();
+
     const ui = document.createMacro("ui");
     ui.init(view);
     doc.append(ui.element);
