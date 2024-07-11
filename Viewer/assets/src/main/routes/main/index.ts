@@ -1,5 +1,7 @@
-import { Constructor, Macro } from "@/rhu/macro.js";
+import { Macro, MacroWrapper } from "@/rhu/macro.js";
+import { signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
+import { app } from "../../app.js";
 import { __version__ } from "../../appinfo.js";
 
 const style = Style(({ style }) => {
@@ -71,26 +73,33 @@ const style = Style(({ style }) => {
 
 declare module "@/rhu/macro.js" {
     interface TemplateMap {
-        "routes/main": main;
+        "routes/main": Main;
     }
 }
 
-export interface main extends HTMLDivElement {
-    dom: {
-        loading: HTMLDivElement;
-        loadButton: HTMLButtonElement;
-        cover: HTMLDivElement;
+class Main extends MacroWrapper<HTMLDivElement> {
+    private loadingWidget: HTMLDivElement;
+    private loadButton: HTMLButtonElement;
+    private cover: HTMLDivElement;
+
+    public loading = signal(false);
+
+    constructor(element: HTMLDivElement, bindings: any) {
+        super(element, bindings);
+
+        this.loadButton.addEventListener("click", () => {
+            app().file.click();    
+        });
+
+        this.loading.on((value) => {
+            this.loadingWidget.style.display = value ? "block" : "none";
+            this.loadButton.style.display = value ? "none" : "block";
+        });
     }
 }
 
-export const main = Macro((() => {
-    const main = function(this: main) {
-        console.log(this.dom);   
-    } as Constructor<main>;
-
-    return main;
-})(), "routes/main", //html
-`
+export const main = Macro(Main, "routes/main", //html
+    `
     <div rhu-id="cover" class="${style.empty}">
         <div class="${style.watermark}">${__version__}</div>
         <video style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
@@ -98,11 +107,10 @@ export const main = Macro((() => {
         </video>   
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
             <button rhu-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
-            <div rhu-id="loading" style="display: none;" class="${style.loader}"></div>
+            <div rhu-id="loadingWidget" style="display: none;" class="${style.loader}"></div>
         </div>
     </div>
     `, {
-    element: //html
-        `<div class="${style.wrapper}"></div>`,
-    encapsulate: "dom"
-});
+        element: //html
+        `<div class="${style.wrapper}"></div>`
+    });

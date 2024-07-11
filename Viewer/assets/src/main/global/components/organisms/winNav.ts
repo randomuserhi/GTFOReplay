@@ -1,4 +1,4 @@
-import { Constructor, Macro } from "@/rhu/macro.js";
+import { Macro, MacroWrapper } from "@/rhu/macro.js";
 import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
@@ -86,12 +86,21 @@ export interface winNav extends HTMLDivElement {
 
 declare module "@/rhu/macro.js" {
     interface TemplateMap {
-        "organisms/winNav": winNav;
+        "organisms/winNav": WinNav;
     }
 }
 
-export const winNav = Macro((() => {
-    const winNav = function(this: winNav) {
+class WinNav extends MacroWrapper<HTMLDivElement> {
+    close: HTMLButtonElement;
+    max: HTMLButtonElement;
+    min: HTMLButtonElement;
+    icon: HTMLButtonElement;
+
+    winTitle: Signal<string>;
+
+    constructor(element: HTMLDivElement, bindings: any) {
+        super(element, bindings);
+
         this.close.onclick = () => {
             window.api.closeWindow();
         };
@@ -101,34 +110,11 @@ export const winNav = Macro((() => {
         this.min.onclick = () => {
             window.api.minimizeWindow();
         };
-        
-        this.file.onclick = () => {
-            this._file.click();
-        };
-        // TODO(randomuserhi): dont put this here
-        this._file.addEventListener("change", (e: any) => {
-            try {
-                const files = e.target.files;
-                if (!files.length) {
-                    console.warn('No file selected!');
-                    return;
-                }
-                const loaded = files.length;
-                if (loaded !== 1) throw new Error("Can only load 1 file.");
-                for (const file of files) {
-                    console.log(file);
-                    (window as any).player.open(file.path);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        });
-        (window as any)._file = this._file;
-    } as Constructor<winNav>;
+    }
+}
 
-    return winNav;
-})(), "organisms/winNav", //html
-`
+export const winNav = Macro(WinNav, "organisms/winNav", //html
+    `
     <div rhu-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
         ${icons.cross}
     </div>
@@ -141,11 +127,10 @@ export const winNav = Macro((() => {
     <div class="${style.text}">
         ${Macro.signal("winTitle", "GTFO Replay Viewer")}
     </div>
-    <div rhu-id="file" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
+    <div rhu-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
         ${icons.rug}
     </div>
-    <input rhu-id="_file" type="file" style="display: none;"/>
     `, {
-    element: //html
+        element: //html
         `<nav class="${style.wrapper}"></nav>`
-});
+    });

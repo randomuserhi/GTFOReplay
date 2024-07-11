@@ -9,15 +9,12 @@ interface Template<T extends Templates> {
     toString: () => T;
     [Symbol.toPrimitive]: () => string;
 }
-export interface Constructor<T extends Element = Element> {
-    (this: T): void;
-    prototype: T;
+export declare class MacroWrapper<T extends Element | undefined = undefined> {
+    element: T;
+    constructor(element: T, bindings: any, target?: any);
 }
 interface Options {
-    element: string;
-    floating?: boolean;
-    strict?: boolean;
-    encapsulate?: PropertyKey;
+    element?: string;
     content?: PropertyKey;
 }
 interface MacroObject {
@@ -28,14 +25,12 @@ interface MacroObject {
     observe(target: Node): void;
     signal(name: string, initial?: string): string;
 }
-type Macro = HTMLElement | {};
 declare global {
     interface Node {
-        macro: Macro;
+        macro: object;
     }
     interface Document {
         createMacro<T extends string & keyof TemplateMap>(type: T | Template<T>): TemplateMap[T];
-        Macro<T extends string & keyof TemplateMap>(type: T | Template<T>, attributes: Record<string, string>): string;
     }
     interface Element {
         rhuMacro: string;

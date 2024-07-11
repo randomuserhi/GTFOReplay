@@ -1,4 +1,4 @@
-import { Constructor, Macro } from "@/rhu/macro.js";
+import { Macro, MacroWrapper, TemplateMap } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptLoader } from "../replay/async-script-loader.js";
@@ -22,8 +22,10 @@ async function __main__() {
             promises.push(AsyncScriptLoader.load(p));
         }
         await Promise.all(promises);
-        const player: player = (window as any).player;
-        player.refresh();
+
+        // TODO(randomuserhi):
+        //const player: player = (window as any).player;
+        //player.refresh();
     });
     
     (await window.api.invoke("loadParserModules")).forEach((p: string) => {
@@ -69,54 +71,76 @@ const style = Style(({ style }) => {
     };
 });
 
-export interface app extends HTMLElement {
-    player: player;
-    main: main;
-
-    body: HTMLDivElement;
-    load(node: Node): void;
-}
-
 declare module "@/rhu/macro.js" {
     interface TemplateMap {
-        "app": app;
+        "app": App;
     }
 }
 
-Macro((() => {
-    const app = function(this: app) {
+class App extends MacroWrapper<HTMLDivElement> {
+    public file: HTMLInputElement;
+
+    private player = document.createMacro(player);
+    private main = document.createMacro(main);
+
+    private body: HTMLDivElement;
+    private nav: TemplateMap["organisms/winNav"];
+
+    constructor(element: HTMLDivElement, bindings: any) {
+        super(element, bindings);
         __main__();
-        this.main = document.createMacro(main);
-        this.player = document.createMacro(player);
-        
-        window.api.on("startGame", () => {
-            console.log("LIVE VIEW OPEN GAME");
-            this.player.open();
-        }); // Temporary for live viewing games
 
-        this.load(this.main);
-    } as any as Constructor<app>;
+        this.file.addEventListener("change", (e: any) => {
+            try {
+                const files = e.target.files;
+                if (!files.length) {
+                    console.warn('No file selected!');
+                    return;
+                }
+                const loaded = files.length;
+                if (loaded !== 1) throw new Error("Can only load 1 file.");
+                for (const file of files) {
+                    this.main.loading(true);
+                    this.load(this.main.element);
+                    this.player.open(file.path);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
 
-    app.prototype.load = function(node) {
+        this.nav.icon.addEventListener("click", () => this.file.click());
+
+        this.load(this.main.element);
+    }
+
+    public load(node: Node) {
         this.body.replaceChildren(node);
-    };
+    }
+}
 
-    return app;
-})(), "app", //html
-`
-    ${winNav}
+Macro(App, "app", //html
+    `
+    ${winNav`rhu-id="nav"`}
     <!-- Content goes here -->
     <div rhu-id="body" class="${style.body}">
     </div>
+    <input rhu-id="file" type="file" style="display: none;"/>
     `, {
-    element: //html
-        `<div class="${theme} ${style.wrapper}"></div>`
-});
+        element: //html
+    `<div class="${theme} ${style.wrapper}"></div>`
+    });
+
+let _app: App | undefined = undefined;
+export function app(): App {
+    if (_app === undefined) throw new Error("App has not loaded yet.");
+    return _app;
+}
 
 // Load app
 const __load__ = () => {
-    const app = document.createMacro("app");
-    document.body.replaceChildren(app);
+    _app = document.createMacro("app");
+    document.body.replaceChildren(_app.element);
 };
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", __load__);

@@ -34,7 +34,10 @@ export function signal(value, equality) {
     const callbacks = new Set();
     const signal = function (...args) {
         if (args.length !== 0) {
-            const [value] = args;
+            let [value] = args;
+            if (signal.guard !== undefined) {
+                value = signal.guard(value);
+            }
             if ((equality === undefined && ref.value !== value) ||
                 (equality !== undefined && !equality(ref.value, value))) {
                 ref.value = value;
