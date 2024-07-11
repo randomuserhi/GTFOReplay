@@ -54,6 +54,7 @@ class UI extends MacroWrapper<HTMLDivElement> {
     public init(view: TemplateMap["routes/player.view"]) {
         this.mount.replaceChildren(view.element);
 
+        // Update seeker when time changes
         view.time.on((time) => {
             if (view.replay === undefined) return;
             
@@ -62,6 +63,7 @@ class UI extends MacroWrapper<HTMLDivElement> {
             }
         });
         
+        // Update time when seeker changes
         this.seeker.value.on((value) => {
             if (view.replay === undefined) return;
 
@@ -70,13 +72,10 @@ class UI extends MacroWrapper<HTMLDivElement> {
             }
         });
 
+        // Pause view when seeking
         this.seeker.seeking.on((seeking) => {
             view.pause(seeking);
         });
-
-        const text = document.createTextNode("");
-        this.length.on((value) => text.nodeValue = `${value}`);
-        this.seeker.mount.append(text);
     }
 }
 
