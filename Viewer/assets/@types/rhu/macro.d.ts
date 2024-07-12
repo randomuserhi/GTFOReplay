@@ -1,42 +1,63 @@
-export type Templates = keyof TemplateMap;
-export interface TemplateMap {
+declare abstract class NODE {
+    static is: (object: any) => object is NODE;
 }
-interface Template<T extends Templates> {
-    (first: TemplateStringsArray, ...interpolations: (string | {
-        [Symbol.toPrimitive]: (...args: any[]) => string;
-    })[]): string;
+declare class CLOSURE extends NODE {
+    static instance: CLOSURE;
+    static is: (object: any) => object is CLOSURE;
+}
+declare const symbols: {
+    readonly factory: unique symbol;
+    readonly bind: unique symbol;
+    readonly value: unique symbol;
+};
+declare class ELEMENT extends NODE {
+    [symbols.bind]?: PropertyKey;
+    bind(key?: PropertyKey): this;
+    static is: (object: any) => object is ELEMENT;
+}
+declare class SIGNAL extends ELEMENT {
+    constructor(binding: string);
+    [symbols.value]?: string;
+    value(value?: string): this;
+    static is: (object: any) => object is SIGNAL;
+}
+export declare class MacroElement {
+    dom: Node[];
+    constructor(dom: Node[], bindings?: any, target?: any);
+    static is: (object: any) => object is MacroElement;
+}
+type MacroClass = new (dom: Node[], bindings: any, children: Node[], ...args: any[]) => any;
+type MacroParameters<T extends MacroClass> = T extends new (dom: Node[], bindings: any, children: Node[], ...args: infer P) => any ? P : never;
+declare class MACRO<T extends MacroClass = MacroClass> extends ELEMENT {
     type: T;
-    toString: () => T;
-    [Symbol.toPrimitive]: () => string;
+    html: HTML;
+    args: MacroParameters<T>;
+    constructor(html: HTML, type: T, args: MacroParameters<T>);
+    static is: (object: any) => object is MACRO;
 }
-export declare class MacroWrapper<T extends Element | undefined = undefined> {
-    element: T;
-    readonly weak: WeakRef<this>["deref"];
-    constructor(element: T, bindings: any, target?: any);
+declare class MACRO_OPEN<T extends MacroClass = MacroClass> extends MACRO<T> {
+    static is: (object: any) => object is MACRO_OPEN;
 }
-interface Options {
-    element?: string;
-    content?: PropertyKey;
+export declare function html(first: HTML["first"], ...interpolations: HTML["interpolations"]): HTML;
+declare class HTML {
+    static empty: HTML;
+    private first;
+    private interpolations;
+    constructor(first: HTML["first"], interpolations: HTML["interpolations"]);
+    dom<T extends Record<PropertyKey, any> = any>(): [bindings: T, fragment: DocumentFragment];
+    static is: (object: any) => object is HTML;
 }
-interface MacroObject {
-    <T extends Templates>(constructor: Function, type: T, source: string, options: Options): Template<T>;
-    parseDomString(str: string): DocumentFragment;
-    anon<T extends {} = {}>(source: string): [T, DocumentFragment];
-    parse(element: Element, type?: string & {} | Templates | undefined | null, force?: boolean): void;
-    observe(target: Node): void;
-    signal(name: string, initial?: string): string;
+interface FACTORY<T extends MacroClass> {
+    (...args: MacroParameters<T>): MACRO<T>;
+    readonly open: () => MACRO_OPEN<T>;
+    readonly close: CLOSURE;
+    readonly [symbols.factory]: boolean;
 }
-declare global {
-    interface Node {
-        macro: object;
-    }
-    interface Document {
-        createMacro<T extends string & keyof TemplateMap>(type: T | Template<T>): TemplateMap[T];
-    }
-    interface Element {
-        rhuMacro: string;
-    }
+export type Macro<F extends FACTORY<any>> = F extends FACTORY<infer T> ? InstanceType<T> : any;
+interface MacroNamespace {
+    <T extends MacroClass>(type: T, html: HTML): FACTORY<T>;
+    signal(binding: string, value?: string): SIGNAL;
+    create<T extends MACRO>(macro: T): T extends MACRO<infer R> ? InstanceType<R> : never;
 }
-declare const Template: <T extends never>(type: T) => Template<T>;
-export declare const Macro: MacroObject;
+export declare const Macro: MacroNamespace;
 export {};

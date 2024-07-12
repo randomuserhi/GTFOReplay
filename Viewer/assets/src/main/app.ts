@@ -1,10 +1,10 @@
-import { Macro, MacroWrapper, TemplateMap } from "@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptLoader } from "../replay/async-script-loader.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
-import { winNav } from "./global/components/organisms/winNav.js";
-import { main } from "./routes/main/index.js";
+import { WinNav } from "./global/components/organisms/winNav.js";
+import { Main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
 
 export const theme = Theme(({ theme }) => {
@@ -41,23 +41,17 @@ const style = Style(({ style }) => {
     };
 });
 
-declare module "@/rhu/macro.js" {
-    interface TemplateMap {
-        "app": App;
-    }
-}
-
-class App extends MacroWrapper<HTMLDivElement> {
+const App = Macro(class App extends MacroElement {
     public file: HTMLInputElement;
 
-    private player = document.createMacro(player);
-    private main = document.createMacro(main);
+    private player = Macro.create(player());
+    private main = Macro.create(Main());
 
     private body: HTMLDivElement;
-    private nav: TemplateMap["organisms/winNav"];
+    private nav: Macro<typeof WinNav>;
 
-    constructor(element: HTMLDivElement, bindings: any) {
-        super(element, bindings);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
         this.init();
 
         this.file.addEventListener("change", (e: any) => {
@@ -71,7 +65,7 @@ class App extends MacroWrapper<HTMLDivElement> {
                 if (loaded !== 1) throw new Error("Can only load 1 file.");
                 for (const file of files) {
                     this.main.loading(true);
-                    this.load(this.main.element);
+                    this.load(this.main);
                     this.player.open(file.path);
                 }
             } catch (err) {
@@ -81,7 +75,7 @@ class App extends MacroWrapper<HTMLDivElement> {
 
         this.nav.icon.addEventListener("click", () => this.file.click());
 
-        this.load(this.main.element);
+        this.load(this.main);
     }
 
     private async init() {
@@ -112,33 +106,29 @@ class App extends MacroWrapper<HTMLDivElement> {
         });
     }
 
-    public load(node: Node) {
-        this.body.replaceChildren(node);
+    public load(macro: MacroElement) {
+        this.body.replaceChildren(...macro.dom);
     }
-}
-
-Macro(App, "app", //html
-    `
-    ${winNav`rhu-id="nav"`}
-    <!-- Content goes here -->
-    <div rhu-id="body" class="${style.body}">
+}, html`
+    <div class="${theme} ${style.wrapper}">
+        ${WinNav().bind("nav")}
+        <!-- Content goes here -->
+        <div m-id="body" class="${style.body}">
+        </div>
+        <input m-id="file" type="file" style="display: none;"/>
     </div>
-    <input rhu-id="file" type="file" style="display: none;"/>
-    `, {
-        element: //html
-    `<div class="${theme} ${style.wrapper}"></div>`
-    });
+    `);
 
-let _app: App | undefined = undefined;
-export function app(): App {
+let _app: Macro<typeof App> | undefined = undefined;
+export function app(): Macro<typeof App> {
     if (_app === undefined) throw new Error("App has not loaded yet.");
     return _app;
 }
 
 // Load app
 const __load__ = () => {
-    _app = document.createMacro("app");
-    document.body.replaceChildren(_app.element);
+    _app = Macro.create(App());
+    document.body.replaceChildren(..._app.dom);
 };
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", __load__);

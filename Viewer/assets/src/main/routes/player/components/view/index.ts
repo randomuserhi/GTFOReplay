@@ -1,4 +1,4 @@
-import { Macro, MacroWrapper } from "@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
@@ -22,39 +22,35 @@ const style = Style(({ style }) => {
     };
 });
 
-declare module "@/rhu/macro.js" {
-    interface TemplateMap {
-        "routes/player.view": View;
-    }
-}
-
-class View extends MacroWrapper<HTMLCanvasElement> {
+export const View = Macro(class View extends MacroElement {
     readonly renderer: Renderer;
     replay?: Replay;
+    canvas: HTMLCanvasElement;
 
-    constructor(element: HTMLCanvasElement, bindings: any) {
-        super(element, bindings);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
+        this.canvas = dom[0] as HTMLCanvasElement;
     
-        this.renderer = new Renderer(this.element);
+        this.renderer = new Renderer(this.canvas);
 
         window.addEventListener("resize", () => {
             this.resize();
         });
-        this.element.addEventListener("mount", () => this.resize());
+        this.canvas.addEventListener("mount", () => this.resize());
 
         this.time.guard = (time) => Math.clamp(time, 0, this.replay !== undefined ? this.replay.length() : 0);
         this.update();
     }
 
     private resize() {
-        const computed = getComputedStyle(this.element);
+        const computed = getComputedStyle(this.canvas);
         const width = parseInt(computed.width);
         const height = parseInt(computed.height);
         this.renderer.resize(width, height);
     }
 
     public refresh() {
-        this.renderer.refresh(this.element, this.replay);
+        this.renderer.refresh(this.canvas, this.replay);
     }
 
     public ready() {
@@ -63,7 +59,7 @@ class View extends MacroWrapper<HTMLCanvasElement> {
         this.reset();
 
         this.renderer.init(this.replay);
-        this.element.focus();
+        this.canvas.focus();
     }
 
     time = signal(0);
@@ -72,6 +68,8 @@ class View extends MacroWrapper<HTMLCanvasElement> {
     frameRate = signal(0);
 
     private reset() {
+        this.resize();
+        
         this.time(0);
         this.timescale(1);       
     }
@@ -102,9 +100,4 @@ class View extends MacroWrapper<HTMLCanvasElement> {
 
         requestAnimationFrame(() => this.update());
     }
-}
-
-export const view = Macro(View, "routes/player.view", "", {
-    element: //html
-        `<canvas class="${style.canvas}"></canvas>`,
-});
+}, html`<canvas class="${style.canvas}"></canvas>`);

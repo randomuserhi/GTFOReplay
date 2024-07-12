@@ -162,20 +162,20 @@ export const bar = Macro((() => {
     return bar;
 })(), "routes/player.bar", //html
 `
-    <button rhu-id="gear" class="${style.button}">
+    <button m-id="gear" class="${style.button}">
         <div class="${style.highlight}"></div>
         ${icons.gear}
     </button>
-    <button rhu-id="stats" class="${style.button}">
+    <button m-id="stats" class="${style.button}">
         <div class="${style.highlight}"></div>
         ${icons.stats}
     </button>
-    <button rhu-id="finder" class="${style.button}">
+    <button m-id="finder" class="${style.button}">
         <div class="${style.highlight}"></div>
         ${icons.finder}
     </button>
     <div style="flex: 1"></div>
-    <button rhu-id="info" class="${style.button}">
+    <button m-id="info" class="${style.button}">
         <div class="${style.highlight}"></div>
         ${icons.info}
     </button>

@@ -134,10 +134,10 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
                 gap: 20px;
                 align-items: center;
                 ">
-                    <input rhu-id="slider" style="
+                    <input m-id="slider" style="
                     flex: 1;
                     " type="range" min="-3" max="3" value="1" step="0.1" />
-                    <input rhu-id="text" style="
+                    <input m-id="text" style="
                     width: 50px;
                     " class="${style.search}" type="text" spellcheck="false" autocomplete="false" value="1"/>
                 </div>
@@ -188,10 +188,10 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
                 gap: 20px;
                 align-items: center;
                 ">
-                    <input rhu-id="slider" style="
+                    <input m-id="slider" style="
                     flex: 1;
                     " type="range" min="50" max="500" value="100" step="10" />
-                    <input rhu-id="text" style="
+                    <input m-id="text" style="
                     width: 50px;
                     " class="${style.search}" type="text" spellcheck="false" autocomplete="false" value="1"/>
                 </div>
@@ -236,7 +236,7 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
             gap: 10px;
             ">
                 <span style="flex: 1; padding-top: 1px;">Follow Player</span>
-                ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
+                ${dropdown`m-id="dropdown" style="width: 100%;"`}
             </div>
             `);
             
@@ -280,7 +280,7 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
             gap: 10px;
             ">
                 <span style="flex: 1; padding-top: 1px;">Dimension</span>
-                ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
+                ${dropdown`m-id="dropdown" style="width: 100%;"`}
             </div>
             `);
             
@@ -317,7 +317,7 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
             align-items: center;
             ">
                 <span style="flex: 1; padding-top: 1px;">Transparent Resource Containers</span>
-                <button rhu-id="toggle" class="${style.toggle}"></button>
+                <button m-id="toggle" class="${style.toggle}"></button>
             </div>
             `);
 
@@ -347,7 +347,7 @@ const _features: ((parent: settings) => [node: Node, key: string, update?: () =>
             align-items: center;
             ">
                 <span style="flex: 1; padding-top: 1px;">Show Enemy Info</span>
-                <button rhu-id="toggle" class="${style.toggle}"></button>
+                <button m-id="toggle" class="${style.toggle}"></button>
             </div>
             `);
 
@@ -424,9 +424,9 @@ export const settings = Macro((() => {
     background-color: #1f1f29;
     margin-bottom: 10px;
     ">
-        <input rhu-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+        <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
     </div>
-    <div rhu-id="body" class="${style.body}">
+    <div m-id="body" class="${style.body}">
     </div>
     `, {
     element: //html

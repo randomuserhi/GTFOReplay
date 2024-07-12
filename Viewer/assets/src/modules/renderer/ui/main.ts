@@ -1,5 +1,6 @@
-import { Macro, MacroWrapper, TemplateMap } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { Style } from "@esm/@/rhu/style.js";
+import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { Render } from "@esm/@root/main/routes/player/index.js";
 
 let disposeController = new AbortController();
@@ -13,12 +14,6 @@ module.ready();
 /* eslint-disable sort-imports */
 import { display } from "./display.js";
 
-declare module "@esm/@/rhu/macro.js" {
-    interface TemplateMap {
-        "ui": UI;
-    }
-}
-
 const style = Style(({ style }) => {
     const wrapper = style.class`
     width: 100%;
@@ -31,31 +26,27 @@ const style = Style(({ style }) => {
     };
 });
 
-class UI extends MacroWrapper<HTMLDivElement> {
-    private display: TemplateMap["ui.display"];
+const UI = Macro(class UI extends MacroElement {
+    private display: Macro<typeof display>;
     
-    constructor(element: HTMLDivElement, bindings: any) {
-        super(element, bindings);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
     }
 
-    public init(view: TemplateMap["routes/player.view"]) {
+    public init(view: Macro<typeof View>) {
         this.display.init(view);
     }
-}
-
-Macro(UI, "ui", //html
-    `
-    ${display`rhu-id="display"`}
-    `, {
-        element: //html
-        `<div class="${style.wrapper}"></div>`
-    });
+}, html`
+    <div class="${style.wrapper}">
+        ${display().bind("display")}
+    </div>
+    `);
 
 Render((doc, view) => {
     if (disposeController !== undefined) disposeController.abort();
     disposeController = new AbortController();
 
-    const ui = document.createMacro("ui");
+    const ui = Macro.create(UI());
     ui.init(view);
-    doc.append(ui.element);
+    doc.append(...ui.dom);
 });

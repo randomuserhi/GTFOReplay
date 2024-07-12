@@ -1,9 +1,9 @@
-import { Macro, MacroWrapper, TemplateMap } from "@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Parser } from "../../../replay/parser.js";
 import { FileHandle } from "../../../replay/stream.js";
 import { app } from "../../app.js";
-import { view } from "./components/view/index.js";
+import { View } from "./components/view/index.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -29,25 +29,20 @@ const style = Style(({ style }) => {
     };
 });
 
-declare module "@/rhu/macro.js" {
-    interface TemplateMap {
-        "routes/player": Player;
-    }
-}
-
-class Player extends MacroWrapper<HTMLDivElement> {
+export const player = Macro(class Player extends MacroElement {
     parser?: Parser;
 
-    private view: TemplateMap["routes/player.view"];
+    private wrapper: HTMLDivElement;
+    private view: Macro<typeof View>;
 
-    constructor(element: HTMLDivElement, bindings: any) {
-        super(element, bindings);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
     }
 
     private render() {
         const frag = new DocumentFragment();
         domFunc(frag, this.view);
-        this.element.replaceChildren(frag);
+        this.wrapper.replaceChildren(frag);
     }
 
     public refresh() {
@@ -68,7 +63,7 @@ class Player extends MacroWrapper<HTMLDivElement> {
 
         this.parser.addEventListener("eoh", () => {
             this.view.ready();
-            app().load(this.element);
+            app().load(this);
         });
         this.parser.addEventListener("end", () => {
             window.api.send("close", file);
@@ -76,20 +71,16 @@ class Player extends MacroWrapper<HTMLDivElement> {
 
         this.view.replay = await this.parser.parse(file);
     }
-}
+}, html`
+    <div m-id="wrapper" class="${style.wrapper}">
+        ${View().bind("view")}
+    </div>
+    `);
 
-export const player = Macro(Player, "routes/player", //html
-    `
-    ${view`rhu-id="view"`}
-    `, {
-        element: //html
-        `<div class="${style.wrapper}"></div>`,
-    });
-
-let domFunc: (doc: DocumentFragment, view: TemplateMap["routes/player.view"]) => void = (doc, view) => {
-    doc.append(view.element);
+let domFunc: (doc: DocumentFragment, view: Macro<typeof View>) => void = (doc, view) => {
+    doc.append(...view.dom);
 };
 
-export function Render(func: (doc: DocumentFragment, view: TemplateMap["routes/player.view"]) => void) {
+export function Render(func: (doc: DocumentFragment, view: Macro<typeof View>) => void) {
     domFunc = func;
 }

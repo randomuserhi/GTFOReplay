@@ -1,4 +1,4 @@
-import { Macro, MacroWrapper } from "@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
@@ -73,24 +73,7 @@ const style = Style(({ style }) => {
     };
 });
 
-export interface winNav extends HTMLDivElement {
-    close: HTMLButtonElement;
-    max: HTMLButtonElement;
-    min: HTMLButtonElement;
-    winTitleDiv: HTMLDivElement;
-    file: HTMLButtonElement;
-    _file: HTMLInputElement;
-
-    winTitle: Signal<string>;
-}
-
-declare module "@/rhu/macro.js" {
-    interface TemplateMap {
-        "organisms/winNav": WinNav;
-    }
-}
-
-class WinNav extends MacroWrapper<HTMLDivElement> {
+export const WinNav = Macro(class WinNav extends MacroElement {
     close: HTMLButtonElement;
     max: HTMLButtonElement;
     min: HTMLButtonElement;
@@ -98,8 +81,8 @@ class WinNav extends MacroWrapper<HTMLDivElement> {
 
     winTitle: Signal<string>;
 
-    constructor(element: HTMLDivElement, bindings: any) {
-        super(element, bindings);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
 
         this.close.onclick = () => {
             window.api.closeWindow();
@@ -111,26 +94,22 @@ class WinNav extends MacroWrapper<HTMLDivElement> {
             window.api.minimizeWindow();
         };
     }
-}
-
-export const winNav = Macro(WinNav, "organisms/winNav", //html
-    `
-    <div rhu-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
-        ${icons.cross}
-    </div>
-    <div rhu-id="max" class="${style.button}" tabindex="-1" role="button" aria-label="Maximize">
-        ${icons.square}
-    </div>
-    <div rhu-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
-        ${icons.line}
-    </div>
-    <div class="${style.text}">
-        ${Macro.signal("winTitle", "GTFO Replay Viewer")}
-    </div>
-    <div rhu-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
-        ${icons.rug}
-    </div>
-    `, {
-        element: //html
-        `<nav class="${style.wrapper}"></nav>`
-    });
+}, html`
+    <nav class="${style.wrapper}">
+        <div m-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
+            ${icons.cross()}
+        </div>
+        <div m-id="max" class="${style.button}" tabindex="-1" role="button" aria-label="Maximize">
+            ${icons.square()}
+        </div>
+        <div m-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
+            ${icons.line()}
+        </div>
+        <div class="${style.text}">
+            ${Macro.signal("winTitle", "GTFO Replay Viewer")}
+        </div>
+        <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
+            ${icons.rug()}
+        </div>
+    </nav>
+    `);

@@ -172,8 +172,8 @@ export const finder = Macro((() => {
                     name: HTMLSpanElement,
                     item: Item,
                 }>(/*html*/`
-                    <div rhu-id="root" class="${style.item}">
-                        <span rhu-id="name">${displayName}</span>
+                    <div m-id="root" class="${style.item}">
+                        <span m-id="name">${displayName}</span>
                     </div>
                     `);
                 frag.item = item;
@@ -220,11 +220,11 @@ export const finder = Macro((() => {
     background-color: #1f1f29;
     margin-bottom: 10px;
     ">
-        <input rhu-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+        <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
         <div class="${style.row}" style="
         margin-top: 20px;
         ">
-            ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
+            ${dropdown`m-id="dropdown" style="width: 100%;"`}
         </div>
         <div class="${style.row}" style="
         flex-direction: row;
@@ -232,10 +232,10 @@ export const finder = Macro((() => {
         margin-top: 20px;
         ">
             <span style="flex: 1; padding-top: 1px;">Include Unknown Items</span>
-            <button rhu-id="includeUnknown" class="${style.toggle}"></button>
+            <button m-id="includeUnknown" class="${style.toggle}"></button>
         </div>
     </div>
-    <div rhu-id="body" class="${style.body}">
+    <div m-id="body" class="${style.body}">
     </div>
     `, {
     element: //html

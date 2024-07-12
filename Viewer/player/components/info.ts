@@ -174,7 +174,7 @@ export const info = Macro((() => {
         <h1>REPLAY INFORMATION</h1>
         <p>Metadata of the current replay</p>
     </div>
-    <div rhu-id="body" class="${style.body}">
+    <div m-id="body" class="${style.body}">
         <div class="${style.row}">
             <div class="${style.row}" style="
             flex-direction: row;
@@ -185,9 +185,9 @@ export const info = Macro((() => {
             ">
                 <span>Is Master</span>
                 <div style="flex: 1"></div>
-                <span rhu-id="isMaster"></span>
+                <span m-id="isMaster"></span>
             </div>
-            <div rhu-id="isMasterText" style="display: none; margin-left: 10px;">
+            <div m-id="isMasterText" style="display: none; margin-left: 10px;">
                 This replay was recorded by the HOST player. This allows for additional information such as:
                 <ul>
                     <li>- Kills / assists</li>
@@ -197,7 +197,7 @@ export const info = Macro((() => {
                     <li>- Alert blame</li>
                 </ul>
             </div>
-            <div rhu-id="isNotMasterText" style="display: none; margin-left: 10px;">
+            <div m-id="isNotMasterText" style="display: none; margin-left: 10px;">
                 This replay was recorded by a CLIENT player. This has limited features:
                 <ul>
                     <li>- No kill / assist tracking</li>
@@ -218,9 +218,9 @@ export const info = Macro((() => {
             ">
                 <span>Version</span>
                 <div style="flex: 1"></div>
-                <span rhu-id="version"></span>
+                <span m-id="version"></span>
             </div>
-            <div rhu-id="versionText" style="margin-left: 10px;">
+            <div m-id="versionText" style="margin-left: 10px;">
             </div>
         </div>
         <div class="${style.row}">
@@ -233,7 +233,7 @@ export const info = Macro((() => {
             ">
                 <span>Compatibility</span>
             </div>
-            <div rhu-id="compatibilityText" style="margin-left: 10px;">
+            <div m-id="compatibilityText" style="margin-left: 10px;">
             </div>
         </div>
     </div>

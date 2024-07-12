@@ -382,26 +382,26 @@ export const player = Macro((() => {
     return player;
 })(), "routes/player", //html
 `
-    ${bar`rhu-id="bar"`}
-    <div rhu-id="window" class="${style.window}" style="display: none;">
+    ${bar`m-id="bar"`}
+    <div m-id="window" class="${style.window}" style="display: none;">
     </div>
     <div class="${style.body}">
-        <div rhu-id="cover" class="${style.empty}">
+        <div m-id="cover" class="${style.empty}">
             <div class="${style.watermark}">${__version__}</div>
             <video style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
                 <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">
             </video>   
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
-                <button rhu-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
-                <div rhu-id="loading" style="display: none;" class="${style.loader}"></div>
+                <button m-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
+                <div m-id="loading" style="display: none;" class="${style.loader}"></div>
             </div>
         </div>
-        <canvas tabindex="0" class="${style.canvas}" rhu-id="canvas"></canvas>
-        <div rhu-id="mount" class="${style.mount}" style="display: none">
-            ${seeker`rhu-id="seeker"`}
+        <canvas tabindex="0" class="${style.canvas}" m-id="canvas"></canvas>
+        <div m-id="mount" class="${style.mount}" style="display: none">
+            ${seeker`m-id="seeker"`}
         </div>
-        <div rhu-id="scoreboardMount" class="${style.scoreboardMount}" style="display: none">
-            ${scoreboard`rhu-id="scoreboard"`}
+        <div m-id="scoreboardMount" class="${style.scoreboardMount}" style="display: none">
+            ${scoreboard`m-id="scoreboard"`}
         </div>
     </div>
     `, {

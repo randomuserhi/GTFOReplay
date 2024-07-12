@@ -177,10 +177,10 @@ const slot = Macro((() => {
     return slot;
 })(), "routes/player.scoreboard.slot", //html
 `
-    <td><span rhu-id="name">Name</span></td>
-    <td><span rhu-id="kills">0</span></td>
-    <td><span rhu-id="assists">0</span></td>
-    <td rhu-id="medalList" style="padding: 0; gap: 10px;">
+    <td><span m-id="name">Name</span></td>
+    <td><span m-id="kills">0</span></td>
+    <td><span m-id="assists">0</span></td>
+    <td m-id="medalList" style="padding: 0; gap: 10px;">
     </td>
     `, {
     element: //html

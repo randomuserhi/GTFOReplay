@@ -1,4 +1,4 @@
-import { Macro, MacroWrapper } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { dispose } from "../main.js";
@@ -75,13 +75,7 @@ const style = Style(({ style }) => {
     };
 });
 
-declare module "@esm/@/rhu/macro.js" {
-    interface TemplateMap {
-        "ui.display.seeker": Seeker;
-    }
-}
-
-class Seeker extends MacroWrapper<HTMLDivElement> {
+export const seeker = Macro(class Seeker extends MacroElement {
     public seeking = signal(false);
     public hovering = signal(false);
 
@@ -92,10 +86,8 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
     
     value = signal(0);
     
-    constructor(element: HTMLDivElement, bindings: any, children: Node[]) {
-        super(element, bindings);
-
-        this.mount.append(...children);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
 
         this.value.guard = (value) => Math.clamp01(value);
         this.value.on((value) => this.progress.style.width = `${Math.clamp01(value) * 100}%`);
@@ -132,19 +124,15 @@ class Seeker extends MacroWrapper<HTMLDivElement> {
             this.hovering(false);
         });
     }
-}
-
-export const seeker = Macro(Seeker, "ui.display.seeker", //html
-    `
-    <div rhu-id="interact" class="${style.bar}">
-        <div rhu-id="bar" class="${style.visualBar}">
-            <div rhu-id="progress" class="${style.visualProgress}">
+}, html`
+    <div class="${style.wrapper}">
+        <div m-id="interact" class="${style.bar}">
+            <div m-id="bar" class="${style.visualBar}">
+                <div m-id="progress" class="${style.visualProgress}">
+                </div>
             </div>
         </div>
+        <div m-id="mount" class="${style.mount}">
+        </div>
     </div>
-    <div rhu-id="mount" class="${style.mount}">
-    </div>
-    `, {
-        element: //html
-        `<div class="${style.wrapper}"></div>`
-    });
+    `);

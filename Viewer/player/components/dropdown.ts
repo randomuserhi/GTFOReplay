@@ -180,7 +180,7 @@ export const dropdown = Macro((() => {
         const [frag, node] = Macro.anon<{
             item: HTMLSpanElement;
         }>(/*html*/`
-            <span rhu-id="item" class="${style.item}">${value}</span>
+            <span m-id="item" class="${style.item}">${value}</span>
             `);
         frag.item.addEventListener("click", () => {
             this.set(key);
@@ -206,8 +206,8 @@ export const dropdown = Macro((() => {
     return dropdown;
 })(), "routes/player.dropdown", //html
 `
-    <span rhu-id="display" class="${style.item}"></span>
-    <div rhu-id="body" class="${style.body}">
+    <span m-id="display" class="${style.item}"></span>
+    <div m-id="body" class="${style.body}">
     </div>
     `, {
     element: //html

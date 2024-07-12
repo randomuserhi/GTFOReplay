@@ -1,14 +1,9 @@
-import { Macro, MacroWrapper, TemplateMap } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { computed, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
+import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { seeker } from "./components/seeker.js";
 import { dispose } from "./main.js";
-
-declare module "@esm/@/rhu/macro.js" {
-    interface TemplateMap {
-        "ui.display": Display;
-    }
-}
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -41,19 +36,20 @@ const style = Style(({ style }) => {
     };
 });
 
-class Display extends MacroWrapper<HTMLDivElement> {
+
+export const display = Macro(class Display extends MacroElement {
     public mount: HTMLDivElement;
-    private seeker: TemplateMap["ui.display.seeker"];
+    private seeker: Macro<typeof seeker>;
     
-    constructor(element: HTMLDivElement, bindings: any) {
-        super(element, bindings);
+    constructor(dom: Node[], bindings: any) {
+        super(dom, bindings);
     }
     
     private length = signal(0);
     private test = computed(() => this.length() + 1, [this.length]);
 
-    public init(view: TemplateMap["routes/player.view"]) {
-        this.mount.replaceChildren(view.element);
+    public init(view: Macro<typeof View>) {
+        this.mount.replaceChildren(...view.dom);
 
         // Update seeker when time changes
         view.time.on((time) => {
@@ -80,15 +76,9 @@ class Display extends MacroWrapper<HTMLDivElement> {
             view.pause(seeking);
         });
     }
-}
-
-export const display = Macro(Display, "ui.display", //html
-    `
-    <div rhu-id="mount" class="${style.view}"></div>
+}, html`
+    <div m-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">
-        ${seeker`rhu-id="seeker"`}
+        ${seeker().bind("seeker")}
     </div>
-    `, {
-        element: //html
-        `<div class="${style.wrapper}"></div>`
-    });
+    `);

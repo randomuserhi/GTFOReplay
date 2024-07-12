@@ -159,20 +159,20 @@ export const seeker = Macro((() => {
     return seeker;
 })(), "routes/player.seeker", //html
 `
-    <div rhu-id="interact" class="${style.bar}">
-        <div rhu-id="bar" class="${style.visualBar}">
-            <div rhu-id="progress" class="${style.visualProgress}">
+    <div m-id="interact" class="${style.bar}">
+        <div m-id="bar" class="${style.visualBar}">
+            <div m-id="progress" class="${style.visualProgress}">
             </div>
         </div>
     </div>
     <div class="${style.mount}">
-        <button rhu-id="pause" class="${style.button}" style="padding: 0 5px;">
+        <button m-id="pause" class="${style.button}" style="padding: 0 5px;">
             ${icons.pause}
         </button>
         <div class="${style.time}">${Macro.signal("time", "00:00 / 00:00")}</div>
         <div style="flex: 1; user-drag: none; user-select: none;"></div>
-        <button rhu-id="live" class="${style.button}">
-            <span rhu-id="dot" style="
+        <button m-id="live" class="${style.button}">
+            <span m-id="dot" style="
                 width: 8px;
                 height: 8px;
                 background-color: red;

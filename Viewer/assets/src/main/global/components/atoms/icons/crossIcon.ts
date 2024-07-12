@@ -1,15 +1,7 @@
-import { Macro, MacroWrapper } from "@/rhu/macro.js";
+import { html, Macro, MacroElement } from "@/rhu/macro.js";
 
-declare module "@/rhu/macro.js" {
-    interface TemplateMap {
-        "atoms/icons/cross": MacroWrapper<SVGElement>;
-    }
-}
-
-export const cross = Macro(MacroWrapper<SVGElement>, "atoms/icons/cross", //html
-    `
-    <polygon fill="currentColor" fill-rule="evenodd" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon>
-    `, {
-        element: //html
-        `<svg aria-hidden="false" width="12" height="12" viewBox="0 0 12 12"></svg>`
-    });
+export const cross = Macro(MacroElement, html`
+    <svg aria-hidden="false" width="12" height="12" viewBox="0 0 12 12">
+        <polygon fill="currentColor" fill-rule="evenodd" points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"></polygon>
+    </svg>
+    `);

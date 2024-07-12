@@ -628,13 +628,13 @@ export const medal = Macro((() => {
     return medal;
 })(), "routes/player.scoreboard.medal", //html
 `
-    <img rhu-id="icon"/>
+    <img m-id="icon"/>
     <div class="${style.mount}">
         <span style="
             font-size: 20px;
             margin-bottom: 0.4rem;
         ">${Macro.signal("name", "Surprise!")}</span>
-        <span rhu-id="desc" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;"></span>
+        <span m-id="desc" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;"></span>
     </div>
     `, {
     element: //html

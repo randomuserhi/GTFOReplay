@@ -119,10 +119,10 @@ function createTypeTable<T>(parent: stats, title: string, all: (stats: PlayerSta
             <div style="display: flex">
                 <span style="font-size: 20px;">${title}</span>
                 <div style="flex: 1"></div>
-                <span rhu-id="total"></span>
+                <span m-id="total"></span>
             </div>
-            <span rhu-id="empty" style="display: none;">None</span>
-            <ul rhu-id="list">
+            <span m-id="empty" style="display: none;">None</span>
+            <ul m-id="list">
             </ul>
         </div>
         `);
@@ -172,10 +172,10 @@ function createTypeTable<T>(parent: stats, title: string, all: (stats: PlayerSta
                 value: HTMLSpanElement;
                 root: HTMLLIElement;
             }>(/*html*/`
-                <li rhu-id="root" style="display: flex">
-                    <span rhu-id="name"></span>
+                <li m-id="root" style="display: flex">
+                    <span m-id="name"></span>
                     <div style="flex: 1"></div>
-                    <span rhu-id="value"></span>
+                    <span m-id="value"></span>
                 </li>
                 `);
             const [type, count] = extract(counts[i]);
@@ -222,32 +222,32 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
                     <li style="display: flex">
                         <span>Bullet Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="ebulletDamage"></span>
+                        <span m-id="ebulletDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Melee Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="emeleeDamage"></span>
+                        <span m-id="emeleeDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Sentry Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="esentryDamage"></span>
+                        <span m-id="esentryDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Explosive Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="eexplosiveDamage"></span>
+                        <span m-id="eexplosiveDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Stagger Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="estaggerDamage"></span>
+                        <span m-id="estaggerDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Sentry Stagger Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="esentryStaggerDamage"></span>
+                        <span m-id="esentryStaggerDamage"></span>
                     </li>
                 </ul>
                 <div></div>
@@ -256,17 +256,17 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
                     <li style="display: flex">
                         <span>Bullet Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="pbulletDamage"></span>
+                        <span m-id="pbulletDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Sentry Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="psentryDamage"></span>
+                        <span m-id="psentryDamage"></span>
                     </li>
                     <li style="display: flex">
                         <span>Explosive Damage</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="pexplosiveDamage"></span>
+                        <span m-id="pexplosiveDamage"></span>
                     </li>
                 </ul>
             </div>
@@ -368,11 +368,11 @@ const _features: ((parent: stats) => [node: Node, key: string, update?: () => vo
             gap: 10px;
             ">
                 <span style="font-size: 20px;">Miscellaneous</span>
-                <ul rhu-id="list">
+                <ul m-id="list">
                     <li style="display: flex">
                         <span>Revives</span>
                         <div style="flex: 1"></div>
-                        <span rhu-id="revives"></span>
+                        <span m-id="revives"></span>
                     </li>
                 </ul>
             </div>
@@ -481,12 +481,12 @@ export const stats = Macro((() => {
     flex-direction: column;
     gap: 10px;
     ">
-        ${dropdown`rhu-id="dropdown" style="width: 100%;"`}
-        <input rhu-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+        ${dropdown`m-id="dropdown" style="width: 100%;"`}
+        <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
     </div>
-    <div rhu-id="body" class="${style.body}" style="display: none; padding-bottom: 50px;">
+    <div m-id="body" class="${style.body}" style="display: none; padding-bottom: 50px;">
     </div>
-    <div rhu-id="empty">
+    <div m-id="empty">
         No player selected.
     </div>
     `, {
