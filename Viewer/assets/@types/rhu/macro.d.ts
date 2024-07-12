@@ -32,7 +32,9 @@ declare class MACRO<T extends MacroClass = MacroClass> extends ELEMENT {
     type: T;
     html: HTML;
     args: MacroParameters<T>;
+    callbacks: Set<(macro: InstanceType<T>) => void>;
     constructor(html: HTML, type: T, args: MacroParameters<T>);
+    then(callback: (macro: InstanceType<T>) => void): this;
     static is: (object: any) => object is MACRO;
 }
 declare class MACRO_OPEN<T extends MacroClass = MacroClass> extends MACRO<T> {

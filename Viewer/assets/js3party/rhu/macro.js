@@ -49,9 +49,14 @@ export { MacroElement };
 class MACRO extends ELEMENT {
     constructor(html, type, args) {
         super();
+        this.callbacks = new Set();
         this.html = html;
         this.type = type;
         this.args = args;
+    }
+    then(callback) {
+        this.callbacks.add(callback);
+        return this;
     }
 }
 MACRO.is = Object.prototype.isPrototypeOf.bind(MACRO.prototype);
@@ -135,10 +140,15 @@ class HTML {
                 return NodeFilter.FILTER_REJECT;
             }
         }).nextNode();
+        const slots = new Array(macros.length);
         for (let i = 0; i < macros.length; ++i) {
             const slot = fragment.querySelector(`rhu-macro[rhu-internal="${i}"]`);
             if (slot === undefined || slot === null)
                 throw new Error("Unable to find slot for macro.");
+            slots[i] = slot;
+        }
+        for (let i = 0; i < macros.length; ++i) {
+            const slot = slots[i];
             const children = [...slot.childNodes];
             slot.replaceChildren();
             const macro = macros[i];
@@ -146,6 +156,9 @@ class HTML {
             const dom = [...frag.childNodes];
             frag.replaceChildren();
             const instance = new macro.type(dom, b, children, ...macro.args);
+            for (const callback of macro.callbacks) {
+                callback(instance);
+            }
             const macro_bind = macro[symbols.bind];
             if (macro_bind !== undefined && macro_bind !== null) {
                 if (macro_bind in bindings)
@@ -160,6 +173,8 @@ class HTML {
 HTML.empty = html ``;
 HTML.is = Object.prototype.isPrototypeOf.bind(HTML.prototype);
 function isFactory(object) {
+    if (object === null || object === undefined)
+        return false;
     return object[symbols.factory] === true;
 }
 export const Macro = ((type, html) => {
@@ -178,7 +193,11 @@ Macro.create = (macro) => {
     const [b, frag] = macro.html.dom();
     const dom = [...frag.childNodes];
     frag.replaceChildren();
-    return new macro.type(dom, b, [], ...macro.args);
+    const instance = new macro.type(dom, b, [], ...macro.args);
+    for (const callback of macro.callbacks) {
+        callback(instance);
+    }
+    return instance;
 };
 const isElement = Object.prototype.isPrototypeOf.bind(Element.prototype);
 const recursiveDispatch = function (node) {
