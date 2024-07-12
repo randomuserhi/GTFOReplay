@@ -109,7 +109,9 @@ export const Display = Macro(class Display extends MacroElement {
         this.liveButton.addEventListener("click", () => {
             view.live(!view.live());
         });
-        view.live.on((value) => this.liveDot.style.backgroundColor = value ? "red" : "#eee", { signal: dispose.signal });
+        view.live.on((value) => this.liveDot.style.backgroundColor = value ? "red" : "#eee", 
+            { signal: dispose.signal }
+        );
 
         // Time display
         view.time.on((value) => {
