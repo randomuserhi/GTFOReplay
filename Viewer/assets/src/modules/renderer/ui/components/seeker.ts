@@ -75,7 +75,7 @@ const style = Style(({ style }) => {
     };
 });
 
-export const seeker = Macro(class Seeker extends MacroElement {
+export const Seeker = Macro(class Seeker extends MacroElement {
     public seeking = signal(false);
     public hovering = signal(false);
 

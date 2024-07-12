@@ -12,7 +12,7 @@ export const dispose = {
 module.ready();
 
 /* eslint-disable sort-imports */
-import { display } from "./display.js";
+import { Display } from "./display.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -27,7 +27,7 @@ const style = Style(({ style }) => {
 });
 
 const UI = Macro(class UI extends MacroElement {
-    private display: Macro<typeof display>;
+    private display: Macro<typeof Display>;
     
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
@@ -38,7 +38,7 @@ const UI = Macro(class UI extends MacroElement {
     }
 }, html`
     <div class="${style.wrapper}">
-        ${display().bind("display")}
+        ${Display().bind("display")}
     </div>
     `);
 

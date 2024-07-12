@@ -2,7 +2,7 @@ import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
-import { seeker } from "./components/seeker.js";
+import { Seeker } from "./components/seeker.js";
 import { dispose } from "./main.js";
 
 const style = Style(({ style }) => {
@@ -37,9 +37,9 @@ const style = Style(({ style }) => {
 });
 
 
-export const display = Macro(class Display extends MacroElement {
+export const Display = Macro(class Display extends MacroElement {
     public mount: HTMLDivElement;
-    private seeker: Macro<typeof seeker>;
+    private seeker: Macro<typeof Seeker>;
     
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
@@ -79,8 +79,8 @@ export const display = Macro(class Display extends MacroElement {
 }, html`
     <div m-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">
-        ${seeker.open().bind("seeker")}
+        ${Seeker.open().bind("seeker")}
             <div>${Macro.signal("test", "crazy")}</div>
-        ${seeker.close}
+        ${Seeker.close}
     </div>
     `);
