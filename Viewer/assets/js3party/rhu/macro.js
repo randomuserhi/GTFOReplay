@@ -100,7 +100,6 @@ class HTML {
         const template = document.createElement("template");
         template.innerHTML = source;
         const fragment = template.content;
-        fragment.normalize();
         const bindings = {};
         for (const el of fragment.querySelectorAll("*[m-id]")) {
             const key = el.getAttribute("m-id");
@@ -126,6 +125,16 @@ class HTML {
                 bindings[sig_bind] = instance;
             }
         }
+        document.createNodeIterator(fragment, NodeFilter.SHOW_TEXT, {
+            acceptNode(node) {
+                const value = node.nodeValue;
+                if (value === null || value === undefined)
+                    node.parentNode?.removeChild(node);
+                else if (value.trim() === "")
+                    node.parentNode?.removeChild(node);
+                return NodeFilter.FILTER_REJECT;
+            }
+        }).nextNode();
         for (let i = 0; i < macros.length; ++i) {
             const slot = fragment.querySelector(`rhu-macro[rhu-internal="${i}"]`);
             if (slot === undefined || slot === null)
