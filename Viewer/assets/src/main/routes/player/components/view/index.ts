@@ -66,6 +66,8 @@ export const View = Macro(class View extends MacroElement {
     timescale = signal(1);
     pause = signal(false);
     frameRate = signal(0);
+    live = signal(false);
+    lerp = 20;
 
     private reset() {
         this.time(0);
@@ -83,7 +85,12 @@ export const View = Macro(class View extends MacroElement {
         this.prevTime = now;
         this.frameRate(1000 / dt);
         if (this.replay !== undefined) {
-            if (!this.pause()) this.time(this.time() + dt * this.timescale());
+            if (!this.pause()) {
+                if (this.live()) {
+                    const time = this.time();
+                    this.time(time + (this.replay.length() - time) * dt / 1000 * this.lerp);
+                } else this.time(this.time() + dt * this.timescale());
+            }
             const time = this.time();
 
             if (this.snapshot?.time !== time) {
