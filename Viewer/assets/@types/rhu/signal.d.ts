@@ -1,5 +1,3 @@
-declare const _isDirty: unique symbol;
-declare const _callbacks: unique symbol;
 interface SignalEvent<T = any> {
     (): T;
     equals(other: T): boolean;
@@ -8,18 +6,23 @@ interface SignalEvent<T = any> {
     }): Callback<T>;
     off(handle: Callback<T>): boolean;
 }
-export interface Signal<T = any> extends SignalEvent<T> {
+export interface Signal<T> extends SignalEvent<T> {
     (value: T): T;
     guard?: (value: T) => T;
 }
-type Callback<T = any> = (value: T) => void;
-type Equality<T = any> = (a: T, b: T) => boolean;
-export declare function isSignalType<T = any>(obj: any): obj is SignalEvent<T>;
-export declare const always: Equality;
-export declare function signal<T = any>(value: T, equality?: Equality<T>): Signal<T>;
-export interface Computed<T = any> extends SignalEvent<T> {
-    [_isDirty]: boolean;
-    [_callbacks]: Set<Callback<T>>;
+type Callback<T> = (value: T) => void;
+type Equality<T> = (a: T, b: T) => boolean;
+export declare const isSignal: <T>(obj: any) => obj is SignalEvent<T>;
+export declare const always: Equality<any>;
+export declare function signal<T>(value: T, equality?: Equality<T>): Signal<T>;
+export interface Effect {
+    (): void;
 }
-export declare function computed<T = any>(expression: () => T, dependencies: Signal[], equality?: Equality<T>): Computed<T>;
+export declare const isEffect: (obj: any) => obj is Effect;
+export declare function effect(expression: () => void, dependencies: SignalEvent[]): Effect;
+export interface Computed<T> extends SignalEvent<T> {
+    (): T;
+    effect: Effect;
+}
+export declare function computed<T>(expression: () => T, dependencies: SignalEvent[], equality?: Equality<T>): Computed<T>;
 export {};

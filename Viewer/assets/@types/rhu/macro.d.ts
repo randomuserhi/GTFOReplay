@@ -7,17 +7,15 @@ declare class CLOSURE extends NODE {
 }
 declare const symbols: {
     readonly factory: unique symbol;
-    readonly bind: unique symbol;
-    readonly value: unique symbol;
 };
 declare class ELEMENT extends NODE {
-    [symbols.bind]?: PropertyKey;
+    private _bind?;
     bind(key?: PropertyKey): this;
     static is: (object: any) => object is ELEMENT;
 }
 declare class SIGNAL extends ELEMENT {
     constructor(binding: string);
-    [symbols.value]?: string;
+    private _value?;
     value(value?: string): this;
     static is: (object: any) => object is SIGNAL;
 }

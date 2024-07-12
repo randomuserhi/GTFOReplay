@@ -1,4 +1,5 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
+import { computed, effect, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptLoader } from "../replay/async-script-loader.js";
@@ -136,3 +137,7 @@ if (document.readyState === "loading") {
 } else {
     __load__();
 }
+
+(window as any).signal = signal;
+(window as any).effect = effect;
+(window as any).computed = computed;

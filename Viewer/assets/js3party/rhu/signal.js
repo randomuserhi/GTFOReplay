@@ -1,33 +1,6 @@
 import { WeakCollectionMap } from "./weak.js";
-const _isDirty = Symbol("isDirty");
-const _callbacks = Symbol("callbacks");
 const proto = {};
-const dependencyMap = new WeakCollectionMap();
-const dirtySet = new Set();
-function markDirty(signal, root = true) {
-    const dependencies = dependencyMap.get(signal);
-    if (dependencies === undefined)
-        return;
-    for (const computed of dependencies) {
-        if (computed[_isDirty])
-            continue;
-        computed[_isDirty] = true;
-        dirtySet.add(computed);
-        markDirty(computed, false);
-    }
-    if (root) {
-        for (const dirty of dirtySet) {
-            for (const callback of dirty[_callbacks]) {
-                callback(dirty());
-            }
-        }
-        dirtySet.clear();
-    }
-}
-globalThis.signals = dependencyMap;
-export function isSignalType(obj) {
-    return Object.prototype.isPrototypeOf.call(proto, obj);
-}
+export const isSignal = Object.prototype.isPrototypeOf.bind(proto);
 export const always = () => false;
 export function signal(value, equality) {
     const ref = { value };
@@ -44,7 +17,7 @@ export function signal(value, equality) {
                 for (const callback of callbacks) {
                     callback(ref.value);
                 }
-                markDirty(signal);
+                triggerEffects(signal);
             }
         }
         return ref.value;
@@ -71,40 +44,47 @@ export function signal(value, equality) {
     Object.setPrototypeOf(signal, proto);
     return signal;
 }
+const effectProto = {};
+Object.setPrototypeOf(effectProto, proto);
+export const isEffect = Object.prototype.isPrototypeOf.bind(effectProto);
+export function effect(expression, dependencies) {
+    expression();
+    const effect = function () {
+        expression();
+    };
+    Object.setPrototypeOf(effect, effectProto);
+    for (const signal of dependencies) {
+        if (isEffect(signal))
+            throw new Error("Effect cannot be used as a dependency.");
+        dependencyMap.set(signal, effect);
+    }
+    return effect;
+}
+const dependencyMap = new WeakCollectionMap();
+function triggerEffects(signal) {
+    const dependencies = dependencyMap.get(signal);
+    if (dependencies === undefined)
+        return;
+    for (const effect of dependencies) {
+        effect();
+    }
+}
 export function computed(expression, dependencies, equality) {
-    const ref = { value: undefined };
-    const callbacks = new Set();
+    const value = signal(expression(), equality);
     const computed = function () {
-        if (computed[_isDirty]) {
-            ref.value = expression();
-            computed[_isDirty] = false;
-        }
-        return ref.value;
+        return value();
     };
     computed.on = function (callback, options) {
-        if (!callbacks.has(callback)) {
-            callback(computed());
-            callbacks.add(callback);
-            if (options?.signal !== undefined) {
-                options.signal.addEventListener("abort", () => callbacks.delete(callback), { once: true });
-            }
-        }
+        value.on(callback, options);
         return callback;
     };
     computed.off = function (callback) {
-        return callbacks.delete(callback);
+        return value.off(callback);
     };
     computed.equals = function (other) {
-        if (equality === undefined) {
-            return ref.value === other;
-        }
-        return equality(ref.value, other);
+        return value.equals(other);
     };
-    computed[_isDirty] = true;
-    computed[_callbacks] = callbacks;
+    computed.effect = effect(() => value(expression()), dependencies);
     Object.setPrototypeOf(computed, proto);
-    for (const signal of dependencies) {
-        dependencyMap.set(signal, computed);
-    }
     return computed;
 }

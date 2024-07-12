@@ -8,16 +8,13 @@ CLOSURE.instance = new CLOSURE();
 CLOSURE.is = Object.prototype.isPrototypeOf.bind(CLOSURE.prototype);
 const symbols = {
     factory: Symbol("factory"),
-    bind: Symbol("macro.bind"),
-    value: Symbol("macro.value")
 };
 class ELEMENT extends NODE {
     bind(key) {
-        this[symbols.bind] = key;
+        this._bind = key;
         return this;
     }
 }
-symbols.bind;
 ELEMENT.is = Object.prototype.isPrototypeOf.bind(ELEMENT.prototype);
 class SIGNAL extends ELEMENT {
     constructor(binding) {
@@ -25,11 +22,10 @@ class SIGNAL extends ELEMENT {
         this.bind(binding);
     }
     value(value) {
-        this[symbols.value] = value;
+        this._value = value;
         return this;
     }
 }
-symbols.value;
 SIGNAL.is = Object.prototype.isPrototypeOf.bind(SIGNAL.prototype);
 class MacroElement {
     constructor(dom, bindings, target) {
@@ -119,11 +115,11 @@ class HTML {
                 throw new Error("Unable to find slot for signal.");
             const sig = signals[i];
             const node = document.createTextNode("");
-            const sig_value = sig[symbols.value];
+            const sig_value = sig._value;
             const instance = signal(sig_value !== undefined && sig_value !== null ? sig_value : "");
             instance.on((value) => node.nodeValue = value);
             slot.replaceWith(node);
-            const sig_bind = sig[symbols.bind];
+            const sig_bind = sig._bind;
             if (sig_bind !== undefined && sig_bind !== null) {
                 if (sig_bind in bindings)
                     throw new SyntaxError(`The binding '${sig_bind.toString()}' already exists.`);
@@ -159,7 +155,7 @@ class HTML {
             for (const callback of macro.callbacks) {
                 callback(instance);
             }
-            const macro_bind = macro[symbols.bind];
+            const macro_bind = macro._bind;
             if (macro_bind !== undefined && macro_bind !== null) {
                 if (macro_bind in bindings)
                     throw new SyntaxError(`The binding '${macro_bind.toString()}' already exists.`);
