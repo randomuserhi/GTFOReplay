@@ -86,7 +86,7 @@ export const seeker = Macro(class Seeker extends MacroElement {
     
     value = signal(0);
     
-    constructor(dom: Node[], bindings: any) {
+    constructor(dom: Node[], bindings: any, children: Node[]) {
         super(dom, bindings);
 
         this.value.guard = Math.clamp01;
@@ -123,6 +123,9 @@ export const seeker = Macro(class Seeker extends MacroElement {
         this.interact.addEventListener("mouseout", () => {
             this.hovering(false);
         });
+
+        console.log(children);
+        //this.mount.append(...children);
     }
 }, html`
     <div class="${style.wrapper}">

@@ -42,7 +42,6 @@ export const display = Macro(class Display extends MacroElement {
     private seeker: Macro<typeof seeker>;
     
     constructor(dom: Node[], bindings: any) {
-        console.log(bindings);
         super(dom, bindings);
     }
     
