@@ -1,5 +1,4 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
-import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
@@ -43,6 +42,7 @@ const style = Style(({ style }) => {
         outline:0;
     }
     ${button}:hover {
+        color: white;
         background-color: #272733; /*TODO: Theme-ColorScheme*/
     }
     `;
@@ -78,10 +78,11 @@ export const WinNav = Macro(class WinNav extends MacroElement {
     max: HTMLButtonElement;
     min: HTMLButtonElement;
     icon: HTMLButtonElement;
+    plugin: HTMLButtonElement;
 
-    winTitle: Signal<string>;
+    mount: HTMLDivElement;
 
-    constructor(dom: Node[], bindings: any) {
+    constructor(dom: Node[], bindings: any, children: Node[]) {
         super(dom, bindings);
 
         this.close.onclick = () => {
@@ -93,6 +94,8 @@ export const WinNav = Macro(class WinNav extends MacroElement {
         this.min.onclick = () => {
             window.api.minimizeWindow();
         };
+
+        this.mount.append(...children);
     }
 }, html`
     <nav class="${style.wrapper}">
@@ -105,8 +108,10 @@ export const WinNav = Macro(class WinNav extends MacroElement {
         <div m-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
             ${icons.line()}
         </div>
-        <div class="${style.text}">
-            ${Macro.signal("winTitle", "GTFO Replay Viewer")}
+        <div m-id="mount" class="${style.text}">
+        </div>
+        <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
+            ${icons.plugin()}
         </div>
         <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
             ${icons.rug()}

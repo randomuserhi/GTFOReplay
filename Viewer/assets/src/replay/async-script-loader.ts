@@ -124,7 +124,7 @@ class Archetype {
 export namespace AsyncScriptCache {
     const _cache = new Map<string, _ASLModule>();
 
-    export const archetype: Archetype = new Archetype();
+    export let archetype: Archetype = new Archetype();
 
     let _type: number = 0;
     const typemap = new Map<string, number>();
@@ -292,10 +292,14 @@ export namespace AsyncScriptCache {
         console.log(`Modules waiting to finalize:\n${waiting.map((entry) => `[${entry[0].src}]\n\t- ${entry[1].join("\n\t- ")}`).join("\n\n")}`);
     }
 
-    export function reset() {
+    export async function reset() {
         for (const module of _cache.values()) {
-            invalidate(module.src);
+            module.destruct();
         }
+
+        _cache.clear();
+        typemap.clear();
+        archetype = new Archetype();
 
         _getList = [];
     }

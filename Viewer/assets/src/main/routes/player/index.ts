@@ -66,10 +66,17 @@ export const player = Macro(class Player extends MacroElement {
             app().load(this);
         });
         this.parser.addEventListener("end", () => {
-            window.api.send("close", file);
+            window.api.send("close");
         });
 
         this.view.replay = await this.parser.parse(file);
+    }
+
+    public close() {
+        this.view.replay = undefined;
+        this.parser?.terminate();
+        this.parser = undefined;
+        window.api.send("close");
     }
 }, html`
     <div m-id="wrapper" class="${style.wrapper}">

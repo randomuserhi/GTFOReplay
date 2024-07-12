@@ -1,23 +1,32 @@
 import * as chokidar from "chokidar";
+import { dialog } from "electron";
 import * as fs from 'node:fs/promises';
 import * as path from "path";
+import Program from "../main.cjs";
 
 export class ModuleLoader {
     private post: (event: string, ...args: any[]) => void;
-    readonly path: string;
-    private watcher: chokidar.FSWatcher;
-    readonly channel: string;
+    private path: string;
+    private watcher?: chokidar.FSWatcher;
 
-    constructor(channel: string, post: (event: string, ...args: any[]) => void, path: string) {
+    constructor(post: (event: string, ...args: any[]) => void, path: string) {
         this.post = post;
         this.path = path;
-        this.channel = channel;
+        this.watch(path);
+    }
+
+    private watch(path: string) {
+        if (this.watcher !== undefined) {
+            this.watcher.close();
+        }
+
+        this.path = path;
         this.watcher = chokidar.watch(this.path);
         this.watcher.on("all", (event, path) => {
             switch(event) {
             case "change":
             case "add":
-                this.post(this.channel, [path]);
+                this.post("loadModules", [path]);
                 break;
             }
         });
@@ -33,8 +42,30 @@ export class ModuleLoader {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
-        ipc.handle(this.channel, async () => {
+        ipc.handle("loadModules", async () => {
             return await ModuleLoader.getFiles(this.path);
+        });
+        ipc.handle("moduleFolder", async () => {
+            if (Program.win === null) return [false, "Failed to find browser window."]; 
+
+            const result = await dialog.showOpenDialog(Program.win, {
+                properties: ["openDirectory"],
+                defaultPath: path.join(__dirname, "../assets")
+            });
+
+            try {
+                if (!result.canceled) {
+                    const path = result.filePaths[0];
+                    if (!(await fs.stat(path)).isDirectory()) return [false, "Invalid path, please point to a directory."]; 
+                    this.watch(path);
+                    console.log(`Switched modules to ${path}`);
+                    return [true];
+                } else {
+                    return [false, "No folder was selected."]; 
+                }
+            } catch (e) {
+                return [false, `Unexpected error ${e}`];
+            }
         });
     }
 }

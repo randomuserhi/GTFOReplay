@@ -1,7 +1,7 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
-import { AsyncScriptLoader } from "../replay/async-script-loader.js";
+import { AsyncScriptCache, AsyncScriptLoader } from "../replay/async-script-loader.js";
 import { WinNav } from "./global/components/organisms/winNav.js";
 import { Main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
@@ -41,7 +41,7 @@ const style = Style(({ style }) => {
 });
 
 const App = Macro(class App extends MacroElement {
-    public file: HTMLInputElement;
+    public replayfile: HTMLInputElement;
 
     private player = Macro.create(player());
     private main = Macro.create(Main());
@@ -53,7 +53,7 @@ const App = Macro(class App extends MacroElement {
         super(dom, bindings);
         this.init();
 
-        this.file.addEventListener("change", (e: any) => {
+        this.replayfile.addEventListener("change", (e: any) => {
             try {
                 const files = e.target.files;
                 if (!files.length) {
@@ -72,7 +72,26 @@ const App = Macro(class App extends MacroElement {
             }
         });
 
-        this.nav.icon.addEventListener("click", () => this.file.click());
+        this.nav.icon.addEventListener("click", () => this.replayfile.click());
+
+        this.nav.plugin.addEventListener("click", async () => {
+            const [success, error] = await window.api.invoke("moduleFolder");
+            if (!success) {
+                console.error(error);
+                return;
+            }
+
+            AsyncScriptCache.reset();
+            (await window.api.invoke("loadModules")).forEach((p: string) => {
+                AsyncScriptLoader.load(p);
+            });
+
+            this.player.close();
+
+            this.main.video.play();
+            this.main.loading(false);
+            this.load(this.main);
+        });
 
         this.load(this.main);
     }
@@ -101,11 +120,13 @@ const App = Macro(class App extends MacroElement {
     }
 }, html`
     <div class="${theme} ${style.wrapper}">
-        ${WinNav().bind("nav")}
+        ${WinNav.open().bind("nav")}
+            <span>GTFO Replay Viewer</span>
+        ${WinNav.close}
         <!-- Content goes here -->
         <div m-id="body" class="${style.body}">
         </div>
-        <input m-id="file" type="file" style="display: none;"/>
+        <input m-id="replayfile" type="file" style="display: none;"/>
     </div>
     `);
 

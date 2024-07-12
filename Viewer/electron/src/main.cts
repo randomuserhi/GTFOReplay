@@ -38,7 +38,7 @@ export default class Program {
     private static onReady(): void {
         Program.setupIPC();
 
-        this.moduleLoader = new ModuleLoader("loadModules", Program.post, path.join(__dirname, "assets/modules"));
+        this.moduleLoader = new ModuleLoader(Program.post, path.join(__dirname, "assets/modules"));
         this.moduleLoader.setupIPC(ipcMain);
 
         this.fileManager = new FileManager();

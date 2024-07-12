@@ -74,6 +74,7 @@ const style = Style(({ style }) => {
 export const Main = Macro(class Main extends MacroElement {
     private loadingWidget: HTMLDivElement;
     private loadButton: HTMLButtonElement;
+    public video: HTMLVideoElement;
 
     public loading = signal(false);
 
@@ -81,7 +82,7 @@ export const Main = Macro(class Main extends MacroElement {
         super(dom, bindings);
 
         this.loadButton.addEventListener("click", () => {
-            app().file.click();    
+            app().replayfile.click();    
         });
 
         this.loading.on((value) => {
@@ -93,7 +94,7 @@ export const Main = Macro(class Main extends MacroElement {
     <div class="${style.wrapper}">
         <div class="${style.empty}">
             <div class="${style.watermark}">${__version__}</div>
-            <video style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
+            <video m-id="video" style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
                 <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">
             </video>   
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
