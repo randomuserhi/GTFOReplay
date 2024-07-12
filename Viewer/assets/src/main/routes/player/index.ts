@@ -46,7 +46,6 @@ export const player = Macro(class Player extends MacroElement {
     }
 
     public refresh() {
-        console.log("refresh");
         this.render();
         this.view.refresh();
     }
