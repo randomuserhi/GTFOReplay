@@ -58,6 +58,12 @@ interface MacroNamespace {
     <T extends MacroClass>(type: T, html: HTML): FACTORY<T>;
     signal(binding: string, value?: string): SIGNAL;
     create<T extends MACRO>(macro: T): T extends MACRO<infer R> ? InstanceType<R> : never;
+    observe(node: Node): void;
 }
 export declare const Macro: MacroNamespace;
+declare global {
+    interface GlobalEventHandlersEventMap {
+        "mount": CustomEvent;
+    }
+}
 export {};

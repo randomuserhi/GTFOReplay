@@ -168,3 +168,35 @@ Macro.create = (macro) => {
     frag.replaceChildren();
     return new macro.type(dom, b, [], ...macro.args);
 };
+const isElement = Object.prototype.isPrototypeOf.bind(Element.prototype);
+const recursiveDispatch = function (node) {
+    if (isElement(node))
+        node.dispatchEvent(new CustomEvent("mount"));
+    for (const child of node.childNodes)
+        recursiveDispatch(child);
+};
+const observer = new MutationObserver(function (mutationList) {
+    for (const mutation of mutationList) {
+        switch (mutation.type) {
+            case "childList":
+                {
+                    for (const node of mutation.addedNodes)
+                        recursiveDispatch(node);
+                }
+                break;
+        }
+    }
+});
+Macro.observe = function (target) {
+    observer.observe(target, {
+        childList: true,
+        subtree: true
+    });
+};
+const onDocumentLoad = function () {
+    Macro.observe(document);
+};
+if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", onDocumentLoad);
+else
+    onDocumentLoad();

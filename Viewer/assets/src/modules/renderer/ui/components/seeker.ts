@@ -89,7 +89,7 @@ export const seeker = Macro(class Seeker extends MacroElement {
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 
-        this.value.guard = (value) => Math.clamp01(value);
+        this.value.guard = Math.clamp01;
         this.value.on((value) => this.progress.style.width = `${Math.clamp01(value) * 100}%`);
 
         const doSeek = (x: number) => {

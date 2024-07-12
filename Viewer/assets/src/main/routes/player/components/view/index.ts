@@ -42,7 +42,7 @@ export const View = Macro(class View extends MacroElement {
         this.update();
     }
 
-    private resize() {
+    public resize() {
         const computed = getComputedStyle(this.canvas);
         const width = parseInt(computed.width);
         const height = parseInt(computed.height);
@@ -68,8 +68,6 @@ export const View = Macro(class View extends MacroElement {
     frameRate = signal(0);
 
     private reset() {
-        this.resize();
-        
         this.time(0);
         this.timescale(1);       
     }
