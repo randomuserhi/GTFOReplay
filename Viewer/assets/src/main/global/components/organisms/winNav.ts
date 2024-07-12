@@ -1,4 +1,5 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
+import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
@@ -66,10 +67,30 @@ const style = Style(({ style }) => {
     user-select: none;
     `;
 
+    const popup = style.class`
+        display: none;
+        position: absolute;
+        top: calc(100% + 5px);
+        transform: translate(calc(50% - 22.5px), 0);
+        padding: 5px 10px;
+        background-color: #11111B; /*TODO: Theme-ColorScheme*/
+        border-radius: 7px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: #2f2e44;
+        font-size: 0.75rem;
+    `;
+    style`
+    ${button}:hover ${popup} {
+        display: block;
+    }
+    `;
+
     return {
         wrapper,
         button,
-        text
+        text,
+        popup
     };
 });
 
@@ -79,8 +100,9 @@ export const WinNav = Macro(class WinNav extends MacroElement {
     min: HTMLButtonElement;
     icon: HTMLButtonElement;
     plugin: HTMLButtonElement;
-
     mount: HTMLDivElement;
+
+    moduleName: Signal<string>;
 
     constructor(dom: Node[], bindings: any, children: Node[]) {
         super(dom, bindings);
@@ -112,6 +134,9 @@ export const WinNav = Macro(class WinNav extends MacroElement {
         </div>
         <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
             ${icons.plugin()}
+            <div class="${style.popup}">
+                <span>${Macro.signal("moduleName", "./resources/app/assets/modules")}</span>
+            </div>
         </div>
         <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
             ${icons.rug()}

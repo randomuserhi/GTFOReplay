@@ -46,7 +46,17 @@ export class ModuleLoader {
             return await ModuleLoader.getFiles(this.path);
         });
         ipc.handle("moduleFolder", async () => {
-            if (Program.win === null) return [false, "Failed to find browser window."]; 
+            const response: {
+                success: boolean;
+                path: string | undefined;
+                error: string | undefined;
+            } = {
+                success: false,
+                path: undefined,
+                error: "An unknown error occured."
+            };
+
+            if (Program.win === null) return response; 
 
             const result = await dialog.showOpenDialog(Program.win, {
                 properties: ["openDirectory"],
@@ -56,15 +66,24 @@ export class ModuleLoader {
             try {
                 if (!result.canceled) {
                     const path = result.filePaths[0];
-                    if (!(await fs.stat(path)).isDirectory()) return [false, "Invalid path, please point to a directory."]; 
+                    if (!(await fs.stat(path)).isDirectory()) {
+                        response.error = "Invalid path, please point to a directory.";
+                        return response;
+                    }
                     this.watch(path);
                     console.log(`Switched modules to ${path}`);
-                    return [true];
+                    
+                    response.success = true;
+                    response.path = path;
+                    response.error = "";
+                    return response;
                 } else {
-                    return [false, "No folder was selected."]; 
+                    response.error = "No folder was selected.";
+                    return response; 
                 }
             } catch (e) {
-                return [false, `Unexpected error ${e}`];
+                response.error = `Unexpected error ${e}`;
+                return response;
             }
         });
     }

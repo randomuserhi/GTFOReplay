@@ -75,7 +75,7 @@ const App = Macro(class App extends MacroElement {
         this.nav.icon.addEventListener("click", () => this.replayfile.click());
 
         this.nav.plugin.addEventListener("click", async () => {
-            const [success, error] = await window.api.invoke("moduleFolder");
+            const { success, path, error } = await window.api.invoke("moduleFolder");
             if (!success) {
                 console.error(error);
                 return;
@@ -91,6 +91,8 @@ const App = Macro(class App extends MacroElement {
             this.main.video.play();
             this.main.loading(false);
             this.load(this.main);
+
+            this.nav.moduleName(path);
         });
 
         this.load(this.main);
