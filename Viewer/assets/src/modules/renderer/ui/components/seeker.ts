@@ -124,7 +124,6 @@ export const seeker = Macro(class Seeker extends MacroElement {
             this.hovering(false);
         });
 
-        console.log(children);
         this.mount.append(...children);
     }
 }, html`
