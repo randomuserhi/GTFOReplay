@@ -97,7 +97,6 @@ class HTML {
             }
             source += this.first[i];
         }
-        console.log(source);
         const template = document.createElement("template");
         template.innerHTML = source;
         const fragment = template.content;
@@ -114,7 +113,6 @@ class HTML {
             if (slot === undefined || slot === null)
                 throw new Error("Unable to find slot for signal.");
             const sig = signals[i];
-            console.log(sig);
             const node = document.createTextNode("");
             const sig_value = sig[symbols.value];
             const instance = signal(sig_value !== undefined && sig_value !== null ? sig_value : "");
