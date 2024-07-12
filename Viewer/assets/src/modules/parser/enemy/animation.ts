@@ -4,6 +4,8 @@ import * as Pod from "@esm/@root/replay/pod.js";
 import { Factory } from "../../library/factory.js";
 import { ScreamType } from "./scream.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {

@@ -3,6 +3,8 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {

@@ -10,6 +10,8 @@ import { Identifier, IdentifierData } from "../identifier.js";
 import { StatTracker } from "../stattracker/stattracker.js";
 import { AnimHandles } from "./animation.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {

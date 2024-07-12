@@ -3,6 +3,8 @@ import { ByteStream } from "@esm/@root/replay/stream.js";
 import { Factory } from "../../library/factory.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {

@@ -2,6 +2,8 @@ import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../../library/factory.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Events {

@@ -4,6 +4,8 @@ import { Vector3Like } from "@esm/three";
 import { Factory } from "../library/factory.js";
 import { xor } from "../library/random.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Data {

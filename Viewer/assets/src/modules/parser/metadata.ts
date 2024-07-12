@@ -1,6 +1,8 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 export interface Metadata {
     version: string;
     compatibility_OldBulkheadSound: boolean; 

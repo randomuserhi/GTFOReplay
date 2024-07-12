@@ -2,6 +2,8 @@ import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../../library/factory.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 export interface MapGeometry {
     vertices: Float32Array;
     indices: number[];

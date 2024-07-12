@@ -2,7 +2,6 @@ import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptLoader } from "../replay/async-script-loader.js";
-import { ModuleLoader } from "../replay/moduleloader.js";
 import { WinNav } from "./global/components/organisms/winNav.js";
 import { Main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
@@ -81,13 +80,7 @@ const App = Macro(class App extends MacroElement {
     private async init() {
         window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
-        window.api.on("loadParserModules", (paths: string[]) => paths.forEach(p => {
-            AsyncScriptLoader.load(p);
-            ModuleLoader.registerASLModule(p); 
-
-            // TODO(randomuserhi): Trigger re-parse of current file
-        }));
-        window.api.on("loadRendererModules", async (paths: string[]) => {
+        window.api.on("loadModules", async (paths: string[]) => {
             const promises: Promise<void>[] = [];
             for (const p of paths) {
                 promises.push(AsyncScriptLoader.load(p));
@@ -98,11 +91,7 @@ const App = Macro(class App extends MacroElement {
             this.player.refresh();
         });
     
-        (await window.api.invoke("loadParserModules")).forEach((p: string) => {
-            AsyncScriptLoader.load(p);
-            ModuleLoader.registerASLModule(p);
-        });
-        (await window.api.invoke("loadRendererModules")).forEach((p: string) => {
+        (await window.api.invoke("loadModules")).forEach((p: string) => {
             AsyncScriptLoader.load(p);
         });
     }

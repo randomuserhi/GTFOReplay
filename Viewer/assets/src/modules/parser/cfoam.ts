@@ -3,6 +3,8 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../library/factory.js";
 import { DynamicPosition } from "../library/helpers.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {

@@ -1,7 +1,9 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
-import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { ByteStream } from "@esm/@root/replay/stream.js";
 import { Factory } from "../library/factory.js";
+
+ModuleLoader.registerASLModule(module.src);
 
 // NOTE(randomuserhi): Identifiers should be treated as immutable - mutating them causes issues.
 

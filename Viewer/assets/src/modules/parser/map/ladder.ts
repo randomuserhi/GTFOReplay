@@ -3,6 +3,8 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Factory } from "../../library/factory.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 export interface Ladder {
     dimension: number;
     top: Pod.Vector;

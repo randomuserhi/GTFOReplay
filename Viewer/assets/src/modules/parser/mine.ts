@@ -4,6 +4,8 @@ import { Factory } from "../library/factory.js";
 import { DynamicTransform } from "../library/helpers.js";
 import { Identifier, IdentifierData } from "./identifier.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
