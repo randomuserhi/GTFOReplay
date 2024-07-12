@@ -1,5 +1,5 @@
 import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
-import { computed, signal } from "@esm/@/rhu/signal.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { seeker } from "./components/seeker.js";
@@ -42,11 +42,12 @@ export const display = Macro(class Display extends MacroElement {
     private seeker: Macro<typeof seeker>;
     
     constructor(dom: Node[], bindings: any) {
+        console.log(bindings);
         super(dom, bindings);
     }
     
     private length = signal(0);
-    private test = computed(() => this.length() + 1, [this.length]);
+    private test: Signal<string>;
 
     public init(view: Macro<typeof View>) {
         this.mount.replaceChildren(...view.dom);
@@ -59,8 +60,6 @@ export const display = Macro(class Display extends MacroElement {
                 this.seeker.value(time / this.length(view.replay.length()));
             }
         }, { signal: dispose.signal });
-        
-        this.test.on((value) => { this.mount.setAttribute("a", value.toString()); });
 
         // Update time when seeker changes
         this.seeker.value.on((value) => {
@@ -75,10 +74,14 @@ export const display = Macro(class Display extends MacroElement {
         this.seeker.seeking.on((seeking) => {
             view.pause(seeking);
         });
+
+        view.time.on((value) => this.test(value.toString()));
     }
 }, html`
     <div m-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">
-        ${seeker().bind("seeker")}
+        ${seeker.open().bind("seeker")}
+            <div>${Macro.signal("test", "crazy")}</div>
+        ${seeker.close}
     </div>
     `);
