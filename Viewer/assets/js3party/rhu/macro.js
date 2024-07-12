@@ -130,6 +130,7 @@ class HTML {
             if (slot === undefined || slot === null)
                 throw new Error("Unable to find slot for macro.");
             const children = [...slot.childNodes];
+            slot.replaceChildren();
             const macro = macros[i];
             const [b, frag] = macro.html.dom();
             const dom = [...frag.childNodes];
