@@ -100,6 +100,7 @@ class HTML {
         const template = document.createElement("template");
         template.innerHTML = source;
         const fragment = template.content;
+        fragment.normalize();
         const bindings = {};
         for (const el of fragment.querySelectorAll("*[m-id]")) {
             const key = el.getAttribute("m-id");
