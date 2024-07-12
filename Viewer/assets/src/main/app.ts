@@ -88,12 +88,13 @@ const App = Macro(class App extends MacroElement {
             // TODO(randomuserhi): Trigger re-parse of current file
         }));
         window.api.on("loadRendererModules", async (paths: string[]) => {
-            const promises: Promise<void>[] = [];
+            const promises: Promise<Promise<void>[] | undefined>[] = [];
             for (const p of paths) {
                 promises.push(AsyncScriptLoader.load(p));
             }
             await Promise.all(promises);
 
+            // Refresh
             this.player.refresh();
         });
     

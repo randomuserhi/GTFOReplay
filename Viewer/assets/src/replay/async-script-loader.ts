@@ -216,10 +216,15 @@ export namespace AsyncScriptCache {
         } while (_getList.length !== currentListLength);
     }
 
-    export function invalidate(url: string) {
-        if (!_cache.has(url)) return false;
+    // NOTE(randomuserhi): returns:
+    //                     - a boolean for if the file was removed from cache or not (wont remove from cache if it was already invalidated)
+    //                     - a list promises for dependencies that were also invalidated and are waiting to re-execute
+    //                       - these promises resolve once the dependency finishes re-executing once the original module is re-imported
+    //                       - useful to Promise.all() this returned list to wait for all modules to finish executing after invalidating and re-importing a module
+    export function invalidate(url: string): [boolean, Promise<void>[] | undefined] {
+        if (!_cache.has(url)) return [false, undefined];
         const module = _cache.get(url)!;
-        if (module.destructed === true) return false;
+        if (module.destructed === true) return [false, undefined];
         
         const type = getType(module.src);
         module.destruct();
@@ -228,19 +233,20 @@ export namespace AsyncScriptCache {
         _getList = _getList.filter((i) => i.root.src !== module.src);
 
         const archetypesContainingModule = Archetype.typemap[type];
+        const executions = [];
         if (archetypesContainingModule !== undefined) {
             for (const archetype of archetypesContainingModule) {
                 for (const module of archetype.modules.values()) {
-                    if (invalidate(module.src)) {
+                    if (invalidate(module.src)[0]) {
                         const m = new _ASLModule(module.src, module.exec);
                         cache(m);
-                        exec(m);
+                        executions.push(exec(m));
                     }
                 }
             }
         }
 
-        return true;
+        return [true, executions];
     }
 
     export function has(path: string) {
@@ -347,10 +353,13 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
 export namespace AsyncScriptLoader {
     // eslint-disable-next-line prefer-const
     export let baseURI: string | undefined = globalThis.document === undefined ? undefined : globalThis.document.baseURI; 
+
+    // NOTE(randomuserhi): returns undefined if there are no remaining executions 
     export async function load(path: string) {
         path = new URL(path, baseURI).toString();
-        AsyncScriptCache.invalidate(path);
+        const [_, executions] = AsyncScriptCache.invalidate(path);
         await fetchModule(path);
+        if (executions !== undefined) await Promise.all(executions);
     }
 }
 
