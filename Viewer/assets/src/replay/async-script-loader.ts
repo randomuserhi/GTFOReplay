@@ -4,6 +4,7 @@ import { Rest } from "@/rhu/rest.js";
 // NOTE(randomuserhi): ExecutionContext vs Module isReady
 //                     - ExecutionContext refers to when the entire module has executed (all code has run)
 //                     - Module isReady refers to when its exports are safe to use (no more to be added or changed)
+//                     - isParser => parser context etc...
 
 function isASLModuleError(e: Error): e is _ASLModuleError {
     return Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e);
