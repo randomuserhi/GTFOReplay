@@ -40,7 +40,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         }
         
         if (datablock.geometry !== undefined) {
-            transparentMaskedParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, instancedMeshInit));
+            transparentMaskedParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, (mesh) => instancedMeshInit(mesh, order)));
         } else if (datablock.path !== undefined) {
             loadGLTF(datablock.path).then((geometry) => transparentMaskedParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
         } else {
@@ -62,7 +62,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         }
         
         if (datablock.geometry !== undefined) {
-            transparentParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, instancedMeshInit));
+            transparentParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, (mesh) => instancedMeshInit(mesh, order)));
         } else if (datablock.path !== undefined) {
             loadGLTF(datablock.path).then((geometry) => transparentParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
         } else {

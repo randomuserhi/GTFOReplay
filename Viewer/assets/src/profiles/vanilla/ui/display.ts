@@ -3,9 +3,26 @@ import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
+import { DataStore } from "@esm/@root/replay/datastore.js";
 import { Seeker } from "./components/seeker.js";
-import { dispose } from "./main.js";
+import { dispose, ui } from "./main.js";
 import { Scoreboard } from "./scoreboard.js";
+
+declare module "@esm/@root/replay/datastore.js" {
+    interface DataStoreTypes {
+        "DisplayState": {
+            pause: boolean;
+            live: boolean;
+        } 
+    }
+}
+
+module.destructor = () => {
+    const display = ui()?.display;
+    if (display === undefined) return;
+
+    display.saveState();
+};
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -107,11 +124,35 @@ export const Display = Macro(class Display extends MacroElement {
     private liveButton: HTMLButtonElement;
     private liveDot: HTMLSpanElement;
     
+    public saveState() {
+        const view = this.view();
+        if (view === undefined) return;
+
+        DataStore.set("DisplayState", {
+            pause: this.pause(),
+            live: view.live()
+        });
+    }
+
+    public restoreState() {
+        const view = this.view();
+        if (view === undefined) return;
+
+        const state = DataStore.get("DisplayState");
+        if (state === undefined) return;
+        const { pause, live } = state;
+
+        this.pause(pause);
+        view.live(live);
+    }
+
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 
         this.view.on((view) => {
             if (view === undefined) return;
+
+            this.restoreState();
 
             this.scoreboard.view(view);
 
