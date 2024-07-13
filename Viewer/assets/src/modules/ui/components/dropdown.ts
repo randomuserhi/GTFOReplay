@@ -149,6 +149,10 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
                 item.remove();
             }
             
+            const value = this.value();
+            if (!this.map.has(value)) this.selected("");
+            else this.selected(this.map.get(value));
+
             const temp = this.items;
             this.items = this._items;
             this._items = temp;

@@ -26,6 +26,7 @@ import type { View } from "@esm/@root/main/routes/player/components/view/index.j
 import { Render } from "@esm/@root/main/routes/player/index.js";
 import { Bar, Button } from "./components/bar.js";
 import { Display } from "./display.js";
+import { Finder } from "./pages/finder.js";
 import { Settings } from "./pages/settings.js";
 
 const style = Style(({ style }) => {
@@ -72,7 +73,9 @@ const UI = Macro(class UI extends MacroElement {
         super(dom, bindings);
 
         const settingsPage = Macro.create(Settings());
+        const finderPage = Macro.create(Finder());
         this.pages.set(this.settings, settingsPage);
+        this.pages.set(this.finder, finderPage);
 
         this.settings.toggle.on((value) => {
             if (!value) {
@@ -95,7 +98,7 @@ const UI = Macro(class UI extends MacroElement {
                 this.load();
                 return;
             }
-            this.load();
+            this.load(finderPage);
         });
 
         this.info.toggle.on((value) => {
@@ -111,6 +114,7 @@ const UI = Macro(class UI extends MacroElement {
 
             this.display.view(view);
             settingsPage.view(view);
+            finderPage.view(view);
         });
     }
 

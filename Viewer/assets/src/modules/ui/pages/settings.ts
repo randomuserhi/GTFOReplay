@@ -5,6 +5,7 @@ import Fuse from "@esm/fuse.js";
 import { EnemyModel } from "../../renderer/enemy/lib.js";
 import { ResourceContainerModel } from "../../renderer/map/resourcecontainers.js";
 import { Dropdown } from "../components/dropdown.js";
+import { Toggle } from "../components/toggle.js";
 import { dispose } from "../main.js";
 import { pageStyles, setInputFilter } from "./lib.js";
 
@@ -287,26 +288,22 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
                 align-items: center;
                 ">
                     <span style="flex: 1; padding-top: 1px;">Transparent Resource Containers</span>
-                    <button m-id="toggle" class="${style.toggle}"></button>
+                    ${Toggle().bind("toggle")}
                 </div>
             ${FeatureWrapper.close}
         `.dom<{
             wrapper: Macro<typeof FeatureWrapper>;
-            toggle: HTMLButtonElement;
+            toggle: Macro<typeof Toggle>;
         }>();
 
         const { toggle } = bindings;
 
-        toggle.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-        });
-        toggle.addEventListener("click", () => {
-            ResourceContainerModel.transparent(!ResourceContainerModel.transparent());
+        toggle.value.on((value) => {
+            ResourceContainerModel.transparent(value);
         });
 
         ResourceContainerModel.transparent.on((value) => {
-            if (value) toggle.classList.add(`${style.active}`);
-            else toggle.classList.remove(`${style.active}`);
+            toggle.value(value);
         });
 
         return bindings.wrapper;
@@ -320,26 +317,22 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
                 align-items: center;
                 ">
                     <span style="flex: 1; padding-top: 1px;">Show Enemy Info</span>
-                    <button m-id="toggle" class="${style.toggle}"></button>
+                    ${Toggle().bind("toggle")}
                 </div>
             ${FeatureWrapper.close}
         `.dom<{
             wrapper: Macro<typeof FeatureWrapper>;
-            toggle: HTMLButtonElement;
+            toggle: Macro<typeof Toggle>;
         }>();
 
         const { toggle } = bindings;
 
-        toggle.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-        });
-        toggle.addEventListener("click", () => {
-            EnemyModel.showInfo(!EnemyModel.showInfo());
+        toggle.value.on((value) => {
+            EnemyModel.showInfo(value);
         });
 
         EnemyModel.showInfo.on((value) => {
-            if (value) toggle.classList.add(`${style.active}`);
-            else toggle.classList.remove(`${style.active}`);
+            toggle.value(value);
         });
 
         return bindings.wrapper;
