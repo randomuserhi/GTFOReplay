@@ -16,14 +16,6 @@ export class Model<T extends any[] = any[]> extends ObjectWrapper<Group> {
     public dispose() {
         
     }
-
-    public isVisible() {
-        return this.root.visible;
-    }
-
-    public setVisible(visibility: boolean) {
-        this.root.visible = visibility;
-    }
 }
 
 const FUNC_isCulled = {

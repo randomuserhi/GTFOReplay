@@ -1,7 +1,7 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
-import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import { ReplayApi } from "../../../../../replay/moduleloader.js";
 import { Renderer } from "../../../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../../../replay/replay.js";
 
@@ -24,7 +24,7 @@ const style = Style(({ style }) => {
 
 export const View = Macro(class View extends MacroElement {
     readonly renderer: Renderer;
-    replay?: Replay;
+    replay = signal<Replay | undefined>(undefined);
     canvas: HTMLCanvasElement;
 
     constructor(dom: Node[], bindings: any) {
@@ -38,7 +38,10 @@ export const View = Macro(class View extends MacroElement {
         });
         this.canvas.addEventListener("mount", () => this.resize());
 
-        this.time.guard = (time) => Math.clamp(time, 0, this.replay !== undefined ? this.replay.length() : 0);
+        this.time.guard = (time) => {
+            const replay = this.replay();
+            return Math.clamp(time, 0, replay !== undefined ? replay.length() : 0);
+        };
         this.update();
     }
 
@@ -50,16 +53,18 @@ export const View = Macro(class View extends MacroElement {
     }
 
     public refresh() {
-        this.renderer.refresh(this.canvas, this.replay);
+        this.renderer.refresh(this.canvas, this.replay());
     }
 
     public ready() {
-        if (this.replay === undefined) throw new Error("Received 'eoh', but no replay was present.");
+        const replay = this.replay();
+        if (replay === undefined) throw new Error("Received 'eoh', but no replay was present.");
         
         this.reset();
 
-        this.renderer.init(this.replay);
-        this.canvas.focus();
+        this.renderer.init(replay);
+
+        requestAnimationFrame(() => this.canvas.focus());
     }
 
     time = signal(0);
@@ -76,33 +81,36 @@ export const View = Macro(class View extends MacroElement {
     
     private prevTime: number;
     public snapshot: Snapshot | undefined;
-    public api: ReplayApi;
+    public api = signal<ReplayApi | undefined>(undefined);
     private update() {
         if (this.time() < 0) this.time(0);
-
+        
         const now = Date.now();
         const dt = now - this.prevTime;
         this.prevTime = now;
         this.frameRate(1000 / dt);
-        if (this.replay !== undefined) {
+        
+        const replay = this.replay();
+        if (replay !== undefined) {
             if (!this.pause()) {
                 if (this.live()) {
                     const time = this.time();
-                    this.time(time + (this.replay.length() - time) * dt / 1000 * this.lerp);
+                    this.time(time + (replay.length() - time) * dt / 1000 * this.lerp);
                 } else this.time(this.time() + dt * this.timescale());
             }
             const time = this.time();
 
             if (this.snapshot?.time !== time) {
-                this.snapshot = this.replay.getSnapshot(time);
+                this.snapshot = replay.getSnapshot(time);
             }
 
             if (this.snapshot !== undefined) {
-                this.api = this.replay.api(this.snapshot);
-                this.renderer.render(dt / 1000, this.api);
+                const api = replay.api(this.snapshot);
+                this.api(api);
+                this.renderer.render(dt / 1000, api);
             }
         }
 
         requestAnimationFrame(() => this.update());
     }
-}, html`<canvas class="${style.canvas}"></canvas>`);
+}, html`<canvas class="${style.canvas}" tabindex="-1"></canvas>`);

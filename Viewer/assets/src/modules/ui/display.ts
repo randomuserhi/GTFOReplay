@@ -96,67 +96,78 @@ export const Display = Macro(class Display extends MacroElement {
     
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
+
+        this.view.on((view) => {
+            if (view === undefined) return;
+
+            this.mount.replaceChildren(...view.dom);
+
+            // Live Button
+            this.liveButton.addEventListener("click", () => {
+                view.live(!view.live());
+                view.canvas.focus();
+            });
+            view.live.on((value) => this.liveDot.style.backgroundColor = value ? "red" : "#eee", 
+                { signal: dispose.signal }
+            );
+
+            // Time display
+            view.time.on((value) => {
+                this.time(`${msToTime(value)} / ${msToTime(this.length())}`);
+            }, { signal: dispose.signal });
+
+            // Pause button
+            this.pauseButton.addEventListener("click", () => {
+                this.pause(!this.pause());
+                view.canvas.focus();
+            });
+            this.pause.on((value) => {
+                view.pause(value);
+                if (value) {
+                    this.playIcon.svg.style.display = "block";
+                    this.pauseIcon.svg.style.display = "none";
+                } else {
+                    this.playIcon.svg.style.display = "none";
+                    this.pauseIcon.svg.style.display = "block";
+                }
+            });
+
+            // Update seeker when time changes
+            view.time.on((time) => {
+                const replay = view.replay();
+                if (replay === undefined) return;
+            
+                if (!this.seeker.seeking()) {
+                    this.seeker.value(time / this.length(replay.length()));
+                }
+            }, { signal: dispose.signal });
+
+            // Update time when seeker changes
+            this.seeker.value.on((value) => {
+                const replay = view.replay();
+                if (replay === undefined) return;
+
+                if (this.seeker.seeking()) {
+                    view.time(value * this.length());
+                }
+            });
+
+            // Pause view when seeking
+            this.seeker.seeking.on((seeking) => {
+                if (seeking) {
+                    view.pause(seeking);
+                    requestAnimationFrame(() => view.canvas.focus());
+                } else view.pause(this.pause());
+            });
+        });
     }
     
+    public pause = signal(false);
+
     private time: Signal<string>;
-    private pause = signal(false);
     private length = signal(0);
 
-    public init(view: Macro<typeof View>) {
-        this.mount.replaceChildren(...view.dom);
-
-        // Live Button
-        this.liveButton.addEventListener("click", () => {
-            view.live(!view.live());
-        });
-        view.live.on((value) => this.liveDot.style.backgroundColor = value ? "red" : "#eee", 
-            { signal: dispose.signal }
-        );
-
-        // Time display
-        view.time.on((value) => {
-            this.time(`${msToTime(value)} / ${msToTime(this.length())}`);
-        }, { signal: dispose.signal });
-
-        // Pause button
-        this.pauseButton.addEventListener("click", () => {
-            this.pause(!this.pause());
-        });
-        this.pause.on((value) => {
-            view.pause(value);
-            if (value) {
-                this.playIcon.svg.style.display = "block";
-                this.pauseIcon.svg.style.display = "none";
-            } else {
-                this.playIcon.svg.style.display = "none";
-                this.pauseIcon.svg.style.display = "block";
-            }
-        });
-
-        // Update seeker when time changes
-        view.time.on((time) => {
-            if (view.replay === undefined) return;
-            
-            if (!this.seeker.seeking()) {
-                this.seeker.value(time / this.length(view.replay.length()));
-            }
-        }, { signal: dispose.signal });
-
-        // Update time when seeker changes
-        this.seeker.value.on((value) => {
-            if (view.replay === undefined) return;
-
-            if (this.seeker.seeking()) {
-                view.time(value * this.length());
-            }
-        });
-
-        // Pause view when seeking
-        this.seeker.seeking.on((seeking) => {
-            if (seeking) view.pause(seeking);
-            else view.pause(this.pause());
-        });
-    }
+    public view = signal<Macro<typeof View> | undefined>(undefined);
 }, html`
     <div m-id="mount" class="${style.view}"></div>
     <div class="${style.bottom}">

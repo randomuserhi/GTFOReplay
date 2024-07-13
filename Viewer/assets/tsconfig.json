@@ -19,6 +19,7 @@
 
       // @esm aliases for babel support for the modules folder
       "@esm/@root/*": ["../assets/src/*"],
+      "@esm/fuse.js": ["./node_modules/fuse.js"],
       "@esm/@/*": ["./@types/*"],
       "@esm/troika-three-text": ["./@types/troika-three-text"],
       "@esm/three": ["./node_modules/@types/three"],

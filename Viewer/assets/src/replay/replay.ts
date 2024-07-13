@@ -1,3 +1,4 @@
+import { signal, Signal } from "@/rhu/signal.js";
 import { Internal } from "./internal.js";
 import { ModuleDesc, ModuleLoader, NoExecFunc, ReplayApi, Typemap, UnknownModuleType } from "./moduleloader.js";
 
@@ -38,12 +39,14 @@ export const largestTickRate = 200; //ms -> tick rate of 100ms (1/10) so longest
 export class Replay {
     typemap: Map<number, ModuleDesc>;
     types: Map<string, number>;
-    header: Map<string, unknown>;
     timeline: Timeline.Snapshot[];
     snapshots: Snapshot[];
+    header: Map<string, unknown>;
+    private signals: Map<string, Signal<any>>;
     private cache: Snapshot | undefined;
-    
+
     constructor() {
+        this.signals = new Map();
         this.typemap = new Map();
         this.types = new Map();
         this.header = new Map();
@@ -53,7 +56,7 @@ export class Replay {
     
     public getOrDefault<T extends keyof Typemap.Headers>(typename: T, def: () => Typemap.Headers[T]): Typemap.Headers[T] {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
-        if (!this.header.has(typename)) this.header.set(typename, def());
+        if (!this.header.has(typename)) this.set(typename, def());
         return this.header.get(typename) as any;
     }
     public get<T extends keyof Typemap.Headers>(typename: T): Typemap.Headers[T] | undefined {
@@ -63,10 +66,20 @@ export class Replay {
     public set<T extends keyof Typemap.Headers>(typename: T, value: Typemap.Headers[T]): void {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         this.header.set(typename, value);
+        if (this.signals.has(typename)) {
+            this.signals.get(typename)!(value);
+        }
     }
     public has<T extends keyof Typemap.Headers>(typename: T): boolean{
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.header.has(typename);
+    }
+    public watch<T extends keyof Typemap.Headers>(typename: T): Signal<Typemap.Headers[T] | undefined> {
+        if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+        if (!this.signals.has(typename)) {
+            this.signals.set(typename, signal(this.get(typename)));
+        }
+        return this.signals.get(typename)!;
     }
 
     public api(state: Snapshot): ReplayApi {

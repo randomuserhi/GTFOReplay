@@ -1,4 +1,5 @@
 import { CreateEvent } from "@/rhu";
+import { signal, Signal } from "@/rhu/signal.js";
 import { Scene, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { DynamicInstanceManager } from "./instancing.js";
@@ -46,9 +47,11 @@ export class Renderer {
     initPasses: InitPass[];
 
     private data: Map<string, unknown>;
+    private signals: Map<string, Signal<any>>;
 
     constructor(canvas: HTMLCanvasElement) {
         this.data = new Map();
+        this.signals = new Map();
 
         this.canvas = canvas;
 
@@ -104,7 +107,7 @@ export class Renderer {
 
     public getOrDefault<T extends keyof Typemap.RenderData>(typename: T, def: () => Typemap.RenderData[T]): Typemap.RenderData[T] {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
-        if (!this.data.has(typename)) this.data.set(typename, def());
+        if (!this.data.has(typename)) this.set(typename, def() as any);
         return this.data.get(typename) as any;
     }
     public get<T extends keyof Typemap.RenderData | string & {}>(typename: T): (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined {
@@ -114,10 +117,20 @@ export class Renderer {
     public set<T extends keyof Typemap.RenderData | string & {}>(typename: T, value: (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any)): void {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         this.data.set(typename, value);
+        if (this.signals.has(typename)) {
+            this.signals.get(typename)!(value);
+        }
     }
     public has<T extends keyof Typemap.RenderData | string & {}>(typename: T): boolean{
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.data.has(typename);
+    }
+    public watch<T extends keyof Typemap.RenderData | string & {}>(typename: T): Signal<(T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined> {
+        if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
+        if (!this.signals.has(typename)) {
+            this.signals.set(typename, signal(this.get(typename)));
+        }
+        return this.signals.get(typename)!;
     }
 
     private loadModules() {

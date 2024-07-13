@@ -96,7 +96,10 @@ export class Parser {
             ipc.on("eoh", (typemap, types, header) => {
                 replay.typemap = typemap;
                 replay.types = types;
-                replay.header = header;
+                // NOTE(randomuserhi): Has to loop such that watch events work
+                for (const [key, value] of header) {
+                    replay.set(key, value);
+                }
                 this.dispatchEvent(CreateEvent("eoh", undefined));
             });
             ipc.on("snapshot", (snapshot: Timeline.Snapshot) => {

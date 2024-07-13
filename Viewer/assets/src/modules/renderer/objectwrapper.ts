@@ -14,4 +14,12 @@ export abstract class ObjectWrapper<T extends Object3D> {
     public removeFromScene(scene: Scene) {
         scene.remove(this.root);
     }
+
+    public setVisible(visible: boolean) {
+        this.root.visible = visible;
+    }
+
+    public isVisible() {
+        return this.root.visible;
+    }
 }

@@ -1,3 +1,4 @@
+import { signal } from "@esm/@/rhu/signal.js";
 import { ColorRepresentation, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
@@ -65,7 +66,7 @@ export class EnemyModel {
         this.model.root.add(this.tag);
     }
 
-    public static showInfo: boolean = false;
+    public static showInfo = signal(false);
 
     private static FUNC_updateTmp = {
         tagPos: new Vector3()
@@ -107,7 +108,7 @@ Target: `;
         };
         this.tmp.text += target;
 
-        this.tmp.visible = EnemyModel.showInfo;
+        this.tmp.visible = EnemyModel.showInfo();
 
         this.orientateText(this.tmp, camera, 0.3, 0.05);
         this.orientateText(this.tag, camera, 0.5, 0.1);

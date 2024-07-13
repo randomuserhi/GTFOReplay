@@ -109,6 +109,16 @@ class HTML {
                 throw new SyntaxError(`The binding '${key}' already exists.`);
             bindings[key] = el;
         }
+        document.createNodeIterator(fragment, NodeFilter.SHOW_TEXT, {
+            acceptNode(node) {
+                const value = node.nodeValue;
+                if (value === null || value === undefined)
+                    node.parentNode?.removeChild(node);
+                else if (value.trim() === "")
+                    node.parentNode?.removeChild(node);
+                return NodeFilter.FILTER_REJECT;
+            }
+        }).nextNode();
         for (let i = 0; i < signals.length; ++i) {
             const slot = fragment.querySelector(`rhu-signal[rhu-internal="${i}"]`);
             if (slot === undefined || slot === null)
@@ -126,16 +136,6 @@ class HTML {
                 bindings[sig_bind] = instance;
             }
         }
-        document.createNodeIterator(fragment, NodeFilter.SHOW_TEXT, {
-            acceptNode(node) {
-                const value = node.nodeValue;
-                if (value === null || value === undefined)
-                    node.parentNode?.removeChild(node);
-                else if (value.trim() === "")
-                    node.parentNode?.removeChild(node);
-                return NodeFilter.FILTER_REJECT;
-            }
-        }).nextNode();
         const slots = new Array(macros.length);
         for (let i = 0; i < macros.length; ++i) {
             const slot = fragment.querySelector(`rhu-macro[rhu-internal="${i}"]`);

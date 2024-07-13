@@ -51,15 +51,13 @@ export const player = Macro(class Player extends MacroElement {
     }
 
     public async open(path?: string) {
-        this.render();
-
         const file: FileHandle = {
             path, finite: false
         };
         await window.api.invoke("open", file);
         if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
-        this.view.replay = undefined;
+        this.view.replay(undefined);
 
         this.parser.addEventListener("eoh", () => {
             this.view.ready();
@@ -69,11 +67,12 @@ export const player = Macro(class Player extends MacroElement {
             window.api.send("close");
         });
 
-        this.view.replay = await this.parser.parse(file);
+        this.view.replay(await this.parser.parse(file));
     }
 
     public close() {
-        this.view.replay = undefined;
+        this.view.renderer.dispose();
+        this.view.replay(undefined);
         this.parser?.terminate();
         this.parser = undefined;
         window.api.send("close");

@@ -11,7 +11,6 @@ declare module "@esm/@root/replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "Enemy.ShowInfo": boolean;
             "Enemies": Map<number, EnemyModel>;
             "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
@@ -22,8 +21,6 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot, dt) => {
-            EnemyModel.showInfo = renderer.getOrDefault("Enemy.ShowInfo", () => false);
-
             const time = snapshot.time();
             const models = renderer.getOrDefault("Enemies", () => new Map());
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());

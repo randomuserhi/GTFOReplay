@@ -238,8 +238,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         this.animate(time, player, anim);
         
-        this.visual.joints.rightHand.add(this.handAttachment);
         this.draw(dt, player.position, player.rotation);
+        this.visual.joints.rightHand.add(this.handAttachment);
     
         this.updateTmp(player, camera, stats, backpack);
     }

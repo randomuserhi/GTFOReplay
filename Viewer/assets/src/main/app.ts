@@ -2,6 +2,7 @@ import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptCache, AsyncScriptLoader } from "../replay/async-script-loader.js";
+import { ModuleLoader } from "../replay/moduleloader.js";
 import { WinNav } from "./global/components/organisms/winNav.js";
 import { Main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
@@ -74,6 +75,7 @@ const App = Macro(class App extends MacroElement {
 
         this.nav.icon.addEventListener("click", () => this.replayfile.click());
 
+        // Switch modules folder
         this.nav.plugin.addEventListener("click", async () => {
             const { success, path, error } = await window.api.invoke("moduleFolder");
             if (!success) {
@@ -81,18 +83,26 @@ const App = Macro(class App extends MacroElement {
                 return;
             }
 
+            // Close player
+            this.player.close();
+
+            // Reset modules
+            ModuleLoader.clear();
+            
+            // Reset cache
             AsyncScriptCache.reset();
             (await window.api.invoke("loadModules")).forEach((p: string) => {
                 AsyncScriptLoader.load(p);
             });
 
-            this.player.close();
-
+            // Show loading screen
             this.main.video.play();
             this.main.loading(false);
             this.load(this.main);
 
+            // Update path information
             this.nav.moduleName(path);
+            this.replayfile.value = "";
         });
 
         this.load(this.main);
@@ -112,9 +122,11 @@ const App = Macro(class App extends MacroElement {
             this.player.refresh();
         });
     
+        const promises: Promise<void>[] = [];
         (await window.api.invoke("loadModules")).forEach((p: string) => {
-            AsyncScriptLoader.load(p);
+            promises.push(AsyncScriptLoader.load(p));
         });
+        (Promise.all(promises)).then(() => this.player.refresh());
     }
 
     public load(macro: MacroElement) {

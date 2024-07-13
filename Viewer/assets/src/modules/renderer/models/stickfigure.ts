@@ -246,7 +246,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
 
         StickFigure.construct(this.skeleton);
         StickFigure.construct(this.visual);
-        this.offset.add(this.visual.joints.hip);
+        this.offset.add(this.visual.joints.hip, this.skeleton.joints.hip);
         this.anchor.add(this.offset);
         this.root.add(this.anchor);
 

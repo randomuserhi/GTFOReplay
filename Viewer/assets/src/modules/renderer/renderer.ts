@@ -12,6 +12,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
         interface RenderData {
             "Camera": Camera;
+            "Controls": Controls
             "MainLight": DirectionalLight;
         }
     }
@@ -44,6 +45,10 @@ export class Camera extends ObjectWrapper<PerspectiveCamera> {
     }
 }
 
+module.ready();
+/* eslint-disable-next-line sort-imports */
+import { Controls } from "./controls.js";
+
 ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
     const init = api.getInitPasses();
     const pass = { 
@@ -67,6 +72,8 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.addEventListener("resize", ({ width, height }) => {
                 camera.resize(width, height);
             });
+
+            r.set("Controls", new Controls(camera, r));
             
             const pointLight = new PointLight(0xFFFFFF, 1, undefined, 1.2);
             camera.root.add(pointLight);
@@ -102,15 +109,18 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
         name, pass: (renderer, snapshot, dt) => {
             const light = renderer.get("MainLight")!;
             const camera = renderer.get("Camera")!;
+            const controls = renderer.get("Controls")!;
             const { cameraPos } = FUNC_renderPass;
             camera.root.getWorldPosition(cameraPos);
             light.position.set(cameraPos.x, cameraPos.y + 50, cameraPos.z); 
             light.target.position.set(cameraPos.x, cameraPos.y - 10, cameraPos.z);
 
-            renderer.get("Camera")?.update();
+            camera.update();
+            controls.update(snapshot, dt);
         } 
     }, ...renderLoop]);
 });
 
 ModuleLoader.registerDispose((renderer) => {
+    renderer.get("CameraControls")?.dispose();
 });
