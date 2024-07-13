@@ -38,13 +38,17 @@ declare class MACRO<T extends MacroClass = MacroClass> extends ELEMENT {
 declare class MACRO_OPEN<T extends MacroClass = MacroClass> extends MACRO<T> {
     static is: (object: any) => object is MACRO_OPEN;
 }
-export declare function html(first: HTML["first"], ...interpolations: HTML["interpolations"]): HTML;
-declare class HTML {
-    static empty: HTML;
+export declare function html<T extends {} = any>(first: HTML["first"], ...interpolations: HTML["interpolations"]): HTML<T>;
+export declare class HTML<T extends {} = any> {
+    static empty: HTML<any>;
     private first;
     private interpolations;
     constructor(first: HTML["first"], interpolations: HTML["interpolations"]);
-    dom<T extends Record<PropertyKey, any> = any>(): [bindings: T, fragment: DocumentFragment];
+    private _bind?;
+    bind(key?: PropertyKey): this;
+    callbacks: Set<(bindings: T) => void>;
+    then(callback: (bindings: T) => void): this;
+    dom<B extends Record<PropertyKey, any> | void = void>(): [bindings: B extends void ? T : B, fragment: DocumentFragment];
     static is: (object: any) => object is HTML;
 }
 interface FACTORY<T extends MacroClass> {

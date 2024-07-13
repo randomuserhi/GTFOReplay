@@ -64,17 +64,31 @@ export function html(first, ...interpolations) {
 }
 class HTML {
     constructor(first, interpolations) {
+        this.callbacks = new Set();
         this.first = first;
         this.interpolations = interpolations;
     }
+    bind(key) {
+        this._bind = key;
+        return this;
+    }
+    then(callback) {
+        this.callbacks.add(callback);
+        return this;
+    }
     dom() {
         let source = this.first[0];
+        const html = [];
         const macros = [];
         const signals = [];
         for (let i = 1; i < this.first.length; ++i) {
             const interp = this.interpolations[i - 1];
             if (isFactory(interp)) {
                 throw new SyntaxError("Macro Factory cannot be used to construct a HTML fragment. Did you mean to call the factory?");
+            }
+            if (HTML.is(interp)) {
+                source += `<rhu-html rhu-internal="${html.length}"></rhu-macro>`;
+                html.push(interp);
             }
             if (NODE.is(interp)) {
                 if (CLOSURE.is(interp)) {
@@ -135,6 +149,23 @@ class HTML {
                     throw new SyntaxError(`The binding '${sig_bind.toString()}' already exists.`);
                 bindings[sig_bind] = instance;
             }
+        }
+        for (let i = 0; i < html.length; ++i) {
+            const slot = fragment.querySelector(`rhu-html[rhu-internal="${i}"]`);
+            if (slot === undefined || slot === null)
+                throw new Error("Unable to find slot for HTML.");
+            const HTML = html[i];
+            const [instance, frag] = HTML.dom();
+            for (const callback of HTML.callbacks) {
+                callback(instance);
+            }
+            const html_bind = HTML._bind;
+            if (html_bind !== undefined && html_bind !== null) {
+                if (html_bind in bindings)
+                    throw new SyntaxError(`The binding '${html_bind.toString()}' already exists.`);
+                bindings[html_bind] = instance;
+            }
+            slot.replaceWith(frag);
         }
         const slots = new Array(macros.length);
         for (let i = 0; i < macros.length; ++i) {

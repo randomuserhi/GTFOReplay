@@ -4,6 +4,7 @@ import type { View } from "@esm/@root/main/routes/player/components/view/index.j
 import Fuse from "@esm/fuse.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { PlayerDatablock } from "../../datablocks/player/player.js";
+import { StatTracker } from "../../parser/stattracker/stattracker.js";
 import { Dropdown } from "../components/dropdown.js";
 import { pageStyles } from "./lib.js";
 
@@ -186,17 +187,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    bulletDamage(`0`);
-                    meleeDamage(`0`);
-                    sentryDamage(`0`);
-                    explosiveDamage(`0`);
-                    staggerDamage(`0`);
-                    sentryStaggerDamage(`0`);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 bulletDamage(`${Math.round([...player.enemyDamage.bulletDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
                 meleeDamage(`${Math.round([...player.enemyDamage.meleeDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
@@ -251,15 +242,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    bulletDamage(`0`);
-                    sentryDamage(`0`);
-                    explosiveDamage(`0`);
-                    return;
-                }
-
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                
                 bulletDamage(`${Math.round((Math.round([...player.playerDamage.bulletDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
                 sentryDamage(`${Math.round((Math.round([...player.playerDamage.sentryDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
                 explosiveDamage(`${Math.round((Math.round([...player.playerDamage.explosiveDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
@@ -292,12 +276,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const count of player.kills.values()) {
@@ -342,12 +321,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const count of player.sentryKills.values()) {
@@ -392,12 +366,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const count of player.mineKills.values()) {
@@ -442,12 +411,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const count of player.assists.values()) {
@@ -492,12 +456,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const count of player.tongueDodges.values()) {
@@ -542,12 +501,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const [type, count] of player.packsUsed) {
@@ -586,12 +540,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    list.values([]);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 total.clear();
                 for (const [type, count] of player.packsGiven) {
@@ -636,12 +585,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const stats = api.get("Vanilla.StatTracker");
-                const player = stats?.players.get(snet);
-                if (player === undefined || stats === undefined) {
-                    revives(`0`);
-                    return;
-                }
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 revives(`${player.revives}`);
             });

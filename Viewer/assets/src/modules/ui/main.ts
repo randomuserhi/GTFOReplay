@@ -97,7 +97,6 @@ const UI = Macro(class UI extends MacroElement {
             if (view === undefined) return;
 
             this.display.view(view);
-
             for (const page of this.pages.values()) {
                 page.view(view);
             }

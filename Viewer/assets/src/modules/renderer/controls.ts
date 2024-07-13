@@ -17,6 +17,7 @@ export class Controls {
     private readonly fakeCamera: PerspectiveCamera;
     private readonly orbitControls: OrbitControls;
 
+    private readonly mount: () => void;
     private readonly wheel: (e: WheelEvent) => void;
 
     private readonly keydown: (e: KeyboardEvent) => void;
@@ -41,12 +42,12 @@ export class Controls {
     speed: number;
 
     constructor(camera: Camera, renderer: Renderer) {
-        const canvas = renderer.canvas;
         this.camera = camera;
         this.renderer = renderer;
+        const canvas = this.renderer.renderer.domElement;
 
         this.fakeCamera = this.camera.root.clone();
-        this.orbitControls = new OrbitControls(this.fakeCamera, canvas);
+        this.orbitControls = new OrbitControls(this.fakeCamera, this.renderer.renderer.domElement);
         this.orbitControls.enablePan = false;
 
         this.speed = 20;
@@ -60,11 +61,16 @@ export class Controls {
         const old = { x: 0, y: 0 };
         this.wheel = (e: WheelEvent) => {
             if (this.slot !== undefined) return;
-    
+            
             e.preventDefault();
             this.speed *= Math.sign(e.deltaY) < 0 ? 10/9 : 9/10;
         };
-        canvas.addEventListener("wheel", this.wheel);
+
+        // NOTE(randomuserhi): Chromium fails to add the wheel event to the canvas if it is unmounted, thus wait for mount before adding the event 
+        this.mount = () => {
+            canvas.addEventListener("wheel", this.wheel);
+        };
+        canvas.addEventListener("mount", this.mount);
         
         this.focus = false;
         canvas.addEventListener("focusin", () => {
@@ -82,6 +88,8 @@ export class Controls {
 
         this.keyup = (e) => {
             if (!this.focus) return;
+
+            const display = ui().display;
 
             switch (e.keyCode) {
             case 32:
@@ -111,7 +119,7 @@ export class Controls {
     
             case 9:
                 e.preventDefault();
-                // TODO(randomuserhi): hide scoreboard
+                if (this.focus) display.scoreboard.wrapper.style.display = "none";
                 break;
             }
         };
@@ -188,7 +196,7 @@ export class Controls {
     
             case 9:
                 e.preventDefault();
-                // TODO(randomuserhi): Show scoreboard
+                display.scoreboard.wrapper.style.display = "block";
                 break;
             }
         };
@@ -331,6 +339,7 @@ export class Controls {
         
         window.removeEventListener("keyup", this.keyup);
         window.removeEventListener("keydown", this.keydown);
+        canvas.removeEventListener("mount", this.mount);
         canvas.removeEventListener("wheel", this.wheel);
         canvas.removeEventListener("mousedown", this.mousedown);
         canvas.removeEventListener("mouseup", this.mouseup);

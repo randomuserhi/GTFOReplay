@@ -5,6 +5,7 @@ import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { Seeker } from "./components/seeker.js";
 import { dispose } from "./main.js";
+import { Scoreboard } from "./scoreboard.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -29,11 +30,23 @@ const style = Style(({ style }) => {
     width: 100%;
     height: 100%;
     `;
+
+    const scoreboard = style.class`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    width: 80%;
+    max-width: 900px;
+    max-height: 500px;
+    transform: translate(-50%, -50%);
+    `;
     
     return {
         wrapper,
         bottom,
-        view
+        view,
+        scoreboard
     };
 });
 
@@ -99,6 +112,8 @@ export const Display = Macro(class Display extends MacroElement {
 
         this.view.on((view) => {
             if (view === undefined) return;
+
+            this.scoreboard.view(view);
 
             this.mount.replaceChildren(...view.dom);
 
@@ -167,9 +182,12 @@ export const Display = Macro(class Display extends MacroElement {
     private time: Signal<string>;
     private length = signal(0);
 
+    public scoreboard: Macro<typeof Scoreboard>;
+
     public view = signal<Macro<typeof View> | undefined>(undefined);
 }, html`
     <div m-id="mount" class="${style.view}"></div>
+    ${Scoreboard().bind("scoreboard").then((macro) => macro.wrapper.classList.add(`${style.scoreboard}`))}
     <div class="${style.bottom}">
         ${Seeker.open().bind("seeker")}
             <button m-id="pauseButton" class="${controls.button}" style="padding: 0 5px;">
