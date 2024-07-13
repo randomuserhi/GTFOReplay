@@ -10,6 +10,11 @@ export class Datablock<K, V, H extends string | number = K extends (string | num
         }
     }
 
+    public clear() {
+        this.keyHashMap?.clear();
+        this.map.clear();
+    }
+
     public delete(key: K) {
         if (this.hash !== undefined) key = this.hash(key) as any;
         this.keyHashMap?.delete(key as any);

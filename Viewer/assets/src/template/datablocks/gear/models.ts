@@ -1,11 +1,8 @@
-import { Vector3, Vector3Like } from "@esm/three";
+import { Vector3 } from "@esm/three";
 import { GearAnimDatablock } from "../../../modules/datablocks/gear/animation.js";
-import { Datablock } from "../../../modules/datablocks/lib.js";
+import { GearDatablock, MeleeArchetype } from "../../../modules/datablocks/gear/models.js";
 import { PlayerAnimDatablock } from "../../../modules/datablocks/player/animation.js";
 import { Identifier } from "../../../modules/parser/identifier.js";
-import { GearFoldAnimation } from "../../../modules/renderer/animations/gearfold.js";
-import { HumanAnimation } from "../../../modules/renderer/animations/human.js";
-import { GearModel } from "../../../modules/renderer/models/gear.js";
 import { AssaultRifle } from "../../../modules/renderer/models/prebuilt/assaultrifle.js";
 import { AutoPistol } from "../../../modules/renderer/models/prebuilt/autopistol.js";
 import { Bat } from "../../../modules/renderer/models/prebuilt/bat.js";
@@ -48,40 +45,6 @@ import { SlugShotgun } from "../../../modules/renderer/models/prebuilt/slugshotg
 import { Smg } from "../../../modules/renderer/models/prebuilt/smg.js";
 import { Sniper } from "../../../modules/renderer/models/prebuilt/sniper.js";
 import { Spear } from "../../../modules/renderer/models/prebuilt/spear.js";
-import { Archetype } from "../items/item.js";
-
-export interface MeleeArchetype {
-    equipAnim: HumanAnimation,
-    movementAnim: HumanAnimation,
-    jumpAnim: HumanAnimation,
-    fallAnim: HumanAnimation,
-    landAnim: HumanAnimation,
-    attackAnim: HumanAnimation,
-    chargeAnim: HumanAnimation,
-    chargeIdleAnim: HumanAnimation,
-    releaseAnim: HumanAnimation,
-    shoveAnim: HumanAnimation,
-}
-
-export interface GunArchetype {
-    gunFoldAnim: GearFoldAnimation;
-    offset?: Vector3Like;
-}
-
-
-export interface GearDatablock {
-    model: (gearJSON: string) => GearModel;
-    type?: Archetype;
-    name?: string;
-    meleeArchetype?: MeleeArchetype;
-    gunArchetype?: GunArchetype;
-}
-
-export const GearDatablock = new Datablock<Identifier, GearDatablock>((identifier) => {
-    if (identifier.type === "Unknown") return undefined;
-    if (identifier.type !== "Gear") throw new Error(`Identifier did not represent gear: ${identifier.hash}`);
-    return identifier.stringKey;
-});
 
 const playerAnimations = PlayerAnimDatablock.obj();
 const gearFoldAnimations = GearAnimDatablock.obj();
@@ -137,6 +100,8 @@ export const batArchetype: MeleeArchetype = {
     releaseAnim: playerAnimations.batRelease,
     shoveAnim: playerAnimations.batShove,
 };
+
+GearDatablock.clear();
 
 GearDatablock.set(
     Identifier.create("Gear", undefined, 

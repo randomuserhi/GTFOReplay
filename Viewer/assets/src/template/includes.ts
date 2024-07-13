@@ -1,156 +1,161 @@
-import("../modules/datablocks/player/animation.js");
-import("../modules/datablocks/gear/animation.js");
-import("../modules/datablocks/enemy/animation.js");
-import("../modules/datablocks/enemy/handles.js");
+import { __header__ } from "./headers.js";
+const header = __header__;
 
-import("../modules/library/animations/inversekinematics/aimsolver.js");
-import("../modules/library/animations/inversekinematics/limbsolver.js");
-import("../modules/library/animations/inversekinematics/rootmotion.js");
-import("../modules/library/animations/lib.js");
-import("../modules/library/animations/loaders.js");
-import("../modules/library/asyncasset.js");
-import("../modules/library/bezier.js");
-import("../modules/library/constants.js");
-import("../modules/library/dynamicspline.js");
-import("../modules/library/factory.js");
-import("../modules/library/helpers.js");
-import("../modules/library/modelloader.js");
-import("../modules/library/models/lib.js");
-import("../modules/library/models/primitives.js");
-import("../modules/library/random.js");
-import("../modules/parser/chainedpuzzle/bioscan.js");
-import("../modules/parser/chainedpuzzle/holopath.js");
-import("../modules/parser/deathcross.js");
-import("../modules/parser/dynamicitems/item.js");
-import("../modules/parser/enemy/alerts.js");
-import("../modules/parser/enemy/animation.js");
-import("../modules/parser/enemy/enemy.js");
-import("../modules/parser/enemy/limbCustom.js");
-import("../modules/parser/enemy/limbDestruction.js");
-import("../modules/parser/enemy/projectile.js");
-import("../modules/parser/enemy/scream.js");
-import("../modules/parser/enemy/stats.js");
-import("../modules/parser/enemy/tendrils.js");
-import("../modules/parser/enemy/tongue.js");
-import("../modules/parser/events/damage.js");
-import("../modules/parser/events/packuse.js");
-import("../modules/parser/events/revive.js");
-import("../modules/parser/events/tonguedodge.js");
-import("../modules/parser/header.js");
-import("../modules/parser/identifier.js");
-import("../modules/parser/map/bulkheadcontroller.js");
-import("../modules/parser/map/disinfectstation.js");
-import("../modules/parser/map/door.js");
-import("../modules/parser/map/generator.js");
-import("../modules/parser/map/item.js");
-import("../modules/parser/map/ladder.js");
-import("../modules/parser/map/map.js");
-import("../modules/parser/map/resourcecontainer.js");
-import("../modules/parser/map/spitters.js");
-import("../modules/parser/map/terminal.js");
-import("../modules/parser/metadata.js");
-import("../modules/parser/player/animation.js");
-import("../modules/parser/player/backpack.js");
-import("../modules/parser/player/cfoam.js");
-import("../modules/parser/player/gunshot.js");
-import("../modules/parser/player/mine.js");
-import("../modules/parser/player/player.js");
-import("../modules/parser/player/sentry.js");
-import("../modules/parser/player/stats.js");
-import("../modules/parser/stattracker/stattracker.js");
-import("../modules/renderer/animations/gearfold.js");
-import("../modules/renderer/animations/human.js");
-import("../modules/renderer/chainedpuzzles/bioscan.js");
-import("../modules/renderer/chainedpuzzles/holopath.js");
-import("../modules/renderer/controls.js");
-import("../modules/renderer/deathcross.js");
-import("../modules/renderer/dynamicitems/item.js");
-import("../modules/renderer/enemy/alert.js");
-import("../modules/renderer/enemy/lib.js");
-import("../modules/renderer/enemy/models/bigflyer.js");
-import("../modules/renderer/enemy/models/flyer.js");
-import("../modules/renderer/enemy/models/humanoid.js");
-import("../modules/renderer/enemy/models/squid.js");
-import("../modules/renderer/enemy/projectiles.js");
-import("../modules/renderer/enemy/render.js");
-import("../modules/renderer/enemy/tendrils.js");
-import("../modules/renderer/enemy/tongues.js");
-import("../modules/renderer/map/bulkheadcontroller.js");
-import("../modules/renderer/map/disinfectstation.js");
-import("../modules/renderer/map/door.js");
-import("../modules/renderer/map/generator.js");
-import("../modules/renderer/map/item.js");
-import("../modules/renderer/map/ladder.js");
-import("../modules/renderer/map/map.js");
-import("../modules/renderer/map/resourcecontainers.js");
-import("../modules/renderer/map/spitter.js");
-import("../modules/renderer/map/terminal.js");
-import("../modules/renderer/models/gear.js");
-import("../modules/renderer/models/items.js");
-import("../modules/renderer/models/prebuilt/assaultrifle.js");
-import("../modules/renderer/models/prebuilt/autopistol.js");
-import("../modules/renderer/models/prebuilt/bat.js");
-import("../modules/renderer/models/prebuilt/biotracker.js");
-import("../modules/renderer/models/prebuilt/bullpup.js");
-import("../modules/renderer/models/prebuilt/burstcannon.js");
-import("../modules/renderer/models/prebuilt/burstpistol.js");
-import("../modules/renderer/models/prebuilt/burstrifle.js");
-import("../modules/renderer/models/prebuilt/carbine.js");
-import("../modules/renderer/models/prebuilt/cfoam.js");
-import("../modules/renderer/models/prebuilt/chokemodshotgun.js");
-import("../modules/renderer/models/prebuilt/combatshotgun.js");
-import("../modules/renderer/models/prebuilt/dmr.js");
-import("../modules/renderer/models/prebuilt/doubletap.js");
-import("../modules/renderer/models/prebuilt/hackingtool.js");
-import("../modules/renderer/models/prebuilt/hammer.js");
-import("../modules/renderer/models/prebuilt/heavyassaultrifle.js");
-import("../modules/renderer/models/prebuilt/heavysmg.js");
-import("../modules/renderer/models/prebuilt/helgun.js");
-import("../modules/renderer/models/prebuilt/helrevolver.js");
-import("../modules/renderer/models/prebuilt/helrifle.js");
-import("../modules/renderer/models/prebuilt/helshotgun.js");
-import("../modules/renderer/models/prebuilt/highcal.js");
-import("../modules/renderer/models/prebuilt/itemGLTF.js");
-import("../modules/renderer/models/prebuilt/keycard.js");
-import("../modules/renderer/models/prebuilt/knife.js");
-import("../modules/renderer/models/prebuilt/machinegun0.js");
-import("../modules/renderer/models/prebuilt/machinegun1.js");
-import("../modules/renderer/models/prebuilt/machinepistol.js");
-import("../modules/renderer/models/prebuilt/minedeployer.js");
-import("../modules/renderer/models/prebuilt/pack.js");
-import("../modules/renderer/models/prebuilt/pdw.js");
-import("../modules/renderer/models/prebuilt/pistol.js");
-import("../modules/renderer/models/prebuilt/precisionrifle.js");
-import("../modules/renderer/models/prebuilt/revolver.js");
-import("../modules/renderer/models/prebuilt/rifle.js");
-import("../modules/renderer/models/prebuilt/sawedoff.js");
-import("../modules/renderer/models/prebuilt/scattergun.js");
-import("../modules/renderer/models/prebuilt/sentry.js");
-import("../modules/renderer/models/prebuilt/shortrifle.js");
-import("../modules/renderer/models/prebuilt/shotgun.js");
-import("../modules/renderer/models/prebuilt/slugshotgun.js");
-import("../modules/renderer/models/prebuilt/smg.js");
-import("../modules/renderer/models/prebuilt/sniper.js");
-import("../modules/renderer/models/prebuilt/spear.js");
-import("../modules/renderer/models/stickfigure.js");
-import("../modules/renderer/objectwrapper.js");
-import("../modules/renderer/player/cfoam.js");
-import("../modules/renderer/player/gunshot.js");
-import("../modules/renderer/player/mine.js");
-import("../modules/renderer/player/model.js");
-import("../modules/renderer/player/render.js");
-import("../modules/renderer/player/sentry.js");
-import("../modules/renderer/renderer.js");
-import("../modules/ui/components/bar.js");
-import("../modules/ui/components/dropdown.js");
-import("../modules/ui/components/seeker.js");
-import("../modules/ui/components/toggle.js");
-import("../modules/ui/display.js");
-import("../modules/ui/main.js");
-import("../modules/ui/medals.js");
-import("../modules/ui/pages/finder.js");
-import("../modules/ui/pages/info.js");
-import("../modules/ui/pages/lib.js");
-import("../modules/ui/pages/settings.js");
-import("../modules/ui/pages/stats.js");
-import("../modules/ui/scoreboard.js");
+module.manual = true;
+
+const includes = [
+    import("../modules/library/animations/inversekinematics/aimsolver.js"),
+    import("../modules/library/animations/inversekinematics/limbsolver.js"),
+    import("../modules/library/animations/inversekinematics/rootmotion.js"),
+    import("../modules/library/animations/lib.js"),
+    import("../modules/library/animations/loaders.js"),
+    import("../modules/library/asyncasset.js"),
+    import("../modules/library/bezier.js"),
+    import("../modules/library/constants.js"),
+    import("../modules/library/dynamicspline.js"),
+    import("../modules/library/factory.js"),
+    import("../modules/library/helpers.js"),
+    import("../modules/library/modelloader.js"),
+    import("../modules/library/models/lib.js"),
+    import("../modules/library/models/primitives.js"),
+    import("../modules/library/random.js"),
+    import("../modules/parser/chainedpuzzle/bioscan.js"),
+    import("../modules/parser/chainedpuzzle/holopath.js"),
+    import("../modules/parser/deathcross.js"),
+    import("../modules/parser/dynamicitems/item.js"),
+    import("../modules/parser/enemy/alerts.js"),
+    import("../modules/parser/enemy/animation.js"),
+    import("../modules/parser/enemy/enemy.js"),
+    import("../modules/parser/enemy/limbCustom.js"),
+    import("../modules/parser/enemy/limbDestruction.js"),
+    import("../modules/parser/enemy/projectile.js"),
+    import("../modules/parser/enemy/scream.js"),
+    import("../modules/parser/enemy/stats.js"),
+    import("../modules/parser/enemy/tendrils.js"),
+    import("../modules/parser/enemy/tongue.js"),
+    import("../modules/parser/events/damage.js"),
+    import("../modules/parser/events/packuse.js"),
+    import("../modules/parser/events/revive.js"),
+    import("../modules/parser/events/tonguedodge.js"),
+    import("../modules/parser/header.js"),
+    import("../modules/parser/identifier.js"),
+    import("../modules/parser/map/bulkheadcontroller.js"),
+    import("../modules/parser/map/disinfectstation.js"),
+    import("../modules/parser/map/door.js"),
+    import("../modules/parser/map/generator.js"),
+    import("../modules/parser/map/item.js"),
+    import("../modules/parser/map/ladder.js"),
+    import("../modules/parser/map/map.js"),
+    import("../modules/parser/map/resourcecontainer.js"),
+    import("../modules/parser/map/spitters.js"),
+    import("../modules/parser/map/terminal.js"),
+    import("../modules/parser/metadata.js"),
+    import("../modules/parser/player/animation.js"),
+    import("../modules/parser/player/backpack.js"),
+    import("../modules/parser/player/cfoam.js"),
+    import("../modules/parser/player/gunshot.js"),
+    import("../modules/parser/player/mine.js"),
+    import("../modules/parser/player/player.js"),
+    import("../modules/parser/player/sentry.js"),
+    import("../modules/parser/player/stats.js"),
+    import("../modules/parser/stattracker/stattracker.js"),
+    import("../modules/renderer/animations/gearfold.js"),
+    import("../modules/renderer/animations/human.js"),
+    import("../modules/renderer/chainedpuzzles/bioscan.js"),
+    import("../modules/renderer/chainedpuzzles/holopath.js"),
+    import("../modules/renderer/controls.js"),
+    import("../modules/renderer/deathcross.js"),
+    import("../modules/renderer/dynamicitems/item.js"),
+    import("../modules/renderer/enemy/alert.js"),
+    import("../modules/renderer/enemy/lib.js"),
+    import("../modules/renderer/enemy/models/bigflyer.js"),
+    import("../modules/renderer/enemy/models/flyer.js"),
+    import("../modules/renderer/enemy/models/humanoid.js"),
+    import("../modules/renderer/enemy/models/squid.js"),
+    import("../modules/renderer/enemy/projectiles.js"),
+    import("../modules/renderer/enemy/render.js"),
+    import("../modules/renderer/enemy/tendrils.js"),
+    import("../modules/renderer/enemy/tongues.js"),
+    import("../modules/renderer/map/bulkheadcontroller.js"),
+    import("../modules/renderer/map/disinfectstation.js"),
+    import("../modules/renderer/map/door.js"),
+    import("../modules/renderer/map/generator.js"),
+    import("../modules/renderer/map/item.js"),
+    import("../modules/renderer/map/ladder.js"),
+    import("../modules/renderer/map/map.js"),
+    import("../modules/renderer/map/resourcecontainers.js"),
+    import("../modules/renderer/map/spitter.js"),
+    import("../modules/renderer/map/terminal.js"),
+    import("../modules/renderer/models/gear.js"),
+    import("../modules/renderer/models/items.js"),
+    import("../modules/renderer/models/prebuilt/assaultrifle.js"),
+    import("../modules/renderer/models/prebuilt/autopistol.js"),
+    import("../modules/renderer/models/prebuilt/bat.js"),
+    import("../modules/renderer/models/prebuilt/biotracker.js"),
+    import("../modules/renderer/models/prebuilt/bullpup.js"),
+    import("../modules/renderer/models/prebuilt/burstcannon.js"),
+    import("../modules/renderer/models/prebuilt/burstpistol.js"),
+    import("../modules/renderer/models/prebuilt/burstrifle.js"),
+    import("../modules/renderer/models/prebuilt/carbine.js"),
+    import("../modules/renderer/models/prebuilt/cfoam.js"),
+    import("../modules/renderer/models/prebuilt/chokemodshotgun.js"),
+    import("../modules/renderer/models/prebuilt/combatshotgun.js"),
+    import("../modules/renderer/models/prebuilt/dmr.js"),
+    import("../modules/renderer/models/prebuilt/doubletap.js"),
+    import("../modules/renderer/models/prebuilt/hackingtool.js"),
+    import("../modules/renderer/models/prebuilt/hammer.js"),
+    import("../modules/renderer/models/prebuilt/heavyassaultrifle.js"),
+    import("../modules/renderer/models/prebuilt/heavysmg.js"),
+    import("../modules/renderer/models/prebuilt/helgun.js"),
+    import("../modules/renderer/models/prebuilt/helrevolver.js"),
+    import("../modules/renderer/models/prebuilt/helrifle.js"),
+    import("../modules/renderer/models/prebuilt/helshotgun.js"),
+    import("../modules/renderer/models/prebuilt/highcal.js"),
+    import("../modules/renderer/models/prebuilt/itemGLTF.js"),
+    import("../modules/renderer/models/prebuilt/keycard.js"),
+    import("../modules/renderer/models/prebuilt/knife.js"),
+    import("../modules/renderer/models/prebuilt/machinegun0.js"),
+    import("../modules/renderer/models/prebuilt/machinegun1.js"),
+    import("../modules/renderer/models/prebuilt/machinepistol.js"),
+    import("../modules/renderer/models/prebuilt/minedeployer.js"),
+    import("../modules/renderer/models/prebuilt/pack.js"),
+    import("../modules/renderer/models/prebuilt/pdw.js"),
+    import("../modules/renderer/models/prebuilt/pistol.js"),
+    import("../modules/renderer/models/prebuilt/precisionrifle.js"),
+    import("../modules/renderer/models/prebuilt/revolver.js"),
+    import("../modules/renderer/models/prebuilt/rifle.js"),
+    import("../modules/renderer/models/prebuilt/sawedoff.js"),
+    import("../modules/renderer/models/prebuilt/scattergun.js"),
+    import("../modules/renderer/models/prebuilt/sentry.js"),
+    import("../modules/renderer/models/prebuilt/shortrifle.js"),
+    import("../modules/renderer/models/prebuilt/shotgun.js"),
+    import("../modules/renderer/models/prebuilt/slugshotgun.js"),
+    import("../modules/renderer/models/prebuilt/smg.js"),
+    import("../modules/renderer/models/prebuilt/sniper.js"),
+    import("../modules/renderer/models/prebuilt/spear.js"),
+    import("../modules/renderer/models/stickfigure.js"),
+    import("../modules/renderer/objectwrapper.js"),
+    import("../modules/renderer/player/cfoam.js"),
+    import("../modules/renderer/player/gunshot.js"),
+    import("../modules/renderer/player/mine.js"),
+    import("../modules/renderer/player/model.js"),
+    import("../modules/renderer/player/render.js"),
+    import("../modules/renderer/player/sentry.js"),
+    import("../modules/renderer/renderer.js"),
+    import("../modules/ui/components/bar.js"),
+    import("../modules/ui/components/dropdown.js"),
+    import("../modules/ui/components/seeker.js"),
+    import("../modules/ui/components/toggle.js"),
+    import("../modules/ui/display.js"),
+    import("../modules/ui/main.js"),
+    import("../modules/ui/medals.js"),
+    import("../modules/ui/pages/finder.js"),
+    import("../modules/ui/pages/info.js"),
+    import("../modules/ui/pages/lib.js"),
+    import("../modules/ui/pages/settings.js"),
+    import("../modules/ui/pages/stats.js"),
+    import("../modules/ui/scoreboard.js"),
+];
+Promise.all(includes).then(() => {
+    module.ready();
+});

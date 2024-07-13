@@ -1,18 +1,8 @@
 
-import { Datablock } from "../../../modules/datablocks/lib.js";
+import { EnemyDatablock } from "../../../modules/datablocks/enemy/enemy.js";
 import { Identifier } from "../../../modules/parser/identifier.js";
 
-export interface EnemyDatablock {
-    maxHealth?: number;
-    name?: string;
-}
-
-export const EnemyDatablock = new Datablock<Identifier, EnemyDatablock>((identifier) => {
-    if (identifier.type === "Unknown") return undefined;
-    if (identifier.type !== "Enemy") throw new Error(`Identifier did not represent an enemy: ${identifier.hash}`);
-    return identifier.id;
-});
-
+EnemyDatablock.clear();
 
 EnemyDatablock.set(Identifier.create("Enemy", 0), {
     name: "Unknown",

@@ -82,6 +82,12 @@ const App = Macro(class App extends MacroElement {
 
         this.nav.icon.addEventListener("click", () => this.replayfile.click());
 
+        // Upon all modules loading, refresh player
+        AsyncScriptCache.onExecutionsCompleted(() => {
+            console.log("refresh");
+            this.player.refresh();
+        });
+
         // Switch modules folder
         this.nav.plugin.addEventListener("click", async () => {
             const { success, path, error } = await window.api.invoke("moduleFolder");
@@ -98,13 +104,8 @@ const App = Macro(class App extends MacroElement {
             
             // Reset cache
             AsyncScriptCache.reset();
-            const promises: Promise<void>[] = [];
             (await window.api.invoke("loadModules")).forEach((p: string) => {
-                promises.push(AsyncScriptLoader.load(p));
-            });
-            // Wait for all modules to load and finish executing before refresh
-            (Promise.all(promises)).then(() => Promise.all(AsyncScriptCache.getExecutionContexts())).then(() => {
-                this.player.refresh();
+                AsyncScriptLoader.load(p);
             });
 
             // Show loading screen
@@ -124,24 +125,13 @@ const App = Macro(class App extends MacroElement {
         window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
 
         window.api.on("loadModules", async (paths: string[]) => {
-            const promises: Promise<void>[] = [];
             for (const p of paths) {
-                promises.push(AsyncScriptLoader.load(p));
+                AsyncScriptLoader.load(p);
             }
-            await Promise.all(promises);
-            await Promise.all(AsyncScriptCache.getExecutionContexts());
-
-            // Refresh
-            this.player.refresh();
         });
     
-        const promises: Promise<void>[] = [];
         (await window.api.invoke("loadModules")).forEach((p: string) => {
-            promises.push(AsyncScriptLoader.load(p));
-        });
-        // Wait for all modules to load and finish executing before refresh
-        (Promise.all(promises)).then(() => Promise.all(AsyncScriptCache.getExecutionContexts())).then(() => {
-            this.player.refresh();
+            AsyncScriptLoader.load(p);
         });
     }
 

@@ -1,30 +1,12 @@
 import { ColorRepresentation } from "@esm/three";
-import { Datablock } from "../../../modules/datablocks/lib.js";
+import { ItemModelDatablock } from "../../../modules/datablocks/items/models.js";
 import { PlayerAnimDatablock } from "../../../modules/datablocks/player/animation.js";
 import { Identifier } from "../../../modules/parser/identifier.js";
-import { HumanAnimation } from "../../../modules/renderer/animations/human.js";
-import { ItemModel } from "../../../modules/renderer/models/items.js";
 import { ItemGLTFModel } from "../../../modules/renderer/models/prebuilt/itemGLTF.js";
 import { Keycard } from "../../../modules/renderer/models/prebuilt/keycard.js";
 import { Pack } from "../../../modules/renderer/models/prebuilt/pack.js";
 
-export interface ItemArchetype {
-    equipAnim?: HumanAnimation;
-    throwAnim?: HumanAnimation;
-    chargeAnim?: HumanAnimation;
-    chargeIdleAnim?: HumanAnimation;
-}
-
-export interface ItemModelDatablock {
-    model: () => ItemModel;
-    archetype?: ItemArchetype;
-}
-
-export const ItemModelDatablock = new Datablock<Identifier, ItemModelDatablock>((identifier) => {
-    if (identifier.type === "Unknown") return undefined;
-    if (identifier.type !== "Item") throw new Error(`Identifier did not represent an item: ${identifier.hash}`);
-    return identifier.id;
-});
+ItemModelDatablock.clear();
 
 ItemModelDatablock.set(
     Identifier.create("Item", 102), {

@@ -1,6 +1,4 @@
-import { Datablock } from "../../../modules/datablocks/lib.js";
-import { Model } from "../../../modules/library/models/lib.js";
-import type { EnemyAnimState } from "../../../modules/parser/enemy/animation.js";
+import { EnemyModelDatablock } from "../../../modules/datablocks/enemy/model.js";
 import { Enemy } from "../../../modules/parser/enemy/enemy.js";
 import { Identifier } from "../../../modules/parser/identifier.js";
 import type { EnemyModelWrapper } from "../../../modules/renderer/enemy/lib.js";
@@ -9,18 +7,9 @@ import { FlyerModel } from "../../../modules/renderer/enemy/models/flyer.js";
 import { HumanoidEnemyModel } from "../../../modules/renderer/enemy/models/humanoid.js";
 import { SquidModel } from "../../../modules/renderer/enemy/models/squid.js";
 
-export interface EnemyModelDatablock {
-    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => Model<[enemy: Enemy, anim: EnemyAnimState]>;
-    tmpHeight?: number;
-}
-
-export const EnemyModelDatablock = new Datablock<Identifier, EnemyModelDatablock>((identifier) => {
-    if (identifier.type === "Unknown") return undefined;
-    if (identifier.type !== "Enemy") throw new Error(`Identifier did not represent an Enemy: ${identifier.hash}`);
-    return identifier.id;
-});
-
 const shooterScale = 0.8;
+
+EnemyModelDatablock.clear();
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 20), {
     model: (wrapper, enemy) => {

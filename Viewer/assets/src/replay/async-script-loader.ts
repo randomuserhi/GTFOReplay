@@ -1,6 +1,9 @@
 import { Rest } from "@/rhu/rest.js";
 
 // TODO(randomuserhi): Documentation & Refactor => code is a mess
+// NOTE(randomuserhi): ExecutionContext vs Module isReady
+//                     - ExecutionContext refers to when the entire module has executed (all code has run)
+//                     - Module isReady refers to when its exports are safe to use (no more to be added or changed)
 
 function isASLModuleError(e: Error): e is _ASLModuleError {
     return Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e);
@@ -18,6 +21,7 @@ export interface ASLModule {
     ready(): void;
     exports: Record<PropertyKey, any>;
     readonly baseURI: string | undefined;
+    manual: boolean;
 }
 
 type ASLExec = (require: Require, module: ASLModule, exports: Record<PropertyKey, any>) => Promise<void>;
@@ -29,6 +33,7 @@ class _ASLModule implements ASLModule, Exports {
     
     isReady: boolean = false;
     destructed: boolean = false;
+    manual: boolean = false;
 
     private _exports: Record<PropertyKey, any> = {};
     private proxy: Record<PropertyKey, any> = new Proxy(this, {
@@ -150,7 +155,21 @@ export namespace AsyncScriptCache {
         _cache.set(url, module);
     }
 
-    const setProps: (string | symbol)[] = ["destructor"];
+    const callbacks = new Set<() => void>();
+    export function onExecutionsCompleted(callback: () => void) {
+        callbacks.add(callback);
+    }
+
+    const executionContexts = new Set<_ASLModule>();
+    const onExec = (module: _ASLModule) => {
+        executionContexts.delete(module);
+        if (executionContexts.size === 0) {
+            for (const callback of callbacks) {
+                callback();
+            }
+        }
+    };
+    const setProps: (string | symbol)[] = ["destructor", "manual"];
     const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI"];
     export async function exec(module: _ASLModule) {
         if (module.executionContext === undefined) {
@@ -166,7 +185,7 @@ export namespace AsyncScriptCache {
                     },
                     get: (module, prop, receiver) => {
                         if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
-                        if (prop === "exports") return exports;
+                        if (prop === "exports") return module.exports;
                         const value = Reflect.get(module, prop, receiver);
                         if (typeof value === "function") {
                             return value.bind(module);
@@ -200,11 +219,15 @@ export namespace AsyncScriptCache {
             
                 module.exec(_require, __module__, module.exports).then(() => {
                     finalize(module);
-                    resolve();
+                    // NOTE(randomuserhi): if manual termination is set to false, module terminates execution context once it has completed
+                    //                     execution
+                    if (module.manual === false) resolve();
                 }).catch((e) => {
                     reject(new _ASLModuleError(`Failed to execute module [${module.src}]:`, e));
                 });
             });
+            executionContexts.add(module);
+            module.executionContext.then(() => { onExec(module); });
         }
         return module.executionContext;
     }
@@ -213,6 +236,9 @@ export namespace AsyncScriptCache {
         if (module.isReady) return;
         module.isReady = true;
         module.archetype.add(module);
+
+        // NOTE(randomuserhi): if manual termination is set to true, module terminates execution context once module.ready() is called (aka the finalized runs)
+        if (module.manual === true && module.terminate !== undefined) module.terminate();
 
         let currentListLength: number;
         do {
@@ -312,6 +338,7 @@ export namespace AsyncScriptCache {
 
         _cache.clear();
         typemap.clear();
+        executionContexts.clear();
         archetype = new Archetype();
 
         _getList = [];
@@ -322,17 +349,13 @@ export namespace AsyncScriptCache {
     }
 
     export function getExecutionContexts() {
-        const promises = [];
-        for (const m of _cache.values()) {
-            if (m.executionContext === undefined) continue;
-            promises.push(m.executionContext);
-        }
-        return promises;
+        return [...executionContexts.values()];
     }
 }
 
 // NOTE(randomuserhi): Exposed for debugging purposes
 (globalThis as any).waiting = AsyncScriptCache.logWaiting;
+(globalThis as any).executions = AsyncScriptCache.getExecutionContexts;
 (globalThis as any).loaded = () => {
     console.log(`Loaded modules:\n\t${AsyncScriptCache.getLoaded().map(m => m.src).join("\n\t")}`);
 };
@@ -365,7 +388,6 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
     const url = new URL(path, path.startsWith(".") ? baseURI : undefined); // TODO(randomuserhi): On error => log what the url was (path)
     path = url.toString();
     if (AsyncScriptCache.has(path)) {
-        //console.log(`cached ${url}.`);
         return AsyncScriptCache.get(path, root);
     }
 
