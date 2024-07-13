@@ -26,12 +26,12 @@ class MineModel {
     readonly base: Group;
     readonly laser: Mesh;
     
-    constructor(color: Color, item: Identifier) {
+    constructor(color: Color, laser: Color, item: Identifier) {
         this.group = new Group();
 
         const material = new MeshPhongMaterial({ color });
         
-        const laserMaterial = new MeshStandardMaterial({ color });
+        const laserMaterial = new MeshStandardMaterial({ color: laser });
         laserMaterial.transparent = true;
         laserMaterial.opacity = 0.5;
         laserMaterial.depthWrite = false;
@@ -82,7 +82,12 @@ ModuleLoader.registerRender("Mine", (name, api) => {
                 if (!models.has(id)) {
                     let color: ColorRepresentation = 0xffffff;
                     if (players.has(mine.owner)) color = getPlayerColor(players.get(mine.owner)!.slot);
-                    const model = new MineModel(new Color(color), mine.item);
+                    let laser: ColorRepresentation = 0xffffff;
+                    switch(mine.item.id) {
+                    case 144: laser = 0x0000ff; break;
+                    default: laser = 0xff0000; break;
+                    }
+                    const model = new MineModel(new Color(color), new Color(laser), mine.item);
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }
