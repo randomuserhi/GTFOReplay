@@ -160,9 +160,9 @@ export namespace AsyncScriptCache {
         callbacks.add(callback);
     }
 
-    const executionContexts = new Set<_ASLModule>();
-    const onExec = (module: _ASLModule) => {
-        executionContexts.delete(module);
+    const executionContexts = new Map<string, _ASLModule>();
+    const onExec = (key: string) => {
+        executionContexts.delete(key);
         if (executionContexts.size === 0) {
             for (const callback of callbacks) {
                 callback();
@@ -226,8 +226,8 @@ export namespace AsyncScriptCache {
                     reject(new _ASLModuleError(`Failed to execute module [${module.src}]:`, e));
                 });
             });
-            executionContexts.add(module);
-            module.executionContext.then(() => { onExec(module); });
+            executionContexts.set(module.src, module);
+            module.executionContext.then(() => { onExec(module.src); });
         }
         return module.executionContext;
     }
@@ -260,11 +260,15 @@ export namespace AsyncScriptCache {
     //                     - a list promises for dependencies that were also invalidated and are waiting to re-execute
     //                       - these promises resolve once the dependency finishes re-executing once the original module is re-imported
     //                       - useful to Promise.all() this returned list to wait for all modules to finish executing after invalidating and re-importing a module
-    export function invalidate(url: string): [boolean, Promise<void>[] | undefined] {
+    export function invalidate(url: string, reimport?: Map<string, _ASLModule>): [boolean, Promise<void>[] | undefined] {
         if (!_cache.has(url)) return [false, undefined];
         const module = _cache.get(url)!;
         if (module.destructed === true) return [false, undefined];
         
+        let _reimport: Map<string, _ASLModule>;
+        if (reimport === undefined) _reimport = new Map();
+        else _reimport = reimport;
+
         const type = getType(module.src);
         module.destruct();
         _cache.delete(url);
@@ -272,16 +276,21 @@ export namespace AsyncScriptCache {
         _getList = _getList.filter((i) => i.root.src !== module.src);
 
         const archetypesContainingModule = Archetype.typemap[type];
-        const executions = [];
         if (archetypesContainingModule !== undefined) {
             for (const archetype of archetypesContainingModule) {
                 for (const module of archetype.modules.values()) {
-                    if (invalidate(module.src)[0]) {
-                        const m = new _ASLModule(module.src, module.exec);
-                        cache(m);
-                        executions.push(exec(m));
+                    if (invalidate(module.src, _reimport)[0] && !_reimport.has(module.src)) {
+                        _reimport.set(module.src, new _ASLModule(module.src, module.exec));
                     }
                 }
+            }
+        }
+
+        const executions = [];
+        if (reimport === undefined) {
+            for (const m of _reimport.values()) {
+                cache(m);
+                executions.push(exec(m));
             }
         }
 
@@ -391,9 +400,9 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
         return AsyncScriptCache.get(path, root);
     }
 
+    const module = new _ASLModule(path);
+    AsyncScriptCache.cache(module);
     return new Promise((resolve, reject) => {
-        const module = new _ASLModule(path);
-        AsyncScriptCache.cache(module);
         if (root !== undefined) AsyncScriptCache.watch(root, module, resolve);
         fetchScript(url).then((exec) => {
             module.exec = exec;
