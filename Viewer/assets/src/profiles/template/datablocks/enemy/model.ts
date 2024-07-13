@@ -1,11 +1,11 @@
-import { EnemyModelDatablock } from "../../../modules/datablocks/enemy/model.js";
-import { Enemy } from "../../../modules/parser/enemy/enemy.js";
-import { Identifier } from "../../../modules/parser/identifier.js";
-import type { EnemyModelWrapper } from "../../../modules/renderer/enemy/lib.js";
-import { BigFlyerModel } from "../../../modules/renderer/enemy/models/bigflyer.js";
-import { FlyerModel } from "../../../modules/renderer/enemy/models/flyer.js";
-import { HumanoidEnemyModel } from "../../../modules/renderer/enemy/models/humanoid.js";
-import { SquidModel } from "../../../modules/renderer/enemy/models/squid.js";
+import { EnemyModelDatablock } from "../../../vanilla/datablocks/enemy/model.js";
+import { Enemy } from "../../../vanilla/parser/enemy/enemy.js";
+import { Identifier } from "../../../vanilla/parser/identifier.js";
+import type { EnemyModelWrapper } from "../../../vanilla/renderer/enemy/lib.js";
+import { BigFlyerModel } from "../../../vanilla/renderer/enemy/models/bigflyer.js";
+import { FlyerModel } from "../../../vanilla/renderer/enemy/models/flyer.js";
+import { HumanoidEnemyModel } from "../../../vanilla/renderer/enemy/models/humanoid.js";
+import { SquidModel } from "../../../vanilla/renderer/enemy/models/squid.js";
 
 const shooterScale = 0.8;
 

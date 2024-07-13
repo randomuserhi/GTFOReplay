@@ -60,7 +60,7 @@ export class ModuleLoader {
 
             const result = await dialog.showOpenDialog(Program.win, {
                 properties: ["openDirectory"],
-                defaultPath: path.join(__dirname, "../assets")
+                defaultPath: path.join(__dirname, "../assets/profiles")
             });
 
             try {

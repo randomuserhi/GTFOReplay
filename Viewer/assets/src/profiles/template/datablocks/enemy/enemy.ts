@@ -1,6 +1,6 @@
 
-import { EnemyDatablock } from "../../../modules/datablocks/enemy/enemy.js";
-import { Identifier } from "../../../modules/parser/identifier.js";
+import { EnemyDatablock } from "../../../vanilla/datablocks/enemy/enemy.js";
+import { Identifier } from "../../../vanilla/parser/identifier.js";
 
 EnemyDatablock.clear();
 

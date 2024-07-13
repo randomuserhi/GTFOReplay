@@ -135,7 +135,7 @@ export const WinNav = Macro(class WinNav extends MacroElement {
         <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
             ${icons.plugin()}
             <div class="${style.popup}">
-                <span>${Macro.signal("moduleName", "./resources/app/assets/modules")}</span>
+                <span>${Macro.signal("moduleName", "./resources/app/assets/profiles/vanilla")}</span>
             </div>
         </div>
         <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">

@@ -1,5 +1,5 @@
-import { ItemDatablock } from "../../../modules/datablocks/items/item.js";
-import { Identifier } from "../../../modules/parser/identifier.js";
+import { ItemDatablock } from "../../../vanilla/datablocks/items/item.js";
+import { Identifier } from "../../../vanilla/parser/identifier.js";
 
 ItemDatablock.clear();
 

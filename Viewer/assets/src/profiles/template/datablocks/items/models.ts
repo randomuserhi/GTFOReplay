@@ -1,10 +1,10 @@
 import { ColorRepresentation } from "@esm/three";
-import { ItemModelDatablock } from "../../../modules/datablocks/items/models.js";
-import { PlayerAnimDatablock } from "../../../modules/datablocks/player/animation.js";
-import { Identifier } from "../../../modules/parser/identifier.js";
-import { ItemGLTFModel } from "../../../modules/renderer/models/prebuilt/itemGLTF.js";
-import { Keycard } from "../../../modules/renderer/models/prebuilt/keycard.js";
-import { Pack } from "../../../modules/renderer/models/prebuilt/pack.js";
+import { ItemModelDatablock } from "../../../vanilla/datablocks/items/models.js";
+import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
+import { Identifier } from "../../../vanilla/parser/identifier.js";
+import { ItemGLTFModel } from "../../../vanilla/renderer/models/prebuilt/itemGLTF.js";
+import { Keycard } from "../../../vanilla/renderer/models/prebuilt/keycard.js";
+import { Pack } from "../../../vanilla/renderer/models/prebuilt/pack.js";
 
 ItemModelDatablock.clear();
 

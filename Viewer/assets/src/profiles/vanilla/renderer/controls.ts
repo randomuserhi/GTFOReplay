@@ -1,9 +1,9 @@
 import { signal } from "@esm/@/rhu/signal.js";
 import { DataStore } from "@esm/@root/replay/datastore.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
+import type { Renderer } from "@esm/@root/replay/renderer.js";
 import { PerspectiveCamera, Quaternion, Vector3, Vector3Like } from "@esm/three";
 import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
-import { Renderer } from "../../replay/renderer.js";
 import { Factory } from "../library/factory.js";
 import { ui } from "../ui/main.js";
 import { Camera } from "./renderer.js";
