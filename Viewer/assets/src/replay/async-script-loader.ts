@@ -144,6 +144,7 @@ export namespace AsyncScriptCache {
 
     export function cache(module: _ASLModule) {
         const { src: url } = module;
+
         if (_cache.has(url)) throw new Error("Cannot cache an existing module, call 'invalidate' on it first.");
         
         if (!typemap.has(url)) {
@@ -289,8 +290,10 @@ export namespace AsyncScriptCache {
         const executions = [];
         if (reimport === undefined) {
             for (const m of _reimport.values()) {
-                cache(m);
-                executions.push(exec(m));
+                if (!_cache.has(m.src)) {
+                    cache(m);
+                    executions.push(exec(m));
+                }
             }
         }
 
