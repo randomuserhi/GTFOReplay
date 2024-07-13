@@ -84,7 +84,6 @@ const App = Macro(class App extends MacroElement {
 
         // Upon all modules loading, refresh player
         AsyncScriptCache.onExecutionsCompleted(() => {
-            console.log("refresh");
             this.player.refresh();
         });
 
