@@ -89,9 +89,7 @@ export const Finder = Macro(class Finder extends MacroElement {
             return true;
         });
 
-        ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop", "focusout"].forEach((event) => {
-            this.search.addEventListener(event, () => this.filter(this.search.value));    
-        });
+        this.search.addEventListener("keyup", () => this.filter(this.search.value));
 
         this.dropdown.value(0);
 

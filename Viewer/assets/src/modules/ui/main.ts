@@ -29,6 +29,7 @@ import { Display } from "./display.js";
 import { Finder } from "./pages/finder.js";
 import { Info } from "./pages/info.js";
 import { Settings } from "./pages/settings.js";
+import { Stats } from "./pages/stats.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -80,6 +81,7 @@ const UI = Macro(class UI extends MacroElement {
         this.pages.set(this.settings, Macro.create(Settings()));
         this.pages.set(this.finder, Macro.create(Finder()));
         this.pages.set(this.info, Macro.create(Info()));
+        this.pages.set(this.stats, Macro.create(Stats()));
 
         for(const [button, page] of this.pages) {
             button.toggle.on((value) => {
