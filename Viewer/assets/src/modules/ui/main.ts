@@ -19,7 +19,7 @@ module.ready();
 
 /* eslint-disable-next-line sort-imports */
 import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
-import { signal } from "@esm/@/rhu/signal.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -27,6 +27,7 @@ import { Render } from "@esm/@root/main/routes/player/index.js";
 import { Bar, Button } from "./components/bar.js";
 import { Display } from "./display.js";
 import { Finder } from "./pages/finder.js";
+import { Info } from "./pages/info.js";
 import { Settings } from "./pages/settings.js";
 
 const style = Style(({ style }) => {
@@ -59,6 +60,10 @@ const style = Style(({ style }) => {
     };
 });
 
+interface Page extends MacroElement {
+    view: Signal<Macro<typeof View> | undefined>
+}
+
 const UI = Macro(class UI extends MacroElement {
     public display: Macro<typeof Display>;
     
@@ -67,54 +72,33 @@ const UI = Macro(class UI extends MacroElement {
     public finder: Macro<typeof Button>;
     public info: Macro<typeof Button>;
 
-    public pages = new Map<Macro<typeof Button>, MacroElement>();
+    public pages = new Map<Macro<typeof Button>, Page>();
 
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 
-        const settingsPage = Macro.create(Settings());
-        const finderPage = Macro.create(Finder());
-        this.pages.set(this.settings, settingsPage);
-        this.pages.set(this.finder, finderPage);
+        this.pages.set(this.settings, Macro.create(Settings()));
+        this.pages.set(this.finder, Macro.create(Finder()));
+        this.pages.set(this.info, Macro.create(Info()));
 
-        this.settings.toggle.on((value) => {
-            if (!value) {
-                this.load();
-                return;
-            }
-            this.load(settingsPage);
-        });
-
-        this.stats.toggle.on((value) => {
-            if (!value) {
-                this.load();
-                return;
-            }
-            this.load();
-        });
-
-        this.finder.toggle.on((value) => {
-            if (!value) {
-                this.load();
-                return;
-            }
-            this.load(finderPage);
-        });
-
-        this.info.toggle.on((value) => {
-            if (!value) {
-                this.load();
-                return;
-            }
-            this.load();
-        });
+        for(const [button, page] of this.pages) {
+            button.toggle.on((value) => {
+                if (!value) {
+                    this.load();
+                    return;
+                }
+                this.load(page);
+            });
+        }
         
         this.view.on((view) => {
             if (view === undefined) return;
 
             this.display.view(view);
-            settingsPage.view(view);
-            finderPage.view(view);
+
+            for (const page of this.pages.values()) {
+                page.view(view);
+            }
         });
     }
 

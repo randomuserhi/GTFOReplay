@@ -131,7 +131,8 @@ export const info = Macro((() => {
         const replay = this.player.replay;
         if (replay === undefined) return;
 
-        const header = replay.get("ReplayRecorder.Header")!;
+        const header = replay.get("ReplayRecorder.Header");
+        if (header === undefined) return;
 
         this.isMaster.innerText = `${header.isMaster.toString().toUpperCase()}`;
         if (header.isMaster) {

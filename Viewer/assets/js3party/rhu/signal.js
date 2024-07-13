@@ -1,4 +1,3 @@
-import { WeakCollectionMap } from "./weak.js";
 const proto = {};
 export const isSignal = Object.prototype.isPrototypeOf.bind(proto);
 export const always = () => false;
@@ -56,11 +55,14 @@ export function effect(expression, dependencies) {
     for (const signal of dependencies) {
         if (isEffect(signal))
             throw new Error("Effect cannot be used as a dependency.");
-        dependencyMap.set(signal, effect);
+        if (!dependencyMap.has(signal)) {
+            dependencyMap.set(signal, []);
+        }
+        dependencyMap.get(signal).push(effect);
     }
     return effect;
 }
-const dependencyMap = new WeakCollectionMap();
+const dependencyMap = new WeakMap();
 function triggerEffects(signal) {
     const dependencies = dependencyMap.get(signal);
     if (dependencies === undefined)
