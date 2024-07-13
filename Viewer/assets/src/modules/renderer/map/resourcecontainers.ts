@@ -190,6 +190,9 @@ class Box extends ResourceContainerModel {
     }
 }
 
+console.log("load");
+console.dir(ResourceContainerModel.transparent);
+
 ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 

@@ -1,12 +1,12 @@
 import { ColorRepresentation } from "@esm/three";
-import { Identifier } from "../../parser/identifier.js";
-import { HumanAnimation } from "../../renderer/animations/human.js";
-import { ItemModel } from "../../renderer/models/items.js";
-import { ItemGLTFModel } from "../../renderer/models/prebuilt/itemGLTF.js";
-import { Keycard } from "../../renderer/models/prebuilt/keycard.js";
-import { Pack } from "../../renderer/models/prebuilt/pack.js";
-import { Datablock } from "../lib.js";
-import { PlayerAnimDatablock } from "../player/animation.js";
+import { Datablock } from "../../../modules/datablocks/lib.js";
+import { PlayerAnimDatablock } from "../../../modules/datablocks/player/animation.js";
+import { Identifier } from "../../../modules/parser/identifier.js";
+import { HumanAnimation } from "../../../modules/renderer/animations/human.js";
+import { ItemModel } from "../../../modules/renderer/models/items.js";
+import { ItemGLTFModel } from "../../../modules/renderer/models/prebuilt/itemGLTF.js";
+import { Keycard } from "../../../modules/renderer/models/prebuilt/keycard.js";
+import { Pack } from "../../../modules/renderer/models/prebuilt/pack.js";
 
 export interface ItemArchetype {
     equipAnim?: HumanAnimation;

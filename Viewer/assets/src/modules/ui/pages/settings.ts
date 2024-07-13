@@ -300,6 +300,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
 
         toggle.value.on((value) => {
             ResourceContainerModel.transparent(value);
+            console.dir(ResourceContainerModel.transparent);
         });
 
         ResourceContainerModel.transparent.on((value) => {

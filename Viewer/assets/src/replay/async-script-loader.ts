@@ -24,6 +24,8 @@ type ASLExec = (require: Require, module: ASLModule, exports: Record<PropertyKey
 class _ASLModule implements ASLModule, Exports {
     readonly src: string;
     exec?: ASLExec;
+    executionContext?: Promise<void>;
+    terminate?: () => void;
     
     isReady: boolean = false;
     destructed: boolean = false;
@@ -47,6 +49,8 @@ class _ASLModule implements ASLModule, Exports {
     public destruct() {
         if (this.destructor !== undefined) this.destructor();
         this.destructed = true;
+        
+        if (this.terminate !== undefined) this.terminate();
     }
 
     constructor(url: string, exec?: ASLExec) {
@@ -149,51 +153,60 @@ export namespace AsyncScriptCache {
     const setProps: (string | symbol)[] = ["destructor"];
     const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI"];
     export async function exec(module: _ASLModule) {
-        module.exports = {};
-        const __module__ = new Proxy(module, {
-            set: (module, prop, newValue, receiver) => {
-                if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
-                if (module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
-                return Reflect.set(module, prop, newValue, receiver);
-            },
-            get: (module, prop, receiver) => {
-                if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
-                if (prop === "exports") return exports;
-                const value = Reflect.get(module, prop, receiver);
-                if (typeof value === "function") {
-                    return value.bind(module);
-                }
-                return value;
-            }
-        });
-        const _require = async (_path: string, type: ASLRequireType = "asl") => {
-            try {
-                switch (type) {
-                case "asl": {
-                    const m = await fetchModule(_path, module.src, module);
-                    if (m === module) throw new Error("Cannot 'require()' self.");
-                    Archetype.traverse(module!, m.src);
-                    return m.exports;
-                }
-                case "esm": {
-                    return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
-                }
-                default: throw new Error(`Invalid ASLRequireType '${type}'`);
-                }
-            } catch (e) {
-                throw new _ASLModuleError(`[${module.src}] Failed to require('${_path}', ${type}):`, e);
-            }
-        };
+        if (module.executionContext === undefined) {
+            module.executionContext = new Promise((resolve, reject) => {
+                module.terminate = resolve;
 
-        if (module.exec === undefined) throw new Error(`Module '${module.src}' was not assigned an exec function.`);
-        
-        try {
-            await module.exec(_require, __module__, module.exports);
-        } catch(e) {
-            throw new _ASLModuleError(`Failed to execute module [${module.src}]:`, e);    
+                module.exports = {};
+                const __module__ = new Proxy(module, {
+                    set: (module, prop, newValue, receiver) => {
+                        if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
+                        if (module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
+                        return Reflect.set(module, prop, newValue, receiver);
+                    },
+                    get: (module, prop, receiver) => {
+                        if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
+                        if (prop === "exports") return exports;
+                        const value = Reflect.get(module, prop, receiver);
+                        if (typeof value === "function") {
+                            return value.bind(module);
+                        }
+                        return value;
+                    }
+                });
+                const _require = async (_path: string, type: ASLRequireType = "asl") => {
+                    try {
+                        switch (type) {
+                        case "asl": {
+                            const m = await fetchModule(_path, module.src, module);
+                            if (m === module) throw new Error("Cannot 'require()' self.");
+                            Archetype.traverse(module!, m.src);
+                            return m.exports;
+                        }
+                        case "esm": {
+                            return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
+                        }
+                        default: throw new Error(`Invalid ASLRequireType '${type}'`);
+                        }
+                    } catch (e) {
+                        throw new _ASLModuleError(`[${module.src}] Failed to require('${_path}', ${type}):`, e);
+                    }
+                };
+
+                if (module.exec === undefined) {
+                    reject(new Error(`Module '${module.src}' was not assigned an exec function.`));
+                    return;
+                }
+            
+                module.exec(_require, __module__, module.exports).then(() => {
+                    finalize(module);
+                    resolve();
+                }).catch((e) => {
+                    reject(new _ASLModuleError(`Failed to execute module [${module.src}]:`, e));
+                });
+            });
         }
-
-        finalize(module);
+        return module.executionContext;
     }
 
     export function finalize(module: _ASLModule) {
@@ -292,7 +305,7 @@ export namespace AsyncScriptCache {
         console.log(`Modules waiting to finalize:\n${waiting.map((entry) => `[${entry[0].src}]\n\t- ${entry[1].join("\n\t- ")}`).join("\n\n")}`);
     }
 
-    export async function reset() {
+    export function reset() {
         for (const module of _cache.values()) {
             module.destruct();
         }
@@ -303,10 +316,26 @@ export namespace AsyncScriptCache {
 
         _getList = [];
     }
+
+    export function getLoaded() {
+        return [..._cache.values()];
+    }
+
+    export function getExecutionContexts() {
+        const promises = [];
+        for (const m of _cache.values()) {
+            if (m.executionContext === undefined) continue;
+            promises.push(m.executionContext);
+        }
+        return promises;
+    }
 }
 
 // NOTE(randomuserhi): Exposed for debugging purposes
 (globalThis as any).waiting = AsyncScriptCache.logWaiting;
+(globalThis as any).loaded = () => {
+    console.log(`Loaded modules:\n\t${AsyncScriptCache.getLoaded().map(m => m.src).join("\n\t")}`);
+};
 
 // NOTE(randomuserhi): Trim the automatically placed 'export {};' from typescript at the end.
 //                     This is done as a hack for my module-esc use of types :P

@@ -83,7 +83,7 @@ const App = Macro(class App extends MacroElement {
                 return;
             }
 
-            // Close player
+            // Close & Refresh player
             this.player.close();
 
             // Reset modules
@@ -91,8 +91,14 @@ const App = Macro(class App extends MacroElement {
             
             // Reset cache
             AsyncScriptCache.reset();
+            const promises: Promise<void>[] = [];
             (await window.api.invoke("loadModules")).forEach((p: string) => {
-                AsyncScriptLoader.load(p);
+                promises.push(AsyncScriptLoader.load(p));
+            });
+            // Wait for all modules to load and finish executing before refresh
+            (Promise.all(promises)).then(() => Promise.all(AsyncScriptCache.getExecutionContexts())).then(() => {
+                console.log("exec finish");
+                this.player.refresh();
             });
 
             // Show loading screen
@@ -117,6 +123,7 @@ const App = Macro(class App extends MacroElement {
                 promises.push(AsyncScriptLoader.load(p));
             }
             await Promise.all(promises);
+            await Promise.all(AsyncScriptCache.getExecutionContexts());
 
             // Refresh
             this.player.refresh();
@@ -126,7 +133,11 @@ const App = Macro(class App extends MacroElement {
         (await window.api.invoke("loadModules")).forEach((p: string) => {
             promises.push(AsyncScriptLoader.load(p));
         });
-        (Promise.all(promises)).then(() => this.player.refresh());
+        // Wait for all modules to load and finish executing before refresh
+        (Promise.all(promises)).then(() => Promise.all(AsyncScriptCache.getExecutionContexts())).then(() => {
+            console.log("exec finish initial");
+            this.player.refresh();
+        });
     }
 
     public load(macro: MacroElement) {

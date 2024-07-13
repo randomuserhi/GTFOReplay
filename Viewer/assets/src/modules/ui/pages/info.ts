@@ -22,7 +22,10 @@ versionInfo.set("0.0.6", `- Improved algorithm for generating map navmesh
 versionInfo.set("0.0.7", `- OldBulkheadSounds compatibility layer
 - Chargers and Shooters now have custom heads for visual clarity
 - Lockout 2 compatibility layer for custom weapon systems`);    
-versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support`);    
+versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
+- Thrown items are now shown
+- Added ability to change module folder to swap parser for modded content
+- Hot reloading support for rendering, changes to the parser requires reloading the replay`);    
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);
