@@ -6,13 +6,11 @@ export const dispose = {
 };
 
 const ref: { value: undefined | Macro<typeof UI> } = { value: undefined };
-console.log(ref);
 export function ui(): Macro<typeof UI> {
     if (ref.value === undefined) {
         if (disposeController !== undefined) disposeController.abort();
         disposeController = new AbortController();
         ref.value = Macro.create(UI());
-        console.log("construct");
     }
     return ref.value;
 }
@@ -102,8 +100,6 @@ const UI = Macro(class UI extends MacroElement {
             for (const page of this.pages.values()) {
                 page.view(view);
             }
-            
-            console.log("view refresh");
         });
     }
 
@@ -157,10 +153,7 @@ const UI = Macro(class UI extends MacroElement {
     </div>
     `);
 
-console.log("sent");
 Render((doc, view) => {
-    console.log("render");
-
     const main = ui();
     main.view(view);
     doc.append(...main.dom);

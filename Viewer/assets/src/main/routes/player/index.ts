@@ -88,6 +88,5 @@ let domFunc: (doc: DocumentFragment, view: Macro<typeof View>) => void = (doc, v
 };
 
 export function Render(func: (doc: DocumentFragment, view: Macro<typeof View>) => void) {
-    console.log("received");
     domFunc = func;
 }

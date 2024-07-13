@@ -97,7 +97,6 @@ const App = Macro(class App extends MacroElement {
             });
             // Wait for all modules to load and finish executing before refresh
             (Promise.all(promises)).then(() => Promise.all(AsyncScriptCache.getExecutionContexts())).then(() => {
-                console.log("exec finish");
                 this.player.refresh();
             });
 
@@ -135,7 +134,6 @@ const App = Macro(class App extends MacroElement {
         });
         // Wait for all modules to load and finish executing before refresh
         (Promise.all(promises)).then(() => Promise.all(AsyncScriptCache.getExecutionContexts())).then(() => {
-            console.log("exec finish initial");
             this.player.refresh();
         });
     }
