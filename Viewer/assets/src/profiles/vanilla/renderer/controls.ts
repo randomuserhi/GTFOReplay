@@ -271,7 +271,7 @@ export class Controls {
                 old.y = mouse.y;
             }
         };
-        canvas.addEventListener("mousemove", this.mousemove);
+        window.addEventListener("mousemove", this.mousemove);
         this.mouseup = (e) => {
             e.preventDefault();
             if (e.button === 0)
@@ -380,6 +380,6 @@ export class Controls {
         canvas.removeEventListener("wheel", this.wheel);
         canvas.removeEventListener("mousedown", this.mousedown);
         canvas.removeEventListener("mouseup", this.mouseup);
-        canvas.removeEventListener("mousemove", this.mousemove);
+        window.removeEventListener("mousemove", this.mousemove);
     }
 }
