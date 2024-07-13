@@ -302,19 +302,6 @@ GearDatablock.set(
 
 GearDatablock.set(
     Identifier.create("Gear", undefined, 
-        `{"Ver":1,"Name":"Shelling S49","Packet":{"Comps":{"Length":16,"a":{"c":2,"v":8},"b":{"c":3,"v":108},"c":{"c":4,"v":8},"d":{"c":5,"v":1},"e":{"c":6,"v":1},"f":{"c":7,"v":2},"g":{"c":8,"v":16},"h":{"c":9,"v":15},"i":{"c":10,"v":27},"j":{"c":11,"v":27},"k":{"c":12,"v":38},"l":{"c":16,"v":21},"m":{"c":19,"v":18},"n":{"c":23,"v":8},"o":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.05},"tDecalB":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.04},"tPattern":{"position":{"x":-0.09,"y":-0.03,"normalized":{"x":-0.9486833,"y":-0.316227764,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.09486833,"sqrMagnitude":0.009000001},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Shelling S49"}}}`,
-    ), {
-        name: "Pistol",
-        type: "pistol",
-        gunArchetype: {
-            gunFoldAnim: gearFoldAnimations.Stock_Pistol_1_reload_1,
-        },
-        model: () => new Pistol()
-    }
-);
-
-GearDatablock.set(
-    Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Shelling Nano","Packet":{"Comps":{"Length":15,"a":{"c":1,"v":1},"b":{"c":2,"v":8},"c":{"c":3,"v":108},"d":{"c":4,"v":8},"e":{"c":5,"v":1},"f":{"c":6,"v":1},"g":{"c":7,"v":1},"h":{"c":8,"v":16},"i":{"c":9,"v":15},"j":{"c":10,"v":27},"k":{"c":11,"v":27},"l":{"c":12,"v":45},"m":{"c":19,"v":22},"n":{"c":25,"v":3}},"MatTrans":{"tDecalA":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.05},"tDecalB":{"position":{"x":-0.098,"y":-0.07,"normalized":{"x":-0.813733459,"y":-0.5812382,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.120432556,"sqrMagnitude":0.014504},"scale":0.04},"tPattern":{"position":{"x":-0.09,"y":-0.03,"normalized":{"x":-0.9486833,"y":-0.316227764,"magnitude":1.0,"sqrMagnitude":1.0},"magnitude":0.09486833,"sqrMagnitude":0.009000001},"angle":-90.0,"scale":0.1}},"publicName":{"data":"Shelling Nano"}}}`,
     ), {
         name: "Burst Pistol",

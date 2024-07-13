@@ -159,7 +159,6 @@ export class Anim<T extends string = string> implements AnimFunc<T> {
     private cache: Avatar<T>;
 
     constructor(joints: ReadonlyArray<T>, rate: number, duration: number, frames: AvatarLike<T>[]) {
-        if (frames.length === 0) throw new Error("Animation had 0 frames.");
         if (rate <= 0) throw new Error("Invalid animation rate.");
 
         this.joints = joints;
@@ -175,6 +174,8 @@ export class Anim<T extends string = string> implements AnimFunc<T> {
     }
 
     public sample(t: number, timescale?: number): Avatar<T> {
+        if (this.frames.length === 0) return this.cache; // NOTE(randomuserhi): returns blank pose - undefined behaviour really
+
         if (timescale !== undefined) t *= timescale;
         t = t % this.duration;
     

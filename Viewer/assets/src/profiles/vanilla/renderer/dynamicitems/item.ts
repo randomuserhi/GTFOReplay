@@ -1,5 +1,5 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { ItemModelDatablock } from "../../datablocks/items/models.js";
+import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Factory } from "../../library/factory.js";
 import { ItemModel } from "../models/items.js";
 
@@ -23,8 +23,9 @@ ModuleLoader.registerRender("DynamicItem", (name, api) => {
             const collection = snapshot.getOrDefault("Vanilla.DynamicItem", Factory("Map"));
             for (const [id, item] of collection) {
                 if (!models.has(id)) {
-                    const model = ItemModelDatablock.get(item.type)?.model();
-                    if (model === undefined) continue;
+                    const factory = ItemDatablock.get(item.type)?.model;
+                    if (factory === undefined) continue;
+                    const model = factory();
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

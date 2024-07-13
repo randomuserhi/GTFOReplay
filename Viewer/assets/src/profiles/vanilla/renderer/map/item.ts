@@ -1,5 +1,5 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { ItemModelDatablock } from "../../datablocks/items/models.js";
+import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Factory } from "../../library/factory.js";
 import { ItemModel } from "../models/items.js";
 
@@ -23,7 +23,9 @@ ModuleLoader.registerRender("Vanilla.Items", (name, api) => {
             const collection = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
             for (const [id, item] of collection) {
                 if (!models.has(id)) {
-                    const model = ItemModelDatablock.get(item.itemID)?.model();
+                    const factory = ItemDatablock.get(item.itemID)?.model;
+                    if (factory === undefined) continue;
+                    const model = factory();
                     if (model === undefined) continue;
                     model.inLevel();
                     model.addToScene(renderer.scene);

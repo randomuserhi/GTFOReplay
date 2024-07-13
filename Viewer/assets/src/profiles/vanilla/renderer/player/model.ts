@@ -2,8 +2,7 @@ import * as Pod from "@esm/@root/replay/pod.js";
 import { Group, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { GearDatablock, GunArchetype, hammerArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
-import { Archetype, ItemDatablock } from "../../datablocks/items/item.js";
-import { ItemArchetype, ItemModelDatablock } from "../../datablocks/items/models.js";
+import { Archetype, ItemArchetype, ItemDatablock } from "../../datablocks/items/item.js";
 import { animCrouch, animVelocity, PlayerAnimDatablock } from "../../datablocks/player/animation.js";
 import { IKSolverAim } from "../../library/animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../../library/animations/inversekinematics/limbsolver.js";
@@ -59,7 +58,6 @@ const aimOffset = new AnimBlend(HumanJoints, [
 class EquippedItem {
     id?: Identifier;
     itemDatablock?: ItemDatablock;
-    itemModelDatablock?: ItemModelDatablock;
     gearDatablock?: GearDatablock;
     model?: ItemModel | GearModel;
 
@@ -67,7 +65,6 @@ class EquippedItem {
         switch (id.type) {
         case "Unknown": {
             this.itemDatablock = undefined;
-            this.itemModelDatablock = undefined;
             this.gearDatablock = undefined;
             this.model = undefined;
         } break;
@@ -79,8 +76,9 @@ class EquippedItem {
         case "Item": {
             this.gearDatablock = undefined;
             this.itemDatablock = ItemDatablock.get(id);
-            this.itemModelDatablock = ItemModelDatablock.get(id);
-            this.model = this.itemModelDatablock?.model();
+            const factory = this.itemDatablock?.model;
+            if (factory !== undefined) this.model = factory();
+            else this.model = undefined;
         } break;
         default: throw new Error(`Could not get equipped item ${id}`);
         }
@@ -119,7 +117,7 @@ class EquippedItem {
 
     get itemArchetype(): ItemArchetype | undefined {
         if (this.id?.type !== "Item") return undefined;
-        return this.itemModelDatablock?.archetype;
+        return this.itemDatablock?.archetype;
     }
 }
 

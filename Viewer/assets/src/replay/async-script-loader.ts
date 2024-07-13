@@ -22,6 +22,7 @@ export interface ASLModule {
     exports: Record<PropertyKey, any>;
     readonly baseURI: string | undefined;
     manual: boolean;
+    readonly isParser: boolean;
 }
 
 type ASLExec = (require: Require, module: ASLModule, exports: Record<PropertyKey, any>) => Promise<void>;
@@ -31,6 +32,7 @@ class _ASLModule implements ASLModule, Exports {
     executionContext?: Promise<void>;
     terminate?: () => void;
     
+    isParser: boolean = AsyncScriptLoader.isParser;
     isReady: boolean = false;
     destructed: boolean = false;
     manual: boolean = false;
@@ -171,7 +173,7 @@ export namespace AsyncScriptCache {
         }
     };
     const setProps: (string | symbol)[] = ["destructor", "manual"];
-    const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI"];
+    const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI", "isParser"];
     export async function exec(module: _ASLModule) {
         if (module.executionContext === undefined) {
             module.executionContext = new Promise((resolve, reject) => {
@@ -418,6 +420,9 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
 }
 
 export namespace AsyncScriptLoader {
+    // eslint-disable-next-line prefer-const
+    export let isParser = false;
+
     // eslint-disable-next-line prefer-const
     export let baseURI: string | undefined = globalThis.document === undefined ? undefined : globalThis.document.baseURI; 
 

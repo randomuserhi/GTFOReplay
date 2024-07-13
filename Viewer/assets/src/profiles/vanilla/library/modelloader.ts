@@ -7,6 +7,8 @@ const loadingGLTF = new Map<string, Promise<BufferGeometry>>();
 
 const loader = new GLTFLoader();
 
+const empty = new BufferGeometry();
+
 // NOTE(randomuserhi): `newLoader` exists due to old models being imported without transforms. All models should have transforms applied, but old models were implemented prior to this.
 export async function loadGLTF(path: string, newLoader: boolean = true): Promise<BufferGeometry> {
     if (loadedGLTF.has(path)) {
@@ -23,6 +25,12 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
     }
 
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
+        // NOTE(randomuserhi): if this is running in parser, return a dummy
+        if (module.isParser) {
+            resolve(empty);
+            return;
+        }
+
         loader.load(path, function (gltf) {
             try {
                 const geometries: BufferGeometry[] = [];

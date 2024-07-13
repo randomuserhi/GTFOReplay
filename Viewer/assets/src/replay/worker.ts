@@ -15,6 +15,7 @@ let replay: Replay | undefined = undefined;
     });
     ipc.on("init", async (file: FileHandle, links: string[], baseURI?: string) => {
         AsyncScriptLoader.baseURI = baseURI;
+        AsyncScriptLoader.isParser = true;
         await Promise.all(links.map(async link => await AsyncScriptLoader.load(link)));
         parse(file);
     });

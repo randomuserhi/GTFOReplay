@@ -3,7 +3,6 @@ import { ColorRepresentation, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { EnemyAnimHandle, EnemyAnimHandlesDatablock } from "../../datablocks/enemy/handles.js";
-import { EnemyModelDatablock } from "../../datablocks/enemy/model.js";
 import { getPlayerColor } from "../../datablocks/player/player.js";
 import { Model } from "../../library/models/lib.js";
 import { EnemyAnimState } from "../../parser/enemy/animation.js";
@@ -22,16 +21,14 @@ export class EnemyModelWrapper {
 
     animHandle?: EnemyAnimHandle;
     datablock?: EnemyDatablock;
-    modelDatablock?: EnemyModelDatablock;
 
     tagTarget?: Object3D;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(enemy: Enemy) {
         this.datablock = EnemyDatablock.get(enemy.type);
-        this.modelDatablock = EnemyModelDatablock.get(enemy.type);
         if (enemy.animHandle !== undefined) this.animHandle = EnemyAnimHandlesDatablock.get(enemy.animHandle);
-        if (this.modelDatablock !== undefined) this.model = this.modelDatablock.model(this, enemy);
+        if (this.datablock?.model !== undefined) this.model = this.datablock.model(this, enemy);
         else this.model = new HumanoidEnemyModel(this);
 
         this.tmp = new Text();
@@ -42,7 +39,7 @@ export class EnemyModelWrapper {
         this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
-        this.tmpHeight = (this.modelDatablock?.tmpHeight === undefined ? 2.2 : this.modelDatablock.tmpHeight) * enemy.scale;
+        this.tmpHeight = (this.datablock?.tmpHeight === undefined ? 2.2 : this.datablock.tmpHeight) * enemy.scale;
         this.tmp.position.y = this.tmpHeight;
         this.model.root.add(this.tmp);
 
