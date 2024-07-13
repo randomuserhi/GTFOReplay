@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory.js";
 
 ModuleLoader.registerASLModule(module.src);
 
@@ -32,7 +33,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Alert", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const { enemy, slot } = data;
         let player: number | undefined = undefined;
         for (const p of players.values()) {
@@ -41,7 +42,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Alert", "0.0.1", {
                 break;
             }
         }
-        const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", () => []);
+        const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", Factory("Array"));
         alerts.push({ time: snapshot.time(), enemy, player });
     }
 });
@@ -49,6 +50,6 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Alert", "0.0.1", {
 const duration = 1500;
 ModuleLoader.registerTick((snapshot) => {
     const t = snapshot.time();
-    const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", () => []);
+    const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", Factory("Array"));
     snapshot.set("Vanilla.Enemy.Alert", alerts.filter((a) => (t - a.time) < duration));
 });

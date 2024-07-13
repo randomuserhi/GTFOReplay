@@ -1,19 +1,20 @@
 import { animCrouch, animDetection, animVelocity, EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
 import { PlayerAnimDatablock } from "../../../datablocks/player/animation.js";
+import { zeroV } from "../../../library/constants.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation.js";
 import { Enemy } from "../../../parser/enemy/enemy.js";
 import { HumanAnimation } from "../../animations/human.js";
 import { StickFigure } from "../../models/stickfigure.js";
-import { EnemyModel } from "../lib.js";
+import { EnemyModelWrapper } from "../lib.js";
 
 const playerAnimations = PlayerAnimDatablock.obj();
 const enemyAnimations = EnemyAnimDatablock.obj();
 
 export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAnimState]> {
-    private readonly wrapper: EnemyModel;
+    private readonly wrapper: EnemyModelWrapper;
     private animOffset: number = Math.random() * 10;
 
-    constructor(wrapper: EnemyModel) {
+    constructor(wrapper: EnemyModelWrapper) {
         super();  
         this.wrapper = wrapper;
     }
@@ -21,13 +22,14 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
     public render(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
         if (!this.isVisible()) return;
 
+        if (enemy.head === false) this.applySettings({ headScale: zeroV });
         this.animate(dt, time, anim);
         this.draw(dt, enemy.position, enemy.rotation);
     }
 
     private animate(dt: number, time: number, anim: EnemyAnimState) {
         const { animHandle } = this.wrapper;
-        
+
         this.color.set(0xff0000);
         if (this.settings.color !== undefined) {
             this.color.set(this.settings.color);

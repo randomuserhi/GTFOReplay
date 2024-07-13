@@ -4,7 +4,7 @@ import { Text } from "@esm/troika-three-text";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { EnemyAnimHandle, EnemyAnimHandlesDatablock } from "../../datablocks/enemy/handles.js";
 import { EnemyModelDatablock } from "../../datablocks/enemy/model.js";
-import { playerColors } from "../../datablocks/player/player.js";
+import { getPlayerColor } from "../../datablocks/player/player.js";
 import { Model } from "../../library/models/lib.js";
 import { EnemyAnimState } from "../../parser/enemy/animation.js";
 import { Enemy } from "../../parser/enemy/enemy.js";
@@ -13,7 +13,7 @@ import { HumanJoints } from "../animations/human.js";
 import { Camera } from "../renderer.js";
 import { HumanoidEnemyModel } from "./models/humanoid.js";
 
-export class EnemyModel {
+export class EnemyModelWrapper {
     model: Model<[enemy: Enemy, anim: EnemyAnimState]>;
 
     tmp?: Text;
@@ -80,7 +80,7 @@ export class EnemyModel {
             return;
         }
         
-        const { tagPos } = EnemyModel.FUNC_updateTmp;
+        const { tagPos } = EnemyModelWrapper.FUNC_updateTmp;
 
         this.tag.visible = enemy.tagged;
         if (this.tagTarget === undefined) {
@@ -94,7 +94,7 @@ export class EnemyModel {
         const player = players[enemy.targetPlayerSlotIndex];
         if (player !== undefined) {
             target = player.nickname;
-            color = playerColors[player.slot]; 
+            color = getPlayerColor(player.slot); 
         }
 
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
@@ -108,7 +108,7 @@ Target: `;
         };
         this.tmp.text += target;
 
-        this.tmp.visible = EnemyModel.showInfo();
+        this.tmp.visible = EnemyModelWrapper.showInfo();
 
         this.orientateText(this.tmp, camera, 0.3, 0.05);
         this.orientateText(this.tag, camera, 0.5, 0.1);
@@ -127,7 +127,7 @@ Target: `;
         camPos: new Vector3()
     } as const;
     private orientateText(tmp: Text, camera: Camera, scale: number, min: number) {
-        const { tmpPos, camPos } = EnemyModel.FUNC_orientateText;
+        const { tmpPos, camPos } = EnemyModelWrapper.FUNC_orientateText;
 
         tmp.getWorldPosition(tmpPos);
         camera.root.getWorldPosition(camPos);

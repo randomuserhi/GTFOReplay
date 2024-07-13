@@ -1,5 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { Factory } from "../../library/factory.js";
 
 ModuleLoader.registerASLModule(module.src);
 
@@ -27,7 +28,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.LimbDestruction", "0.0.1", {
         };
     },
     exec: (data, snapshot) => {
-        const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
+        const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
 
         const { id, limb } = data;
         if (!enemies.has(id)) return;

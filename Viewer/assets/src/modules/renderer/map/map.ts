@@ -1,6 +1,7 @@
 import { HeaderApi, ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Renderer } from "@esm/@root/replay/renderer.js";
 import { BufferAttribute, BufferGeometry, DoubleSide, LineBasicMaterial, LineSegments, Mesh, MeshPhongMaterial } from "@esm/three";
+import { Factory } from "../../library/factory.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -80,7 +81,7 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
     const init = api.getInitPasses();
     api.setInitPasses([...init, { 
         name, pass: (renderer: Renderer, header: HeaderApi) => {
-            const geometry = header.getOrDefault("Vanilla.Map.Geometry", () => new Map());
+            const geometry = header.getOrDefault("Vanilla.Map.Geometry", Factory("Map"));
             
             const maps = new Map<number, Mesh[]>();
             for (const [dimension, meshes] of geometry) {
@@ -127,8 +128,8 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer) => {
             const maps = renderer.get("Maps")!;
-            const currentDimension = renderer.getOrDefault("Dimension", () => 0);
-            const mapDimension = renderer.getOrDefault("MapDimension", () => -1);
+            const currentDimension = renderer.getOrDefault("Dimension", zero);
+            const mapDimension = renderer.getOrDefault("MapDimension", negOne);
             if (mapDimension !== currentDimension) {
                 for (const [dimension, meshes] of maps) {
                     for (const mesh of meshes) {
@@ -140,3 +141,6 @@ ModuleLoader.registerRender("Vanilla.Map", (name, api) => {
         } 
     }]);
 });
+
+const zero = () => 0;
+const negOne = () => 1;

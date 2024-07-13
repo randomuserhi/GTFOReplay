@@ -2,7 +2,7 @@ import { Model } from "../../library/models/lib.js";
 import type { EnemyAnimState } from "../../parser/enemy/animation.js";
 import { Enemy } from "../../parser/enemy/enemy.js";
 import { Identifier } from "../../parser/identifier.js";
-import type { EnemyModel } from "../../renderer/enemy/lib.js";
+import type { EnemyModelWrapper } from "../../renderer/enemy/lib.js";
 import { BigFlyerModel } from "../../renderer/enemy/models/bigflyer.js";
 import { FlyerModel } from "../../renderer/enemy/models/flyer.js";
 import { HumanoidEnemyModel } from "../../renderer/enemy/models/humanoid.js";
@@ -10,7 +10,7 @@ import { SquidModel } from "../../renderer/enemy/models/squid.js";
 import { Datablock } from "../lib.js";
 
 export interface EnemyModelDatablock {
-    model: (wrapper: EnemyModel, enemy: Enemy) => Model<[enemy: Enemy, anim: EnemyAnimState]>;
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => Model<[enemy: Enemy, anim: EnemyAnimState]>;
     tmpHeight?: number;
 }
 
@@ -146,7 +146,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 35), {
     }
 });
 
-const baby = (wrapper: EnemyModel, enemy: Enemy) => {
+const baby = (wrapper: EnemyModelWrapper, enemy: Enemy) => {
     const model = new HumanoidEnemyModel(wrapper);
     model.applySettings({
         armScale: {
@@ -179,7 +179,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 63), {
     model: baby
 });
 
-const striker = (wrapper: EnemyModel, enemy: Enemy) => {
+const striker = (wrapper: EnemyModelWrapper, enemy: Enemy) => {
     const model = new HumanoidEnemyModel(wrapper);
     model.applySettings({
         scale: enemy.scale
@@ -202,7 +202,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 49), {
     model: striker
 });
 
-const bigStriker = (wrapper: EnemyModel, enemy: Enemy) => {
+const bigStriker = (wrapper: EnemyModelWrapper, enemy: Enemy) => {
     const model = new HumanoidEnemyModel(wrapper);
     model.applySettings({
         scale: enemy.scale,
@@ -230,7 +230,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 50), {
     model: bigStriker
 });
 
-const shooter = (wrapper: EnemyModel, enemy: Enemy) => {
+const shooter = (wrapper: EnemyModelWrapper, enemy: Enemy) => {
     const model = new HumanoidEnemyModel(wrapper);
     model.applySettings({
         scale: shooterScale * enemy.scale,
@@ -254,7 +254,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 11), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 18), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: shooterScale * enemy.scale,
@@ -285,7 +285,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 18), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 33), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: shooterScale * enemy.scale,
@@ -317,7 +317,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 33), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 30), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale,
@@ -341,7 +341,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 30), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 39), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale,
@@ -370,7 +370,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 39), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 29), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale,
@@ -379,7 +379,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 29), {
     }
 });
 
-const mum = (wrapper: EnemyModel, enemy: Enemy) => {
+const mum = (wrapper: EnemyModelWrapper, enemy: Enemy) => {
     const model = new HumanoidEnemyModel(wrapper);
     model.applySettings({
         scale: enemy.scale,
@@ -403,7 +403,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 55), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 46), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale * 1.5,
@@ -413,7 +413,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 46), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 47), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale * 1.2,
@@ -423,7 +423,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 47), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 42), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new FlyerModel();
         const scale = 1.3 * enemy.scale;
         model.anchor.scale.set(scale, scale, scale);
@@ -432,7 +432,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 42), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 45), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new BigFlyerModel();
         const scale = enemy.scale;
         model.anchor.scale.set(scale, scale, scale);
@@ -440,7 +440,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 45), {
     }
 });
 
-const squid = (wrapper: EnemyModel, enemy: Enemy) => {
+const squid = (wrapper: EnemyModelWrapper, enemy: Enemy) => {
     const model = new SquidModel();
     const scale = enemy.scale;
     model.anchor.scale.set(scale, scale, scale);
@@ -454,7 +454,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 44), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 53), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale,
@@ -485,7 +485,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 53), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 52), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale * shooterScale,
@@ -511,7 +511,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 52), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 54), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale * shooterScale,
@@ -539,7 +539,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 54), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 56), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale * shooterScale,
@@ -565,7 +565,7 @@ EnemyModelDatablock.set(Identifier.create("Enemy", 56), {
 });
 
 EnemyModelDatablock.set(Identifier.create("Enemy", 62), {
-    model: (wrapper: EnemyModel, enemy: Enemy) => {
+    model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
             scale: enemy.scale,

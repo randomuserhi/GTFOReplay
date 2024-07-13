@@ -3,6 +3,7 @@ import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { PerspectiveCamera, Vector3, Vector3Like } from "@esm/three";
 import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
 import { Renderer } from "../../replay/renderer.js";
+import { Factory } from "../library/factory.js";
 import { ui } from "../ui/main.js";
 import { Camera } from "./renderer.js";
 
@@ -249,7 +250,7 @@ export class Controls {
         const renderer = this.renderer;
         const camera = this.camera;
 
-        const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
+        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const slots = new Map([...players.values()].map(p => [p.slot, p]));
         const targetSlot = this.targetSlot();
         if (targetSlot !== undefined) {
@@ -270,7 +271,7 @@ export class Controls {
             if (this.forward || this.backward || this.left || this.right || this.up || this.down) {
                 this.targetSlot(undefined);
             } else {
-                const models = renderer.getOrDefault("Players", () => new Map());
+                const models = renderer.getOrDefault("Players", Factory("Map"));
                 const first = slots.get(this.slot);
                 if (first !== undefined) {
                     renderer.set("Dimension", first.dimension);

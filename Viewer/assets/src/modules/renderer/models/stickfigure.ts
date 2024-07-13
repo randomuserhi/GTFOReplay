@@ -10,8 +10,8 @@ import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } f
 
 const transparentMaskedParts = new Map<StickModelType, DynamicInstanceManager>();
 const transparentParts = new Map<StickModelType, DynamicInstanceManager>();
-const parts = new Map<StickModelType, DynamicInstanceManager>(); 
-function getInstanceOrDefault(instancing: Map<StickModelType, DynamicInstanceManager>, type: StickModelType | undefined, defaultType: StickModelType) {
+export const parts = new Map<StickModelType, DynamicInstanceManager>(); 
+export function getInstanceOrDefault(instancing: Map<StickModelType, DynamicInstanceManager>, type: StickModelType | undefined, defaultType: StickModelType) {
     let result: DynamicInstanceManager | undefined = undefined;
     if (type === undefined) result = instancing.get(defaultType);
     else result = instancing.get(type);

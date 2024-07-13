@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
+import { Factory } from "../../library/factory.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
 
 ModuleLoader.registerASLModule(module.src);
@@ -44,7 +45,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
             };
         }, 
         exec: (id, data, snapshot) => {
-            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
     
             if (!limbs.has(id)) throw new Error(`Limb of id '${id}' was not found.`);
             const limb = limbs.get(id)!;
@@ -61,7 +62,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
             };
         },
         exec: (id, data, snapshot) => {
-            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
         
             if (limbs.has(id)) throw new Error(`Limb of id '${id}' already exists.`);
             limbs.set(id, { 
@@ -73,7 +74,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
 
             if (!limbs.has(id)) throw new Error(`Limb of id '${id}' did not exist.`);
             limbs.delete(id);

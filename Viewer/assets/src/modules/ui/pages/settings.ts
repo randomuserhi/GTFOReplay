@@ -2,7 +2,7 @@ import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
-import { EnemyModel } from "../../renderer/enemy/lib.js";
+import { EnemyModelWrapper } from "../../renderer/enemy/lib.js";
 import { ResourceContainerModel } from "../../renderer/map/resourcecontainers.js";
 import { Dropdown } from "../components/dropdown.js";
 import { Toggle } from "../components/toggle.js";
@@ -328,10 +328,10 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
         const { toggle } = bindings;
 
         toggle.value.on((value) => {
-            EnemyModel.showInfo(value);
+            EnemyModelWrapper.showInfo(value);
         });
 
-        EnemyModel.showInfo.on((value) => {
+        EnemyModelWrapper.showInfo.on((value) => {
             toggle.value(value);
         });
 

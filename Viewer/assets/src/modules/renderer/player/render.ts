@@ -1,5 +1,6 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { playerColors } from "../../datablocks/player/player.js";
+import { getPlayerColor } from "../../datablocks/player/player.js";
+import { Factory } from "../../library/factory.js";
 import { IdentifierData } from "../../parser/identifier.js";
 import { PlayerModel } from "./model.js";
 
@@ -22,15 +23,15 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const time = snapshot.time();
             const database = IdentifierData(snapshot);
             const camera = renderer.get("Camera")!;
-            const models = renderer.getOrDefault("Players", () => new Map());
-            const players = snapshot.getOrDefault("Vanilla.Player", () => new Map());
-            const anims = snapshot.getOrDefault("Vanilla.Player.Animation", () => new Map());
-            const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", () => new Map());
-            const stats = snapshot.getOrDefault("Vanilla.Player.Stats", () => new Map());
+            const models = renderer.getOrDefault("Players", Factory("Map"));
+            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
+            const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
+            const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
             for (const [id, player] of players) {
                 if (!models.has(id)) {
                     const model = new PlayerModel();
-                    model.applySettings({ color: playerColors[player.slot] });
+                    model.applySettings({ color: getPlayerColor(player.slot) });
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }
@@ -56,7 +57,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
 });
 
 ModuleLoader.registerDispose((renderer) => {
-    const models = renderer.getOrDefault("Players", () => new Map());
+    const models = renderer.getOrDefault("Players", Factory("Map"));
     for (const model of models.values()) {
         model.dispose();
     }

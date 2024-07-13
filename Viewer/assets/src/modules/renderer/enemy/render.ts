@@ -1,8 +1,9 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Mesh, MeshPhongMaterial } from "@esm/three";
+import { Factory } from "../../library/factory.js";
 import { isCulled } from "../../library/models/lib.js";
 import { Sphere } from "../../library/models/primitives.js";
-import { EnemyModel } from "./lib.js";
+import { EnemyModelWrapper } from "./lib.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -11,7 +12,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "Enemies": Map<number, EnemyModel>;
+            "Enemies": Map<number, EnemyModelWrapper>;
             "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
     }
@@ -22,14 +23,14 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot, dt) => {
             const time = snapshot.time();
-            const models = renderer.getOrDefault("Enemies", () => new Map());
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", () => new Map());
-            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", () => new Map());
+            const models = renderer.getOrDefault("Enemies", Factory("Map"));
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
+            const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
             const camera = renderer.get("Camera")!;
-            const players = snapshot.getOrDefault("Vanilla.Player.Slots", () => []);
+            const players = snapshot.getOrDefault("Vanilla.Player.Slots", Factory("Array"));
             for (const [id, enemy] of enemies) {
                 if (!models.has(id)) {
-                    const wrapper = new EnemyModel(enemy);
+                    const wrapper = new EnemyModelWrapper(enemy);
                     models.set(id, wrapper);
                     wrapper.model.addToScene(renderer.scene);
                 }
@@ -58,9 +59,9 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
         } 
     }, { 
         name, pass: (renderer, snapshot) => {
-            const models = renderer.getOrDefault("Enemy.LimbCustom", () => new Map());
-            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", () => new Map());
-            const skeletons = renderer.getOrDefault("Enemies", () => new Map());
+            const models = renderer.getOrDefault("Enemy.LimbCustom", Factory("Map"));
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
+            const skeletons = renderer.getOrDefault("Enemies", Factory("Map"));
             for (const [id, limb] of limbs) {
                 if (!skeletons.has(limb.owner)) continue;
                 const skeleton = skeletons.get(limb.owner)!;

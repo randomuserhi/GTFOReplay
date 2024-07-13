@@ -2,6 +2,7 @@ import { signal } from "@esm/@/rhu/signal.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Color, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { black, white } from "../../library/constants.js";
+import { Factory } from "../../library/factory.js";
 import { loadGLTF } from "../../library/modelloader.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
 import { ObjectWrapper } from "../objectwrapper.js";
@@ -208,9 +209,9 @@ ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
             }
 
             const time = snapshot.time();
-            const containers = snapshot.header.getOrDefault("Vanilla.Map.ResourceContainers", () => new Map());
-            const states = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", () => new Map());
-            const models = renderer.getOrDefault("ResourceContainers", () => new Map());
+            const containers = snapshot.header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
+            const states = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", Factory("Map"));
+            const models = renderer.getOrDefault("ResourceContainers", Factory("Map"));
             for (const [id, container] of containers.entries()) {
                 if (!models.has(id)) {
                     const model = container.isLocker ? new Locker(container) : new Box(container);
