@@ -2,6 +2,7 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Renderer } from "@esm/@root/replay/renderer.js";
 import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, PointLight, Vector3, VSMShadowMap } from "@esm/three";
 import { RenderPass } from "@esm/three/examples/jsm/postprocessing/RenderPass.js";
+import { dispose } from "../ui/main.js";
 import { ObjectWrapper } from "./objectwrapper.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -71,9 +72,18 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.set("Camera", camera);
             r.addEventListener("resize", ({ width, height }) => {
                 camera.resize(width, height);
-            });
+            }, { signal: dispose.signal });
 
-            r.set("Controls", new Controls(camera, r));
+            const controls = new Controls(camera, r);
+            r.set("Controls", controls);
+
+            // Save camera state between refreshes
+            r.addEventListener("pre-refresh", () => {
+                controls.saveState();
+            }, { signal: dispose.signal });
+            r.addEventListener("post-refresh", () => {
+                controls.loadState();
+            }, { signal: dispose.signal });
             
             const pointLight = new PointLight(0xFFFFFF, 1, undefined, 1.2);
             camera.root.add(pointLight);

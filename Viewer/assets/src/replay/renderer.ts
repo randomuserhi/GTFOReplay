@@ -34,6 +34,9 @@ interface RendererEventMap {
         width: number;
         height: number;
     };
+
+    "pre-refresh": void;
+    "post-refresh": void;
 }
 
 export class Renderer {
@@ -91,9 +94,13 @@ export class Renderer {
         this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.composer = new EffectComposer(this.renderer);
 
+        this.dispatchEvent(new CustomEvent("pre-refresh"));
+
         if (replay !== undefined) {
             this.init(replay);
         }
+
+        this.dispatchEvent(new CustomEvent("post-refresh"));
     }
 
     private static isEventListener = function (callback: EventListenerOrEventListenerObject): callback is EventListener {

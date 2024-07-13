@@ -1,5 +1,6 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { Style } from "@/rhu/style.js";
+import { DataStore } from "../../../replay/datastore.js";
 import { Parser } from "../../../replay/parser.js";
 import { FileHandle } from "../../../replay/stream.js";
 import { app } from "../../app.js";
@@ -77,6 +78,9 @@ export const player = Macro(class Player extends MacroElement {
         } else {
             this.view.live(true); // Acknowledge awaiting for bytes from game
         }
+
+        // Clear state on fresh replay load
+        DataStore.clear();
 
         this.view.replay(await this.parser.parse(file));
     }

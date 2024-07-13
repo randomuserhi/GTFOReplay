@@ -1,6 +1,7 @@
 import { signal } from "@esm/@/rhu/signal.js";
+import { DataStore } from "@esm/@root/replay/datastore.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
-import { PerspectiveCamera, Vector3, Vector3Like } from "@esm/three";
+import { PerspectiveCamera, Quaternion, Vector3, Vector3Like } from "@esm/three";
 import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
 import { Renderer } from "../../replay/renderer.js";
 import { Factory } from "../library/factory.js";
@@ -8,6 +9,18 @@ import { ui } from "../ui/main.js";
 import { Camera } from "./renderer.js";
 
 // TODO(randomuserhi): Cleanup and rework
+
+declare module "@esm/@root/replay/datastore.js" {
+    interface DataStoreTypes {
+        "ControlState": {
+            position: Vector3;
+            rotation: Quaternion;
+            fposition: Vector3;
+            frotation: Quaternion;
+            targetSlot?: number;
+        }
+    }
+}
 
 const move = new Vector3();
 const tp_temp = new Vector3();
@@ -41,6 +54,29 @@ export class Controls {
     right: boolean;
 
     speed: number;
+
+    public saveState() {
+        DataStore.set("ControlState", {
+            position: this.camera.root.position.clone(),
+            rotation: this.camera.root.quaternion.clone(),
+            fposition: this.fakeCamera.position.clone(),
+            frotation: this.fakeCamera.quaternion.clone(),
+            targetSlot: this.targetSlot()
+        });
+    }
+
+    public loadState() {
+        const state = DataStore.get("ControlState");
+        if (state === undefined) return;
+
+        const { position, fposition, rotation, frotation, targetSlot } = state;
+
+        this.camera.root.position.copy(position);
+        this.camera.root.quaternion.copy(rotation);
+        this.fakeCamera.position.copy(fposition);
+        this.fakeCamera.quaternion.copy(frotation);
+        this.targetSlot(targetSlot);
+    }
 
     constructor(camera: Camera, renderer: Renderer) {
         this.camera = camera;
