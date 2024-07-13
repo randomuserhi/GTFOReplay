@@ -202,7 +202,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Supporter",
         icon: "./medals/support.png",
-        text: html`
+        description: html`
             <div>Most assists</div>
             <div><span style="color: #e9bc29">${Macro.signal("value")}</span> assists</div>
         `,
@@ -243,7 +243,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Kill Stealer",
         icon: "./medals/killstealer.png",
-        text: html`
+        description: html`
             <div>Most kills (excluding sentry / mines), but not most damage</div>
             <div><span style="color: #e9bc29">${Macro.signal("value")}</span> kills</div>
         `,
@@ -288,7 +288,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Sleepy",
         icon: "./medals/sleepy.png",
-        text: html`
+        description: html`
             <div>Most time spent downed</div>
             <div><span style="color: #e9bc29">${Macro.signal("value")}</span> time spent</div>
         `,
@@ -331,7 +331,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Fragile",
         icon: "./medals/fragile.png",
-        text: html`
+        description: html`
             <div>Most healing items consumed</div>
             <div><span style="color: #e9bc29">${Macro.signal("value")}</span> items used</div>
         `,
@@ -372,7 +372,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Lazy",
         icon: "./medals/lazy.png",
-        text: html`
+        description: html`
             <div>Deal more damage with your sentry than your guns.</div>
             <div>Sentry did <span style="color: #e9bc29">${Macro.signal("value")}%</span> more damage.</div>
         `,

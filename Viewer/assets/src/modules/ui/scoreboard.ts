@@ -145,8 +145,6 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 
-        console.log(bindings);
-
         this.view.on((view) => {
             if (view === undefined) return;
 
