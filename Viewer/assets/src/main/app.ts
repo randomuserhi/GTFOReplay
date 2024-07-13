@@ -54,6 +54,13 @@ const App = Macro(class App extends MacroElement {
         super(dom, bindings);
         this.init();
 
+        window.api.on("startGame", () => {
+            console.log("LIVE VIEW OPEN GAME");
+            this.main.loading(true);
+            this.load(this.main);
+            this.player.open();
+        }); // Temporary for live viewing games
+
         this.replayfile.addEventListener("change", (e: any) => {
             try {
                 const files = e.target.files;

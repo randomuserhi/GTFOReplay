@@ -37,6 +37,8 @@ export const player = Macro(class Player extends MacroElement {
 
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
+
+        (window as any).player = this;
     }
 
     private render() {
@@ -50,7 +52,9 @@ export const player = Macro(class Player extends MacroElement {
         this.view.refresh();
     }
 
+    private path?: string;
     public async open(path?: string) {
+        this.path = path;
         const file: FileHandle = {
             path, finite: false
         };
@@ -67,7 +71,27 @@ export const player = Macro(class Player extends MacroElement {
             window.api.send("close");
         });
 
+        if (path !== undefined) {
+            this.unlink(); // Unlink if loading a regular file.
+        } else {
+            this.view.live(true); // Acknowledge awaiting for bytes from game
+        }
+
         this.view.replay(await this.parser.parse(file));
+    }
+
+    public async link(ip: string, port: number) {
+        const resp: string | undefined = await window.api.invoke("link", ip, port);
+        if (resp !== undefined) {
+            // TODO(randomuserhi)
+            console.error(`Failed to link: ${resp}`);
+            return;
+        }
+        window.api.send("goLive");
+    }
+
+    public async unlink () {
+        window.api.send("unlink");
     }
 
     public close() {
