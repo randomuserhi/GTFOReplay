@@ -73,6 +73,7 @@ export const player = Macro(class Player extends MacroElement {
 
         if (path !== undefined) {
             this.unlink(); // Unlink if loading a regular file.
+            this.view.live(false);
         } else {
             this.view.live(true); // Acknowledge awaiting for bytes from game
         }
