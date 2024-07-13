@@ -564,6 +564,50 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
+            ${FeatureWrapper.open("Packs Given").bind("wrapper")}
+                <div class="${style.row}" style="
+                gap: 10px;
+                ">
+                    ${TypeList("Packs Given").bind("list")}
+                </div>
+            ${FeatureWrapper.close}
+        `.dom<{
+            wrapper: Macro<typeof FeatureWrapper>;
+            list: Macro<typeof TypeList>;
+        }>();
+
+        const { list } = bindings;
+        const total = new Map<string, number>();
+
+        v.on((view) => {
+            if (view === undefined) return;
+
+            view.api.on((api) => {
+                if (api === undefined) return;
+
+                const snet = self.dropdown.value();
+                const stats = api.get("Vanilla.StatTracker");
+                const player = stats?.players.get(snet);
+                if (player === undefined || stats === undefined) {
+                    list.values([]);
+                    return;
+                }
+
+                total.clear();
+                for (const [type, count] of player.packsGiven) {
+                    if (!total.has(type)) {
+                        total.set(type, 0);
+                    }
+                    total.set(type, total.get(type)! + count);
+                }
+                list.values([...total.entries()]);
+            });
+        });
+
+        return bindings.wrapper;
+    },
+    (self, v) => {
+        const [bindings, frag] = html`
             ${FeatureWrapper.open("Miscellaneous").bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
