@@ -253,8 +253,28 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         this.applySettings();
     }
 
-    protected draw(dt: number, position: Vector3Like, rotation: QuaternionLike) {
-        this.computeMatrices(dt, position, rotation);
+    protected updateSkeleton(dt: number, position: Vector3Like, rotation: QuaternionLike) {
+        this.root.position.copy(position);
+        this.anchor.quaternion.copy(rotation);
+        if (this.settings.rotOffset !== undefined) {
+            this.anchor.rotateY(this.settings.rotOffset.y);
+            this.anchor.rotateX(this.settings.rotOffset.x);
+            this.anchor.rotateZ(this.settings.rotOffset.z);
+        }
+        if (this.settings.posOffset !== undefined) {
+            this.anchor.position.copy(this.settings.posOffset);
+        }
+
+        const blendFactor = Math.clamp01(dt * 50);
+        for (const key of HumanJoints) {
+            this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
+        }
+        this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
+    }
+
+    // NOTE(randomuserhi): requires updateSkeleton to be called prior
+    protected draw() {
+        this.computeMatrices();
 
         if (this.settings.transparent) {
             this.drawCall(transparentMaskedParts);
@@ -342,29 +362,12 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         pscale: new Vector3(),
         rot: new Quaternion(),
     } as const;
-    private computeMatrices(dt: number, position: Vector3Like, rotation: QuaternionLike): void {
+    private computeMatrices(): void {
         const { bodyTop, bodyBottom, temp, scale, pscale, rot, headRot } = StickFigure.FUNC_computeMatrices;
         const { parts, points } = this;
 
         const defaultRadius = 0.05;
         const defaultHeadRadius = 0.15;
-
-        this.root.position.copy(position);
-        this.anchor.quaternion.copy(rotation);
-        if (this.settings.rotOffset !== undefined) {
-            this.anchor.rotateY(this.settings.rotOffset.y);
-            this.anchor.rotateX(this.settings.rotOffset.x);
-            this.anchor.rotateZ(this.settings.rotOffset.z);
-        }
-        if (this.settings.posOffset !== undefined) {
-            this.anchor.position.copy(this.settings.posOffset);
-        }
-
-        const blendFactor = Math.clamp01(dt * 50);
-        for (const key of HumanJoints) {
-            this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
-        }
-        this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
         const worldPos = getWorldPos(this.worldPos, this.visual);
 
         scale.set(defaultHeadRadius, defaultHeadRadius, defaultHeadRadius);

@@ -24,10 +24,11 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
 
         if (enemy.head === false) this.applySettings({ headScale: zeroV });
         this.animate(dt, time, anim);
-        this.draw(dt, enemy.position, enemy.rotation);
+        this.updateSkeleton(dt, enemy.position, enemy.rotation);
+        this.draw();
     }
 
-    private animate(dt: number, time: number, anim: EnemyAnimState) {
+    protected animate(dt: number, time: number, anim: EnemyAnimState) {
         const { animHandle } = this.wrapper;
 
         this.color.set(0xff0000);
