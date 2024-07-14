@@ -5,7 +5,7 @@ import type { Renderer } from "@esm/@root/replay/renderer.js";
 import { PerspectiveCamera, Quaternion, Vector3, Vector3Like } from "@esm/three";
 import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
 import { Factory } from "../library/factory.js";
-import { ui } from "../ui/main.js";
+import { dispose, ui } from "../ui/main.js";
 import { Camera } from "./renderer.js";
 
 // TODO(randomuserhi): Cleanup and rework
@@ -105,14 +105,14 @@ export class Controls {
 
         // NOTE(randomuserhi): Chromium fails to add the wheel event to the canvas if it is unmounted, thus wait for mount before adding the event 
         this.mount = () => {
-            canvas.addEventListener("wheel", this.wheel);
+            canvas.addEventListener("wheel", this.wheel, { signal: dispose.signal });
         };
-        canvas.addEventListener("mount", this.mount);
+        canvas.addEventListener("mount", this.mount, { signal: dispose.signal });
         
         this.focus = false;
         canvas.addEventListener("focusin", () => {
             this.focus = true;
-        });
+        }, { signal: dispose.signal });
         canvas.addEventListener("blur", () => {
             this.focus = false;
             this.up = false;
@@ -121,7 +121,7 @@ export class Controls {
             this.right = false;
             this.forward = false;
             this.backward = false;
-        });
+        }, { signal: dispose.signal });
 
         this.keyup = (e) => {
             if (!this.focus) return;
@@ -237,8 +237,8 @@ export class Controls {
                 break;
             }
         };
-        window.addEventListener("keydown", this.keydown);
-        window.addEventListener("keyup", this.keyup);
+        window.addEventListener("keydown", this.keydown, { signal: dispose.signal });
+        window.addEventListener("keyup", this.keyup, { signal: dispose.signal });
         this.mousedown = (e: MouseEvent) => {
             this.focus = true;
             
@@ -253,9 +253,8 @@ export class Controls {
             origin.x = mouse.x;
             origin.y = mouse.y;
         };
-        canvas.addEventListener("mousedown", this.mousedown);
+        canvas.addEventListener("mousedown", this.mousedown, { signal: dispose.signal });
         this.mousemove = (e) => {
-            e.preventDefault();
             const rect = canvas.getBoundingClientRect();
             mouse.x = e.clientX - rect.left;
             mouse.y = e.clientY - rect.top;
@@ -271,7 +270,7 @@ export class Controls {
                 old.y = mouse.y;
             }
         };
-        window.addEventListener("mousemove", this.mousemove);
+        window.addEventListener("mousemove", this.mousemove, { signal: dispose.signal });
         this.mouseup = (e) => {
             e.preventDefault();
             if (e.button === 0)
@@ -279,7 +278,7 @@ export class Controls {
             else if (e.button === 2)
                 mouse.right = false;
         };
-        canvas.addEventListener("mouseup", this.mouseup);
+        canvas.addEventListener("mouseup", this.mouseup, { signal: dispose.signal });
     }
 
     public update(snapshot: ReplayApi, dt: number) {

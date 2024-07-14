@@ -3,6 +3,7 @@ import { Computed, computed, Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
+import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Item } from "../../parser/map/item.js";
 import { Dropdown } from "../components/dropdown.js";
 import { Toggle } from "../components/toggle.js";
@@ -38,12 +39,12 @@ const Item = Macro(class Item extends MacroElement {
     }
 
     public key: Signal<string>;
+    public id: Signal<number>;
     public button: HTMLSpanElement;
 
-    constructor(dom: Node[], bindings: any, children: Node[], key: string) {
+    constructor(dom: Node[], bindings: any, children: Node[], id: number) {
         super(dom, bindings);
-
-        this.key(key);
+        this.id = signal(id);
     }
 }, html`
     <div m-id="button" class="${itemStyle.item}">
@@ -59,20 +60,22 @@ export const Finder = Macro(class Finder extends MacroElement {
     private includeUnknown: Macro<typeof Toggle>;
     private body: HTMLDivElement;
 
-    private fuse = new Fuse<Item>([], { keys: ["key"] });
+    private fuse = new Fuse<{ item: Item, key: string }>([], { keys: ["key"] });
 
     private _items = new Map<number, Macro<typeof Item>>(); 
     private items = new Map<number, Macro<typeof Item>>();
 
-    private values = signal<Item[]>([]);
-    private filtered: Computed<Item[]>;
+    private values = signal<{ item: Item, key: string }[]>([]);
+    private filtered: Computed<{ item: Item, key: string }[]>;
     private filter = signal("");
+
+    public active = signal(false);
 
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 
-        this.filtered = computed<Item[]>(() => {
-            let filtered = this.values().filter(({ key, dimension }) => this.includeUnknown.value() ? true : dimension === this.dropdown.value() && key !== "Unknown");
+        this.filtered = computed<{ item: Item, key: string }[]>(() => {
+            let filtered = this.values().filter(({ item }) => this.includeUnknown.value() ? true : item.dimension === this.dropdown.value() && ItemDatablock.has(item.itemID));
             const filter = this.filter();
             if (filter !== "") {
                 this.fuse.setCollection(filtered);
@@ -82,9 +85,10 @@ export const Finder = Macro(class Finder extends MacroElement {
         }, [this.values, this.includeUnknown.value, this.filter], (a, b) => {
             if (a.length !== b.length) return false;
             for (let i = 0; i < a.length; ++i) {
-                if (a[i].id !== b[i].id) return false;
-                if (a[i].position.x !== b[i].position.x || a[i].position.y !== b[i].position.y || a[i].position.z !== b[i].position.z) return false;
-                if (a[i].dimension !== b[i].dimension) return false;
+                if (a[i].item.id !== b[i].item.id) return false;
+                if (a[i].key !== b[i].key) return false;
+                if (a[i].item.position.x !== b[i].item.position.x && a[i].item.position.y !== b[i].item.position.y && a[i].item.position.z !== b[i].item.position.z) return false;
+                if (a[i].item.dimension !== b[i].item.dimension) return false;
             }
             return true;
         });
@@ -94,20 +98,20 @@ export const Finder = Macro(class Finder extends MacroElement {
         this.dropdown.value(0);
 
         this.filtered.on((values) => {
-            for (const { id, itemID, key, position, dimension } of values) {
-                if (this.items.has(id)) {
-                    this._items.set(id, this.items.get(id)!);
-                } else {
-                    const item = Macro.create(Item(key === "Unknown" ? `${itemID.hash}` : key));
-                    item.button.addEventListener("click", () => {
+            for (const { item, key } of values) {
+                let el = this.items.get(item.id);
+                if (el === undefined) {
+                    el = Macro.create(Item(item.id));
+                    el.button.addEventListener("click", () => {
                         const view = this.view();
                         if (view === undefined) return;
 
-                        view.renderer.get("Controls")?.tp(position, dimension);
+                        view.renderer.get("Controls")?.tp(item.position, item.dimension);
                     });
-                    this._items.set(id, item);
-                    this.body.append(item.frag);
+                    this.body.append(el.frag);
                 }
+                el.key(key === "Unknown" ? `${item.itemID.hash}` : key);
+                this._items.set(item.id, el);
             }
             
             for (const [key, item] of this.items) {
@@ -151,12 +155,22 @@ export const Finder = Macro(class Finder extends MacroElement {
             });
 
             view.api.on((api) => {
+                if (!this.active()) return;
+                
                 if (api === undefined) return;
 
                 const items = api.get("Vanilla.Map.Items");
                 if (items === undefined) return;
 
-                this.values([...items.values()]);
+                const mapped = [];
+                for (const item of items.values()) {
+                    const spec = ItemDatablock.get(item.itemID);
+                    const _serial = item.serialNumber < 1000 ? `_${item.serialNumber}` : ""; 
+                    const serial = item.serialNumber < 1000 ? ` (${item.serialNumber})` : "";
+                    const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
+                    mapped.push({ item, key });
+                }
+                this.values(mapped);
             });
         });
     }

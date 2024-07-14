@@ -30,7 +30,7 @@ const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
     <div m-id="body"></div>
 `);
 
-const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof FeatureWrapper>)[] = [
+const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<boolean>) => Macro<typeof FeatureWrapper>)[] = [
     (v) => {
         const [bindings, frag] = html`
             ${FeatureWrapper.open("Timescale").bind("wrapper")}
@@ -67,7 +67,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
         window.addEventListener("mouseup", () => {
             active = false;
         }, { signal: dispose.signal });
-        slider.addEventListener("mousemove", () => {
+        const change = () => {
             if (!active) return;
             text.value = slider.value;
 
@@ -75,7 +75,9 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
             if (view === undefined) return;
 
             view.timescale(parseFloat(slider.value));
-        });
+        };
+        slider.addEventListener("mousemove", change);
+        slider.addEventListener("change", change);
 
         text.addEventListener("keyup", () => {
             slider.value = text.value;
@@ -153,7 +155,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
 
         return bindings.wrapper;
     },
-    (v) => {
+    (v, active) => {
         const [bindings, frag] = html`
             ${FeatureWrapper.open("Follow Player").bind("wrapper")}
                 <div class="${style.row}" style="
@@ -194,6 +196,8 @@ const features: ((v: Signal<Macro<typeof View> | undefined>) => Macro<typeof Fea
             });
 
             view.api.on((api) => {
+                if (!active()) return;
+
                 if (api === undefined) {
                     dropdown.options([]);
                     return;
@@ -348,12 +352,14 @@ export const Settings = Macro(class Settings extends MacroElement {
     private features: Macro<typeof FeatureWrapper>[];
     private fuse: Fuse<Macro<typeof FeatureWrapper>>;
 
+    public active = signal(false);
+
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 
         this.features = [];
         for (const feature of features) {
-            const f = feature(this.view);
+            const f = feature(this.view, this.active);
             this.features.push(f);
 
             this.body.append(f.frag);

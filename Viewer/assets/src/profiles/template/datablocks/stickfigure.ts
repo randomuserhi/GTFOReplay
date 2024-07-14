@@ -1,5 +1,8 @@
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { StickModelDatablock } from "../../vanilla/datablocks/stickfigure.js";
 import { Cylinder, Sphere } from "../../vanilla/library/models/primitives.js";
+
+ModuleLoader.registerASLModule(module.src);
 
 StickModelDatablock.clear();
 

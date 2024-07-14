@@ -72,7 +72,8 @@ const style = Style(({ style }) => {
 });
 
 interface Page extends MacroElement {
-    view: Signal<Macro<typeof View> | undefined>
+    view: Signal<Macro<typeof View> | undefined>;
+    active: Signal<boolean>;
 }
 
 const UI = Macro(class UI extends MacroElement {
@@ -117,7 +118,8 @@ const UI = Macro(class UI extends MacroElement {
 
     private window: HTMLDivElement;
     private loadedMacro?: MacroElement;
-    public load(macro?: MacroElement) {
+    public load(macro?: Page) {
+        console.log("bruh");
         const view = this.display.view();
         if (this.loadedMacro === macro) macro = undefined;
         this.loadedMacro = macro;
@@ -125,12 +127,14 @@ const UI = Macro(class UI extends MacroElement {
         for (const [button, page] of this.pages) {
             if (page !== macro) {
                 button.toggle(false);
+                page.active(false);
             }
         }
 
         if (macro !== undefined) {
             this.window.replaceChildren(...macro.dom);
             this.window.style.display = "block";
+            macro.active(true);
         } else {
             if (view) view.canvas.focus();
             this.window.replaceChildren();

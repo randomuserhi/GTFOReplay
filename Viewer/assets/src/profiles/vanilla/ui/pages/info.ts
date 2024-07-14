@@ -39,6 +39,8 @@ export const Info = Macro(class Info extends MacroElement {
 
     private compatibilityText: HTMLDivElement;
 
+    public active = signal(false);
+
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
 

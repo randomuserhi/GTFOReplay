@@ -73,10 +73,11 @@ export const View = Macro(class View extends MacroElement {
     frameRate = signal(0);
     live = signal(false);
     lerp = 20;
-
+    
     private reset() {
         this.time(0);
-        this.timescale(1);       
+        this.timescale(1);     
+        this.pause(false);  
     }
     
     private prevTime: number;

@@ -184,6 +184,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -239,6 +241,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -273,6 +277,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -318,6 +324,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -363,6 +371,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -408,6 +418,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -453,6 +465,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -498,6 +512,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -537,6 +553,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -582,6 +600,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             if (view === undefined) return;
 
             view.api.on((api) => {
+                if (!self.active()) return;
+                
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
@@ -604,6 +624,8 @@ export const Stats = Macro(class Stats extends MacroElement {
 
     private features: Macro<typeof FeatureWrapper>[];
     private fuse: Fuse<Macro<typeof FeatureWrapper>>;
+
+    public active = signal(false);
 
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
@@ -637,6 +659,8 @@ export const Stats = Macro(class Stats extends MacroElement {
             }
 
             view.api.on((api) => {
+                if (!this.active()) return;
+
                 if (api === undefined) {
                     this.dropdown.options([]);
                     return;

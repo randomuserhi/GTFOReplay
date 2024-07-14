@@ -1,3 +1,4 @@
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Vector3 } from "@esm/three";
 import { GearAnimDatablock } from "../../../vanilla/datablocks/gear/animation.js";
 import { GearDatablock, MeleeArchetype } from "../../../vanilla/datablocks/gear/models.js";
@@ -45,6 +46,8 @@ import { SlugShotgun } from "../../../vanilla/renderer/models/prebuilt/slugshotg
 import { Smg } from "../../../vanilla/renderer/models/prebuilt/smg.js";
 import { Sniper } from "../../../vanilla/renderer/models/prebuilt/sniper.js";
 import { Spear } from "../../../vanilla/renderer/models/prebuilt/spear.js";
+
+ModuleLoader.registerASLModule(module.src);
 
 const playerAnimations = PlayerAnimDatablock.obj();
 const gearFoldAnimations = GearAnimDatablock.obj();

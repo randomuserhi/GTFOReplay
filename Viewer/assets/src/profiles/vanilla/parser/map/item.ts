@@ -46,7 +46,6 @@ export interface Item extends DynamicTransform.Type {
     onGround: boolean;
     linkedToMachine: boolean;
     player: bigint | undefined;
-    key: string;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
@@ -73,11 +72,6 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             item.onGround = data.onGround;
             item.linkedToMachine = data.linkedToMachine;
             item.serialNumber = data.serialNumber;
-            
-            const spec = ItemDatablock.get(item.itemID);
-            const _serial = data.serialNumber < 1000 ? `_${data.serialNumber}` : ""; 
-            const serial = data.serialNumber < 1000 ? ` (${data.serialNumber})` : "";
-            item.key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
             
             // If the item is on the ground, a player doesn't have it.
             if (item.onGround === true) {
@@ -129,7 +123,6 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 serialNumber: data.serialNumber, // 65535 (ushort.MaxValue) indicates item has no serial number
                 itemID: data.itemID,
                 player: undefined,
-                key
             });
         }
     },

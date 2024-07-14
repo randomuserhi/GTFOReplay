@@ -356,6 +356,9 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
             this.anchor.rotateX(this.settings.rotOffset.x);
             this.anchor.rotateZ(this.settings.rotOffset.z);
         }
+        if (this.settings.posOffset !== undefined) {
+            this.anchor.position.copy(this.settings.posOffset);
+        }
 
         const blendFactor = Math.clamp01(dt * 50);
         for (const key of HumanJoints) {

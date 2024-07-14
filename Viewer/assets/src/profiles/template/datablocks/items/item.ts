@@ -1,3 +1,4 @@
+import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import type { ColorRepresentation } from "@esm/three";
 import { ItemDatablock } from "../../../vanilla/datablocks/items/item.js";
 import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
@@ -6,11 +7,13 @@ import { ItemGLTFModel } from "../../../vanilla/renderer/models/prebuilt/itemGLT
 import { Keycard } from "../../../vanilla/renderer/models/prebuilt/keycard.js";
 import { Pack } from "../../../vanilla/renderer/models/prebuilt/pack.js";
 
+ModuleLoader.registerASLModule(module.src);
+
 ItemDatablock.clear();
 
 ItemDatablock.set(Identifier.create("Item", 102), {
     type: "consumable",
-    serial: "MEDIPACK",
+    serial: "MEDIPACKsss",
     model: () => new Pack(0xff0000),
 });
 
