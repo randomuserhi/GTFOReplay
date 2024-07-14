@@ -21,7 +21,7 @@ export class ModuleLoader {
         }
 
         this.path = path;
-        this.watcher = chokidar.watch(this.path);
+        this.watcher = chokidar.watch(`${this.path}/**/*.js`);
         this.watcher.on("all", (event, path) => {
             switch(event) {
             case "change":

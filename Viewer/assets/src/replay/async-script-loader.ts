@@ -6,7 +6,6 @@ import { Rest } from "@/rhu/rest.js";
 //                     - ExecutionContext refers to when the entire module has executed (all code has run)
 //                     - Module isReady refers to when its exports are safe to use (no more to be added or changed)
 //                     - isParser => parser context etc...
-//                     - better error handling by storing source code and regex string matching <anonymous>:line_number:column_number and then console logging that code snippet
 
 export interface ASLModule {
     readonly src: string;
