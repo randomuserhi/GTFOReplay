@@ -133,6 +133,7 @@ class Archetype {
 export namespace AsyncScriptCache {
     const _cache = new Map<string, _ASLModule>();
 
+    // NOTE(randomuserhi): Used to get more informative errors -> including code snippet (since dev tools can't handle the hot reload stuff very well)
     const sourceRegex = /\(((?:https?|file):\/\/.*\.js):([0-9]+):([0-9]+)\)/g;
     export function formatError(e: Error, offset: number = 0) {
         let stack = e.stack;

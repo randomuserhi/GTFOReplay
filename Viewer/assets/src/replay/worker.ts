@@ -1,4 +1,4 @@
-import { AsyncScriptLoader } from "./async-script-loader.js";
+import { AsyncScriptCache, AsyncScriptLoader } from "./async-script-loader.js";
 import * as BitHelper from "./bithelper.js";
 import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
@@ -186,7 +186,7 @@ let replay: Replay | undefined = undefined;
             }
         } catch (err) {
             if (!(err instanceof RangeError)) {
-                throw err;
+                throw new Error(`Failed to parse replay:\n\n${AsyncScriptCache.formatError(err)}`);
             }
         }
 
