@@ -32,6 +32,7 @@ const moduleListStyles = Style(({ style }) => {
     color: white;
     padding: 5px 0px;
     max-height: 300px;
+    overflow: auto;
     `;
 
     const item = style.class`
