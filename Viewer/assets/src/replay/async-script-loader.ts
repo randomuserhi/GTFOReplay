@@ -187,7 +187,7 @@ export namespace AsyncScriptCache {
                 const __module__ = new Proxy(module, {
                     set: (module, prop, newValue, receiver) => {
                         if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
-                        if (module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
+                        if (prop !== "destructor" && module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
                         return Reflect.set(module, prop, newValue, receiver);
                     },
                     get: (module, prop, receiver) => {

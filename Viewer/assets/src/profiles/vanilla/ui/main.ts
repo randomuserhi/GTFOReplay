@@ -1,3 +1,15 @@
+import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
+import { Style } from "@esm/@/rhu/style.js";
+import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
+import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
+import { Render } from "@esm/@root/main/routes/player/index.js";
+import { Bar, Button } from "./components/bar.js";
+import { Display } from "./display.js";
+import { Finder } from "./pages/finder.js";
+import { Info } from "./pages/info.js";
+import { Settings } from "./pages/settings.js";
+import { Stats } from "./pages/stats.js";
 
 let disposeController = new AbortController();
 export const dispose = {
@@ -24,22 +36,6 @@ module.destructor = () => {
     const r = view.renderer;
     r.get("Controls")?.saveState();
 };
-
-module.ready();
-
-/* eslint-disable-next-line sort-imports */
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
-import { Signal, signal } from "@esm/@/rhu/signal.js";
-import { Style } from "@esm/@/rhu/style.js";
-import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
-import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
-import { Render } from "@esm/@root/main/routes/player/index.js";
-import { Bar, Button } from "./components/bar.js";
-import { Display } from "./display.js";
-import { Finder } from "./pages/finder.js";
-import { Info } from "./pages/info.js";
-import { Settings } from "./pages/settings.js";
-import { Stats } from "./pages/stats.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -171,3 +167,4 @@ Render((doc, view) => {
     main.view(view);
     doc.append(...main.dom);
 });
+
