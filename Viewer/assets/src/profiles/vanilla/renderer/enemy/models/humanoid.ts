@@ -29,6 +29,11 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
     }
 
     protected animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+        this._animate(dt, time, enemy, anim);
+        this.updateSkeleton(dt, enemy.position, enemy.rotation);
+    }
+
+    private _animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
         const { animHandle } = this.wrapper;
 
         this.color.set(0xff0000);
@@ -204,7 +209,5 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
             }
             this.skeleton.blend(hitreactAnim.sample(Math.clamp(hitreactTime, 0, hitreactAnim.duration)), blend);
         }
-
-        this.updateSkeleton(dt, enemy.position, enemy.rotation);
     }
 }
