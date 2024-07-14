@@ -244,17 +244,21 @@ export namespace AsyncScriptCache {
                     }
                 });
                 const _require = async (_path: string, type: ASLRequireType = "asl") => {
-                    switch (type) {
-                    case "asl": {
-                        const m = await fetchModule(_path, module.src, module);
-                        if (m === module) throw new Error("Cannot 'require()' self.");
-                        Archetype.traverse(module!, m.src);
-                        return m.exports;
-                    }
-                    case "esm": {
-                        return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
-                    }
-                    default: throw new Error(`Invalid ASLRequireType '${type}'`);
+                    try {
+                        switch (type) {
+                        case "asl": {
+                            const m = await fetchModule(_path, module.src, module);
+                            if (m === module) throw new Error("Cannot 'require()' self.");
+                            Archetype.traverse(module!, m.src);
+                            return m.exports;
+                        }
+                        case "esm": {
+                            return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
+                        }
+                        default: throw new Error(`Invalid ASLRequireType '${type}'`);
+                        }
+                    } catch (e) {
+                        throw new Error(`Failed to fetch '${_path}'.`);
                     }
                 };
 
