@@ -1,7 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
+import { backwardsCompatEnemyHp } from "../../datablocks/enemy/backwards-compat.js";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
 import { DeathCross } from "../deathcross.js";
@@ -98,10 +98,10 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         
             if (enemies.has(id)) throw new Error(`Enemy of id '${id}' already exists.`);
-            const datablock = EnemyDatablock.get(data.type);
+            const backwardsCompatHp = backwardsCompatEnemyHp.get(data.type.id);
             let health = data.maxHealth;
-            if (health === Infinity && datablock?.maxHealth !== undefined) {
-                health = datablock.maxHealth;
+            if (health === Infinity && backwardsCompatHp !== undefined) {
+                health = backwardsCompatHp;
             }
             enemies.set(id, { 
                 id, ...data,

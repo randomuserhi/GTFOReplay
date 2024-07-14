@@ -8,6 +8,8 @@ import { Pack } from "../../renderer/models/prebuilt/pack.js";
 import { Datablock } from "../lib.js";
 import { PlayerAnimDatablock } from "../player/animation.js";
 
+if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+
 export type Archetype = 
     "melee" |
     "pistol" |

@@ -2,6 +2,8 @@ import { BufferGeometry } from "@esm/three";
 import { Cylinder, Sphere } from "../library/models/primitives.js";
 import { Datablock } from "./lib.js";
 
+if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+
 export interface StickModelDatablock {
     path?: string;
     geometry?: BufferGeometry;

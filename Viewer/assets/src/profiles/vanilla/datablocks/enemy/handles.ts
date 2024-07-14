@@ -4,6 +4,8 @@ import { HumanAnim, HumanAnimation, HumanJoints } from "../../renderer/animation
 import { Datablock } from "../lib.js";
 import { EnemyAnimDatablock } from "./animation.js";
 
+if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+
 export interface EnemyAnimHandle {
     movement: HumanAnimation;
     abilityFire: HumanAnimation[];

@@ -35,12 +35,6 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
     }
     
     const promise = new Promise<Anim<T>>((resolve, reject) => {
-        // NOTE(randomuserhi): if this is the parser, return a dummy
-        if (module.isParser) {
-            resolve(new Anim<T>(joints, 0.05, 0, []));
-            return;
-        }
-
         fetchAnimJson(path).then((json) => {
             resolve(new Anim<T>(joints, json.rate, json.duration, json.frames));
         }).catch((error) => {

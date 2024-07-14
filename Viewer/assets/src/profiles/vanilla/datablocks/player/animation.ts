@@ -3,6 +3,8 @@ import { loadAllClips } from "../../library/animations/loaders.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
 import { Datablock } from "../lib.js";
 
+if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+
 export const PlayerAnimDatablock: Datablock<PlayerAnimationClips | PlayerAnimations, AnimFunc<HumanJoints>> = new Datablock();
 
 export const animVelocity = {

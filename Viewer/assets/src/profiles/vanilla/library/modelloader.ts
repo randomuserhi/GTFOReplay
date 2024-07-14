@@ -25,12 +25,6 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
     }
 
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
-        // NOTE(randomuserhi): if this is running in parser, return a dummy
-        if (module.isParser) {
-            resolve(empty);
-            return;
-        }
-
         loader.load(path, function (gltf) {
             try {
                 const geometries: BufferGeometry[] = [];

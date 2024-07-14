@@ -1,3 +1,5 @@
+if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+
 export class Datablock<K, V, H extends string | number = K extends (string | number) ? K : string | number> {
     private map = new Map<K, V>();
     private keyHashMap?: Map<H, K>;
