@@ -23,7 +23,7 @@ const fetchAnimJson = Rest.fetch<AnimJson, [path: string]>({
 export function deleteAnimCache(path: string) {
     loadedAnims.delete(path);
     if (loadingAnims.has(path)) {
-        loadingAnims.get(path)!.terminate("Model cache invalidated.");
+        loadingAnims.get(path)!.terminate("Anim cache invalidated.");
         loadingAnims.delete(path);
     }
 }
