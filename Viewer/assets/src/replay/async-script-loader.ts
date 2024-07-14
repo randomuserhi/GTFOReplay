@@ -378,6 +378,7 @@ const fetchScript = Rest.fetch<string, [url: URL]>({
         method: "GET"
     }),
     callback: async (resp) => {
+        // TODO(randomuserhi): comment header for ASYNC-MODULE-LOADER EVAL CONTEXT or something
         return `const __code__ = async function(require, module, exports) {\n\n${await resp.text()}\n\n}; return __code__.bind(undefined); //# sourceURL=${resp.url}`;
     }
 });
