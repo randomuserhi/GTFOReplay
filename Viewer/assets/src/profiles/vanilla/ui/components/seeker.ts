@@ -1,7 +1,6 @@
 import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
-import { dispose } from "../main.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -138,3 +137,9 @@ export const Seeker = Macro(class Seeker extends MacroElement {
         </div>
     </div>
     `);
+
+module.ready();
+
+/* eslint-disable-next-line sort-imports */
+import { dispose } from "../main.js";
+
