@@ -270,7 +270,7 @@ export namespace AsyncScriptCache {
                     //                     execution
                     if (module.manual === false) resolve();
                 }).catch((e) => {
-                    reject(e);
+                    reject(new Error(`Failed to execute '${module.src}':\n\n${AsyncScriptCache.formatError(e)}`));
                 });
             });
             executionContexts.set(module.src, module);
