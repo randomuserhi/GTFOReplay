@@ -1,7 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
 import { Identifier, IdentifierData } from "../identifier.js";
@@ -107,11 +106,6 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
             //                     Parse it anyway cause backend saves it regardless.
 
             if (items.has(id)) throw new DuplicateItem(`Item of id '${id}' already exists.`);
-
-            const spec = ItemDatablock.get(data.itemID);
-            const _serial = data.serialNumber < 1000 ? `_${data.serialNumber}` : ""; 
-            const serial = data.serialNumber < 1000 ? ` (${data.serialNumber})` : "";
-            const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
 
             items.set(id, { 
                 id,

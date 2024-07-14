@@ -330,7 +330,7 @@ EnemyDatablock.set(Identifier.create("Enemy", 33), {
 
 EnemyDatablock.set(Identifier.create("Enemy", 30), {
     name: "Charger",
-    maxHealth: 150,
+    maxHealth: 30,
     model: (wrapper: EnemyModelWrapper, enemy: Enemy) => {
         const model = new HumanoidEnemyModel(wrapper);
         model.applySettings({
@@ -410,7 +410,7 @@ EnemyDatablock.set(Identifier.create("Enemy", 36), {
                 z: 0
             },
         });
-        wrapper.tmpHeight = 1;
+        wrapper.tmpHeight = 1 * enemy.scale;
         return model;
     }
 });
@@ -428,7 +428,7 @@ EnemyDatablock.set(Identifier.create("Enemy", 37), {
                 z: 0
             },
         });
-        wrapper.tmpHeight = 1;
+        wrapper.tmpHeight = 1 * enemy.scale;
         return model;
     }
 });
@@ -446,7 +446,7 @@ EnemyDatablock.set(Identifier.create("Enemy", 55), {
                 z: 0
             },
         });
-        wrapper.tmpHeight = 1;
+        wrapper.tmpHeight = 1 * enemy.scale;
         return model;
     }
 });
@@ -605,7 +605,7 @@ EnemyDatablock.set(Identifier.create("Enemy", 54), {
                 z: 1.1,
             },
         });
-        wrapper.tmpHeight = 1;
+        wrapper.tmpHeight = 1 * enemy.scale;
         return model;
     }
 });

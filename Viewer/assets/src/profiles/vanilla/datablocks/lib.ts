@@ -25,6 +25,7 @@ export class Datablock<K, V, H extends string | number = K extends (string | num
         const original = key;
         if (this.hash !== undefined) key = this.hash(key) as any;
         if (key === undefined) throw new Error("Cannot set key to 'undefined'.");
+        if (this.map.has(key)) console.warn(`Datablock already has key ${key}. If you meant to overwrite the original then ignore this warning.`);
         this.keyHashMap?.set(key as any, original);
         return this.map.set(key, value);
     }

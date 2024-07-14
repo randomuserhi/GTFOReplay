@@ -1,5 +1,4 @@
 
-import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { EnemyDatablock } from "../../../vanilla/datablocks/enemy/enemy.js";
 import type { Enemy } from "../../../vanilla/parser/enemy/enemy.js";
 import { Identifier } from "../../../vanilla/parser/identifier.js";
@@ -8,8 +7,6 @@ import { BigFlyerModel } from "../../../vanilla/renderer/enemy/models/bigflyer.j
 import { FlyerModel } from "../../../vanilla/renderer/enemy/models/flyer.js";
 import { HumanoidEnemyModel } from "../../../vanilla/renderer/enemy/models/humanoid.js";
 import { SquidModel } from "../../../vanilla/renderer/enemy/models/squid.js";
-
-ModuleLoader.registerASLModule(module.src);
 
 EnemyDatablock.clear();
 

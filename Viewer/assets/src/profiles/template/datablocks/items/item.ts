@@ -1,4 +1,3 @@
-import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import type { ColorRepresentation } from "@esm/three";
 import { ItemDatablock } from "../../../vanilla/datablocks/items/item.js";
 import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
@@ -6,8 +5,6 @@ import { Identifier } from "../../../vanilla/parser/identifier.js";
 import { ItemGLTFModel } from "../../../vanilla/renderer/models/prebuilt/itemGLTF.js";
 import { Keycard } from "../../../vanilla/renderer/models/prebuilt/keycard.js";
 import { Pack } from "../../../vanilla/renderer/models/prebuilt/pack.js";
-
-ModuleLoader.registerASLModule(module.src);
 
 ItemDatablock.clear();
 

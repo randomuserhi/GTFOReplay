@@ -39,7 +39,7 @@ export class EnemyModelWrapper {
         this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
-        this.tmpHeight = (this.datablock?.tmpHeight === undefined ? 2.2 : this.datablock.tmpHeight) * enemy.scale;
+        if (this.tmpHeight === undefined) this.tmpHeight = (this.datablock?.tmpHeight === undefined ? 2.2 : this.datablock.tmpHeight) * enemy.scale;
         this.tmp.position.y = this.tmpHeight;
         this.model.root.add(this.tmp);
 
@@ -70,6 +70,8 @@ export class EnemyModelWrapper {
     } as const;
     public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, players: (Player | undefined)[]) {
         if (this.tmp === undefined || this.tag === undefined) return;
+
+        this.tmp.position.y = this.tmpHeight;
         
         if (!this.model.isVisible()) {
             this.tmp.visible = false;
