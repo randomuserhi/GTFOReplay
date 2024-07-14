@@ -6,7 +6,6 @@ import { Rest } from "@/rhu/rest.js";
 //                     - ExecutionContext refers to when the entire module has executed (all code has run)
 //                     - Module isReady refers to when its exports are safe to use (no more to be added or changed)
 //                     - isParser => parser context etc...
-//                     - destructor being able to be set at any time
 
 function isASLModuleError(e: Error): e is _ASLModuleError {
     return Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e);
@@ -188,7 +187,7 @@ export namespace AsyncScriptCache {
                 const __module__ = new Proxy(module, {
                     set: (module, prop, newValue, receiver) => {
                         if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
-                        if (prop !== "destructor" && module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
+                        if (module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
                         return Reflect.set(module, prop, newValue, receiver);
                     },
                     get: (module, prop, receiver) => {
