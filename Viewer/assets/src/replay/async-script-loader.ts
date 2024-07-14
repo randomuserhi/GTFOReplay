@@ -26,17 +26,17 @@ class _ASLModuleError extends Error {
             const lines = module.code.split("\n");
             const grab = 2;
             const error = lines[line];
-            const top = lines.slice(Math.max(line - grab, 0), line);
-            const bottom = lines.slice(Math.min(line + 1, lines.length - 1), Math.min(line + 1 + grab, lines.length));
+            const top = lines.slice(Math.max(line - grab, 1), line);
+            const bottom = lines.slice(Math.min(line + 1, lines.length - 2), Math.min(line + 1 + grab, lines.length - 1));
             let point = "";
             for (let i = 0; i < Math.min(col - 1, error.length); ++i) {
                 if (error[i] !== "\t") point += " ";
                 else point += "\t";
             }
-            point += "^";
-            codeSnippet = `..\n${top.join("\n")}\n\n${error}\n${point}\n\n${bottom.join("\n")}\n...\n`;
+            point += `^:${line}:${col}`;
+            codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}${err !== undefined ? `\n\t| ${err.split("\n").join("\n\t| ")}` : ""}\n\n${bottom.join("\n")}\n\n...\n`;
         }
-        super(`${message}\n\t${codeSnippet === undefined ? "" : `\n\t${codeSnippet.split("\n").join("\n\t")}`}\n\t${err !== undefined ? err.split("\n").join("\n\t") : ""}`);
+        super(`${message}\n\t${codeSnippet === undefined ? `${err !== undefined ? err.split("\n").join("\n\t") : ""}` : `\n\t${codeSnippet.split("\n").join("\n\t")}`}\n\t`);
     }
 }
 
