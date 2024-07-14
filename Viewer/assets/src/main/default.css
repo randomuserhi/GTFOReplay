@@ -4,19 +4,19 @@
 
 ::-webkit-scrollbar 
 {
-    width: 14px;
+    width: 7px;
 }
 ::-webkit-scrollbar-track 
 {
     background-clip: padding-box;
-    border: 4px solid transparent;
+    border: 2px solid transparent;
     border-radius: 8px;
     background-color: transparent;
 }
 ::-webkit-scrollbar-thumb 
 {
     background-clip: padding-box;
-    border: 4px solid transparent;
+    border: 2px solid transparent;
     border-radius: 8px;
     background-color: #888;
 }

@@ -7,7 +7,6 @@ const moduleListStyles = Style(({ style }) => {
     const wrapper = style.class`
     position: absolute;
     top: calc(100% + 5px);
-    padding: 5px;
     background-color: #2a2a43;
     border-radius: 7px;
     border-style: solid;
@@ -15,6 +14,16 @@ const moduleListStyles = Style(({ style }) => {
     border-color: #2f2e44;
     font-size: 0.75rem;
     min-width: 100px;
+    max-height: 300px;
+    overflow: auto;
+    `;
+
+    const sticky = style.class`
+    position: sticky;
+    top: 0;
+    display: flex;
+    background-color: #2a2a43;
+    padding: 5px;
     `;
 
     const filter = style.class`
@@ -30,9 +39,7 @@ const moduleListStyles = Style(({ style }) => {
     flex-direction: column;
     gap: 2px;
     color: white;
-    padding: 5px 0px;
-    max-height: 300px;
-    overflow: auto;
+    padding: 5px;
     `;
 
     const item = style.class`
@@ -50,7 +57,8 @@ const moduleListStyles = Style(({ style }) => {
         wrapper,
         filter,
         mount,
-        item
+        item,
+        sticky
     };
 });
 
@@ -60,7 +68,9 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
     }
 }, html`
     <div class="${moduleListStyles.wrapper}">
-        <input m-id="filter" class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
+        <div class="${moduleListStyles.sticky}">
+            <input m-id="filter" class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
+        </div>
         <ul class="${moduleListStyles.mount}">
             <li class="${moduleListStyles.item}">vanilla</li>
             <li class="${moduleListStyles.item}">duo trials</li>
