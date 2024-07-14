@@ -3,6 +3,86 @@ import { Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import * as icons from "../atoms/icons/index.js";
 
+const moduleListStyles = Style(({ style }) => {
+    const wrapper = style.class`
+    position: absolute;
+    top: calc(100% + 5px);
+    padding: 5px;
+    background-color: #2a2a43;
+    border-radius: 7px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #2f2e44;
+    font-size: 0.75rem;
+    min-width: 100px;
+    `;
+
+    const filter = style.class`
+    background-color: #12121a;
+    padding: 3px 5px;
+    border-radius: 4px;
+    color: white;
+    width: 100%;
+    `;
+
+    const mount = style.class`
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: white;
+    padding: 5px 0px;
+    max-height: 300px;
+    `;
+
+    const item = style.class`
+    padding: 3px 5px;
+    cursor: pointer;
+    `;
+    style`
+    ${item}:hover {
+        background-color: black;
+        border-radius: 4px;
+    }
+    `;
+
+    return {
+        wrapper,
+        filter,
+        mount,
+        item
+    };
+});
+
+const ModuleList = Macro(class ModuleList extends MacroElement {
+    constructor (dom: Node[], bindings: any, children: Node[]) {
+        super(dom, bindings);
+    }
+}, html`
+    <div class="${moduleListStyles.wrapper}">
+        <input m-id="filter" class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
+        <ul class="${moduleListStyles.mount}">
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+            <li class="${moduleListStyles.item}">vanilla</li>
+            <li class="${moduleListStyles.item}">duo trials</li>
+        </ul>
+    </div>
+    `);
+
 const style = Style(({ style }) => {
     const height = "40px";
 
@@ -80,11 +160,11 @@ const style = Style(({ style }) => {
         border-color: #2f2e44;
         font-size: 0.75rem;
     `;
-    style`
+    /*style`
     ${button}:hover ${popup} {
         display: block;
     }
-    `;
+    `;*/
 
     return {
         wrapper,
@@ -132,12 +212,15 @@ export const WinNav = Macro(class WinNav extends MacroElement {
         </div>
         <div m-id="mount" class="${style.text}">
         </div>
-        <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
-            ${icons.plugin()}
-            <div class="${style.popup}">
-                <span>${Macro.signal("moduleName", "./resources/app/assets/profiles/vanilla")}</span>
+        <span style="position: relative;">
+            <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
+                ${icons.plugin()}
+                <div class="${style.popup}">
+                    <span>${Macro.signal("moduleName", "vanilla")}</span>
+                </div>
             </div>
-        </div>
+            ${ModuleList()}
+        </span>
         <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
             ${icons.rug()}
         </div>
