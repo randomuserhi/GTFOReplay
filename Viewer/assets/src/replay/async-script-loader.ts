@@ -54,7 +54,7 @@ class _ASLModule implements ASLModule, Exports {
             try {
                 this.destructor();
             } catch (e) {
-                console.warn(`Failed to destruct '${this.src}': ${e.stack}`);
+                console.warn(`Failed to destruct '${this.src}':\n\n${AsyncScriptCache.formatError(e)}`);
             }
         }
         this.destructed = true;
@@ -62,9 +62,10 @@ class _ASLModule implements ASLModule, Exports {
         if (this.terminate !== undefined) this.terminate();
     }
 
-    constructor(url: string, exec?: ASLExec) {
+    constructor(url: string, exec?: ASLExec, code?: string) {
         this.src = url;
         this.exec = exec;
+        this.code = code;
     }
     
     public ready() {
@@ -131,6 +132,50 @@ class Archetype {
 
 export namespace AsyncScriptCache {
     const _cache = new Map<string, _ASLModule>();
+
+    const sourceRegex = /\(((?:https?|file):\/\/.*\.js):([0-9]+):([0-9]+)\)/g;
+    export function formatError(e: Error, offset: number = 0) {
+        let stack = e.stack;
+        if (stack === undefined) return e.toString();
+
+        let topLevel: { module: _ASLModule, line: number, col: number, isTop: boolean } | undefined = undefined;
+        let isTop = true;
+        for (const match of stack.matchAll(sourceRegex)) {
+            const src = match[1];
+            const line = parseInt(match[2]) + offset;
+            const col = match[3];
+            
+            let module = _cache.get(src);
+            if (module === undefined) module = executionContexts.get(src);
+            if (module !== undefined) {
+                if (topLevel === undefined) topLevel = { module, line: line - offset - 3, col: parseInt(col), isTop };
+                stack = stack.replace(match[0], `(${src}:${line}:${col})`);
+            }
+
+            isTop = false;
+        }
+
+        let codeSnippet: string | undefined = undefined; 
+        if (topLevel?.module.code !== undefined) {
+            const { module, line, col, isTop } = topLevel;
+
+            const lines = module.code!.split("\n");
+            const grab = 4;
+            const error = lines[line];
+            const top = lines.slice(Math.max(line - grab, 1), line);
+            const bottom = lines.slice(Math.min(line + 1, lines.length - 2), Math.min(line + 1 + grab, lines.length - 1));
+            let point = "";
+            for (let i = 0; i < Math.min(col - 1, error.length); ++i) {
+                if (error[i] !== "\t") point += " ";
+                else point += "\t";
+            }
+            point += `^:${line+offset+3}:${col}`;
+            const message = isTop ? stack : `Main callsite of nested error:\n\tat (${module.src}:${line+offset+3}:${col})\n\n${stack}`;
+            codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}${stack !== undefined ? `\n\t| ${message.split("\n").join("\n\t| ")}` : ""}\n\n${bottom.join("\n")}\n\n...\n`;
+        }
+
+        return codeSnippet === undefined ? stack : codeSnippet;
+    }
 
     export let archetype: Archetype = new Archetype();
 
@@ -281,7 +326,7 @@ export namespace AsyncScriptCache {
             for (const archetype of archetypesContainingModule) {
                 for (const module of archetype.modules.values()) {
                     if (invalidate(module.src, _reimport)[0] && !_reimport.has(module.src)) {
-                        _reimport.set(module.src, new _ASLModule(module.src, module.exec));
+                        _reimport.set(module.src, new _ASLModule(module.src, module.exec, module.code));
                     }
                 }
             }
@@ -378,8 +423,7 @@ const fetchScript = Rest.fetch<string, [url: URL]>({
         method: "GET"
     }),
     callback: async (resp) => {
-        // TODO(randomuserhi): comment header for ASYNC-MODULE-LOADER EVAL CONTEXT or something
-        return `const __code__ = async function(require, module, exports) {${await resp.text()}}; return __code__.bind(undefined); //# sourceURL=${resp.url}`;
+        return `const __code__ = async function(require, module, exports) {\n\n// ASYNC MODULE EVAL CONTEXT //\n\n${await resp.text()}\n\n}; return __code__.bind(undefined); //# sourceURL=${resp.url}`;
     }
 });
 

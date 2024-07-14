@@ -2,6 +2,7 @@ import { CreateEvent } from "@/rhu";
 import { signal, Signal } from "@/rhu/signal.js";
 import { Scene, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { AsyncScriptCache } from "./async-script-loader.js";
 import { DynamicInstanceManager } from "./instancing.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
 import { Replay } from "./replay.js";
@@ -194,7 +195,7 @@ export class Renderer {
             try {
                 func.pass(this, header);
             } catch (e) {
-                console.error(`An error occured executing render init pass '${func.name}':\n\n${e.stack}`);
+                console.error(`An error occured executing render init pass '${func.name}':\n\n${AsyncScriptCache.formatError(e, -6)}`);
             }
         }
     }
@@ -208,7 +209,7 @@ export class Renderer {
             try {
                 func.pass(this, snapshot, dt);
             } catch (e) {
-                console.error(`An error occured executing render pass '${func.name}':\n\n${e.stack}`);
+                console.error(`An error occured executing render pass '${func.name}':\n\n${AsyncScriptCache.formatError(e, -6)}`);
             }
         }
         for (const manager of DynamicInstanceManager.all) {
