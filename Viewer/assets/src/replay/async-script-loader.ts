@@ -8,38 +8,6 @@ import { Rest } from "@/rhu/rest.js";
 //                     - isParser => parser context etc...
 //                     - better error handling by storing source code and regex string matching <anonymous>:line_number:column_number and then console logging that code snippet
 
-function isASLModuleError(e: Error): e is _ASLModuleError {
-    return Object.prototype.isPrototypeOf.call(_ASLModuleError.prototype, e);
-}
-const lineMatch = /<anonymous>:([0-9]+):([0-9]+)/;
-class _ASLModuleError extends Error {
-    constructor(message: string, module: _ASLModule, e?: Error) {
-        let err = e?.stack;
-        if (err === undefined) err = e?.toString();
-        const match = err?.match(lineMatch);
-        let codeSnippet: string | undefined = undefined; 
-        if (match !== null && match !== undefined && module.code !== undefined) {
-            const [_, sline, scol] = match;
-            const line = parseInt(sline) - 3;
-            const col = parseInt(scol);
-
-            const lines = module.code.split("\n");
-            const grab = 2;
-            const error = lines[line];
-            const top = lines.slice(Math.max(line - grab, 1), line);
-            const bottom = lines.slice(Math.min(line + 1, lines.length - 2), Math.min(line + 1 + grab, lines.length - 1));
-            let point = "";
-            for (let i = 0; i < Math.min(col - 1, error.length); ++i) {
-                if (error[i] !== "\t") point += " ";
-                else point += "\t";
-            }
-            point += `^:${line}:${col}`;
-            codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}${err !== undefined ? `\n\t| ${err.split("\n").join("\n\t| ")}` : ""}\n\n${bottom.join("\n")}\n\n...\n`;
-        }
-        super(`${message}\n\t${codeSnippet === undefined ? `${err !== undefined ? err.split("\n").join("\n\t") : ""}` : `\n\t${codeSnippet.split("\n").join("\n\t")}`}\n\t`);
-    }
-}
-
 export interface ASLModule {
     readonly src: string;
     readonly isReady: boolean;
@@ -68,7 +36,7 @@ class _ASLModule implements ASLModule, Exports {
     private _exports: Record<PropertyKey, any> = {};
     private proxy: Record<PropertyKey, any> = new Proxy(this, {
         set(module, prop, newValue, receiver) {
-            if (module.isReady) module.raise(new Error(`You cannot add exports once a module has loaded.`));
+            if (module.isReady) throw new Error(`You cannot add exports once a module has loaded.`);
             return Reflect.set(module._exports, prop, newValue, receiver);
         }
     });
@@ -101,11 +69,6 @@ class _ASLModule implements ASLModule, Exports {
     
     public ready() {
         AsyncScriptCache.finalize(this);
-    }
-
-    public raise(e: Error) {
-        if (isASLModuleError(e)) throw e;
-        else throw new _ASLModuleError(`[${this.src}]:`, this, e);
     }
 
     _archetype: Archetype = AsyncScriptCache.archetype;
@@ -221,12 +184,12 @@ export namespace AsyncScriptCache {
                 module.exports = {};
                 const __module__ = new Proxy(module, {
                     set: (module, prop, newValue, receiver) => {
-                        if (setProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation set '${prop.toString()}'.`));
-                        if (module.isReady) module.raise(new Error(`You cannot change '${prop.toString()}' once a module has loaded.`));
+                        if (setProps.indexOf(prop) === -1) throw new Error(`Invalid operation set '${prop.toString()}'.`);
+                        if (module.isReady) throw new Error(`You cannot change '${prop.toString()}' once a module has loaded.`);
                         return Reflect.set(module, prop, newValue, receiver);
                     },
                     get: (module, prop, receiver) => {
-                        if (getProps.indexOf(prop) === -1) module.raise(new Error(`Invalid operation get '${prop.toString()}'.`));
+                        if (getProps.indexOf(prop) === -1) throw new Error(`Invalid operation get '${prop.toString()}'.`);
                         if (prop === "exports") return module.exports;
                         const value = Reflect.get(module, prop, receiver);
                         if (typeof value === "function") {
@@ -236,21 +199,17 @@ export namespace AsyncScriptCache {
                     }
                 });
                 const _require = async (_path: string, type: ASLRequireType = "asl") => {
-                    try {
-                        switch (type) {
-                        case "asl": {
-                            const m = await fetchModule(_path, module.src, module);
-                            if (m === module) throw new Error("Cannot 'require()' self.");
-                            Archetype.traverse(module!, m.src);
-                            return m.exports;
-                        }
-                        case "esm": {
-                            return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
-                        }
-                        default: throw new Error(`Invalid ASLRequireType '${type}'`);
-                        }
-                    } catch (e) {
-                        throw new _ASLModuleError(`[${module.src}] Failed to require('${_path}', ${type}):`, module, e);
+                    switch (type) {
+                    case "asl": {
+                        const m = await fetchModule(_path, module.src, module);
+                        if (m === module) throw new Error("Cannot 'require()' self.");
+                        Archetype.traverse(module!, m.src);
+                        return m.exports;
+                    }
+                    case "esm": {
+                        return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
+                    }
+                    default: throw new Error(`Invalid ASLRequireType '${type}'`);
                     }
                 };
 
@@ -265,7 +224,7 @@ export namespace AsyncScriptCache {
                     //                     execution
                     if (module.manual === false) resolve();
                 }).catch((e) => {
-                    reject(new _ASLModuleError(`Failed to execute module [${module.src}]:`, module, e));
+                    reject(e);
                 });
             });
             executionContexts.set(module.src, module);
@@ -413,26 +372,13 @@ export namespace AsyncScriptCache {
     console.log(`Loaded modules:\n\t${AsyncScriptCache.getLoaded().map(m => m.src).join("\n\t")}`);
 };
 
-// NOTE(randomuserhi): Trim the automatically placed 'export {};' from typescript at the end.
-//                     This is done as a hack for my module-esc use of types :P
-function typescriptModuleSupport(code: string) {
-    const match = "export {};";
-    const lastIndex = code.lastIndexOf(match);
-    
-    if (lastIndex === -1) {
-        return code;
-    }
-
-    return code.substring(0, lastIndex) + code.substring(lastIndex + match.length);
-}
-
 const fetchScript = Rest.fetch<string, [url: URL]>({
     url: (url) => url,
     fetch: async () => ({
         method: "GET"
     }),
     callback: async (resp) => {
-        return `const __code__ = async function(require, module, exports) {\n${typescriptModuleSupport(await resp.text())}\n}; return __code__.bind(undefined);`;
+        return `const __code__ = async function(require, module, exports) {\n\n${await resp.text()}\n\n}; return __code__.bind(undefined); //# sourceURL=${resp.url}`;
     }
 });
 
@@ -453,8 +399,7 @@ function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise
             module.exec = (new Function(exec))();
             return AsyncScriptCache.exec(module);
         }).then(() => resolve(module)).catch((e) => {
-            if (isASLModuleError(e)) reject(e);
-            else throw new _ASLModuleError(`Error whilst fetching [${url}] in [${root === undefined ? "@root" : root.src}]:`, module, e);
+            reject(e);
         });
     });
 }
