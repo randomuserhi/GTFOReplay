@@ -1,15 +1,3 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
-import { Signal, signal } from "@esm/@/rhu/signal.js";
-import { Style } from "@esm/@/rhu/style.js";
-import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
-import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
-import { Render } from "@esm/@root/main/routes/player/index.js";
-import { Bar, Button } from "./components/bar.js";
-import { Display } from "./display.js";
-import { Finder } from "./pages/finder.js";
-import { Info } from "./pages/info.js";
-import { Settings } from "./pages/settings.js";
-import { Stats } from "./pages/stats.js";
 
 let disposeController = new AbortController();
 export const dispose = {
@@ -28,14 +16,21 @@ export function ui(): Macro<typeof UI> {
     return ref.value;
 }
 
-// NOTE(randomuserhi): Save state for hot reload
-module.destructor = () => {
-    const view = ui()?.view();
-    if (view === undefined) return;
+module.ready();
 
-    const r = view.renderer;
-    r.get("Controls")?.saveState();
-};
+/* eslint-disable-next-line sort-imports */
+import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
+import { Style } from "@esm/@/rhu/style.js";
+import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
+import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
+import { Render } from "@esm/@root/main/routes/player/index.js";
+import { Bar, Button } from "./components/bar.js";
+import { Display } from "./display.js";
+import { Finder } from "./pages/finder.js";
+import { Info } from "./pages/info.js";
+import { Settings } from "./pages/settings.js";
+import { Stats } from "./pages/stats.js";
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -168,3 +163,11 @@ Render((doc, view) => {
     doc.append(...main.dom);
 });
 
+// NOTE(randomuserhi): Save state for hot reload
+module.destructor = () => {
+    const view = ui()?.view();
+    if (view === undefined) return;
+
+    const r = view.renderer;
+    r.get("Controls")?.saveState();
+};

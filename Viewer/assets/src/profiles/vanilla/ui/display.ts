@@ -5,6 +5,7 @@ import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { DataStore } from "@esm/@root/replay/datastore.js";
 import { Seeker } from "./components/seeker.js";
+import { dispose, ui } from "./main.js";
 import { Scoreboard } from "./scoreboard.js";
 
 declare module "@esm/@root/replay/datastore.js" {
@@ -15,6 +16,13 @@ declare module "@esm/@root/replay/datastore.js" {
         } 
     }
 }
+
+module.destructor = () => {
+    const display = ui()?.display;
+    if (display === undefined) return;
+
+    display.saveState();
+};
 
 const style = Style(({ style }) => {
     const wrapper = style.class`
@@ -236,16 +244,3 @@ export const Display = Macro(class Display extends MacroElement {
         ${Seeker.close}
     </div>
     `);
-
-module.ready();
-
-/* eslint-disable-next-line sort-imports */
-import { dispose, ui } from "./main.js";
-
-module.destructor = () => {
-    const display = ui()?.display;
-    if (display === undefined) return;
-
-    display.saveState();
-};
-

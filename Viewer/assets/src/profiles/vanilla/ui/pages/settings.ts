@@ -6,6 +6,7 @@ import { EnemyModelWrapper } from "../../renderer/enemy/lib.js";
 import { ResourceContainerModel } from "../../renderer/map/resourcecontainers.js";
 import { Dropdown } from "../components/dropdown.js";
 import { Toggle } from "../components/toggle.js";
+import { dispose } from "../main.js";
 import { pageStyles, setInputFilter } from "./lib.js";
 
 const style = pageStyles;
@@ -425,9 +426,3 @@ export const Settings = Macro(class Settings extends MacroElement {
         </div>
     </div>
     `);
-
-module.ready();
-
-/* eslint-disable-next-line sort-imports */
-import { dispose } from "../main.js";
-
