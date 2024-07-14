@@ -16,6 +16,15 @@ export function ui(): Macro<typeof UI> {
     return ref.value;
 }
 
+// NOTE(randomuserhi): Save state for hot reload
+module.destructor = () => {
+    const view = ui()?.view();
+    if (view === undefined) return;
+
+    const r = view.renderer;
+    r.get("Controls")?.saveState();
+};
+
 module.ready();
 
 /* eslint-disable-next-line sort-imports */
@@ -162,12 +171,3 @@ Render((doc, view) => {
     main.view(view);
     doc.append(...main.dom);
 });
-
-// NOTE(randomuserhi): Save state for hot reload
-module.destructor = () => {
-    const view = ui()?.view();
-    if (view === undefined) return;
-
-    const r = view.renderer;
-    r.get("Controls")?.saveState();
-};
