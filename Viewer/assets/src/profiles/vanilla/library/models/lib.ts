@@ -30,7 +30,8 @@ export function isCulled(position: Vector3Like, radius: number, camera: Camera) 
     const { sphere, diff } = FUNC_isCulled;
     sphere.center.copy(position);
     sphere.radius = radius;
-    if (camera.root.getWorldPosition(diff).sub(position).lengthSq() > camera.renderDistance * camera.renderDistance ||
+    const renderDistance = camera.renderDistance();
+    if (camera.root.getWorldPosition(diff).sub(position).lengthSq() > renderDistance * renderDistance ||
         !camera.frustum.intersectsSphere(sphere)) {
         return true;
     }

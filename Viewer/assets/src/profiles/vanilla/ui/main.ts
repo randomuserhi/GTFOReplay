@@ -119,7 +119,6 @@ const UI = Macro(class UI extends MacroElement {
     private window: HTMLDivElement;
     private loadedMacro?: MacroElement;
     public load(macro?: Page) {
-        console.log("bruh");
         const view = this.display.view();
         if (this.loadedMacro === macro) macro = undefined;
         this.loadedMacro = macro;

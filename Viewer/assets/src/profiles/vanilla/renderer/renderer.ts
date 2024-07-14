@@ -1,3 +1,4 @@
+import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Renderer } from "@esm/@root/replay/renderer.js";
 import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, PointLight, Vector3, VSMShadowMap } from "@esm/three";
@@ -21,7 +22,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
 export class Camera extends ObjectWrapper<PerspectiveCamera> {
     public frustum: Frustum = new Frustum();
-    public renderDistance: number;
+    public renderDistance: Signal<number>;
     
     constructor(fov: number, aspect: number, near: number = 0.1, far: number = 1000, renderDistance: number = 100) {
         super();
@@ -29,7 +30,7 @@ export class Camera extends ObjectWrapper<PerspectiveCamera> {
         this.root = new PerspectiveCamera(fov, aspect, near, far);
         this.root.rotation.order = "YXZ";
 
-        this.renderDistance = renderDistance;
+        this.renderDistance = signal(renderDistance);
     }
 
     public resize(width: number, height: number) {

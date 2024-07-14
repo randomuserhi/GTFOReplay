@@ -79,6 +79,17 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
         slider.addEventListener("mousemove", change);
         slider.addEventListener("change", change);
 
+        v.on((view) => {
+            if (view === undefined) {
+                return;
+            }
+            
+            view.timescale.on(value => {
+                slider.value = `${value}`;
+                text.value = `${value}`;
+            });
+        });
+
         text.addEventListener("keyup", () => {
             slider.value = text.value;
 
@@ -128,7 +139,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
         window.addEventListener("mouseup", () => {
             active = false;
         }, { signal: dispose.signal });
-        slider.addEventListener("mousemove", () => {
+        const change = () => {
             if (!active) return;
             text.value = slider.value;
 
@@ -137,7 +148,24 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
             const camera = view.renderer.get("Camera");
             if (camera === undefined) return;
 
-            camera.renderDistance = parseFloat(slider.value);
+            camera.renderDistance(parseFloat(slider.value));
+        };
+        slider.addEventListener("mousemove", change);
+        slider.addEventListener("change", change);
+
+        v.on((view) => {
+            if (view === undefined) {
+                return;
+            }
+            
+            view.renderer.watch("Camera").on(camera => {
+                if (camera === undefined) return;
+                
+                camera.renderDistance.on(value => {
+                    slider.value = `${value}`;
+                    text.value = `${value}`;
+                });
+            });
         });
 
         text.addEventListener("keyup", () => {
@@ -148,7 +176,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
             const camera = view.renderer.get("Camera");
             if (camera === undefined) return;
 
-            camera.renderDistance = parseFloat(text.value);
+            camera.renderDistance(parseFloat(text.value));
         });
 
         setInputFilter(text, function(value) { return /^-?\d*[.,]?\d*$/.test(value); });

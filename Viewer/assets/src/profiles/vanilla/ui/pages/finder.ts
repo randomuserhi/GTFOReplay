@@ -39,12 +39,10 @@ const Item = Macro(class Item extends MacroElement {
     }
 
     public key: Signal<string>;
-    public id: Signal<number>;
     public button: HTMLSpanElement;
 
-    constructor(dom: Node[], bindings: any, children: Node[], id: number) {
+    constructor(dom: Node[], bindings: any, children: Node[]) {
         super(dom, bindings);
-        this.id = signal(id);
     }
 }, html`
     <div m-id="button" class="${itemStyle.item}">
@@ -101,7 +99,7 @@ export const Finder = Macro(class Finder extends MacroElement {
             for (const { item, key } of values) {
                 let el = this.items.get(item.id);
                 if (el === undefined) {
-                    el = Macro.create(Item(item.id));
+                    el = Macro.create(Item());
                     el.button.addEventListener("click", () => {
                         const view = this.view();
                         if (view === undefined) return;
