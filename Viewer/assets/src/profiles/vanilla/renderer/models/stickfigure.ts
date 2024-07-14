@@ -253,6 +253,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         this.applySettings();
     }
 
+    protected smoothFactor = 50;
     protected updateSkeleton(dt: number, position: Vector3Like, rotation: QuaternionLike) {
         this.root.position.copy(position);
         this.anchor.quaternion.copy(rotation);
@@ -265,7 +266,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
             this.anchor.position.copy(this.settings.posOffset);
         }
 
-        const blendFactor = Math.clamp01(dt * 50);
+        const blendFactor = Math.clamp01(dt * this.smoothFactor);
         for (const key of HumanJoints) {
             this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
         }

@@ -480,6 +480,7 @@ ItemDatablock.set(Identifier.create("Item", 128), {
             model.gltf.position.set(0, 0.01, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }
@@ -493,6 +494,7 @@ ItemDatablock.set(Identifier.create("Item", 129), {
         const model = new ItemGLTFModel("../js3party/models/Objective/pdec.glb", () => {
             model.gltf.position.set(0, 0.1, 0);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }
@@ -506,6 +508,7 @@ const HardDrive: ItemDatablock = {
             model.gltf.position.set(0, 0.05, 0);
             model.gltf.rotation.set(0, 0, -90 * Math.deg2rad);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }
@@ -523,6 +526,7 @@ ItemDatablock.set(Identifier.create("Item", 149), {
             model.gltf.position.set(0, 0.1, 0);
             model.gltf.rotation.set(0, 0, 0);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
 
         return model;
     }
@@ -536,6 +540,7 @@ ItemDatablock.set(Identifier.create("Item", 169), {
             model.gltf.position.set(0, 0.05, 0);
             model.gltf.rotation.set(90 * Math.deg2rad, 0, 0);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }
@@ -549,6 +554,7 @@ ItemDatablock.set(Identifier.create("Item", 150), {
         const model = new ItemGLTFModel("../js3party/models/Objective/osip.glb", () => {
             model.gltf.position.set(0, 0.2, 0);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }
@@ -562,6 +568,7 @@ ItemDatablock.set(Identifier.create("Item", 153), {
             model.gltf.position.set(0, 0.1, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }
@@ -575,6 +582,7 @@ const MemoryStick: ItemDatablock = {
             model.gltf.position.set(0, 0.1, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
         });
+        model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
     }

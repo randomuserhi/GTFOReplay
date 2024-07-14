@@ -25,7 +25,8 @@ versionInfo.set("0.0.7", `- OldBulkheadSounds compatibility layer
 versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
 - Thrown items are now shown
 - Added ability to change module folder to swap parser for modded content
-- Hot reloading support for rendering, changes to the parser requires reloading the replay`);    
+- Hot reloading support for rendering, changes to the parser requires reloading the replay
+- Fixed map not including all geometry for the ground`);    
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

@@ -132,7 +132,6 @@ namespace Vanilla.Map {
 
             Vector3[] vertices = triangulation.vertices;
             int[] indices = triangulation.indices;
-            indices = MeshUtils.ClearInaccessibleTriangles(dimension.DimensionIndex, vertices, indices);
             (vertices, indices) = MeshUtils.Weld(vertices, indices, 0.25f, 2f);
 
             APILogger.Debug($"Splitting navmesh...");
@@ -153,7 +152,10 @@ namespace Vanilla.Map {
                 meshes[i].RecalculateBounds();
             }
 
-            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 5).ToArray(); // Cull meshes that are too small
+            long _start = Raudy.Now;
+            meshes = meshes.Where(s => MeshUtils.GetSurfaceArea(s) > 5 && MeshUtils.InvalidPercentage(s, dimension.DimensionIndex, 0.2f)).ToArray(); // Cull meshes that are too small or have too many invalid triangles
+            long _end = Raudy.Now;
+            APILogger.Warn($"Culled surfaces in {(_end - _start) / 1000f} seconds.");
 
             /// This works since each dimension has Layer information containing:
             /// - spawn locations
@@ -236,7 +238,7 @@ namespace Vanilla.Map {
 
                 long end = Raudy.Now;
                 surfaces = relevantSurfaces.Values.ToArray();
-                APILogger.Debug($"Found {surfaces.Length} relevant surfaces in {(end - start) / 1000f} seconds.");
+                APILogger.Warn($"Found {surfaces.Length} relevant surfaces in {(end - start) / 1000f} seconds.");
             } else {
                 surfaces = new Surface[meshes.Length];
                 for (int i = 0; i < meshes.Length; ++i) {
@@ -257,6 +259,7 @@ namespace Vanilla.Map {
             }
 
             // subdivide mesh and fix poor positions
+            _start = Raudy.Now;
             for (int i = 0; i < surfaces.Length; ++i) {
                 Surface surface = surfaces[i];
                 (vertices, indices) = Subdivide(surface.mesh!);
@@ -274,6 +277,8 @@ namespace Vanilla.Map {
                 surfaces[i].mesh = null;
                 GC.Collect();
             }
+            _end = Raudy.Now;
+            APILogger.Warn($"Subdivided surfaces in {(_end - _start) / 1000f} seconds.");
         }
 
         [ReplayOnElevatorStop]

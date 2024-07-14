@@ -199,6 +199,31 @@ namespace Vanilla.Map {
             return newIndices.ToArray();
         }
 
+        public static bool InvalidPercentage(Mesh mesh, eDimensionIndex dimensionIndex, float threshold) {
+            var indices = mesh.triangles;
+            var triangles = mesh.vertices;
+            float percentage = 0;
+            float tick = 3f / indices.Length;
+            for (int i = 0; i < indices.Length; i += 3) {
+                var a = indices[i + 0];
+                var b = indices[i + 1];
+                var c = indices[i + 2];
+
+                var pa = triangles[a];
+                var pb = triangles[b];
+                var pc = triangles[c];
+                CalcTriangleProps(pa, pb, pc, out var pAvg, out var heightDiff);
+
+                var tolerance = Mathf.Max(2f, heightDiff * 2f);
+                if (IsPositionValid(dimensionIndex, pAvg, tolerance)) {
+                    percentage += tick;
+                }
+
+                if (percentage >= threshold) return true;
+            }
+            return percentage >= threshold;
+        }
+
         public static void CalcTriangleProps(Vector3 p1, Vector3 p2, Vector3 p3, out Vector3 center, out float heightDifference) {
             center = (p1 + p2 + p3) * 0.333333f;
 

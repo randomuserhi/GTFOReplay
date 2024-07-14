@@ -17,6 +17,7 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
     constructor(wrapper: EnemyModelWrapper) {
         super();  
         this.wrapper = wrapper;
+        this.wrapper.tagTarget = this.visual.joints.spine1;
     }
 
     public render(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {

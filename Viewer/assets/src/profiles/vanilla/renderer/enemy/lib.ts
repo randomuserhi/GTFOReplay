@@ -82,9 +82,7 @@ export class EnemyModelWrapper {
         const { tagPos } = EnemyModelWrapper.FUNC_updateTmp;
 
         this.tag.visible = enemy.tagged;
-        if (this.tagTarget === undefined) {
-            this.tag.position.copy(this.model.root.position);
-        } else {
+        if (this.tagTarget !== undefined) {
             this.tag.position.copy(this.tagTarget.getWorldPosition(tagPos).sub(this.model.root.position));
         }
         
