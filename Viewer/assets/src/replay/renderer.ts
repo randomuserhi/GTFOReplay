@@ -108,8 +108,8 @@ export class Renderer {
     };
 
     private listeners: Map<string, Map<EventListenerOrEventListenerObject, (e: CustomEvent) => void>>;
-    public addEventListener: <T extends keyof RendererEventMap | string & {}>(type: T, callback: (data: T extends keyof RendererEventMap ? RendererEventMap[T] : unknown) => void, options?: boolean | AddEventListenerOptions | undefined) => void;
-    public removeEventListener: <T extends keyof RendererEventMap | string & {}>(type: T, callback: (data: T extends keyof RendererEventMap ? RendererEventMap[T] : unknown) => void, options?: EventListenerOptions | boolean) => void;
+    public addEventListener: <T extends keyof RendererEventMap>(type: T, callback: (data: T extends keyof RendererEventMap ? RendererEventMap[T] : unknown) => void, options?: boolean | AddEventListenerOptions | undefined) => void;
+    public removeEventListener: <T extends keyof RendererEventMap>(type: T, callback: (data: T extends keyof RendererEventMap ? RendererEventMap[T] : unknown) => void, options?: EventListenerOptions | boolean) => void;
     private dispatchEvent: (event: Event) => boolean;
 
     public getOrDefault<T extends keyof Typemap.RenderData>(typename: T, def: () => Typemap.RenderData[T]): Typemap.RenderData[T] {
@@ -117,22 +117,22 @@ export class Renderer {
         if (!this.data.has(typename)) this.set(typename, def() as any);
         return this.data.get(typename) as any;
     }
-    public get<T extends keyof Typemap.RenderData | string & {}>(typename: T): (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined {
+    public get<T extends keyof Typemap.RenderData>(typename: T): (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.data.get(typename) as any;
     }
-    public set<T extends keyof Typemap.RenderData | string & {}>(typename: T, value: (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any)): void {
+    public set<T extends keyof Typemap.RenderData>(typename: T, value: (T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any)): void {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         this.data.set(typename, value);
         if (this.signals.has(typename)) {
             this.signals.get(typename)!(value);
         }
     }
-    public has<T extends keyof Typemap.RenderData | string & {}>(typename: T): boolean{
+    public has<T extends keyof Typemap.RenderData>(typename: T): boolean{
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         return this.data.has(typename);
     }
-    public watch<T extends keyof Typemap.RenderData | string & {}>(typename: T): Signal<(T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined> {
+    public watch<T extends keyof Typemap.RenderData>(typename: T): Signal<(T extends keyof Typemap.RenderData ? Typemap.RenderData[T] : any) | undefined> {
         if (typename as string === "" || typename === undefined) throw new SyntaxError("Typename cannot be blank.");
         if (!this.signals.has(typename)) {
             this.signals.set(typename, signal(this.get(typename)));
