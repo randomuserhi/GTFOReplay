@@ -1,5 +1,4 @@
-import { __header__ } from "./headers.js";
-const header = __header__;
+// NOTE(randomuserhi): Need to make sure that all vanilla modules load, thus wrap them all in a Promise
 
 module.manual = true;
 
