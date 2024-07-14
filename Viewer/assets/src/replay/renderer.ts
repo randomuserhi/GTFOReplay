@@ -191,7 +191,11 @@ export class Renderer {
             has: Replay.prototype.has.bind(replay),
         };
         for (const func of this.initPasses.values()) {
-            func.pass(this, header);
+            try {
+                func.pass(this, header);
+            } catch (e) {
+                console.error(`An error occured executing render init pass '${func.name}':\n\n${e.stack}`);
+            }
         }
     }
 
@@ -201,7 +205,11 @@ export class Renderer {
             this.scene.add(manager.mesh);
         }
         for (const func of this.renderLoop.values()) {
-            func.pass(this, snapshot, dt);
+            try {
+                func.pass(this, snapshot, dt);
+            } catch (e) {
+                console.error(`An error occured executing render pass '${func.name}':\n\n${e.stack}`);
+            }
         }
         for (const manager of DynamicInstanceManager.all) {
             manager.mesh.instanceMatrix.needsUpdate = true;

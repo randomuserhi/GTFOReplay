@@ -12,7 +12,9 @@ function isASLModuleError(e: Error): e is _ASLModuleError {
 }
 class _ASLModuleError extends Error {
     constructor(message?: string, e?: Error) {
-        super(`${message}\n\t${e !== undefined ? e.toString().split("\n").join("\n\t") : ""}`);
+        let err = e?.stack;
+        if (err === undefined) err = e?.toString();
+        super(`${message}\n\t${err !== undefined ? err.split("\n").join("\n\t") : ""}`);
     }
 }
 
