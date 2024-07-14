@@ -170,7 +170,7 @@ export namespace AsyncScriptCache {
                 else point += "\t";
             }
             point += `^:${line+offset+3}:${col}`;
-            const message = isTop ? stack : `Main callsite of nested error:\n\tat (${module.src}:${line+offset+3}:${col})\n\n${stack}`;
+            const message = isTop ? stack : `Callsite for nested error:\n\tat (${module.src}:${line+offset+3}:${col})\n\n${stack}`;
             codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}${stack !== undefined ? `\n\t| ${message.split("\n").join("\n\t| ")}` : ""}\n\n${bottom.join("\n")}\n\n...\n`;
         }
 
