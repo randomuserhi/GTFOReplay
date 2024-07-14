@@ -234,9 +234,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         this.updateBackpack(database, player, backpack);
 
-        this.animate(time, player, anim);
+        this.animate(dt, time, player, anim);
         
-        this.updateSkeleton(dt, player.position, player.rotation);
         this.draw();
         this.visual.joints.rightHand.add(this.handAttachment);
     
@@ -246,7 +245,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private static FUNC_animate = {
         tempAvatar: new Avatar(HumanJoints)
     } as const;
-    private animate(time: number, player: Player, anim: PlayerAnimState) {
+    private animate(dt: number, time: number, player: Player, anim: PlayerAnimState) {
         const { tempAvatar } = PlayerModel.FUNC_animate;
 
         this.skeleton.joints.rightHand.add(this.handAttachment);
@@ -539,6 +538,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             this.skeleton.blend(animations.TerminalConsole_Idle.sample(t), blend);
             return;
         }
+
+        this.updateSkeleton(dt, player.position, player.rotation);
     }
 
     private updateBackpack(database: IdentifierData, player: Player, backpack?: PlayerBackpack) {
