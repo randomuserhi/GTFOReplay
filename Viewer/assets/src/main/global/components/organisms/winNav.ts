@@ -5,8 +5,7 @@ import * as icons from "../atoms/icons/index.js";
 
 const moduleListStyles = Style(({ style }) => {
     const wrapper = style.class`
-    position: absolute;
-    top: calc(100% + 5px);
+    display: none;
     background-color: #2a2a43;
     border-radius: 7px;
     border-style: solid;
@@ -14,6 +13,7 @@ const moduleListStyles = Style(({ style }) => {
     border-color: #2f2e44;
     font-size: 0.75rem;
     min-width: 100px;
+    flex-shrink: 0;
     `;
 
     const sticky = style.class`
@@ -157,29 +157,47 @@ const style = Style(({ style }) => {
     `;
 
     const popup = style.class`
-        display: none;
-        position: absolute;
-        top: calc(100% + 5px);
-        transform: translate(calc(50% - 22.5px), 0);
-        padding: 5px 10px;
-        background-color: #11111B; /*TODO: Theme-ColorScheme*/
-        border-radius: 7px;
-        border-style: solid;
-        border-width: 1px;
-        border-color: #2f2e44;
-        font-size: 0.75rem;
+    display: none;
+    padding: 5px 10px;
+    background-color: #11111B; /*TODO: Theme-ColorScheme*/
+    border-radius: 7px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #2f2e44;
+    font-size: 0.75rem;
+    flex-shrink: 0;
     `;
-    /*style`
-    ${button}:hover ${popup} {
+    style`
+    ${button}:hover + div ${popup} {
         display: block;
     }
-    `;*/
+    `;
+
+    const active = style.class``;
+    style`
+    ${active} ${popup} {
+        display: block;
+    }
+    ${active} ${moduleListStyles.wrapper} {
+        display: block;
+    }
+    `;
+
+    const mount = style.class`
+    position: absolute;
+    top: calc(100% + 5px);
+    display: flex; 
+    gap: 5px;
+    color: white;
+    `;
 
     return {
         wrapper,
         button,
         text,
-        popup
+        popup,
+        mount,
+        active
     };
 });
 
@@ -224,11 +242,13 @@ export const WinNav = Macro(class WinNav extends MacroElement {
         <span style="position: relative;">
             <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
                 ${icons.plugin()}
-                <div class="${style.popup}">
-                    <span>${Macro.signal("moduleName", "vanilla")}</span>
-                </div>
             </div>
-            ${ModuleList()}
+            <div class="${style.mount} ${style.active}">
+                ${ModuleList()}
+                <span><div class="${style.popup}">
+                    <span>${Macro.signal("moduleName", "vanilla")}</span>
+                </div></span>
+            </div>
         </span>
         <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
             ${icons.rug()}

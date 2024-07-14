@@ -138,17 +138,18 @@ class HTML {
             if (slot === undefined || slot === null)
                 throw new Error("Unable to find slot for signal.");
             const sig = signals[i];
-            const node = document.createTextNode("");
+            let instance = undefined;
             const sig_value = sig._value;
-            const instance = signal(sig_value !== undefined && sig_value !== null ? sig_value : "");
-            instance.on((value) => node.nodeValue = value);
-            slot.replaceWith(node);
             const sig_bind = sig._bind;
             if (sig_bind !== undefined && sig_bind !== null) {
-                if (sig_bind in bindings)
-                    throw new SyntaxError(`The binding '${sig_bind.toString()}' already exists.`);
-                bindings[sig_bind] = instance;
+                if (!(sig_bind in bindings)) {
+                    bindings[sig_bind] = signal(sig_value !== undefined && sig_value !== null ? sig_value : "");
+                }
+                instance = bindings[sig_bind];
             }
+            const node = document.createTextNode(sig_value === undefined ? "" : sig_value);
+            instance?.on((value) => node.nodeValue = value);
+            slot.replaceWith(node);
         }
         for (let i = 0; i < html.length; ++i) {
             const slot = fragment.querySelector(`rhu-html[rhu-internal="${i}"]`);
@@ -199,6 +200,7 @@ class HTML {
 }
 HTML.empty = html ``;
 HTML.is = Object.prototype.isPrototypeOf.bind(HTML.prototype);
+export { HTML };
 function isFactory(object) {
     if (object === null || object === undefined)
         return false;
