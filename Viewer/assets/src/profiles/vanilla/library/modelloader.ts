@@ -3,11 +3,19 @@ import { GLTFLoader } from '@esm/three/examples/jsm/loaders/GLTFLoader.js';
 import * as BufferGeometryUtils from '@esm/three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const loadedGLTF = new Map<string, BufferGeometry>();
-const loadingGLTF = new Map<string, Promise<BufferGeometry>>();
+const loadingGLTF = new Map<string, { promise: Promise<BufferGeometry>; terminate: (reason: any) => void }>();
 
 const loader = new GLTFLoader();
 
 const empty = new BufferGeometry();
+
+export function deleteGLTFCache(path: string) {
+    loadedGLTF.delete(path);
+    if (loadingGLTF.has(path)) {
+        loadingGLTF.get(path)!.terminate("Model cache invalidated.");
+        loadingGLTF.delete(path);
+    }
+}
 
 // NOTE(randomuserhi): `newLoader` exists due to old models being imported without transforms. All models should have transforms applied, but old models were implemented prior to this.
 export async function loadGLTF(path: string, newLoader: boolean = true): Promise<BufferGeometry> {
@@ -18,13 +26,11 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
     }
 
     if (loadingGLTF.has(path)) {
-        const promise = loadingGLTF.get(path)!;
-        return new Promise((resolve) => {
-            promise.then((geometry) => resolve(geometry));
-        });
+        return loadingGLTF.get(path)!.promise;
     }
 
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
+        loadingGLTF.set(path, { promise, terminate: reject });
         loader.load(path, function (gltf) {
             try {
                 const geometries: BufferGeometry[] = [];
@@ -51,6 +57,5 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
             reject(error);
         });
     });
-    loadingGLTF.set(path, promise);
     return promise; 
 }

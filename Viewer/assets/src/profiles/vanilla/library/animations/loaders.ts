@@ -2,7 +2,7 @@ import { Rest } from "@esm/@/rhu/rest.js";
 import { Anim, AvatarLike } from "./lib.js";
 
 const loadedAnims = new Map<string, Anim>();
-const loadingAnims = new Map<string, Promise<Anim>>();
+const loadingAnims = new Map<string, { promise: Promise<Anim>; terminate: (reason: any) => void }>();
 
 interface AnimJson {
     rate: number;
@@ -20,21 +20,27 @@ const fetchAnimJson = Rest.fetch<AnimJson, [path: string]>({
     }
 });
 
+export function deleteAnimCache(path: string) {
+    loadedAnims.delete(path);
+    if (loadingAnims.has(path)) {
+        loadingAnims.get(path)!.terminate("Model cache invalidated.");
+        loadingAnims.delete(path);
+    }
+}
+
 export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArray<T>, path: string): Promise<Anim<T>> {
     if (loadedAnims.has(path)) {
         return new Promise((resolve) => {
             resolve(loadedAnims.get(path)! as Anim<T>);
         });
     }
-
+    
     if (loadingAnims.has(path)) {
-        const promise = loadingAnims.get(path)!;
-        return new Promise((resolve) => {
-            promise.then((anim) => resolve(anim as Anim<T>));
-        });
+        return loadingAnims.get(path)!.promise as Promise<Anim<T>>;
     }
     
     const promise = new Promise<Anim<T>>((resolve, reject) => {
+        loadingAnims.set(path, { promise, terminate: reject });
         fetchAnimJson(path).then((json) => {
             resolve(new Anim<T>(joints, json.rate, json.duration, json.frames));
         }).catch((error) => {
@@ -42,7 +48,6 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
             reject(error);
         });
     });
-    loadingAnims.set(path, promise);
     return promise;
 }
 

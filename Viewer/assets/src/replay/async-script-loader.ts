@@ -16,6 +16,7 @@ export interface ASLModule {
     readonly baseURI: string | undefined;
     manual: boolean;
     readonly isParser: boolean;
+    rel(path: string): string;
 }
 
 type ASLExec = (require: Require, module: ASLModule, exports: Record<PropertyKey, any>) => Promise<void>;
@@ -81,6 +82,10 @@ class _ASLModule implements ASLModule, Exports {
 
     get baseURI() {
         return AsyncScriptLoader.baseURI;
+    }
+
+    public rel(path: string) {
+        return new URL(path, this.src).toString();
     }
 }
 
@@ -215,7 +220,7 @@ export namespace AsyncScriptCache {
         }
     };
     const setProps: (string | symbol)[] = ["destructor", "manual"];
-    const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI", "isParser"];
+    const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI", "isParser", "rel"];
     export async function exec(module: _ASLModule) {
         if (executionContexts.has(module.src)) {
             const kill = executionContexts.get(module.src)!.kill;
