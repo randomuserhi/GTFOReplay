@@ -14,13 +14,9 @@ const moduleListStyles = Style(({ style }) => {
     border-color: #2f2e44;
     font-size: 0.75rem;
     min-width: 100px;
-    max-height: 300px;
-    overflow: auto;
     `;
 
     const sticky = style.class`
-    position: sticky;
-    top: 0;
     display: flex;
     background-color: #2a2a43;
     padding: 5px;
@@ -40,6 +36,8 @@ const moduleListStyles = Style(({ style }) => {
     gap: 2px;
     color: white;
     padding: 5px;
+    max-height: 300px;
+    overflow: auto;
     `;
 
     const item = style.class`
