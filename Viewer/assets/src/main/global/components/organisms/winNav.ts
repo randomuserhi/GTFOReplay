@@ -22,6 +22,7 @@ const moduleListStyles = Style(({ style }) => {
     display: flex;
     background-color: #2a2a43;
     padding: 5px;
+    border-radius: 4px 4px 0 0;
     `;
 
     const filter = style.class`
