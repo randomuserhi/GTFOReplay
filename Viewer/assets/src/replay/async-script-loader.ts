@@ -205,17 +205,29 @@ export namespace AsyncScriptCache {
         _cache.set(url, module);
     }
 
-    const callbacks = new Set<() => void>();
-    export function onExecutionsCompleted(callback: () => void) {
-        callbacks.add(callback);
+    interface ExecCallback {
+        callback: () => void;
+        options?: {
+            once?: boolean;
+        }
+    }
+    const callbacks = new Set<ExecCallback>();
+    export function onExecutionsCompleted(callback: () => void, options?: ExecCallback["options"]) {
+        callbacks.add({
+            callback,
+            options
+        });
     }
 
     const executionContexts = new Map<string, _ASLModule>();
     const onExec = (key: string) => {
         executionContexts.delete(key);
         if (executionContexts.size === 0) {
-            for (const callback of callbacks) {
-                callback();
+            for (const callback of [...callbacks.values()]) {
+                callback.callback();
+                if (callback.options?.once === true) {
+                    callbacks.delete(callback);
+                } 
             }
         }
     };

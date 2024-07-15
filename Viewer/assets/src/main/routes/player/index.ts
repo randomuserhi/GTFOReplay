@@ -53,7 +53,7 @@ export const player = Macro(class Player extends MacroElement {
         this.view.refresh();
     }
 
-    private path?: string;
+    public path?: string;
     public async open(path?: string) {
         this.path = path;
         const file: FileHandle = {

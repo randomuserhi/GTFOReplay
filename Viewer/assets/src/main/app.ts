@@ -153,9 +153,21 @@ const App = Macro(class App extends MacroElement {
             this.player.refresh();
         });
 
-        // Switch modules folder
-        this.nav.plugin.addEventListener("click", async () => {
-            // todo
+        // reload module list on click
+        this.nav.activeModuleList.on(async (value) => {
+            if (!value) return;
+
+            const response = await window.api.invoke("moduleList");
+            if (response.success === false) {
+                console.error(response.error);
+                return;
+            }
+            if (response.modules === undefined) {
+                console.error("Module list was undefined despite success.");
+                return;
+            }
+    
+            moduleListHandle(response);
         });
 
         this.load(this.main);
@@ -173,6 +185,9 @@ const App = Macro(class App extends MacroElement {
             return;
         }
 
+        // Close modulelist
+        this.nav.activeModuleList(false);
+
         // Close & Refresh player
         this.player.close();
 
@@ -187,13 +202,17 @@ const App = Macro(class App extends MacroElement {
 
         // Show loading screen
         this.main.video.play();
-        this.main.loading(false);
+        this.main.loading(this.player.path !== undefined);
         this.load(this.main);
 
         // reset file loader
         this.replayfile.value = "";
 
         this.profile(response.module);
+
+        if (this.player.path !== undefined) {
+            AsyncScriptCache.onExecutionsCompleted(() => this.player.open(this.player.path), { once: true });
+        }
     }
 
     public load(macro: MacroElement) {

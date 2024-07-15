@@ -55,11 +55,12 @@ export class ModuleLoader {
                     if (!stat.isDirectory()) return;
             
                     switch(event) {
-                    case "change":
                     case "addDir":
+                    case "unlinkDir":
                         this.post("moduleList", await this.getModuleList());
                         break;
                     }
+                    
                 });
             }
         } catch (e) {
@@ -119,6 +120,7 @@ export class ModuleLoader {
                 switch(event) {
                 case "change":
                 case "add":
+                case "unlink":
                     this.post("loadScript", [path]);
                     break;
                 }
