@@ -221,13 +221,14 @@ export namespace AsyncScriptCache {
     };
     const setProps: (string | symbol)[] = ["destructor", "manual"];
     const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI", "isParser", "rel"];
+    const silent = {}; // NOTE(randomuserhi): used when killing a module without throwing an error.
     export async function exec(module: _ASLModule) {
         if (executionContexts.has(module.src)) {
             const kill = executionContexts.get(module.src)!.kill;
-            if (kill !== undefined) kill(new Error(`'${module.src}' was killed to be replaced by a new execution.`)); 
+            if (kill !== undefined) kill(silent); 
         }
         if (module.executionContext === undefined) {
-            module.executionContext = new Promise((resolve, reject) => {
+            module.executionContext = new Promise<void>((resolve, reject) => {
                 module.terminate = resolve;
                 module.kill = reject;
 
@@ -280,6 +281,8 @@ export namespace AsyncScriptCache {
                 }).catch((e) => {
                     reject(new Error(`Failed to execute '${module.src}':\n\n${AsyncScriptCache.formatError(e)}`));
                 });
+            }).catch((e) => {
+                if (e !== silent) throw e;
             });
             executionContexts.set(module.src, module);
             module.executionContext.then(() => { onExec(module.src); });

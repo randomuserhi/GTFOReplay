@@ -1,6 +1,8 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
-import { Signal } from "@/rhu/signal.js";
+import { computed, signal, Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
+import Fuse from "fuse.js";
+import { app } from "../../../app.js";
 import * as icons from "../atoms/icons/index.js";
 
 const moduleListStyles = Style(({ style }) => {
@@ -46,7 +48,7 @@ const moduleListStyles = Style(({ style }) => {
     `;
     style`
     ${item}:hover {
-        background-color: black;
+        background-color: #12121a;
         border-radius: 4px;
     }
     `;
@@ -60,34 +62,96 @@ const moduleListStyles = Style(({ style }) => {
     };
 });
 
-const ModuleList = Macro(class ModuleList extends MacroElement {
-    constructor (dom: Node[], bindings: any, children: Node[]) {
-        super(dom, bindings);
+const ModuleItem = Macro(class ModuleItem extends MacroElement {
+    private _frag = new DocumentFragment();
+    get frag() {
+        this._frag.replaceChildren(...this.dom);
+        return this._frag;
     }
+
+    public remove() {
+        this._frag.replaceChildren(...this.dom);
+    }
+
+    constructor (dom: Node[], bindings: any, children: Node[], key: string) {
+        super(dom, bindings);
+
+        this.key(key);
+    }
+
+    public button: HTMLLIElement;
+    public key: Signal<string>;
+}, html`<li m-id="button" class="${moduleListStyles.item}">${Macro.signal("key")}</li>`);
+
+const ModuleList = Macro(class ModuleList extends MacroElement {
+    constructor (dom: Node[], bindings: any) {
+        super(dom, bindings);
+    
+        this.input.addEventListener("keyup", () => this.filter(this.input.value));
+
+        this.filtered.on((values) => {
+            for (const key of values) {
+                if (this.items.has(key)) {
+                    this._items.set(key, this.items.get(key)!);
+                } else {
+                    const item = Macro.create(ModuleItem(key));
+                    item.button.addEventListener("click", () => {
+                        window.api.invoke("loadModule", item.key()).then((response) => {
+                            app().onLoadModule(response);
+                        });
+                    });
+                    this._items.set(key, item);
+                    this.mount.append(item.frag);
+                }
+            }
+            
+            for (const [key, item] of this.items) {
+                if (this._items.has(key)) continue;
+                item.remove();
+            }
+
+            const temp = this.items;
+            this.items = this._items;
+            this._items = temp;
+            this._items.clear();
+        });
+    }
+
+    private input: HTMLInputElement;
+    private filter = signal("");
+
+    private _items = new Map<string, Macro<typeof ModuleItem>>(); 
+    private items = new Map<string, Macro<typeof ModuleItem>>();
+
+    private validation = new Set<string>();
+    public values = signal<string[]>([]);
+    private fuse = new Fuse(this.values(), { keys: ["key"] });
+    private filtered = computed(() => {
+        let values = this.values();
+        this.fuse.setCollection(values);
+        const filter = this.filter();
+        if (filter.trim() !== "") {
+            this.fuse.setCollection(this.values());
+            values = this.fuse.search(filter).map((n) => n.item);
+        }
+        return values;
+    }, [this.values, this.filter], (a, b) => {
+        if (a.length !== b.length) return false;
+        this.validation.clear();
+        for (let i = 0; i < a.length; ++i) {
+            this.validation.add(a[i]);
+            if (!this.validation.has(b[i])) return false;
+        }
+        return true;
+    });
+
+    public mount: HTMLDivElement;
 }, html`
     <div class="${moduleListStyles.wrapper}">
         <div class="${moduleListStyles.sticky}">
-            <input m-id="filter" class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
+            <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
         </div>
-        <ul class="${moduleListStyles.mount}">
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
-            <li class="${moduleListStyles.item}">vanilla</li>
-            <li class="${moduleListStyles.item}">duo trials</li>
+        <ul m-id="mount" class="${moduleListStyles.mount}">
         </ul>
     </div>
     `);
@@ -183,9 +247,15 @@ const style = Style(({ style }) => {
     }
     `;
 
+    const error = style.class`
+    background-color: #2d1623;
+    border-color: #e81b23;
+    `;
+
     const mount = style.class`
     position: absolute;
     top: calc(100% + 5px);
+    left: 5px;
     display: flex; 
     gap: 5px;
     color: white;
@@ -197,7 +267,8 @@ const style = Style(({ style }) => {
         text,
         popup,
         mount,
-        active
+        active,
+        error
     };
 });
 
@@ -209,10 +280,30 @@ export const WinNav = Macro(class WinNav extends MacroElement {
     plugin: HTMLButtonElement;
     mount: HTMLDivElement;
 
-    moduleName: Signal<string>;
+    error = signal(true);
+    module: Signal<string | undefined>;
+    moduleWrapper: HTMLDivElement;
+    moduleList: Macro<typeof ModuleList>;
+    
+    private moduleListMount: HTMLDivElement;
+    activeModuleList = signal(false);
 
     constructor(dom: Node[], bindings: any, children: Node[]) {
         super(dom, bindings);
+
+        this.plugin.addEventListener("click", () => {
+            this.activeModuleList(!this.activeModuleList());
+        });
+
+        this.activeModuleList.on((value) => {
+            if (value) this.moduleListMount.classList.add(`${style.active}`);
+            else this.moduleListMount.classList.remove(`${style.active}`);
+        });
+
+        this.error.on(value => {
+            if (value) this.moduleWrapper.classList.add(`${style.error}`);
+            else this.moduleWrapper.classList.remove(`${style.error}`);
+        });
 
         this.close.onclick = () => {
             window.api.closeWindow();
@@ -243,10 +334,10 @@ export const WinNav = Macro(class WinNav extends MacroElement {
             <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
                 ${icons.plugin()}
             </div>
-            <div class="${style.mount} ${style.active}">
-                ${ModuleList()}
-                <span><div class="${style.popup}">
-                    <span>${Macro.signal("moduleName", "vanilla")}</span>
+            <div m-id="moduleListMount" class="${style.mount}">
+                ${ModuleList().bind("moduleList")}
+                <span style="flex-shrink: 0; margin-top: 5px;"><div m-id="moduleWrapper" class="${style.popup} ${style.error}">
+                    ${Macro.signal("module", "No profile loaded!")}
                 </div></span>
             </div>
         </span>

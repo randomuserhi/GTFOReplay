@@ -1,4 +1,5 @@
 import { html, Macro, MacroElement } from "@/rhu/macro.js";
+import { signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { AsyncScriptCache, AsyncScriptLoader } from "../replay/async-script-loader.js";
@@ -50,17 +51,75 @@ const App = Macro(class App extends MacroElement {
     private body: HTMLDivElement;
     private nav: Macro<typeof WinNav>;
 
+    private profile = signal<string | undefined>(undefined);
+
     constructor(dom: Node[], bindings: any) {
         super(dom, bindings);
-        this.init();
+
+        window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
+
+        this.profile.on(value => {
+            if (value === undefined) {
+                this.nav.module("No profile loaded!");
+                this.nav.error(true);
+                return;
+            } 
+            this.nav.module(value);
+            this.nav.error(false);
+        });
+
+        // hot reload event
+        window.api.on("loadScript", async (paths: string[]) => {
+            for (const p of paths) {
+                AsyncScriptLoader.load(p);
+            }
+        });
+
+        const moduleListHandle = (response: { success: boolean; modules: string[] | undefined; error: string | undefined; }) => {
+            if (response.success === false) {
+                console.error(response.error);
+                return;
+            }
+            if (response.modules === undefined) {
+                console.error("Module list was undefined despite success.");
+                return;
+            }
+            this.nav.moduleList.values(response.modules);
+        };
+
+        // listen for module list changes
+        window.api.on("moduleList", moduleListHandle);
+
+        // get module list
+        window.api.invoke("moduleList").then((response) => {
+            if (response.success === false) {
+                console.error(response.error);
+                return;
+            }
+            if (response.modules === undefined) {
+                console.error("Module list was undefined despite success.");
+                return;
+            }
+
+            moduleListHandle(response);
+            if (response.modules.includes("vanilla")) {
+                window.api.invoke("loadModule", "vanilla").then((response) => this.onLoadModule(response));
+            }
+        });
 
         window.api.on("startGame", () => {
-            console.log("LIVE VIEW OPEN GAME");
-            this.main.loading(true);
-            this.load(this.main);
-            this.player.open();
+            if (this.profile() === undefined) {
+                this.player.unlink();
+                console.error("Unable to start live view as no profile was loaded.");
+            } else {
+                console.log("LIVE VIEW OPEN GAME");
+                this.main.loading(true);
+                this.load(this.main);
+                this.player.open();
+            }
         }); // Temporary for live viewing games
 
+        // Load replay file
         this.replayfile.addEventListener("change", (e: any) => {
             try {
                 const files = e.target.files;
@@ -70,11 +129,18 @@ const App = Macro(class App extends MacroElement {
                 }
                 const loaded = files.length;
                 if (loaded !== 1) throw new Error("Can only load 1 file.");
-                for (const file of files) {
+                const file = files[0];
+
+                if (this.profile() === undefined) {
+                    this.nav.activeModuleList(true);
+                    console.error("Unable to load replay as no profile was loaded.");
+                } else {
                     this.main.loading(true);
                     this.load(this.main);
                     this.player.open(file.path);
                 }
+
+                this.replayfile.value = "";
             } catch (err) {
                 console.error(err);
             }
@@ -89,49 +155,45 @@ const App = Macro(class App extends MacroElement {
 
         // Switch modules folder
         this.nav.plugin.addEventListener("click", async () => {
-            const { success, path, error } = await window.api.invoke("moduleFolder");
-            if (!success) {
-                console.error(error);
-                return;
-            }
-
-            // Close & Refresh player
-            this.player.close();
-
-            // Reset modules
-            ModuleLoader.clear();
-            
-            // Reset cache
-            AsyncScriptCache.reset();
-            (await window.api.invoke("loadModules")).forEach((p: string) => {
-                AsyncScriptLoader.load(p);
-            });
-
-            // Show loading screen
-            this.main.video.play();
-            this.main.loading(false);
-            this.load(this.main);
-
-            // Update path information
-            this.nav.moduleName(path);
-            this.replayfile.value = "";
+            // todo
         });
 
         this.load(this.main);
     }
 
-    private async init() {
-        window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
+    public async onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }) {
+        if (response.success === false) {
+            console.error(response.error);
+            this.profile(undefined);
+            return;
+        }
+        if (response.module === undefined || response.scripts === undefined) {
+            console.error("Module was undefined despite success.");
+            this.profile(undefined);
+            return;
+        }
 
-        window.api.on("loadModules", async (paths: string[]) => {
-            for (const p of paths) {
-                AsyncScriptLoader.load(p);
-            }
-        });
-    
-        (await window.api.invoke("loadModules")).forEach((p: string) => {
+        // Close & Refresh player
+        this.player.close();
+
+        // Reset modules
+        ModuleLoader.clear();
+        
+        // Reset cache
+        AsyncScriptCache.reset();
+        response.scripts.forEach((p: string) => {
             AsyncScriptLoader.load(p);
         });
+
+        // Show loading screen
+        this.main.video.play();
+        this.main.loading(false);
+        this.load(this.main);
+
+        // reset file loader
+        this.replayfile.value = "";
+
+        this.profile(response.module);
     }
 
     public load(macro: MacroElement) {

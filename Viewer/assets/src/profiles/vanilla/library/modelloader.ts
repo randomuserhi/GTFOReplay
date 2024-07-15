@@ -29,8 +29,9 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
         return loadingGLTF.get(path)!.promise;
     }
 
+    let terminate: ((reason: any) => void) | undefined = undefined;
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
-        loadingGLTF.set(path, { promise, terminate: reject });
+        terminate = reject;
         loader.load(path, function (gltf) {
             try {
                 const geometries: BufferGeometry[] = [];
@@ -57,5 +58,10 @@ export async function loadGLTF(path: string, newLoader: boolean = true): Promise
             reject(error);
         });
     });
+    if (terminate !== undefined) {
+        loadingGLTF.set(path, { promise, terminate });
+    } else {
+        console.warn("Unable to obtain termination from model loading promise. This shouldn't happen!");
+    }
     return promise; 
 }

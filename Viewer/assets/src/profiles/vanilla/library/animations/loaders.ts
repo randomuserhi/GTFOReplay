@@ -39,8 +39,9 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
         return loadingAnims.get(path)!.promise as Promise<Anim<T>>;
     }
     
+    let terminate: ((reason: any) => void) | undefined = undefined;
     const promise = new Promise<Anim<T>>((resolve, reject) => {
-        loadingAnims.set(path, { promise, terminate: reject });
+        terminate = reject;
         fetchAnimJson(path).then((json) => {
             resolve(new Anim<T>(joints, json.rate, json.duration, json.frames));
         }).catch((error) => {
@@ -48,6 +49,11 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
             reject(error);
         });
     });
+    if (terminate !== undefined) {
+        loadingAnims.set(path, { promise, terminate });
+    } else {
+        console.warn("Unable to obtain termination from anim loading promise. This shouldn't happen!");
+    }
     return promise;
 }
 
