@@ -25,8 +25,11 @@ versionInfo.set("0.0.7", `- OldBulkheadSounds compatibility layer
 versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
 - Thrown items are now shown
 - Added ability to change module folder to swap parser for modded content
-- Hot reloading support for rendering, changes to the parser requires reloading the replay
-- Fixed map not including all geometry for the ground (really only applies to R8E2)`);    
+- Duo Trials profile provided as an example for modders
+- Hot reloading support to aid modding
+- Fixed map not including all geometry for the ground (really only applies to R8E2)
+- Fog repeller radius can be toggled
+- Option to follow rotation of player`);    
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

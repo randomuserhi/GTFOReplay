@@ -8,44 +8,44 @@ ModuleLoader.registerASLModule(module.src);
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
-            "Vanilla.Cfoam": {
+            "Vanilla.FogSphere": {
                 parse: DynamicPosition.Parse & {
-                    scale: number;
+                    range: number;
                 };
                 spawn: DynamicPosition.Spawn & {
-                    scale: number;
+                    range: number;
                 };
                 despawn: void;
             };
         }
 
         interface Data {
-            "Vanilla.Cfoam": Map<number, Cfoam>
+            "Vanilla.FogSphere": Map<number, FogSphere>
         }
     }
 }
 
-export interface Cfoam extends DynamicPosition.Type {
+export interface FogSphere extends DynamicPosition.Type {
     id: number;
-    scale: number;
+    range: number;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.FogSphere", "0.0.1", {
     main: {
         parse: async (data) => {
             const result = await DynamicPosition.parse(data);
             return {
                 ...result,
-                scale: await BitHelper.readHalf(data)
+                range: await BitHelper.readHalf(data),
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
-            const collection = snapshot.getOrDefault("Vanilla.Cfoam", Factory("Map"));
+            const collection = snapshot.getOrDefault("Vanilla.FogSphere", Factory("Map"));
     
-            if (!collection.has(id)) throw new Error(`Cfoam of id '${id}' was not found.`);
-            const cfoam = collection.get(id)!;
-            DynamicPosition.lerp(cfoam, data, lerp);
-            cfoam.scale += (data.scale - cfoam.scale) * lerp;
+            if (!collection.has(id)) throw new Error(`FogSphere of id '${id}' was not found.`);
+            const sphere = collection.get(id)!;
+            DynamicPosition.lerp(sphere, data, lerp);
+            sphere.range += (data.range - sphere.range) * lerp;
         }
     },
     spawn: {
@@ -53,14 +53,14 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
             const spawn = await DynamicPosition.spawn(data);
             const result = {
                 ...spawn,
-                scale: await BitHelper.readHalf(data)
+                range: await BitHelper.readHalf(data),
             };
             return result;
         },
         exec: (id, data, snapshot) => {
-            const collection = snapshot.getOrDefault("Vanilla.Cfoam", Factory("Map"));
+            const collection = snapshot.getOrDefault("Vanilla.FogSphere", Factory("Map"));
         
-            if (collection.has(id)) throw new Error(`Cfoam of id '${id}' already exists.`);
+            if (collection.has(id)) throw new Error(`FogSphere of id '${id}' already exists.`);
             collection.set(id, { id, ...data });
         }
     },
@@ -68,9 +68,9 @@ ModuleLoader.registerDynamic("Vanilla.Cfoam", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const collection = snapshot.getOrDefault("Vanilla.Cfoam", Factory("Map"));
+            const collection = snapshot.getOrDefault("Vanilla.FogSphere", Factory("Map"));
 
-            if (!collection.has(id)) throw new Error(`Cfoam of id '${id}' did not exist.`);
+            if (!collection.has(id)) throw new Error(`FogSphere of id '${id}' did not exist.`);
             collection.delete(id);
         }
     }

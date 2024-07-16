@@ -2,6 +2,7 @@ import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
+import { FogSphereModel } from "../../renderer/dynamicitems/fogsphere.js";
 import { EnemyModelWrapper } from "../../renderer/enemy/lib.js";
 import { ResourceContainerModel } from "../../renderer/map/resourcecontainers.js";
 import { Dropdown } from "../components/dropdown.js";
@@ -254,6 +255,50 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
         const [bindings, frag] = html`
             ${FeatureWrapper.open("Dimension").bind("wrapper")}
                 <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <span style="flex: 1; padding-top: 1px;">Relative Rotation</span>
+                    ${Toggle().bind("toggle")}
+                </div>
+            ${FeatureWrapper.close}
+        `.dom<{
+            wrapper: Macro<typeof FeatureWrapper>;
+            toggle: Macro<typeof Toggle>;
+        }>();
+
+        const { toggle } = bindings;
+
+        toggle.value.on((value) => {
+            const view = v();
+            if (view === undefined) return;
+            const controls = view.renderer.get("Controls");
+            if (controls === undefined) return;
+
+            controls.relativeRot(value);
+        });
+
+        v.on((view) => {
+            if (view === undefined) {
+                return;
+            }
+            
+            view.renderer.watch("Controls").on(controls => {
+                if (controls === undefined) return;
+                
+                controls.relativeRot.on(value => {
+                    toggle.value(value);
+                });
+            });
+        });
+
+        return bindings.wrapper;
+    },
+    (v) => {
+        const [bindings, frag] = html`
+            ${FeatureWrapper.open("Dimension").bind("wrapper")}
+                <div class="${style.row}" style="
                 gap: 10px;
                 ">
                     <span style="flex: 1; padding-top: 1px;">Dimension</span>
@@ -369,6 +414,35 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
 
         return bindings.wrapper;
     },
+    (v) => {
+        const [bindings, frag] = html`
+            ${FeatureWrapper.open("Show Fog Repeller Radius").bind("wrapper")}
+                <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <span style="flex: 1; padding-top: 1px;">Show Fog Repeller Radius</span>
+                    ${Toggle().bind("toggle")}
+                </div>
+            ${FeatureWrapper.close}
+        `.dom<{
+            wrapper: Macro<typeof FeatureWrapper>;
+            toggle: Macro<typeof Toggle>;
+        }>();
+
+        const { toggle } = bindings;
+
+        toggle.value.on((value) => {
+            FogSphereModel.show(value);
+        });
+
+        FogSphereModel.show.on((value) => {
+            toggle.value(value);
+        });
+
+        return bindings.wrapper;
+    },
 ];
 
 export const Settings = Macro(class Settings extends MacroElement {
@@ -419,6 +493,7 @@ export const Settings = Macro(class Settings extends MacroElement {
         top: 0px; 
         background-color: #1f1f29;
         margin-bottom: 10px;
+        z-index: 100;
         ">
             <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
         </div>

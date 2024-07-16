@@ -18,6 +18,7 @@ declare module "@esm/@root/replay/datastore.js" {
             fposition: Vector3;
             frotation: Quaternion;
             targetSlot?: number;
+            relativeRot: boolean;
         }
     }
 }
@@ -45,6 +46,7 @@ export class Controls {
 
     slot?: number;
     targetSlot = signal<number | undefined>(undefined);
+    relativeRot = signal(false);
 
     up: boolean;
     down: boolean;
@@ -61,7 +63,8 @@ export class Controls {
             rotation: this.camera.root.quaternion.clone(),
             fposition: this.fakeCamera.position.clone(),
             frotation: this.fakeCamera.quaternion.clone(),
-            targetSlot: this.targetSlot()
+            targetSlot: this.targetSlot(),
+            relativeRot: this.relativeRot(),
         });
     }
 
@@ -69,13 +72,14 @@ export class Controls {
         const state = DataStore.get("ControlState");
         if (state === undefined) return;
 
-        const { position, fposition, rotation, frotation, targetSlot } = state;
+        const { position, fposition, rotation, frotation, targetSlot, relativeRot } = state;
 
         this.camera.root.position.copy(position);
         this.camera.root.quaternion.copy(rotation);
         this.fakeCamera.position.copy(fposition);
         this.fakeCamera.quaternion.copy(frotation);
         this.targetSlot(targetSlot);
+        this.relativeRot(relativeRot);
     }
 
     constructor(camera: Camera, renderer: Renderer) {
@@ -313,8 +317,15 @@ export class Controls {
                     
                     const model = models.get(first.id)!;
                     if (model !== undefined) {
-                        if (camera.root.parent !== model.root) {
-                            camera.root.parent = model.root;
+                        const relativeRot = this.relativeRot();
+                        if (relativeRot === true) {
+                            if (camera.root.parent !== model.anchor) {
+                                camera.root.parent = model.anchor;
+                            }
+                        } else {
+                            if (camera.root.parent !== model.root) {
+                                camera.root.parent = model.root;
+                            }
                         }
 
                         camera.root.position.copy(this.fakeCamera.position);

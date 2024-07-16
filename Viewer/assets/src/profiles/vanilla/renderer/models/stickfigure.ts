@@ -33,7 +33,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
     material.opacity = 0.5;
     material.colorWrite = false;
 
-    const order = -2;
+    const order = -4;
     for (const [key, datablock] of StickModelDatablock.entries()) {
         if (datablock.geometry !== undefined && datablock.path !== undefined) {
             console.error(`Unable to load datablock '${key}' as both geometry and path were provided.`);
@@ -55,7 +55,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
     material.opacity = 0.5;
     material.colorWrite = true;
 
-    const order = -1;
+    const order = -3;
     for (const [key, datablock] of StickModelDatablock.entries()) {
         if (datablock.geometry !== undefined && datablock.path !== undefined) {
             console.error(`Unable to load datablock '${key}' as both geometry and path were provided.`);
@@ -141,7 +141,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
     public visual: HumanSkeleton = new AvatarSkeleton(HumanJoints, "hip");
     private inverseMatrix: AvatarStructure<HumanJoints, Matrix4> = createAvatarStruct(HumanJoints, () => new Matrix4());
 
-    protected anchor: Group = new Group();
+    public anchor: Group = new Group();
     protected offset: Group = new Group();
 
     public color: Color = new Color();

@@ -192,6 +192,7 @@ export const Finder = Macro(class Finder extends MacroElement {
         top: 0px; 
         background-color: #1f1f29;
         margin-bottom: 10px;
+        z-index: 100;
         ">
             <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
             <div class="${style.row}" style="

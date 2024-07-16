@@ -31,15 +31,13 @@ declare module "@esm/@root/replay/moduleloader.js" {
     }
 }
 
+const color = new Color(0xd8f0f2);
 const scale = new Vector3();
 const mat = new Matrix4();
 class CfoamModel {
-    sphere: number;
     visible: boolean;
-    readonly color: Color; 
     
     constructor() {
-        this.color = new Color(0xd8f0f2);
     }
 
     public update(cfoam: Cfoam) {
@@ -47,7 +45,7 @@ class CfoamModel {
 
         scale.set(cfoam.scale, cfoam.scale, cfoam.scale);
         mat.compose(cfoam.position, zeroQ, scale);
-        this.sphere = consume("Cfoam.Sphere.MeshPhong", mat, this.color);
+        consume("Cfoam.Sphere.MeshPhong", mat, color);
     }
 
     public setVisible(visible: boolean) {
