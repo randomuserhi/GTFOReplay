@@ -104,6 +104,7 @@ export const player = Macro(class Player extends MacroElement {
         this.view.replay(undefined);
         this.parser?.terminate();
         this.parser = undefined;
+        window.api.send("unlink");
         window.api.send("close");
     }
 }, html`

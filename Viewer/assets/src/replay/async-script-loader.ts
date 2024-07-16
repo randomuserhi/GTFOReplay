@@ -196,7 +196,7 @@ export class VM<T = any> {
 
             // Build source code if not built already
             if (module.build === undefined) {
-                module.build = (new Function(`const __code__ = async function(require, module, exports) {${code}}; return __code__.bind(undefined); //# sourceURL=${module.src}`))() as Exec;
+                module.build = (new Function(`const __code__ = async function(require, module, exports) {\n${code}\n}; return __code__.bind(undefined); //# sourceURL=${module.src}`))() as Exec;
             }
 
             // Check if an existing module is still executing, if it is - terminate it
@@ -423,7 +423,7 @@ export class VM<T = any> {
         let isTop = true;
         for (const match of stack.matchAll(VM.sourceRegex)) {
             const src = match[1];
-            const line = parseInt(match[2]);
+            const line = parseInt(match[2]) - 1;
             const col = match[3];
             
             const module = this.cache.get(src);
