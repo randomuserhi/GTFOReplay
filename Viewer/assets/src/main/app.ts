@@ -102,9 +102,12 @@ const App = Macro(class App extends MacroElement {
             }
 
             moduleListHandle(response);
-            if (response.modules.includes("vanilla")) {
-                window.api.invoke("loadModule", "vanilla").then((response) => this.onLoadModule(response));
-            }
+
+            window.api.invoke("defaultModule").then((defaultModule) => {
+                if (response.modules.includes(defaultModule)) {
+                    window.api.invoke("loadModule", defaultModule).then((response) => this.onLoadModule(response));
+                }
+            });
         });
 
         window.api.on("startGame", () => {
@@ -200,19 +203,24 @@ const App = Macro(class App extends MacroElement {
             ASL_VM.load(p);
         });
 
-        // Show loading screen
-        this.main.video.play();
-        this.main.loading(this.player.path !== undefined);
-        this.load(this.main);
+        // Get last opened file
+        window.api.invoke("lastFile").then((path) => {
+            this.player.path = path;
 
-        // reset file loader
-        this.replayfile.value = "";
+            // Show loading screen
+            this.main.video.play();
+            this.main.loading(this.player.path !== undefined);
+            this.load(this.main);
 
-        this.profile(response.module);
+            // reset file loader
+            this.replayfile.value = "";
 
-        if (this.player.path !== undefined) {
-            ASL_VM.onNoExecutionsLeft(() => this.player.open(this.player.path), { once: true });
-        }
+            this.profile(response.module);
+
+            if (this.player.path !== undefined) {
+                ASL_VM.onNoExecutionsLeft(() => this.player.open(this.player.path), { once: true });
+            }
+        });
     }
 
     public load(macro: MacroElement) {

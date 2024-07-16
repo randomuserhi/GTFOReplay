@@ -218,6 +218,9 @@ export class FileManager {
         ipc.on("close", () => {
             this.file?.close();
         });
+        ipc.handle("lastFile", () => {
+            return this.file?.path;
+        });
         
         ipc.handle("getBytes", async (_, index: number, numBytes: number, wait?: boolean) => {
             return await this.file?.getBytes(index, numBytes, wait);

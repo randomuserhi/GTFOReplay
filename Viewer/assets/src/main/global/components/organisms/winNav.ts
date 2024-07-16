@@ -2,7 +2,6 @@ import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { computed, signal, Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
-import { app } from "../../../app.js";
 import * as icons from "../atoms/icons/index.js";
 
 const moduleListStyles = Style(({ style }) => {
@@ -97,9 +96,11 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
                 } else {
                     const item = Macro.create(ModuleItem(key));
                     item.button.addEventListener("click", () => {
-                        window.api.invoke("loadModule", item.key()).then((response) => {
+                        // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
+                        window.api.send("defaultModule", item.key());
+                        /*window.api.invoke("loadModule", item.key()).then((response) => {
                             app().onLoadModule(response);
-                        });
+                        });*/
                     });
                     this._items.set(key, item);
                     this.mount.append(item.frag);

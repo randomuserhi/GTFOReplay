@@ -1,12 +1,14 @@
 import * as chokidar from "chokidar";
 import * as fs from 'node:fs/promises';
 import * as path from "path";
+import Program from "../main.cjs";
 
 export class ModuleLoader {
     private post: (event: string, ...args: any[]) => void;
     private directory: string;
     private hotreload?: chokidar.FSWatcher;
     private watcher?: chokidar.FSWatcher;
+    private defaultModule = "vanilla";
 
     constructor(post: (event: string, ...args: any[]) => void, directory: string) {
         this.post = post;
@@ -149,6 +151,13 @@ export class ModuleLoader {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
+        ipc.handle("defaultModule", async () => {
+            return this.defaultModule;
+        });
+        ipc.on("defaultModule", async (_, module: string) => {
+            this.defaultModule = module;
+            Program.win?.reload();
+        });
         ipc.handle("loadModule", async (_, module: string) => {
             return await this.load(module);
         });
