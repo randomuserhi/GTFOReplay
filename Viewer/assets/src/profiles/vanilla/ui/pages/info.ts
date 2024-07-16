@@ -63,7 +63,7 @@ export const Info = Macro(class Info extends MacroElement {
 
             this.version.on((value) => {
                 const text = versionInfo.get(value);
-                if (text !== undefined) this.versionText.innerHTML = text;
+                if (text !== undefined) this.versionText.innerText = text;
             });
 
             view.replay.on((replay) => {
