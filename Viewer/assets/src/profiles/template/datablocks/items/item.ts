@@ -252,7 +252,9 @@ const MatterWaveProjector: ItemDatablock = {
     name: "Matter Wave Projector",
     serial: "MATTER_WAVE_PROJECTOR",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/matter wave projector.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/matter wave projector.glb", () => {
+            model.gltf.rotation.set(-90 * Math.deg2rad, 0, 0);
+        });
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotateZ(Math.PI);
     

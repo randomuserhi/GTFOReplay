@@ -21,6 +21,12 @@ namespace ReplayRecorder.BepInEx {
                 false,
                 "Enables debug messages for dynamics when true.");
 
+            performanceDebug = configFile.Bind(
+                "Debug",
+                "performanceDebug",
+                false,
+                "Shows the amount of memory buffers used and time taken to write a snapshot to disk. Useful to know the performance impact of this mod.");
+
             replayFolder = configFile.Bind(
                 "Settings",
                 "replayFolder",
@@ -44,6 +50,12 @@ namespace ReplayRecorder.BepInEx {
             set { debug.Value = value; }
         }
         private static ConfigEntry<bool> debug;
+
+        public static bool PerformanceDebug {
+            get { return performanceDebug.Value; }
+            set { performanceDebug.Value = value; }
+        }
+        private static ConfigEntry<bool> performanceDebug;
 
         // TODO(randomuserhi): Convert to string and have space seperated debug filters "ALL" etc...
         public static bool DebugDynamics {
