@@ -50,7 +50,7 @@ import { Datablock } from "../lib.js";
 import { PlayerAnimDatablock } from "../player/animation.js";
 import { GearAnimDatablock } from "./animation.js";
 
-if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
 export interface MeleeArchetype {
     equipAnim: HumanAnimation,

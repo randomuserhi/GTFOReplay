@@ -4,6 +4,7 @@ import { Style } from "@/rhu/style.js";
 import { ReplayApi } from "../../../../../replay/moduleloader.js";
 import { Renderer } from "../../../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../../../replay/replay.js";
+import { ASL_VM } from "../../../../../replay/vm.js";
 
 const style = Style(({ style }) => {
     const canvas = style.class`
@@ -93,22 +94,26 @@ export const View = Macro(class View extends MacroElement {
         
         const replay = this.replay();
         if (replay !== undefined) {
-            if (!this.pause()) {
-                if (this.live()) {
-                    const time = this.time();
-                    this.time(time + (replay.length() - time) * dt / 1000 * this.lerp);
-                } else this.time(this.time() + dt * this.timescale());
-            }
-            const time = this.time();
+            try {
+                if (!this.pause()) {
+                    if (this.live()) {
+                        const time = this.time();
+                        this.time(time + (replay.length() - time) * dt / 1000 * this.lerp);
+                    } else this.time(this.time() + dt * this.timescale());
+                }
+                const time = this.time();
 
-            if (this.snapshot?.time !== time) {
-                this.snapshot = replay.getSnapshot(time);
-            }
+                if (this.snapshot?.time !== time) {
+                    this.snapshot = replay.getSnapshot(time);
+                }
 
-            if (this.snapshot !== undefined) {
-                const api = replay.api(this.snapshot);
-                this.api(api);
-                this.renderer.render(dt / 1000, api);
+                if (this.snapshot !== undefined) {
+                    const api = replay.api(this.snapshot);
+                    this.api(api);
+                    this.renderer.render(dt / 1000, api);
+                }
+            } catch (e) {
+                ASL_VM.verboseError(e);
             }
         }
 

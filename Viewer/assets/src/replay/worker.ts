@@ -1,4 +1,4 @@
-import { AsyncScriptCache, AsyncScriptLoader } from "./async-script-loader.js";
+import { VM } from "./async-script-loader.js";
 import * as BitHelper from "./bithelper.js";
 import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
@@ -9,18 +9,18 @@ import { ByteStream, FileHandle, FileStream } from "./stream.js";
 let replay: Replay | undefined = undefined;
 
 (() => {
+
     const ipc = new IpcInterface({
         on: (callback) => self.addEventListener("message", (e) => { callback(e.data); }),
         send: self.postMessage.bind(self)
     });
     ipc.on("init", async (file: FileHandle, links: string[], baseURI?: string) => {
-        AsyncScriptLoader.baseURI = baseURI;
-        AsyncScriptLoader.isParser = true;
-        await Promise.all(links.map(async link => await AsyncScriptLoader.load(link)));
-        parse(file);
+        const vm = new VM({ isParser: true }, baseURI);
+        await Promise.all(links.map(async link => (vm.load(link)).then(module => module.execution)));
+        parse(vm, file);
     });
 
-    async function parse(file: FileHandle) {
+    async function parse(vm: VM, file: FileHandle) {
         if (replay !== undefined) return;
         replay = new Replay();
 
@@ -186,7 +186,7 @@ let replay: Replay | undefined = undefined;
             }
         } catch (err) {
             if (!(err instanceof RangeError)) {
-                throw new Error(`Failed to parse replay:\n\n${AsyncScriptCache.formatError(err)}`);
+                throw new Error(`Failed to parse replay:\n\n${vm.verboseError(err)}`);
             }
         }
 

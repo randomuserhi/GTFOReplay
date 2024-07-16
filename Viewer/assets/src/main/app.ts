@@ -2,8 +2,8 @@ import { html, Macro, MacroElement } from "@/rhu/macro.js";
 import { signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
-import { AsyncScriptCache, AsyncScriptLoader } from "../replay/async-script-loader.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
+import { ASL_VM } from "../replay/vm.js";
 import { WinNav } from "./global/components/organisms/winNav.js";
 import { Main } from "./routes/main/index.js";
 import { player } from "./routes/player/index.js";
@@ -71,7 +71,7 @@ const App = Macro(class App extends MacroElement {
         // hot reload event
         window.api.on("loadScript", async (paths: string[]) => {
             for (const p of paths) {
-                AsyncScriptLoader.load(p);
+                ASL_VM.load(p);
             }
         });
 
@@ -149,7 +149,7 @@ const App = Macro(class App extends MacroElement {
         this.nav.icon.addEventListener("click", () => this.replayfile.click());
 
         // Upon all modules loading, refresh player
-        AsyncScriptCache.onExecutionsCompleted(() => {
+        ASL_VM.onNoExecutionsLeft(() => {
             this.player.refresh();
         });
 
@@ -173,7 +173,7 @@ const App = Macro(class App extends MacroElement {
         this.load(this.main);
     }
 
-    public async onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }) {
+    public onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }) {
         if (response.success === false) {
             console.error(response.error);
             this.profile(undefined);
@@ -195,9 +195,9 @@ const App = Macro(class App extends MacroElement {
         ModuleLoader.clear();
         
         // Reset cache
-        AsyncScriptCache.reset();
+        ASL_VM.dispose();
         response.scripts.forEach((p: string) => {
-            AsyncScriptLoader.load(p);
+            ASL_VM.load(p);
         });
 
         // Show loading screen
@@ -211,7 +211,7 @@ const App = Macro(class App extends MacroElement {
         this.profile(response.module);
 
         if (this.player.path !== undefined) {
-            AsyncScriptCache.onExecutionsCompleted(() => this.player.open(this.player.path), { once: true });
+            ASL_VM.onNoExecutionsLeft(() => this.player.open(this.player.path), { once: true });
         }
     }
 

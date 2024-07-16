@@ -9,7 +9,7 @@ import { HumanoidEnemyModel } from "../../renderer/enemy/models/humanoid.js";
 import { SquidModel } from "../../renderer/enemy/models/squid.js";
 import { Datablock } from "../lib.js";
 
-if (module.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
+if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
 export interface EnemyDatablock {
     maxHealth?: number;

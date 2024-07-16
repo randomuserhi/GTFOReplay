@@ -1,7 +1,5 @@
 // NOTE(randomuserhi): Need to make sure that all vanilla modules load, thus wrap them all in a Promise
 
-module.manual = true;
-
 const includes = [
     import("./library/animations/inversekinematics/aimsolver.js"),
     import("./library/animations/inversekinematics/limbsolver.js"),
@@ -155,9 +153,7 @@ const includes = [
     import("./ui/pages/stats.js"),
     import("./ui/scoreboard.js"),
 ];
-Promise.all(includes).then(() => {
-    module.ready();
-});
+await Promise.all(includes);
 
 export { };
 

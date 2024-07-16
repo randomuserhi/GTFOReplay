@@ -1,4 +1,4 @@
-import { ASLModule } from "./replay/async-script-loader";
+import { ASLModule } from "./replay/vm.js";
 
 declare global {
     const module: ASLModule;

@@ -1,93 +1,3 @@
-import { Rest } from "@/rhu/rest.js";
-
-// TODO(randomuserhi): Documentation & Refactor => code is a mess
-
-// NOTE(randomuserhi): ExecutionContext vs Module isReady
-//                     - ExecutionContext refers to when the entire module has executed (all code has run)
-//                     - Module isReady refers to when its exports are safe to use (no more to be added or changed)
-//                     - isParser => parser context etc...
-
-export interface ASLModule {
-    readonly src: string;
-    readonly isReady: boolean;
-    destructor?: () => void;
-    ready(): void;
-    exports: Record<PropertyKey, any>;
-    readonly baseURI: string | undefined;
-    manual: boolean;
-    readonly isParser: boolean;
-    rel(path: string): string;
-}
-
-type ASLExec = (require: Require, module: ASLModule, exports: Record<PropertyKey, any>) => Promise<void>;
-class _ASLModule implements ASLModule, Exports {
-    readonly src: string;
-    exec?: ASLExec;
-    code?: string;
-    executionContext?: Promise<void>;
-    terminate?: () => void;
-    kill?: (reason: any) => void;
-    
-    isParser: boolean = AsyncScriptLoader.isParser;
-    isReady: boolean = false;
-    destructed: boolean = false;
-    manual: boolean = false;
-
-    private _exports: Record<PropertyKey, any> = {};
-    private proxy: Record<PropertyKey, any> = new Proxy(this, {
-        set(module, prop, newValue, receiver) {
-            if (module.isReady) throw new Error(`You cannot add exports once a module has loaded.`);
-            return Reflect.set(module._exports, prop, newValue, receiver);
-        }
-    });
-    get exports() {
-        return this.proxy;
-    }
-    set exports(value) {
-        this._exports = value;
-    }
-
-    destructor?: () => void;
-
-    public destruct() {
-        if (this.destructor !== undefined) {
-            try {
-                this.destructor();
-            } catch (e) {
-                console.warn(`Failed to destruct '${this.src}':\n\n${AsyncScriptCache.formatError(e)}`);
-            }
-        }
-        this.destructed = true;
-        
-        if (this.terminate !== undefined) this.terminate();
-    }
-
-    constructor(url: string, exec?: ASLExec, code?: string) {
-        this.src = url;
-        this.exec = exec;
-        this.code = code;
-    }
-    
-    public ready() {
-        AsyncScriptCache.finalize(this);
-    }
-
-    _archetype: Archetype = AsyncScriptCache.archetype;
-    set archetype(value: Archetype) {
-        value.add(this);
-    }
-    get archetype() {
-        return this._archetype;
-    }
-
-    get baseURI() {
-        return AsyncScriptLoader.baseURI;
-    }
-
-    public rel(path: string) {
-        return new URL(path, this.src).toString();
-    }
-}
 
 // Represents module dependencies
 class Archetype {
@@ -96,7 +6,7 @@ class Archetype {
     static typemap: Archetype[][] = []; // Maps a type to all archetypes that contain said type
 
     type: number[]; // The dependencies for the given modules in this archetype
-    modules: Map<string, _ASLModule> = new Map();
+    modules: Map<string, Module> = new Map();
     addMap: Map<number, Archetype> = new Map(); // Map to traverse to move to other archetypes as dependencies are added
 
     constructor(type: number[] = []) {
@@ -112,16 +22,16 @@ class Archetype {
         }
     }
 
-    public add(module: _ASLModule) {
+    public add(module: Module) {
         module._archetype.modules.delete(module.src);
         this.modules.set(module.src, module);
         module._archetype = this;
     }
 
-    public static traverse(module: _ASLModule, path: string) {
+    public static traverse(module: Module, src: string) {
         const archetype = module.archetype;
 
-        const type = AsyncScriptCache.getType(path);
+        const type = Archetype.getAlias(src);
         if (!archetype.addMap.has(type)) {
             const typelist = [...archetype.type, type].sort();
             let newArchetype = this.allMap.get(typelist.join(","));
@@ -132,28 +42,394 @@ class Archetype {
         }
         archetype.addMap.get(type)!.add(module);
     }
+
+    private static _type: number = 0;
+    private static readonly aliases = new Map<string, number>();
+    public static getAlias(src: string) {
+        if (!Archetype.aliases.has(src)) {
+            Archetype.aliases.set(src, Archetype._type++);
+        }
+        return Archetype.aliases.get(src)!;
+    }
 }
 
-export namespace AsyncScriptCache {
-    const _cache = new Map<string, _ASLModule>();
+type RequireType = "asl" | "esm";
+type Require = <T>(path: string, mode?: RequireType) => Promise<T>;
+type Exec = (require: Require, module: Module, exports: Record<PropertyKey, any>) => Promise<void>;
 
-    // NOTE(randomuserhi): Used to get more informative errors -> including code snippet (since dev tools can't handle the hot reload stuff very well)
-    const sourceRegex = /\(((?:https?|file):\/\/.*\.js):([0-9]+):([0-9]+)\)/g;
-    export function formatError(e: Error, offset: number = 0) {
+class Module {
+    static silent = {}; // When passed to `terminate`, will silently terminate instead of throwing an error
+    
+    readonly src: string; // path to module (also used as the module identifier)
+    
+    public rel(path: string) {
+        return new URL(path, this.src).toString();
+    }
+
+    private _exports: Record<PropertyKey, any> = {};
+    private proxy: Record<PropertyKey, any> = new Proxy(this, {
+        set(module, prop, newValue) {
+            if (module.isReady) throw new Error(`You cannot add exports once a module has loaded.`);
+            if (module.destructed) throw new Error(`You cannot add exports once a module has been destructed.`);
+            module._exports[prop] = newValue;
+            return true;
+        },
+        get(module, prop) {
+            return module._exports[prop];
+        }
+    });
+    get exports() {
+        return this.proxy;
+    }
+    set exports(value) {
+        this._exports = value;
+    }
+
+    constructor(vm: VM, src: string) {
+        this.vm = vm;
+        this.src = src;
+        this._archetype = vm.baseArchetype;
+
+        const promise = new Promise<Module>((resolve) => {
+            this.resolve = () => {
+                this.isReady = true;
+                resolve(this);
+            };
+        });
+        this.resolution = promise;
+    }
+
+    public clone() {
+        const clone = new Module(this.vm, this.src);
+        clone.code = this.code;
+        clone.build = this.build;
+        return clone;
+    }
+
+    readonly vm: VM; // the VM the module is running in
+    code: string | undefined; //internal immedate access to code, is undefined if still fetching
+    build?: Exec; // built source code that can be executed
+    destructor?: (() => void) | undefined;
+    execution?: Promise<void>; // represents the execution of the module, if not fullfilled, module hasn't finished executing
+    readonly resolution: Promise<Module>; // represents the resolve of the module, if not fullfilled, exports are not ready to be used
+    resolve: () => void; // resolve the module exports as ready for use
+    terminate?: (reason?: any) => void; // terminate the execution of the module
+    public ready() { // mark this modules exports as ready for use
+        this.resolve();
+    }
+
+    isReady: boolean = false; // are the exports of the module ready for use?
+    destructed: boolean = false; // has this module been destructed
+
+    // Module dependencies managed by Archetype class
+    _archetype: Archetype;
+    set archetype(value: Archetype) {
+        value.add(this);
+    }
+    get archetype() {
+        return this._archetype;
+    }
+}
+
+interface ExecutionCallback {
+    callback: () => void;
+    options?: {
+        once?: boolean;
+    }
+}
+
+export class VM<T = any> {
+    readonly baseURI: string | undefined;
+    readonly metadata?: T;
+    constructor(metadata?: T, baseURI?: string) {
+        this.baseURI = baseURI === undefined ? globalThis.document === undefined ? undefined : globalThis.document.baseURI : baseURI;
+        
+        try {
+            this.metadata = structuredClone(metadata);
+        } catch {
+            console.warn("Metadata must be serializable.");
+            this.metadata = undefined;
+        }
+    }
+
+    baseArchetype = new Archetype();
+
+    // Ongoing require requests
+    private requires = new Map<Module, Set<string>>();
+
+    // Cache of loaded modules
+    private cache = new Map<string, Module>();
+
+    // Map of modules still executing
+    private executing = new Map<string, Set<Module>>();
+
+    // Callback when no executions are left
+    private callbacks = new Set<ExecutionCallback>();
+    public onNoExecutionsLeft(callback: () => void, options?: ExecutionCallback["options"]) {
+        this.callbacks.add({
+            callback,
+            options
+        });
+    }
+
+    private static setProps: (string | symbol)[] = ["destructor"];
+    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel"]; 
+    // Execute a module
+    private execute(module: Module): Promise<void> {
+        const vm = this;
+
+        // Check if this module is already executing
+        if (module.execution !== undefined) return module.execution; 
+        module.archetype.add(module);
+        module.execution = new Promise<string>((resolve) => {
+            // Fetch code if needed
+            if (module.code !== undefined) resolve(module.code);
+            else resolve(fetch(new URL(module.src), { method: "GET" }).then((req) => req.text()));
+        }).then((code) => new Promise<void>((resolve, reject) => {
+            module.code = code; // cache code
+
+            // add this execution to the executing tracker
+            if (!this.executing.has(module.src)) {
+                this.executing.set(module.src, new Set());
+            }
+            this.executing.get(module.src)!.add(module);
+
+            // Build source code if not built already
+            if (module.build === undefined) {
+                module.build = (new Function(`const __code__ = async function(require, module, exports) {${code}}; return __code__.bind(undefined); //# sourceURL=${module.src}`))() as Exec;
+            }
+
+            // Check if an existing module is still executing, if it is - terminate it
+            if (this.executing.has(module.src)) {
+                for (const old of this.executing.get(module.src)!) {
+                    const kill = old.terminate;
+                    if (kill !== undefined) kill(Module.silent);
+                }
+            }
+
+            // Assign termination
+            module.terminate = (reason?: any) => {
+                reject(reason);
+            };
+
+            // Setup exports & module proxy
+            module.exports = {};
+            let metadata: T | undefined = undefined;
+            const __module__ = new Proxy(module, {
+                set: (module, prop, newValue, receiver) => {
+                    if (module.destructed) throw new Error(`Module has been destructed`);
+                    if (VM.setProps.indexOf(prop) === -1) throw new Error(`Invalid operation set '${prop.toString()}'.`);
+                    if (module.isReady) throw new Error(`You cannot change '${prop.toString()}' once a module has loaded.`);
+                    return Reflect.set(module, prop, newValue, receiver);
+                },
+                get: (module, prop, receiver) => {
+                    if (module.destructed) throw new Error(`Module has been destructed`);
+                    if (VM.getProps.indexOf(prop) === -1) throw new Error(`Invalid operation get '${prop.toString()}'.`);
+                    if (prop === "exports") return module.exports;
+                    else if (prop === "metadata") {
+                        if (metadata === undefined && vm.metadata !== undefined) metadata = structuredClone(vm.metadata);
+                        return metadata;
+                    } else if (prop === "baseURI") return vm.baseURI;
+                    const value = Reflect.get(module, prop, receiver);
+                    if (typeof value === "function") {
+                        return value.bind(module);
+                    }
+                    return value;
+                }
+            });
+
+            // Create require method
+            const _require = async (_path: string, type: RequireType = "asl") => {
+                try {
+                    switch (type) {
+                    case "asl": {
+                        const resolvedPath = new URL(_path, _path.startsWith(".") ? module.src : undefined).toString();
+                        Archetype.traverse(module, resolvedPath);
+                        const m = await this._load(resolvedPath, module);
+                        if (m === module) throw new Error("Cannot 'require()' self");
+                        return m.exports;
+                    }
+                    case "esm": {
+                        return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
+                    }
+                    default: throw new Error(`Invalid RequireType '${type}'`);
+                    }
+                } catch (e) {
+                    throw new Error(`Failed to fetch '${_path}':\n${vm.verboseError(e)}`);
+                }
+            };
+
+            // Execute module
+            module.build(_require, __module__, module.exports).then(() => {
+                module.ready();
+                resolve();
+            }).catch((e) => {
+                if (e !== Module.silent) reject(e);
+            });
+        })).catch((e) => {
+            if (module.destructed !== true && e !== Module.silent) throw new Error(`Failed to execute '${module.src}':\n\n${this.verboseError(e)}`);
+        }).finally(() => {
+            // Clear module from execution
+            const collection = this.executing.get(module.src);
+            if (collection !== undefined) { 
+                collection.delete(module);
+                if (collection.size === 0) {
+                    this.executing.delete(module.src);
+                }
+            }
+
+            // Trigger onNoExecutionsLeft callback
+            if (this.executing.size === 0) {
+                for (const callback of [...this.callbacks.values()]) {
+                    callback.callback();
+                    if (callback.options?.once === true) {
+                        this.callbacks.delete(callback);
+                    } 
+                }
+            }
+        });
+
+        // Return execution
+        return module.execution;
+    }
+
+    // Destruct a module
+    private destruct(module: Module) {
+        if (module.destructed) return;
+
+        const kill = module.terminate;
+        if (kill !== undefined) kill(Module.silent);
+
+        const destructor = module.destructor;
+        if (destructor !== undefined) {
+            try {
+                destructor();
+            } catch (e) {
+                console.warn(`Failed to destruct '${module.src}':\n\n${this.verboseError(e)}`);
+            }
+        }
+        
+        this.cache.delete(module.src);
+        
+        // Clear module from execution
+        const exec = this.executing.get(module.src);
+        if (exec !== undefined) { 
+            exec.delete(module);
+            if (exec.size === 0) {
+                this.executing.delete(module.src);
+            }
+        }
+
+        // Clear requests
+        this.requires.delete(module);
+
+        module.destructed = true;
+    }
+
+    // Dispose of all modules
+    public async dispose() {
+        for (const module of this.cache.values()) {
+            const kill = module.terminate;
+            if (kill !== undefined) kill(Module.silent);
+            this.destruct(module);
+        }
+        this.cache.clear();
+        this.baseArchetype = new Archetype();
+    }
+
+    // Load a module
+    private _load(path: string, root?: Module): Promise<Module> {
+        let promise: Promise<Module>;
+
+        // If module exists already, resolve from cache, otherwise fetch and execute 
+        if (this.cache.has(path)) promise = this.cache.get(path)!.resolution;
+        else {
+            // NOTE(randomuserhi): Wrap fetch in another promise to catch errors and produce a verbose one
+            const module = new Module(this, path);
+            this.cache.set(module.src, module);
+            this.execute(module);
+            promise = module.resolution;
+        }
+
+        // If load was called from another module (aka a require call), keep track of the request
+        if (root !== undefined && root.destructed !== true) {
+            // Add to watch list
+            if (!this.requires.has(root)) {
+                this.requires.set(root, new Set());
+            }
+            this.requires.get(root)!.add(path);
+
+            // Remove on completion
+            promise.finally(() => {
+                const collection = this.requires.get(root);
+                if (collection !== undefined) {
+                    collection.delete(path);
+                    if (collection.size === 0) {
+                        this.requires.delete(root);
+                    }
+                }
+            });
+        }
+
+        return promise;
+    }
+
+    private invalidate(path: string, reimport?: Map<string, Module>): boolean {
+        if (!this.cache.has(path)) return false;
+        const module = this.cache.get(path)!;
+
+        // recursive calls to invalidate do not trigger reimport, only the root call.
+        // this is guaranteed by passing a reimport map
+
+        let _reimport: Map<string, Module>;
+        if (reimport === undefined) _reimport = new Map();
+        else _reimport = reimport;
+
+        this.destruct(module);
+
+        // invalidate and re-import modules that depended on the module being invalidated
+        const archetypesContainingModule = Archetype.typemap[Archetype.getAlias(module.src)];
+        if (archetypesContainingModule !== undefined) {
+            for (const archetype of archetypesContainingModule) {
+                for (const module of archetype.modules.values()) {
+                    if (this.invalidate(module.src)) {
+                        _reimport.set(module.src, module.clone());
+                    }
+                }
+            }
+        }
+
+        if (reimport === undefined) {
+            for (const module of _reimport.values()) {
+                this.cache.set(module.src, module);
+                this.execute(module);
+            }
+        }
+
+        return true;
+    }
+    public async load(path: string) {
+        path = new URL(path, this.baseURI).toString();
+        this.invalidate(path);
+        return this._load(path);
+    }
+
+    private static sourceRegex = /\(((?:https?|file):\/\/.*\.js):([0-9]+):([0-9]+)\)/g;
+    public verboseError(e: Error) {
         let stack = e.stack;
         if (stack === undefined) return e.toString();
 
-        let topLevel: { module: _ASLModule, line: number, col: number, isTop: boolean } | undefined = undefined;
+        let topLevel: { module: Module, line: number, col: number, isTop: boolean } | undefined = undefined;
         let isTop = true;
-        for (const match of stack.matchAll(sourceRegex)) {
+        for (const match of stack.matchAll(VM.sourceRegex)) {
             const src = match[1];
-            const line = parseInt(match[2]) + offset;
+            const line = parseInt(match[2]);
             const col = match[3];
             
-            let module = _cache.get(src);
-            if (module === undefined) module = executionContexts.get(src);
+            const module = this.cache.get(src);
+            //if (module === undefined) module = this.pending.get(src);
             if (module !== undefined) {
-                if (topLevel === undefined) topLevel = { module, line: line - offset - 3, col: parseInt(col), isTop };
+                if (topLevel === undefined) topLevel = { module, line: line - 3, col: parseInt(col), isTop };
                 stack = stack.replace(match[0], `(${src}:${line}:${col})`);
             }
 
@@ -174,323 +450,11 @@ export namespace AsyncScriptCache {
                 if (error[i] !== "\t") point += " ";
                 else point += "\t";
             }
-            point += `^:${line+offset+3}:${col}`;
-            const message = isTop ? stack : `Callsite for nested error:\n\tat (${module.src}:${line+offset+3}:${col})\n\n${stack}`;
+            point += `^:${line+1}:${col}`;
+            const message = isTop ? stack : `Callsite for nested error:\n\tat (${module.src}:${line+1}:${col})\n\n${stack}`;
             codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}${stack !== undefined ? `\n\t| ${message.split("\n").join("\n\t| ")}` : ""}\n\n${bottom.join("\n")}\n\n...\n`;
         }
 
         return codeSnippet === undefined ? stack : codeSnippet;
     }
-
-    export let archetype: Archetype = new Archetype();
-
-    let _type: number = 0;
-    const typemap = new Map<string, number>();
-    export function getType(path: string) {
-        if (!typemap.has(path)) throw new Error(`Type '${path}' does not exist.`);
-        return typemap.get(path)!;
-    }
-
-    export function cache(module: _ASLModule) {
-        const { src: url } = module;
-
-        if (_cache.has(url)) throw new Error("Cannot cache an existing module, call 'invalidate' on it first.");
-        
-        if (!typemap.has(url)) {
-            typemap.set(url, _type++);
-            
-            // TODO(randomuserhi): handle integer overflow
-        }
-
-        _cache.set(url, module);
-    }
-
-    interface ExecCallback {
-        callback: () => void;
-        options?: {
-            once?: boolean;
-        }
-    }
-    const callbacks = new Set<ExecCallback>();
-    export function onExecutionsCompleted(callback: () => void, options?: ExecCallback["options"]) {
-        callbacks.add({
-            callback,
-            options
-        });
-    }
-
-    const executionContexts = new Map<string, _ASLModule>();
-    const onExec = (key: string) => {
-        executionContexts.delete(key);
-        if (executionContexts.size === 0) {
-            for (const callback of [...callbacks.values()]) {
-                callback.callback();
-                if (callback.options?.once === true) {
-                    callbacks.delete(callback);
-                } 
-            }
-        }
-    };
-    const setProps: (string | symbol)[] = ["destructor", "manual"];
-    const getProps: (string | symbol)[] = [...setProps, "exports", "ready", "src", "isReady", "baseURI", "isParser", "rel"];
-    const silent = {}; // NOTE(randomuserhi): used when killing a module without throwing an error.
-    export async function exec(module: _ASLModule) {
-        if (executionContexts.has(module.src)) {
-            const kill = executionContexts.get(module.src)!.kill;
-            if (kill !== undefined) kill(silent); 
-        }
-        if (module.executionContext === undefined) {
-            module.executionContext = new Promise<void>((resolve, reject) => {
-                module.terminate = resolve;
-                module.kill = reject;
-
-                module.exports = {};
-                const __module__ = new Proxy(module, {
-                    set: (module, prop, newValue, receiver) => {
-                        if (setProps.indexOf(prop) === -1) throw new Error(`Invalid operation set '${prop.toString()}'.`);
-                        if (module.isReady) throw new Error(`You cannot change '${prop.toString()}' once a module has loaded.`);
-                        return Reflect.set(module, prop, newValue, receiver);
-                    },
-                    get: (module, prop, receiver) => {
-                        if (getProps.indexOf(prop) === -1) throw new Error(`Invalid operation get '${prop.toString()}'.`);
-                        if (prop === "exports") return module.exports;
-                        const value = Reflect.get(module, prop, receiver);
-                        if (typeof value === "function") {
-                            return value.bind(module);
-                        }
-                        return value;
-                    }
-                });
-                const _require = async (_path: string, type: ASLRequireType = "asl") => {
-                    try {
-                        switch (type) {
-                        case "asl": {
-                            const m = await fetchModule(_path, module.src, module);
-                            if (m === module) throw new Error("Cannot 'require()' self.");
-                            Archetype.traverse(module!, m.src);
-                            return m.exports;
-                        }
-                        case "esm": {
-                            return await import(_path.startsWith(".") ? new URL(_path, module.src).toString() : _path);
-                        }
-                        default: throw new Error(`Invalid ASLRequireType '${type}'`);
-                        }
-                    } catch (e) {
-                        throw new Error(`Failed to fetch '${_path}'.`);
-                    }
-                };
-
-                if (module.exec === undefined) {
-                    reject(new Error(`Module '${module.src}' was not assigned an exec function.`));
-                    return;
-                }
-            
-                module.exec(_require, __module__, module.exports).then(() => {
-                    finalize(module);
-                    // NOTE(randomuserhi): if manual termination is set to false, module terminates execution context once it has completed
-                    //                     execution
-                    if (module.manual === false) resolve();
-                }).catch((e) => {
-                    reject(new Error(`Failed to execute '${module.src}':\n\n${AsyncScriptCache.formatError(e)}`));
-                });
-            }).catch((e) => {
-                if (e !== silent) throw e;
-            });
-            executionContexts.set(module.src, module);
-            module.executionContext.then(() => { onExec(module.src); });
-        }
-        return module.executionContext;
-    }
-
-    export function finalize(module: _ASLModule) {
-        if (module.isReady) return;
-        module.isReady = true;
-        module.archetype.add(module);
-
-        // NOTE(randomuserhi): if manual termination is set to true, module terminates execution context once module.ready() is called (aka the finalized runs)
-        if (module.manual === true && module.terminate !== undefined) module.terminate();
-
-        let currentListLength: number;
-        do {
-            currentListLength = _getList.length;
-            const getList = _getList;
-            _getList = [];
-            for (const item of getList) {
-                const { module, resolve } = item;
-                if (module.destructed) continue;
-                if (module.isReady) {
-                    if (resolve !== undefined) resolve(module);
-                } else _getList.push(item);
-            }
-        } while (_getList.length !== currentListLength);
-    }
-
-    // NOTE(randomuserhi): returns:
-    //                     - a boolean for if the file was removed from cache or not (wont remove from cache if it was already invalidated)
-    //                     - a list promises for dependencies that were also invalidated and are waiting to re-execute
-    //                       - these promises resolve once the dependency finishes re-executing once the original module is re-imported
-    //                       - useful to Promise.all() this returned list to wait for all modules to finish executing after invalidating and re-importing a module
-    export function invalidate(url: string, reimport?: Map<string, _ASLModule>): [boolean, Promise<void>[] | undefined] {
-        if (!_cache.has(url)) return [false, undefined];
-        const module = _cache.get(url)!;
-        if (module.destructed === true) return [false, undefined];
-        
-        let _reimport: Map<string, _ASLModule>;
-        if (reimport === undefined) _reimport = new Map();
-        else _reimport = reimport;
-
-        const type = getType(module.src);
-        module.destruct();
-        _cache.delete(url);
-
-        _getList = _getList.filter((i) => i.root.src !== module.src);
-
-        const archetypesContainingModule = Archetype.typemap[type];
-        if (archetypesContainingModule !== undefined) {
-            for (const archetype of archetypesContainingModule) {
-                for (const module of archetype.modules.values()) {
-                    if (invalidate(module.src, _reimport)[0] && !_reimport.has(module.src)) {
-                        _reimport.set(module.src, new _ASLModule(module.src, module.exec, module.code));
-                    }
-                }
-            }
-        }
-
-        const executions = [];
-        if (reimport === undefined) {
-            for (const m of _reimport.values()) {
-                if (!_cache.has(m.src)) {
-                    cache(m);
-                    executions.push(exec(m));
-                }
-            }
-        }
-
-        return [true, executions];
-    }
-
-    export function has(path: string) {
-        return _cache.has(path);
-    }
-
-    let _getList: { module: _ASLModule, resolve?: (value: _ASLModule) => void, root: _ASLModule }[] = []; 
-    export function get(path: string, root?: _ASLModule): Promise<_ASLModule> {
-        return new Promise((resolve) => {
-            const module = _cache.get(path);
-            if (module === undefined) throw new Error(`Could not find module '${path}'.`);
-            if (module.destructed) throw new Error(`Cannot load the invalidated module '${path}'.`);
-            if (module.isReady) {
-                resolve(module);
-                return;
-            }
-
-            if (root !== undefined) watch(root, module, resolve);
-        });
-    }
-
-    // NOTE(randomuserhi): internal function used for debugging modules waiting to get other modules
-    export function watch(root: _ASLModule, module: _ASLModule, resolve?: (value: _ASLModule) => void) {
-        _getList.push({ module, resolve, root });
-    }
-
-    export function getWaiting() {
-        const result: Map<_ASLModule, string[]> = new Map();
-        for (const { module, root } of _getList) {
-            if (root.isReady) continue;
-            if (!result.has(root)) result.set(root, []);
-            result.get(root)!.push(module.src);
-        }
-        return result;
-    }
-
-    export function logWaiting() {
-        const waiting = [...getWaiting().entries()];
-        if (waiting.length === 0) {
-            console.log("No modules are waiting to finalize.");
-            return;
-        }
-        console.log(`Modules waiting to finalize:\n${waiting.map((entry) => `[${entry[0].src}]\n\t- ${entry[1].join("\n\t- ")}`).join("\n\n")}`);
-    }
-
-    export function reset() {
-        for (const module of _cache.values()) {
-            module.destruct();
-        }
-
-        _cache.clear();
-        typemap.clear();
-        executionContexts.clear();
-        archetype = new Archetype();
-
-        _getList = [];
-    }
-
-    export function getLoaded() {
-        return [..._cache.values()];
-    }
-
-    export function getExecutionContexts() {
-        return [...executionContexts.values()];
-    }
 }
-
-// NOTE(randomuserhi): Exposed for debugging purposes
-(globalThis as any).waiting = AsyncScriptCache.logWaiting;
-(globalThis as any).executions = AsyncScriptCache.getExecutionContexts;
-(globalThis as any).loaded = () => {
-    console.log(`Loaded modules:\n\t${AsyncScriptCache.getLoaded().map(m => m.src).join("\n\t")}`);
-};
-
-const fetchScript = Rest.fetch<string, [url: URL]>({
-    url: (url) => url,
-    fetch: async () => ({
-        method: "GET"
-    }),
-    callback: async (resp) => {
-        return `const __code__ = async function(require, module, exports) {\n\n// ASYNC MODULE EVAL CONTEXT //\n\n${await resp.text()}\n\n}; return __code__.bind(undefined); //# sourceURL=${resp.url}`;
-    }
-});
-
-function fetchModule(path: string, baseURI?: string, root?: _ASLModule): Promise<_ASLModule> {
-    if (path === "") throw new Error("Cannot use 'require()' on a blank string.");
-    const url = new URL(path, path.startsWith(".") ? baseURI : undefined); // TODO(randomuserhi): On error => log what the url was (path)
-    path = url.toString();
-    if (AsyncScriptCache.has(path)) {
-        return AsyncScriptCache.get(path, root);
-    }
-
-    const module = new _ASLModule(path);
-    AsyncScriptCache.cache(module);
-    return new Promise((resolve, reject) => {
-        if (root !== undefined) AsyncScriptCache.watch(root, module, resolve);
-        fetchScript(url).then((exec) => {
-            module.code = exec;
-            module.exec = (new Function(exec))();
-            return AsyncScriptCache.exec(module);
-        }).then(() => resolve(module)).catch((e) => {
-            reject(e);
-        });
-    });
-}
-
-export namespace AsyncScriptLoader {
-    // eslint-disable-next-line prefer-const
-    export let isParser = false;
-
-    // eslint-disable-next-line prefer-const
-    export let baseURI: string | undefined = globalThis.document === undefined ? undefined : globalThis.document.baseURI; 
-
-    // NOTE(randomuserhi): returns undefined if there are no remaining executions 
-    export async function load(path: string) {
-        path = new URL(path, baseURI).toString();
-        const [_, executions] = AsyncScriptCache.invalidate(path);
-        await fetchModule(path);
-        if (executions !== undefined) await Promise.all(executions);
-    }
-}
-
-export type ASLRequireType = "asl" | "esm";
-export type Require = <T>(path: string, mode?: ASLRequireType) => Promise<T>;
-export type Exports = {
-    exports?: any
-};
