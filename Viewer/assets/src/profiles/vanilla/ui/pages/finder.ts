@@ -73,7 +73,7 @@ export const Finder = Macro(class Finder extends MacroElement {
         super(dom, bindings);
 
         this.filtered = computed<{ item: Item, key: string }[]>(() => {
-            let filtered = this.values().filter(({ item }) => this.includeUnknown.value() ? true : item.dimension === this.dropdown.value() && ItemDatablock.has(item.itemID));
+            let filtered = this.values().filter(({ item }) => item.onGround && this.includeUnknown.value() ? true : item.dimension === this.dropdown.value() && ItemDatablock.has(item.itemID));
             const filter = this.filter();
             if (filter !== "") {
                 this.fuse.setCollection(filtered);
