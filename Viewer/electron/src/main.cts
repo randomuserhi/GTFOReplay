@@ -50,7 +50,7 @@ export default class Program {
         Program.win = new BrowserWindow({
             frame: false, // remove the window frame
             show: false, // hide the window,
-            backgroundColor: "#fff", // always set a bg color to enable font antialiasing
+            backgroundColor: "#000", // always set a bg color to enable font antialiasing
             webPreferences: {
                 nodeIntegration: false, // is default value after Electron v5 - is disabled as per security (https://www.electronjs.org/docs/latest/tutorial/security)
                 contextIsolation: true, // protect against prototype pollution - (https://www.electronjs.org/docs/latest/tutorial/context-isolation)

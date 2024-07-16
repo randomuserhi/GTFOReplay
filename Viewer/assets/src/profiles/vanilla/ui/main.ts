@@ -95,11 +95,7 @@ const UI = Macro(class UI extends MacroElement {
         this.pages.set(this.stats, Macro.create(Stats()));
 
         for(const [button, page] of this.pages) {
-            button.toggle.on((value) => {
-                if (!value) {
-                    this.load();
-                    return;
-                }
+            button.button.addEventListener("click", () => {
                 this.load(page);
             });
         }
@@ -127,13 +123,15 @@ const UI = Macro(class UI extends MacroElement {
             if (page !== macro) {
                 button.toggle(false);
                 page.active(false);
+            } else {
+                button.toggle(true);
+                page.active(true);
             }
         }
 
         if (macro !== undefined) {
             this.window.replaceChildren(...macro.dom);
             this.window.style.display = "block";
-            macro.active(true);
         } else {
             if (view) view.canvas.focus();
             this.window.replaceChildren();

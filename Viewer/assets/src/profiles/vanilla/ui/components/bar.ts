@@ -66,7 +66,7 @@ const style = Style(({ style }) => {
 });
 
 export const Button = Macro(class Button extends MacroElement {
-    private button: HTMLButtonElement;
+    public button: HTMLButtonElement;
     private icon: HTMLSpanElement;
 
     public toggle = signal(false);
@@ -79,10 +79,6 @@ export const Button = Macro(class Button extends MacroElement {
         this.toggle.on((value) => {
             if (value) this.button.classList.add(`${style.selected}`);
             else this.button.classList.remove(`${style.selected}`);
-        });
-
-        this.button.addEventListener("click", () => {
-            this.toggle(!this.toggle());
         });
     }
 }, html`
