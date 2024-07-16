@@ -40,6 +40,7 @@ ModuleLoader.registerRender("Vanilla.Items", (name, api) => {
             for (const [id, model] of [...models.entries()]) {
                 if (!collection.has(id)) {
                     models.delete(id);
+                    model.removeFromScene(renderer.scene);
                 }
             }
         } 

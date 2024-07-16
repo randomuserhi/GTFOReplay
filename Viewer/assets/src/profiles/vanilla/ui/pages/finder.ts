@@ -40,9 +40,15 @@ const Item = Macro(class Item extends MacroElement {
 
     public key: Signal<string>;
     public button: HTMLSpanElement;
+    public onGround = signal(false);
 
     constructor(dom: Node[], bindings: any, children: Node[]) {
         super(dom, bindings);
+
+        this.onGround.on((value) => {
+            if (value) this.button.style.display = "flex";
+            else this.button.style.display = "none";
+        });
     }
 }, html`
     <div m-id="button" class="${itemStyle.item}">
@@ -73,7 +79,7 @@ export const Finder = Macro(class Finder extends MacroElement {
         super(dom, bindings);
 
         this.filtered = computed<{ item: Item, key: string }[]>(() => {
-            let filtered = this.values().filter(({ item }) => item.onGround && this.includeUnknown.value() ? true : item.dimension === this.dropdown.value() && ItemDatablock.has(item.itemID));
+            let filtered = this.values().filter(({ item }) => (this.includeUnknown.value() ? true : item.dimension === this.dropdown.value()) && ItemDatablock.has(item.itemID));
             const filter = this.filter();
             if (filter !== "") {
                 this.fuse.setCollection(filtered);
@@ -84,6 +90,7 @@ export const Finder = Macro(class Finder extends MacroElement {
             if (a.length !== b.length) return false;
             for (let i = 0; i < a.length; ++i) {
                 if (a[i].item.id !== b[i].item.id) return false;
+                if (a[i].item.onGround !== b[i].item.onGround) return false;
                 if (a[i].key !== b[i].key) return false;
                 if (a[i].item.position.x !== b[i].item.position.x && a[i].item.position.y !== b[i].item.position.y && a[i].item.position.z !== b[i].item.position.z) return false;
                 if (a[i].item.dimension !== b[i].item.dimension) return false;
@@ -109,6 +116,7 @@ export const Finder = Macro(class Finder extends MacroElement {
                     this.body.append(el.frag);
                 }
                 el.key(key === "Unknown" ? `${item.itemID.hash}` : key);
+                el.onGround(item.onGround);
                 this._items.set(item.id, el);
             }
             
