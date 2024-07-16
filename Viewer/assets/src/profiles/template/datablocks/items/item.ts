@@ -39,7 +39,7 @@ const GlowSticks: ItemDatablock = {
         const model = new ItemGLTFModel("../js3party/models/Consumables/glowstick.glb", () => {
             model.gltf.rotation.set(90 * Math.deg2rad, 0, -90 * Math.deg2rad);
             model.gltf.position.set(0, 0.1, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.02, 0.02, 0.02);
     
         model.equipOffsetPos = { x: 0, y: 0, z: 0 };
@@ -59,7 +59,7 @@ ItemDatablock.set(Identifier.create("Item", 30), {
             model.gltf.scale.set(0.07, 0.07, 0.07);
             model.gltf.rotation.set(0, 90 * Math.deg2rad, 0);
             model.gltf.position.set(0, 0.1, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotateX(Math.PI);
 
@@ -77,7 +77,7 @@ const syringeModel = (color: ColorRepresentation) => {
             model.gltf.scale.set(0.08, 0.08, 0.08);
             model.gltf.rotation.set(0, 90 * Math.deg2rad, 90 * Math.deg2rad);
             model.gltf.position.set(0.05, 0.04, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotateX(-90 * Math.deg2rad);
         model.material.color.set(color);
@@ -107,7 +107,7 @@ ItemDatablock.set(Identifier.create("Item", 115), {
         const model = new ItemGLTFModel("../js3party/models/Consumables/cnade.glb", () => {
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
             model.gltf.position.set(0, 0.1, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
 
         model.leftHand = undefined;
@@ -124,7 +124,7 @@ ItemDatablock.set(Identifier.create("Item", 116), {
         const model = new ItemGLTFModel("../js3party/models/Consumables/lock melter.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
-        });
+        }, false);
         model.gltf.scale.set(0.04, 0.04, 0.04);
         
         model.equipOffsetPos = { x: 0.1, y: 0, z: 0 };
@@ -140,7 +140,7 @@ ItemDatablock.set(Identifier.create("Item", 117), {
     model: () => {
         const model = new ItemGLTFModel("../js3party/models/Consumables/fog rep.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.07, 0.07, 0.07);
         model.gltf.rotateY(90 * Math.deg2rad);
 
@@ -163,7 +163,7 @@ ItemDatablock.set(Identifier.create("Item", 139), {
     model: () => {
         const model = new ItemGLTFModel("../js3party/models/Consumables/emine.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
 
         model.equipOffsetPos = { x: 0.07, y: 0, z: 0 };
@@ -179,7 +179,7 @@ ItemDatablock.set(Identifier.create("Item", 144), {
     model: () => {
         const model = new ItemGLTFModel("../js3party/models/Consumables/ctrip.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
 
         model.equipOffsetPos = { x: 0.07, y: 0, z: 0 };
@@ -197,7 +197,7 @@ ItemDatablock.set(Identifier.create("Item", 131), {
         const model = new ItemGLTFModel("../js3party/models/BigPickups/cell.glb", () => {
             model.gltf.rotation.set(-90 * Math.deg2rad, 0, 90 * Math.deg2rad);
             model.gltf.scale.set(0.07, 0.07, 0.07);
-        });
+        }, false);
         model.gltf.scale.set(0.04, 0.04, 0.04);
         model.gltf.rotateZ(Math.PI);
 
@@ -213,7 +213,7 @@ ItemDatablock.set(Identifier.create("Item", 133), {
     name: "Fog Turbine",
     serial: "FOG_TURBINE",
     model: () => {
-        const model = new ItemGLTFModel(".../js3party/models/BigPickups/fog turbine.glb");
+        const model = new ItemGLTFModel(".../js3party/models/BigPickups/fog turbine.glb", undefined, false);
         model.gltf.scale.set(0.2, 0.2, 0.2);
         model.gltf.rotation.set(0, 0, 0, "YXZ");
 
@@ -229,7 +229,7 @@ const Neonate: ItemDatablock = {
     name: "Neonate",
     serial: "NEONATE",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/neonate.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/neonate.glb", undefined, false);
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotation.set(-90 * Math.deg2rad, 180 * Math.deg2rad, -40 * Math.deg2rad);
     
@@ -272,7 +272,7 @@ const DataSphere: ItemDatablock = {
     name: "Data Sphere",
     serial: "DATA_SPHERE",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/data sphere.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/data sphere.glb", undefined, false);
         model.gltf.scale.set(0.13, 0.13, 0.13);
         model.gltf.rotation.set(0, 0, 0, "YXZ");
     
@@ -290,7 +290,7 @@ const CargoCrate: ItemDatablock = {
     name: "Cargo Crate",
     serial: "CARGO",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/base cargo.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/base cargo.glb", undefined, false);
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotateZ(Math.PI);
         model.gltf.rotateY(40 * Math.deg2rad);
@@ -309,7 +309,7 @@ const HisecCargoCrate: ItemDatablock = {
     name: "Hisec Cargo Crate",
     serial: "CARGO",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/hisec cargo.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/hisec cargo.glb", undefined, false);
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotateZ(Math.PI);
         model.gltf.rotateY(40 * Math.deg2rad);
@@ -328,7 +328,7 @@ ItemDatablock.set(Identifier.create("Item", 148), {
     name: "Cryo",
     serial: "CRYO",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/cryo.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/cryo.glb", undefined, false);
         model.gltf.scale.set(0.1, 0.1, 0.1);
         model.gltf.rotateY(130 * Math.deg2rad);
     
@@ -344,7 +344,7 @@ ItemDatablock.set(Identifier.create("Item", 173), {
     name: "Collection Case",
     serial: "COLLECTION_CASE",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/BigPickups/collection case.glb");
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/collection case.glb", undefined, false);
         model.gltf.scale.set(0.15, 0.15, 0.15);
         model.gltf.rotateY(130 * Math.deg2rad);
     
@@ -360,7 +360,7 @@ const DataCube: ItemDatablock = {
     name: "Data Cube",
     serial: "DATA_CUBE",
     model: () => {
-        const model = new ItemGLTFModel("../js3party/models/Objective/data cube.glb");
+        const model = new ItemGLTFModel("../js3party/models/Objective/data cube.glb", undefined, false);
         model.gltf.scale.set(0.03, 0.03, 0.03);
     
         model.equipOffsetPos = { x: 0.1, y: 0, z: 0 };
@@ -382,7 +382,7 @@ ItemDatablock.set(Identifier.create("Item", 146), {
         const model = new ItemGLTFModel("../js3party/models/Objective/bulkhead_key.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
             model.gltf.rotation.set(-90 * Math.deg2rad, 0, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.3, 0.3, 0.3);
     
         return model;
@@ -452,7 +452,7 @@ ItemDatablock.set(Identifier.create("Item", 128), {
         const model = new ItemGLTFModel("../js3party/models/Objective/id.glb", () => {
             model.gltf.position.set(0, 0.01, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
@@ -466,7 +466,7 @@ ItemDatablock.set(Identifier.create("Item", 129), {
     model: () => {
         const model = new ItemGLTFModel("../js3party/models/Objective/pdec.glb", () => {
             model.gltf.position.set(0, 0.1, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
@@ -480,7 +480,7 @@ const HardDrive: ItemDatablock = {
         const model = new ItemGLTFModel("../js3party/models/Objective/hdd.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
             model.gltf.rotation.set(0, 0, -90 * Math.deg2rad);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
@@ -498,7 +498,7 @@ ItemDatablock.set(Identifier.create("Item", 149), {
         const model = new ItemGLTFModel("../js3party/models/Objective/glp1.glb", () => {
             model.gltf.position.set(0, 0.1, 0);
             model.gltf.rotation.set(0, 0, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
 
         return model;
@@ -512,7 +512,7 @@ ItemDatablock.set(Identifier.create("Item", 169), {
         const model = new ItemGLTFModel("../js3party/models/Objective/glp2.glb", () => {
             model.gltf.position.set(0, 0.05, 0);
             model.gltf.rotation.set(90 * Math.deg2rad, 0, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
@@ -526,7 +526,7 @@ ItemDatablock.set(Identifier.create("Item", 150), {
     model: () => {
         const model = new ItemGLTFModel("../js3party/models/Objective/osip.glb", () => {
             model.gltf.position.set(0, 0.2, 0);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
@@ -540,7 +540,7 @@ ItemDatablock.set(Identifier.create("Item", 153), {
         const model = new ItemGLTFModel("../js3party/models/Objective/plant.glb", () => {
             model.gltf.position.set(0, 0.1, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
@@ -554,7 +554,7 @@ const MemoryStick: ItemDatablock = {
         const model = new ItemGLTFModel("../js3party/models/Objective/mem stick.glb", () => {
             model.gltf.position.set(0, 0.1, 0);
             model.gltf.rotation.set(0, 0, 90 * Math.deg2rad);
-        });
+        }, false);
         model.gltf.scale.set(0.05, 0.05, 0.05);
     
         return model;
