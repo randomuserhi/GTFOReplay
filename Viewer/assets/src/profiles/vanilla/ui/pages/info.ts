@@ -39,7 +39,7 @@ export const Info = Macro(class Info extends MacroElement {
     private isNotMasterText: HTMLDivElement;
 
     private version: Signal<string>;
-    private versionText: Signal<string>;
+    private versionText: HTMLDivElement;
 
     private compatibilityText: HTMLDivElement;
 
@@ -63,7 +63,7 @@ export const Info = Macro(class Info extends MacroElement {
 
             this.version.on((value) => {
                 const text = versionInfo.get(value);
-                if (text !== undefined) this.versionText(text);
+                if (text !== undefined) this.versionText.innerHTML = text;
             });
 
             view.replay.on((replay) => {
@@ -154,8 +154,7 @@ export const Info = Macro(class Info extends MacroElement {
                     <div style="flex: 1"></div>
                     <span>${Macro.signal("version")}</span>
                 </div>
-                <div style="margin-left: 10px;">
-                    ${Macro.signal("versionText")}
+                <div m-id="versionText" style="margin-left: 10px;">
                 </div>
             </div>
             <div class="${style.row}">
