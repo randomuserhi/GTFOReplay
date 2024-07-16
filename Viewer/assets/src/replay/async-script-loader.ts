@@ -427,7 +427,6 @@ export class VM<T = any> {
             const col = match[3];
             
             const module = this.cache.get(src);
-            //if (module === undefined) module = this.pending.get(src);
             if (module !== undefined) {
                 if (topLevel === undefined) topLevel = { module, line: line - 3, col: parseInt(col), isTop };
                 stack = stack.replace(match[0], `(${src}:${line}:${col})`);
