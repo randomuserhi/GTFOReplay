@@ -24,6 +24,8 @@ export function ui(): Macro<typeof UI> {
 
 // NOTE(randomuserhi): Save state for hot reload
 module.destructor = () => {
+    disposeController?.abort();
+
     const view = ui()?.view();
     if (view === undefined) return;
 
