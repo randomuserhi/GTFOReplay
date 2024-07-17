@@ -213,7 +213,7 @@ ItemDatablock.set(Identifier.create("Item", 133), {
     name: "Fog Turbine",
     serial: "FOG_TURBINE",
     model: () => {
-        const model = new ItemGLTFModel(".../js3party/models/BigPickups/fog turbine.glb", undefined, false);
+        const model = new ItemGLTFModel("../js3party/models/BigPickups/fog turbine.glb", undefined, false);
         model.gltf.scale.set(0.2, 0.2, 0.2);
         model.gltf.rotation.set(0, 0, 0, "YXZ");
 
