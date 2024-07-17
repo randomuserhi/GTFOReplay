@@ -66,7 +66,7 @@ class Module {
         return new URL(path, this.src).toString();
     }
 
-    private _exports: Record<PropertyKey, any> = {};
+    public _exports: Record<PropertyKey, any> = {};
     private proxy: Record<PropertyKey, any> = new Proxy(this, {
         set(module, prop, newValue) {
             if (module.isReady) throw new Error(`You cannot add exports once a module has loaded.`);

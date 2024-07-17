@@ -2,6 +2,7 @@ import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
+import { dispose } from "./main.js";
 import { Medal, MedalDatablock } from "./medals.js";
 
 const style = Style(({ style }) => {
@@ -240,8 +241,8 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
                     slots.push(snet);
                 }
                 this.slots(slots);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
     }
 
     private awardedMedals = new Map<bigint, Map<string, string>>();

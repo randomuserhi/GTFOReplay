@@ -88,8 +88,8 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
             view.timescale.on(value => {
                 slider.value = `${value}`;
                 text.value = `${value}`;
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         text.addEventListener("keyup", () => {
             slider.value = text.value;
@@ -166,8 +166,8 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                     slider.value = `${value}`;
                     text.value = `${value}`;
                 });
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         text.addEventListener("keyup", () => {
             slider.value = text.value;
@@ -222,7 +222,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                 controls.targetSlot.on(value => {
                     dropdown.value(value);
                 });
-            });
+            }, { signal: dispose.signal });
 
             view.api.on((api) => {
                 if (!active()) return;
@@ -246,8 +246,8 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                     });
                 }
                 dropdown.options(players);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -290,8 +290,8 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                 controls.relativeRot.on(value => {
                     toggle.value(value);
                 });
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -328,7 +328,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
             view.renderer.watch("Dimension").on(dimension => {
                 if (dimension === undefined) return;
                 dropdown.value(dimension);
-            });
+            }, { signal: dispose.signal });
 
             view.replay.on((replay) => {
                 if (replay === undefined) {
@@ -350,9 +350,9 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                         });
                     }
                     dropdown.options(dimensions);
-                });
-            });
-        });
+                }, { signal: dispose.signal });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },

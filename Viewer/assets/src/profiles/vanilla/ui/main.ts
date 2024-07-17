@@ -107,7 +107,7 @@ const UI = Macro(class UI extends MacroElement {
             for (const page of this.pages.values()) {
                 page.view(view);
             }
-        });
+        }, { signal: dispose.signal });
     }
 
     public view = signal<Macro<typeof View> | undefined>(undefined);

@@ -6,6 +6,7 @@ import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { PlayerDatablock } from "../../datablocks/player/player.js";
 import { StatTracker } from "../../parser/stattracker/stattracker.js";
 import { Dropdown } from "../components/dropdown.js";
+import { dispose } from "../main.js";
 import { pageStyles } from "./lib.js";
 
 const style = pageStyles;
@@ -104,7 +105,7 @@ const TypeList = Macro(class TypeList extends MacroElement {
             } else {
                 this.empty.style.display = "none";
             }
-        });
+        }, { signal: dispose.signal });
     }
 
     public values = signal<[key: string, value: number][]>([], (a, b) => {
@@ -197,8 +198,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 explosiveDamage(`${Math.round([...player.enemyDamage.explosiveDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
                 staggerDamage(`${Math.round([...player.enemyDamage.staggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
                 sentryStaggerDamage(`${Math.round([...player.enemyDamage.sentryStaggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -251,8 +252,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 bulletDamage(`${Math.round((Math.round([...player.playerDamage.bulletDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
                 sentryDamage(`${Math.round((Math.round([...player.playerDamage.sentryDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
                 explosiveDamage(`${Math.round((Math.round([...player.playerDamage.explosiveDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -298,8 +299,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(name, total.get(name)! + count.value);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -345,8 +346,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(name, total.get(name)! + count.value);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -392,8 +393,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(name, total.get(name)! + count.value);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -439,8 +440,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(name, total.get(name)! + count.value);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -486,8 +487,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(name, total.get(name)! + count.value);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -527,8 +528,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(type, total.get(type)! + count);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -568,8 +569,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                     total.set(type, total.get(type)! + count);
                 }
                 list.values([...total.entries()]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -608,8 +609,8 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 revives(`${player.revives}`);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return bindings.wrapper;
     },
@@ -680,8 +681,8 @@ export const Stats = Macro(class Stats extends MacroElement {
                     });
                 }
                 this.dropdown.options(players);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
     }
 }, html`
     <div class="${style.wrapper}">

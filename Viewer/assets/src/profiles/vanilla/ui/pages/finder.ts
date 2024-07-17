@@ -7,6 +7,7 @@ import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Item } from "../../parser/map/item.js";
 import { Dropdown } from "../components/dropdown.js";
 import { Toggle } from "../components/toggle.js";
+import { dispose } from "../main.js";
 import { pageStyles } from "./lib.js";
 
 const style = pageStyles;
@@ -157,8 +158,8 @@ export const Finder = Macro(class Finder extends MacroElement {
                         });
                     }
                     this.dropdown.options(dimensions);
-                });
-            });
+                }, { signal: dispose.signal });
+            }, { signal: dispose.signal });
 
             view.api.on((api) => {
                 if (!this.active()) return;
@@ -177,8 +178,8 @@ export const Finder = Macro(class Finder extends MacroElement {
                     mapped.push({ item, key });
                 }
                 this.values(mapped);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
     }
 }, html`
     <div class="${style.wrapper}">

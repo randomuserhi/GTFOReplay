@@ -215,7 +215,7 @@ export const Display = Macro(class Display extends MacroElement {
                     requestAnimationFrame(() => view.canvas.focus());
                 } else view.pause(this.pause());
             });
-        });
+        }, { signal: dispose.signal });
     }
     
     public pause = signal(false);

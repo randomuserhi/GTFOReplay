@@ -1,6 +1,7 @@
 import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
 import { effect, Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
+import { dispose } from "../main.js";
 import { pageStyles } from "./lib.js";
 
 const style = pageStyles;
@@ -99,8 +100,8 @@ export const Info = Macro(class Info extends MacroElement {
                     if (compatability.length === 0) this.compatibilityText.innerHTML = "None";
                     else this.compatibilityText.replaceChildren(...compatability);
                 }, [_header, _metadata]);
-            });
-        });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
     }
 }, html`
     <div class="${style.wrapper}">
