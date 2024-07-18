@@ -201,6 +201,10 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
                 return;
             }
 
+            view.replay.on(() => {
+                this.slots([]);
+            }, { signal: dispose.signal }); 
+
             this.slots.on((slots) => {
                 const api = view.api();
                 if (api === undefined) return;
