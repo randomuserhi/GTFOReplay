@@ -7,9 +7,6 @@ import { HumanAnimation } from "../../animations/human.js";
 import { StickFigure } from "../../models/stickfigure.js";
 import { EnemyModelWrapper } from "../lib.js";
 
-const playerAnimations = PlayerAnimDatablock.obj();
-const enemyAnimations = EnemyAnimDatablock.obj();
-
 export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAnimState]> {
     private readonly wrapper: EnemyModelWrapper;
     private animOffset: number = Math.random() * 10;
@@ -54,7 +51,7 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
         const overrideBlend = animHandle !== undefined && animHandle.blend ? Math.clamp01(animHandle.blend * dt) : 1;
 
         if (animHandle === undefined) {
-            this.skeleton.blend(playerAnimations.defaultMovement.sample(offsetTime), overrideBlend);
+            this.skeleton.blend(PlayerAnimDatablock.defaultMovement.sample(offsetTime), overrideBlend);
             return;
         }
 
@@ -161,17 +158,17 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
         }
 
         const pouncerGrabTime = time - (anim.lastPouncerGrabTime / 1000);
-        const inPouncerGrab = pouncerGrabTime < enemyAnimations.PO_Consume.duration;
+        const inPouncerGrab = pouncerGrabTime < EnemyAnimDatablock.PO_Consume.duration;
         if (inPouncerGrab) {
-            const blend = pouncerGrabTime < enemyAnimations.PO_Consume.duration / 2 ? Math.clamp01(pouncerGrabTime / 0.15) : Math.clamp01((enemyAnimations.PO_Consume.duration - pouncerGrabTime) / 0.15);
-            this.skeleton.blend(enemyAnimations.PO_Consume.sample(Math.clamp(pouncerGrabTime, 0, enemyAnimations.PO_Consume.duration)), blend);
+            const blend = pouncerGrabTime < EnemyAnimDatablock.PO_Consume.duration / 2 ? Math.clamp01(pouncerGrabTime / 0.15) : Math.clamp01((EnemyAnimDatablock.PO_Consume.duration - pouncerGrabTime) / 0.15);
+            this.skeleton.blend(EnemyAnimDatablock.PO_Consume.sample(Math.clamp(pouncerGrabTime, 0, EnemyAnimDatablock.PO_Consume.duration)), blend);
         }
 
         const pouncerSpitTime = time - (anim.lastPouncerSpitTime / 1000);
-        const inPouncerSpit = pouncerSpitTime < enemyAnimations.PO_SpitOut_Fast.duration;
+        const inPouncerSpit = pouncerSpitTime < EnemyAnimDatablock.PO_SpitOut_Fast.duration;
         if (inPouncerSpit) {
-            const blend = pouncerSpitTime < enemyAnimations.PO_SpitOut_Fast.duration / 2 ? Math.clamp01(pouncerSpitTime / 0.15) : Math.clamp01((enemyAnimations.PO_SpitOut_Fast.duration - pouncerSpitTime) / 0.15);
-            this.skeleton.blend(enemyAnimations.PO_SpitOut_Fast.sample(Math.clamp(pouncerSpitTime, 0, enemyAnimations.PO_SpitOut_Fast.duration)), blend);
+            const blend = pouncerSpitTime < EnemyAnimDatablock.PO_SpitOut_Fast.duration / 2 ? Math.clamp01(pouncerSpitTime / 0.15) : Math.clamp01((EnemyAnimDatablock.PO_SpitOut_Fast.duration - pouncerSpitTime) / 0.15);
+            this.skeleton.blend(EnemyAnimDatablock.PO_SpitOut_Fast.sample(Math.clamp(pouncerSpitTime, 0, EnemyAnimDatablock.PO_SpitOut_Fast.duration)), blend);
         }
 
         const hitreactTime = time - (anim.lastHitreactTime / 1000);

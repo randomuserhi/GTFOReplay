@@ -150,6 +150,24 @@ export function difference<T extends string>(skeleton: AvatarLike<T>, reference:
     return skeleton;
 }
 
+export function empty<T extends string>(joints: ReadonlyArray<T>) {
+    const avatar: AvatarLike<T> = {
+        root: { x: 0, y: 0, z: 0 },
+        joints: {}
+    } as AvatarLike<T>;
+
+    for (const joint of joints) {
+        avatar.joints[joint] = {
+            x: 0,
+            y: 0,
+            z: 0,
+            w: 1
+        };
+    }
+
+    return new Anim(joints, 0.05, 0.01, [avatar]);
+}
+
 export class Anim<T extends string = string> implements AnimFunc<T> {
     frames: AvatarLike<T>[];
     duration: number;

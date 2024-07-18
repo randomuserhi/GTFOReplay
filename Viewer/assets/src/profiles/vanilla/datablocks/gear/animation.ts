@@ -1,11 +1,12 @@
 import { AnimFunc } from "../../library/animations/lib.js";
 import { loadAllClips } from "../../library/animations/loaders.js";
 import { GearFoldJoints } from "../../renderer/animations/gearfold.js";
-import { Datablock } from "../lib.js";
 
 if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
-export const GearAnimDatablock = new Datablock<GearFoldAnimations, AnimFunc<GearFoldJoints>>();
+// NOTE(randomuserhi): These are static datablocks -> They are not designed to be changed or updated
+
+export const GearAnimDatablock: Record<GearFoldAnimations, AnimFunc<GearFoldJoints>> = {} as any;
 
 const gearFoldAnimationNames = [
     "Revolver_Front_1_Reload_1",
@@ -25,6 +26,6 @@ type GearFoldAnimations = typeof gearFoldAnimationNames[number];
 const gearFoldAnimations = await loadAllClips(GearFoldJoints, gearFoldAnimationNames);
 
 for (const [key, anim] of Object.entries(gearFoldAnimations)) {
-    if (GearAnimDatablock.has(key as any)) throw new Error(`Duplicate clip '${key}' being loaded.`);
-    GearAnimDatablock.set(key as any, anim);
+    if (key in GearAnimDatablock) throw new Error(`Duplicate clip '${key}' being loaded.`);
+    GearAnimDatablock[key as GearFoldAnimations] = anim;
 }

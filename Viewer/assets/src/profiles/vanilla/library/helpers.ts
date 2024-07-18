@@ -51,9 +51,14 @@ export namespace DynamicTransform {
         const { temp } = FUNC_lerp;
 
         const { absolute, position, rotation, dimension } = data;
-        const fpos = absolute ? position : Pod.Vec.add(temp, dyn.position, position);
-        Pod.Vec.lerp(dyn.position, dyn.position, fpos, lerp);
-        Pod.Quat.slerp(dyn.rotation, dyn.rotation, rotation, lerp);
+        if (absolute) {
+            Pod.Vec.copy(dyn.position, position);
+            Pod.Quat.copy(dyn.rotation, rotation);
+        } else {
+            const fpos = Pod.Vec.add(temp, dyn.position, position);
+            Pod.Vec.lerp(dyn.position, dyn.position, fpos, lerp);
+            Pod.Quat.slerp(dyn.rotation, dyn.rotation, rotation, lerp);
+        }
         dyn.dimension = dimension;
     }
 }
@@ -95,8 +100,12 @@ export namespace DynamicPosition {
         const { temp } = FUNC_lerp;
 
         const { absolute, position, dimension } = data;
-        const fpos = absolute ? position : Pod.Vec.add(temp, dyn.position, position);
-        Pod.Vec.lerp(dyn.position, dyn.position, fpos, lerp);
+        if (absolute) {
+            Pod.Vec.copy(dyn.position, position);
+        } else {
+            const fpos = Pod.Vec.add(temp, dyn.position, position);
+            Pod.Vec.lerp(dyn.position, dyn.position, fpos, lerp);
+        }
         dyn.dimension = dimension;
     }
 }

@@ -1,4 +1,4 @@
-import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkeleton } from "../../library/animations/lib.js";
+import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkeleton, empty } from "../../library/animations/lib.js";
 
 export const GearFoldJoints = [
     "fold",
@@ -12,3 +12,5 @@ export type GearFoldAnimBlend = AnimBlend<GearFoldJoints>;
 export type GearFoldAnimation = AnimFunc<GearFoldJoints>;
 export type GearFoldSkeleton = AvatarSkeleton<GearFoldJoints>;
 export type GearFoldMask = AvatarMask<GearFoldJoints>;
+
+export const gearFoldEmptyAnim: GearFoldAnim = empty(GearFoldJoints);

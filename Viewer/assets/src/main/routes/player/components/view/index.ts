@@ -73,11 +73,13 @@ export const View = Macro(class View extends MacroElement {
     pause = signal(false);
     frameRate = signal(0);
     live = signal(false);
+    length = signal(0);
     lerp = 20;
     
     private reset() {
         this.time(0);
         this.timescale(1);     
+        this.length(0);
         this.pause(false);  
     }
     
@@ -95,10 +97,12 @@ export const View = Macro(class View extends MacroElement {
         const replay = this.replay();
         if (replay !== undefined) {
             try {
+                this.length(replay.length());
+
                 if (!this.pause()) {
                     if (this.live()) {
                         const time = this.time();
-                        this.time(time + (replay.length() - time) * dt / 1000 * this.lerp);
+                        this.time(time + (this.length() - time) * dt / 1000 * this.lerp);
                     } else this.time(this.time() + dt * this.timescale());
                 }
                 const time = this.time();

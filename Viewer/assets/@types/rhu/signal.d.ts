@@ -19,7 +19,9 @@ export interface Effect {
     (): void;
 }
 export declare const isEffect: (obj: any) => obj is Effect;
-export declare function effect(expression: () => void, dependencies: SignalEvent[]): Effect;
+export declare function effect(expression: () => void, dependencies: SignalEvent[], options?: {
+    signal?: AbortSignal;
+}): Effect;
 export interface Computed<T> extends SignalEvent<T> {
     (): T;
     effect: Effect;

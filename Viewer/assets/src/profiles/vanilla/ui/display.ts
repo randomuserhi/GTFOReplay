@@ -1,5 +1,5 @@
 import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
-import { Signal, signal } from "@esm/@/rhu/signal.js";
+import { effect, Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -158,6 +158,11 @@ export const Display = Macro(class Display extends MacroElement {
 
             this.mount.replaceChildren(...view.dom);
 
+            // Reset pause on new replay
+            view.replay.on(() => {
+                this.pause(false);
+            }, { signal: dispose.signal });
+
             // Live Button
             this.liveButton.addEventListener("click", () => {
                 view.live(!view.live());
@@ -168,9 +173,9 @@ export const Display = Macro(class Display extends MacroElement {
             );
 
             // Time display
-            view.time.on((value) => {
-                this.time(`${msToTime(value)} / ${msToTime(this.length())}`);
-            }, { signal: dispose.signal });
+            effect(() => {
+                this.time(`${msToTime(view.time())} / ${msToTime(this.length())}`);
+            }, [view.time, this.length], { signal: dispose.signal });
 
             // Pause button
             this.pauseButton.addEventListener("click", () => {
@@ -188,13 +193,19 @@ export const Display = Macro(class Display extends MacroElement {
                 }
             });
 
-            // Update seeker when time changes
-            view.time.on((time) => {
+            // Update seeker when time / length changes
+            effect(() => {
                 const replay = view.replay();
                 if (replay === undefined) return;
             
                 if (!this.seeker.seeking()) {
-                    this.seeker.value(time / this.length(replay.length()));
+                    this.seeker.value(view.time() / this.length());
+                }
+            }, [view.time, this.length], { signal: dispose.signal });
+
+            view.length.on((length) => {
+                if (!this.seeker.seeking()) {
+                    this.length(length);
                 }
             }, { signal: dispose.signal });
 

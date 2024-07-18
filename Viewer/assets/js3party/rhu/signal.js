@@ -46,7 +46,7 @@ export function signal(value, equality) {
 const effectProto = {};
 Object.setPrototypeOf(effectProto, proto);
 export const isEffect = Object.prototype.isPrototypeOf.bind(effectProto);
-export function effect(expression, dependencies) {
+export function effect(expression, dependencies, options) {
     expression();
     const effect = function () {
         expression();
@@ -56,9 +56,13 @@ export function effect(expression, dependencies) {
         if (isEffect(signal))
             throw new Error("Effect cannot be used as a dependency.");
         if (!dependencyMap.has(signal)) {
-            dependencyMap.set(signal, []);
+            dependencyMap.set(signal, new Set());
         }
-        dependencyMap.get(signal).push(effect);
+        const dependency = dependencyMap.get(signal);
+        dependency.add(effect);
+        if (options?.signal !== undefined) {
+            options.signal.addEventListener("abort", () => dependency.delete(effect), { once: true });
+        }
     }
     return effect;
 }

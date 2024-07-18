@@ -1,11 +1,12 @@
 import { AnimBlend, AnimFunc } from "../../library/animations/lib.js";
 import { loadAllClips } from "../../library/animations/loaders.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
-import { Datablock } from "../lib.js";
 
 if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
-export const PlayerAnimDatablock: Datablock<PlayerAnimationClips | PlayerAnimations, AnimFunc<HumanJoints>> = new Datablock();
+// NOTE(randomuserhi): These are static datablocks -> They are not designed to be changed or updated
+
+export const PlayerAnimDatablock: Record<PlayerAnimationClips | PlayerAnimations, AnimFunc<HumanJoints>> = {} as any;
 
 export const animVelocity = {
     x: 0,
@@ -628,6 +629,6 @@ const playerAnimations = {
 export type PlayerAnimations = keyof typeof playerAnimations;
 
 for (const [key, anim] of [...Object.entries(playerAnimations), ...Object.entries(playerAnimationClips)]) {
-    if (PlayerAnimDatablock.has(key as any)) throw new Error(`Duplicate clip '${key}' being loaded.`);
-    PlayerAnimDatablock.set(key as any, anim);
+    if (key in PlayerAnimDatablock) throw new Error(`Duplicate clip '${key}' being loaded.`);
+    PlayerAnimDatablock[key as PlayerAnimationClips | PlayerAnimations] = anim;
 }

@@ -1,7 +1,7 @@
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Group, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
-import { GearDatablock, GunArchetype, hammerArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
+import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemArchetype, ItemDatablock } from "../../datablocks/items/item.js";
 import { animCrouch, animVelocity, PlayerAnimDatablock } from "../../datablocks/player/animation.js";
 import { IKSolverAim } from "../../library/animations/inversekinematics/aimsolver.js";
@@ -18,8 +18,6 @@ import { GearModel } from "../models/gear.js";
 import { ItemModel } from "../models/items.js";
 import { StickFigure } from "../models/stickfigure.js";
 import { Camera } from "../renderer.js";
-
-const animations = PlayerAnimDatablock.obj();
 
 const upperBodyMask: HumanMask = {
     root: false,
@@ -44,16 +42,29 @@ const upperBodyMask: HumanMask = {
 };
 
 const aimOffset = new AnimBlend(HumanJoints, [
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_U.first())), x: 0, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_D.first())), x: 0, y: -1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_L.first())), x: -1, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_R.first())), x: 1, y: 0 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_LD.first())), x: -1, y: -1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_LU.first())), x: -1, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_RD.first())), x: 1, y: -1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_RU.first())), x: 1, y: 1 },
-    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), animations.Rifle_AO_C.first(), animations.Rifle_AO_C.first())), x: 0, y: 0 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_U.first())), x: 0, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_D.first())), x: 0, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_L.first())), x: -1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_R.first())), x: 1, y: 0 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_LD.first())), x: -1, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_LU.first())), x: -1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_RD.first())), x: 1, y: -1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_RU.first())), x: 1, y: 1 },
+    { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_C.first())), x: 0, y: 0 },
 ]);
+
+const defaultArchetype: MeleeArchetype = {
+    equipAnim: PlayerAnimDatablock.Equip_Melee,
+    movementAnim: PlayerAnimDatablock.hammerMovement,
+    jumpAnim: PlayerAnimDatablock.SledgeHammer_Jump,
+    fallAnim:  PlayerAnimDatablock.SledgeHammer_Fall,
+    landAnim:  PlayerAnimDatablock.SledgeHammer_Land,
+    attackAnim: PlayerAnimDatablock.hammerSwing,
+    chargeAnim: PlayerAnimDatablock.hammerCharge,
+    chargeIdleAnim: PlayerAnimDatablock.hammerChargeIdle,
+    releaseAnim: PlayerAnimDatablock.hammerRelease,
+    shoveAnim: PlayerAnimDatablock.hammerShove,
+};
 
 class EquippedItem {
     id?: Identifier;
@@ -138,7 +149,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private backpackAligns: Group[] = new Array(inventorySlots.length);
 
     private lastArchetype: Archetype;
-    private meleeArchetype: MeleeArchetype = hammerArchetype;
+    private meleeArchetype: MeleeArchetype = defaultArchetype;
     private itemArchetype: ItemArchetype;
     private gunArchetype: GunArchetype;
 
@@ -266,8 +277,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         const equipTime = time - (player.lastEquippedTime / 1000);
         switch (this.lastArchetype) {
-        case "pistol": this.skeleton.override(animations.pistolMovement.sample(offsetTime)); break;
-        case "rifle": this.skeleton.override(animations.rifleMovement.sample(offsetTime)); break;
+        case "pistol": this.skeleton.override(PlayerAnimDatablock.pistolMovement.sample(offsetTime)); break;
+        case "rifle": this.skeleton.override(PlayerAnimDatablock.rifleMovement.sample(offsetTime)); break;
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
         }
         
@@ -278,26 +289,26 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             }
 
             switch (this.equippedItem?.type) {
-            case "pistol": this.skeleton.blend(animations.pistolMovement.sample(offsetTime), blend); break;
-            case "rifle": this.skeleton.blend(animations.rifleMovement.sample(offsetTime), blend); break;
+            case "pistol": this.skeleton.blend(PlayerAnimDatablock.pistolMovement.sample(offsetTime), blend); break;
+            case "rifle": this.skeleton.blend(PlayerAnimDatablock.rifleMovement.sample(offsetTime), blend); break;
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;
             }
         }
 
         const downedTime = time - (anim.lastDowned / 1000);
         const reviveTime = time - (anim.lastRevive / 1000);
-        if (reviveTime < animations.Revive.duration) {
+        if (reviveTime < PlayerAnimDatablock.Revive.duration) {
             this.equipped.visible = false;
             
-            this.skeleton.override(animations.Revive.sample(reviveTime));
+            this.skeleton.override(PlayerAnimDatablock.Revive.sample(reviveTime));
             return;
         } else if (anim.isDowned) {
             this.equipped.visible = false;
             
-            if (downedTime < animations.Die.duration) {
-                this.skeleton.override(animations.Die.sample(downedTime));
+            if (downedTime < PlayerAnimDatablock.Die.duration) {
+                this.skeleton.override(PlayerAnimDatablock.Die.sample(downedTime));
             } else {
-                this.skeleton.override(animations.Dead.sample(downedTime));
+                this.skeleton.override(PlayerAnimDatablock.Dead.sample(downedTime));
             }
             return;
         } 
@@ -306,16 +317,16 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         switch(anim.state) {
         case "jump": {
             switch (this.equippedItem?.type) {
-            case "pistol": this.skeleton.override(animations.Pistol_Jump.sample(stateTime)); break;
-            case "rifle": this.skeleton.override(animations.Rifle_Jump.sample(stateTime)); break;
+            case "pistol": this.skeleton.override(PlayerAnimDatablock.Pistol_Jump.sample(stateTime)); break;
+            case "rifle": this.skeleton.override(PlayerAnimDatablock.Rifle_Jump.sample(stateTime)); break;
             default: this.skeleton.override(this.meleeArchetype.jumpAnim.sample(stateTime)); break;
             }
         } break;
         case "fall": {
             const blendWeight = Math.clamp01(stateTime / 0.2);
             switch (this.equippedItem?.type) {
-            case "pistol": this.skeleton.blend(animations.Pistol_Fall.sample(stateTime), blendWeight); break;
-            case "rifle": this.skeleton.blend(animations.Rifle_Fall.sample(stateTime), blendWeight); break;
+            case "pistol": this.skeleton.blend(PlayerAnimDatablock.Pistol_Fall.sample(stateTime), blendWeight); break;
+            case "rifle": this.skeleton.blend(PlayerAnimDatablock.Rifle_Fall.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.fallAnim.sample(stateTime), blendWeight);  break;
             }
         } break;
@@ -323,14 +334,14 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             const isSlow = (Math.abs(anim.velocity.x) < 0.08 && Math.abs(anim.velocity.z) < 0.08);
             const blendWeight = 1 - Math.clamp01(stateTime / (isSlow ? 1 : 0.5));
             switch (this.equippedItem?.type) {
-            case "pistol": this.skeleton.blend(animations.Pistol_Land.sample(stateTime), blendWeight); break;
-            case "rifle": this.skeleton.blend(animations.Rifle_Land.sample(stateTime), blendWeight); break;
+            case "pistol": this.skeleton.blend(PlayerAnimDatablock.Pistol_Land.sample(stateTime), blendWeight); break;
+            case "rifle": this.skeleton.blend(PlayerAnimDatablock.Rifle_Land.sample(stateTime), blendWeight); break;
             default: this.skeleton.blend(this.meleeArchetype.landAnim.sample(stateTime), blendWeight);  break;
             }
         } break;
         case "climbLadder": {
             const blendWeight = Math.clamp01(stateTime / 0.2);
-            this.skeleton.blend(animations.ladderMovement.sample(stateTime), blendWeight);
+            this.skeleton.blend(PlayerAnimDatablock.ladderMovement.sample(stateTime), blendWeight);
         } break;
         }
 
@@ -356,15 +367,15 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                 const blend = Math.clamp01(equipTime / 0.2);
                 switch (this.equippedSlot) {
                 case "melee": this.skeleton.blend(this.meleeArchetype.equipAnim.sample(equipTime / equipDuration * this.meleeArchetype.equipAnim.duration), blend, upperBodyMask); break;
-                case "main": this.skeleton.blend(animations.Equip_Primary.sample(equipTime / equipDuration * animations.Equip_Primary.duration), blend, upperBodyMask); break;
-                case "special": this.skeleton.blend(animations.Equip_Secondary.sample(equipTime / equipDuration * animations.Equip_Secondary.duration), blend, upperBodyMask); break;
-                case "pack": this.skeleton.blend(animations.ConsumablePack_Equip.sample(equipTime / equipDuration * animations.ConsumablePack_Equip.duration), blend, upperBodyMask); break;
+                case "main": this.skeleton.blend(PlayerAnimDatablock.Equip_Primary.sample(equipTime / equipDuration * PlayerAnimDatablock.Equip_Primary.duration), blend, upperBodyMask); break;
+                case "special": this.skeleton.blend(PlayerAnimDatablock.Equip_Secondary.sample(equipTime / equipDuration * PlayerAnimDatablock.Equip_Secondary.duration), blend, upperBodyMask); break;
+                case "pack": this.skeleton.blend(PlayerAnimDatablock.ConsumablePack_Equip.sample(equipTime / equipDuration * PlayerAnimDatablock.ConsumablePack_Equip.duration), blend, upperBodyMask); break;
                 case "consumable": {
                     let equipAnim = this.itemArchetype?.equipAnim;
-                    if (equipAnim === undefined) equipAnim = animations.Consumable_Throw_Equip;
+                    if (equipAnim === undefined) equipAnim = PlayerAnimDatablock.Consumable_Throw_Equip;
                     this.skeleton.blend(equipAnim.sample(equipTime / equipDuration * equipAnim.duration), blend, upperBodyMask);
                 } break;
-                default: this.skeleton.blend(animations.Equip_Generic.sample(equipTime), blend, upperBodyMask); break;
+                default: this.skeleton.blend(PlayerAnimDatablock.Equip_Generic.sample(equipTime), blend, upperBodyMask); break;
                 }
             } else {
                 this.equipped.visible = true;
@@ -451,7 +462,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                         }
                     } else {
                         const shotTime = time - (anim.lastShot / 1000);
-                        const recoilAnim = this.equippedItem?.type === "pistol" ? animations.Pistol_Recoil : animations.Rifle_Recoil;
+                        const recoilAnim = this.equippedItem?.type === "pistol" ? PlayerAnimDatablock.Pistol_Recoil : PlayerAnimDatablock.Rifle_Recoil;
                         if (shotTime < recoilAnim.duration) {
                             this.skeleton.additive(difference(tempAvatar, recoilAnim.first(), recoilAnim.sample(shotTime)), 1, upperBodyMask);
                         }
@@ -491,14 +502,14 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     }
                 } break;
                 case "consumable": {
-                    this.skeleton.override(animations.ConsumablePack_Idle.sample(time), upperBodyMask);
+                    this.skeleton.override(PlayerAnimDatablock.ConsumablePack_Idle.sample(time), upperBodyMask);
 
                     let throwAnim = this.itemArchetype?.throwAnim;
-                    if (throwAnim === undefined) throwAnim = animations.Consumable_Throw;
+                    if (throwAnim === undefined) throwAnim = PlayerAnimDatablock.Consumable_Throw;
                     let chargeAnim = this.itemArchetype?.chargeAnim;
-                    if (chargeAnim === undefined) chargeAnim = animations.Consumable_Throw_Charge;
+                    if (chargeAnim === undefined) chargeAnim = PlayerAnimDatablock.Consumable_Throw_Charge;
                     let chargeIdleAnim = this.itemArchetype?.chargeIdleAnim;
-                    if (chargeIdleAnim === undefined) chargeIdleAnim = animations.Consumable_Throw_Charge_Idle;
+                    if (chargeIdleAnim === undefined) chargeIdleAnim = PlayerAnimDatablock.Consumable_Throw_Charge_Idle;
 
                     const throwTime = time - (anim.lastThrowTime / 1000);
                     let isThrowing = false;
@@ -540,7 +551,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         if (anim.state === "onTerminal") {
             const t = time - (anim.lastStateTransition / 1000);
             const blend = Math.clamp01(t / 0.2);
-            this.skeleton.blend(animations.TerminalConsole_Idle.sample(t), blend);
+            this.skeleton.blend(PlayerAnimDatablock.TerminalConsole_Idle.sample(t), blend);
             return;
         }
     }

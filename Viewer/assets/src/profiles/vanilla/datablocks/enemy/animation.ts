@@ -1,12 +1,12 @@
 import { AnimBlend, mergeAnims, ScaledAnim, type AnimFunc } from "../../library/animations/lib.js";
 import { loadAllClips } from "../../library/animations/loaders.js";
 import { HumanJoints } from "../../renderer/animations/human.js";
-import { Datablock } from "../lib.js";
 
 if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
-export const EnemyAnimDatablock = new Datablock<EnemyAnimationClips | EnemyAnimations, AnimFunc<HumanJoints>>();
+// NOTE(randomuserhi): These are static datablocks -> They are not designed to be changed or updated
 
+export const EnemyAnimDatablock: Record<EnemyAnimationClips | EnemyAnimations,AnimFunc<HumanJoints>> = {} as any;
 
 export const animVelocity = {
     x: 0,
@@ -644,6 +644,6 @@ const enemyAnimations = {
 export type EnemyAnimations = keyof typeof enemyAnimations;
 
 for (const [key, anim] of [...Object.entries(enemyAnimations), ...Object.entries(enemyAnimationClips)]) {
-    if (EnemyAnimDatablock.has(key as any)) throw new Error(`Duplicate clip '${key}' being loaded.`);
-    EnemyAnimDatablock.set(key as any, anim);
+    if (key in EnemyAnimDatablock) throw new Error(`Duplicate clip '${key}' being loaded.`);
+    EnemyAnimDatablock[key as EnemyAnimations | EnemyAnimationClips] = anim;
 }
