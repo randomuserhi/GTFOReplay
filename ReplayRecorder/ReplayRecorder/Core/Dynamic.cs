@@ -84,6 +84,10 @@ namespace ReplayRecorder.Core {
             /// Vector3(Full/Half) => full precision / half precision based on absolute or relative position
 
             BitHelper.WriteBytes(transform.dimensionIndex, buffer);
+
+            Vector3 diff = transform.position - oldPosition;
+            calculatedPosition += diff;
+
             // If object has moved too far, write absolute position
             if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
                 BitHelper.WriteBytes((byte)(1), buffer);
@@ -93,9 +97,7 @@ namespace ReplayRecorder.Core {
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), buffer);
-                Vector3 diff = transform.position - oldPosition;
                 BitHelper.WriteHalf(diff, buffer);
-                calculatedPosition += diff;
             }
 
             oldDimensionIndex = transform.dimensionIndex;
