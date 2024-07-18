@@ -428,7 +428,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Lone Wolf",
         icon: "./medals/wolf.png",
         description: html`
-            <div>Be the sole player alive for atleast 1 minute.</div>
+            <div>Be the longest sole player alive for atleast 1 minute.</div>
             <div><span style="color: #e9bc29">${Macro.signal("value")}</span> time spent solo.</div>
         `,
         award(medals, api, players) {

@@ -128,7 +128,7 @@ const Slot = Macro(class Slot extends MacroElement {
         });
 
         fetchProfilePicture(key).then(frag => { 
-            if (frag !== undefined) {
+            if (frag !== undefined && frag !== null) {
                 this.avatar.replaceChildren(frag);
                 this.avatar.addEventListener("click", () => {
                     window.open(`https://steamcommunity.com/profiles/${key}`, '_blank')?.focus();
