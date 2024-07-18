@@ -424,6 +424,49 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
             }
         }
     },
+    {
+        name: "Lone Wolf",
+        icon: "./medals/wolf.png",
+        description: html`
+            <div>Be the sole player alive for atleast 1 minute.</div>
+            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> time spent solo.</div>
+        `,
+        award(medals, api, players) {
+            const statTracker = StatTracker.from(api);
+            if (players.length === 0) return;
+
+            const time = api.time();
+
+            let chosen: bigint[] = [];
+            let maxTimeSolo = 0;
+            for (const snet of players) {
+                const stats = StatTracker.getPlayer(snet, statTracker);
+                
+                let timeSolo = stats.timeSpentSolo;
+                if (stats._timeSpentSoloTimeStamp !== undefined) {
+                    timeSolo += Math.clamp(time - stats._timeSpentSoloTimeStamp, 0, Infinity);
+                }
+
+                if (timeSolo > maxTimeSolo) {
+                    chosen = [];
+                    maxTimeSolo = timeSolo;
+                }
+                if (timeSolo == maxTimeSolo) {
+                    chosen.push(snet);
+                }
+            } 
+
+            if (maxTimeSolo < 60 * 1000) return;
+
+            if (chosen.length === 1) {
+                const snet = chosen[0];
+                if (!medals.has(snet)) {
+                    medals.set(snet, new Map());
+                }
+                medals.get(snet)!.set(this.name, msToString(maxTimeSolo));
+            }
+        }
+    },
 ] as MedalRequirement[]).map(m => [m.name, m]));
 
 const style = Style(({ style }) => {

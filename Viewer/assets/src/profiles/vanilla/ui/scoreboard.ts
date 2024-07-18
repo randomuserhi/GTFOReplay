@@ -1,4 +1,5 @@
 import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { Rest } from "@esm/@/rhu/rest.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -17,6 +18,7 @@ const style = Style(({ style }) => {
     border-collapse: collapse;
     min-width: 100%;
     grid-template-columns: 
+        1fr
         2fr
         2fr
         2fr
@@ -57,14 +59,32 @@ const style = Style(({ style }) => {
     }
     `;
 
+    // Steam styles
+    const avatar = style.class`
+    cursor: pointer;
+    `;
+    style`
+    ${avatar} .playerAvatarAutoSizeInner {
+        position: relative;
+    }
+    ${avatar} .profile_avatar_frame {
+        position: absolute;
+    }
+    ${avatar} .profile_avatar_frame img {
+        transform: scale(1.22);
+    }
+    `;
+
     return {
         wrapper,
-        slot
+        slot,
+        avatar
     };
 });
 
 const Slot = Macro(class Slot extends MacroElement {
     public wrapper: HTMLTableElement;
+    private avatar: HTMLTableCellElement;
     constructor(dom: Node[], bindings: any, children: Node[], key: bigint) {
         super(dom, bindings);
 
@@ -106,6 +126,22 @@ const Slot = Macro(class Slot extends MacroElement {
             this._items = temp;
             this._items.clear();
         });
+
+        fetchProfilePicture(key).then(frag => { 
+            if (frag !== undefined) {
+                this.avatar.replaceChildren(frag);
+                this.avatar.addEventListener("click", () => {
+                    window.open(`https://steamcommunity.com/profiles/${key}`, '_blank')?.focus();
+                }, { signal: dispose.signal });
+            } 
+        });
+
+        this.name.guard = (name) => {
+            if (name.length > 30) {
+                return `${name.slice(0, 27)}...`;
+            }
+            return name;
+        };
     }
 
     public remove() {
@@ -131,6 +167,7 @@ const Slot = Macro(class Slot extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);
 }, html`
     <tr m-id="wrapper" class="${style.slot}">
+        <td m-id="avatar" class="${style.avatar}" style="padding: 10px;"></td>
         <td><span>${Macro.signal("name", "Name")}</span></td>
         <td><span>${Macro.signal("kills", "0")}</span></td>
         <td><span>${Macro.signal("assists", "0")}</span></td>
@@ -138,6 +175,18 @@ const Slot = Macro(class Slot extends MacroElement {
         </td>
     </tr>
     `);
+
+const htmlParser = new DOMParser();
+const fetchProfilePicture = Rest.fetch<HTMLDivElement | undefined, [snet: bigint]>({
+    url: (snet: bigint) => new URL(`https://steamcommunity.com/profiles/${snet}`),
+    fetch: async () => ({
+        method: "GET"
+    }),
+    callback: async (resp) => {
+        const frame = htmlParser.parseFromString(await resp.text(), 'text/html');
+        return frame.querySelector("div.playerAvatarAutoSizeInner") as (HTMLDivElement | undefined);
+    }
+});
 
 export const Scoreboard = Macro(class Scoreboard extends MacroElement {
     public wrapper: HTMLDivElement;
@@ -147,7 +196,10 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
         super(dom, bindings);
 
         this.view.on((view) => {
-            if (view === undefined) return;
+            if (view === undefined) {
+                this.slots([]);
+                return;
+            }
 
             this.slots.on((slots) => {
                 const api = view.api();
@@ -261,6 +313,7 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
         <table class="${style.wrapper}">
             <tbody m-id="table" style="display: none;">
                 <tr style="color: white; font-size: 20px;">
+                    <td></td>    
                     <td></td>
                     <td style="display: flex; align-items: center; justify-content: center;"><span>K</span></td>
                     <td style="display: flex; align-items: center; justify-content: center;"><span>A</span></td>

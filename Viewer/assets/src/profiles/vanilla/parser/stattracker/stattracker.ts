@@ -60,6 +60,7 @@ interface PlayerStats {
     packsUsed: Map<PackType, number>;
     packsGiven: Map<PackType, number>;
     timeSpentDowned: number;
+    timeSpentSolo: number;
     kills: Map<IdentifierHash, IdentifiedValue>;
     mineKills: Map<IdentifierHash, IdentifiedValue>;
     sentryKills: Map<IdentifierHash, IdentifiedValue>;
@@ -67,6 +68,7 @@ interface PlayerStats {
     fallDamage: number;
     tongueDodges: Map<IdentifierHash, IdentifiedValue>;
     _downedTimeStamp?: number;
+    _timeSpentSoloTimeStamp?: number;
 }
 
 function PlayerStats(snet: bigint): PlayerStats {
@@ -78,6 +80,7 @@ function PlayerStats(snet: bigint): PlayerStats {
         packsUsed: new Map(),
         packsGiven: new Map(),
         timeSpentDowned: 0,
+        timeSpentSolo: 0,
         kills: new Map(),
         mineKills: new Map(),
         sentryKills: new Map(),
@@ -85,6 +88,7 @@ function PlayerStats(snet: bigint): PlayerStats {
         fallDamage: 0,
         tongueDodges: new Map(),
         _downedTimeStamp: undefined,
+        _timeSpentSoloTimeStamp: undefined
     };
 }
 

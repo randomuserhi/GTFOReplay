@@ -47,7 +47,7 @@ const parse = async (data: ByteStream): Promise<Omit<PlayerStats, "id">> => {
     };
 };
 
-const updateStats = (status: PlayerStats, snapshot: ReplayApi) => {
+const updateStats = (stats: Map<number, PlayerStats>, status: PlayerStats, snapshot: ReplayApi) => {
     const { id } = status;
     const time = snapshot.time();
     const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
@@ -80,7 +80,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             status.consumableAmmo = data.consumableAmmo;
             status.resourceAmmo = data.resourceAmmo;
 
-            updateStats(status, snapshot);            
+            updateStats(stats, status, snapshot);            
         }
     },
     spawn: {
@@ -93,7 +93,7 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             };
             stats.set(id, status);
 
-            updateStats(status, snapshot);
+            updateStats(stats, status, snapshot);
         }
     },
     despawn: {
@@ -103,7 +103,44 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
 
             if (!stats.has(id)) throw new Error(`PlayerStats of id '${id}' did not exist.`);
+
+            updateStats(stats, stats.get(id)!, snapshot);
+
             stats.delete(id);
+        }
+    }
+});
+
+ModuleLoader.registerTick((snapshot) => {
+    const time = snapshot.time();
+    const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
+    const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+    for (const status of stats.values()) {
+        
+        if (players.has(status.id)) {
+            const player = players.get(status.id)!;
+            const statTracker = StatTracker.from(snapshot);
+
+            const playerStats = StatTracker.getPlayer(player.snet, statTracker);
+
+            let isSolo = status.health > 0;
+            if (isSolo) {
+                for (const other of stats.values()) {
+                    if (other.id === status.id) continue;
+
+                    if (other.health > 0) {
+                        isSolo = false;
+                        break;
+                    }
+                }
+            }
+
+            if (playerStats._timeSpentSoloTimeStamp === undefined && isSolo) {
+                playerStats._timeSpentSoloTimeStamp = time;
+            } else if (playerStats._timeSpentSoloTimeStamp !== undefined && !isSolo) {
+                playerStats.timeSpentSolo += time - playerStats._timeSpentSoloTimeStamp;
+                playerStats._timeSpentSoloTimeStamp = undefined;
+            }
         }
     }
 });
