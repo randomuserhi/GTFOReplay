@@ -224,7 +224,10 @@ export const Display = Macro(class Display extends MacroElement {
                 if (seeking) {
                     view.pause(seeking);
                     requestAnimationFrame(() => view.canvas.focus());
-                } else view.pause(this.pause());
+                } else {
+                    view.pause(this.pause());
+                    this.length(view.length());
+                }
             });
         }, { signal: dispose.signal });
     }
