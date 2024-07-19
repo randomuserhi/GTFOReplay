@@ -5,7 +5,7 @@ using ReplayRecorder.API.Attributes;
 namespace Vanilla.Metadata {
     [ReplayData("Vanilla.Metadata", "0.0.2")]
     internal class rMetadata : ReplayHeader {
-        const string Version = "0.0.8";
+        const string Version = "0.0.9";
 
         public static bool OldBulkheadSound_Compatability = false;
 

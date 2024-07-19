@@ -90,19 +90,35 @@ namespace Vanilla.StaticItems {
             get {
                 CarryItemPickup_Core? carryItem = item.item.TryCast<CarryItemPickup_Core>();
                 if (carryItem != null) {
-                    return (ushort)carryItem.m_serialNumber;
+                    if (carryItem.ItemDataBlock.addSerialNumberToName) {
+                        return (ushort)carryItem.m_serialNumber;
+                    } else {
+                        return ushort.MaxValue;
+                    }
                 }
                 ResourcePackPickup? resourceItem = item.item.TryCast<ResourcePackPickup>();
                 if (resourceItem != null) {
-                    return (ushort)resourceItem.m_serialNumber;
+                    if (resourceItem.ItemDataBlock.addSerialNumberToName) {
+                        return (ushort)resourceItem.m_serialNumber;
+                    } else {
+                        return ushort.MaxValue;
+                    }
                 }
                 GenericSmallPickupItem_Core? smallItem = item.item.TryCast<GenericSmallPickupItem_Core>();
                 if (smallItem != null) {
-                    return (ushort)smallItem.m_serialNumber1;
+                    if (smallItem.ItemDataBlock.addSerialNumberToName) {
+                        return (ushort)smallItem.m_serialNumber1;
+                    } else {
+                        return ushort.MaxValue;
+                    }
                 }
                 KeyItemPickup_Core? key = item.item.TryCast<KeyItemPickup_Core>();
                 if (key != null && key.m_keyItem != null) {
-                    return (ushort)key.m_keyItem.m_keyNum;
+                    if (key.ItemDataBlock.addSerialNumberToName) {
+                        return (ushort)key.m_keyItem.m_keyNum;
+                    } else {
+                        return ushort.MaxValue;
+                    }
                 }
                 return ushort.MaxValue;
             }
