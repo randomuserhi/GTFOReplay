@@ -297,9 +297,11 @@ export class VM<T = any> {
     private destruct(module: Module) {
         if (module.destructed) return;
 
+        // Stop execution
         const kill = module.terminate;
         if (kill !== undefined) kill(Module.silent);
 
+        // call destructor
         const destructor = module.destructor;
         if (destructor !== undefined) {
             try {
@@ -309,6 +311,11 @@ export class VM<T = any> {
             }
         }
         
+        // Delete from archetype
+        module._archetype.modules.delete(module.src);
+        module._archetype = this.baseArchetype;
+        
+        // Delete from cache
         this.cache.delete(module.src);
         
         // Clear module from execution

@@ -91,6 +91,9 @@ export class Renderer {
             this.canvas = canvas;
         }
 
+        this.renderer?.dispose();
+        this.composer?.dispose();
+        
         this.scene = new Scene();
         this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
         this.composer = new EffectComposer(this.renderer);

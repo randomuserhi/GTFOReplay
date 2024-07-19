@@ -11,6 +11,19 @@ import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } f
 const transparentMaskedParts = new Map<StickModelType, DynamicInstanceManager>();
 const transparentParts = new Map<StickModelType, DynamicInstanceManager>();
 export const parts = new Map<StickModelType, DynamicInstanceManager>(); 
+
+module.destructor = () => {
+    for (const instance of transparentMaskedParts.values()) {
+        instance.mesh.dispose();
+    }
+    for (const instance of transparentParts.values()) {
+        instance.mesh.dispose();
+    }
+    for (const instance of parts.values()) {
+        instance.mesh.dispose();
+    }
+};
+
 export function getInstanceOrDefault(instancing: Map<StickModelType, DynamicInstanceManager>, type: StickModelType | undefined, defaultType: StickModelType) {
     let result: DynamicInstanceManager | undefined = undefined;
     if (type === undefined) result = instancing.get(defaultType);
