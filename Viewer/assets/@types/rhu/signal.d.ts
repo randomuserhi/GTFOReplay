@@ -11,7 +11,7 @@ export interface Signal<T> extends SignalEvent<T> {
     guard?: (value: T) => T;
 }
 type Callback<T> = (value: T) => void;
-type Equality<T> = (a: T, b: T) => boolean;
+type Equality<T> = (a?: T, b?: T) => boolean;
 export declare const isSignal: <T>(obj: any) => obj is SignalEvent<T>;
 export declare const always: Equality<any>;
 export declare function signal<T>(value: T, equality?: Equality<T>): Signal<T>;
@@ -28,7 +28,7 @@ export interface Computed<T> extends SignalEvent<T> {
     (): T;
     effect: Effect;
 }
-export declare function computed<T>(expression: (value: Signal<T>) => ((() => void) | void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
+export declare function computed<T>(expression: (set: Signal<T>) => ((() => void) | void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
     signal?: AbortSignal;
 }): Computed<T>;
 export {};

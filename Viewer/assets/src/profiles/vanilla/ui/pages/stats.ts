@@ -109,6 +109,8 @@ const TypeList = Macro(class TypeList extends MacroElement {
     }
 
     public values = signal<[key: string, value: number][]>([], (a, b) => {
+        if (a === undefined && b === undefined) return true;
+        if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; ++i) {
             if (a[i][0] !== b[i][0]) return false;

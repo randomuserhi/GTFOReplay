@@ -187,6 +187,8 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
 
     public value = signal<any>(undefined);
     public options = signal<{ key: string, value: any }[]>([], (a, b) => {
+        if (a === undefined && b === undefined) return true;
+        if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; ++i) {
             if (a[i].value !== b[i].value) return false; // TODO(randomuserhi): allow for custom equality

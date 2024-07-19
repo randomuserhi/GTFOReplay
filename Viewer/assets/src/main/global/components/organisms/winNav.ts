@@ -129,7 +129,7 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
     private validation = new Set<string>();
     public values = signal<string[]>([]);
     private fuse = new Fuse(this.values(), { keys: ["key"] });
-    private filtered = computed(() => {
+    private filtered = computed<string[]>((set) => {
         let values = this.values();
         this.fuse.setCollection(values);
         const filter = this.filter();
@@ -137,8 +137,10 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
             this.fuse.setCollection(this.values());
             values = this.fuse.search(filter).map((n) => n.item);
         }
-        return values;
+        set(values);
     }, [this.values, this.filter], (a, b) => {
+        if (a === undefined && b === undefined) return true;
+        if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
         this.validation.clear();
         for (let i = 0; i < a.length; ++i) {

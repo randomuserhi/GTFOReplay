@@ -155,6 +155,8 @@ const Slot = Macro(class Slot extends MacroElement {
     public kills: Signal<string>;
     public assists: Signal<string>;
     public medals = signal<Map<string, string>>(new Map(), (current, next) => {
+        if (current === undefined && next === undefined) return true;
+        if (current === undefined || next === undefined) return false;
         if (current.size === 0 && next.size === 0) return true;
         return false;
     });
@@ -307,6 +309,8 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
     private items = new Map<bigint, Macro<typeof Slot>>();
 
     private slots = signal<bigint[]>([], (current, next) => {
+        if (current === undefined && next === undefined) return true;
+        if (current === undefined || next === undefined) return false;
         if (current.length === 0 && next.length === 0) return true;
         return false;
     }); 
