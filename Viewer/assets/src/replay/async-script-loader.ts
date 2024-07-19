@@ -313,7 +313,7 @@ export class VM<T = any> {
         
         // Delete from archetype
         module._archetype.modules.delete(module.src);
-        module._archetype = this.baseArchetype;
+        module._archetype = undefined!;
         
         // Delete from cache
         this.cache.delete(module.src);
