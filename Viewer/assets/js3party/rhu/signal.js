@@ -53,9 +53,16 @@ export function effect(expression, dependencies, options) {
             destructor();
         }
         effect[destructors] = [];
-        expression();
+        const destructor = expression();
+        if (destructor !== undefined) {
+            effect[destructors].push(destructor);
+        }
     };
-    effect[destructors] = [expression()];
+    effect[destructors] = [];
+    const destructor = expression();
+    if (destructor !== undefined) {
+        effect[destructors].push(destructor);
+    }
     Object.setPrototypeOf(effect, effectProto);
     for (const signal of dependencies) {
         if (isEffect(signal))

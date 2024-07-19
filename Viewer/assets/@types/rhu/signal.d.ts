@@ -21,14 +21,14 @@ export interface Effect {
     [destructors]: (() => void)[];
 }
 export declare const isEffect: (obj: any) => obj is Effect;
-export declare function effect(expression: () => (() => void), dependencies: SignalEvent[], options?: {
+export declare function effect(expression: () => ((() => void) | undefined), dependencies: SignalEvent[], options?: {
     signal?: AbortSignal;
 }): Effect;
 export interface Computed<T> extends SignalEvent<T> {
     (): T;
     effect: Effect;
 }
-export declare function computed<T>(expression: (value: Signal<T>) => (() => void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
+export declare function computed<T>(expression: (value: Signal<T>) => ((() => void) | undefined), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
     signal?: AbortSignal;
 }): Computed<T>;
 export {};
