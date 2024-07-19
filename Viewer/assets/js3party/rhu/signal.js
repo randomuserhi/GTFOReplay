@@ -43,14 +43,19 @@ export function signal(value, equality) {
     Object.setPrototypeOf(signal, proto);
     return signal;
 }
+const destructors = Symbol("effect.destructors");
 const effectProto = {};
 Object.setPrototypeOf(effectProto, proto);
 export const isEffect = Object.prototype.isPrototypeOf.bind(effectProto);
 export function effect(expression, dependencies, options) {
-    expression();
     const effect = function () {
+        for (const destructor of effect[destructors]) {
+            destructor();
+        }
+        effect[destructors] = [];
         expression();
     };
+    effect[destructors] = [expression()];
     Object.setPrototypeOf(effect, effectProto);
     for (const signal of dependencies) {
         if (isEffect(signal))
@@ -75,8 +80,8 @@ function triggerEffects(signal) {
         effect();
     }
 }
-export function computed(expression, dependencies, equality) {
-    const value = signal(expression(), equality);
+export function computed(expression, dependencies, equality, options) {
+    const value = signal(undefined, equality);
     const computed = function () {
         return value();
     };
@@ -90,7 +95,7 @@ export function computed(expression, dependencies, equality) {
     computed.equals = function (other) {
         return value.equals(other);
     };
-    computed.effect = effect(() => value(expression()), dependencies);
+    computed.effect = effect(() => expression(value), dependencies, options);
     Object.setPrototypeOf(computed, proto);
     return computed;
 }

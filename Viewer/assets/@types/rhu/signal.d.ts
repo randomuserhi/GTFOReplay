@@ -15,16 +15,20 @@ type Equality<T> = (a: T, b: T) => boolean;
 export declare const isSignal: <T>(obj: any) => obj is SignalEvent<T>;
 export declare const always: Equality<any>;
 export declare function signal<T>(value: T, equality?: Equality<T>): Signal<T>;
+declare const destructors: unique symbol;
 export interface Effect {
     (): void;
+    [destructors]: (() => void)[];
 }
 export declare const isEffect: (obj: any) => obj is Effect;
-export declare function effect(expression: () => void, dependencies: SignalEvent[], options?: {
+export declare function effect(expression: () => (() => void), dependencies: SignalEvent[], options?: {
     signal?: AbortSignal;
 }): Effect;
 export interface Computed<T> extends SignalEvent<T> {
     (): T;
     effect: Effect;
 }
-export declare function computed<T>(expression: () => T, dependencies: SignalEvent[], equality?: Equality<T>): Computed<T>;
+export declare function computed<T>(expression: (value: Signal<T>) => (() => void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
+    signal?: AbortSignal;
+}): Computed<T>;
 export {};
