@@ -86,10 +86,15 @@ namespace ReplayRecorder.Core {
             BitHelper.WriteBytes(transform.dimensionIndex, buffer);
 
             Vector3 diff = transform.position - oldPosition;
+            diff = new Vector3(
+                BitHelper.Quantize(diff.x),
+                BitHelper.Quantize(diff.y),
+                BitHelper.Quantize(diff.z)
+                );
             calculatedPosition += diff;
 
             // If object has moved too far, write absolute position
-            if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
+            if (diff.sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
                 BitHelper.WriteBytes((byte)(1), buffer);
                 BitHelper.WriteBytes(transform.position, buffer);
                 calculatedPosition = transform.position;
@@ -207,8 +212,17 @@ namespace ReplayRecorder.Core {
             //                     0,1,2,3 for which component was missing.
 
             BitHelper.WriteBytes(transform.dimensionIndex, buffer);
+
+            Vector3 diff = transform.position - oldPosition;
+            diff = new Vector3(
+                BitHelper.Quantize(diff.x),
+                BitHelper.Quantize(diff.y),
+                BitHelper.Quantize(diff.z)
+                );
+            calculatedPosition += diff;
+
             // If object has moved too far, write absolute position
-            if ((transform.position - oldPosition).sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
+            if (diff.sqrMagnitude > threshold * threshold || (transform.position - calculatedPosition).sqrMagnitude > 1) {
                 BitHelper.WriteBytes((byte)(1), buffer);
                 BitHelper.WriteBytes(transform.position, buffer);
                 calculatedPosition = transform.position;
@@ -216,10 +230,9 @@ namespace ReplayRecorder.Core {
             // If object has not moved too far, write relative to last absolute position
             else {
                 BitHelper.WriteBytes((byte)(0), buffer);
-                Vector3 diff = transform.position - oldPosition;
                 BitHelper.WriteHalf(diff, buffer);
-                calculatedPosition += diff;
             }
+
             if (float.IsNaN(transform.rotation.x) || float.IsNaN(transform.rotation.y) ||
                     float.IsNaN(transform.rotation.z) || float.IsNaN(transform.rotation.w)) {
                 BitHelper.WriteHalf(Quaternion.identity, buffer);
