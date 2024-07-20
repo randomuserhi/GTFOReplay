@@ -1,1 +1,1 @@
-export const __version__ = "0.0.9";
+export const __version__ = "0.1.0";
