@@ -224,13 +224,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"RAD Labs Meduza","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":11},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":45},"f":{"c":12,"v":28},"g":{"c":16,"v":2},"h":{"c":27,"v":9},"i":{"c":40,"v":2},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"RAD Labs Meduza"}}}`,
     ), {
-        model: (gearJSON) => {
-            const model = new GearBuilder(gearJSON);
-            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
-            model.equipOffsetPos = { x: 0, y: -0.3, z: 0.1 };
-            model.equipOffsetRot = { x: -0.7071081, y: 0, z: 0, w: 0.7071055 };
-            return model;
-        },
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Auto Sentry"
     }
 );
@@ -239,13 +233,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Autotek 51 RSG","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":10},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":36},"f":{"c":12,"v":19},"g":{"c":16,"v":1},"h":{"c":27,"v":9},"i":{"c":40,"v":1},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Autotek 51 RSG"}}}`,
     ), {
-        model: (gearJSON) => {
-            const model = new GearBuilder(gearJSON);
-            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
-            model.equipOffsetPos = { x: 0, y: -0.3, z: 0.1 };
-            model.equipOffsetRot = { x: -0.7071081, y: 0, z: 0, w: 0.7071055 };
-            return model;
-        },
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Sniper Sentry"
     }
 );
