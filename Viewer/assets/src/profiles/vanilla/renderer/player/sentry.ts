@@ -1,8 +1,11 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { BoxGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Scene } from "@esm/three";
+import { BoxGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3D } from "@esm/three";
 import { getPlayerColor } from "../../datablocks/player/player.js";
 import { Factory } from "../../library/factory.js";
+import { Identifier, IdentifierData } from "../../parser/identifier.js";
+import { inventorySlotMap, PlayerBackpack } from "../../parser/player/backpack.js";
 import { Sentry } from "../../parser/player/sentry.js";
+import { GearBuilder } from "../models/gearbuilder.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -23,26 +26,41 @@ const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).rotateX(Math.PI * 0.5);
 class SentryModel extends ObjectWrapper<Group> {
     readonly base: Mesh;
 
+    readonly defaultModel: Group;
+
+    current: Identifier;
+    gearModel?: GearBuilder;
+    yaw?: Object3D;
+    pitch?: Object3D;
+
     readonly gun: Group;
     readonly muzzle: Mesh;
     readonly screen: Mesh;
     readonly top: Mesh;
     readonly middle: Mesh;
     readonly bottom: Mesh;
+
+    readonly color: Color;
     
     constructor(color: Color) {
         super();
 
-        this.root = new Group();
+        this.color = color;
 
-        const material = new MeshPhongMaterial({ color });
+        this.root = new Group();
+        
+        this.defaultModel = new Group();
+        this.root.add(this.defaultModel);
+
+        const material = new MeshPhongMaterial({ color: this.color });
 
         this.base = new Mesh(geometry, material);
-        this.root.add(this.base);
+        this.defaultModel.add(this.base);
         this.base.position.set(0, 0.1 / 2, 0);
         this.base.scale.set(0.4, 0.05, 0.6);
 
         this.gun = new Group();
+        this.defaultModel.add(this.gun);
 
         this.bottom = new Mesh(geometry, material);
         this.gun.add(this.bottom);
@@ -73,26 +91,40 @@ class SentryModel extends ObjectWrapper<Group> {
         this.gun.position.set(0, 0.45, 0);
     }
 
-    public update(sentry: Sentry) {
-        this.root.quaternion.set(sentry.baseRot.x, sentry.baseRot.y, sentry.baseRot.z, sentry.baseRot.w);
-        this.root.position.set(sentry.position.x, sentry.position.y - 0.3, sentry.position.z);
+    private static FUNC_update = {
+        temp: new Object3D()
+    } as const;
+    public update(sentry: Sentry, db: IdentifierData, backpack?: PlayerBackpack) {
+        if (backpack !== undefined && !Identifier.equals(db, this.current, backpack.slots[inventorySlotMap.tool])) {
+            this.current = backpack.slots[inventorySlotMap.tool];
+            if (this.gearModel !== undefined) this.gearModel.removeFromParent();
+            this.gearModel = new GearBuilder(this.current.stringKey, (gearModel) => {
+                gearModel.material.color = this.color;
+                this.yaw = gearModel.findObjectByName(gearModel.root, "a_yaw");
+                this.pitch = gearModel.findObjectByName(gearModel.root, "a_pitch");
+            });
+            this.root.add(this.gearModel.root);
+        }
 
-        this.gun.quaternion.set(sentry.rotation.x, sentry.rotation.y, sentry.rotation.z, sentry.rotation.w);
-        this.gun.position.set(this.root.position.x, this.root.position.y + 0.45, this.root.position.z);
-    }
+        if (this.gearModel !== undefined) {
+            this.root.position.set(sentry.position.x, sentry.position.y, sentry.position.z);
+            this.gearModel.root.quaternion.copy(sentry.baseRot);
 
-    public addToScene(scene: Scene): void {
-        super.addToScene(scene);
-        scene.add(this.gun);
-    }
+            this.base.visible = false;
+            this.gun.visible = false;
 
-    public removeFromScene(scene: Scene): void {
-        super.removeFromScene(scene);
-        scene.remove(this.gun);
-    }
+            const { temp } = SentryModel.FUNC_update;
+            temp.quaternion.copy(sentry.rotation);
+            if (this.yaw !== undefined) this.yaw.rotation.y = - temp.rotation.y + this.gearModel.root.rotation.y;
+            if (this.pitch !== undefined) this.pitch.rotation.x = - temp.rotation.x + this.gearModel.root.rotation.x;
+        } else {
+            this.root.position.set(sentry.position.x, sentry.position.y - 0.3, sentry.position.z);
 
-    public removeFromParent(): void {
-        throw new Error("Invalid Operation");
+            this.base.visible = true;
+            this.gun.visible = true;
+            this.base.quaternion.set(sentry.baseRot.x, sentry.baseRot.y, sentry.baseRot.z, sentry.baseRot.w);
+            this.gun.quaternion.set(sentry.rotation.x, sentry.rotation.y, sentry.rotation.z, sentry.rotation.w);
+        }
     }
 }
 
@@ -102,7 +134,9 @@ ModuleLoader.registerRender("Sentry", (name, api) => {
         name, pass: (renderer, snapshot) => {
             const models = renderer.getOrDefault("Sentry", Factory("Map"));
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            const backpack = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
             const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
+            const db = IdentifierData(snapshot);
             for (const [id, sentry] of sentries) {
                 if (!models.has(id)) {
                     let color: ColorRepresentation = 0xffffff;
@@ -115,7 +149,7 @@ ModuleLoader.registerRender("Sentry", (name, api) => {
                 }
 
                 const model = models.get(id)!;
-                model.update(sentry);
+                model.update(sentry, db, backpack.get(sentry.owner));
                 model.setVisible(sentry.dimension === renderer.get("Dimension"));
             }
 

@@ -23,15 +23,6 @@ import { GearFoldAvatar } from "../animations/gearfold.js";
 import { GearModel } from "./gear.js";
 import { AlignType, ComponentType, componentTypes, GearComp, GearJSON } from "./gearjson.js";
 
-const defaultMaterial = new MeshPhongMaterial({ color: 0xffffff });
-
-const setMaterial = (obj: Object3D) => {
-    const mesh = obj as Mesh;
-    if (mesh.isMesh === true) {
-        mesh.material = defaultMaterial;
-    }
-};
-
 export class GearBuilder extends GearModel {
     readonly json: string;
     schematic: GearJSON;
@@ -39,7 +30,7 @@ export class GearBuilder extends GearModel {
     readonly parts = new Group();
 
     aligns: Partial<Record<
-    "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting", 
+    "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver", 
     { obj: Object3D, source: ComponentType }>> = {};
 
     foldObjects: Object3D[] = [];
@@ -50,14 +41,25 @@ export class GearBuilder extends GearModel {
         x: 0, y: 0, z: 0, w: 1
     };
 
-    constructor(gearJSON: string) {
+    public material = new MeshPhongMaterial({ color: 0xffffff });
+
+    private setMaterial = (obj: Object3D) => {
+        const mesh = obj as Mesh;
+        if (mesh.isMesh === true) {
+            mesh.material = this.material;
+        }
+    };
+
+    constructor(gearJSON: string, onBuild?: (gear: GearBuilder) => void) {
         super();
 
         this.root.add(this.parts);
 
         this.json = gearJSON;
         this.schematic = JSON.parse(this.json).Packet;
-        this.build();
+        this.build().then(() => {
+            if (onBuild !== undefined) onBuild(this);
+        });
     }
 
     // NOTE(randomuserhi): Supports blender renaming dupes with "name.001".
@@ -158,6 +160,16 @@ export class GearBuilder extends GearModel {
                     this.aligns.targeting = { obj: object, source: component };
                 }
             } break;
+            case "Front": {
+                if (this.aligns.front === undefined || this.higherPriority(this.aligns.front.source, component, align.alignType, partAlignPriority)) {
+                    this.aligns.front = { obj: object, source: component };
+                }
+            } break;
+            case "Receiver": {
+                if (this.aligns.receiver === undefined || this.higherPriority(this.aligns.receiver.source, component, align.alignType, partAlignPriority)) {
+                    this.aligns.receiver = { obj: object, source: component };
+                }
+            } break;
             }
         }
     }
@@ -180,7 +192,7 @@ export class GearBuilder extends GearModel {
             const fold = this.findObjectByName(model, part.fold);
             if (fold !== undefined) this.foldObjects.push(fold);
         }
-        model.traverse(setMaterial);
+        model.traverse(this.setMaterial);
         return model;
     }
 
@@ -198,7 +210,7 @@ export class GearBuilder extends GearModel {
             const fold = this.findObjectByName(model, part.fold);
             if (fold !== undefined) this.foldObjects.push(fold);
         }
-        model.traverse(setMaterial);
+        model.traverse(this.setMaterial);
         return model;
     }
     
@@ -442,10 +454,16 @@ export class GearBuilder extends GearModel {
             }
         }
 
-        Promise.all(pending).then(() => {
-            if (this.receiver !== undefined) this.parts.add(this.receiver);
+        return Promise.all(pending).then(() => {
+            if (this.receiver !== undefined) {
+                if (this.aligns.receiver !== undefined) this.attach(this.receiver, this.aligns.receiver.obj);
+                else this.parts.add(this.receiver);
+            }
             if (this.stock !== undefined) this.parts.add(this.stock);
-            if (this.front !== undefined) this.parts.add(this.front);
+            if (this.front !== undefined) {
+                if (this.aligns.front !== undefined) this.attach(this.front, this.aligns.front.obj);
+                else this.parts.add(this.front);
+            }
             if (this.mag !== undefined) {
                 if (this.aligns.mag !== undefined) this.attach(this.mag, this.aligns.mag.obj);
                 else this.parts.add(this.mag);

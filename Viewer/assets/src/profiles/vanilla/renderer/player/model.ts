@@ -12,6 +12,7 @@ import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { InventorySlot, inventorySlotMap, inventorySlots, PlayerBackpack } from "../../parser/player/backpack.js";
 import { Player } from "../../parser/player/player.js";
+import { Sentry } from "../../parser/player/sentry.js";
 import { PlayerStats } from "../../parser/player/stats.js";
 import { HumanAnimation, HumanJoints, HumanMask } from "../animations/human.js";
 import { GearModel } from "../models/gear.js";
@@ -137,7 +138,7 @@ class EquippedItem {
     }
 }
 
-export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack]> {
+export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>]> {
     private aimIK: IKSolverAim = new IKSolverAim();
     private aimTarget: Object3D;
     
@@ -245,10 +246,10 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.leftIK.initiate(this.leftIK.root);
     }
 
-    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack) {
+    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>) {
         if (!this.isVisible()) return;
 
-        this.updateBackpack(database, player, backpack);
+        this.updateBackpack(database, player, backpack, sentries);
 
         this.animate(dt, time, player, anim);
         
@@ -561,9 +562,21 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         }
     }
 
-    private updateBackpack(database: IdentifierData, player: Player, backpack?: PlayerBackpack) {
+    private updateBackpack(database: IdentifierData, player: Player, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>) {
         if (backpack === undefined) return;
 
+        // Check if there exists a sentry that belongs to this player, if so hide the tool slot
+        this.backpackAligns[inventorySlotMap.tool].visible = true;
+        if (sentries !== undefined) {
+            for (const sentry of sentries.values()) {
+                if (sentry.owner === player.id) {
+                    this.backpackAligns[inventorySlotMap.tool].visible = false;
+                    break;
+                }
+            }
+        }
+
+        // Update items
         this.equippedItem = undefined;
         this.equippedSlot = undefined;
         for (let i = 0; i < this.slots.length; ++i) {

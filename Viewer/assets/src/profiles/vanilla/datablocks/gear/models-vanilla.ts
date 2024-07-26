@@ -1,6 +1,7 @@
 import { Vector3 } from "@esm/three";
 import { Identifier } from "../../parser/identifier.js";
 import { GearBuilder } from "../../renderer/models/gearbuilder.js";
+import { HackingTool } from "../../renderer/models/prebuilt/hackingtool.js";
 import { PlayerAnimDatablock } from "../player/animation.js";
 import { GearAnimDatablock } from "./animation.js";
 import { GearDatablock, MeleeArchetype } from "./models.js";
@@ -946,12 +947,6 @@ GearDatablock.set(
     ), {
         name: "Hacking Tool",
         type: "rifle",
-        model: (gearJSON) => {
-            const model = new GearBuilder(gearJSON);
-            model.leftHandGrip = { x: 0.1, y: -0.05, z: 0 };
-            model.equipOffsetPos = { x: 0.05, y: 0, z: -0.05 };
-            model.equipOffsetRot = { x: -0.303235918, y: 0, z: 0, w: 0.952915549 };
-            return model;
-        }
+        model: () => new HackingTool()
     }
 );

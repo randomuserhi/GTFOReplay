@@ -50,7 +50,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
         gunshots.push({ time: snapshot.time(), ...data });
 
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
-        if (anims.has(data.owner)) { 
+        if (anims.has(data.owner) && data.sentry === false) { 
             anims.get(data.owner)!.lastShot = snapshot.time();
         }
     }

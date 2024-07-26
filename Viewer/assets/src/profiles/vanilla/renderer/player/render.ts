@@ -25,6 +25,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const camera = renderer.get("Camera")!;
             const models = renderer.getOrDefault("Players", Factory("Map"));
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
             const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
@@ -41,7 +42,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 
                 const anim = anims.get(id);
                 if (anim !== undefined) {
-                    model.render(dt, time, camera, database, player, anim, stats.get(id), backpacks.get(id));
+                    model.render(dt, time, camera, database, player, anim, stats.get(id), backpacks.get(id), sentries);
                 }
             }
 
