@@ -85,7 +85,6 @@ export class Renderer {
         this.dispatchEvent = node.dispatchEvent.bind(node);
     }
 
-    // TODO(randomuserhi): add events that can be hooked into
     public refresh(canvas?: HTMLCanvasElement, replay?: Replay) {
         if (canvas !== undefined) {
             this.canvas = canvas;

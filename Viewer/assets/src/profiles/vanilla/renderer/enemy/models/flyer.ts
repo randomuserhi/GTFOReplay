@@ -1,6 +1,6 @@
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
-import { loadGLTF } from "../../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../../library/modelloader.js";
 import { Model } from "../../../library/models/lib.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation";
 import { Enemy } from "../../../parser/enemy/enemy.js";
@@ -21,14 +21,14 @@ export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
             color: 0xff0000
         });
 
-        loadGLTF("../js3party/models/meatball.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
+        loadGLTFGeometry("../js3party/models/meatball.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
         this.eye.scale.set(0.4, 0.4, 0.4);
         this.eye.rotateY(15 * Math.deg2rad);
         
         for (let i = 0; i < this.spikes.length; ++i) {
             const group = new Group();
             group.scale.set(0.2, 0.4, 0.2);
-            loadGLTF("../js3party/models/spike.glb", false).then((model) => group.add(new Mesh(model, material)));
+            loadGLTFGeometry("../js3party/models/spike.glb", false).then((model) => group.add(new Mesh(model, material)));
             this.spikes[i] = group;
         }
         

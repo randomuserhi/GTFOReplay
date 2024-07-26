@@ -50,8 +50,8 @@ export namespace DynamicTransform {
     export function lerp(dyn: Spawn, data: Parse, lerp: number): void {
         const { temp } = FUNC_lerp;
 
-        const { position, rotation, dimension } = data;
-        const fpos = Pod.Vec.add(temp, dyn.position, position);
+        const { position, rotation, dimension, absolute } = data;
+        const fpos = absolute ? position : Pod.Vec.add(temp, dyn.position, position);
         Pod.Vec.lerp(dyn.position, dyn.position, fpos, lerp);
         Pod.Quat.slerp(dyn.rotation, dyn.rotation, rotation, lerp);
         dyn.dimension = dimension;
@@ -94,8 +94,8 @@ export namespace DynamicPosition {
     export function lerp(dyn: Spawn, data: Parse, lerp: number): void {
         const { temp } = FUNC_lerp;
 
-        const { position, dimension } = data;
-        const fpos = Pod.Vec.add(temp, dyn.position, position);
+        const { position, dimension, absolute } = data;
+        const fpos = absolute ? position : Pod.Vec.add(temp, dyn.position, position);
         Pod.Vec.lerp(dyn.position, dyn.position, fpos, lerp);
         dyn.dimension = dimension;
     }

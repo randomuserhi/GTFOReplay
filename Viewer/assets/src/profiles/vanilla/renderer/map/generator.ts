@@ -1,7 +1,7 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Mesh, MeshPhongMaterial, Scene } from "@esm/three";
 import { Factory } from "../../library/factory.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { Generator } from "../../parser/map/generator.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 
@@ -42,7 +42,7 @@ class GeneratorModel extends ObjectWrapper<Group> {
         this.root.position.copy(generator.position);
         this.root.quaternion.copy(generator.rotation);
     
-        loadGLTF("../js3party/models/generator.glb").then((geometry) => {
+        loadGLTFGeometry("../js3party/models/generator.glb").then((geometry) => {
             this.mesh = new Mesh(geometry, inactive);
             this.model.add(this.mesh);
         });

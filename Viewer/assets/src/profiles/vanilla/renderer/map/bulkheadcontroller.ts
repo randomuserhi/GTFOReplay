@@ -2,7 +2,7 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { white } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { BulkheadController } from "../../parser/map/bulkheadcontroller.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 
@@ -38,7 +38,7 @@ class BulkheadControllerModel extends ObjectWrapper<Group> {
         this.root.position.copy(controller.position);
         this.root.quaternion.copy(controller.rotation);
     
-        loadGLTF("../js3party/models/bulkhead_dc.glb").then((geometry) => {
+        loadGLTFGeometry("../js3party/models/bulkhead_dc.glb").then((geometry) => {
             this.mesh = new Mesh(geometry, material);
             this.model.add(this.mesh);
         });

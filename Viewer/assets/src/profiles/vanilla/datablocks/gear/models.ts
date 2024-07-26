@@ -3,6 +3,7 @@ import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../../renderer/animations/gearfold.js";
 import { HumanAnimation } from "../../renderer/animations/human.js";
 import { GearModel } from "../../renderer/models/gear.js";
+import { AlignType, ComponentType } from "../../renderer/models/gearbuilder.js";
 import { Archetype } from "../items/item.js";
 import { Datablock } from "../lib.js";
 
@@ -33,6 +34,12 @@ export interface GearDatablock {
     name?: string;
     meleeArchetype?: MeleeArchetype;
     gunArchetype?: GunArchetype;
+
+    // NOTE(randomuserhi): Only relevant to gear builder
+    partAlignPriority?: {
+        alignType: AlignType;
+        partPrio: ComponentType[];
+    }[]
 }
 
 export const GearDatablock = new Datablock<Identifier, GearDatablock>((identifier) => {

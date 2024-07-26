@@ -4,7 +4,7 @@ import { Color, ColorRepresentation, DynamicDrawUsage, Group, InstancedMesh, Mat
 import { StickModelDatablock, StickModelType } from "../../datablocks/stickfigure.js";
 import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../library/animations/lib.js";
 import { upV, zeroQ, zeroV } from "../../library/constants.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { Model } from "../../library/models/lib.js";
 import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } from "../animations/human.js";
 
@@ -55,7 +55,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         if (datablock.geometry !== undefined) {
             transparentMaskedParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, (mesh) => instancedMeshInit(mesh, order)));
         } else if (datablock.path !== undefined) {
-            loadGLTF(datablock.path).then((geometry) => transparentMaskedParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
+            loadGLTFGeometry(datablock.path).then((geometry) => transparentMaskedParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
         } else {
             console.error(`Unable to load datablock '${key}' as no geometry or path was provided.`);
         }
@@ -77,7 +77,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         if (datablock.geometry !== undefined) {
             transparentParts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, (mesh) => instancedMeshInit(mesh, order)));
         } else if (datablock.path !== undefined) {
-            loadGLTF(datablock.path).then((geometry) => transparentParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
+            loadGLTFGeometry(datablock.path).then((geometry) => transparentParts.set(key, new DynamicInstanceManager(geometry, material, 100, (mesh) => instancedMeshInit(mesh, order))));
         } else {
             console.error(`Unable to load datablock '${key}' as no geometry or path was provided.`);
         }
@@ -95,7 +95,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
         if (datablock.geometry !== undefined) {
             parts.set(key, new DynamicInstanceManager(datablock.geometry, material, 100, instancedMeshInit));
         } else if (datablock.path !== undefined) {
-            loadGLTF(datablock.path).then((geometry) => parts.set(key, new DynamicInstanceManager(geometry, material, 100, instancedMeshInit)));
+            loadGLTFGeometry(datablock.path).then((geometry) => parts.set(key, new DynamicInstanceManager(geometry, material, 100, instancedMeshInit)));
         } else {
             console.error(`Unable to load datablock '${key}' as no geometry or path was provided.`);
         }

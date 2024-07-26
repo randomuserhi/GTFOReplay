@@ -2,7 +2,7 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "@esm/three";
 import { getPlayerColor } from "../../datablocks/player/player.js";
 import { Factory } from "../../library/factory.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { Identifier } from "../../parser/identifier.js";
 import { Mine } from "../../parser/player/mine.js";
 
@@ -40,9 +40,9 @@ class MineModel {
         this.group.add(this.base);
         const apply = (model: BufferGeometry) => this.base.add(new Mesh(model, material));
         switch(item.id) {
-        case 144: loadGLTF("../js3party/models/Consumables/ctrip.glb").then(apply); break;
-        case 139: loadGLTF("../js3party/models/Consumables/emine.glb").then(apply); break;
-        default: loadGLTF("../js3party/models/Consumables/depmine.glb").then(apply); break;
+        case 144: loadGLTFGeometry("../js3party/models/Consumables/ctrip.glb").then(apply); break;
+        case 139: loadGLTFGeometry("../js3party/models/Consumables/emine.glb").then(apply); break;
+        default: loadGLTFGeometry("../js3party/models/Consumables/depmine.glb").then(apply); break;
         }
         this.base.scale.set(0.05, 0.05, 0.05);
         this.base.rotateX(90 * Math.deg2rad);

@@ -3,7 +3,7 @@ import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Vector3
 import { Bezier } from "../../library/bezier.js";
 import { black, white } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 
@@ -39,8 +39,8 @@ class LockModel {
         this.lockColor = new Color(0xffffff);
         this.lockMaterial = new MeshPhongMaterial();
         this.lockMaterial.color = this.lockColor;
-        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
-        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
+        loadGLTFGeometry("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
+        loadGLTFGeometry("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
 
         this.hacklock.add(this.padlock);
         this.hacklock.rotation.set(0, 0, -90 * Math.deg2rad);

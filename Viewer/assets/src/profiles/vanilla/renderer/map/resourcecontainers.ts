@@ -3,7 +3,7 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Color, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { black, white } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 
@@ -56,8 +56,8 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
         this.lockMaterial = new MeshPhongMaterial();
         this.lockMaterial.color = this.lockColor;
         this.lockMaterial.specular = black;
-        loadGLTF("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
-        loadGLTF("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
+        loadGLTFGeometry("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
+        loadGLTFGeometry("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
 
         this.hacklock.add(this.padlock);
         this.anchor.add(this.hacklock);
@@ -117,9 +117,9 @@ class Locker extends ResourceContainerModel {
 
         this.pivot.position.set(-1.1, 0, 0.55);
 
-        loadGLTF("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, materialGrey)));
-        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, materialOrange)));
-        loadGLTF("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, materialOrange)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, materialGrey)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, materialOrange)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, materialOrange)));
         
         this.hacklock.position.set(0, 0.575, 0.6);
         
@@ -165,8 +165,8 @@ class Box extends ResourceContainerModel {
         this.anchor.scale.set(0.25, 0.25, 0.25);
         this.anchor.position.set(0, 0, 0.1);
 
-        loadGLTF("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, materialGrey)));
-        loadGLTF("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, materialOrange)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, materialGrey)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, materialOrange)));
         
         this.hacklock.position.set(0, 0.4, 1);
         this.hacklock.scale.set(1.72, 1.72, 1.72);

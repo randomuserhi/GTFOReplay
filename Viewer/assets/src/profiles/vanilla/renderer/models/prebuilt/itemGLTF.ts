@@ -1,5 +1,5 @@
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
-import { loadGLTF } from "../../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../../library/modelloader.js";
 import { ItemModel } from "../items.js";
 
 export class ItemGLTFModel extends ItemModel {
@@ -10,7 +10,7 @@ export class ItemGLTFModel extends ItemModel {
         super();
 
         const gltf = this.gltf = new Group();
-        loadGLTF(path, newLoader).then((geometry) => gltf.add(new Mesh(geometry, this.material)));
+        loadGLTFGeometry(path, newLoader).then((geometry) => gltf.add(new Mesh(geometry, this.material)));
         this.root.add(gltf);
     
         if (inLevel !== undefined) this.inLevel = inLevel;

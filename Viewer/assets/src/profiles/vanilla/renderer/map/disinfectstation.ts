@@ -1,7 +1,7 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { Factory } from "../../library/factory.js";
-import { loadGLTF } from "../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { DisinfectStation } from "../../parser/map/disinfectstation.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 
@@ -35,7 +35,7 @@ class DisinfectStationModel extends ObjectWrapper<Group> {
         this.root.position.copy(station.position);
         this.root.quaternion.copy(station.rotation);
     
-        loadGLTF("../js3party/models/disinfect_station.glb").then((geometry) => {
+        loadGLTFGeometry("../js3party/models/disinfect_station.glb").then((geometry) => {
             this.mesh = new Mesh(geometry, material);
             this.model.add(this.mesh);
         });

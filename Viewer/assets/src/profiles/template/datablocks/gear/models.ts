@@ -3,48 +3,7 @@ import { GearAnimDatablock } from "../../../vanilla/datablocks/gear/animation.js
 import { GearDatablock, MeleeArchetype } from "../../../vanilla/datablocks/gear/models.js";
 import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
 import { Identifier } from "../../../vanilla/parser/identifier.js";
-import { AssaultRifle } from "../../../vanilla/renderer/models/prebuilt/assaultrifle.js";
-import { AutoPistol } from "../../../vanilla/renderer/models/prebuilt/autopistol.js";
-import { Bat } from "../../../vanilla/renderer/models/prebuilt/bat.js";
-import { Biotracker } from "../../../vanilla/renderer/models/prebuilt/biotracker.js";
-import { Bullpup } from "../../../vanilla/renderer/models/prebuilt/bullpup.js";
-import { BurstCannon } from "../../../vanilla/renderer/models/prebuilt/burstcannon.js";
-import { BurstPistol } from "../../../vanilla/renderer/models/prebuilt/burstpistol.js";
-import { BurstRifle } from "../../../vanilla/renderer/models/prebuilt/burstrifle.js";
-import { Carbine } from "../../../vanilla/renderer/models/prebuilt/carbine.js";
-import { CfoamLauncher } from "../../../vanilla/renderer/models/prebuilt/cfoam.js";
-import { ChokeModShotgun } from "../../../vanilla/renderer/models/prebuilt/chokemodshotgun.js";
-import { CombatShotgun } from "../../../vanilla/renderer/models/prebuilt/combatshotgun.js";
-import { Dmr } from "../../../vanilla/renderer/models/prebuilt/dmr.js";
-import { DoubleTap } from "../../../vanilla/renderer/models/prebuilt/doubletap.js";
-import { HackingTool } from "../../../vanilla/renderer/models/prebuilt/hackingtool.js";
-import { Hammer } from "../../../vanilla/renderer/models/prebuilt/hammer.js";
-import { HeavyAssaultRifle } from "../../../vanilla/renderer/models/prebuilt/heavyassaultrifle.js";
-import { HeavySmg } from "../../../vanilla/renderer/models/prebuilt/heavysmg.js";
-import { HelGun } from "../../../vanilla/renderer/models/prebuilt/helgun.js";
-import { HelRevolver } from "../../../vanilla/renderer/models/prebuilt/helrevolver.js";
-import { HelRifle } from "../../../vanilla/renderer/models/prebuilt/helrifle.js";
-import { HelShotgun } from "../../../vanilla/renderer/models/prebuilt/helshotgun.js";
-import { HighCal } from "../../../vanilla/renderer/models/prebuilt/highcal.js";
-import { Knife } from "../../../vanilla/renderer/models/prebuilt/knife.js";
-import { MachineGun0 } from "../../../vanilla/renderer/models/prebuilt/machinegun0.js";
-import { MachineGun1 } from "../../../vanilla/renderer/models/prebuilt/machinegun1.js";
-import { MachinePistol } from "../../../vanilla/renderer/models/prebuilt/machinepistol.js";
-import { MineDeployer } from "../../../vanilla/renderer/models/prebuilt/minedeployer.js";
-import { PDW } from "../../../vanilla/renderer/models/prebuilt/pdw.js";
-import { Pistol } from "../../../vanilla/renderer/models/prebuilt/pistol.js";
-import { PrecisionRifle } from "../../../vanilla/renderer/models/prebuilt/precisionrifle.js";
-import { Revolver } from "../../../vanilla/renderer/models/prebuilt/revolver.js";
-import { Rifle } from "../../../vanilla/renderer/models/prebuilt/rifle.js";
-import { SawedOff } from "../../../vanilla/renderer/models/prebuilt/sawedoff.js";
-import { ScatterGun } from "../../../vanilla/renderer/models/prebuilt/scattergun.js";
-import { Sentry } from "../../../vanilla/renderer/models/prebuilt/sentry.js";
-import { ShortRifle } from "../../../vanilla/renderer/models/prebuilt/shortrifle.js";
-import { Shotgun } from "../../../vanilla/renderer/models/prebuilt/shotgun.js";
-import { SlugShotgun } from "../../../vanilla/renderer/models/prebuilt/slugshotgun.js";
-import { Smg } from "../../../vanilla/renderer/models/prebuilt/smg.js";
-import { Sniper } from "../../../vanilla/renderer/models/prebuilt/sniper.js";
-import { Spear } from "../../../vanilla/renderer/models/prebuilt/spear.js";
+import { GearBuilder } from "../../../vanilla/renderer/models/gearbuilder.js";
 
 export const hammerArchetype: MeleeArchetype = {
     equipAnim: PlayerAnimDatablock.Equip_Melee,
@@ -104,7 +63,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Mastaba Fixed Blade","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":27},"b":{"c":3,"v":161},"c":{"c":4,"v":39},"d":{"c":44,"v":12},"e":{"c":48,"v":14},"f":{"c":50,"v":10}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mastaba Fixed Blade"}}}`
     ), {
-        model: () => new Knife(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: knifeArchetype,
         name: "Knife"
@@ -115,7 +74,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Wox Compact","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":27},"b":{"c":3,"v":161},"c":{"c":4,"v":39},"d":{"c":48,"v":19}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Wox Compact"}}}`,
     ), {
-        model: () => new Knife(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: knifeArchetype,
         name: "Knife"
@@ -126,7 +85,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Kovac Peacekeeper","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":29},"b":{"c":3,"v":163},"c":{"c":4,"v":41},"d":{"c":44,"v":14},"e":{"c":48,"v":16},"f":{"c":50,"v":12}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Kovac Peacekeeper"}}}`,
     ), {
-        model: () => new Bat(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: batArchetype,
         name: "Bat"
@@ -137,7 +96,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Attroc Titanium","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":29},"b":{"c":3,"v":163},"c":{"c":4,"v":41},"d":{"c":48,"v":17}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Attroc Titanium"}}}`,
     ), {
-        model: () => new Bat(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: batArchetype,
         name: "Bat"
@@ -148,7 +107,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"MACO Drillhead","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":28},"b":{"c":3,"v":162},"c":{"c":4,"v":40},"d":{"c":44,"v":13},"e":{"c":48,"v":15},"f":{"c":50,"v":11}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"MACO Drillhead"}}}`,
     ), {
-        model: () => new Spear(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: spearArchetype,
         name: "Spear"
@@ -159,7 +118,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"IsoCo Stinger","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":28},"b":{"c":3,"v":162},"c":{"c":4,"v":40},"d":{"c":44,"v":16},"e":{"c":48,"v":18},"f":{"c":50,"v":13}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"IsoCo Stinger"}}}`,
     ), {
-        model: () => new Spear(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: spearArchetype,
         name: "Spear"
@@ -170,7 +129,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Kovac Sledgehammer","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":11},"e":{"c":46,"v":12},"f":{"c":48,"v":6},"g":{"c":50,"v":4}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Kovac Sledgehammer"}}}`,
     ), {
-        model: () => new Hammer(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: hammerArchetype,
         name: "Hammer"
@@ -181,7 +140,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Santonian HDH","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":2},"e":{"c":46,"v":4},"f":{"c":48,"v":9},"g":{"c":50,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Santonian HDH"}}}`,
     ), {
-        model: () => new Hammer(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: hammerArchetype,
         name: "Hammer"
@@ -192,7 +151,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Santonian Mallet","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":6},"e":{"c":46,"v":9},"f":{"c":48,"v":10},"g":{"c":50,"v":8}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Santonian Mallet"}}}`,
     ), {
-        model: () => new Hammer(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: hammerArchetype,
         name: "Hammer"
@@ -203,7 +162,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Omneco Maul","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":3},"e":{"c":46,"v":5},"f":{"c":48,"v":2},"g":{"c":50,"v":5}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Omneco Maul"}}}`,
     ), {
-        model: () => new Hammer(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: hammerArchetype,
         name: "Hammer"
@@ -214,7 +173,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"MACO Gavel","Packet":{"Comps":{"Length":8,"a":{"c":2,"v":14},"b":{"c":3,"v":100},"c":{"c":4,"v":13},"d":{"c":44,"v":5},"e":{"c":46,"v":3},"f":{"c":48,"v":5},"g":{"c":50,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"MACO Gavel"}}}`,
     ), {
-        model: () => new Hammer(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         type: "melee",
         meleeArchetype: hammerArchetype,
         name: "Hammer"
@@ -225,7 +184,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Mechatronic SGB3","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":12},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":3},"f":{"c":12,"v":17},"g":{"c":16,"v":8},"h":{"c":27,"v":9},"i":{"c":40,"v":3},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mechatronic SGB3"}}}`,
     ), {
-        model: () => new Sentry(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Burst Sentry"
     }
 );
@@ -234,7 +193,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"RAD Labs Meduza","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":11},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":45},"f":{"c":12,"v":28},"g":{"c":16,"v":2},"h":{"c":27,"v":9},"i":{"c":40,"v":2},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"RAD Labs Meduza"}}}`,
     ), {
-        model: () => new Sentry(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Auto Sentry"
     }
 );
@@ -243,7 +202,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Autotek 51 RSG","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":10},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":36},"f":{"c":12,"v":19},"g":{"c":16,"v":1},"h":{"c":27,"v":9},"i":{"c":40,"v":1},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Autotek 51 RSG"}}}`,
     ), {
-        model: () => new Sentry(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Sniper Sentry"
     }
 );
@@ -252,7 +211,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Mechatronic B5 LFR","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":13},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":4},"f":{"c":12,"v":13},"g":{"c":16,"v":2},"h":{"c":27,"v":9},"i":{"c":40,"v":2},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mechatronic B5 LFR"}}}`,
     ), {
-        model: () => new Sentry(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Shotgun Sentry"
     }
 );
@@ -261,7 +220,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"D-tek Optron IV","Packet":{"Comps":{"Length":9,"a":{"c":2,"v":9},"b":{"c":3,"v":28},"c":{"c":4,"v":10},"d":{"c":27,"v":10},"e":{"c":30,"v":3},"f":{"c":33,"v":3},"g":{"c":40,"v":2},"h":{"c":42,"v":3}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"D-tek Optron IV"}}}`,
     ), {
-        model: () => new Biotracker(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Bio Tracker"
     }
 );
@@ -270,7 +229,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Stalwart Flow G2","Packet":{"Comps":{"Length":12,"a":{"c":2,"v":11},"b":{"c":3,"v":73},"c":{"c":4,"v":15},"d":{"c":27,"v":15},"e":{"c":30,"v":5},"f":{"c":32,"v":4},"g":{"c":33,"v":4},"h":{"c":36,"v":1},"i":{"c":37,"v":2},"j":{"c":40,"v":2},"k":{"c":42,"v":7}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Stalwart Flow G2"}}}`,
     ), {
-        model: () => new CfoamLauncher(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "C-Foam Launcher"
     }
 );
@@ -279,7 +238,7 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Krieger O4","Packet":{"Comps":{"Length":10,"a":{"c":2,"v":13},"b":{"c":3,"v":37},"c":{"c":4,"v":14},"d":{"c":27,"v":12},"e":{"c":30,"v":2},"f":{"c":33,"v":2},"g":{"c":37,"v":1},"h":{"c":40,"v":1},"i":{"c":42,"v":6}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Krieger O4"}}}`,
     ), {
-        model: () => new MineDeployer(),
+        model: (gearJSON) => new GearBuilder(gearJSON),
         name: "Mine Deployer"
     }
 );
@@ -293,7 +252,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: () => new Pistol()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -306,7 +265,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: () => new BurstPistol()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -319,7 +278,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
         },
-        model: () => new HelRevolver()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -332,7 +291,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: () => new MachinePistol()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -346,7 +305,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.1)
         },
-        model: () => new AutoPistol()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -359,7 +318,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: () => new Bullpup()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -372,7 +331,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: () => new Smg()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -385,7 +344,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: () => new PDW()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -398,7 +357,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: () => new HeavySmg()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -411,7 +370,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: () => new Carbine()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -425,7 +384,7 @@ GearDatablock.set(
             offset: new Vector3(0, 0, 0.2)
         },
         type: "rifle",
-        model: () => new Dmr()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -439,7 +398,7 @@ GearDatablock.set(
             offset: new Vector3(0, 0, 0.2)
         },
         type: "rifle",
-        model: () => new DoubleTap()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -453,7 +412,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new AssaultRifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -467,7 +426,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new BurstRifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -481,7 +440,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new Rifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -494,7 +453,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1
         },
-        model: () => new SawedOff()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -508,7 +467,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new HelShotgun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -522,7 +481,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new SlugShotgun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -536,7 +495,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new HeavyAssaultRifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -550,7 +509,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new ShortRifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -564,7 +523,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new Shotgun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -578,7 +537,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new CombatShotgun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -592,7 +551,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new ScatterGun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -606,7 +565,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new ChokeModShotgun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -619,7 +578,7 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
         },
-        model: () => new Revolver()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -633,7 +592,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new MachineGun0()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -647,7 +606,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new MachineGun1()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -661,7 +620,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new BurstCannon()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -675,7 +634,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new HelGun()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -689,7 +648,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new HighCal()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -703,7 +662,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new PrecisionRifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -717,7 +676,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new Sniper()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -731,7 +690,7 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: () => new HelRifle()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );
 
@@ -741,6 +700,6 @@ GearDatablock.set(
     ), {
         name: "Hacking Tool",
         type: "rifle",
-        model: () => new HackingTool()
+        model: (gearJSON) => new GearBuilder(gearJSON)
     }
 );

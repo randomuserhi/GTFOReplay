@@ -72,7 +72,7 @@ class EquippedItem {
     gearDatablock?: GearDatablock;
     model?: ItemModel | GearModel;
 
-    public get(id: Identifier) {
+    public get(id: Identifier, includeModel: boolean = true) {
         switch (id.type) {
         case "Unknown": {
             this.itemDatablock = undefined;
@@ -82,13 +82,14 @@ class EquippedItem {
         case "Gear": {
             this.itemDatablock = undefined;
             this.gearDatablock = GearDatablock.get(id);
-            this.model = this.gearDatablock?.model(id.stringKey);
+            if (includeModel) this.model = this.gearDatablock?.model(id.stringKey);
+            else this.model = undefined;
         } break;
         case "Item": {
             this.gearDatablock = undefined;
             this.itemDatablock = ItemDatablock.get(id);
             const factory = this.itemDatablock?.model;
-            if (factory !== undefined) this.model = factory();
+            if (includeModel && factory !== undefined) this.model = factory();
             else this.model = undefined;
         } break;
         default: throw new Error(`Could not get equipped item ${id}`);
@@ -641,9 +642,9 @@ Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
                     [nickname.length]: 0xffffff,
                 };
             } else {
-                const main = equippable.get(backpack.slots[inventorySlotMap.main]).name;
-                const special = equippable.get(backpack.slots[inventorySlotMap.special]).name;
-                const tool = equippable.get(backpack.slots[inventorySlotMap.tool]).name;
+                const main = equippable.get(backpack.slots[inventorySlotMap.main], false).name;
+                const special = equippable.get(backpack.slots[inventorySlotMap.special], false).name;
+                const tool = equippable.get(backpack.slots[inventorySlotMap.tool], false).name;
                 this.tmp.text = `${nickname}
 ${health}${infection}
 ${(main !== undefined ? main : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%

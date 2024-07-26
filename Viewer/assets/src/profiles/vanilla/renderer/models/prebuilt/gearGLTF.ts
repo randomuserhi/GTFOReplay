@@ -1,16 +1,18 @@
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
-import { loadGLTF } from "../../../library/modelloader.js";
+import { loadGLTFGeometry } from "../../../library/modelloader.js";
 import { GearModel } from "../gear.js";
+
+const defaultMaterial = new MeshPhongMaterial({ color: 0xffffff });
 
 export class GearGLTFModel extends GearModel {
     gltf: Group;
-    material = new MeshPhongMaterial({ color: 0xcccccc });
+    material = defaultMaterial;
 
     constructor(path: string, newLoader?: boolean) {
         super();
 
         const gltf = this.gltf = new Group();
-        loadGLTF(path, newLoader).then((geometry) => gltf.add(new Mesh(geometry, this.material)));
+        loadGLTFGeometry(path, newLoader).then((geometry) => gltf.add(new Mesh(geometry, this.material)));
         this.root.add(gltf);
     }
 }
