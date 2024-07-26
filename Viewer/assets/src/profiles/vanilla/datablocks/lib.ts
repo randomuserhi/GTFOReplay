@@ -13,17 +13,6 @@ export class Datablock<K, V, H extends string | number = K extends (string | num
         }
     }
 
-    private callbacks = new Set<() => void>();
-    public change(callback: () => void, options?: { signal?: AbortSignal }) {
-        if (!this.callbacks.has(callback)) {
-            this.callbacks.add(callback);
-            if (options?.signal !== undefined) {
-                options.signal.addEventListener("abort", () => this.callbacks.delete(callback), { once: true });
-            }
-        }
-        return callback;
-    }
-
     public clear() {
         this.keyHashMap?.clear();
         this.map.clear();
@@ -42,13 +31,6 @@ export class Datablock<K, V, H extends string | number = K extends (string | num
         if (this.map.has(key)) console.warn(`Datablock already has key ${key}. If you meant to overwrite the original then ignore this warning.`);
         this.keyHashMap?.set(key as any, original);
         return this.map.set(key, value);
-    }
-
-    // Trigger updates on callbacks
-    public reload() {
-        for (const cb of this.callbacks) {
-            cb();
-        }
     }
 
     public get(key: K): V | undefined {

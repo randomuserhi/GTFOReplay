@@ -1,4 +1,4 @@
-import { AlignType } from "../../../renderer/models/gearbuilder.js";
+import { AlignType } from "../../../renderer/models/gearjson.js";
 
 export interface GearPartDatablock {
     path: string;

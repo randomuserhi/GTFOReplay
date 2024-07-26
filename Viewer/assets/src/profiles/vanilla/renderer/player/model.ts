@@ -82,6 +82,10 @@ class EquippedItem {
         case "Gear": {
             this.itemDatablock = undefined;
             this.gearDatablock = GearDatablock.get(id);
+            if (this.gearDatablock === undefined) {
+                // Possibly a reskin => attempt again via category
+                this.gearDatablock = GearDatablock.matchCategory(id);
+            }
             if (includeModel) this.model = this.gearDatablock?.model(id.stringKey);
             else this.model = undefined;
         } break;
