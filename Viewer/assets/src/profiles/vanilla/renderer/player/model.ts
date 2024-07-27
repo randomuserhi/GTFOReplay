@@ -453,7 +453,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                         if (this.gunArchetype.gunFoldAnim !== undefined && this.equippedItem.model !== undefined) {
                             if (this.equippedItem.model.type === "Gear") {
                                 const model = this.equippedItem.model as GearModel;
-                                model.animate(this.gunArchetype.gunFoldAnim.sample(reloadTime / anim.reloadDurationInSeconds * this.gunArchetype.gunFoldAnim.duration));
+                                const t = reloadTime / anim.reloadDurationInSeconds;
+                                model.animate(t, this.gunArchetype.gunFoldAnim.sample(t * this.gunArchetype.gunFoldAnim.duration).root);
                             } else {
                                 throw new Error(`Tried to perform reload animation on a ItemModel, expected a GearModel instead.`);
                             }

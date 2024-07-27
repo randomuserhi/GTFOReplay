@@ -1,4 +1,4 @@
-import { GearFoldAvatar } from "../animations/gearfold.js";
+import { Vector3Like } from "@esm/three";
 import { ItemModel } from "./items.js";
 
 
@@ -9,7 +9,7 @@ export class GearModel extends ItemModel {
         super();
     }
 
-    public animate(gearfold: GearFoldAvatar): void {
-        this.leftHand?.position.copy(gearfold.root);
+    public animate(t: number, leftHand?: Vector3Like): void {
+        if (leftHand !== undefined) this.leftHand?.position.copy(leftHand);
     }
 }

@@ -19,7 +19,7 @@ import { GearPartStockDatablock } from "../../datablocks/gear/parts/stock.js";
 import { GearPartTargetingDatablock } from "../../datablocks/gear/parts/targeting.js";
 import { loadGLTF } from "../../library/modelloader.js";
 import { Identifier } from "../../parser/identifier.js";
-import { GearFoldAvatar } from "../animations/gearfold.js";
+import { GearFoldAnimation } from "../animations/gearfold.js";
 import { GearModel } from "./gear.js";
 import { AlignType, ComponentType, componentTypes, GearComp, GearJSON } from "./gearjson.js";
 
@@ -33,7 +33,7 @@ export class GearBuilder extends GearModel {
     "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver", 
     { obj: Object3D, source: ComponentType }>> = {};
 
-    foldObjects: { obj: Object3D, offset: Quaternion, base: Quaternion }[] = [];
+    foldObjects: { obj: Object3D, offset: Quaternion, base: Quaternion, anim?: GearFoldAnimation }[] = [];
 
     public material = new MeshPhongMaterial({ color: 0xcccccc });
 
@@ -191,7 +191,8 @@ export class GearBuilder extends GearModel {
                     const f = {
                         obj: fold,
                         offset: new Quaternion(),
-                        base: new Quaternion()  
+                        base: new Quaternion(),
+                        anim: part.foldAnim
                     };
                     if (part.foldOffsetRot !== undefined) f.offset.copy(part.foldOffsetRot);
                     if (part.baseFoldRot !== undefined) f.base.copy(part.baseFoldRot);
@@ -223,7 +224,8 @@ export class GearBuilder extends GearModel {
                     const f = {
                         obj: fold,
                         offset: new Quaternion(),
-                        base: new Quaternion()  
+                        base: new Quaternion(),
+                        anim: part.foldAnim
                     };
                     if (part.foldOffsetRot !== undefined) f.offset.copy(part.foldOffsetRot);
                     if (part.baseFoldRot !== undefined) f.base.copy(part.baseFoldRot);
@@ -572,12 +574,13 @@ export class GearBuilder extends GearModel {
     private static FUNC_animate = {
         temp: new Quaternion()
     } as const;
-    public animate(gearfold: GearFoldAvatar): void {
-        super.animate(gearfold);
+    public animate(t: number, leftHand?: Vector3Like): void {
+        super.animate(t, leftHand);
         
         const { temp } = GearBuilder.FUNC_animate;
         for (const fold of this.foldObjects) {
-            fold.obj.quaternion.copy(gearfold.joints.fold).multiply(temp.copy(fold.offset));
+            if (fold.anim === undefined) continue;
+            fold.obj.quaternion.copy(fold.anim.sample(t * fold.anim.duration).joints.fold).multiply(temp.copy(fold.offset));
         }
     }
 

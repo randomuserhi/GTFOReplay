@@ -1,3 +1,4 @@
+import { GearAnimDatablock } from "../../../../vanilla/datablocks/gear/animation.js";
 import { GearPartFrontDatablock } from "../../../../vanilla/datablocks/gear/parts/front.js";
 
 GearPartFrontDatablock.clear();
@@ -99,6 +100,7 @@ GearPartFrontDatablock.set(36, {
         z: 0.7071,
         w: 0.7071,
     },
+    foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
     aligns: [{alignType:"Muzzle", alignName:"Front_M"},{alignType:"ShellEject", alignName:"Front_SE"},{alignType:"Magazine", alignName:"Front_Mag"},{alignType:"Flashlight", alignName:"Front_Flash"},{alignType:"LeftHand", alignName:"LeftHand"},{alignType:"SightLook", alignName:"Sight_align"},{alignType:"RightHand", alignName:"RightHand"}]
 });
 GearPartFrontDatablock.set(35, {
@@ -110,6 +112,7 @@ GearPartFrontDatablock.set(35, {
         z: 0,
         w: 0.7071
     },
+    foldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
     aligns: [{alignType:"Muzzle", alignName:"Front_M"},{alignType:"ShellEject", alignName:"Front_SE"},{alignType:"Magazine", alignName:"a_Mag"},{alignType:"Flashlight", alignName:"Front_Flash"},{alignType:"LeftHand", alignName:"LeftHand"},{alignType:"SightLook", alignName:"Sight_align"}]
 });
 GearPartFrontDatablock.set(37, {
@@ -119,6 +122,7 @@ GearPartFrontDatablock.set(37, {
 GearPartFrontDatablock.set(47, {
     path: `${root}/Front_Short_Shotgun_2.glb`,
     fold: "BreakPoint",
+    foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
     aligns: [{alignType:"Muzzle", alignName:"Front_M"},{alignType:"ShellEject", alignName:"Front_SE"},{alignType:"Magazine", alignName:"Front_Mag"},{alignType:"Flashlight", alignName:"Front_Flash"},{alignType:"Sight", alignName:"Front_Sight"},{alignType:"SightLook", alignName:"Sight_align"},{alignType:"RightHand", alignName:"RightHand"},{alignType:"LeftHand", alignName:"LeftHand"}]
 });
 GearPartFrontDatablock.set(40, {

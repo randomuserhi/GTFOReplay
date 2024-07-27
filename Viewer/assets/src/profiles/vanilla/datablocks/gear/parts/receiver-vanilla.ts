@@ -1,3 +1,4 @@
+import { GearAnimDatablock } from "../animation.js";
 import { GearPartReceiverDatablock } from "./receiver.js";
 
 GearPartReceiverDatablock.clear();
@@ -199,6 +200,7 @@ GearPartReceiverDatablock.set(16, {
         z: 0.7071,
         w: 0.7071,
     },
+    foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
     aligns: [
         {
             alignType: "SightLook",
@@ -224,6 +226,7 @@ GearPartReceiverDatablock.set(17, {
         z: 0,
         w: 0.7071
     },
+    foldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
     aligns: [
         {
             alignType: "SightLook",
