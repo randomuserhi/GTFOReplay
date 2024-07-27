@@ -185,17 +185,22 @@ export class GearBuilder extends GearModel {
             partPrio: ComponentType[];
         }[]) {
         const path = part.paths[payloadType];
-        if (path === undefined) throw new Error(`Could not find payload type of '${payloadType}'.`);
+        try {
+            if (path === undefined) throw new Error(`Could not find payload type of '${payloadType}'.`);
 
-        const gltf = await loadGLTF(path);
-        const model = gltf();
-        this.setAlign(type, model, part, partAlignPriority);
-        if (part.fold !== undefined) {
-            const fold = this.findObjectByName(model, part.fold);
-            if (fold !== undefined) this.foldObjects.push(fold);
+            const gltf = await loadGLTF(path);
+            const model = gltf();
+            this.setAlign(type, model, part, partAlignPriority);
+            if (part.fold !== undefined) {
+                const fold = this.findObjectByName(model, part.fold);
+                if (fold !== undefined) this.foldObjects.push(fold);
+            }
+            model.traverse(this.setMaterial);
+            return model;
+        }  catch (err) {
+            console.error(`Failed to load payload part '${payloadType}' - '${path}'`);
+            throw err;
         }
-        model.traverse(this.setMaterial);
-        return model;
     }
 
     private async loadPart(
@@ -205,15 +210,20 @@ export class GearBuilder extends GearModel {
             alignType: AlignType;
             partPrio: ComponentType[];
         }[]) {
-        const gltf = await loadGLTF(part.path);
-        const model = gltf();
-        this.setAlign(type, model, part, partAlignPriority);
-        if (part.fold !== undefined) {
-            const fold = this.findObjectByName(model, part.fold);
-            if (fold !== undefined) this.foldObjects.push(fold);
+        try {
+            const gltf = await loadGLTF(part.path);
+            const model = gltf();
+            this.setAlign(type, model, part, partAlignPriority);
+            if (part.fold !== undefined) {
+                const fold = this.findObjectByName(model, part.fold);
+                if (fold !== undefined) this.foldObjects.push(fold);
+            }
+            model.traverse(this.setMaterial);
+            return model;
+        }  catch (err) {
+            console.error(`Failed to load part '${part.path}'`);
+            throw err;
         }
-        model.traverse(this.setMaterial);
-        return model;
     }
     
     mag?: Group;
