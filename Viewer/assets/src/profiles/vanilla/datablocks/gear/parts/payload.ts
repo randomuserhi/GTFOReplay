@@ -1,3 +1,4 @@
+import { QuaternionLike } from "@esm/three";
 import { AlignType } from "../../../renderer/models/gearjson.js";
 import { Datablock } from "../../lib.js";
 
@@ -14,6 +15,8 @@ export type PayloadType = typeof payloadType[number];
 export interface GearPartPayloadDatablock {
     paths: Partial<Record<PayloadType, string>>;
     fold?: string;
+    foldOffsetRot?: QuaternionLike;
+    baseFoldRot?: QuaternionLike;
     aligns?: {
         alignType: AlignType;
         alignName: string;

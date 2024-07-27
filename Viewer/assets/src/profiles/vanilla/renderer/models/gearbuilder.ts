@@ -1,4 +1,4 @@
-import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, Vector3Like } from "@esm/three";
+import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3Like } from "@esm/three";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { GearPartDeliveryDatablock } from "../../datablocks/gear/parts/delivery.js";
 import { GearPartFlashlightDatablock } from "../../datablocks/gear/parts/flashlight.js";
@@ -33,13 +33,7 @@ export class GearBuilder extends GearModel {
     "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver", 
     { obj: Object3D, source: ComponentType }>> = {};
 
-    foldObjects: Object3D[] = [];
-    baseFoldRot: QuaternionLike = {
-        x: 0, y: 0, z: 0, w: 1
-    };
-    foldOffset: QuaternionLike = {
-        x: 0, y: 0, z: 0, w: 1
-    };
+    foldObjects: { obj: Object3D, offset: Quaternion, base: Quaternion }[] = [];
 
     public material = new MeshPhongMaterial({ color: 0xcccccc });
 
@@ -193,7 +187,16 @@ export class GearBuilder extends GearModel {
             this.setAlign(type, model, part, partAlignPriority);
             if (part.fold !== undefined) {
                 const fold = this.findObjectByName(model, part.fold);
-                if (fold !== undefined) this.foldObjects.push(fold);
+                if (fold !== undefined) {
+                    const f = {
+                        obj: fold,
+                        offset: new Quaternion(),
+                        base: new Quaternion()  
+                    };
+                    if (part.foldOffsetRot !== undefined) f.offset.copy(part.foldOffsetRot);
+                    if (part.baseFoldRot !== undefined) f.base.copy(part.baseFoldRot);
+                    this.foldObjects.push(f);
+                }
             }
             model.traverse(this.setMaterial);
             return model;
@@ -216,7 +219,16 @@ export class GearBuilder extends GearModel {
             this.setAlign(type, model, part, partAlignPriority);
             if (part.fold !== undefined) {
                 const fold = this.findObjectByName(model, part.fold);
-                if (fold !== undefined) this.foldObjects.push(fold);
+                if (fold !== undefined) {
+                    const f = {
+                        obj: fold,
+                        offset: new Quaternion(),
+                        base: new Quaternion()  
+                    };
+                    if (part.foldOffsetRot !== undefined) f.offset.copy(part.foldOffsetRot);
+                    if (part.baseFoldRot !== undefined) f.base.copy(part.baseFoldRot);
+                    this.foldObjects.push(f);
+                }
             }
             model.traverse(this.setMaterial);
             return model;
@@ -565,14 +577,14 @@ export class GearBuilder extends GearModel {
         
         const { temp } = GearBuilder.FUNC_animate;
         for (const fold of this.foldObjects) {
-            fold.quaternion.copy(gearfold.joints.fold).multiply(temp.copy(this.foldOffset));
+            fold.obj.quaternion.copy(gearfold.joints.fold).multiply(temp.copy(fold.offset));
         }
     }
 
     public reset(): void {
         super.reset();
         for (const fold of this.foldObjects) {
-            fold.quaternion.copy(this.baseFoldRot);
+            fold.obj.quaternion.copy(fold.base);
         }
     }
 }
