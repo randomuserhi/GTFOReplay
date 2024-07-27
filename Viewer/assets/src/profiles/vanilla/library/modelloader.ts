@@ -1,4 +1,5 @@
 import { BufferGeometry, Group, Mesh } from '@esm/three';
+import { DRACOLoader } from '@esm/three/examples/jsm/loaders/DRACOLoader.js';
 import { GLTFLoader } from '@esm/three/examples/jsm/loaders/GLTFLoader.js';
 import * as BufferGeometryUtils from '@esm/three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -6,6 +7,9 @@ const loadedGLTFGeometry = new Map<string, BufferGeometry>();
 const loadingGLTFGeometry = new Map<string, { promise: Promise<BufferGeometry>; terminate: (reason: any) => void }>();
 
 const loader = new GLTFLoader();
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("../js3party/three/examples/jsm/libs/draco/");
+loader.setDRACOLoader( dracoLoader );
 
 export function deleteGLTFGeometryCache(path: string) {
     loadedGLTFGeometry.delete(path);
