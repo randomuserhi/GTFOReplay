@@ -292,6 +292,7 @@ export class GearBuilder extends GearModel {
         if (datablock === undefined) {
             // could be a reskin - attempt by matching category
             datablock = GearDatablock.matchCategory(key);
+            if (datablock !== undefined) console.warn(`Gear '${key.stringKey}' does not exist, but we found a matching category. Gear will be built as if it was a reskin of the matched category.`);
         }
         const partAlignPriority = datablock?.partAlignPriority;
         
