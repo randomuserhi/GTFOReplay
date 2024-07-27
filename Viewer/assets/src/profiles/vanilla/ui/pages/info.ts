@@ -31,7 +31,8 @@ versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
 - Fixed map not including all geometry for the ground (really only applies to R8E2)
 - Fog repeller radius can be toggled
 - Option to follow rotation of player`);  
-versionInfo.set("0.0.9", `- Not all items have serial numbers`);    
+versionInfo.set("0.0.9", `- Not all items have serial numbers
+- Lockmelters applied on doors not removing locks in replay`);    
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

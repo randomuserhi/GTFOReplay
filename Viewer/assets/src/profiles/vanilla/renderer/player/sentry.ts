@@ -115,8 +115,20 @@ class SentryModel extends ObjectWrapper<Group> {
 
             const { temp } = SentryModel.FUNC_update;
             temp.quaternion.copy(sentry.rotation);
-            if (this.yaw !== undefined) this.yaw.rotation.y = - temp.rotation.y + this.gearModel.root.rotation.y;
-            if (this.pitch !== undefined) this.pitch.rotation.x = - temp.rotation.x + this.gearModel.root.rotation.x;
+            temp.rotation.order = "YXZ";
+            if (this.yaw !== undefined) {
+                const parent = this.yaw.parent;
+                this.yaw.getWorldPosition(temp.position);
+                this.yaw.getWorldScale(temp.scale);
+                this.yaw.removeFromParent();
+                this.yaw.position.copy(temp.position);
+                this.yaw.scale.copy(temp.scale);
+                this.yaw.rotation.set(0, temp.rotation.y, 0);
+                parent?.attach(this.yaw);
+            }
+            if (this.pitch !== undefined) {
+                this.pitch.rotation.set(temp.rotation.x, 0, 0);
+            }
         } else {
             this.root.position.set(sentry.position.x, sentry.position.y - 0.3, sentry.position.z);
 

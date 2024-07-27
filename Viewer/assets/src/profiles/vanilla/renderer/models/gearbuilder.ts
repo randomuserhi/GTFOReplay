@@ -1,4 +1,4 @@
-import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike } from "@esm/three";
+import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, QuaternionLike, Vector3Like } from "@esm/three";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { GearPartDeliveryDatablock } from "../../datablocks/gear/parts/delivery.js";
 import { GearPartFlashlightDatablock } from "../../datablocks/gear/parts/flashlight.js";
@@ -235,6 +235,32 @@ export class GearBuilder extends GearModel {
     payloadType: PayloadType = payloadType[0];
     screen?: Group;
     targeting?: Group;
+
+    public transformPart(
+        part: "mag" | "receiver" | "front" | "stock" | "sight" | "flashlight" | "handle" | "head" | "neck" | "pommel" | "delivery" | "grip" | "main" | "payload" | "screen" | "targeting",
+        transformation: Partial<{
+            position: Vector3Like,
+            scale: Vector3Like,
+            rotation: Vector3Like
+        }>, unit: "deg" | "rad" = "rad") {
+        const obj: Group | undefined = this[part] as Group | undefined;
+        if (obj === undefined) return;
+        if (transformation.position !== undefined) obj.position.add(transformation.position);
+        if (transformation.scale !== undefined) obj.scale.multiply(transformation.scale);
+        if (transformation.rotation !== undefined) {
+            if (unit === "deg") {
+                obj.rotateY(transformation.rotation.y * Math.deg2rad);
+                obj.rotateX(transformation.rotation.x * Math.deg2rad);
+                obj.rotateZ(transformation.rotation.z * Math.deg2rad);
+            } else if (unit === "rad") {
+                obj.rotateY(transformation.rotation.y);
+                obj.rotateX(transformation.rotation.x);
+                obj.rotateZ(transformation.rotation.z);
+            } else {
+                throw new Error(`Unknown units '${unit}'. Only 'deg' or 'rad' are supported.`);
+            }
+        }
+    }
 
     private build() {
         const key = Identifier.create("Gear", undefined, this.json);
