@@ -4,6 +4,7 @@ import { GearDatablock, MeleeArchetype } from "../../../vanilla/datablocks/gear/
 import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
 import { Identifier } from "../../../vanilla/parser/identifier.js";
 import { GearBuilder } from "../../../vanilla/renderer/models/gearbuilder.js";
+import { HackingTool } from "../../../vanilla/renderer/models/prebuilt/hackingtool.js";
 
 export const hammerArchetype: MeleeArchetype = {
     equipAnim: PlayerAnimDatablock.Equip_Melee,
@@ -63,7 +64,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Mastaba Fixed Blade","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":27},"b":{"c":3,"v":161},"c":{"c":4,"v":39},"d":{"c":44,"v":12},"e":{"c":48,"v":14},"f":{"c":50,"v":10}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mastaba Fixed Blade"}}}`
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.equipOffsetPos = { x: 0, y: 0.05, z: -0.1 };
+            model.equipOffsetRot = { x: 0.3420201, y: 0, z: 0, w: 0.9396926 };
+            return model;
+        },
         type: "melee",
         meleeArchetype: knifeArchetype,
         name: "Knife"
@@ -74,7 +80,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Wox Compact","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":27},"b":{"c":3,"v":161},"c":{"c":4,"v":39},"d":{"c":48,"v":19}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Wox Compact"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.equipOffsetPos = { x: 0, y: 0.05, z: -0.1 };
+            model.equipOffsetRot = { x: 0.3420201, y: 0, z: 0, w: 0.9396926 };
+            return model;
+        },
         type: "melee",
         meleeArchetype: knifeArchetype,
         name: "Knife"
@@ -85,7 +96,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Kovac Peacekeeper","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":29},"b":{"c":3,"v":163},"c":{"c":4,"v":41},"d":{"c":44,"v":14},"e":{"c":48,"v":16},"f":{"c":50,"v":12}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Kovac Peacekeeper"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHand = undefined;
+            model.equipOffsetPos = { x: 0, y: 0.1, z: 0 };
+            return model; 
+        },
         type: "melee",
         meleeArchetype: batArchetype,
         name: "Bat"
@@ -96,7 +112,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Attroc Titanium","Packet":{"Comps":{"Length":5,"a":{"c":2,"v":29},"b":{"c":3,"v":163},"c":{"c":4,"v":41},"d":{"c":48,"v":17}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Attroc Titanium"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHand = undefined;
+            model.equipOffsetPos = { x: 0, y: 0.1, z: 0 };
+            return model; 
+        },
         type: "melee",
         meleeArchetype: batArchetype,
         name: "Bat"
@@ -107,7 +128,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"MACO Drillhead","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":28},"b":{"c":3,"v":162},"c":{"c":4,"v":40},"d":{"c":44,"v":13},"e":{"c":48,"v":15},"f":{"c":50,"v":11}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"MACO Drillhead"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
+            model.equipOffsetRot = { x: 0, y: 0, z: -0.1736482, w: 0.9848078 };
+            return model;
+        },
         type: "melee",
         meleeArchetype: spearArchetype,
         name: "Spear"
@@ -118,7 +144,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"IsoCo Stinger","Packet":{"Comps":{"Length":7,"a":{"c":2,"v":28},"b":{"c":3,"v":162},"c":{"c":4,"v":40},"d":{"c":44,"v":16},"e":{"c":48,"v":18},"f":{"c":50,"v":13}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"IsoCo Stinger"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
+            model.equipOffsetRot = { x: 0, y: 0, z: -0.1736482, w: 0.9848078 };
+            return model;
+        },
         type: "melee",
         meleeArchetype: spearArchetype,
         name: "Spear"
@@ -211,7 +242,13 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Mechatronic B5 LFR","Packet":{"Comps":{"Length":11,"a":{"c":1,"v":13},"b":{"c":2,"v":12},"c":{"c":3,"v":97},"d":{"c":4,"v":11},"e":{"c":5,"v":4},"f":{"c":12,"v":13},"g":{"c":16,"v":2},"h":{"c":27,"v":9},"i":{"c":40,"v":2},"j":{"c":42,"v":2}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Mechatronic B5 LFR"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: -0.3, z: 0.1 };
+            model.equipOffsetRot = { x: -0.7071081, y: 0, z: 0, w: 0.7071055 };
+            return model;
+        },
         name: "Shotgun Sentry"
     }
 );
@@ -220,7 +257,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"D-tek Optron IV","Packet":{"Comps":{"Length":9,"a":{"c":2,"v":9},"b":{"c":3,"v":28},"c":{"c":4,"v":10},"d":{"c":27,"v":10},"e":{"c":30,"v":3},"f":{"c":33,"v":3},"g":{"c":40,"v":2},"h":{"c":42,"v":3}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"D-tek Optron IV"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.1, y: -0.15, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: 0.1, z: 0.1 };
+            return model;
+        },
         name: "Bio Tracker"
     }
 );
@@ -229,7 +271,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Stalwart Flow G2","Packet":{"Comps":{"Length":12,"a":{"c":2,"v":11},"b":{"c":3,"v":73},"c":{"c":4,"v":15},"d":{"c":27,"v":15},"e":{"c":30,"v":5},"f":{"c":32,"v":4},"g":{"c":33,"v":4},"h":{"c":36,"v":1},"i":{"c":37,"v":2},"j":{"c":40,"v":2},"k":{"c":42,"v":7}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Stalwart Flow G2"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: 0.1, z: 0.1 };
+            return model;
+        },
         name: "C-Foam Launcher"
     }
 );
@@ -238,7 +285,12 @@ GearDatablock.set(
     Identifier.create("Gear", undefined, 
         `{"Ver":1,"Name":"Krieger O4","Packet":{"Comps":{"Length":10,"a":{"c":2,"v":13},"b":{"c":3,"v":37},"c":{"c":4,"v":14},"d":{"c":27,"v":12},"e":{"c":30,"v":2},"f":{"c":33,"v":2},"g":{"c":37,"v":1},"h":{"c":40,"v":1},"i":{"c":42,"v":6}},"MatTrans":{"tDecalA":{"scale":0.1},"tDecalB":{"scale":0.1},"tPattern":{"scale":0.1}},"publicName":{"data":"Krieger O4"}}}`,
     ), {
-        model: (gearJSON) => new GearBuilder(gearJSON),
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.07 };
+            model.equipOffsetPos = { x: 0, y: 0.1, z: 0.1 };
+            return model;
+        },
         name: "Mine Deployer"
     }
 );
@@ -252,7 +304,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.2 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -265,7 +322,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.2 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -278,7 +340,18 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0 };
+            model.baseFoldRot = {
+                x: 0.7071,
+                y: 0,
+                z: 0,
+                w: 0.7071,
+            };
+            return model;
+        }
     }
 );
 
@@ -291,7 +364,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.2 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -305,7 +383,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.1)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.2 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model; 
+        }
     }
 );
 
@@ -318,7 +401,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.1, y: -0.1, z: 0.05 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -331,7 +419,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model; 
+        }
     }
 );
 
@@ -344,7 +437,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.07 };
+            return model;
+        }
     }
 );
 
@@ -357,7 +455,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -370,7 +473,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.SMG_Front_4_Reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -384,7 +492,12 @@ GearDatablock.set(
             offset: new Vector3(0, 0, 0.2)
         },
         type: "rifle",
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.15 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -398,7 +511,12 @@ GearDatablock.set(
             offset: new Vector3(0, 0, 0.2)
         },
         type: "rifle",
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.15 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -412,7 +530,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        },
     }
 );
 
@@ -426,7 +549,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.15 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -440,7 +568,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -453,7 +586,12 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.1, y: -0.1, z: -0.2 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.07 };
+            return model;
+        }
     }
 );
 
@@ -467,7 +605,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.15 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -481,7 +624,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.15 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -495,7 +643,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -509,7 +662,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -523,7 +681,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.07, z: 0.3 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.05 };
+            return model;
+        }
     }
 );
 
@@ -537,7 +700,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -551,7 +719,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model;
+        }
     }
 );
 
@@ -565,7 +738,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.2 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.07 };
+            return model;
+        }
     }
 );
 
@@ -578,7 +756,24 @@ GearDatablock.set(
         gunArchetype: {
             gunFoldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.1 };
+            model.equipOffsetPos = { x: 0, y: 0, z: 0.1 };
+            model.baseFoldRot = {
+                x: 0,
+                y: 0,
+                z: 0.7071,
+                w: 0.7071,
+            };
+            model.foldOffset = {
+                x: 0,
+                y: 0,
+                z: 0.7071,
+                w: 0.7071,
+            };
+            return model;
+        } 
     }
 );
 
@@ -592,7 +787,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model; 
+        }
     }
 );
 
@@ -606,7 +806,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model; 
+        }
     }
 );
 
@@ -620,7 +825,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model; 
+        }
     }
 );
 
@@ -634,7 +844,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.12 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.1 };
+            return model; 
+        }
     }
 );
 
@@ -648,7 +863,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.1, z: -0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.11, z: 0 };
+            return model;
+        }
     }
 );
 
@@ -662,7 +882,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.05 };
+            return model;
+        }
     }
 );
 
@@ -676,7 +901,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.05 };
+            return model;
+        }
     }
 );
 
@@ -690,7 +920,12 @@ GearDatablock.set(
             gunFoldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
             offset: new Vector3(0, 0, 0.2)
         },
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: (gearJSON) => {
+            const model = new GearBuilder(gearJSON);
+            model.leftHandGrip = { x: 0.05, y: -0.05, z: 0.1 };
+            model.equipOffsetPos = { x: 0, y: 0.05, z: 0.05 };
+            return model;
+        }
     }
 );
 
@@ -700,6 +935,6 @@ GearDatablock.set(
     ), {
         name: "Hacking Tool",
         type: "rifle",
-        model: (gearJSON) => new GearBuilder(gearJSON)
+        model: () => new HackingTool()
     }
 );

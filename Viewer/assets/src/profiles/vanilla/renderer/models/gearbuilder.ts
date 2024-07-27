@@ -41,7 +41,7 @@ export class GearBuilder extends GearModel {
         x: 0, y: 0, z: 0, w: 1
     };
 
-    public material = new MeshPhongMaterial({ color: 0xffffff });
+    public material = new MeshPhongMaterial({ color: 0xcccccc });
 
     private setMaterial = (obj: Object3D) => {
         const mesh = obj as Mesh;
@@ -54,6 +54,8 @@ export class GearBuilder extends GearModel {
         super();
 
         this.root.add(this.parts);
+
+        this.parts.scale.set(0.8, 0.8, 0.8);
 
         this.json = gearJSON;
         this.schematic = JSON.parse(this.json).Packet;

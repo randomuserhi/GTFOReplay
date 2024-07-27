@@ -1,4 +1,4 @@
-import { GearPartReceiverDatablock } from "../../../../vanilla/datablocks/gear/parts/receiver";
+import { GearPartReceiverDatablock } from "../../../../vanilla/datablocks/gear/parts/receiver.js";
 
 GearPartReceiverDatablock.clear();
 
@@ -156,6 +156,7 @@ GearPartReceiverDatablock.set(14, {
 
 GearPartReceiverDatablock.set(15, {
     path: `${root}/Receiver_Short_Shotgun_2.glb`,
+    fold: "BreakPoint",
     aligns: [
         {
             alignType: "Flashlight",
@@ -170,6 +171,7 @@ GearPartReceiverDatablock.set(15, {
 
 GearPartReceiverDatablock.set(22, {
     path: `${root}/Receiver_Short_Shotgun_2.glb`,
+    fold: "BreakPoint",
     aligns: [
         {
             alignType: "Flashlight",
@@ -184,6 +186,7 @@ GearPartReceiverDatablock.set(22, {
 
 GearPartReceiverDatablock.set(16, {
     path: `${root}/Receiver_Revolver_1_Gripalign.glb`,
+    fold: "a_RevolverFold",
     aligns: [
         {
             alignType: "SightLook",
@@ -202,6 +205,7 @@ GearPartReceiverDatablock.set(16, {
 
 GearPartReceiverDatablock.set(17, {
     path: `${root}/Receiver_Revolver_2.glb`,
+    fold: "a_Fold",
     aligns: [
         {
             alignType: "SightLook",

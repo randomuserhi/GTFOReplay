@@ -230,14 +230,17 @@ namespace Vanilla.StaticItems {
             LG_WeakLock weakLock = door.m_weakLocks[slot];
 
             LockType type = LockType.None;
-            if (weakLock != null && weakLock.m_stateReplicator.State.status != eWeakLockStatus.Unlocked) {
-                switch (weakLock.m_lockType) {
-                case eWeakLockType.Melee:
-                    type = LockType.Melee;
-                    break;
-                case eWeakLockType.Hackable:
-                    type = LockType.Hackable;
-                    break;
+            if (weakLock != null) {
+                bool isLocked = weakLock.m_stateReplicator.State.status != eWeakLockStatus.Unlocked && weakLock.m_stateReplicator.State.status != eWeakLockStatus.LockMelterApplied;
+                if (isLocked) {
+                    switch (weakLock.m_lockType) {
+                    case eWeakLockType.Melee:
+                        type = LockType.Melee;
+                        break;
+                    case eWeakLockType.Hackable:
+                        type = LockType.Hackable;
+                        break;
+                    }
                 }
             }
             return type;

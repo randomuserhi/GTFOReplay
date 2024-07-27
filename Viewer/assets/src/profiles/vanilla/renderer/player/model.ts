@@ -200,7 +200,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.backpackAligns[inventorySlotMap.special].position.set(0.159, 0.07800007, -0.223);
         this.backpackAligns[inventorySlotMap.special].quaternion.set(0.704416037, 0.0616284497, -0.0616284497, 0.704416037);
 
-        this.backpackAligns[inventorySlotMap.tool].position.set(-0.295, 0.07800007, -0.318);
+        this.backpackAligns[inventorySlotMap.tool].position.set(-0.395, 0.07800007, -0.318);
         this.backpackAligns[inventorySlotMap.tool].quaternion.set(0.0979499891, 0.700289905, -0.700289726, 0.0979499221);
 
         this.backpackAligns[inventorySlotMap.pack].position.set(-0.003, -0.2, -0.24);
