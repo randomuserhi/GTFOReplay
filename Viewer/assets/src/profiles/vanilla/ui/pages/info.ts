@@ -55,7 +55,7 @@ export const Info = Macro(class Info extends MacroElement {
             if (view === undefined) return;
 
             this.isMaster.on((value) => {
-                if (value) {
+                if (value === "TRUE") {
                     this.isMasterText.style.display = "block";
                     this.isNotMasterText.style.display = "none";
                 } else {
