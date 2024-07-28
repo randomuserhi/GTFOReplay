@@ -107,7 +107,7 @@ class Module {
     }
 
     public raise(e: any) {
-        new Error(`'${this.src}' raised an Error:\n${this.vm.verboseError(e)}`); 
+        return new Error(`'${this.src}' raised an Error:\n${this.vm.verboseError(e)}`); 
     }
 
     readonly vm: VM; // the VM the module is running in

@@ -7,6 +7,7 @@ export interface ASLModule {
     readonly metadata: Metadata;
     destructor?: () => void;
     ready(): void;
+    raise(e: any): Error;
     rel(path: string): string;
     exports: Record<PropertyKey, any>;
 }
