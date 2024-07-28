@@ -200,7 +200,7 @@ export class VM<T = any> {
         module.execution = new Promise<string | ASLError>((resolve) => {
             // Fetch code if needed
             if (module.code !== undefined) resolve(module.code);
-            else resolve(fetch(new URL(module.src), { method: "GET" }).then((req) => req.text()).catch((e) => module.error(e, `Failed to fetch code for '${module.src}'`)));
+            else resolve(fetch(new URL(module.src), { method: "GET" }).then((req) => req.text()).catch((e) => module.error(e, `Could not find source code for '${module.src}'`)));
         }).then((code) => new Promise<void>((resolve, reject) => {
             // If code fetch failed, throw fetch error.
             if (ASLError.is(code)) {
