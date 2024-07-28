@@ -480,7 +480,7 @@ export class VM<T = any> {
             point += `^:${line+1}:${col}`;
             const stackMessage = `${metadata !== undefined ? `${metadata}\n` : ""}${stack}`;
             const message = isTop ? stackMessage : `Callsite for nested error:\n\tat (${module.src}:${line+1}:${col})\n\n${stackMessage}`;
-            codeSnippet = `...\n${top.join("\n")}\n\n${error}\n${point}\n\t| ${message.split("\n").join("\n\t| ")}\n\n${bottom.join("\n")}\n\n...\n`;
+            codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}\n\t| ${message.split("\n").join("\n\t| ")}\n\n${bottom.join("\n")}\n\n...\n`;
         }
 
         return codeSnippet === undefined ? stack : codeSnippet;
