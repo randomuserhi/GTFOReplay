@@ -65,6 +65,8 @@ class ASLError extends Error {
     static is: (error: Error) => error is ASLError = Object.prototype.isPrototypeOf.bind(ASLError.prototype);
 }
 
+const isError: (obj: any) => obj is Error =  Object.prototype.isPrototypeOf.bind(Error.prototype);
+
 class Module {
     static silent = {}; // When passed to `terminate`, will silently terminate instead of throwing an error
     
@@ -114,9 +116,10 @@ class Module {
         return clone;
     }
 
-    public raise(e: Error) {
+    public raise(e: any) {
         if (ASLError.is(e)) return e;
-        else return new ASLError(this, e);
+        else if (isError(e)) return new ASLError(this, e);
+        else return new ASLError(this, new Error(e));
     }
 
     readonly vm: VM; // the VM the module is running in
