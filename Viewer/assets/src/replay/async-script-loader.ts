@@ -59,10 +59,10 @@ type Exec = (require: Require, module: Module, exports: Record<PropertyKey, any>
 
 class ASLError extends Error {
     constructor(module: Module, error: Error, message?: string) {
-        super(`'${module.src}' raised an Error:${message !== undefined ? `\n${message}` : ""}\n${module.vm.verboseError(error)}`);
+        super(`'${module.src}' raised an Error:\n${module.vm.verboseError(error, message)}`);
     }
 
-    static is: (error: Error) => error is ASLError = Object.prototype.isPrototypeOf.bind(ASLError.prototype);
+    static is: (obj: any) => obj is ASLError = Object.prototype.isPrototypeOf.bind(ASLError.prototype);
 }
 
 const isError: (obj: any) => obj is Error =  Object.prototype.isPrototypeOf.bind(Error.prototype);
@@ -197,11 +197,16 @@ export class VM<T = any> {
         // Check if this module is already executing
         if (module.execution !== undefined) return module.execution; 
         module.archetype.add(module);
-        module.execution = new Promise<string>((resolve) => {
+        module.execution = new Promise<string | ASLError>((resolve) => {
             // Fetch code if needed
             if (module.code !== undefined) resolve(module.code);
-            else resolve(fetch(new URL(module.src), { method: "GET" }).then((req) => req.text()));
+            else resolve(fetch(new URL(module.src), { method: "GET" }).then((req) => req.text()).catch((e) => module.error(e, `Failed to fetch code for '${module.src}'`)));
         }).then((code) => new Promise<void>((resolve, reject) => {
+            // If code fetch failed, throw fetch error.
+            if (ASLError.is(code)) {
+                throw code;
+            }
+
             module.code = code; // cache code
 
             // add this execution to the executing tracker
@@ -271,7 +276,7 @@ export class VM<T = any> {
                     default: throw new Error(`Invalid RequireType '${type}'`);
                     }
                 } catch (e) {
-                    throw module.error(e, `Failed to fetch '${_path}'`);
+                    throw module.error(new Error(`Failed to fetch '${_path}':\n${e}`));
                 }
             };
 
@@ -438,7 +443,7 @@ export class VM<T = any> {
     }
 
     private static sourceRegex = /\(((?:https?|file):\/\/.*\.js):([0-9]+):([0-9]+)\)/g;
-    public verboseError(e: Error) {
+    public verboseError(e: Error, metadata?: string) {
         let stack = e.stack;
         if (stack === undefined) return e.toString();
 
@@ -473,8 +478,9 @@ export class VM<T = any> {
                 else point += "\t";
             }
             point += `^:${line+1}:${col}`;
-            const message = isTop ? stack : `Callsite for nested error:\n\tat (${module.src}:${line+1}:${col})\n\n${stack}`;
-            codeSnippet = `...\n\n${top.join("\n")}\n\n${error}\n${point}${stack !== undefined ? `\n\t| ${message.split("\n").join("\n\t| ")}` : ""}\n\n${bottom.join("\n")}\n\n...\n`;
+            const stackMessage = `${metadata !== undefined ? `${metadata}\n` : ""}${stack}`;
+            const message = isTop ? stackMessage : `Callsite for nested error:\n\tat (${module.src}:${line+1}:${col})\n\n${stackMessage}`;
+            codeSnippet = `...\n${top.join("\n")}\n\n${error}\n${point}\n\t| ${message.split("\n").join("\n\t| ")}\n\n${bottom.join("\n")}\n\n...\n`;
         }
 
         return codeSnippet === undefined ? stack : codeSnippet;
