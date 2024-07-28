@@ -158,6 +158,7 @@ GearPartReceiverDatablock.set(14, {
 GearPartReceiverDatablock.set(15, {
     path: `${root}/Receiver_Short_Shotgun_2.glb`,
     fold: "BreakPoint",
+    foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
     aligns: [
         {
             alignType: "Flashlight",
@@ -173,6 +174,7 @@ GearPartReceiverDatablock.set(15, {
 GearPartReceiverDatablock.set(22, {
     path: `${root}/Receiver_Short_Shotgun_2.glb`,
     fold: "BreakPoint",
+    foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
     aligns: [
         {
             alignType: "Flashlight",
