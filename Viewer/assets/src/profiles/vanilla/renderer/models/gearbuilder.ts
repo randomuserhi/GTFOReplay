@@ -260,6 +260,8 @@ export class GearBuilder extends GearModel {
     screen?: Group;
     targeting?: Group;
 
+    datablock?: GearDatablock;
+
     public transformPart(
         part: "mag" | "receiver" | "front" | "stock" | "sight" | "flashlight" | "handle" | "head" | "neck" | "pommel" | "delivery" | "grip" | "main" | "payload" | "screen" | "targeting",
         transformation: Partial<{
@@ -288,13 +290,13 @@ export class GearBuilder extends GearModel {
 
     private build() {
         const key = Identifier.create("Gear", undefined, this.json);
-        let datablock = GearDatablock.get(key);
-        if (datablock === undefined) {
+        this.datablock = GearDatablock.get(key);
+        if (this.datablock === undefined) {
             // could be a reskin - attempt by matching category
-            datablock = GearDatablock.matchCategory(key);
-            if (datablock !== undefined) console.warn(`Gear '${key.stringKey}' does not exist, but we found a matching category. Gear will be built as if it was a reskin of the matched category.`);
+            this.datablock = GearDatablock.matchCategory(key);
+            if (this.datablock !== undefined) console.warn(`Gear '${key.stringKey}' does not exist, but we found a matching category. Gear will be built as if it was a reskin of the matched category.`);
         }
-        const partAlignPriority = datablock?.partAlignPriority;
+        const partAlignPriority = this.datablock?.partAlignPriority;
         
         this.aligns = {};
         this.foldObjects = [];
@@ -575,9 +577,14 @@ export class GearBuilder extends GearModel {
     private static FUNC_animate = {
         temp: new Quaternion()
     } as const;
-    public animate(t: number, leftHand?: Vector3Like): void {
-        super.animate(t, leftHand);
-        
+    public animate(t: number): void {
+        if (this.datablock !== undefined) {
+            const gunArchetype = this.datablock.gunArchetype;
+            if (gunArchetype !== undefined) {
+                this.leftHand?.position.copy(gunArchetype.gunFoldAnim.sample(t * gunArchetype.gunFoldAnim.duration).root);
+            }
+        }
+
         const { temp } = GearBuilder.FUNC_animate;
         for (const fold of this.foldObjects) {
             if (fold.anim === undefined) continue;
