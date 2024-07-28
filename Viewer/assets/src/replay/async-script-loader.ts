@@ -69,7 +69,7 @@ class Module {
     public _exports: Record<PropertyKey, any> = {};
     private proxy: Record<PropertyKey, any> = new Proxy(this, {
         set(module, prop, newValue) {
-            if (module.isReady) throw new Error(`You cannot add exports once a module has loaded.`);
+            if (module.isReady) throw new Error(`You cannot alter exports once a module has loaded.`);
             if (module.destructed) throw new Error(`You cannot add exports once a module has been destructed.`);
             module._exports[prop] = newValue;
             return true;
