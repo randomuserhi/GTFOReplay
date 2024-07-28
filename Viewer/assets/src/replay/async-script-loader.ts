@@ -246,7 +246,8 @@ export class VM<T = any> {
                     if (module.destructed) throw new Error(`Module has been destructed`);
                     if (VM.setProps.indexOf(prop) === -1) throw new Error(`Invalid operation set '${prop.toString()}'.`);
                     if (module.isReady) throw new Error(`You cannot change '${prop.toString()}' once a module has loaded.`);
-                    if (prop === "destructor" && typeof newValue === "function") {
+                    if (prop === "destructor") {
+                        if (typeof newValue !== "function") throw new Error(`Destructor can only be assigned a function.`);
                         // Make sure to bind destructor to prevent leaking implementation
                         newValue = newValue.bind(__module__);
                     }
