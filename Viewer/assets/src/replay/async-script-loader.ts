@@ -124,7 +124,7 @@ class Module {
 
     abortController = new AbortController();
     get dispose() {
-        return this.abortController?.signal;
+        return this.abortController.signal;
     }
 
     readonly vm: VM; // the VM the module is running in
@@ -344,7 +344,6 @@ export class VM<T = any> {
 
         // trigger abort
         module.abortController.abort();
-        module.abortController = undefined!;
         
         // Delete from archetype
         module._archetype.modules.delete(module.src);
