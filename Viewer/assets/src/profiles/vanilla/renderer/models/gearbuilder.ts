@@ -202,8 +202,7 @@ export class GearBuilder extends GearModel {
             model.traverse(this.setMaterial);
             return model;
         }  catch (err) {
-            console.error(`Failed to load payload part '${payloadType}' - '${path}'`);
-            throw err;
+            throw module.error(err, `Failed to load payload part '${payloadType}' - '${path}'`);
         }
     }
 
@@ -235,8 +234,7 @@ export class GearBuilder extends GearModel {
             model.traverse(this.setMaterial);
             return model;
         }  catch (err) {
-            console.error(`Failed to load part '${part.path}'`);
-            throw err;
+            throw module.error(err, `Failed to load part '${part.path}'`);
         }
     }
     
