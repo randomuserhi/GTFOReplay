@@ -189,7 +189,7 @@ export class VM<T = any> {
     }
 
     private static setProps: (string | symbol)[] = ["destructor"];
-    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel", "raise"]; 
+    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel", "error"]; 
     // Execute a module
     private execute(module: Module): Promise<void> {
         const vm = this;
