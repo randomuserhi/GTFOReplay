@@ -246,6 +246,10 @@ export class VM<T = any> {
                     if (module.destructed) throw new Error(`Module has been destructed`);
                     if (VM.setProps.indexOf(prop) === -1) throw new Error(`Invalid operation set '${prop.toString()}'.`);
                     if (module.isReady) throw new Error(`You cannot change '${prop.toString()}' once a module has loaded.`);
+                    if (prop === "destructor" && typeof newValue === "function") {
+                        // Make sure to bind destructor to prevent leaking implementation
+                        newValue = newValue.bind(__module__);
+                    }
                     return Reflect.set(module, prop, newValue, receiver);
                 },
                 get: (module, prop) => {
@@ -256,11 +260,7 @@ export class VM<T = any> {
                         if (metadata === undefined && vm.metadata !== undefined) metadata = structuredClone(vm.metadata);
                         return metadata;
                     } else if (prop === "baseURI") return vm.baseURI;
-                    const value = module[prop as keyof typeof module];
-                    if (typeof value === "function") {
-                        return value.bind(module);
-                    }
-                    return value;
+                    return module[prop as keyof typeof module];
                 }
             });
 
