@@ -57,6 +57,14 @@ type RequireType = "asl" | "esm";
 type Require = <T>(path: string, mode?: RequireType) => Promise<T>;
 type Exec = (require: Require, module: Module, exports: Record<PropertyKey, any>) => Promise<void>;
 
+class ASLError extends Error {
+    constructor(module: Module, error: Error) {
+        super(`'${module.src}' raised an Error:\n${module.vm.verboseError(error)}`);
+    }
+
+    static is: (error: Error) => error is ASLError = Object.prototype.isPrototypeOf.bind(ASLError.prototype);
+}
+
 class Module {
     static silent = {}; // When passed to `terminate`, will silently terminate instead of throwing an error
     
@@ -106,8 +114,9 @@ class Module {
         return clone;
     }
 
-    public raise(e: any) {
-        return new Error(`'${this.src}' raised an Error:\n${this.vm.verboseError(e)}`); 
+    public raise(e: Error) {
+        if (ASLError.is(e)) return e;
+        else return new ASLError(this, e);
     }
 
     readonly vm: VM; // the VM the module is running in
@@ -259,7 +268,7 @@ export class VM<T = any> {
                     default: throw new Error(`Invalid RequireType '${type}'`);
                     }
                 } catch (e) {
-                    throw new Error(`Failed to fetch '${_path}':\n${vm.verboseError(e)}`);
+                    throw module.raise(new Error(`Failed to fetch '${_path}' with reason: ${e}`));
                 }
             };
 
@@ -271,7 +280,7 @@ export class VM<T = any> {
                 if (e !== Module.silent) reject(e);
             });
         })).catch((e) => {
-            if (module.destructed !== true && e !== Module.silent) throw new Error(`Failed to execute '${module.src}':\n\n${this.verboseError(e)}`);
+            if (module.destructed !== true && e !== Module.silent) throw module.raise(e);
         }).finally(() => {
             // Clear module from execution
             const collection = this.executing.get(module.src);
