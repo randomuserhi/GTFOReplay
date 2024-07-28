@@ -261,7 +261,11 @@ export class VM<T = any> {
                         if (metadata === undefined && vm.metadata !== undefined) metadata = structuredClone(vm.metadata);
                         return metadata;
                     } else if (prop === "baseURI") return vm.baseURI;
-                    return module[prop as keyof typeof module];
+                    const value = module[prop as keyof typeof module];
+                    if (typeof value === "function") {
+                        return value.bind(module);
+                    }
+                    return value;
                 }
             });
 
