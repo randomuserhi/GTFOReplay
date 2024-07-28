@@ -106,6 +106,10 @@ class Module {
         return clone;
     }
 
+    public raise(e: any) {
+        new Error(`'${this.src}' raised an Error:\n${this.vm.verboseError(e)}`); 
+    }
+
     readonly vm: VM; // the VM the module is running in
     code: string | undefined; //internal immedate access to code, is undefined if still fetching
     build?: Exec; // built source code that can be executed
@@ -173,7 +177,7 @@ export class VM<T = any> {
     }
 
     private static setProps: (string | symbol)[] = ["destructor"];
-    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel"]; 
+    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel", "raise"]; 
     // Execute a module
     private execute(module: Module): Promise<void> {
         const vm = this;
