@@ -555,6 +555,8 @@ export class GearBuilder extends GearModel {
                 if (this.aligns.targeting !== undefined) this.attach(this.targeting, this.aligns.targeting.obj);
                 else this.parts.add(this.targeting);
             }
+        }).catch((e) => {
+            throw module.raise(e);
         });
     }
 
