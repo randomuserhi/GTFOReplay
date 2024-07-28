@@ -556,7 +556,7 @@ export class GearBuilder extends GearModel {
                 else this.parts.add(this.targeting);
             }
         }).catch((e) => {
-            throw module.raise(e);
+            throw module.error(e);
         });
     }
 
