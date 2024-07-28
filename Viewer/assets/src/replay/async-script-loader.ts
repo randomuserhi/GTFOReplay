@@ -122,6 +122,11 @@ class Module {
         else return new ASLError(this, new Error(e), message);
     }
 
+    abortController = new AbortController();
+    get dispose() {
+        return this.abortController?.signal;
+    }
+
     readonly vm: VM; // the VM the module is running in
     code: string | undefined; //internal immedate access to code, is undefined if still fetching
     build?: Exec; // built source code that can be executed
@@ -189,7 +194,7 @@ export class VM<T = any> {
     }
 
     private static setProps: (string | symbol)[] = ["destructor"];
-    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel", "error"]; 
+    private static getProps: (string | symbol)[] = [...VM.setProps, "exports", "ready", "src", "isReady", "baseURI", "metadata", "rel", "error", "dispose"]; 
     // Execute a module
     private execute(module: Module): Promise<void> {
         const vm = this;
@@ -331,6 +336,10 @@ export class VM<T = any> {
                 console.warn(`Failed to destruct '${module.src}':\n\n${this.verboseError(e)}`);
             }
         }
+
+        // trigger abort
+        module.abortController.abort();
+        module.abortController = undefined!;
         
         // Delete from archetype
         module._archetype.modules.delete(module.src);

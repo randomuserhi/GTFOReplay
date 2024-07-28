@@ -5,6 +5,7 @@ export interface ASLModule {
     readonly isReady: boolean;
     readonly baseURI: string | undefined;
     readonly metadata: Metadata;
+    readonly dispose: AbortSignal;
     destructor?: () => void;
     ready(): void;
     error(e: any, message?: string): Error;
