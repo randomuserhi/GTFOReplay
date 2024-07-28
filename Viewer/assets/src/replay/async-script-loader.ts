@@ -58,8 +58,8 @@ type Require = <T>(path: string, mode?: RequireType) => Promise<T>;
 type Exec = (require: Require, module: Module, exports: Record<PropertyKey, any>) => Promise<void>;
 
 class ASLError extends Error {
-    constructor(module: Module, error: Error) {
-        super(`'${module.src}' raised an Error:\n${module.vm.verboseError(error)}`);
+    constructor(module: Module, error: Error, message?: string) {
+        super(`'${module.src}' raised an Error:${message !== undefined ? `\n${message}` : ""}\n${module.vm.verboseError(error)}`);
     }
 
     static is: (error: Error) => error is ASLError = Object.prototype.isPrototypeOf.bind(ASLError.prototype);
@@ -116,10 +116,10 @@ class Module {
         return clone;
     }
 
-    public raise(e: any) {
+    public error(e: any, message?: string) {
         if (ASLError.is(e)) return e;
-        else if (isError(e)) return new ASLError(this, e);
-        else return new ASLError(this, new Error(e));
+        else if (isError(e)) return new ASLError(this, e, message);
+        else return new ASLError(this, new Error(e), message);
     }
 
     readonly vm: VM; // the VM the module is running in
@@ -271,7 +271,7 @@ export class VM<T = any> {
                     default: throw new Error(`Invalid RequireType '${type}'`);
                     }
                 } catch (e) {
-                    throw module.raise(new Error(`Failed to fetch '${_path}' with reason: ${e}`));
+                    throw module.error(e, `Failed to fetch '${_path}'`);
                 }
             };
 
@@ -283,7 +283,7 @@ export class VM<T = any> {
                 if (e !== Module.silent) reject(e);
             });
         })).catch((e) => {
-            if (module.destructed !== true && e !== Module.silent) throw module.raise(e);
+            if (module.destructed !== true && e !== Module.silent) throw module.error(e);
         }).finally(() => {
             // Clear module from execution
             const collection = this.executing.get(module.src);
