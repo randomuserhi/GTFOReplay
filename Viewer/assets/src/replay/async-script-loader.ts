@@ -248,7 +248,7 @@ export class VM<T = any> {
                     if (module.isReady) throw new Error(`You cannot change '${prop.toString()}' once a module has loaded.`);
                     return Reflect.set(module, prop, newValue, receiver);
                 },
-                get: (module, prop, receiver) => {
+                get: (module, prop) => {
                     if (module.destructed) throw new Error(`Module has been destructed`);
                     if (VM.getProps.indexOf(prop) === -1) throw new Error(`Invalid operation get '${prop.toString()}'.`);
                     if (prop === "exports") return module.exports;
@@ -256,7 +256,7 @@ export class VM<T = any> {
                         if (metadata === undefined && vm.metadata !== undefined) metadata = structuredClone(vm.metadata);
                         return metadata;
                     } else if (prop === "baseURI") return vm.baseURI;
-                    const value = Reflect.get(module, prop, receiver);
+                    const value = module[prop as keyof typeof module];
                     if (typeof value === "function") {
                         return value.bind(module);
                     }
