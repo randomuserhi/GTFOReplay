@@ -60,13 +60,18 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
                 serialNumber: await BitHelper.readUShort(data),
             };
         }, 
-        exec: (id, data, snapshot) => {
+        exec: (id, data, snapshot, lerp) => {
             const items = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
     
             if (!items.has(id)) throw new ItemNotFound(`Item of id '${id}' was not found.`);
             const item = items.get(id)!;
-            Pod.Vec.copy(item.position, data.position);
-            Pod.Quat.copy(item.rotation, data.rotation);
+            if (Pod.Vec.sqrDist(item.position, data.position) > 1) {
+                Pod.Vec.copy(item.position, data.position);
+                Pod.Quat.copy(item.rotation, data.rotation);
+            } else {
+                Pod.Vec.lerp(item.position, item.position, data.position, lerp);
+                Pod.Quat.slerp(item.rotation, item.rotation, data.rotation, lerp);
+            }
             item.dimension = data.dimension;
             item.onGround = data.onGround;
             item.linkedToMachine = data.linkedToMachine;

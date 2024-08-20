@@ -321,7 +321,7 @@ namespace ReplayRecorder.Snapshot {
 
             filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
             string path = ConfigManager.ReplayFolder;
-            filename = Utils.RemoveInvalidCharacters(filename);
+            filename = Utils.RemoveInvalidCharacters(filename, isFullPath: false);
             if (!Directory.Exists(path)) {
                 path = "./";
             }

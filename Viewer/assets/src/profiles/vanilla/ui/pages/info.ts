@@ -32,7 +32,7 @@ versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
 - Fog repeller radius can be toggled
 - Option to follow rotation of player`);  
 versionInfo.set("0.0.9", `- Not all items have serial numbers
-- Lockmelters applied on doors not removing locks in replay`);    
+- Lockmelters applied on doors not removing locks in replay`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

@@ -50,6 +50,12 @@ export namespace Vec {
         const z = a.z - b.z;
         return Math.sqrt(x * x + y * y + z * z);
     }
+    export function sqrDist(a: Vector, b: Vector): number {
+        const x = a.x - b.x;
+        const y = a.y - b.y;
+        const z = a.z - b.z;
+        return x * x + y * y + z * z;
+    }
     export function lerp(result: Vector, a: Vector, b: Vector, lerp: number): Vector {
         lerp = Math.clamp01(lerp);
         result.x = a.x + (b.x - a.x) * lerp;

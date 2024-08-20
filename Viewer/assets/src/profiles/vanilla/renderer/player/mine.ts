@@ -1,8 +1,8 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { BufferGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene } from "@esm/three";
+import { Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshStandardMaterial, Scene } from "@esm/three";
+import { MineInstanceDatablock } from "../../datablocks/items/mineinstance.js";
 import { getPlayerColor } from "../../datablocks/player/player.js";
 import { Factory } from "../../library/factory.js";
-import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { Identifier } from "../../parser/identifier.js";
 import { Mine } from "../../parser/player/mine.js";
 
@@ -26,26 +26,22 @@ class MineModel {
     readonly base: Group;
     readonly laser: Mesh;
     
-    constructor(color: Color, laser: Color, item: Identifier) {
+    constructor(playerColor: Color, item: Identifier) {
         this.group = new Group();
 
-        const material = new MeshPhongMaterial({ color });
-        
-        const laserMaterial = new MeshStandardMaterial({ color: laser });
+        let datablock = MineInstanceDatablock.get(item);
+        if (datablock === undefined) {
+            datablock = MineInstanceDatablock.obtain(Identifier.unknown);
+        }
+
+        const laserMaterial = new MeshStandardMaterial({ color: datablock.laserColor === undefined ? 0xff0000 : datablock.laserColor });
         laserMaterial.transparent = true;
         laserMaterial.opacity = 0.5;
         laserMaterial.depthWrite = false;
         
         this.base = new Group();
         this.group.add(this.base);
-        const apply = (model: BufferGeometry) => this.base.add(new Mesh(model, material));
-        switch(item.id) {
-        case 144: loadGLTFGeometry("../js3party/models/Consumables/ctrip.glb").then(apply); break;
-        case 139: loadGLTFGeometry("../js3party/models/Consumables/emine.glb").then(apply); break;
-        default: loadGLTFGeometry("../js3party/models/Consumables/depmine.glb").then(apply); break;
-        }
-        this.base.scale.set(0.05, 0.05, 0.05);
-        this.base.rotateX(90 * Math.deg2rad);
+        if (datablock.model !== undefined) datablock.model(this.base, playerColor);
         
         this.laser = new Mesh(cylinder, laserMaterial);
         this.group.add(this.laser);
@@ -82,12 +78,7 @@ ModuleLoader.registerRender("Mine", (name, api) => {
                 if (!models.has(id)) {
                     let color: ColorRepresentation = 0xffffff;
                     if (players.has(mine.owner)) color = getPlayerColor(players.get(mine.owner)!.slot);
-                    let laser: ColorRepresentation = 0xffffff;
-                    switch(mine.item.id) {
-                    case 144: laser = 0x0000ff; break;
-                    default: laser = 0xff0000; break;
-                    }
-                    const model = new MineModel(new Color(color), new Color(laser), mine.item);
+                    const model = new MineModel(new Color(color), mine.item);
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }

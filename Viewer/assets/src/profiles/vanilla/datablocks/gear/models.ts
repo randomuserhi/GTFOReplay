@@ -45,8 +45,7 @@ export interface GearDatablock {
 // NOTE(randomuserhi): Tracks gear category to handle reskins
 class ExtendedGearDatablock {
     datablock = new Datablock<Identifier, GearDatablock>((identifier) => {
-        if (identifier.type === "Unknown") return undefined;
-        if (identifier.type !== "Gear") throw new Error(`Identifier did not represent gear: ${identifier.hash}`);
+        if (identifier.type !== "Unknown" && identifier.type !== "Gear") throw new Error(`Identifier did not represent gear: ${identifier.hash}`);
         return identifier.stringKey;
     });
     categories = new Map<number, GearDatablock>();
