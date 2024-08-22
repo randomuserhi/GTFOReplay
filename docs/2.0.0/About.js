@@ -17,5 +17,7 @@ RHU.require(new Error(), {
         p("As long as the modded rundown doesn't stray too far from vanilla mechanics and it doesnt overly patch key methods shared with this mod it should be fine (even with custom weapons / enemies). Furthermore, the viewer can be modded to add visuals and animations for custom enemies and items from modded content. A guide for this will be provided in the near future.");
         br();
         p("If there are any issues, just report it as a bug as normal alongside which modded content you are trying to run this mod along side. Do note, that I will only make fixes where reasonable, do not post issues for specific compatability features.");
+        h1("Documentation");
+        p("(Unfinished) Documentation can be found ", link("https://randomuserhi.gitbook.io/gtfo-replay", "github repo"), ".");
     }, rhuDocuscript);
 });
