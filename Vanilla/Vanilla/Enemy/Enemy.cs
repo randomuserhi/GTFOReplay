@@ -122,7 +122,13 @@ namespace Vanilla.Enemy {
                 float stagger;
                 // Pouncer uses a different measurement for stagger
                 if (pouncer != null) {
-                    stagger = pouncer.Dash.m_damageReceivedDuringState / 34.5f;
+                    if (pouncer.CurrentState.ENUM_ID == pouncer.Dash.ENUM_ID) {
+                        stagger = pouncer.Dash.m_damageReceivedDuringState / pouncer.m_data.DashStaggerDamageThreshold;
+                    } else if (pouncer.CurrentState.ENUM_ID == pouncer.Charge.ENUM_ID) {
+                        stagger = pouncer.Charge.m_damageReceivedDuringState / pouncer.m_data.ChargeStaggerDamageThreshold;
+                    } else {
+                        stagger = Mathf.Max(pouncer.Dash.m_damageReceivedDuringState / pouncer.m_data.DashStaggerDamageThreshold, pouncer.Charge.m_damageReceivedDuringState / pouncer.m_data.ChargeStaggerDamageThreshold);
+                    }
                 } else {
                     stagger = agent.Damage.m_damBuildToHitreact / agent.EnemyBalancingData.Health.DamageUntilHitreact;
                 }
