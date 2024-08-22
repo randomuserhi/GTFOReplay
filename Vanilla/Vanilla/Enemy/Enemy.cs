@@ -126,8 +126,10 @@ namespace Vanilla.Enemy {
                         stagger = pouncer.Dash.m_damageReceivedDuringState / pouncer.m_data.DashStaggerDamageThreshold;
                     } else if (pouncer.CurrentState.ENUM_ID == pouncer.Charge.ENUM_ID) {
                         stagger = pouncer.Charge.m_damageReceivedDuringState / pouncer.m_data.ChargeStaggerDamageThreshold;
+                    } else if (pouncer.CurrentState.ENUM_ID == pouncer.Stagger.ENUM_ID) {
+                        stagger = 1.0f;
                     } else {
-                        stagger = Mathf.Max(pouncer.Dash.m_damageReceivedDuringState / pouncer.m_data.DashStaggerDamageThreshold, pouncer.Charge.m_damageReceivedDuringState / pouncer.m_data.ChargeStaggerDamageThreshold);
+                        stagger = 0.0f;
                     }
                 } else {
                     stagger = agent.Damage.m_damBuildToHitreact / agent.EnemyBalancingData.Health.DamageUntilHitreact;
@@ -142,7 +144,7 @@ namespace Vanilla.Enemy {
             get {
                 // Ppouncer uses a different measurement for stagger
                 if (pouncer != null) {
-                    return pouncer.CurrentState.ENUM_ID == pouncer.Dash.ENUM_ID;
+                    return pouncer.CurrentState.ENUM_ID == pouncer.Dash.ENUM_ID || pouncer.CurrentState.ENUM_ID == pouncer.Charge.ENUM_ID;
                 } else {
                     return true;
                 }

@@ -59,12 +59,14 @@ let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
         }
 
         // count silent shots
-        const statTracker = StatTracker.from(snapshot);
-        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-        const player = players.get(data.owner);
-        if (player !== undefined) {
-            const stats = StatTracker.getPlayer(player.snet, statTracker);
-            stats.silentShots += 1;
+        if (data.silent === true) {
+            const statTracker = StatTracker.from(snapshot);
+            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            const player = players.get(data.owner);
+            if (player !== undefined) {
+                const stats = StatTracker.getPlayer(player.snet, statTracker);
+                stats.silentShots += 1;
+            }
         }
     }
 });
