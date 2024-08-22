@@ -24,6 +24,8 @@ declare module "@esm/@root/replay/moduleloader.js" {
                     tagged: boolean;
                     consumedPlayerSlotIndex: number;
                     targetPlayerSlotIndex: number;
+                    stagger: number;
+                    canStagger: boolean;
                 };
                 spawn: {
                     dimension: number;
@@ -57,6 +59,8 @@ export interface Enemy extends DynamicTransform.Type {
     tagged: boolean;
     targetPlayerSlotIndex: number;
     consumedPlayerSlotIndex: number;
+    stagger: number;
+    canStagger: boolean;
 }
 
 let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
@@ -68,6 +72,8 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
                 tagged: await BitHelper.readBool(data),
                 consumedPlayerSlotIndex: await BitHelper.readByte(data),
                 targetPlayerSlotIndex: 255,
+                stagger: Infinity,
+                canStagger: true,
             };
             return result;
         }, 
@@ -80,6 +86,8 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
             enemy.tagged = data.tagged;
             enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
             enemy.targetPlayerSlotIndex = data.targetPlayerSlotIndex;
+            enemy.stagger = data.stagger;
+            enemy.canStagger = data.canStagger;
         }
     },
     spawn: {
@@ -110,7 +118,9 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
                 players: new Set(),
                 tagged: false,
                 consumedPlayerSlotIndex: 255,
-                targetPlayerSlotIndex: 255
+                targetPlayerSlotIndex: 255,
+                stagger: Infinity,
+                canStagger: true
             });
         }
     },
@@ -210,6 +220,26 @@ enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.3", {
                 tagged: await BitHelper.readBool(data),
                 consumedPlayerSlotIndex: await BitHelper.readByte(data),
                 targetPlayerSlotIndex: await BitHelper.readByte(data),
+                stagger: Infinity,
+                canStagger: true
+            };
+            return result;
+        }
+    }
+});
+enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.4", {
+    ...enemyParser,
+    main: {
+        ...enemyParser.main,
+        parse: async (data) => {
+            const transform = await DynamicTransform.parse(data);
+            const result = {
+                ...transform,
+                tagged: await BitHelper.readBool(data),
+                consumedPlayerSlotIndex: await BitHelper.readByte(data),
+                targetPlayerSlotIndex: await BitHelper.readByte(data),
+                stagger: await BitHelper.readByte(data) / 255,
+                canStagger: await BitHelper.readBool(data)
             };
             return result;
         }

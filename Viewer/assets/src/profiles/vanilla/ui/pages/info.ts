@@ -34,6 +34,9 @@ versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
 versionInfo.set("0.0.9", `- Not all items have serial numbers
 - Lockmelters applied on doors not removing locks in replay`);
 versionInfo.set("0.1.0", `- Replay now detects silent shots when ran as host`);
+versionInfo.set("0.1.1", `- Fix silent shot detection not working properly for host player
+- Fix snatcher stagger damage calculation
+- Show how close an enemy is to being staggered in enemy info`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

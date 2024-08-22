@@ -37,7 +37,6 @@ namespace Vanilla.Enemy {
             if (!Replay.Active) return;
 
             Replay.Spawn(new rEnemy(enemy));
-            Replay.Spawn(new rEnemyStats(enemy));
             Replay.Spawn(new rEnemyAnimation(enemy));
         }
 
@@ -45,7 +44,6 @@ namespace Vanilla.Enemy {
             if (!Replay.Active) return;
 
             Replay.TryDespawn<rEnemy>(enemy.GlobalID);
-            Replay.TryDespawn<rEnemyStats>(enemy.GlobalID);
             Replay.TryDespawn<rEnemyAnimation>(enemy.GlobalID);
         }
     }
@@ -66,8 +64,28 @@ namespace Vanilla.Enemy {
         }
     }
 
-    [ReplayData("Vanilla.Enemy", "0.0.3")]
+    [ReplayData("Vanilla.Enemy", "0.0.4")]
     internal class rEnemy : DynamicTransform {
+        [HarmonyPatch]
+        private static class Patches {
+
+            [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.Target), MethodType.Setter)]
+            [HarmonyPrefix]
+            private static void Prefix_SetTarget(EnemyAI __instance, AgentTarget value) {
+                //if (__instance.m_mode != AgentMode.Agressive) return;
+                if (value == null) return;
+                if (__instance.m_target != null && value.m_agent.GlobalID == __instance.m_target.m_agent.GlobalID) return;
+
+                PlayerAgent? player = value.m_agent.TryCast<PlayerAgent>();
+                if (player != null) {
+                    if (Replay.Has<rEnemy>(__instance.m_enemyAgent.GlobalID)) {
+                        Replay.Get<rEnemy>(__instance.m_enemyAgent.GlobalID).targetPlayer = player;
+                    }
+                }
+            }
+        }
+        public PlayerAgent? targetPlayer;
+
         public EnemyAgent agent;
 
         public rEnemy(EnemyAgent enemy) : base(enemy.GlobalID, new EnemyTransform(enemy)) {
@@ -99,11 +117,40 @@ namespace Vanilla.Enemy {
         }
         private byte consumedPlayer;
 
+        private byte _stagger {
+            get {
+                float stagger;
+                // Pouncer uses a different measurement for stagger
+                if (pouncer != null) {
+                    stagger = pouncer.Dash.m_damageReceivedDuringState / 34.5f;
+                } else {
+                    stagger = agent.Damage.m_damBuildToHitreact / agent.EnemyBalancingData.Health.DamageUntilHitreact;
+                }
+
+                return (byte)(Mathf.Clamp01(stagger) * byte.MaxValue);
+            }
+        }
+        private byte stagger = 0;
+
+        private bool _canStagger {
+            get {
+                // Ppouncer uses a different measurement for stagger
+                if (pouncer != null) {
+                    return pouncer.CurrentState.ENUM_ID == pouncer.Dash.ENUM_ID;
+                } else {
+                    return true;
+                }
+            }
+        }
+        private bool canStagger = true;
+
         public override bool IsDirty =>
             base.IsDirty ||
             consumedPlayer != _consumedPlayer ||
             tagged != _tagged ||
-            target != _target;
+            target != _target ||
+            stagger != _stagger ||
+            canStagger != _canStagger;
 
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
@@ -116,6 +163,12 @@ namespace Vanilla.Enemy {
 
             target = _target;
             BitHelper.WriteBytes(target, buffer);
+
+            stagger = _stagger;
+            BitHelper.WriteBytes(stagger, buffer);
+
+            canStagger = _canStagger;
+            BitHelper.WriteBytes(canStagger, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

@@ -151,13 +151,13 @@ namespace Vanilla.Enemy {
         public rEnemyTongue(MovingEnemyTentacleBase tongue) : base(tongue.GetInstanceID()) {
             this.tongue = tongue;
 
-            // Set target tongue is after => if unobtainable, steal last valid target from rEnemyStats
+            // Set target tongue is after => if unobtainable, steal last valid target from rEnemy
             if (tongue.PlayerTarget != null) {
                 target = tongue.PlayerTarget;
-            } else if (Replay.Has<rEnemyStats>(tongue.m_owner.GlobalID)) {
-                rEnemyStats enemy = Replay.Get<rEnemyStats>(tongue.m_owner.GlobalID);
-                if (enemy.target != null) {
-                    target = enemy.target;
+            } else if (Replay.Has<rEnemy>(tongue.m_owner.GlobalID)) {
+                rEnemy enemy = Replay.Get<rEnemy>(tongue.m_owner.GlobalID);
+                if (enemy.targetPlayer != null) {
+                    target = enemy.targetPlayer;
                 }
             }
         }

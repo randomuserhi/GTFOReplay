@@ -68,9 +68,9 @@ namespace Vanilla.Events {
             [HarmonyPatch(typeof(PlayerInventorySynced), nameof(PlayerInventorySynced.GetSync))]
             [HarmonyPrefix]
             private static void Prefix_ShotSync(PlayerInventorySynced __instance) {
-                if (!SNet.IsMaster || __instance.Owner.Owner.IsBot) return;
+                if (!SNet.IsMaster || __instance.Owner.IsLocallyOwned || __instance.Owner.Owner.IsBot) return;
 
-                if (__instance.m_queuedEquipItem != null) {
+                if (__instance.m_wieldedItem.TryCast<BulletWeapon>() == null && __instance.m_queuedEquipItem != null) {
                     silent = true;
 
                     ItemEquippable item = __instance.m_queuedEquipItem;

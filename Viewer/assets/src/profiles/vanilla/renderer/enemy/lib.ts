@@ -94,10 +94,12 @@ export class EnemyModelWrapper {
             color = getPlayerColor(player.slot); 
         }
 
+        const inStagger = anim.state === "Hitreact" || anim.state === "HitReactFlyer" || anim.state === "FloaterHitReact";
+
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
 State: ${anim.state}
 Anim: ${enemy.animHandle}
-HP: ${Math.round(enemy.health * 10) / 10}
+HP: ${Math.round(enemy.health * 10) / 10}${enemy.stagger !== Infinity ? `\nStagger: ${Math.round(enemy.stagger * 10000) / 100}%${enemy.canStagger ? `` : ` (DISABLED)`}${inStagger ? ` (STAGGERED)` : ``}` : ``}
 Target: `;
         this.tmp.colorRanges = {
             0: 0xffffff,
@@ -147,3 +149,4 @@ module.ready();
 
 /* eslint-disable-next-line sort-imports */
 import { HumanoidEnemyModel } from "./models/humanoid.js";
+

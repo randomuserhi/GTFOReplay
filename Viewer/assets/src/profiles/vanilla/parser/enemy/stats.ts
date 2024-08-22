@@ -5,6 +5,8 @@ import { Factory } from "../../library/factory.js";
 
 ModuleLoader.registerASLModule(module.src);
 
+// NOTE(randomuserhi): UNUSED BUT IS KEPT FOR BACKWARDS COMPATABILITY
+
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
         interface Dynamics {
@@ -28,7 +30,7 @@ export interface EnemyStats {
 
 const parse = async (data: ByteStream): Promise<Omit<EnemyStats, "id">> => {
     return {
-        tagged: await BitHelper.readBool(data),
+        tagged: await BitHelper.readBool(data)
     };
 };
 
@@ -36,7 +38,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Stats", "0.0.1", {
     main: {
         parse, exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", Factory("Map"));
-    
+
             if (!stats.has(id)) throw new Error(`PlayerStats of id '${id}' was not found.`);
             const enemy = stats.get(id)!;
             enemy.tagged = data.tagged;
@@ -45,7 +47,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Stats", "0.0.1", {
     spawn: {
         parse, exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Enemy.Stats", Factory("Map"));
-        
+    
             if (stats.has(id)) throw new Error(`EnemyStats of id '${id}' already exists.`);
             stats.set(id, { 
                 id, ...data

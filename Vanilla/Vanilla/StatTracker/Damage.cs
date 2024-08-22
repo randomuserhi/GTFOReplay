@@ -1,5 +1,6 @@
 ﻿using Agents;
 using API;
+using Enemies;
 using HarmonyLib;
 using Player;
 using ReplayRecorder;
@@ -176,7 +177,10 @@ namespace Vanilla.StatTracker {
                     float stagger = damage;
                     float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
                     if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
-                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage), false, Mathf.Min(remainingStaggerDamage, stagger)));
+
+                    damage = Mathf.Min(__instance.Health, damage);
+                    stagger = HandlePouncerStagger(__instance, damage, Mathf.Min(remainingStaggerDamage, stagger));
+                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, damage, false, stagger));
                 } else {
                     APILogger.Error("Unable to find detonation event. This should not happen.");
                 }
@@ -203,7 +207,10 @@ namespace Vanilla.StatTracker {
                     float stagger = damage * data.staggerMulti.Get(10f);
                     float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
                     if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage), gear, false, Mathf.Min(remainingStaggerDamage, stagger)));
+
+                    damage = Mathf.Min(__instance.Health, damage);
+                    stagger = HandlePouncerStagger(__instance, damage, Mathf.Min(remainingStaggerDamage, stagger));
+                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, damage, gear, false, stagger));
                 }
             }
 
@@ -232,7 +239,23 @@ namespace Vanilla.StatTracker {
                     float stagger = damage * data.staggerMulti.Get(10f);
                     float remainingStaggerDamage = __instance.Owner.EnemyBalancingData.Health.DamageUntilHitreact - __instance.m_damBuildToHitreact;
                     if (remainingStaggerDamage < 0) remainingStaggerDamage = 0;
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry, Mathf.Min(remainingStaggerDamage, stagger)));
+
+                    damage = Mathf.Min(__instance.Health, damage);
+                    stagger = HandlePouncerStagger(__instance, damage, Mathf.Min(remainingStaggerDamage, stagger));
+                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, damage, gear, sentry, stagger));
+                }
+            }
+
+            private static float HandlePouncerStagger(Dam_EnemyDamageBase __instance, float damage, float stagger) {
+                PouncerBehaviour? pouncerBehaviour = __instance.Owner.GetComponent<PouncerBehaviour>();
+                // Not a pouncer
+                if (pouncerBehaviour == null) return stagger;
+
+                if (pouncerBehaviour.CurrentState.ENUM_ID == pouncerBehaviour.Dash.ENUM_ID) {
+                    return damage;
+                } else {
+                    // Cannot be staggered when not in dash state
+                    return 0;
                 }
             }
         }
