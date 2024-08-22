@@ -47,6 +47,9 @@ ModuleLoader.registerRender("Vanilla.Player.Gunshots", (name, api) => {
                 if (players.has(gunshot.owner)) {
                     color = getPlayerColor(players.get(gunshot.owner)!.slot);
                 }
+                if (gunshot.silent === true) {
+                    color = 0x000000;
+                } 
                 (mesh.material as MeshStandardMaterial).color.set(color);
 
                 const a = gunshot.start;

@@ -69,6 +69,7 @@ interface PlayerStats {
     tongueDodges: Map<IdentifierHash, IdentifiedValue>;
     _downedTimeStamp?: number;
     _timeSpentSoloTimeStamp?: number;
+    silentShots: number;
 }
 
 function PlayerStats(snet: bigint): PlayerStats {
@@ -88,7 +89,8 @@ function PlayerStats(snet: bigint): PlayerStats {
         fallDamage: 0,
         tongueDodges: new Map(),
         _downedTimeStamp: undefined,
-        _timeSpentSoloTimeStamp: undefined
+        _timeSpentSoloTimeStamp: undefined,
+        silentShots: 0
     };
 }
 

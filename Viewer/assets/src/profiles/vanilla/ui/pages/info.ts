@@ -33,6 +33,7 @@ versionInfo.set("0.0.8", `- Mines now use a proper Identifier for modded support
 - Option to follow rotation of player`);  
 versionInfo.set("0.0.9", `- Not all items have serial numbers
 - Lockmelters applied on doors not removing locks in replay`);
+versionInfo.set("0.1.0", `- Replay now detects silent shots when ran as host`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);
@@ -132,6 +133,7 @@ export const Info = Macro(class Info extends MacroElement {
                         <li>- Enemy health tracking</li>
                         <li>- Player stat tracking</li>
                         <li>- Alert blame</li>
+                        <li>- Silent shot detection</li>
                     </ul>
                 </div>
                 <div m-id="isNotMasterText" style="display: none; margin-left: 10px;">
@@ -142,6 +144,7 @@ export const Info = Macro(class Info extends MacroElement {
                         <li>- No enemy health tracking</li>
                         <li>- No player stat tracking</li>
                         <li>- No alert blame </li>
+                        <li>- No silent shot detection</li>
                     </ul>
                 </div>
             </div>

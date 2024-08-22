@@ -58,5 +58,10 @@ RHU.require(new Error(), {
         p(
             "If there are any issues, just report it as a bug as normal alongside which modded content you are trying to run this mod along side. Do note, that I will only make fixes where reasonable, do not post issues for specific compatability features."
         );
+
+        h1("Documentation");
+        p(
+            "(Unfinished) Documentation can be found ", link("https://randomuserhi.gitbook.io/gtfo-replay", "here"), "."
+        );
     }, rhuDocuscript);
 });

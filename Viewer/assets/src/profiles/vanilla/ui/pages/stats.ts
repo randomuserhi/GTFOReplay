@@ -589,15 +589,21 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                             <div style="flex: 1"></div>
                             <span>${Macro.signal("revives")}</span>
                         </li>
+                        <li style="display: flex">
+                            <span>Silent Shots</span>
+                            <div style="flex: 1"></div>
+                            <span>${Macro.signal("silent")}</span>
+                        </li>
                     </ul>
                 </div>
             ${FeatureWrapper.close}
         `.dom<{
             wrapper: Macro<typeof FeatureWrapper>;
             revives: Signal<string>;
+            silent: Signal<string>;
         }>();
 
-        const { revives } = bindings;
+        const { revives, silent } = bindings;
 
         v.on((view) => {
             if (view === undefined) return;
@@ -611,6 +617,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                 const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 revives(`${player.revives}`);
+                silent(`${player.silentShots}`);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 

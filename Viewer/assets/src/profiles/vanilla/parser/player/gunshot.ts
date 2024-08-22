@@ -2,6 +2,7 @@ import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Factory } from "../../library/factory.js";
+import { StatTracker } from "../stattracker/stattracker.js";
 
 ModuleLoader.registerASLModule(module.src);
 
@@ -15,6 +16,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
                 start: Pod.Vector;
                 end: Pod.Vector;
                 sentry: boolean;
+                silent: boolean;
             };
         }
     
@@ -32,9 +34,10 @@ export interface Gunshot {
     end: Pod.Vector;
     sentry: boolean;
     time: number;
+    silent: boolean;
 }
 
-ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
+let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
     parse: async (bytes) => {
         return {
             owner: await BitHelper.readInt(bytes),
@@ -43,6 +46,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
             sentry: await BitHelper.readBool(bytes),
             start: await BitHelper.readVector(bytes),
             end: await BitHelper.readVector(bytes),
+            silent: false,
         };
     },
     exec: async (data, snapshot) => {
@@ -53,6 +57,29 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
         if (anims.has(data.owner) && data.sentry === false) { 
             anims.get(data.owner)!.lastShot = snapshot.time();
         }
+
+        // count silent shots
+        const statTracker = StatTracker.from(snapshot);
+        const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+        const player = players.get(data.owner);
+        if (player !== undefined) {
+            const stats = StatTracker.getPlayer(player.snet, statTracker);
+            stats.silentShots += 1;
+        }
+    }
+});
+parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.2", {
+    ...parser,
+    parse: async (bytes) => {
+        return {
+            owner: await BitHelper.readInt(bytes),
+            dimension: await BitHelper.readByte(bytes),
+            damage: await BitHelper.readHalf(bytes),
+            sentry: await BitHelper.readBool(bytes),
+            start: await BitHelper.readVector(bytes),
+            end: await BitHelper.readVector(bytes),
+            silent: await BitHelper.readBool(bytes)
+        };
     }
 });
 

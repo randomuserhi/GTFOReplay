@@ -5,11 +5,12 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using SNetwork;
 using UnityEngine;
 
 namespace Vanilla.Events {
     [HarmonyPatch]
-    [ReplayData("Vanilla.Player.Gunshots", "0.0.1")]
+    [ReplayData("Vanilla.Player.Gunshots", "0.0.2")]
     internal class rGunshot : Id {
         [HarmonyPatch]
         private static class Patches {
@@ -29,6 +30,7 @@ namespace Vanilla.Events {
 
             private static PlayerAgent? owner = null;
             private static float damage = 0;
+            private static bool silent = false;
             private static bool sentry = false;
             private static bool autoTrack = true;
 
@@ -62,6 +64,35 @@ namespace Vanilla.Events {
                 sentry = false;
             }
 
+            // Handle silent shots on host
+            [HarmonyPatch(typeof(PlayerInventorySynced), nameof(PlayerInventorySynced.GetSync))]
+            [HarmonyPrefix]
+            private static void Prefix_ShotSync(PlayerInventorySynced __instance) {
+                if (!SNet.IsMaster || __instance.Owner.Owner.IsBot) return;
+
+                if (__instance.m_queuedEquipItem != null) {
+                    silent = true;
+
+                    ItemEquippable item = __instance.m_queuedEquipItem;
+
+                    ShotgunSynced? shotgunWeapon = item.TryCast<ShotgunSynced>();
+                    if (shotgunWeapon != null) {
+                        _Prefix_ShotgunSyncFire(shotgunWeapon);
+                        _Postfix_ShotgunSyncFire();
+                        goto end;
+                    }
+                    BulletWeaponSynced? bulletWeapon = item.TryCast<BulletWeaponSynced>();
+                    if (bulletWeapon != null) {
+                        _Prefix_BulletWeaponSyncFire(bulletWeapon);
+                        _Postfix_BulletWeaponSyncFire();
+                        goto end;
+                    }
+
+                end:
+                    silent = false;
+                }
+            }
+
             [HarmonyPatch(typeof(BulletWeapon), nameof(BulletWeapon.Fire))]
             [HarmonyPrefix]
             private static void Prefix_BulletWeaponFire(BulletWeapon __instance) {
@@ -91,13 +122,17 @@ namespace Vanilla.Events {
             [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
             [HarmonyPrefix]
             private static void Prefix_BulletWeaponSyncFire(BulletWeaponSynced __instance) {
+                _Prefix_BulletWeaponSyncFire(__instance);
+            }
+            private static void _Prefix_BulletWeaponSyncFire(BulletWeaponSynced __instance) {
                 autoTrack = false;
                 damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
                 owner = __instance.Owner;
 
                 Transform alignTransform = __instance.MuzzleAlign;
                 Vector3 fireDir = __instance.Owner.TargetLookDir;
-                Vector3 vector = alignTransform.position;
+                //Vector3 vector = alignTransform.position;
+                Vector3 vector = __instance.Owner.AnimatorBody.GetBoneTransform(HumanBodyBones.Head).position;
                 float maxRayDist = __instance.MaxRayDist;
 
                 if (__instance.ArchetypeData.PiercingBullets) {
@@ -121,7 +156,7 @@ namespace Vanilla.Events {
                             if (hitEnemy) {
                                 num5++;
                             }
-                            Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry));
+                            Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
                             flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
                             vector = hit.point + fireDir * 0.1f;
                             num4 += hit.distance;
@@ -132,12 +167,15 @@ namespace Vanilla.Events {
                         num3++;
                     }
                 } else if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
-                    Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry));
+                    Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
                 }
             }
             [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
             [HarmonyPostfix]
             private static void Postfix_BulletWeaponSyncFire() {
+                _Postfix_BulletWeaponSyncFire();
+            }
+            private static void _Postfix_BulletWeaponSyncFire() {
                 damage = 0;
                 autoTrack = true;
                 owner = null;
@@ -146,9 +184,16 @@ namespace Vanilla.Events {
             [HarmonyPatch(typeof(ShotgunSynced), nameof(ShotgunSynced.Fire))]
             [HarmonyPrefix]
             private static void Prefix_ShotgunSyncFire(ShotgunSynced __instance) {
+                _Prefix_ShotgunSyncFire(__instance);
+            }
+            private static void _Prefix_ShotgunSyncFire(ShotgunSynced __instance) {
                 autoTrack = false;
                 damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
                 owner = __instance.Owner;
+
+                Transform alignTransform = __instance.MuzzleAlign;
+                //Vector3 vector = alignTransform.position;
+                Vector3 vector = __instance.Owner.AnimatorBody.GetBoneTransform(HumanBodyBones.Head).position;
 
                 for (int i = 0; i < __instance.ArchetypeData.ShotgunBulletCount; i++) {
                     float f = __instance.m_segmentSize * (float)i;
@@ -161,9 +206,6 @@ namespace Vanilla.Events {
                     float randomSpread = __instance.ArchetypeData.ShotgunBulletSpread;
                     Vector3 fireDir = __instance.Owner.TargetLookDir;
                     float maxRayDist = __instance.MaxRayDist;
-
-                    Transform alignTransform = __instance.MuzzleAlign;
-                    Vector3 vector = alignTransform.position;
 
                     Vector3 up = alignTransform.up;
                     Vector3 right = alignTransform.right;
@@ -201,7 +243,7 @@ namespace Vanilla.Events {
                                 if (hitEnemy) {
                                     num5++;
                                 }
-                                Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry));
+                                Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
                                 flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
                                 vector = hit.point + fireDir * 0.1f;
                                 num4 += hit.distance;
@@ -212,13 +254,16 @@ namespace Vanilla.Events {
                             num3++;
                         }
                     } else if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
-                        Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry));
+                        Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
                     }
                 }
             }
             [HarmonyPatch(typeof(ShotgunSynced), nameof(ShotgunSynced.Fire))]
             [HarmonyPostfix]
             private static void Postfix_ShotgunSyncFire() {
+                _Postfix_ShotgunSyncFire();
+            }
+            private static void _Postfix_ShotgunSyncFire() {
                 damage = 0;
                 autoTrack = true;
                 owner = null;
@@ -242,7 +287,7 @@ namespace Vanilla.Events {
 
                 // NOTE(randomuserhi): glushot is used to ignore cfoam since it also uses weapon ray cast
                 if (__result && !glueShot) {
-                    Replay.Trigger(new rGunshot(owner, damage, originPos, weaponRayData.rayHit.point, sentry));
+                    Replay.Trigger(new rGunshot(owner, damage, originPos, weaponRayData.rayHit.point, sentry, silent));
                 }
             }
         }
@@ -252,12 +297,14 @@ namespace Vanilla.Events {
         private Vector3 start;
         private Vector3 end;
         private bool sentry;
+        private bool silent;
 
         // NOTE(randomuserhi): If no source is provided, record with ID of -1
-        public rGunshot(PlayerAgent? source, float damage, Vector3 start, Vector3 end, bool sentry) : base(source == null ? -1 : source.GlobalID) {
+        public rGunshot(PlayerAgent? source, float damage, Vector3 start, Vector3 end, bool sentry, bool silent) : base(source == null ? -1 : source.GlobalID) {
             dimension = source == null ? (byte)Dimension.GetDimensionFromPos(start).DimensionIndex : (byte)source.DimensionIndex;
             this.damage = damage;
             this.start = start;
+            this.silent = silent;
             if (!sentry && source != null && source.IsLocallyOwned && !source.Owner.IsBot) {
                 // NOTE(randomuserhi): Check start is within player, otherwise its from penetration and does not need adjusting
                 Vector3 a = source.transform.position; a.y = 0;
@@ -293,6 +340,7 @@ namespace Vanilla.Events {
             BitHelper.WriteBytes(sentry, buffer);
             BitHelper.WriteBytes(start, buffer);
             BitHelper.WriteBytes(end, buffer);
+            BitHelper.WriteBytes(silent, buffer);
         }
     }
 }
