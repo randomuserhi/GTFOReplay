@@ -416,6 +416,35 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
+            ${FeatureWrapper.open("Colour Enemy Based on Aggro").bind("wrapper")}
+                <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <span style="flex: 1; padding-top: 1px;">Colour Enemy Based on Aggro</span>
+                    ${Toggle().bind("toggle")}
+                </div>
+            ${FeatureWrapper.close}
+        `.dom<{
+            wrapper: Macro<typeof FeatureWrapper>;
+            toggle: Macro<typeof Toggle>;
+        }>();
+
+        const { toggle } = bindings;
+
+        toggle.value.on((value) => {
+            EnemyModelWrapper.aggroColour(value);
+        });
+
+        EnemyModelWrapper.aggroColour.on((value) => {
+            toggle.value(value);
+        });
+
+        return bindings.wrapper;
+    },
+    (v) => {
+        const [bindings, frag] = html`
             ${FeatureWrapper.open("Show Fog Repeller Radius").bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;

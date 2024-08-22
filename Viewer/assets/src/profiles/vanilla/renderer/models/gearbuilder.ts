@@ -260,6 +260,10 @@ export class GearBuilder extends GearModel {
 
     datablock?: GearDatablock;
 
+    private static FUNC_transformPart = {
+        temp: new Object3D(),
+        root: new Object3D()
+    } as const;
     public transformPart(
         part: "mag" | "receiver" | "front" | "stock" | "sight" | "flashlight" | "handle" | "head" | "neck" | "pommel" | "delivery" | "grip" | "main" | "payload" | "screen" | "targeting",
         transformation: Partial<{
@@ -269,6 +273,30 @@ export class GearBuilder extends GearModel {
         }>, unit: "deg" | "rad" = "rad") {
         const obj: Group | undefined = this[part] as Group | undefined;
         if (obj === undefined) return;
+        
+        const { temp, root } = exports.GearBuilder.FUNC_transformPart;
+            
+        // Set root to origin (makes transforms relative to gun when we detach parts)
+        const rootParent = this.parts.parent;
+        root.position.copy(this.parts.position);
+        root.quaternion.copy(this.parts.quaternion);
+        root.scale.copy(this.parts.scale);
+        this.parts.removeFromParent();
+        this.parts.position.set(0, 0, 0);
+        this.parts.scale.set(1, 1, 1);
+        this.parts.quaternion.set(0, 0, 0, 1);
+
+        // Detach part from parent to apply transforms in world space 
+        // (ignore scale issues etc... due to blender models being scaled 0.01 and rotated 90 deg on X axis)
+        const parent = obj.parent;
+        obj.getWorldPosition(temp.position);
+        obj.getWorldQuaternion(temp.quaternion);
+        obj.getWorldScale(temp.scale);
+        obj.removeFromParent();
+        obj.position.copy(temp.position);
+        obj.quaternion.copy(temp.quaternion);
+        obj.scale.copy(temp.scale);
+        
         if (transformation.position !== undefined) obj.position.add(transformation.position);
         if (transformation.scale !== undefined) obj.scale.multiply(transformation.scale);
         if (transformation.rotation !== undefined) {
@@ -283,6 +311,19 @@ export class GearBuilder extends GearModel {
             } else {
                 throw new Error(`Unknown units '${unit}'. Only 'deg' or 'rad' are supported.`);
             }
+        }
+
+        // Re-attach part to parent
+        if (parent !== undefined && parent !== null) {
+            parent.attach(obj);
+        }
+
+        // Re-attach root to parent
+        if (rootParent !== undefined && rootParent !== null) {
+            rootParent.add(this.parts);
+            this.parts.position.copy(root.position);
+            this.parts.quaternion.copy(root.quaternion);
+            this.parts.scale.copy(root.scale);
         }
     }
 

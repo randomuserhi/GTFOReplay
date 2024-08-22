@@ -1,5 +1,6 @@
 import { animCrouch, animDetection, animVelocity, EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
 import { PlayerAnimDatablock } from "../../../datablocks/player/animation.js";
+import { getPlayerColor } from "../../../datablocks/player/player.js";
 import { zeroV } from "../../../library/constants.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation.js";
 import { Enemy } from "../../../parser/enemy/enemy.js";
@@ -33,9 +34,13 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
     private _animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
         const { animHandle } = this.wrapper;
 
-        this.color.set(0xff0000);
-        if (this.settings.color !== undefined) {
-            this.color.set(this.settings.color);
+        if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
+            this.color.set(getPlayerColor(enemy.targetPlayerSlotIndex));
+        } else {
+            this.color.set(0xff0000);
+            if (this.settings.color !== undefined) {
+                this.color.set(this.settings.color);
+            }
         }
 
         this.offset.rotation.set(0, 0, 0);

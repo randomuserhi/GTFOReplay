@@ -36,7 +36,7 @@ namespace ReplayRecorder.BepInEx {
                 "Settings",
                 "replayFilename",
                 "{0} {1:yyyy-MM-dd HH-mm}",
-                "Filename format of stored replays. Follows C# string format syntax with (0: Rundown + Level, 1: Date). If filename is invalid (contains invalid characters etc...) default name of 'replay' is used.");
+                "Filename format of stored replays. Follows C# string format syntax with (0: Rundown + Level, 1: Date, 2: Level Name). If filename is invalid (contains invalid characters etc...) default name of 'replay' is used.");
 
             separateByRundown = configFile.Bind(
                 "Settings",

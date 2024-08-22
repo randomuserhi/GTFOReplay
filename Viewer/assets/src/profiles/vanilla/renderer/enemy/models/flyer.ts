@@ -1,9 +1,11 @@
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
+import { getPlayerColor } from "../../../datablocks/player/player.js";
 import { loadGLTFGeometry } from "../../../library/modelloader.js";
 import { Model } from "../../../library/models/lib.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation";
 import { Enemy } from "../../../parser/enemy/enemy.js";
+import { EnemyModelWrapper } from "../lib.js";
 
 export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
     anchor: Group = new Group();
@@ -14,10 +16,12 @@ export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
     left: number = 0;
     right: number = 0;
 
+    material: MeshPhongMaterial;
+
     constructor() {
         super();
 
-        const material = new MeshPhongMaterial({
+        const material = this.material = new MeshPhongMaterial({
             color: 0xff0000
         });
 
@@ -44,6 +48,12 @@ export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
     }
 
     public animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+        if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
+            this.material.color.set(getPlayerColor(enemy.targetPlayerSlotIndex));
+        } else {
+            this.material.color.set(0xff0000);
+        }
+
         const drift = 30;
         const separation = 10 + (1 - Math.clamp01(Pod.Vec.length(anim.velocity) / 10)) * 10;
         const min = 90 - separation;

@@ -10,7 +10,6 @@ import { Enemy } from "../../parser/enemy/enemy.js";
 import { Player } from "../../parser/player/player.js";
 import { HumanJoints } from "../animations/human.js";
 import { Camera } from "../renderer.js";
-import { HumanoidEnemyModel } from "./models/humanoid.js";
 
 export class EnemyModelWrapper {
     model: Model<[enemy: Enemy, anim: EnemyAnimState]>;
@@ -64,6 +63,7 @@ export class EnemyModelWrapper {
     }
 
     public static showInfo = signal(false);
+    public static aggroColour = signal(false);
 
     private static FUNC_updateTmp = {
         tagPos: new Vector3()
@@ -142,3 +142,8 @@ Target: `;
         this.tmp = undefined;
     }
 }
+
+module.ready();
+
+/* eslint-disable-next-line sort-imports */
+import { HumanoidEnemyModel } from "./models/humanoid.js";

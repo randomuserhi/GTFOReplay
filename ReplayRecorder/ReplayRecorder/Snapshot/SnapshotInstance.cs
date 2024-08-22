@@ -316,10 +316,12 @@ namespace ReplayRecorder.Snapshot {
 
             pActiveExpedition expedition = RundownManager.GetActiveExpeditionData();
             RundownDataBlock data = GameDataBlockBase<RundownDataBlock>.GetBlock(Global.RundownIdToLoad);
-            string shortName = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex).GetShortName(expedition.expeditionIndex);
+            ExpeditionInTierData levelData = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex);
+            string shortName = levelData.GetShortName(expedition.expeditionIndex);
+            string levelName = levelData.Descriptive.PublicName;
             DateTime now = DateTime.Now;
 
-            filename = string.Format(ConfigManager.ReplayFileName, shortName, now);
+            filename = string.Format(ConfigManager.ReplayFileName, shortName, now, levelName);
             string path = ConfigManager.ReplayFolder;
             filename = Utils.RemoveInvalidCharacters(filename, isFullPath: false);
             if (!Directory.Exists(path)) {
