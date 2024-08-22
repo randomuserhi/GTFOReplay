@@ -75,6 +75,7 @@ const includes = [
     import("./renderer/enemy/render.js"),
     import("./renderer/enemy/tendrils.js"),
     import("./renderer/enemy/tongues.js"),
+    import("./renderer/enemy/scream.js"),
     import("./renderer/map/bulkheadcontroller.js"),
     import("./renderer/map/disinfectstation.js"),
     import("./renderer/map/door.js"),
