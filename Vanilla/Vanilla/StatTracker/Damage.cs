@@ -251,7 +251,7 @@ namespace Vanilla.StatTracker {
                 // Not a pouncer
                 if (pouncerBehaviour == null) return stagger;
 
-                if (pouncerBehaviour.CurrentState.ENUM_ID == pouncerBehaviour.Dash.ENUM_ID) {
+                if (pouncerBehaviour.CurrentState.ENUM_ID == pouncerBehaviour.Dash.ENUM_ID || pouncerBehaviour.CurrentState.ENUM_ID == pouncerBehaviour.Charge.ENUM_ID) {
                     return damage;
                 } else {
                     // Cannot be staggered when not in dash state
