@@ -252,9 +252,9 @@ namespace Vanilla.StatTracker {
                 if (pouncerBehaviour == null) return stagger;
 
                 if (pouncerBehaviour.CurrentState.ENUM_ID == pouncerBehaviour.Dash.ENUM_ID) {
-                    return Mathf.Min(damage, pouncerBehaviour.m_data.DashStaggerDamageThreshold);
+                    return Mathf.Min(damage + pouncerBehaviour.Dash.m_damageReceivedDuringState, pouncerBehaviour.m_data.DashStaggerDamageThreshold) - pouncerBehaviour.Dash.m_damageReceivedDuringState;
                 } else if (pouncerBehaviour.CurrentState.ENUM_ID == pouncerBehaviour.Charge.ENUM_ID) {
-                    return Mathf.Min(damage, pouncerBehaviour.m_data.ChargeStaggerDamageThreshold);
+                    return Mathf.Min(damage + pouncerBehaviour.Charge.m_damageReceivedDuringState, pouncerBehaviour.m_data.ChargeStaggerDamageThreshold) - pouncerBehaviour.Charge.m_damageReceivedDuringState;
                 } else {
                     // Cannot be staggered when not in dash state
                     return 0;
