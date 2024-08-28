@@ -37,6 +37,8 @@ versionInfo.set("0.1.0", `- Replay now detects silent shots when ran as host`);
 versionInfo.set("0.1.1", `- Fix silent shot detection not working properly for host player
 - Fix snatcher stagger damage calculation
 - Show how close an enemy is to being staggered in enemy info`);
+versionInfo.set("0.1.2", `- Checkpoint support added
+- Vanity support added`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);
