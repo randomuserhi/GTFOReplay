@@ -11,6 +11,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
             "Vanilla.Player.Backpack": {
                 parse: {
                     slots: Identifier[];
+                    vanity: Identifier[];
                 };
                 spawn: Dynamics["Vanilla.Player.Backpack"]["parse"];
                 despawn: void;
@@ -36,23 +37,38 @@ export const inventorySlots = [
 export type InventorySlot = typeof inventorySlots[number];
 export const inventorySlotMap: Record<InventorySlot, number> = Object.fromEntries([...inventorySlots.entries()].map(e => [e[1], e[0]])) as any;
 
+export const vanitySlots = [
+    "helmet",
+    "torso",
+    "legs",
+    "backpack",
+    "pallete"
+] as const;
+
 export interface PlayerBackpack {
     slots: Identifier[];
+    vanity: Identifier[];
 }
 
-async function parseSlots(snapshot: ReplayApi, data: ByteStream): Promise<Identifier[]> {
-    const slots: Identifier[] = new Array(inventorySlots.length);
-    for (let i = 0; i < slots.length; ++i) {
-        slots[i] = await Identifier.parse(IdentifierData(snapshot), data);
+async function parseSlots(snapshot: ReplayApi, data: ByteStream, numSlots: number): Promise<Identifier[]> {
+    const items: Identifier[] = new Array(numSlots);
+    for (let i = 0; i < items.length; ++i) {
+        items[i] = await Identifier.parse(IdentifierData(snapshot), data);
     }
-    return slots;
+    return items;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
+let parser = ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
     main: {
         parse: async (data, snapshot) => {
+            const vanity = new Array(vanitySlots.length);
+            for (let i = 0; i < vanity.length; ++i) {
+                vanity[i] = Identifier.unknown;
+            }
+
             return {
-                slots: await parseSlots(snapshot, data)
+                slots: await parseSlots(snapshot, data, inventorySlots.length),
+                vanity
             };
         }, 
         exec: (id, data, snapshot) => {
@@ -61,12 +77,19 @@ ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
             if (!backpacks.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
             const backpack = backpacks.get(id)!;
             backpack.slots = data.slots;
+            backpack.vanity = data.vanity;
         }
     },
     spawn: {
         parse: async (data, snapshot) => {
+            const vanity = new Array(vanitySlots.length);
+            for (let i = 0; i < vanity.length; ++i) {
+                vanity[i] = Identifier.unknown;
+            }
+            
             return {
-                slots: await parseSlots(snapshot, data)
+                slots: await parseSlots(snapshot, data, inventorySlots.length),
+                vanity
             };
         },
         exec: (id, data, snapshot) => {
@@ -86,4 +109,25 @@ ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
             backpacks.delete(id);
         }
     }
+});
+parser = ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.2", {
+    ...parser,
+    main: {
+        ...parser.main,
+        parse: async (data, snapshot) => {
+            return {
+                slots: await parseSlots(snapshot, data, inventorySlots.length),
+                vanity: await parseSlots(snapshot, data, vanitySlots.length),
+            };
+        }
+    },
+    spawn: {
+        ...parser.spawn,
+        parse: async (data, snapshot) => {
+            return {
+                slots: await parseSlots(snapshot, data, inventorySlots.length),
+                vanity: await parseSlots(snapshot, data, vanitySlots.length),
+            };
+        }
+    },
 });

@@ -41,6 +41,7 @@ namespace Vanilla {
             Alias_Gear,
             Item,
             Enemy,
+            Vanity
         }
 
         private static ushort _id = 0;
@@ -68,7 +69,8 @@ namespace Vanilla {
             }
             break;
             case Type.Enemy:
-            case Type.Item: {
+            case Type.Item:
+            case Type.Vanity: {
                 BitHelper.WriteBytes((byte)type, buffer);
                 BitHelper.WriteBytes(id, buffer);
             }
@@ -99,7 +101,8 @@ namespace Vanilla {
                 return other.stringKey != null && GearTable.ContainsKey(other.stringKey) && id == GearTable[other.stringKey];
             }
             case Type.Enemy:
-            case Type.Item: return type == other.type && id == other.id;
+            case Type.Item:
+            case Type.Vanity: return type == other.type && id == other.id;
             default: throw new NotImplementedException();
             }
         }
@@ -186,6 +189,13 @@ namespace Vanilla {
             identifier.type = Type.Enemy;
             identifier.id = (ushort)enemy.EnemyData.persistentID;
 
+            return identifier;
+        }
+
+        public static Identifier Vanity(uint id) {
+            Identifier identifier = new Identifier();
+            identifier.type = Type.Vanity;
+            identifier.id = (ushort)id;
             return identifier;
         }
     }

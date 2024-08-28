@@ -4,7 +4,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 
 namespace Vanilla.Player {
-    [ReplayData("Vanilla.Player.Backpack", "0.0.1")]
+    [ReplayData("Vanilla.Player.Backpack", "0.0.2")]
     internal class rPlayerBackpack : ReplayDynamic {
         public PlayerAgent agent;
 
@@ -15,6 +15,16 @@ namespace Vanilla.Player {
                         ItemEquippable item = bpItem.Instance.Cast<ItemEquippable>();
                         return Identifier.From(item);
                     }
+                }
+            } catch { }
+            return Identifier.unknown;
+        }
+
+        private Identifier GetVanityItem(ClothesType type) {
+            try {
+                PlayerBackpack backpack = PlayerBackpackManager.GetBackpack(agent.Owner);
+                if (backpack != null) {
+                    return Identifier.Vanity(backpack.m_vanityItems[(int)type]);
                 }
             } catch { }
             return Identifier.unknown;
@@ -44,6 +54,21 @@ namespace Vanilla.Player {
         private Identifier lastHackingTool = Identifier.unknown;
         private Identifier hackingTool => GetSlotId(InventorySlot.HackingTool);
 
+        private Identifier lastVanityHelmet = Identifier.unknown;
+        private Identifier vanityHelmet => GetVanityItem(ClothesType.Helmet);
+
+        private Identifier lastVanityTorso = Identifier.unknown;
+        private Identifier vanityTorso => GetVanityItem(ClothesType.Torso);
+
+        private Identifier lastVanityLegs = Identifier.unknown;
+        private Identifier vanityLegs => GetVanityItem(ClothesType.Legs);
+
+        private Identifier lastVanityBackpack = Identifier.unknown;
+        private Identifier vanityBackpack => GetVanityItem(ClothesType.Backpack);
+
+        private Identifier lastVanityPallete = Identifier.unknown;
+        private Identifier vanityPallete => GetVanityItem(ClothesType.Palette);
+
         public override bool Active => agent != null;
         public override bool IsDirty =>
             melee != lastMelee ||
@@ -53,7 +78,12 @@ namespace Vanilla.Player {
             pack != lastPack ||
             consumable != lastConsumable ||
             heavyItem != lastHeavyItem ||
-            hackingTool != lastHackingTool;
+            hackingTool != lastHackingTool ||
+            vanityHelmet != lastVanityHelmet ||
+            vanityTorso != lastVanityTorso ||
+            vanityLegs != lastVanityLegs ||
+            vanityBackpack != lastVanityBackpack ||
+            vanityPallete != lastVanityPallete;
 
         public rPlayerBackpack(PlayerAgent player) : base(player.GlobalID) {
             this.agent = player;
@@ -68,6 +98,11 @@ namespace Vanilla.Player {
             lastConsumable = consumable;
             lastHeavyItem = heavyItem;
             lastHackingTool = hackingTool;
+            lastVanityHelmet = vanityHelmet;
+            lastVanityTorso = vanityTorso;
+            lastVanityLegs = vanityLegs;
+            lastVanityBackpack = vanityBackpack;
+            lastVanityPallete = vanityPallete;
 
             BitHelper.WriteBytes(lastMelee, buffer);
             BitHelper.WriteBytes(lastPrimary, buffer);
@@ -77,6 +112,12 @@ namespace Vanilla.Player {
             BitHelper.WriteBytes(lastConsumable, buffer);
             BitHelper.WriteBytes(lastHeavyItem, buffer);
             BitHelper.WriteBytes(lastHackingTool, buffer);
+
+            BitHelper.WriteBytes(lastVanityHelmet, buffer);
+            BitHelper.WriteBytes(lastVanityTorso, buffer);
+            BitHelper.WriteBytes(lastVanityLegs, buffer);
+            BitHelper.WriteBytes(lastVanityBackpack, buffer);
+            BitHelper.WriteBytes(lastVanityPallete, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

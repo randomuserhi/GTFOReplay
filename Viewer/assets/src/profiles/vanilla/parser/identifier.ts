@@ -21,6 +21,7 @@ const identifierTypes = [
     "Alias_Gear",
     "Item",
     "Enemy",
+    "Vanity",
 ] as const;
 type IdentifierType = typeof identifierTypes[number];
 
@@ -98,7 +99,8 @@ export namespace Identifier {
             return gearTable.get(a.id) === b.stringKey;
         }
         case "Enemy":
-        case "Item": return a.type == b.type && a.id == b.id;
+        case "Item": 
+        case "Vanity": return a.type == b.type && a.id == b.id;
         default: throw new Error("Not yet implemented.");
         }
     }
@@ -121,10 +123,9 @@ export namespace Identifier {
             identifier.stringKey = gearTable.get(identifier.id)!;
             identifier.type = "Gear"; // NOTE(randomuserhi): Normalize 'GearAlias' types to 'Gear'.
         } break;
-        case "Item": {
-            identifier.id = await BitHelper.readUShort(data);
-        } break;
-        case "Enemy": {
+        case "Item":
+        case "Enemy":
+        case "Vanity": {
             identifier.id = await BitHelper.readUShort(data);
         } break;
         }
