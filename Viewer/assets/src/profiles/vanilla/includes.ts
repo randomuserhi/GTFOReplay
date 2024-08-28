@@ -31,6 +31,7 @@ const includes = [
     import("./parser/enemy/stats.js"),
     import("./parser/enemy/tendrils.js"),
     import("./parser/enemy/tongue.js"),
+    import("./parser/events/checkpoint.js"),
     import("./parser/events/damage.js"),
     import("./parser/events/packuse.js"),
     import("./parser/events/revive.js"),
