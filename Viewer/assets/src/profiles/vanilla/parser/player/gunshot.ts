@@ -50,22 +50,28 @@ let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
         };
     },
     exec: async (data, snapshot) => {
+        const time = snapshot.time();
+
         const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", Factory("Array"));
-        gunshots.push({ time: snapshot.time(), ...data });
+        gunshots.push({ time, ...data });
 
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         if (anims.has(data.owner) && data.sentry === false) { 
-            anims.get(data.owner)!.lastShot = snapshot.time();
+            anims.get(data.owner)!.lastShot = time;
         }
 
-        // count silent shots
+        // Count silent shots
+        // - To handle shotguns / penetration, check when the last silent shot was received
+        //   If it was recieved less than 10ms ago, then it dont count it as its probably
+        //   penetration or a shotgun
         if (data.silent === true) {
             const statTracker = StatTracker.from(snapshot);
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
             const player = players.get(data.owner);
-            if (player !== undefined) {
+            if (player !== undefined && time > player.lastSilentShotTime + 10) {
                 const stats = StatTracker.getPlayer(player.snet, statTracker);
                 stats.silentShots += 1;
+                player.lastSilentShotTime = time;
             }
         }
     }

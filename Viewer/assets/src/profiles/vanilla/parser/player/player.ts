@@ -37,6 +37,7 @@ export interface Player extends DynamicTransform.Type {
     nickname: string;
     equippedId: Identifier;
     lastEquippedTime: number;
+    lastSilentShotTime: number;
 }
 
 ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
@@ -80,7 +81,8 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             const player = { 
                 id, ...data,
                 equippedId: Identifier.create(),
-                lastEquippedTime: 0
+                lastEquippedTime: 0,
+                lastSilentShotTime: 0,
             };
 
             players.set(id, player);
