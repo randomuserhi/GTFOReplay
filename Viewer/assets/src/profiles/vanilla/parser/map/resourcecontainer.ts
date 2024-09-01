@@ -15,6 +15,7 @@ export interface ResourceContainer {
     isLocker: boolean;
     consumableType: Identifier;
     registered: boolean;
+    assignedLock?: LockType;
 }
 
 export interface ResourceContainerState {
@@ -56,7 +57,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
     }
 }
 
-let headerParser = ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
+ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
     parse: async (data, header) => {
         const containers = header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
         const count = await BitHelper.readUShort(data);
@@ -70,12 +71,13 @@ let headerParser = ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers",
                 serialNumber: await BitHelper.readUShort(data),
                 isLocker: await BitHelper.readBool(data),
                 consumableType: Identifier.unknown,
-                registered: true
+                registered: true,
+                assignedLock: undefined
             });
         }
     }
 });
-headerParser = ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.2", {
+ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.2", {
     parse: async (data, header, snapshot) => {
         const containers = header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
         const count = await BitHelper.readUShort(data);
@@ -89,7 +91,28 @@ headerParser = ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.
                 serialNumber: await BitHelper.readUShort(data),
                 isLocker: await BitHelper.readBool(data),
                 consumableType: await Identifier.parse(IdentifierData(snapshot), data),
-                registered: await BitHelper.readBool(data)
+                registered: await BitHelper.readBool(data),
+                assignedLock: undefined
+            });
+        }
+    }
+});
+ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.3", {
+    parse: async (data, header, snapshot) => {
+        const containers = header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
+        const count = await BitHelper.readUShort(data);
+        for (let i = 0; i < count; ++i) {
+            const id = await BitHelper.readInt(data);
+            containers.set(id, {
+                id,
+                dimension: await BitHelper.readByte(data),
+                position: await BitHelper.readVector(data),
+                rotation: await BitHelper.readHalfQuaternion(data),
+                serialNumber: await BitHelper.readUShort(data),
+                isLocker: await BitHelper.readBool(data),
+                consumableType: await Identifier.parse(IdentifierData(snapshot), data),
+                registered: await BitHelper.readBool(data),
+                assignedLock: lockType[await BitHelper.readByte(data)]
             });
         }
     }

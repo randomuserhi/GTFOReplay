@@ -41,6 +41,7 @@ versionInfo.set("0.1.2", `- Checkpoint support added
 - Vanity support added`);
 versionInfo.set("0.1.3", `- Added all resource container locations (including hidden ones)
 - Resource containers now include debug info for their assigned item type`);
+versionInfo.set("0.1.4", `- Added resource container lock type to debug info`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

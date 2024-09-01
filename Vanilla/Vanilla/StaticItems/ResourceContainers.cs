@@ -10,18 +10,13 @@ using UnityEngine;
 namespace Vanilla.StaticItems {
     [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.1")]
     internal class rContainer : ReplayDynamic {
-        private enum LockType {
-            None,
-            Melee,
-            Hackable
-        }
-
         private LG_ResourceContainer_Storage container;
         private LG_WeakResourceContainer core;
         private LG_ResourceContainer_Sync sync;
 
         public bool registered = true;
         public Identifier consumableType = Identifier.unknown;
+        public eWeakLockType assignedLock = eWeakLockType.None;
 
         public bool isLocker;
 
@@ -58,14 +53,14 @@ namespace Vanilla.StaticItems {
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
-            LockType type = LockType.None;
+            eWeakLockType type = eWeakLockType.None;
             if (core.m_weakLock != null) {
                 switch (core.m_weakLock.Status) {
                 case eWeakLockStatus.LockedMelee:
-                    type = LockType.Melee;
+                    type = eWeakLockType.Melee;
                     break;
                 case eWeakLockStatus.LockedHackable:
-                    type = LockType.Hackable;
+                    type = eWeakLockType.Hackable;
                     break;
                 }
             }
@@ -74,7 +69,7 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.ResourceContainers", "0.0.2")]
+    [ReplayData("Vanilla.Map.ResourceContainers", "0.0.3")]
     internal class rContainers : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -95,6 +90,8 @@ namespace Vanilla.StaticItems {
                     containers.Add(id, new rContainer(storage, false, 0));
                 }
                 rContainer container = containers[id];
+
+                container.assignedLock = (!(__instance.m_lockRandom < 0.5f)) ? eWeakLockType.Melee : eWeakLockType.Hackable;
 
                 ConsumableDistributionDataBlock? consumableData = GameDataBlockBase<ConsumableDistributionDataBlock>.GetBlock(__instance.m_node.m_zone.m_settings.m_zoneData.ConsumableDistributionInZone);
                 if (consumableData == null) return;
@@ -172,6 +169,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(container.isLocker, buffer);
                 BitHelper.WriteBytes(container.consumableType, buffer);
                 BitHelper.WriteBytes(container.registered, buffer);
+                BitHelper.WriteBytes((byte)container.assignedLock, buffer);
             }
         }
     }

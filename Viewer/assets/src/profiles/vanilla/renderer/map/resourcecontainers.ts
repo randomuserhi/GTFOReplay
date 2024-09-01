@@ -111,6 +111,7 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
 
     private static FUNC_updateStateless = {
         camPos: new Vector3(),
+        tmpPos: new Vector3()
     } as const;
     public updateStateless(camera?: Camera, state?: ResourceContainerState) {
         this.anchor.visible = this.container.registered || ResourceContainerModel.debug();
@@ -128,14 +129,17 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
                 }
             }
 
-            this.tmp.text = `locker: ${this.container.isLocker}
-registered: ${this.container.registered}
+            this.tmp.text = `lock: ${this.container.assignedLock === undefined ? "Unknown" : this.container.assignedLock} 
 type: ${name}`;
 
             if (this.tmp.visible && camera !== undefined) {
-                const { camPos } = ResourceContainerModel.FUNC_updateStateless;
+                const { camPos, tmpPos } = ResourceContainerModel.FUNC_updateStateless;
 
+                this.tmp.getWorldPosition(tmpPos);
                 camera.root.getWorldPosition(camPos);
+                
+                const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
+                this.tmp.fontSize = Math.clamp(lerp * 0.3 + 0.05, 0.05, 0.2);
                 this.tmp.lookAt(camPos);
             }
         }
