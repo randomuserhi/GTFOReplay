@@ -6,6 +6,7 @@ import { ItemDatablock } from "../../datablocks/items/item.js";
 import { black, white } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
 import { loadGLTFGeometry } from "../../library/modelloader.js";
+import { Identifier } from "../../parser/identifier.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
 import { ObjectWrapper } from "../objectwrapper.js";
 import { Camera } from "../renderer.js";
@@ -122,7 +123,7 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
             if (item !== undefined) {
                 if (item.name !== undefined) {
                     name = item.name;
-                } else {
+                } else if (Identifier.isKnown(this.container.consumableType)) {
                     name = this.container.consumableType.hash;
                 }
             }
