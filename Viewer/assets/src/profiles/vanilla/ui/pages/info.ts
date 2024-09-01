@@ -39,6 +39,8 @@ versionInfo.set("0.1.1", `- Fix silent shot detection not working properly for h
 - Show how close an enemy is to being staggered in enemy info`);
 versionInfo.set("0.1.2", `- Checkpoint support added
 - Vanity support added`);
+versionInfo.set("0.1.3", `- Added all resource container locations (including hidden ones)
+- Resource containers now include debug info for their assigned item type`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

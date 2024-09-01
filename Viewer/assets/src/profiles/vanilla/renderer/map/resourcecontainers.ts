@@ -1,11 +1,14 @@
 import { signal } from "@esm/@/rhu/signal.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Color, Group, Mesh, MeshPhongMaterial } from "@esm/three";
+import { Color, Group, Mesh, MeshPhongMaterial, Vector3 } from "@esm/three";
+import { Text } from "@esm/troika-three-text";
+import { ItemDatablock } from "../../datablocks/items/item.js";
 import { black, white } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
 import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
 import { ObjectWrapper } from "../objectwrapper.js";
+import { Camera } from "../renderer.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -20,17 +23,29 @@ declare module "@esm/@root/replay/moduleloader.js" {
 }
 
 const materialOrange = new MeshPhongMaterial({
-    color: 0xc57000
+    color: 0xc57000,
+    transparent: true
 });
-materialOrange.transparent = true;
 
 const materialGrey = new MeshPhongMaterial({
-    color: 0x777777
+    color: 0x777777,
+    transparent: true
 });
-materialGrey.transparent = true;
+
+const materialGreyUnregistered = new MeshPhongMaterial({
+    color: 0x777777,
+    transparent: true,
+    opacity: 0.1
+});
+const materialOrangeUnregistered = new MeshPhongMaterial({
+    color: 0xc57000,
+    transparent: true,
+    opacity: 0.1
+});
 
 export class ResourceContainerModel extends ObjectWrapper<Group> {
     static transparent = signal(false);
+    static debug = signal(false);
 
     anchor: Group;
 
@@ -40,8 +55,15 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
     lockColor: Color;
     lockMaterial: MeshPhongMaterial;
 
+    container: ResourceContainer;
+
+    private tmp?: Text;
+    tmpAnchor: Group = new Group();
+
     constructor(container: ResourceContainer) {
         super();
+        this.container = container;
+
         this.root = new Group();
         this.anchor = new Group();
         this.root.add(this.anchor);
@@ -67,20 +89,69 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
 
         this.hacklock.visible = false;
         this.padlock.visible = false;
+
+        this.anchor.visible = this.container.registered || ResourceContainerModel.debug();
+
+        // Setup tmp
+        this.tmp = new Text();
+        this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.tmp.fontSize = 0.2;
+        this.tmp.position.y = 2;
+        this.tmp.textAlign = "center";
+        this.tmp.anchorX = "center";
+        this.tmp.anchorY = "bottom";
+        this.tmp.color = 0xffffff;
+        this.tmp.visible = false;
+        this.tmpAnchor.add(this.tmp);
+        this.root.add(this.tmpAnchor);
+
+        this.updateStateless();
     }
 
-    public update(time: number, container: ResourceContainerState) {
-        if (container.closed) {
-            this.hacklock.visible = container.lockType === "Hackable" || container.lockType === "Melee";
-            this.padlock.visible = container.lockType === "Melee";
+    private static FUNC_updateStateless = {
+        camPos: new Vector3(),
+    } as const;
+    public updateStateless(camera?: Camera, state?: ResourceContainerState) {
+        this.anchor.visible = this.container.registered || ResourceContainerModel.debug();
 
-            if (container.lockType === "Melee") {
+        if (this.tmp !== undefined) {
+            this.tmp.visible = ResourceContainerModel.debug();
+
+            const item = ItemDatablock.get(this.container.consumableType);
+            let name = "Unknown";
+            if (item !== undefined) {
+                if (item.name !== undefined) {
+                    name = item.name;
+                } else {
+                    name = this.container.consumableType.hash;
+                }
+            }
+
+            this.tmp.text = `locker: ${this.container.isLocker}
+registered: ${this.container.registered}
+type: ${name}`;
+
+            if (this.tmp.visible && camera !== undefined) {
+                const { camPos } = ResourceContainerModel.FUNC_updateStateless;
+
+                camera.root.getWorldPosition(camPos);
+                this.tmp.lookAt(camPos);
+            }
+        }
+    }
+
+    public update(time: number, state: ResourceContainerState) {
+        if (state.closed) {
+            this.hacklock.visible = state.lockType === "Hackable" || state.lockType === "Melee";
+            this.padlock.visible = state.lockType === "Melee";
+
+            if (state.lockType === "Melee") {
                 this.lockMaterial.specular = white;
             } else {
                 this.lockMaterial.specular = black;
             }
 
-            if (container.lockType === "Hackable") {
+            if (state.lockType === "Hackable") {
                 this.lockColor.set(0x6666ff);
             } else {
                 this.lockColor.set(0x666666);
@@ -117,13 +188,15 @@ class Locker extends ResourceContainerModel {
 
         this.pivot.position.set(-1.1, 0, 0.55);
 
-        loadGLTFGeometry("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, materialGrey)));
-        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, materialOrange)));
-        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, materialOrange)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, container.registered ? materialGrey : materialGreyUnregistered)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, container.registered ? materialOrange : materialOrangeUnregistered)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, container.registered ? materialOrange : materialOrangeUnregistered)));
         
         this.hacklock.position.set(0, 0.575, 0.6);
         
         this.anchor.rotateX(Math.PI / 2);
+        this.tmpAnchor.position.copy(this.anchor.position);
+        this.tmpAnchor.rotation.copy(this.anchor.rotation);
     }
 
     public update(time: number, container: ResourceContainerState): void {
@@ -165,19 +238,21 @@ class Box extends ResourceContainerModel {
         this.anchor.scale.set(0.25, 0.25, 0.25);
         this.anchor.position.set(0, 0, 0.1);
 
-        loadGLTFGeometry("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, materialGrey)));
-        loadGLTFGeometry("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, materialOrange)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, container.registered ? materialGrey : materialGreyUnregistered)));
+        loadGLTFGeometry("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, container.registered ? materialOrange : materialOrangeUnregistered)));
         
         this.hacklock.position.set(0, 0.4, 1);
         this.hacklock.scale.set(1.72, 1.72, 1.72);
 
         this.anchor.rotateX(Math.PI / 2);
+        this.tmpAnchor.position.copy(this.anchor.position);
+        this.tmpAnchor.rotation.copy(this.anchor.rotation);
     }
 
-    public update(time: number, container: ResourceContainerState): void {
-        super.update(time, container);
+    public update(time: number, state: ResourceContainerState): void {
+        super.update(time, state);
 
-        if (container.closed) {
+        if (state.closed) {
             this.pivot.rotation.set(0, 0, 0);
             return;
         }
@@ -186,7 +261,7 @@ class Box extends ResourceContainerModel {
         this.padlock.visible = false;
 
         const animDuration = 400;
-        this.pivot.rotation.set(-90 * Math.deg2rad * Math.clamp01((time - container.lastCloseTime) / animDuration), 0, 0);
+        this.pivot.rotation.set(-90 * Math.deg2rad * Math.clamp01((time - state.lastCloseTime) / animDuration), 0, 0);
     }
 }
 
@@ -212,6 +287,7 @@ ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
             const containers = snapshot.header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
             const states = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", Factory("Map"));
             const models = renderer.getOrDefault("ResourceContainers", Factory("Map"));
+            const camera = renderer.get("Camera")!;
             for (const [id, container] of containers.entries()) {
                 if (!models.has(id)) {
                     const model = container.isLocker ? new Locker(container) : new Box(container);
@@ -225,8 +301,9 @@ ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
 
                 if (visible) {
                     const state = states.get(id);
+                    model.updateStateless(camera, state);
+                    
                     if (state === undefined) continue;
-
                     model.update(time, state);
                 }
             }

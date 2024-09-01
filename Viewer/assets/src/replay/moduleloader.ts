@@ -66,7 +66,7 @@ export interface EventParser<T extends Typemap.EventNames> {
     exec(data: Typemap.Events[T], snapshot: ReplayApi): void;
 }
 export interface HeaderParser {
-    parse(bytes: ByteStream, header: ReplayApi["header"]): Promise<void>;
+    parse(bytes: ByteStream, header: ReplayApi["header"], snapshot: ReplayApi): Promise<void>;
 }
 
 export namespace ModuleLoader {

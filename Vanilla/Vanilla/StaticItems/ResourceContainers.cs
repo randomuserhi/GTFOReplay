@@ -1,4 +1,5 @@
 ﻿using AIGraph;
+using GameData;
 using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
@@ -19,11 +20,14 @@ namespace Vanilla.StaticItems {
         private LG_WeakResourceContainer core;
         private LG_ResourceContainer_Sync sync;
 
+        public bool registered = true;
+        public Identifier consumableType = Identifier.unknown;
+
         public bool isLocker;
 
         public byte dimension;
-        public Vector3 position => container.transform.position;
-        public Quaternion rotation => container.transform.rotation;
+        public Vector3 position;
+        public Quaternion rotation;
         public ushort serialNumber => (ushort)core.m_serialNumber;
 
         public rContainer(LG_ResourceContainer_Storage container, bool isLocker, byte dimension) : base(container.GetInstanceID()) {
@@ -32,6 +36,9 @@ namespace Vanilla.StaticItems {
             this.dimension = dimension;
             core = container.m_core.Cast<LG_WeakResourceContainer>();
             sync = core.m_sync.Cast<LG_ResourceContainer_Sync>();
+
+            position = container.transform.position;
+            rotation = container.transform.rotation;
         }
 
         public override bool Active => core != null;
@@ -67,10 +74,41 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.ResourceContainers", "0.0.1")]
+    [ReplayData("Vanilla.Map.ResourceContainers", "0.0.2")]
     internal class rContainers : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
+            private static void SetupContainer(AIG_CourseNode node, rContainer container) {
+                container.dimension = (byte)node.m_dimension.DimensionIndex;
+            }
+
+            [HarmonyPatch(typeof(LG_ResourceContainerBuilder), nameof(LG_ResourceContainerBuilder.SetupFunctionGO))]
+            [HarmonyPostfix]
+            private static void OnBuild(LG_ResourceContainerBuilder __instance, LG_LayerType layer, GameObject GO) {
+                if (__instance.m_function != ExpeditionFunction.ResourceContainerWeak) return;
+                LG_WeakResourceContainer? comp = GO.GetComponentInChildren<LG_WeakResourceContainer>();
+                if (comp == null) return;
+
+                LG_ResourceContainer_Storage storage = comp.m_storage.Cast<LG_ResourceContainer_Storage>();
+                int id = storage.GetInstanceID();
+                if (!containers.ContainsKey(id)) {
+                    containers.Add(id, new rContainer(storage, false, 0));
+                }
+                rContainer container = containers[id];
+
+                ConsumableDistributionDataBlock? consumableData = GameDataBlockBase<ConsumableDistributionDataBlock>.GetBlock(__instance.m_node.m_zone.m_settings.m_zoneData.ConsumableDistributionInZone);
+                if (consumableData == null) return;
+                UnityEngine.Random.InitState(__instance.m_randomSeed);
+
+                float[] array = new float[consumableData.SpawnData.Count];
+                for (int i = 0; i < consumableData.SpawnData.Count; i++) {
+                    array[i] = consumableData.SpawnData[i].Weight;
+                }
+                BuilderWeightedRandom builderWeightedRandom = new BuilderWeightedRandom();
+                builderWeightedRandom.Setup(array);
+                container.consumableType = Identifier.Item(consumableData.SpawnData[builderWeightedRandom.GetRandomIndex(UnityEngine.Random.value)].ItemID);
+            }
+
             [HarmonyPatch(typeof(AIG_CourseNode), nameof(AIG_CourseNode.RegisterContainer))]
             [HarmonyPostfix]
             private static void ResourceContainer_Add(AIG_CourseNode __instance, LG_ResourceContainer_Storage container) {
@@ -78,13 +116,18 @@ namespace Vanilla.StaticItems {
                 if (!containers.ContainsKey(id)) {
                     containers.Add(id, new rContainer(container, false, (byte)__instance.m_dimension.DimensionIndex));
                 }
-                containers[id].dimension = (byte)__instance.m_dimension.DimensionIndex;
+                SetupContainer(__instance, containers[id]);
             }
 
             [HarmonyPatch(typeof(AIG_CourseNode), nameof(AIG_CourseNode.UnregisterContainer))]
             [HarmonyPostfix]
             private static void ResourceContainer_Remove(AIG_CourseNode __instance, LG_ResourceContainer_Storage container) {
-                containers.Remove(container.GetInstanceID());
+                int id = container.GetInstanceID();
+                if (!containers.ContainsKey(id)) {
+                    containers.Add(id, new rContainer(container, false, (byte)__instance.m_dimension.DimensionIndex));
+                }
+                SetupContainer(__instance, containers[id]);
+                containers[id].registered = false;
             }
 
             [HarmonyPatch(typeof(LG_ResourceContainer_Storage), nameof(LG_ResourceContainer_Storage.Setup))]
@@ -127,6 +170,8 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteHalf(container.rotation, buffer);
                 BitHelper.WriteBytes(container.serialNumber, buffer);
                 BitHelper.WriteBytes(container.isLocker, buffer);
+                BitHelper.WriteBytes(container.consumableType, buffer);
+                BitHelper.WriteBytes(container.registered, buffer);
             }
         }
     }

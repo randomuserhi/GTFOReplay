@@ -46,7 +46,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
     material.opacity = 0.5;
     material.colorWrite = false;
 
-    const order = -4;
+    const order = 1;
     for (const [key, datablock] of StickModelDatablock.entries()) {
         if (datablock.geometry !== undefined && datablock.path !== undefined) {
             console.error(`Unable to load datablock '${key}' as both geometry and path were provided.`);
@@ -68,7 +68,7 @@ const instancedMeshInit = (mesh: InstancedMesh, renderOrder?: number) => {
     material.opacity = 0.5;
     material.colorWrite = true;
 
-    const order = -3;
+    const order = 2;
     for (const [key, datablock] of StickModelDatablock.entries()) {
         if (datablock.geometry !== undefined && datablock.path !== undefined) {
             console.error(`Unable to load datablock '${key}' as both geometry and path were provided.`);

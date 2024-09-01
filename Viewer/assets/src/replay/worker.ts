@@ -48,31 +48,7 @@ let replay: Replay | undefined = undefined;
             }
             await Internal.parsers[typeMapVersion](bytes, replay);
 
-            // Grab headerApi
-            const headerApi = {
-                getOrDefault: Replay.prototype.getOrDefault.bind(replay),
-                get: Replay.prototype.get.bind(replay),
-                set: Replay.prototype.set.bind(replay),
-                has: Replay.prototype.has.bind(replay)
-            };
-
-            // Initialise
-            for (const init of ModuleLoader.library.init) {
-                init(headerApi);
-            }
-
-            // Parse Headers
-            let [module] = await getModule(bytes);
-            while (module?.typename !== "ReplayRecorder.EndOfHeader") {
-                const func = ModuleLoader.getHeader(module as any);
-                if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
-                await func.parse(bytes, headerApi);
-                [module] = await getModule(bytes);
-            }
-
-            ipc.send("eoh", replay.typemap, replay.types, replay.header);
-
-            // Parse snapshots
+            // Setup API
             const state: Snapshot = {
                 tick: 0,
                 time: 0,
@@ -80,6 +56,24 @@ let replay: Replay | undefined = undefined;
                 data: new Map()
             };
             const api = replay.api(state);
+
+            // Initialise
+            for (const init of ModuleLoader.library.init) {
+                init(api.header);
+            }
+
+            // Parse Headers
+            let [module] = await getModule(bytes);
+            while (module?.typename !== "ReplayRecorder.EndOfHeader") {
+                const func = ModuleLoader.getHeader(module as any);
+                if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
+                await func.parse(bytes, api.header, api);
+                [module] = await getModule(bytes);
+            }
+
+            ipc.send("eoh", replay.typemap, replay.types, replay.header);
+
+            // Parse snapshots
             const exists = new Map<number, Map<number, boolean>>();
             const parseEvents = async (bytes: ByteStream): Promise<Timeline.Event[]> => {
                 if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);

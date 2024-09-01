@@ -26,7 +26,7 @@ const geometry = new SphereGeometry(1, 20, 20);
     mask.mesh.instanceMatrix.setUsage( DynamicDrawUsage );
     mask.mesh.castShadow = false;
     mask.mesh.receiveShadow = true;
-    mask.mesh.renderOrder = -2;
+    mask.mesh.renderOrder = 3;
 })();
 
 (() => {
@@ -40,7 +40,7 @@ const geometry = new SphereGeometry(1, 20, 20);
     spheres.mesh.instanceMatrix.setUsage( DynamicDrawUsage );
     spheres.mesh.castShadow = false;
     spheres.mesh.receiveShadow = true;
-    spheres.mesh.renderOrder = -1;
+    spheres.mesh.renderOrder = 4;
 })();
 
 declare module "@esm/@root/replay/moduleloader.js" {

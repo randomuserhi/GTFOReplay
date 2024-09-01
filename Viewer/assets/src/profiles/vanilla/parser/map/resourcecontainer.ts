@@ -2,6 +2,7 @@ import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Factory } from "../../library/factory.js";
+import { Identifier, IdentifierData } from "../identifier.js";
 
 ModuleLoader.registerASLModule(module.src);
 
@@ -12,6 +13,8 @@ export interface ResourceContainer {
     rotation: Pod.Quaternion;
     serialNumber: number;
     isLocker: boolean;
+    consumableType: Identifier;
+    registered: boolean;
 }
 
 export interface ResourceContainerState {
@@ -53,7 +56,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
     }
 }
 
-ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
+let headerParser = ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
     parse: async (data, header) => {
         const containers = header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
         const count = await BitHelper.readUShort(data);
@@ -65,7 +68,28 @@ ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.1", {
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
                 serialNumber: await BitHelper.readUShort(data),
-                isLocker: await BitHelper.readBool(data)
+                isLocker: await BitHelper.readBool(data),
+                consumableType: Identifier.unknown,
+                registered: true
+            });
+        }
+    }
+});
+headerParser = ModuleLoader.registerHeader("Vanilla.Map.ResourceContainers", "0.0.2", {
+    parse: async (data, header, snapshot) => {
+        const containers = header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
+        const count = await BitHelper.readUShort(data);
+        for (let i = 0; i < count; ++i) {
+            const id = await BitHelper.readInt(data);
+            containers.set(id, {
+                id,
+                dimension: await BitHelper.readByte(data),
+                position: await BitHelper.readVector(data),
+                rotation: await BitHelper.readHalfQuaternion(data),
+                serialNumber: await BitHelper.readUShort(data),
+                isLocker: await BitHelper.readBool(data),
+                consumableType: await Identifier.parse(IdentifierData(snapshot), data),
+                registered: await BitHelper.readBool(data)
             });
         }
     }

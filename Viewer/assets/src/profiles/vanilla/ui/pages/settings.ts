@@ -358,7 +358,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Dimension").bind("wrapper")}
+            ${FeatureWrapper.open("Transparent Resource Containers").bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;
@@ -380,6 +380,35 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
         });
 
         ResourceContainerModel.transparent.on((value) => {
+            toggle.value(value);
+        });
+
+        return bindings.wrapper;
+    },
+    (v) => {
+        const [bindings, frag] = html`
+            ${FeatureWrapper.open("Debug Resource Containers").bind("wrapper")}
+                <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <span style="flex: 1; padding-top: 1px;">Debug Resource Containers</span>
+                    ${Toggle().bind("toggle")}
+                </div>
+            ${FeatureWrapper.close}
+        `.dom<{
+            wrapper: Macro<typeof FeatureWrapper>;
+            toggle: Macro<typeof Toggle>;
+        }>();
+
+        const { toggle } = bindings;
+
+        toggle.value.on((value) => {
+            ResourceContainerModel.debug(value);
+        });
+
+        ResourceContainerModel.debug.on((value) => {
             toggle.value(value);
         });
 

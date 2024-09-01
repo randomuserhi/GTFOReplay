@@ -198,5 +198,12 @@ namespace Vanilla {
             identifier.id = (ushort)id;
             return identifier;
         }
+
+        public static Identifier Item(uint id) {
+            Identifier identifier = new Identifier();
+            identifier.type = Type.Item;
+            identifier.id = (ushort)id;
+            return identifier;
+        }
     }
 }
