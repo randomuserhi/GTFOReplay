@@ -65,7 +65,7 @@ const updateStats = (stats: Map<number, PlayerStats>, status: PlayerStats, snaps
     }
 };
 
-ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
+let parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
     main: {
         parse, exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
@@ -109,6 +109,9 @@ ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             stats.delete(id);
         }
     }
+});
+parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.2", {
+    ...parser
 });
 
 ModuleLoader.registerTick((snapshot) => {
