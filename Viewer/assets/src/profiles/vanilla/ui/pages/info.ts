@@ -42,6 +42,7 @@ versionInfo.set("0.1.2", `- Checkpoint support added
 versionInfo.set("0.1.3", `- Added all resource container locations (including hidden ones)
 - Resource containers now include debug info for their assigned item type`);
 versionInfo.set("0.1.4", `- Added resource container lock type to debug info`);
+versionInfo.set("0.1.5", `- Fix 6 use packs showing up incorrectly`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);
