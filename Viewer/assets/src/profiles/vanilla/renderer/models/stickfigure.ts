@@ -124,6 +124,8 @@ export interface StickFigureSettings {
         rightLowerArm: { scale?: number, type?: StickModelType };
     }>;
 
+    defaultPose?: Partial<AvatarStructure<HumanJoints, QuaternionLike>>;
+
     headScale?: Vector3Like;
     neckScale?: Vector3Like;
     chestScale?: Vector3Like;
@@ -212,7 +214,16 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         if (this.settings.color !== undefined) {
             this.color.set(this.settings.color);
         }
-        
+
+        // Setup default pose before grabbing inverse matrices for tumour attachments
+        for (const joint of HumanJoints) {
+            const quaternion = this.settings.defaultPose === undefined ? undefined : this.settings.defaultPose[joint];
+            if (quaternion !== undefined) {
+                this.visual.joints[joint].quaternion.copy(quaternion);
+            } else {
+                this.visual.joints[joint].quaternion.set(0, 0, 0, 1);   
+            }
+        }
         for (const joint of HumanJoints) {
             this.visual.joints[joint].updateWorldMatrix(true, true);
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
