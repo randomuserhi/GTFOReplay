@@ -177,7 +177,7 @@ namespace Vanilla.Enemy {
             BitHelper.WriteBytes(limb.m_base.Owner.GlobalID, buffer);
             BitHelper.WriteBytes((byte)bone, buffer);
             BitHelper.WriteHalf(offset, buffer);
-            BitHelper.WriteHalf(limb.transform.localScale.x, buffer);
+            BitHelper.WriteHalf(limb.transform.lossyScale.x / Mathf.Max(limb.m_base.Owner.transform.lossyScale.x), buffer);
         }
     }
 }

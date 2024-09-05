@@ -49,6 +49,7 @@ namespace Vanilla.StatTracker.Consumable {
                 }
             }
 
+            // TODO(randomuserhi): Check last equipped healing item or something...
             [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveAddHealth))]
             [HarmonyPrefix]
             public static void Postfix_ReceiveAddHealth(Dam_PlayerDamageBase __instance, pAddHealthData data) {

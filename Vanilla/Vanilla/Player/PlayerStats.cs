@@ -69,7 +69,8 @@ namespace Vanilla.Player {
         private byte resourceAmmo {
             get {
                 InventorySlotAmmo ammo = backpack.AmmoStorage.GetInventorySlotAmmo(AmmoType.ResourcePackRel);
-                return (byte)(byte.MaxValue * ammo.RelInPack);
+                float actualRelInPack = ammo.RelInPack * 5.0f / 6.0f; // NOTE(randomuserhi): Scale properly to account for 6 uses
+                return (byte)(byte.MaxValue * actualRelInPack);
             }
         }
 

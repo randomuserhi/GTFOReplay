@@ -197,6 +197,7 @@ export namespace ModuleLoader {
         links.add(path);
     }
 }
+(globalThis as any).test = ModuleLoader;
 
 export class NoExecFunc extends Error {
     constructor(message?: string) {

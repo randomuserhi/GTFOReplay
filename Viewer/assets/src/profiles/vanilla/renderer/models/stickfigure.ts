@@ -212,9 +212,9 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         if (this.settings.color !== undefined) {
             this.color.set(this.settings.color);
         }
-
+        
         for (const joint of HumanJoints) {
-            this.visual.joints[joint].updateWorldMatrix(true, false);
+            this.visual.joints[joint].updateWorldMatrix(true, true);
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
         }
     }
