@@ -102,7 +102,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 }
 
 ModuleLoader.registerHeader("Vanilla.Map.Doors", "0.0.1", {
-    parse: async (data, header) => {
+    parse: async (data, header, snapshot) => {
         const doors = new Map<number, Door>();
 
         const nDoors = await BitHelper.readUShort(data);
@@ -123,6 +123,21 @@ ModuleLoader.registerHeader("Vanilla.Map.Doors", "0.0.1", {
                 dimension, position, rotation,
                 serialNumber, isCheckpoint, type, size,
             });
+
+            // Spawn an item to generate an item finder entry
+            /*const items = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
+
+            items.set(id, { 
+                id,
+                dimension,
+                position,
+                rotation,
+                onGround: true,
+                linkedToMachine: false,
+                serialNumber: serialNumber, // 65535 (ushort.MaxValue) indicates item has no serial number
+                itemID: Identifier.create("Internal_Finder_Item", undefined, type === "WeakDoor" ? "DOOR" : "SECURITY_DOOR"),
+                player: undefined,
+            });*/
         }
 
         if (header.has("Vanilla.Map.Doors")) throw new Error("Doors was already written.");

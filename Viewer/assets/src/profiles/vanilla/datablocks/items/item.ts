@@ -27,6 +27,7 @@ export interface ItemDatablock {
 }
 
 export const ItemDatablock = new Datablock<Identifier, ItemDatablock>((identifier) => {
-    if (identifier.type !== "Unknown" && identifier.type !== "Item") throw new Error(`Identifier did not represent an item: ${identifier.hash}`);
+    if (identifier.type !== "Unknown" && identifier.type !== "Item" && identifier.type !== "Internal_Finder_Item") throw new Error(`Identifier did not represent an item: ${identifier.hash}`);
+    if (identifier.type === "Internal_Finder_Item") return undefined;
     return identifier.id;
 });

@@ -80,7 +80,7 @@ export const Finder = Macro(class Finder extends MacroElement {
         super(dom, bindings);
 
         this.filtered = computed<{ item: Item, key: string }[]>((set) => {
-            let filtered = this.values().filter(({ item }) => (this.includeUnknown.value() ? true : ItemDatablock.has(item.itemID)) && item.dimension === this.dropdown.value());
+            let filtered = this.values().filter(({ item }) => (this.includeUnknown.value() ? true : (item.itemID.type === "Internal_Finder_Item" || ItemDatablock.has(item.itemID))) && item.dimension === this.dropdown.value());
             const filter = this.filter();
             if (filter !== "") {
                 this.fuse.setCollection(filtered);
@@ -173,11 +173,17 @@ export const Finder = Macro(class Finder extends MacroElement {
 
                 const mapped = [];
                 for (const item of items.values()) {
-                    const spec = ItemDatablock.get(item.itemID);
-                    const _serial = item.serialNumber < 1000 ? `_${item.serialNumber}` : ""; 
-                    const serial = item.serialNumber < 1000 ? ` (${item.serialNumber})` : "";
-                    const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
-                    mapped.push({ item, key });
+                    if (item.itemID.type === "Internal_Finder_Item") {
+                        const _serial = item.serialNumber < 1000 ? `_${item.serialNumber}` : ""; 
+                        const key = `${item.itemID.stringKey}${_serial}`;
+                        mapped.push({ item, key });
+                    } else {
+                        const spec = ItemDatablock.get(item.itemID);
+                        const _serial = item.serialNumber < 1000 ? `_${item.serialNumber}` : ""; 
+                        const serial = item.serialNumber < 1000 ? ` (${item.serialNumber})` : "";
+                        const key = spec === undefined ? "Unknown" : spec.serial === undefined ? spec.name === undefined ? "Unknown" : `${spec.name}${serial}` : `${spec.serial}${_serial}`;
+                        mapped.push({ item, key });
+                    }
                 }
                 this.values(mapped);
             }, { signal: dispose.signal });

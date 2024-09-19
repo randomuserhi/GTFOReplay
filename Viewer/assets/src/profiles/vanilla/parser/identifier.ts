@@ -23,7 +23,8 @@ const identifierTypes = [
     "Enemy",
     "Vanity",
 ] as const;
-type IdentifierType = typeof identifierTypes[number];
+type IdentifierType = typeof identifierTypes[number] | "Internal_Finder_Item";
+// NOTE(randomuserhi): Internal_Finder_Item is used for items that dont actually exist, but are spawned to mark pingable static objects such as terminals, generators etc...
 
 export type IdentifierHash = string;
 
@@ -100,7 +101,8 @@ export namespace Identifier {
         }
         case "Enemy":
         case "Item": 
-        case "Vanity": return a.type == b.type && a.id == b.id;
+        case "Vanity": 
+        case "Internal_Finder_Item": return a.type == b.type && a.id == b.id;
         default: throw new Error("Not yet implemented.");
         }
     }

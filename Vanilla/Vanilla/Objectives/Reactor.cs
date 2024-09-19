@@ -30,7 +30,7 @@ namespace Vanilla.Objectives {
 
         private LG_WardenObjective_Reactor core;
 
-        public rReactor(LG_WardenObjective_Reactor core) : base(core.GetInstanceID()) {
+        public rReactor(LG_WardenObjective_Reactor core) : base(core.m_stateReplicator.Replicator.Key) {
             this.core = core;
             var reactorWaves = WardenObjectiveManager.Current.m_activeWardenObjectives[core.OriginLayer].ReactorWaves;
             terminalSerials = new ushort[reactorWaves.Count];

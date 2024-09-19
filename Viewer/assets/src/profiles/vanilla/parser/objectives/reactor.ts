@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../../library/factory.js";
+import { Identifier } from "../identifier.js";
 import { layers, ObjectiveLayer } from "../map/bulkheadcontroller.js";
 
 ModuleLoader.registerASLModule(module.src);
@@ -108,6 +109,24 @@ ModuleLoader.registerDynamic("Vanilla.Objectives.Reactor", "0.0.1", {
                 wave: 0,
                 waveDuration: 0,
                 waveProgress: 0
+            });
+
+            // Find terminal and spawn an item to generate an item finder entry 
+            const terminals = snapshot.header.getOrDefault("Vanilla.Map.Terminals", Factory("Map"));
+            if (!terminals.has(data.masterTerminal)) throw new Error(`Could not find reactor's master terminal '${data.masterTerminal}'.`);
+            const terminal = terminals.get(data.masterTerminal)!;
+
+            const items = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
+            items.set(id, { 
+                id,
+                dimension: terminal.dimension,
+                position: terminal.position,
+                rotation: terminal.rotation,
+                onGround: true,
+                linkedToMachine: false,
+                serialNumber: data.serialNumber, // 65535 (ushort.MaxValue) indicates item has no serial number
+                itemID: Identifier.create("Internal_Finder_Item", undefined, "REACTOR"),
+                player: undefined,
             });
         }
     },
