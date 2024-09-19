@@ -45,7 +45,8 @@ versionInfo.set("0.1.4", `- Added resource container lock type to debug info`);
 versionInfo.set("0.1.5", `- Fix 6 use packs showing up incorrectly`);
 versionInfo.set("0.1.6", `- Fix shooter projectiles being incompatible with EEC
 - Added terminal serial numbers
-- Added reactor objective messages`);
+- Added reactor objective messages
+- Added terminals, reactors, generators, disinfect station and bulkhead controllers to finder tab`);
 
 export const Info = Macro(class Info extends MacroElement {
     public view = signal<Macro<typeof View> | undefined>(undefined);

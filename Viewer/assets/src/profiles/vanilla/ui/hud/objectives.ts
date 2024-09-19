@@ -156,6 +156,7 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
     private controls: HTMLDivElement;
     private reactor: Signal<string>;
     private title: Signal<string>;
+    private timeWrapper: HTMLDivElement;
     private time: Signal<string>;
     private codeText: Signal<string>;
     private code: Signal<string>;
@@ -183,7 +184,7 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
             }
 
             let reactorIndex = this.reactorIndex();
-            if (reactorIndex < 0 || reactorIndex > activeReactors.length) {
+            if (reactorIndex < 0 || reactorIndex >= activeReactors.length) {
                 reactorIndex = 0;
             }
             this.reactorIndex(reactorIndex);
@@ -212,20 +213,19 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
             this.progress.style.width = `${reactor.waveProgress * 100}%`;
 
             switch (reactor.status) {
-            case "Startup_intro":
-            case "Shutdown_intro": {
+            case "Startup_intro":{
                 this.wrapper.classList.add(`${style.warmup}`);
                 this.wrapper.classList.remove(`${style.verify}`);
                 this.wrapper.classList.remove(`${style.intense}`);
+                this.timeWrapper.style.display = "flex";
 
                 this.title(`REACTOR STARTUP TEST (${reactor.wave + 1} of ${reactor.numWaves}) WARMING UP..`);
             } break;
-            
-            case "Startup_waitForVerify":
-            case "Shutdown_waitForVerify": {
+            case "Startup_waitForVerify":{
                 this.wrapper.classList.remove(`${style.warmup}`);
                 this.wrapper.classList.add(`${style.verify}`);
                 this.wrapper.classList.remove(`${style.intense}`);
+                this.timeWrapper.style.display = "flex";
 
                 this.title(`SECURITY VERIFICATION (${reactor.wave + 1} of ${reactor.numWaves})`);
 
@@ -239,10 +239,46 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
                 }
             } break;
 
+            case "Shutdown_intro": {
+                this.wrapper.classList.add(`${style.warmup}`);
+                this.wrapper.classList.remove(`${style.verify}`);
+                this.wrapper.classList.remove(`${style.intense}`);
+                this.timeWrapper.style.display = "none";
+
+                this.title(`REACTOR SHUTTING DOWN ..`);
+            } break;
+            case "Shutdown_waitForVerify": {
+                this.wrapper.classList.remove(`${style.warmup}`);
+                this.wrapper.classList.add(`${style.verify}`);
+                this.wrapper.classList.remove(`${style.intense}`);
+                this.timeWrapper.style.display = "none";
+
+                this.title(`SECURITY VERIFICATION TO START SHUTDOWN`);
+
+                const codeTerminalSerial = reactor.codeTerminalSerial[reactor.wave];
+                if (codeTerminalSerial === 65535) {
+                    this.codeText("REACTOR CODE:");
+                    this.code(`${reactor.codes[reactor.wave].toUpperCase()}`);
+                } else {
+                    this.codeText("REACTOR CODE IN LOG FILE ON");
+                    this.code(`TERMINAL_${codeTerminalSerial}`);
+                }
+            } break;
+            case "Shutdown_puzzleChaos": {
+                this.wrapper.classList.remove(`${style.warmup}`);
+                this.wrapper.classList.remove(`${style.verify}`);
+                this.wrapper.classList.add(`${style.intense}`);
+                this.timeWrapper.style.display = "none";
+
+                this.title(`COMPLETE SCAN TO FINISH REACTOR SHUTDOWN`);
+                this.progress.style.width = `100%`;
+            } break;
+
             default: {
                 this.wrapper.classList.remove(`${style.warmup}`);
                 this.wrapper.classList.remove(`${style.verify}`);
                 this.wrapper.classList.add(`${style.intense}`);
+                this.timeWrapper.style.display = "flex";
 
                 this.title(`REACTOR PERFORMING HIGH INTENSITY (${reactor.wave + 1}/${reactor.numWaves})`);
             } break;
@@ -292,7 +328,7 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
         <div>
             <span>${Macro.signal("title", "")}</span>
         </div>
-        <div class="${style.timeWrapper}">
+        <div m-id="timeWrapper" class="${style.timeWrapper}">
             <span>TIME LEFT:</span>
             <span>${Macro.signal("time", "")}</span>
         </div>
