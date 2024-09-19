@@ -176,10 +176,11 @@ namespace ReplayRecorder.Snapshot {
                                 } catch (Exception ex) {
                                     // Restore buffer write point
                                     buffer.count = writeIndex;
-                                    instance.Despawn(dynamic);
-                                    APILogger.Warn($"[DynamicCollection] Error Despawn {Type} {dynamic.id}");
-
-                                    APILogger.Error($"Unexpected error occured whilst trying to write Dynamic[{Type}]({dynamic.id}) at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
+                                    if (!dynamic.remove) {
+                                        instance.Despawn(dynamic);
+                                        APILogger.Warn($"[DynamicCollection] Despawning due to Error {Type} {dynamic.id}");
+                                        APILogger.Error($"Unexpected error occured whilst trying to write Dynamic[{Type}]({dynamic.id}) at [{instance.Now}ms]:\n{ex}\n{ex.StackTrace}");
+                                    }
                                 }
                             }
                         }

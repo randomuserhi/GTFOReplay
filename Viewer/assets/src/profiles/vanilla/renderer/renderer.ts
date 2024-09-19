@@ -1,7 +1,7 @@
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Renderer } from "@esm/@root/replay/renderer.js";
-import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, PointLight, Vector3, VSMShadowMap } from "@esm/three";
+import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, PointLight, Vector3, Vector3Like, VSMShadowMap } from "@esm/three";
 import { RenderPass } from "@esm/three/examples/jsm/postprocessing/RenderPass.js";
 import { dispose } from "../ui/main.js";
 import { ObjectWrapper } from "./objectwrapper.js";
@@ -38,12 +38,20 @@ export class Camera extends ObjectWrapper<PerspectiveCamera> {
         this.root.updateProjectionMatrix();
     }
 
+    public position = signal<Vector3Like>({ x: 0, y: 0, z: 0 }, (a, b) => {
+        if (a === undefined && b === undefined) return true;
+        if (a === undefined || b === undefined) return false;
+        return a.x === b.x && a.y === b.y && a.z === b.z;
+    });
+
     private static FUNC_update = {
         pM: new Matrix4()
     } as const;
     public update() {
         const { pM } = Camera.FUNC_update;
         this.frustum.setFromProjectionMatrix(pM.multiplyMatrices(this.root.projectionMatrix, this.root.matrixWorldInverse));
+
+        this.position({ x: this.root.position.x, y: this.root.position.y, z: this.root.position.z });
     }
 }
 

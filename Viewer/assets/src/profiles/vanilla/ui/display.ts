@@ -5,6 +5,9 @@ import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { DataStore } from "@esm/@root/replay/datastore.js";
 import { Seeker } from "./components/seeker.js";
+import { msToTime } from "./helper.js";
+import { Debug } from "./hud/debug.js";
+import { ReactorObjective } from "./hud/objectives.js";
 import { dispose, ui } from "./main.js";
 import { Scoreboard } from "./scoreboard.js";
 
@@ -102,19 +105,6 @@ const controls = Style(({ style }) => {
     };
 });
 
-function msToTime(value: number) {
-    const milliseconds: string | number = Math.floor((value % 1000) / 100);
-    let seconds: string | number = Math.floor((value / 1000) % 60),
-        minutes: string | number = Math.floor((value / (1000 * 60)) % 60),
-        hours: string | number = Math.floor((value / (1000 * 60 * 60)) % 24);
-            
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-    seconds = (seconds < 10) ? "0" + seconds : seconds;
-            
-    return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
-}
-
 export const Display = Macro(class Display extends MacroElement {
     public mount: HTMLDivElement;
     private seeker: Macro<typeof Seeker>;
@@ -123,6 +113,8 @@ export const Display = Macro(class Display extends MacroElement {
     private playIcon: Macro<typeof icons.play>;
     private liveButton: HTMLButtonElement;
     private liveDot: HTMLSpanElement;
+    private debug: Macro<typeof Debug>;
+    private objective: Macro<typeof ReactorObjective>;
     
     public saveState() {
         const view = this.view();
@@ -155,6 +147,8 @@ export const Display = Macro(class Display extends MacroElement {
             this.restoreState();
 
             this.scoreboard.view(view);
+            this.debug.view(view);
+            this.objective.view(view);
 
             this.mount.replaceChildren(...view.dom);
 
@@ -257,4 +251,6 @@ export const Display = Macro(class Display extends MacroElement {
             </button>
         ${Seeker.close}
     </div>
+    ${Debug().bind("debug")}
+    ${ReactorObjective().bind("objective")}
     `);

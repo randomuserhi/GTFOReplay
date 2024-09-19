@@ -54,7 +54,7 @@ function getBoundaryEdges(indices: number[]) {
 
         // duplicate triangle
         if (triangles.filter(t => t[0] == triangle[0] && t[1] == triangle[1] && t[2] == triangle[2]).length === 1) {
-            console.log("duplicate?");
+            //console.log("duplicate?");
             continue;
         }
 

@@ -10,6 +10,7 @@ export const layers = [
     "SecondaryLayer",
     "ThirdLayer"
 ] as const;
+export type ObjectiveLayer = typeof layers[number];
 
 export interface BulkheadController {
     id: number;
