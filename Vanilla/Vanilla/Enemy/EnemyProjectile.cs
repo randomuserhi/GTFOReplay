@@ -1,5 +1,4 @@
-﻿using Agents;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
@@ -29,23 +28,12 @@ namespace Vanilla.Enemy {
         [HarmonyPatch]
         internal static class EnemyProjectilePatches {
             [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]
-            [HarmonyPrefix]
-            private static bool DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data) {
-                Agent comp;
-                data.target.TryGet(out comp);
-                Vector3 pos = data.position;
-                Quaternion rot = Quaternion.LookRotation(data.forward);
-                GameObject projectile = ProjectileManager.SpawnProjectileType(data.type, pos, rot);
-                IProjectile component = projectile.GetComponent<IProjectile>();
-                ProjectileTargeting targeting = projectile.GetComponent<ProjectileTargeting>();
-                if (targeting != null) {
-                    __instance.m_projectiles.Add(targeting);
-                }
-                component.OnFire(comp);
+            [HarmonyPostfix]
+            private static void DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data) {
+                GameObject projectile = ProjectileManager.s_tempGO;
+                if (projectile == null) return;
 
                 Replay.Spawn(new rEnemyProjectile(projectile));
-
-                return false;
             }
 
             [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.OnDestroy))]

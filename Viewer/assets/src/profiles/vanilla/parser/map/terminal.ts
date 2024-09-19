@@ -10,6 +10,7 @@ export interface Terminal {
     dimension: number;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
+    serialNumber: number; // 65535 - ushort.MaxValue indicates no serial number is available (old version)
 }
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -31,6 +32,24 @@ ModuleLoader.registerHeader("Vanilla.Map.Terminals", "0.0.1", {
                 dimension: await BitHelper.readByte(data),
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
+                serialNumber: 65535
+            });
+        }
+    }
+});
+
+ModuleLoader.registerHeader("Vanilla.Map.Terminals", "0.0.2", {
+    parse: async (data, header) => {
+        const terminals = header.getOrDefault("Vanilla.Map.Terminals", Factory("Map"));
+        const count = await BitHelper.readUShort(data);
+        for (let i = 0; i < count; ++i) {
+            const id = await BitHelper.readInt(data);
+            terminals.set(id, {
+                id,
+                dimension: await BitHelper.readByte(data),
+                position: await BitHelper.readVector(data),
+                rotation: await BitHelper.readHalfQuaternion(data),
+                serialNumber: await BitHelper.readUShort(data)
             });
         }
     }

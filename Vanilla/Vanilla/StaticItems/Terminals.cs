@@ -9,6 +9,7 @@ namespace Vanilla.StaticItems {
     internal class rTerminal {
         public readonly byte dimension;
         public readonly int id;
+        public readonly ushort serialNumber;
 
         private LG_ComputerTerminal terminal;
 
@@ -23,11 +24,12 @@ namespace Vanilla.StaticItems {
             id = terminal.GetInstanceID();
             this.dimension = dimension;
             this.terminal = terminal;
+            this.serialNumber = (ushort)terminal.m_serialNumber;
         }
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.Terminals", "0.0.1")]
+    [ReplayData("Vanilla.Map.Terminals", "0.0.2")]
     internal class rTerminals : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -57,7 +59,7 @@ namespace Vanilla.StaticItems {
         internal static Dictionary<int, rTerminal> terminals = new Dictionary<int, rTerminal>();
 
         public override void Write(ByteBuffer buffer) {
-            // TODO(randomuserhi): Throw error on too many ladders
+            // TODO(randomuserhi): Throw error on too many terminals
             BitHelper.WriteBytes((ushort)terminals.Count, buffer);
 
             foreach (rTerminal terminal in terminals.Values) {
@@ -65,6 +67,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(terminal.dimension, buffer);
                 BitHelper.WriteBytes(terminal.position, buffer);
                 BitHelper.WriteHalf(terminal.rotation, buffer);
+                BitHelper.WriteBytes(terminal.serialNumber, buffer);
             }
             terminals.Clear();
         }
