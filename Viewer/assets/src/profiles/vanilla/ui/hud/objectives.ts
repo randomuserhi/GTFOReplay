@@ -238,6 +238,15 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
                     this.code(`TERMINAL_${codeTerminalSerial}`);
                 }
             } break;
+            case "Startup_complete": {
+                this.wrapper.classList.add(`${style.warmup}`);
+                this.wrapper.classList.remove(`${style.verify}`);
+                this.wrapper.classList.remove(`${style.intense}`);
+                this.timeWrapper.style.display = "none";
+
+                this.title(`REACTOR STARTUP COMPLETE`);
+                this.progress.style.width = `100%`;
+            } break;
 
             case "Shutdown_intro": {
                 this.wrapper.classList.add(`${style.warmup}`);
@@ -271,6 +280,15 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
                 this.timeWrapper.style.display = "none";
 
                 this.title(`COMPLETE SCAN TO FINISH REACTOR SHUTDOWN`);
+                this.progress.style.width = `100%`;
+            } break;
+            case "Shutdown_complete": {
+                this.wrapper.classList.add(`${style.warmup}`);
+                this.wrapper.classList.remove(`${style.verify}`);
+                this.wrapper.classList.remove(`${style.intense}`);
+                this.timeWrapper.style.display = "none";
+
+                this.title(`REACTOR SHUTDOWN COMPLETE`);
                 this.progress.style.width = `100%`;
             } break;
 
