@@ -21,7 +21,7 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
     public render(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
         if (!this.isVisible()) return;
 
-        if (enemy.head === false) this.applySettings({ headScale: zeroV });
+        if (enemy.head === false) this._applySettings({ headScale: zeroV });
         this.animate(dt, time, enemy, anim);
         this.draw();
     }
