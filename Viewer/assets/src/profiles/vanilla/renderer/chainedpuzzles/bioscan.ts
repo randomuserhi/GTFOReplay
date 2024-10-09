@@ -22,30 +22,40 @@ class BioscanModel extends ObjectWrapper<Group> {
     readonly root: Group;
 
     readonly base: Mesh;
+    readonly progress: Mesh;
     
     constructor() {
         super();
         this.root = new Group();
 
+        const progressMaterial = new MeshPhongMaterial({ color: 0xffffff });
+        progressMaterial.transparent = true;
+        progressMaterial.opacity = 0.5;
+        progressMaterial.depthWrite = false;
+        this.progress = new Mesh(cylinder, progressMaterial);
+
         const material = new MeshPhongMaterial({ color: 0xffffff });
         material.transparent = true;
         material.opacity = 0.5;
         material.depthWrite = false;
-        
+
         this.base = new Mesh(cylinder, material);
+        this.base.add(this.progress);
         this.root.add(this.base);
         this.base.scale.set(1, 0.05, 1);
+        this.progress.scale.set(0, 0.8, 0);
     }
 
     public update(bioscan: Bioscan) {
         this.root.position.set(bioscan.position.x, bioscan.position.y, bioscan.position.z);
 
         this.base.scale.set(bioscan.radius, 0.5, bioscan.radius);
-        
     }
 
     public morph(status: BioscanStatus) {
         (this.base.material as MeshPhongMaterial).color.set(status.color);
+        (this.progress.material as MeshPhongMaterial).color.set(status.color);
+        this.progress.scale.set(status.progress, status.progress * 0.2 + 0.8, status.progress);
     }
 }
 
