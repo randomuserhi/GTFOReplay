@@ -306,6 +306,8 @@ export class RHU_MAP extends MacroElement {
     assign(entries) {
         for (const [key, value] of entries) {
             let el = this.items.get(key);
+            if (el === undefined)
+                el = this._items.get(key);
             if (el === undefined) {
                 const [bindings, frag] = this.itemFactory.dom();
                 el = { bindings, value, dom: [...frag.childNodes] };
@@ -415,6 +417,8 @@ export class RHU_SET extends MacroElement {
     assign(entries) {
         for (const value of entries) {
             let el = this.items.get(value);
+            if (el === undefined)
+                el = this._items.get(value);
             if (el === undefined) {
                 const [bindings, frag] = this.itemFactory.dom();
                 el = { bindings, dom: [...frag.childNodes] };
@@ -427,8 +431,8 @@ export class RHU_SET extends MacroElement {
             }
             this._items.set(value, el);
         }
-        for (const [key, item] of this.items) {
-            if (this._items.has(key))
+        for (const [value, item] of this.items) {
+            if (this._items.has(value))
                 continue;
             if (this.onremove.size === 0) {
                 for (const node of item.dom) {
