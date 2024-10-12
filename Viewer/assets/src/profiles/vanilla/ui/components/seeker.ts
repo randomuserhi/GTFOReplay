@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { dispose } from "../main.js";
@@ -86,7 +86,7 @@ export const Seeker = Macro(class Seeker extends MacroElement {
     
     value = signal(0);
     
-    constructor(dom: Node[], bindings: any, children: Node[]) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
         super(dom, bindings);
 
         this.value.guard = Math.clamp01;

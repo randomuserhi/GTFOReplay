@@ -1,4 +1,4 @@
-import { html, HTML, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, HTML, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
@@ -523,7 +523,7 @@ export const Medal = Macro(class Medal extends MacroElement {
     private img: HTMLImageElement;
     private description: HTMLSpanElement;
 
-    constructor(dom: Node[], bindings: any, children: Node[], key: string, icon: string, description: HTML<{ value: Signal<string> }>) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, key: string, icon: string, description: HTML<{ value: Signal<string> }>) {
         super(dom, bindings);
 
         this.key(key);

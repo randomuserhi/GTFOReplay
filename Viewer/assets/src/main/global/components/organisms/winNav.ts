@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@/rhu/macro.js";
 import { computed, signal, Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
@@ -74,7 +74,7 @@ const ModuleItem = Macro(class ModuleItem extends MacroElement {
         this._frag.replaceChildren(...this.dom);
     }
 
-    constructor (dom: Node[], bindings: any, children: Node[], key: string) {
+    constructor (dom: Node[], bindings: any, children: RHU_CHILDREN, key: string) {
         super(dom, bindings);
 
         this.key(key);
@@ -293,7 +293,7 @@ export const WinNav = Macro(class WinNav extends MacroElement {
     private moduleListMount: HTMLDivElement;
     activeModuleList = signal(false);
 
-    constructor(dom: Node[], bindings: any, children: Node[]) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
         super(dom, bindings);
 
         this.plugin.addEventListener("click", () => {

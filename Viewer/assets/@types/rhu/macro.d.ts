@@ -1,70 +1,147 @@
-declare abstract class NODE {
-    static is: (object: any) => object is NODE;
+import { Signal } from "./signal.js";
+export declare abstract class RHU_NODE {
+    static is: (object: any) => object is RHU_NODE;
 }
-declare class CLOSURE extends NODE {
-    static instance: CLOSURE;
-    static is: (object: any) => object is CLOSURE;
+export declare class RHU_CLOSURE extends RHU_NODE {
+    static instance: RHU_CLOSURE;
+    static is: (object: any) => object is RHU_CLOSURE;
 }
-declare const symbols: {
-    readonly factory: unique symbol;
-};
-declare class ELEMENT extends NODE {
-    private _bind?;
+export declare class RHU_ELEMENT<T = any, Frag extends Node = Node> extends RHU_NODE {
+    protected _bind?: PropertyKey;
     bind(key?: PropertyKey): this;
-    static is: (object: any) => object is ELEMENT;
+    callbacks: Set<(element: T) => void>;
+    then(callback: (element: T) => void): this;
+    protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: T, fragment: Frag];
+    dom<B extends T | void = void>(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: B extends void ? T : B, fragment: Frag];
+    static is: (object: any) => object is RHU_ELEMENT;
 }
-declare class SIGNAL extends ELEMENT {
+type ElementInstance<T extends RHU_ELEMENT> = T extends RHU_ELEMENT<infer Bindings> ? Bindings : never;
+export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<string>> {
     constructor(binding: string);
-    private _value?;
+    protected _value?: string;
     value(value?: string): this;
-    static is: (object: any) => object is SIGNAL;
+    protected _dom(target?: Record<PropertyKey, any>): [instance: Signal<string>, fragment: Node];
+    static is: (object: any) => object is RHU_SIGNAL;
 }
 export declare class MacroElement {
-    dom: Node[];
-    constructor(dom: Node[], bindings?: any, target?: any);
+    readonly dom: Node[];
+    constructor(dom: Node[], bindings?: any);
     static is: (object: any) => object is MacroElement;
 }
-type MacroClass = new (dom: Node[], bindings: any, children: Node[], ...args: any[]) => any;
-type MacroParameters<T extends MacroClass> = T extends new (dom: Node[], bindings: any, children: Node[], ...args: infer P) => any ? P : never;
-declare class MACRO<T extends MacroClass = MacroClass> extends ELEMENT {
+export type RHU_CHILDREN = Iterable<Node>;
+type MacroClass = new (dom: Node[], bindings: any, children: RHU_CHILDREN, ...args: any[]) => any;
+type MacroParameters<T extends MacroClass> = T extends new (dom: Node[], bindings: any, children: RHU_CHILDREN, ...args: infer P) => any ? P : never;
+export declare class RHU_MACRO<T extends MacroClass = MacroClass> extends RHU_ELEMENT<InstanceType<T>, DocumentFragment> {
     type: T;
-    html: HTML;
+    html: RHU_HTML;
     args: MacroParameters<T>;
-    callbacks: Set<(macro: InstanceType<T>) => void>;
-    constructor(html: HTML, type: T, args: MacroParameters<T>);
-    then(callback: (macro: InstanceType<T>) => void): this;
-    static is: (object: any) => object is MACRO;
+    constructor(html: RHU_HTML, type: T, args: MacroParameters<T>);
+    protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: InstanceType<T>, fragment: DocumentFragment];
+    static is: (object: any) => object is RHU_MACRO;
 }
-declare class MACRO_OPEN<T extends MacroClass = MacroClass> extends MACRO<T> {
-    static is: (object: any) => object is MACRO_OPEN;
+export type MACRO<F extends FACTORY<any>> = RHU_MACRO<F extends FACTORY<infer T> ? T : any>;
+export declare class RHU_MACRO_OPEN<T extends MacroClass = MacroClass> extends RHU_MACRO<T> {
+    static is: (object: any) => object is RHU_MACRO_OPEN;
 }
-export declare function html<T extends {} = any>(first: HTML["first"], ...interpolations: HTML["interpolations"]): HTML<T>;
-export declare class HTML<T extends {} = any> {
-    static empty: HTML<any>;
+export declare function html<T extends {} = any>(first: RHU_HTML["first"], ...interpolations: RHU_HTML["interpolations"]): RHU_HTML<T>;
+export declare class RHU_HTML<T extends Record<PropertyKey, any> = any> extends RHU_ELEMENT<T, DocumentFragment> {
+    static empty: RHU_HTML<any>;
     private first;
     private interpolations;
-    constructor(first: HTML["first"], interpolations: HTML["interpolations"]);
-    private _bind?;
-    bind(key?: PropertyKey): this;
-    callbacks: Set<(bindings: T) => void>;
-    then(callback: (bindings: T) => void): this;
-    dom<B extends Record<PropertyKey, any> | void = void>(): [bindings: B extends void ? T : B, fragment: DocumentFragment];
-    static is: (object: any) => object is HTML;
+    constructor(first: RHU_HTML["first"], interpolations: RHU_HTML["interpolations"]);
+    private stitch;
+    protected _dom(target?: Record<PropertyKey, any>): [instance: T, fragment: DocumentFragment];
+    static is: (object: any) => object is RHU_HTML;
 }
+export type HTML<T extends Record<PropertyKey, any> = any> = RHU_HTML<T>;
+export type RHU_COMPONENT = RHU_HTML | RHU_MACRO;
+declare const isFactorySymbol: unique symbol;
 interface FACTORY<T extends MacroClass> {
-    (...args: MacroParameters<T>): MACRO<T>;
-    readonly open: (...args: MacroParameters<T>) => MACRO_OPEN<T>;
-    readonly close: CLOSURE;
-    readonly [symbols.factory]: boolean;
+    (...args: MacroParameters<T>): RHU_MACRO<T>;
+    readonly open: (...args: MacroParameters<T>) => RHU_MACRO<T>;
+    readonly close: RHU_CLOSURE;
+    readonly [isFactorySymbol]: boolean;
 }
 export type Macro<F extends FACTORY<any>> = F extends FACTORY<infer T> ? InstanceType<T> : any;
 interface MacroNamespace {
-    <T extends MacroClass>(type: T, html: HTML): FACTORY<T>;
-    signal(binding: string, value?: string): SIGNAL;
-    create<T extends MACRO>(macro: T): T extends MACRO<infer R> ? InstanceType<R> : never;
+    <T extends MacroClass>(type: T, html: RHU_HTML): FACTORY<T>;
+    signal(binding: string, value?: string): RHU_SIGNAL;
+    create<T extends RHU_MACRO>(macro: T): T extends RHU_MACRO<infer R> ? InstanceType<R> : never;
     observe(node: Node): void;
+    map: typeof MapFactory;
+    set: typeof SetFactory;
+    list: typeof ListFactory;
 }
 export declare const Macro: MacroNamespace;
+type SetValue<T extends Set<any>> = T extends Set<infer V> ? V : unknown;
+export declare class RHU_MAP<K, V, Wrapper extends RHU_COMPONENT = any, Item extends RHU_COMPONENT = any> extends MacroElement {
+    constructor(dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: SetValue<RHU_MAP<K, V, Wrapper, Item>["onappend"]>, update?: SetValue<RHU_MAP<K, V, Wrapper, Item>["onupdate"]>, remove?: SetValue<RHU_MAP<K, V, Wrapper, Item>["onremove"]>);
+    private itemFactory;
+    wrapper: ElementInstance<Wrapper>;
+    onappend: Set<(wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void>;
+    onupdate: Set<(item: ElementInstance<Item>, key: K, value: V) => void>;
+    onremove: Set<(wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void>;
+    private _items;
+    private items;
+    entries(): IterableIterator<[key: K, value: V, item: ElementInstance<Item>]>;
+    clear(): void;
+    get size(): number;
+    has(key: K): boolean;
+    get(key: K): V | undefined;
+    getElement(key: K): ElementInstance<Item> | undefined;
+    set(key: K, value: V): void;
+    remove(key: K): void;
+    assign(entries: Iterable<[key: K, value: V]>): void;
+}
+declare const MapFactory: <K, V, Wrapper extends RHU_COMPONENT, Item extends RHU_COMPONENT>(wrapper: Wrapper, item: Item, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined, update?: ((item: ElementInstance<Item>, key: K, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined) => RHU_MACRO<{
+    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined, update?: ((item: ElementInstance<Item>, key: K, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined): RHU_MAP<K, V, Wrapper, Item>;
+    is: (object: any) => object is MacroElement;
+}>;
+export declare class RHU_SET<V, Wrapper extends RHU_COMPONENT = any, Item extends RHU_COMPONENT = any> extends MacroElement {
+    constructor(dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: SetValue<RHU_SET<V, Wrapper, Item>["onappend"]>, update?: SetValue<RHU_SET<V, Wrapper, Item>["onupdate"]>, remove?: SetValue<RHU_SET<V, Wrapper, Item>["onremove"]>);
+    private itemFactory;
+    wrapper: ElementInstance<Wrapper>;
+    onappend: Set<(wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void>;
+    onupdate: Set<(item: ElementInstance<Item>, value: V) => void>;
+    onremove: Set<(wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void>;
+    private _items;
+    private items;
+    entries(): IterableIterator<[value: V, item: ElementInstance<Item>]>;
+    clear(): void;
+    get size(): number;
+    has(value: V): boolean;
+    getElement(value: V): ElementInstance<Item> | undefined;
+    add(value: V): void;
+    remove(value: V): void;
+    assign(entries: Iterable<V>): void;
+}
+declare const SetFactory: <V, Wrapper extends RHU_COMPONENT, Item extends RHU_COMPONENT>(wrapper: Wrapper, item: Item, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined) => RHU_MACRO<{
+    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined): RHU_SET<V, Wrapper, Item>;
+    is: (object: any) => object is MacroElement;
+}>;
+export declare class RHU_LIST<V, Wrapper extends RHU_COMPONENT = any, Item extends RHU_COMPONENT = any> extends MacroElement {
+    constructor(dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: SetValue<RHU_LIST<V, Wrapper, Item>["onappend"]>, update?: SetValue<RHU_LIST<V, Wrapper, Item>["onupdate"]>, remove?: SetValue<RHU_LIST<V, Wrapper, Item>["onremove"]>);
+    private itemFactory;
+    wrapper: ElementInstance<Wrapper>;
+    onappend: Set<(wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void>;
+    onupdate: Set<(item: ElementInstance<Item>, value: V, index: number) => void>;
+    onremove: Set<(wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void>;
+    private _items;
+    private items;
+    entries(): IterableIterator<[index: number, value: V, item: ElementInstance<Item>]>;
+    clear(): void;
+    get length(): number;
+    get(index: number): V;
+    getElement(index: number): ElementInstance<Item>;
+    remove(index: number): void;
+    push(value: V): void;
+    insert(value: V, index: number): void;
+    assign(entries: Iterable<V>): void;
+}
+declare const ListFactory: <V, Wrapper extends RHU_COMPONENT, Item extends RHU_COMPONENT>(wrapper: Wrapper, item: Item, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V, index: number) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined) => RHU_MACRO<{
+    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V, index: number) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>) => void) | undefined): RHU_LIST<V, Wrapper, Item>;
+    is: (object: any) => object is MacroElement;
+}>;
 declare global {
     interface GlobalEventHandlersEventMap {
         "mount": CustomEvent;

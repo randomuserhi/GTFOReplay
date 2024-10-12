@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
@@ -22,7 +22,7 @@ const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
         return this._frag;
     }
 
-    constructor(dom: Node[], bindings: any, children: Node[], tag: string) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, tag: string) {
         super(dom, bindings);
         this.tag = tag;
         this.body.append(...children);
@@ -238,12 +238,12 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                     return;
                 }
 
-                const players: { key: string, value: any }[] = [];
+                const players: [key: string, value: any][] = [];
                 for (const player of all.values()) {
-                    players.push({
-                        key: player.nickname,
-                        value: player.slot
-                    });
+                    players.push([
+                        player.nickname,
+                        player.slot
+                    ]);
                 }
                 dropdown.options(players);
             }, { signal: dispose.signal });
@@ -342,12 +342,12 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
                         return;
                     }
     
-                    const dimensions: { key: string, value: any }[] = [];
+                    const dimensions: [key: string, value: any][] = [];
                     for (const dimension of map.keys()) {
-                        dimensions.push({
-                            key: dimension === 0 ? `Reality` : `Dimension ${dimension}`,
-                            value: dimension
-                        });
+                        dimensions.push([
+                            dimension === 0 ? `Reality` : `Dimension ${dimension}`,
+                            dimension
+                        ]);
                     }
                     dropdown.options(dimensions);
                 }, { signal: dispose.signal });

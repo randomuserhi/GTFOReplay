@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
@@ -21,7 +21,7 @@ const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
         return this._frag;
     }
 
-    constructor(dom: Node[], bindings: any, children: Node[], tag: string) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, tag: string) {
         super(dom, bindings);
         this.tag = tag;
         this.body.append(...children);
@@ -44,7 +44,7 @@ const Item = Macro(class Item extends MacroElement {
     public key: Signal<string>;
     public value: Signal<string>;
 
-    constructor(dom: Node[], bindings: any, children: Node[], key: string) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, key: string) {
         super(dom, bindings);
 
         this.key(key);
@@ -67,7 +67,7 @@ const TypeList = Macro(class TypeList extends MacroElement {
     private _items = new Map<string, Macro<typeof Item>>(); 
     private items = new Map<string, Macro<typeof Item>>();
 
-    constructor(dom: Node[], bindings: any, children: Node[], title: string) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, title: string) {
         super(dom, bindings);
 
         this.title(title);
@@ -682,12 +682,12 @@ export const Stats = Macro(class Stats extends MacroElement {
                     return;
                 }
 
-                const players: { key: string, value: any }[] = [];
+                const players: [key: string, value: any][] = [];
                 for (const player of all.values()) {
-                    players.push({
-                        key: player.nickname,
-                        value: player.snet
-                    });
+                    players.push([
+                        player.nickname,
+                        player.snet
+                    ]);
                 }
                 this.dropdown.options(players);
             }, { signal: dispose.signal });

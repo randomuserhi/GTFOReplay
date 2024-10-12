@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 
@@ -71,7 +71,7 @@ export const Button = Macro(class Button extends MacroElement {
 
     public toggle = signal(false);
 
-    constructor(dom: Node[], bindings: any, children: Node[]) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
         super(dom, bindings);
 
         this.icon.replaceWith(...children);
@@ -91,7 +91,7 @@ export const Button = Macro(class Button extends MacroElement {
 export const Bar = Macro(class Bar extends MacroElement {
     private mount: HTMLDivElement;
     
-    constructor(dom: Node[], bindings: any, children: Node[]) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
         super(dom, bindings);
 
         this.mount.append(...children);

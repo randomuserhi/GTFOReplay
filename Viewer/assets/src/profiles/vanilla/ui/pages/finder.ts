@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { Computed, computed, Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -43,7 +43,7 @@ const Item = Macro(class Item extends MacroElement {
     public button: HTMLSpanElement;
     public onGround = signal(false);
 
-    constructor(dom: Node[], bindings: any, children: Node[]) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
         super(dom, bindings);
 
         this.onGround.on((value) => {
@@ -152,12 +152,12 @@ export const Finder = Macro(class Finder extends MacroElement {
                         return;
                     }
     
-                    const dimensions: { key: string, value: any }[] = [];
+                    const dimensions: [key: string, value: any][] = [];
                     for (const dimension of map.keys()) {
-                        dimensions.push({
-                            key: dimension === 0 ? `Reality` : `Dimension ${dimension}`,
-                            value: dimension
-                        });
+                        dimensions.push([
+                            dimension === 0 ? `Reality` : `Dimension ${dimension}`,
+                            dimension
+                        ]);
                     }
                     this.dropdown.options(dimensions);
                 }, { signal: dispose.signal });

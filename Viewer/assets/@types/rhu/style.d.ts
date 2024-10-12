@@ -41,5 +41,9 @@ type CSSPropertiesMap = CSSProperties.All & {
     "border"?: CSSString | CSSProperties.border;
 };
 type CSSProperty = CSSKey | keyof CSSPropertiesMap;
-export declare function Style<T>(factory: (worker: Factory) => T): T;
+interface Style {
+    <T>(factory: (worker: Factory) => T): T;
+    dispose(obj: any): void;
+}
+export declare const Style: Style;
 export {};

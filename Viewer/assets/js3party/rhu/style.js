@@ -42,7 +42,8 @@ export const css = function (style) {
     }
     return result;
 };
-export function Style(factory) {
+const element = Symbol("style.element");
+export const Style = ((factory) => {
     let generatedCode = "";
     const generator = function (first, ...interpolations) {
         generatedCode += first[0];
@@ -96,5 +97,12 @@ export function Style(factory) {
     const el = document.createElement("style");
     el.innerHTML = generatedCode;
     document.head.append(el);
+    exports[element] = el;
     return exports;
-}
+});
+Style.dispose = (style) => {
+    const el = style[element];
+    if (el === undefined)
+        throw new Error("Cannot dispose a non-style object.");
+    el.remove();
+};

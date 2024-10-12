@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { Rest } from "@esm/@/rhu/rest.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
@@ -85,7 +85,7 @@ const style = Style(({ style }) => {
 const Slot = Macro(class Slot extends MacroElement {
     public wrapper: HTMLTableElement;
     private avatar: HTMLTableCellElement;
-    constructor(dom: Node[], bindings: any, children: Node[], key: bigint) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, key: bigint) {
         super(dom, bindings);
 
         this.key = key;

@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { HTML, html, MACRO, Macro, MacroElement, RHU_MAP } from "@esm/@/rhu/macro.js";
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 
@@ -104,59 +104,36 @@ const Item = Macro(class Item extends MacroElement {
 
     public key: Signal<string>;
     public button: HTMLSpanElement;
-
-    constructor(dom: Node[], bindings: any, children: Node[], key: string) {
-        super(dom, bindings);
-
-        this.key(key);
-    }
 }, html`<span m-id="button" class="${style.item}">${Macro.signal("key")}</span>`);
 
 export const Dropdown = Macro(class Dropdown extends MacroElement {
     public wrapper: HTMLDivElement;
-    private body: HTMLDivElement;
     private select: HTMLDivElement;
     private selected: Signal<string>;
-    
-    private map = new Map<string, any>();
+    private items: RHU_MAP<string, any, HTML<{ body: HTMLDivElement }>, MACRO<typeof Item>>;
+    private valueMap = new Map<any, string>();
 
-    private _items = new Map<string, Macro<typeof Item>>(); 
-    private items = new Map<string, Macro<typeof Item>>();
-    
     constructor(dom: Node[], bindings: []) {
         super(dom, bindings);
         
+        this.items.onupdate.add((item, key, value) => {
+            item.key(key);
+            item.button.addEventListener("click", () => {
+                this.active(false);
+                this.value(value);
+            });
+        });
+
         this.options.on((values) => {
-            this.map.clear();
-            for (const { key, value } of values) {
-                this.map.set(value, key);
+            this.items.assign(values);
 
-                if (this.items.has(value)) {
-                    this._items.set(value, this.items.get(value)!);
-                } else {
-                    const item = Macro.create(Item(key));
-                    item.button.addEventListener("click", () => {
-                        this.active(false);
-                        this.value(value);
-                    });
-                    this._items.set(value, item);
-                    this.body.append(item.frag);
-                }
+            for (const [key, value] of values) {
+                this.valueMap.set(value, key);
             }
-            
-            for (const [key, item] of this.items) {
-                if (this._items.has(key)) continue;
-                item.remove();
-            }
-            
+
             const value = this.value();
-            if (!this.map.has(value)) this.selected("");
-            else this.selected(this.map.get(value));
-
-            const temp = this.items;
-            this.items = this._items;
-            this._items = temp;
-            this._items.clear();
+            if (!this.valueMap.has(value)) this.selected("");
+            else this.selected(this.valueMap.get(value)!);
         });
 
         this.active.guard = (active) => {
@@ -178,27 +155,31 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
         });
 
         this.value.on((value) => {
-            if (!this.map.has(value)) this.selected("");
-            else this.selected(this.map.get(value));
+            if (!this.valueMap.has(value)) this.selected("");
+            else this.selected(this.valueMap.get(value)!);
         });
     }
     
     private active = signal(false);
 
     public value = signal<any>(undefined);
-    public options = signal<{ key: string, value: any }[]>([], (a, b) => {
+    public options = signal<[key: string, value: any][]>([], (a, b) => {
         if (a === undefined && b === undefined) return true;
         if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; ++i) {
-            if (a[i].value !== b[i].value) return false; // TODO(randomuserhi): allow for custom equality
+            if (a[i][0] !== b[i][1]) return false; // TODO(randomuserhi): allow for custom equality
         }
         return true;
     });
 }, html`
     <div m-id="wrapper" class="${style.wrapper}" tabindex="-1">
         <span m-id="select" class="${style.item}">${Macro.signal("selected")}</span>
-        <div m-id="body" class="${style.body}">
-        </div>
+        ${
+    Macro.map<string, any, HTML<{ body: HTMLDivElement }>, MACRO<typeof Item>>(
+        html`<div m-id="body" class="${style.body}"></div>`,
+        Item(),
+        (wrapper, dom) => wrapper.body.append(...dom))
+        .bind("items")}
     </div>
     `);
