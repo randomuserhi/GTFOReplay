@@ -513,19 +513,17 @@ export const Medal = Macro(class Medal extends MacroElement {
         return this._frag;
     }
 
-    public remove() {
-        this._frag.replaceChildren(...this.dom);
-    }
-
     public key: Signal<string>;
     public value = signal("");
 
     private img: HTMLImageElement;
     private description: HTMLSpanElement;
 
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, key: string, icon: string, description: HTML<{ value: Signal<string> }>) {
+    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
         super(dom, bindings);
+    }
 
+    public set(key: string, icon: string, description: HTML<{ value: Signal<string> }>) {
         this.key(key);
         this.img.src = icon;
         const [b, frag] = description.dom();

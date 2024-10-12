@@ -283,7 +283,7 @@ export class RHU_MAP extends MacroElement {
             const [bindings, frag] = this.itemFactory.dom();
             item = { bindings, value, dom: [...frag.childNodes] };
             for (const callback of this.onappend)
-                callback(this.wrapper, item.dom, item.bindings);
+                callback(this.wrapper, item.dom, item.bindings, key, value);
         }
         for (const callback of this.onupdate)
             callback(item.bindings, key, value);
@@ -300,7 +300,7 @@ export class RHU_MAP extends MacroElement {
         }
         else {
             for (const callback of this.onremove)
-                callback(this.wrapper, item.dom, item.bindings);
+                callback(this.wrapper, item.dom, item.bindings, key, item.value);
         }
     }
     assign(entries) {
@@ -312,7 +312,7 @@ export class RHU_MAP extends MacroElement {
                 const [bindings, frag] = this.itemFactory.dom();
                 el = { bindings, value, dom: [...frag.childNodes] };
                 for (const callback of this.onappend)
-                    callback(this.wrapper, el.dom, el.bindings);
+                    callback(this.wrapper, el.dom, el.bindings, key, value);
             }
             if (this.onupdate !== undefined) {
                 for (const callback of this.onupdate)
@@ -330,7 +330,7 @@ export class RHU_MAP extends MacroElement {
             }
             else {
                 for (const callback of this.onremove)
-                    callback(this.wrapper, item.dom, item.bindings);
+                    callback(this.wrapper, item.dom, item.bindings, key, item.value);
             }
         }
         const temp = this.items;
@@ -394,7 +394,7 @@ export class RHU_SET extends MacroElement {
             const [bindings, frag] = this.itemFactory.dom();
             item = { bindings, dom: [...frag.childNodes] };
             for (const callback of this.onappend)
-                callback(this.wrapper, item.dom, item.bindings);
+                callback(this.wrapper, item.dom, item.bindings, value);
         }
         for (const callback of this.onupdate)
             callback(item.bindings, value);
@@ -411,7 +411,7 @@ export class RHU_SET extends MacroElement {
         }
         else {
             for (const callback of this.onremove)
-                callback(this.wrapper, item.dom, item.bindings);
+                callback(this.wrapper, item.dom, item.bindings, value);
         }
     }
     assign(entries) {
@@ -423,7 +423,7 @@ export class RHU_SET extends MacroElement {
                 const [bindings, frag] = this.itemFactory.dom();
                 el = { bindings, dom: [...frag.childNodes] };
                 for (const callback of this.onappend)
-                    callback(this.wrapper, el.dom, el.bindings);
+                    callback(this.wrapper, el.dom, el.bindings, value);
             }
             if (this.onupdate !== undefined) {
                 for (const callback of this.onupdate)
@@ -441,7 +441,7 @@ export class RHU_SET extends MacroElement {
             }
             else {
                 for (const callback of this.onremove)
-                    callback(this.wrapper, item.dom, item.bindings);
+                    callback(this.wrapper, item.dom, item.bindings, value);
             }
         }
         const temp = this.items;
@@ -515,7 +515,7 @@ export class RHU_LIST extends MacroElement {
         }
         else {
             for (const callback of this.onremove)
-                callback(this.wrapper, item.dom, item.bindings);
+                callback(this.wrapper, item.dom, item.bindings, item.value, index);
         }
         this.items.splice(index, 1);
     }
@@ -528,7 +528,7 @@ export class RHU_LIST extends MacroElement {
             const [bindings, frag] = this.itemFactory.dom();
             el = { bindings, value, dom: [...frag.childNodes] };
             for (const callback of this.onappend)
-                callback(this.wrapper, el.dom, el.bindings);
+                callback(this.wrapper, el.dom, el.bindings, value, index);
         }
         if (this.onupdate !== undefined) {
             for (const callback of this.onupdate)
@@ -547,7 +547,7 @@ export class RHU_LIST extends MacroElement {
                 const [bindings, frag] = this.itemFactory.dom();
                 el = { bindings, value, dom: [...frag.childNodes] };
                 for (const callback of this.onappend)
-                    callback(this.wrapper, el.dom, el.bindings);
+                    callback(this.wrapper, el.dom, el.bindings, value, i);
             }
             if (this.onupdate !== undefined) {
                 for (const callback of this.onupdate)
@@ -566,7 +566,7 @@ export class RHU_LIST extends MacroElement {
             }
             else {
                 for (const callback of this.onremove)
-                    callback(this.wrapper, item.dom, item.bindings);
+                    callback(this.wrapper, item.dom, item.bindings, item.value, i);
             }
         }
         const temp = this.items;

@@ -103,6 +103,7 @@ const Item = Macro(class Item extends MacroElement {
     }
 
     public key: Signal<string>;
+    public value: any = undefined;
     public button: HTMLSpanElement;
 }, html`<span m-id="button" class="${style.item}">${Macro.signal("key")}</span>`);
 
@@ -116,12 +117,16 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
     constructor(dom: Node[], bindings: []) {
         super(dom, bindings);
         
-        this.items.onupdate.add((item, key, value) => {
-            item.key(key);
+        this.items.onappend.add((wrapper, dom, item) => {
+            wrapper.body.append(...dom);
             item.button.addEventListener("click", () => {
                 this.active(false);
-                this.value(value);
+                this.value(item.value);
             });
+        });
+        this.items.onupdate.add((item, key, value) => {
+            item.key(key);
+            item.value = value;
         });
 
         this.options.on((values) => {
@@ -178,8 +183,7 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
         ${
     Macro.map<string, any, HTML<{ body: HTMLDivElement }>, MACRO<typeof Item>>(
         html`<div m-id="body" class="${style.body}"></div>`,
-        Item(),
-        (wrapper, dom) => wrapper.body.append(...dom))
+        Item())
         .bind("items")}
     </div>
     `);

@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
+import { HTML, html, MACRO, Macro, MacroElement, RHU_CHILDREN, RHU_MAP } from "@esm/@/rhu/macro.js";
 import { Rest } from "@esm/@/rhu/rest.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
@@ -100,31 +100,20 @@ const Slot = Macro(class Slot extends MacroElement {
             }
         });
 
+        console.log(this.items);
+
+        this.items.onappend.add((wrapper, dom, item, key) => {
+            wrapper.medalList.append(...dom);
+            const medal = MedalDatablock.get(key);
+            if (medal === undefined) throw new Error(`Unable to find medal of type ${key}.`);
+            item.set(key, medal.icon, medal.description);
+        });
+        this.items.onupdate.add((item, key, value) => {
+            item.value(value);
+        });
+
         this.medals.on((medals) => {
-            for (const [key, value] of medals) {
-                let item: Macro<typeof Medal>;
-                if (this.items.has(key)) {
-                    item = this.items.get(key)!;
-                    this._items.set(key, item);
-                } else {
-                    const medal = MedalDatablock.get(key);
-                    if (medal === undefined) throw new Error(`Unable to find medal of type ${key}.`);
-                    item = Macro.create(Medal(key, medal.icon, medal.description));
-                    this._items.set(key, item);
-                    this.medalList.append(item.frag);
-                }
-                item.value(value);
-            }
-            
-            for (const [key, item] of this.items) {
-                if (this._items.has(key)) continue;
-                item.remove();
-            }
-            
-            const temp = this.items;
-            this.items = this._items;
-            this._items = temp;
-            this._items.clear();
+            this.items.assign(medals);
         });
 
         fetchProfilePicture(key).then(frag => { 
@@ -148,7 +137,7 @@ const Slot = Macro(class Slot extends MacroElement {
         this.wrapper.remove();
     }
 
-    private key: bigint;
+    public key: bigint;
     public health = signal<number>(100);
 
     public name: Signal<string>;
@@ -161,10 +150,7 @@ const Slot = Macro(class Slot extends MacroElement {
         return false;
     });
 
-    private medalList: HTMLTableCellElement;
-
-    private _items = new Map<string, Macro<typeof Medal>>(); 
-    private items = new Map<string, Macro<typeof Medal>>();
+    private items: RHU_MAP<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>;
 
     public view = signal<Macro<typeof View> | undefined>(undefined);
 }, html`
@@ -173,7 +159,11 @@ const Slot = Macro(class Slot extends MacroElement {
         <td><span>${Macro.signal("name", "Name")}</span></td>
         <td><span>${Macro.signal("kills", "0")}</span></td>
         <td><span>${Macro.signal("assists", "0")}</span></td>
-        <td m-id="medalList" style="padding: 0; gap: 10px;">
+        <td style="padding: 0;">${
+    Macro.map<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>(
+        html`<span m-id="medalList" style="display: flex; gap: 10px;"></span>`,
+        Medal())
+        .bind("items")}
         </td>
     </tr>
     `);

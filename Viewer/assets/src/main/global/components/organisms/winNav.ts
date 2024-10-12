@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement, RHU_CHILDREN } from "@/rhu/macro.js";
+import { HTML, html, MACRO, Macro, MacroElement, RHU_CHILDREN, RHU_LIST } from "@/rhu/macro.js";
 import { computed, signal, Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
@@ -64,22 +64,6 @@ const moduleListStyles = Style(({ style }) => {
 });
 
 const ModuleItem = Macro(class ModuleItem extends MacroElement {
-    private _frag = new DocumentFragment();
-    get frag() {
-        this._frag.replaceChildren(...this.dom);
-        return this._frag;
-    }
-
-    public remove() {
-        this._frag.replaceChildren(...this.dom);
-    }
-
-    constructor (dom: Node[], bindings: any, children: RHU_CHILDREN, key: string) {
-        super(dom, bindings);
-
-        this.key(key);
-    }
-
     public button: HTMLLIElement;
     public key: Signal<string>;
 }, html`<li m-id="button" class="${moduleListStyles.item}">${Macro.signal("key")}</li>`);
@@ -90,41 +74,27 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
     
         this.input.addEventListener("keyup", () => this.filter(this.input.value));
 
-        this.filtered.on((values) => {
-            for (const key of values) {
-                if (this.items.has(key)) {
-                    this._items.set(key, this.items.get(key)!);
-                } else {
-                    const item = Macro.create(ModuleItem(key));
-                    item.button.addEventListener("click", () => {
-                        // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
-                        //window.api.send("defaultModule", item.key());
-                        window.api.invoke("loadModule", item.key()).then((response) => {
-                            app().onLoadModule(response);
-                        });
-                    });
-                    this._items.set(key, item);
-                    this.mount.append(item.frag);
-                }
-            }
-            
-            for (const [key, item] of this.items) {
-                if (this._items.has(key)) continue;
-                item.remove();
-            }
-
-            const temp = this.items;
-            this.items = this._items;
-            this._items = temp;
-            this._items.clear();
+        this.items.onappend.add((wrapper, dom, item) => {
+            wrapper.mount.append(...dom);
+            item.button.addEventListener("click", () => {
+                // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
+                //window.api.send("defaultModule", item.key());
+                window.api.invoke("loadModule", item.key()).then((response) => {
+                    app().onLoadModule(response);
+                });
+            });
         });
+        this.items.onupdate.add((item, value) => {
+            item.key(value);
+        });
+
+        this.filtered.on((values) => this.items.assign(values));
     }
 
     private input: HTMLInputElement;
     private filter = signal("");
 
-    private _items = new Map<string, Macro<typeof ModuleItem>>(); 
-    private items = new Map<string, Macro<typeof ModuleItem>>();
+    private items: RHU_LIST<string, HTML<{ mount: HTMLUListElement }>, MACRO<typeof ModuleItem>>;
 
     private validation = new Set<string>();
     public values = signal<string[]>([]);
@@ -156,8 +126,11 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
         <div class="${moduleListStyles.sticky}">
             <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
         </div>
-        <ul m-id="mount" class="${moduleListStyles.mount}">
-        </ul>
+        ${
+    Macro.list<string, HTML<{ mount: HTMLUListElement }>, MACRO<typeof ModuleItem>>(
+        html`<ul m-id="mount" class="${moduleListStyles.mount}"></ul>`,
+        ModuleItem())
+        .bind("items")}
     </div>
     `);
 
