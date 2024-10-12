@@ -84,6 +84,8 @@ export declare class RHU_MAP<K, V, Wrapper extends RHU_COMPONENT = any, Item ext
     private _items;
     private items;
     entries(): IterableIterator<[key: K, value: V, item: ElementInstance<Item>]>;
+    values(): IterableIterator<[value: V, item: ElementInstance<Item>]>;
+    keys(): IterableIterator<K>;
     clear(): void;
     get size(): number;
     has(key: K): boolean;
@@ -129,6 +131,7 @@ export declare class RHU_LIST<V, Wrapper extends RHU_COMPONENT = any, Item exten
     private _items;
     private items;
     entries(): IterableIterator<[index: number, value: V, item: ElementInstance<Item>]>;
+    values(): IterableIterator<[value: V, item: ElementInstance<Item>]>;
     clear(): void;
     get length(): number;
     get(index: number): V;

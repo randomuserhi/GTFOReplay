@@ -252,6 +252,16 @@ export class RHU_MAP extends MacroElement {
             yield [key, item.value, item.bindings];
         }
     }
+    *values() {
+        for (const item of this.items.values()) {
+            yield [item.value, item.bindings];
+        }
+    }
+    *keys() {
+        for (const key of this.items.keys()) {
+            yield key;
+        }
+    }
     clear() {
         this.assign(empty);
     }
@@ -471,6 +481,11 @@ export class RHU_LIST extends MacroElement {
     *entries() {
         for (const [key, item] of this.items.entries()) {
             yield [key, item.value, item.bindings];
+        }
+    }
+    *values() {
+        for (const item of this.items.values()) {
+            yield [item.value, item.bindings];
         }
     }
     clear() {
