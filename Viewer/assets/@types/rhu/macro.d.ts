@@ -148,6 +148,7 @@ declare const ListFactory: <V, Wrapper extends RHU_COMPONENT, Item extends RHU_C
 declare global {
     interface GlobalEventHandlersEventMap {
         "mount": CustomEvent;
+        "dismount": CustomEvent;
     }
 }
 export {};

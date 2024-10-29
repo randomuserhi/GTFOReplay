@@ -580,11 +580,11 @@ const ListFactory = function (wrapper, item, append, update, remove) {
 };
 Macro.list = ListFactory;
 const isElement = Object.prototype.isPrototypeOf.bind(Element.prototype);
-const recursiveDispatch = function (node) {
+const recursiveDispatch = function (node, event) {
     if (isElement(node))
-        node.dispatchEvent(new CustomEvent("mount"));
+        node.dispatchEvent(new CustomEvent(event));
     for (const child of node.childNodes)
-        recursiveDispatch(child);
+        recursiveDispatch(child, event);
 };
 const observer = new MutationObserver(function (mutationList) {
     for (const mutation of mutationList) {
@@ -592,7 +592,9 @@ const observer = new MutationObserver(function (mutationList) {
             case "childList":
                 {
                     for (const node of mutation.addedNodes)
-                        recursiveDispatch(node);
+                        recursiveDispatch(node, "mount");
+                    for (const node of mutation.removedNodes)
+                        recursiveDispatch(node, "dismount");
                 }
                 break;
         }
