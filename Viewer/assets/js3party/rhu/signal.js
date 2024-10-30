@@ -12,11 +12,23 @@ export function signal(value, equality) {
             }
             if ((equality === undefined && ref.value !== value) ||
                 (equality !== undefined && !equality(ref.value, value))) {
+                const dependencies = dependencyMap.get(signal);
+                if (dependencies !== undefined) {
+                    for (const effect of dependencies) {
+                        for (const destructor of effect[destructors]) {
+                            destructor();
+                        }
+                    }
+                }
                 ref.value = value;
                 for (const callback of callbacks) {
                     callback(ref.value);
                 }
-                triggerEffects(signal);
+                if (dependencies !== undefined) {
+                    for (const effect of dependencies) {
+                        effect();
+                    }
+                }
             }
         }
         return ref.value;
@@ -49,9 +61,6 @@ Object.setPrototypeOf(effectProto, proto);
 export const isEffect = Object.prototype.isPrototypeOf.bind(effectProto);
 export function effect(expression, dependencies, options) {
     const effect = function () {
-        for (const destructor of effect[destructors]) {
-            destructor();
-        }
         effect[destructors] = [];
         const destructor = expression();
         if (destructor !== undefined) {
@@ -79,14 +88,6 @@ export function effect(expression, dependencies, options) {
     return effect;
 }
 const dependencyMap = new WeakMap();
-function triggerEffects(signal) {
-    const dependencies = dependencyMap.get(signal);
-    if (dependencies === undefined)
-        return;
-    for (const effect of dependencies) {
-        effect();
-    }
-}
 export function computed(expression, dependencies, equality, options) {
     const value = signal(undefined, equality);
     const computed = function () {
