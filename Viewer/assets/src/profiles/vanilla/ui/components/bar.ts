@@ -2,8 +2,8 @@ import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     width: 60px;
     height: 100%;
     background-color: #050506; /*TODO: Theme-ColorScheme*/
@@ -13,7 +13,7 @@ const style = Style(({ style }) => {
     flex-shrink: 0;
     `;
 
-    const button = style.class`
+    const button = css.class`
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -26,7 +26,7 @@ const style = Style(({ style }) => {
     padding: 20px 20px 20px 15px;
     color: #B9BBBE; /*TODO: Theme-ColorScheme*/
     `;
-    style`
+    css`
     ${button}:focus {
         outline:0;
     }
@@ -35,7 +35,7 @@ const style = Style(({ style }) => {
     }
     `;
 
-    const highlight = style.class`
+    const highlight = css.class`
     width: 5px;
     height: 10px;
     background-color: white;
@@ -45,11 +45,11 @@ const style = Style(({ style }) => {
     transition: all ease-in-out 200ms;
     `;
 
-    const selected = style.class`
+    const selected = css.class`
         padding: 20px 15px 20px 15px;
     `;
 
-    style`
+    css`
     ${selected} ${highlight} {
         height: 30px;
         margin-right: 10px;

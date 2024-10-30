@@ -5,8 +5,8 @@ import Fuse from "fuse.js";
 import { app } from "../../../app.js";
 import * as icons from "../atoms/icons/index.js";
 
-const moduleListStyles = Style(({ style }) => {
-    const wrapper = style.class`
+const moduleListStyles = Style(({ css }) => {
+    const wrapper = css.class`
     display: none;
     background-color: #2a2a43;
     border-radius: 7px;
@@ -18,14 +18,14 @@ const moduleListStyles = Style(({ style }) => {
     flex-shrink: 0;
     `;
 
-    const sticky = style.class`
+    const sticky = css.class`
     display: flex;
     background-color: #2a2a43;
     padding: 5px;
     border-radius: 4px 4px 0 0;
     `;
 
-    const filter = style.class`
+    const filter = css.class`
     background-color: #12121a;
     padding: 3px 5px;
     border-radius: 4px;
@@ -33,7 +33,7 @@ const moduleListStyles = Style(({ style }) => {
     width: 100%;
     `;
 
-    const mount = style.class`
+    const mount = css.class`
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -43,11 +43,11 @@ const moduleListStyles = Style(({ style }) => {
     overflow: auto;
     `;
 
-    const item = style.class`
+    const item = css.class`
     padding: 3px 5px;
     cursor: pointer;
     `;
-    style`
+    css`
     ${item}:hover {
         background-color: #12121a;
         border-radius: 4px;
@@ -134,10 +134,10 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
     </div>
     `);
 
-const style = Style(({ style }) => {
+const style = Style(({ css }) => {
     const height = "40px";
 
-    const wrapper = style.class`
+    const wrapper = css.class`
     display: flex;
     justify-content: flex-start;
     flex-direction: row-reverse;
@@ -154,7 +154,7 @@ const style = Style(({ style }) => {
     border-bottom-width: 2px;
     border-bottom-color: #2f2e44;
     `;
-    const button = style.class`
+    const button = css.class`
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -169,7 +169,7 @@ const style = Style(({ style }) => {
     -webkit-app-region: no-drag;
     pointer-events: auto;
     `;
-    style`
+    css`
     ${button}:focus {
         outline:0;
     }
@@ -178,7 +178,7 @@ const style = Style(({ style }) => {
         background-color: #272733; /*TODO: Theme-ColorScheme*/
     }
     `;
-    const text = style.class`
+    const text = css.class`
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -198,7 +198,7 @@ const style = Style(({ style }) => {
     user-select: none;
     `;
 
-    const popup = style.class`
+    const popup = css.class`
     display: none;
     padding: 5px 10px;
     background-color: #11111B; /*TODO: Theme-ColorScheme*/
@@ -209,14 +209,14 @@ const style = Style(({ style }) => {
     font-size: 0.75rem;
     flex-shrink: 0;
     `;
-    style`
+    css`
     ${button}:hover + div ${popup} {
         display: block;
     }
     `;
 
-    const active = style.class``;
-    style`
+    const active = css.class``;
+    css`
     ${active} ${popup} {
         display: block;
     }
@@ -225,12 +225,12 @@ const style = Style(({ style }) => {
     }
     `;
 
-    const error = style.class`
+    const error = css.class`
     background-color: #2d1623;
     border-color: #e81b23;
     `;
 
-    const mount = style.class`
+    const mount = css.class`
     position: absolute;
     top: calc(100% + 5px);
     left: 5px;

@@ -2,8 +2,8 @@ import { HTML, html, MACRO, Macro, MacroElement, RHU_MAP } from "@esm/@/rhu/macr
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     position: relative;
 
     display: flex;
@@ -17,15 +17,15 @@ const style = Style(({ style }) => {
     -ms-user-select: none;
     user-select: none;
     `;
-    style`
+    css`
     ${wrapper}:focus {
         outline: none;
     }
     `;
 
-    const active = style.class``;
+    const active = css.class``;
 
-    const body = style.class`
+    const body = css.class`
     width: 100%;
     display: none;
     flex-direction: column;
@@ -36,7 +36,7 @@ const style = Style(({ style }) => {
     overflow-x: none;
     `;
 
-    style`
+    css`
     ${wrapper}${active} {
         z-index: 1000;
     }
@@ -52,7 +52,7 @@ const style = Style(({ style }) => {
     }
     `;
 
-    const item = style.class`
+    const item = css.class`
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -66,7 +66,7 @@ const style = Style(({ style }) => {
 
     cursor: pointer;
     `;
-    style`
+    css`
     ${item}:hover {
         background-color: #313145;
     }

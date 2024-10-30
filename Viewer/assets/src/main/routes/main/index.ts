@@ -4,14 +4,14 @@ import { Style } from "@/rhu/style.js";
 import { app } from "../../app.js";
 import { __version__ } from "../../appinfo.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     width: 100%;
     height: 100%;
     position: relative;
     `;
 
-    const empty = style.class`
+    const empty = css.class`
     position: absolute;
     z-index: 1000;
     width: 100%;
@@ -22,12 +22,12 @@ const style = Style(({ style }) => {
     justify-content: center;
     `;
 
-    const loader = style.class`
+    const loader = css.class`
     width: 65px;
     aspect-ratio: 1;
     position: relative;
     `;
-    style`
+    css`
     ${loader}:before,
     ${loader}:after {
         content: "";
@@ -53,7 +53,7 @@ const style = Style(({ style }) => {
     }
     `;
 
-    const watermark = style.class`
+    const watermark = css.class`
     position: absolute;
     bottom: 0;
     right: 0;

@@ -1,20 +1,20 @@
 import { Style } from "@esm/@/rhu/style.js";
 
-export const pageStyles = Style(({ style }) => {
-    const wrapper = style.class`
+export const pageStyles = Style(({ css }) => {
+    const wrapper = css.class`
     position: relative;
     width: 400px;
     padding: 20px;
     color: white;
     font-size: 15px;
     `;
-    style`
+    css`
     ${wrapper} h1 {
         font-size: 30px;
     }
     `;
 
-    const search = style.class`
+    const search = css.class`
     background-color: #12121a;
     padding: 7px 10px;
     border-radius: 3px;
@@ -22,27 +22,27 @@ export const pageStyles = Style(({ style }) => {
     width: 100%;
     `;
 
-    const row = style.class`
+    const row = css.class`
     width: 100%;
     display: flex;
     flex-direction: column;
     `;
 
-    const divider = style.class`
+    const divider = css.class`
     width: 100%;
     border-bottom-width: 1px;
     border-bottom-style: solid;
     border-bottom-color: white;
     `;
 
-    const body = style.class`
+    const body = css.class`
     display: flex;
     flex-direction: column;
     gap: 30px;
     `;
 
-    const active = style.class``;
-    const toggle = style.class`
+    const active = css.class``;
+    const toggle = css.class`
     width: 50px;
     height: 15px;
     border-radius: 100px;
@@ -54,7 +54,7 @@ export const pageStyles = Style(({ style }) => {
     background-color: transparent;
     transition: all ease-in-out 100ms;
     `;
-    style`
+    css`
     ${toggle}:hover {
         --color: #bfb9eb;
     }

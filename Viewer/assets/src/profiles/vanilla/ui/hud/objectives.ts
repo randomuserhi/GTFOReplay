@@ -8,8 +8,8 @@ import { Factory } from "../../library/factory.js";
 import { msToTime } from "../helper.js";
 import { dispose } from "../main.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     position: absolute;
     top: 15px;
     padding: 10px;
@@ -26,7 +26,7 @@ const style = Style(({ style }) => {
     gap: 5px;
     `;
 
-    const controls = style.class<{
+    const controls = css.class<{
         button: ClassName;
         active: ClassName;
     }>`
@@ -44,24 +44,24 @@ const style = Style(({ style }) => {
     user-select: none;
     `;
 
-    controls.button = style.class`
+    controls.button = css.class`
     padding-bottom: 5px;
     color: #444;
     `;
     
-    controls.active = style.class`
+    controls.active = css.class`
     color: #fff;
     cursor: pointer;
     `;
 
-    const timeWrapper = style.class`
+    const timeWrapper = css.class`
     display: flex;
     gap: 10px;
     font-size: 18px;
     color: white;
     `;
 
-    const progressWrapper = style.class`
+    const progressWrapper = css.class`
     position: relative;
     width: 80%;
     max-width: 800px;
@@ -70,7 +70,7 @@ const style = Style(({ style }) => {
     margin-bottom: 5px;
     `;
 
-    const progressBackground = style.class`
+    const progressBackground = css.class`
     position: absolute;
     top: 0;
     left: 0;
@@ -80,7 +80,7 @@ const style = Style(({ style }) => {
     background-color: white;
     `;
 
-    const progressForeground = style.class`
+    const progressForeground = css.class`
     position: absolute;
     top: 0;
     left: 0;
@@ -89,27 +89,27 @@ const style = Style(({ style }) => {
     border-radius: 50px;
     `;
 
-    const codeWrapper = style.class`
+    const codeWrapper = css.class`
     display: none;
     gap: 10px;
     font-size: 18px;
     color: white;
     `;
 
-    const code = style.class`
+    const code = css.class`
     color: #34abeb;
     `;
 
-    const warmup = style.class`
+    const warmup = css.class`
     `;
 
-    const verify = style.class`
+    const verify = css.class`
     `;
     
-    const intense = style.class`
+    const intense = css.class`
     `;
 
-    style`
+    css`
     ${warmup}${wrapper} {
         color: orange;
     }

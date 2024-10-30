@@ -6,19 +6,19 @@ import { FileHandle } from "../../../replay/stream.js";
 import { app } from "../../app.js";
 import { View } from "./components/view/index.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     width: 100%;
     height: 100%;
     position: relative;
     `;
 
-    const canvas = style.class`
+    const canvas = css.class`
     display: block;
     width: 100%;
     height: 100%;
     `;
-    style`
+    css`
     ${canvas}:focus {
         outline: none;
     }

@@ -12,12 +12,12 @@ import { pageStyles } from "./lib.js";
 
 const style = pageStyles;
 
-const itemStyle = Style(({ style }) => {
-    const item = style.class`
+const itemStyle = Style(({ css }) => {
+    const item = css.class`
     display: flex;
     cursor: pointer;
     `;
-    style`
+    css`
     ${item}:hover {
     color: #7169ce;
     }

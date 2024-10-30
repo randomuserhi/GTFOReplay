@@ -6,13 +6,13 @@ import { Renderer } from "../../../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../../../replay/replay.js";
 import { ASL_VM } from "../../../../../replay/vm.js";
 
-const style = Style(({ style }) => {
-    const canvas = style.class`
+const style = Style(({ css }) => {
+    const canvas = css.class`
     display: block;
     width: 100%;
     height: 100%;
     `;
-    style`
+    css`
     ${canvas}:focus {
         outline: none;
     }

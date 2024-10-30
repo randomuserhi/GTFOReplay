@@ -43,8 +43,8 @@ import { Info } from "./pages/info.js";
 import { Settings } from "./pages/settings.js";
 import { Stats } from "./pages/stats.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     width: 100%;
     height: 100%;
     position: relative;
@@ -52,12 +52,12 @@ const style = Style(({ style }) => {
     flex-direction: row;
     `;
 
-    const body = style.class`
+    const body = css.class`
     position: relative;
     flex: 1;
     `;
     
-    const window = style.class`
+    const window = css.class`
     height: 100%;
     flex-shrink: 0;
     width: auto;

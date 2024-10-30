@@ -12,36 +12,6 @@ export const ClassName = function (name) {
 ClassName.prototype[Symbol.toPrimitive] = function () {
     return this.name;
 };
-const interpret = function (value) {
-    if (typeof value === "number") {
-        return `${value}px`;
-    }
-    return value;
-};
-export const css = function (style) {
-    let result = "";
-    for (const [key, value] of Object.entries(style)) {
-        const prop = key.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
-        if (typeof value === "string" || value instanceof String) {
-            result += `${prop}:${value};`;
-        }
-        else if (typeof value === "number") {
-            result += `${prop}:${value}px;`;
-        }
-        else {
-            switch (prop) {
-                case "border": {
-                    const parse = value;
-                    const borderRadius = interpret(parse["border-radius"] || parse.borderRadius);
-                    if (exists(borderRadius))
-                        result += `border-radius: ${borderRadius}; `;
-                    break;
-                }
-            }
-        }
-    }
-    return result;
-};
 const element = Symbol("style.element");
 export const Style = ((factory) => {
     let generatedCode = "";
@@ -57,7 +27,7 @@ export const Style = ((factory) => {
                     generatedCode += `${interpolation}`;
                 }
                 else {
-                    generatedCode += css(interpolation);
+                    generatedCode += interpolation;
                 }
             }
             else {
@@ -73,14 +43,11 @@ export const Style = ((factory) => {
             for (let i = 0; i < interpolations.length; ++i) {
                 const interpolation = interpolations[i];
                 if (typeof interpolation === "object") {
-                    if (interpolation instanceof ClassName) {
-                        generatedCode += interpolation;
-                    }
-                    else if (interpolation instanceof ThemeVariable) {
+                    if (interpolation instanceof ThemeVariable) {
                         generatedCode += `${interpolation}`;
                     }
                     else {
-                        generatedCode += css(interpolation);
+                        generatedCode += interpolation;
                     }
                 }
                 else {
@@ -92,7 +59,7 @@ export const Style = ((factory) => {
         }
         return classname;
     };
-    const exports = factory({ style: generator });
+    const exports = factory({ css: generator });
     generatedCode = generatedCode.replace(/(\r\n|\n|\r)/gm, "").replace(/ +/g, ' ').trim();
     const el = document.createElement("style");
     el.innerHTML = generatedCode;

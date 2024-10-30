@@ -3,14 +3,14 @@ import { signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { dispose } from "../main.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     position: relative;
     width: 100%;
     height: 100%;
     `;
 
-    const bar = style.class`
+    const bar = css.class`
     cursor: pointer;
     position: absolute;
     top: 0px;
@@ -18,7 +18,7 @@ const style = Style(({ style }) => {
     width: 100%;
     `;
 
-    const visualBar = style.class`
+    const visualBar = css.class`
     position: absolute;
     bottom: 0px;
     height: 3px;
@@ -26,19 +26,19 @@ const style = Style(({ style }) => {
     background-color: #eee;
     transition: height 100ms;
     `;
-    style`
+    css`
     ${bar}:hover ${visualBar} {
         height: 5px;
     }
     `;
 
-    const visualProgress = style.class`
+    const visualProgress = css.class`
     height: 100%;
     width: 0;
     background-color: #f00;
     `;
 
-    const mount = style.class`
+    const mount = css.class`
     position: absolute;
     bottom: 0;
     left: 0;
@@ -54,13 +54,13 @@ const style = Style(({ style }) => {
     user-drag: none;
     `;
 
-    const button = style.class`
+    const button = css.class`
     color: white;
     padding: 0 15px;
     align-items: center;
     display: flex;
     `;
-    style`
+    css`
     ${button}:focus {
         outline:0;
     }

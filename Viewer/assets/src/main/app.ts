@@ -19,8 +19,8 @@ export const theme = Theme(({ theme }) => {
     };
 });
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     font-family: Oxanium;
 
     width: 100%;
@@ -32,7 +32,7 @@ const style = Style(({ style }) => {
 
     overflow: hidden;
     `;
-    const body = style.class`
+    const body = css.class`
     flex: 1;
     `;
 

@@ -27,14 +27,14 @@ module.destructor = () => {
     display.saveState();
 };
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     width: 100%;
     height: 100%;
     position: relative;
     `;
 
-    const bottom = style.class`
+    const bottom = css.class`
     position: absolute;
     bottom: 0;
     left: 0;
@@ -43,7 +43,7 @@ const style = Style(({ style }) => {
     height: 50px;
     `;
 
-    const view = style.class`
+    const view = css.class`
     position: absolute;
     top: 0;
     left: 0;
@@ -51,7 +51,7 @@ const style = Style(({ style }) => {
     height: 100%;
     `;
 
-    const scoreboard = style.class`
+    const scoreboard = css.class`
     position: absolute;
     top: 50%;
     left: 50%;
@@ -70,26 +70,26 @@ const style = Style(({ style }) => {
     };
 });
 
-const controls = Style(({ style }) => {
-    const button = style.class`
+const controls = Style(({ css }) => {
+    const button = css.class`
     color: white;
     padding: 0 15px;
     align-items: center;
     display: flex;
     `;
-    style`
+    css`
     ${button}:focus {
         outline:0;
     }
     `;
 
-    const time = style.class`
+    const time = css.class`
     align-items: center;
     display: flex;
     padding: 0 10px;
     `;
 
-    const dot = style.class`
+    const dot = css.class`
     width: 8px;
     height: 8px;
     background-color: red;

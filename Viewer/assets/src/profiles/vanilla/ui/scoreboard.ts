@@ -6,8 +6,8 @@ import type { View } from "@esm/@root/main/routes/player/components/view/index.j
 import { dispose } from "./main.js";
 import { Medal, MedalDatablock } from "./medals.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     position: relative;
     width: 100%;
     height: 100%;
@@ -25,14 +25,14 @@ const style = Style(({ style }) => {
         4fr;
     grid-row-gap: 15px;
     `;
-    style`
+    css`
     ${wrapper} thead,
     ${wrapper} tbody,
     ${wrapper} tr {
         display: contents;
     }`;
 
-    const slot = style.class`
+    const slot = css.class`
     font-size: 20px;
     color: white;
     background-color: rgba(0, 0, 0, 0.9);
@@ -40,7 +40,7 @@ const style = Style(({ style }) => {
     transition: background-color 200ms;
     `;
 
-    style`
+    css`
     ${slot} td {
         position: relative;
 
@@ -60,10 +60,10 @@ const style = Style(({ style }) => {
     `;
 
     // Steam styles
-    const avatar = style.class`
+    const avatar = css.class`
     cursor: pointer;
     `;
-    style`
+    css`
     ${avatar} .playerAvatarAutoSizeInner {
         position: relative;
     }

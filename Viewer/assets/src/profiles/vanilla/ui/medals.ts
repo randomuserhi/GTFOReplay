@@ -469,15 +469,15 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     },
 ] as MedalRequirement[]).map(m => [m.name, m]));
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     position: relative;
     width: 50px;
     height: 50px;
     overflow: visible;
     `;
 
-    const mount = style.class`
+    const mount = css.class`
     display: none;
     position: absolute;
     left: 50%;
@@ -494,7 +494,7 @@ const style = Style(({ style }) => {
     padding: 0.5rem;
     `;
 
-    style`
+    css`
     ${wrapper}:has(>img:hover) ${mount} {
         display: flex;
     }

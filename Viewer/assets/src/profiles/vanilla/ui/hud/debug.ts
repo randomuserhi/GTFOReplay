@@ -4,8 +4,8 @@ import { Style } from "@esm/@/rhu/style.js";
 import { View } from "../../../../main/routes/player/components/view/index.js";
 import { dispose } from "../main.js";
 
-const style = Style(({ style }) => {
-    const wrapper = style.class`
+const style = Style(({ css }) => {
+    const wrapper = css.class`
     position: absolute;
     right: 0;
     top: 0;
