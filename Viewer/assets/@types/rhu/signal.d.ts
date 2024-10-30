@@ -8,7 +8,7 @@ interface SignalEvent<T = any> {
 }
 export interface Signal<T> extends SignalEvent<T> {
     (value: T): T;
-    guard?: (value: T) => T;
+    guard?: (newValue: T, oldValue: T) => T;
 }
 type Callback<T> = (value: T) => void;
 type Equality<T> = (a?: T, b?: T) => boolean;

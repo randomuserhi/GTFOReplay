@@ -8,7 +8,7 @@ export function signal(value, equality) {
         if (args.length !== 0) {
             let [value] = args;
             if (signal.guard !== undefined) {
-                value = signal.guard(value);
+                value = signal.guard(value, ref.value);
             }
             if ((equality === undefined && ref.value !== value) ||
                 (equality !== undefined && !equality(ref.value, value))) {
