@@ -73,6 +73,7 @@ export function effect(expression, dependencies, options) {
         effect[destructors].push(destructor);
     }
     Object.setPrototypeOf(effect, effectProto);
+    let deps = [];
     for (const signal of dependencies) {
         if (isEffect(signal))
             throw new Error("Effect cannot be used as a dependency.");
@@ -81,9 +82,20 @@ export function effect(expression, dependencies, options) {
         }
         const dependency = dependencyMap.get(signal);
         dependency.add(effect);
-        if (options?.signal !== undefined) {
-            options.signal.addEventListener("abort", () => dependency.delete(effect), { once: true });
+        deps.push(new WeakRef(dependency));
+    }
+    effect.release = function () {
+        if (deps === undefined)
+            return;
+        for (const ref of deps) {
+            ref.deref()?.delete(effect);
         }
+        deps = undefined;
+    };
+    if (options?.signal !== undefined) {
+        options.signal.addEventListener("abort", () => {
+            effect.release();
+        }, { once: true });
     }
     return effect;
 }
@@ -104,6 +116,7 @@ export function computed(expression, dependencies, equality, options) {
         return value.equals(other);
     };
     computed.effect = effect(() => expression(value), dependencies, options);
+    computed.release = computed.effect.release;
     Object.setPrototypeOf(computed, proto);
     return computed;
 }

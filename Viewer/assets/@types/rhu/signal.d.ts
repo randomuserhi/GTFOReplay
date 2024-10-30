@@ -19,6 +19,7 @@ declare const destructors: unique symbol;
 export interface Effect {
     (): void;
     [destructors]: (() => void)[];
+    release(): void;
 }
 export declare const isEffect: (obj: any) => obj is Effect;
 export declare function effect(expression: () => ((() => void) | void), dependencies: SignalEvent[], options?: {
@@ -27,6 +28,7 @@ export declare function effect(expression: () => ((() => void) | void), dependen
 export interface Computed<T> extends SignalEvent<T> {
     (): T;
     effect: Effect;
+    release(): void;
 }
 export declare function computed<T>(expression: (set: Signal<T>) => ((() => void) | void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
     signal?: AbortSignal;
