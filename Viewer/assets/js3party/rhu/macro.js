@@ -21,6 +21,9 @@ class RHU_ELEMENT extends RHU_NODE {
         this.callbacks.add(callback);
         return this;
     }
+    copy() {
+        throw new Error("Invalid operation.");
+    }
     _dom(target, children) {
         throw new Error("Invalid operation.");
     }
@@ -42,6 +45,13 @@ class RHU_SIGNAL extends RHU_ELEMENT {
     value(value) {
         this._value = value;
         return this;
+    }
+    copy() {
+        const copy = new RHU_SIGNAL(this._bind).value(this._value);
+        for (const callback of this.callbacks.values()) {
+            copy.then(callback);
+        }
+        return copy;
     }
     _dom(target) {
         let instance = undefined;
@@ -80,6 +90,13 @@ class RHU_MACRO extends RHU_ELEMENT {
         this.type = type;
         this.args = args;
     }
+    copy() {
+        const copy = new RHU_MACRO(this.html, this.type, this.args).bind(this._bind);
+        for (const callback of this.callbacks.values()) {
+            copy.then(callback);
+        }
+        return copy;
+    }
     _dom(target, children) {
         const [b, frag] = this.html.dom();
         const dom = [...frag.childNodes];
@@ -95,6 +112,13 @@ class RHU_MACRO extends RHU_ELEMENT {
 RHU_MACRO.is = Object.prototype.isPrototypeOf.bind(RHU_MACRO.prototype);
 export { RHU_MACRO };
 class RHU_MACRO_OPEN extends RHU_MACRO {
+    copy() {
+        const copy = new RHU_MACRO_OPEN(this.html, this.type, this.args).bind(this._bind);
+        for (const callback of this.callbacks.values()) {
+            copy.then(callback);
+        }
+        return copy;
+    }
 }
 RHU_MACRO_OPEN.is = Object.prototype.isPrototypeOf.bind(RHU_MACRO_OPEN.prototype);
 export { RHU_MACRO_OPEN };
@@ -106,6 +130,13 @@ class RHU_HTML extends RHU_ELEMENT {
         super();
         this.first = first;
         this.interpolations = interpolations;
+    }
+    copy() {
+        const copy = new RHU_HTML(this.first, this.interpolations).bind(this._bind);
+        for (const callback of this.callbacks.values()) {
+            copy.then(callback);
+        }
+        return copy;
     }
     stitch(interp, slots) {
         if (isFactory(interp)) {
@@ -161,14 +192,23 @@ class RHU_HTML extends RHU_ELEMENT {
                 return NodeFilter.FILTER_REJECT;
             }
         }).nextNode();
-        if (target === undefined)
-            target = {};
+        let instance;
+        const hasBinding = this._bind !== null && this._bind !== undefined;
+        if (target !== undefined && !hasBinding)
+            instance = target;
+        else
+            instance = {};
         for (const el of fragment.querySelectorAll("*[m-id]")) {
             const key = el.getAttribute("m-id");
             el.removeAttribute("m-id");
-            if (key in target)
+            if (key in instance)
                 throw new Error(`The binding '${key}' already exists.`);
-            target[key] = el;
+            instance[key] = el;
+        }
+        if (target !== undefined && hasBinding) {
+            if (this._bind in target)
+                throw new SyntaxError(`The binding '${this._bind.toString()}' already exists.`);
+            target[this._bind] = instance;
         }
         for (const slotElement of fragment.querySelectorAll("rhu-slot[rhu-internal]")) {
             try {
@@ -181,7 +221,7 @@ class RHU_HTML extends RHU_ELEMENT {
                     throw new Error("Could not find slot id.");
                 }
                 const slot = slots[i];
-                const frag = slot.dom(target, slotElement.childNodes)[1];
+                const frag = slot.dom(instance, slotElement.childNodes)[1];
                 slotElement.replaceWith(frag);
             }
             catch (e) {
@@ -190,7 +230,7 @@ class RHU_HTML extends RHU_ELEMENT {
                 continue;
             }
         }
-        return [target, fragment];
+        return [instance, fragment];
     }
 }
 RHU_HTML.empty = html ``;

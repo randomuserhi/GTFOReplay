@@ -15,4 +15,5 @@ interface Factory {
 }
 export declare const ThemeVariable: ThemeVariableConstructor;
 export declare function Theme<T extends {} = {}>(factory: (worker: Factory) => T): ClassName<T>;
+export declare function tvar(themeVar: ThemeVariable): string;
 export {};

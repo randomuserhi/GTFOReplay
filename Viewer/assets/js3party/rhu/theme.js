@@ -35,3 +35,6 @@ export function Theme(factory) {
     Object.assign(cn, exports);
     return cn;
 }
+export function tvar(themeVar) {
+    return themeVar.name;
+}

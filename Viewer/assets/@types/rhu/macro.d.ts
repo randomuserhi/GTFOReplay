@@ -11,15 +11,17 @@ export declare class RHU_ELEMENT<T = any, Frag extends Node = Node> extends RHU_
     bind(key?: PropertyKey): this;
     callbacks: Set<(element: T) => void>;
     then(callback: (element: T) => void): this;
+    copy(): RHU_ELEMENT;
     protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: T, fragment: Frag];
     dom<B extends T | void = void>(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: B extends void ? T : B, fragment: Frag];
     static is: (object: any) => object is RHU_ELEMENT;
 }
 type ElementInstance<T extends RHU_ELEMENT> = T extends RHU_ELEMENT<infer Bindings> ? Bindings : never;
 export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<string>> {
-    constructor(binding: string);
+    constructor(binding: PropertyKey);
     protected _value?: string;
     value(value?: string): this;
+    copy(): RHU_SIGNAL;
     protected _dom(target?: Record<PropertyKey, any>): [instance: Signal<string>, fragment: Node];
     static is: (object: any) => object is RHU_SIGNAL;
 }
@@ -36,11 +38,13 @@ export declare class RHU_MACRO<T extends MacroClass = MacroClass> extends RHU_EL
     html: RHU_HTML;
     args: MacroParameters<T>;
     constructor(html: RHU_HTML, type: T, args: MacroParameters<T>);
+    copy(): RHU_MACRO;
     protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: InstanceType<T>, fragment: DocumentFragment];
     static is: (object: any) => object is RHU_MACRO;
 }
 export type MACRO<F extends FACTORY<any>> = RHU_MACRO<F extends FACTORY<infer T> ? T : any>;
 export declare class RHU_MACRO_OPEN<T extends MacroClass = MacroClass> extends RHU_MACRO<T> {
+    copy(): RHU_MACRO_OPEN;
     static is: (object: any) => object is RHU_MACRO_OPEN;
 }
 export declare function html<T extends {} = any>(first: RHU_HTML["first"], ...interpolations: RHU_HTML["interpolations"]): RHU_HTML<T>;
@@ -49,6 +53,7 @@ export declare class RHU_HTML<T extends Record<PropertyKey, any> = any> extends 
     private first;
     private interpolations;
     constructor(first: RHU_HTML["first"], interpolations: RHU_HTML["interpolations"]);
+    copy(): RHU_HTML;
     private stitch;
     protected _dom(target?: Record<PropertyKey, any>): [instance: T, fragment: DocumentFragment];
     static is: (object: any) => object is RHU_HTML;
