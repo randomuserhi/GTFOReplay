@@ -31,12 +31,12 @@ export declare class RHU_ELEMENT_OPEN<T extends RHU_ELEMENT = any> extends RHU_N
     dom<B extends ElementInstance<T> | void = void>(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: B extends void ? any : B, fragment: Node];
     static is: (object: any) => object is RHU_ELEMENT_OPEN;
 }
-export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<any>> {
+export declare class RHU_SIGNAL<T = any> extends RHU_ELEMENT<Signal<T>> {
     constructor(binding: PropertyKey);
-    protected _value?: any;
-    value(value?: any): this;
-    copy(): RHU_SIGNAL;
-    protected _dom(target?: Record<PropertyKey, any>): [instance: Signal<any>, fragment: Node];
+    protected _value: T;
+    value(value: T): this;
+    copy(): RHU_SIGNAL<T>;
+    protected _dom(target?: Record<PropertyKey, any>): [instance: Signal<T>, fragment: Node];
     static is: (object: any) => object is RHU_SIGNAL;
 }
 export declare class MacroElement {
@@ -87,7 +87,7 @@ interface FACTORY<T extends MacroClass> {
 export type Macro<F extends FACTORY<any>> = F extends FACTORY<infer T> ? InstanceType<T> : any;
 interface MacroNamespace {
     <T extends MacroClass>(type: T, html: RHU_HTML): FACTORY<T>;
-    signal(binding: string, value?: string): RHU_SIGNAL;
+    signal<T>(binding: string, value?: T): RHU_SIGNAL<T>;
     create<T extends RHU_MACRO>(macro: T): T extends RHU_MACRO<infer R> ? InstanceType<R> : never;
     observe(node: Node): void;
     map: typeof MapFactory;

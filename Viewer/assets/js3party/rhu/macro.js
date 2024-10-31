@@ -101,12 +101,12 @@ class RHU_SIGNAL extends RHU_ELEMENT {
             instance = target[this._bind];
         }
         if (instance === undefined) {
-            instance = signal(this._value !== undefined && this._value !== null ? this._value : "");
+            instance = signal(this._value);
         }
         if (doBinding)
             target[this._bind] = instance;
-        const node = document.createTextNode(this._value === undefined ? "" : this._value);
-        instance.on((value) => node.nodeValue = value);
+        const node = document.createTextNode(`${this._value}`);
+        instance.on((value) => node.nodeValue = `${value}`);
         return [instance, node];
     }
 }
