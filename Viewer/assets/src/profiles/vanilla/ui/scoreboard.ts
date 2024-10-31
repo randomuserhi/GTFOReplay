@@ -100,8 +100,6 @@ const Slot = Macro(class Slot extends MacroElement {
             }
         });
 
-        console.log(this.items);
-
         this.items.onappend.add((wrapper, dom, item, key) => {
             wrapper.medalList.append(...dom);
             const medal = MedalDatablock.get(key);

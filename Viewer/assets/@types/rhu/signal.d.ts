@@ -3,6 +3,7 @@ export interface SignalEvent<T = any> {
     equals(other: T): boolean;
     on(callback: Callback<T>, options?: {
         signal?: AbortSignal;
+        guard?: () => boolean;
     }): Callback<T>;
     off(handle: Callback<T>): boolean;
 }
@@ -24,6 +25,7 @@ export interface Effect {
 export declare const isEffect: (obj: any) => obj is Effect;
 export declare function effect(expression: () => ((() => void) | void), dependencies: SignalEvent[], options?: {
     signal?: AbortSignal;
+    guard?: () => boolean;
 }): Effect;
 export interface Computed<T> extends SignalEvent<T> {
     (): T;
@@ -32,5 +34,6 @@ export interface Computed<T> extends SignalEvent<T> {
 }
 export declare function computed<T>(expression: (set: Signal<T>) => ((() => void) | void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
     signal?: AbortSignal;
+    guard?: () => boolean;
 }): Computed<T>;
 export {};

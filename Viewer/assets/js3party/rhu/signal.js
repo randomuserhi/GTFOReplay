@@ -3,7 +3,10 @@ export const isSignal = Object.prototype.isPrototypeOf.bind(proto);
 export const always = () => false;
 export function signal(value, equality) {
     const ref = { value };
-    const callbacks = new Set();
+    const callbacks = {
+        value: new Map(),
+        buffer: new Map()
+    };
     const signal = function (...args) {
         if (args.length !== 0) {
             let [value] = args;
@@ -21,9 +24,17 @@ export function signal(value, equality) {
                     }
                 }
                 ref.value = value;
-                for (const callback of callbacks) {
+                for (const [callback, guard] of callbacks.value) {
+                    if (guard !== undefined && !guard()) {
+                        continue;
+                    }
                     callback(ref.value);
+                    callbacks.buffer.set(callback, guard);
                 }
+                callbacks.value.clear();
+                const temp = callbacks.buffer;
+                callbacks.buffer = callbacks.value;
+                callbacks.value = temp;
                 if (dependencies !== undefined) {
                     for (const effect of dependencies) {
                         effect();
@@ -34,17 +45,17 @@ export function signal(value, equality) {
         return ref.value;
     };
     signal.on = function (callback, options) {
-        if (!callbacks.has(callback)) {
+        if (!callbacks.value.has(callback)) {
             callback(ref.value);
-            callbacks.add(callback);
+            callbacks.value.set(callback, options?.guard);
             if (options?.signal !== undefined) {
-                options.signal.addEventListener("abort", () => callbacks.delete(callback), { once: true });
+                options.signal.addEventListener("abort", () => callbacks.value.delete(callback), { once: true });
             }
         }
         return callback;
     };
     signal.off = function (callback) {
-        return callbacks.delete(callback);
+        return callbacks.value.delete(callback);
     };
     signal.equals = function (other) {
         if (equality === undefined) {
@@ -61,6 +72,12 @@ Object.setPrototypeOf(effectProto, proto);
 export const isEffect = Object.prototype.isPrototypeOf.bind(effectProto);
 export function effect(expression, dependencies, options) {
     const effect = function () {
+        if (options?.guard !== undefined) {
+            if (!options.guard()) {
+                effect.release();
+                return;
+            }
+        }
         effect[destructors] = [];
         const destructor = expression();
         if (destructor !== undefined) {
