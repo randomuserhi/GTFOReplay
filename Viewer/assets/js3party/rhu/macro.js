@@ -88,6 +88,7 @@ class RHU_SIGNAL extends RHU_ELEMENT {
     }
     copy() {
         const copy = new RHU_SIGNAL(this._bind).value(this._value);
+        copy.boxed = this.boxed;
         for (const callback of this.callbacks.values()) {
             copy.then(callback);
         }
@@ -136,6 +137,7 @@ class RHU_MACRO extends RHU_ELEMENT {
     }
     copy() {
         const copy = new RHU_MACRO(this.html, this.type, this.args).bind(this._bind);
+        copy.boxed = this.boxed;
         for (const callback of this.callbacks.values()) {
             copy.then(callback);
         }
@@ -171,6 +173,7 @@ class RHU_HTML extends RHU_ELEMENT {
     }
     copy() {
         const copy = new RHU_HTML(this.first, this.interpolations).bind(this._bind);
+        copy.boxed = this.boxed;
         for (const callback of this.callbacks.values()) {
             copy.then(callback);
         }
