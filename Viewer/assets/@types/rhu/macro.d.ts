@@ -31,12 +31,12 @@ export declare class RHU_ELEMENT_OPEN<T extends RHU_ELEMENT = any> extends RHU_N
     dom<B extends ElementInstance<T> | void = void>(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: B extends void ? any : B, fragment: Node];
     static is: (object: any) => object is RHU_ELEMENT_OPEN;
 }
-export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<string>> {
+export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<any>> {
     constructor(binding: PropertyKey);
-    protected _value?: string;
-    value(value?: string): this;
+    protected _value?: any;
+    value(value?: any): this;
     copy(): RHU_SIGNAL;
-    protected _dom(target?: Record<PropertyKey, any>): [instance: Signal<string>, fragment: Node];
+    protected _dom(target?: Record<PropertyKey, any>): [instance: Signal<any>, fragment: Node];
     static is: (object: any) => object is RHU_SIGNAL;
 }
 export declare class MacroElement {
