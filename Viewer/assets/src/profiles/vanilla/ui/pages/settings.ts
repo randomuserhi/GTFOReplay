@@ -34,7 +34,7 @@ const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
 const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<boolean>) => Macro<typeof FeatureWrapper>)[] = [
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Timescale").bind("wrapper")}
+            ${FeatureWrapper("Timescale").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -106,7 +106,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Render Distance").bind("wrapper")}
+            ${FeatureWrapper("Render Distance").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -186,7 +186,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v, active) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Follow Player").bind("wrapper")}
+            ${FeatureWrapper("Follow Player").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -253,7 +253,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Dimension").bind("wrapper")}
+            ${FeatureWrapper("Dimension").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;
@@ -297,7 +297,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Dimension").bind("wrapper")}
+            ${FeatureWrapper("Dimension").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -358,7 +358,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Transparent Resource Containers").bind("wrapper")}
+            ${FeatureWrapper("Transparent Resource Containers").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;
@@ -387,7 +387,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Debug Resource Containers").bind("wrapper")}
+            ${FeatureWrapper("Debug Resource Containers").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;
@@ -416,7 +416,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Show Enemy Info").bind("wrapper")}
+            ${FeatureWrapper("Show Enemy Info").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;
@@ -445,7 +445,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Colour Enemy Based on Aggro").bind("wrapper")}
+            ${FeatureWrapper("Colour Enemy Based on Aggro").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;
@@ -474,7 +474,7 @@ const features: ((v: Signal<Macro<typeof View> | undefined>, active: Signal<bool
     },
     (v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Show Fog Repeller Radius").bind("wrapper")}
+            ${FeatureWrapper("Show Fog Repeller Radius").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 flex-direction: row;
                 gap: 20px;

@@ -238,7 +238,7 @@ export const Display = Macro(class Display extends MacroElement {
     <div m-id="mount" class="${style.view}"></div>
     ${Scoreboard().bind("scoreboard").then((macro) => macro.wrapper.classList.add(`${style.scoreboard}`))}
     <div class="${style.bottom}">
-        ${Seeker.open().bind("seeker")}
+        ${Seeker().open().bind("seeker")}
             <button m-id="pauseButton" class="${controls.button}" style="padding: 0 5px;">
                 ${icons.pause().bind("pauseIcon")}
                 ${icons.play().bind("playIcon")}

@@ -228,7 +228,7 @@ const App = Macro(class App extends MacroElement {
     }
 }, html`
     <div class="${theme} ${style.wrapper}">
-        ${WinNav.open().bind("nav")}
+        ${WinNav().open().bind("nav")}
             <span>GTFO Replay Viewer</span>
         ${WinNav.close}
         <!-- Content goes here -->

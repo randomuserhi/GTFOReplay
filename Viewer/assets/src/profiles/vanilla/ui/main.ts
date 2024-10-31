@@ -143,18 +143,18 @@ const UI = Macro(class UI extends MacroElement {
     }
 }, html`
     <div class="${style.wrapper}">
-        ${Bar.open()}
-            ${Button.open().bind("settings")}
+        ${Bar().open()}
+            ${Button().open().bind("settings")}
                 ${icons.gear()}
             ${Button.close}
-            ${Button.open().bind("stats")}
+            ${Button().open().bind("stats")}
                 ${icons.stats()}
             ${Button.close}
-            ${Button.open().bind("finder")}
+            ${Button().open().bind("finder")}
                 ${icons.finder()}
             ${Button.close}
             <div style="flex: 1"></div>
-            ${Button.open().bind("info")}
+            ${Button().open().bind("info")}
                 ${icons.info()}
             ${Button.close}
         ${Bar.close}

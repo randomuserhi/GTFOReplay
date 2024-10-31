@@ -11,10 +11,19 @@ export { RHU_CLOSURE };
 class RHU_ELEMENT extends RHU_NODE {
     constructor() {
         super(...arguments);
+        this.boxed = false;
         this.callbacks = new Set();
     }
     bind(key) {
         this._bind = key;
+        return this;
+    }
+    box() {
+        this.boxed = true;
+        return this;
+    }
+    unbox() {
+        this.boxed = true;
         return this;
     }
     then(callback) {
@@ -30,13 +39,43 @@ class RHU_ELEMENT extends RHU_NODE {
     dom(target, children) {
         const result = this._dom(target, children);
         for (const callback of this.callbacks) {
-            callback(result[0]);
+            callback(result[0], children);
         }
         return result;
     }
 }
 RHU_ELEMENT.is = Object.prototype.isPrototypeOf.bind(RHU_ELEMENT.prototype);
 export { RHU_ELEMENT };
+class RHU_ELEMENT_OPEN extends RHU_NODE {
+    constructor(element) {
+        super();
+        this.element = element;
+    }
+    box() {
+        this.element.box();
+        return this;
+    }
+    unbox() {
+        this.element.unbox();
+        return this;
+    }
+    copy() {
+        return new RHU_ELEMENT_OPEN(this.element.copy());
+    }
+    bind(key) {
+        this.element.bind(key);
+        return this;
+    }
+    then(callback) {
+        this.element.then(callback);
+        return this;
+    }
+    dom(target, children) {
+        return this.element.dom(target, children);
+    }
+}
+RHU_ELEMENT_OPEN.is = Object.prototype.isPrototypeOf.bind(RHU_ELEMENT_OPEN.prototype);
+export { RHU_ELEMENT_OPEN };
 class RHU_SIGNAL extends RHU_ELEMENT {
     constructor(binding) {
         super();
@@ -90,6 +129,9 @@ class RHU_MACRO extends RHU_ELEMENT {
         this.type = type;
         this.args = args;
     }
+    open() {
+        return new RHU_ELEMENT_OPEN(this);
+    }
     copy() {
         const copy = new RHU_MACRO(this.html, this.type, this.args).bind(this._bind);
         for (const callback of this.callbacks.values()) {
@@ -111,25 +153,19 @@ class RHU_MACRO extends RHU_ELEMENT {
 }
 RHU_MACRO.is = Object.prototype.isPrototypeOf.bind(RHU_MACRO.prototype);
 export { RHU_MACRO };
-class RHU_MACRO_OPEN extends RHU_MACRO {
-    copy() {
-        const copy = new RHU_MACRO_OPEN(this.html, this.type, this.args).bind(this._bind);
-        for (const callback of this.callbacks.values()) {
-            copy.then(callback);
-        }
-        return copy;
-    }
-}
-RHU_MACRO_OPEN.is = Object.prototype.isPrototypeOf.bind(RHU_MACRO_OPEN.prototype);
-export { RHU_MACRO_OPEN };
-export function html(first, ...interpolations) {
+export const html = function (first, ...interpolations) {
     return new RHU_HTML(first, interpolations);
-}
+};
+html.close = RHU_CLOSURE.instance;
 class RHU_HTML extends RHU_ELEMENT {
     constructor(first, interpolations) {
         super();
+        this.close = RHU_CLOSURE.instance;
         this.first = first;
         this.interpolations = interpolations;
+    }
+    open() {
+        return new RHU_ELEMENT_OPEN(this);
     }
     copy() {
         const copy = new RHU_HTML(this.first, this.interpolations).bind(this._bind);
@@ -142,16 +178,21 @@ class RHU_HTML extends RHU_ELEMENT {
         if (isFactory(interp)) {
             throw new SyntaxError("Macro Factory cannot be used to construct a HTML fragment. Did you mean to call the factory?");
         }
+        const index = slots.length;
         if (RHU_ELEMENT.is(interp)) {
-            let result = `<rhu-slot rhu-internal="${slots.length}">`;
-            if (!RHU_MACRO_OPEN.is(interp))
-                result += `</rhu-slot>`;
             slots.push(interp);
-            return result;
+            return `<rhu-slot rhu-internal="${index}"></rhu-slot>`;
         }
-        if (RHU_CLOSURE.is(interp))
+        else if (RHU_ELEMENT_OPEN.is(interp)) {
+            slots.push(interp.element);
+            return `<rhu-slot rhu-internal="${index}" rhu-open>`;
+        }
+        else if (RHU_CLOSURE.is(interp)) {
             return `</rhu-slot>`;
-        return undefined;
+        }
+        else {
+            return undefined;
+        }
     }
     _dom(target) {
         let source = this.first[0];
@@ -194,7 +235,7 @@ class RHU_HTML extends RHU_ELEMENT {
         }).nextNode();
         let instance;
         const hasBinding = this._bind !== null && this._bind !== undefined;
-        if (target !== undefined && !hasBinding)
+        if (target !== undefined && !hasBinding && !this.boxed)
             instance = target;
         else
             instance = {};
@@ -213,6 +254,7 @@ class RHU_HTML extends RHU_ELEMENT {
         for (const slotElement of fragment.querySelectorAll("rhu-slot[rhu-internal]")) {
             try {
                 const attr = slotElement.getAttribute("rhu-internal");
+                const isOpen = slotElement.hasAttribute("rhu-open");
                 if (attr === undefined || attr === null) {
                     throw new Error("Could not find internal attribute.");
                 }
@@ -221,7 +263,7 @@ class RHU_HTML extends RHU_ELEMENT {
                     throw new Error("Could not find slot id.");
                 }
                 const slot = slots[i];
-                const frag = slot.dom(instance, slotElement.childNodes)[1];
+                const frag = slot.dom(instance, isOpen ? slotElement.childNodes : undefined)[1];
                 slotElement.replaceWith(frag);
             }
             catch (e) {
@@ -245,9 +287,6 @@ function isFactory(object) {
 export const Macro = ((type, html) => {
     const factory = function (...args) {
         return new RHU_MACRO(html, type, args);
-    };
-    factory.open = function (...args) {
-        return new RHU_MACRO_OPEN(html, type, args);
     };
     factory.close = RHU_CLOSURE.instance;
     factory[isFactorySymbol] = true;

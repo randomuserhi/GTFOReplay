@@ -132,7 +132,7 @@ const TypeList = Macro(class TypeList extends MacroElement {
 const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | undefined>) => Macro<typeof FeatureWrapper>)[] = [
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Damage Dealt to Enemies").bind("wrapper")}
+            ${FeatureWrapper("Damage Dealt to Enemies").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -207,7 +207,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Damage Dealt to Players").bind("wrapper")}
+            ${FeatureWrapper("Damage Dealt to Players").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -261,7 +261,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Kills").bind("wrapper")}
+            ${FeatureWrapper("Kills").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -308,7 +308,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Sentry Kills").bind("wrapper")}
+            ${FeatureWrapper("Sentry Kills").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -355,7 +355,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Mine Kills").bind("wrapper")}
+            ${FeatureWrapper("Mine Kills").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -402,7 +402,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Assists").bind("wrapper")}
+            ${FeatureWrapper("Assists").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -449,7 +449,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Tongue Dodges").bind("wrapper")}
+            ${FeatureWrapper("Tongue Dodges").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -496,7 +496,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Packs Used").bind("wrapper")}
+            ${FeatureWrapper("Packs Used").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -537,7 +537,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Packs Given").bind("wrapper")}
+            ${FeatureWrapper("Packs Given").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -578,7 +578,7 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
     },
     (self, v) => {
         const [bindings, frag] = html`
-            ${FeatureWrapper.open("Miscellaneous").bind("wrapper")}
+            ${FeatureWrapper("Miscellaneous").open().bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">

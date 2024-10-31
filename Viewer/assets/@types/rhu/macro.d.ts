@@ -9,14 +9,28 @@ export declare class RHU_CLOSURE extends RHU_NODE {
 export declare class RHU_ELEMENT<T = any, Frag extends Node = Node> extends RHU_NODE {
     protected _bind?: PropertyKey;
     bind(key?: PropertyKey): this;
-    callbacks: Set<(element: T) => void>;
-    then(callback: (element: T) => void): this;
-    copy(): RHU_ELEMENT;
+    protected boxed: boolean;
+    box(): this;
+    unbox(): this;
+    callbacks: Set<(element: T, children?: Iterable<Node>) => void>;
+    then(callback: (element: T, children?: Iterable<Node>) => void): this;
+    copy(): RHU_ELEMENT<T, Frag>;
     protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: T, fragment: Frag];
     dom<B extends T | void = void>(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: B extends void ? T : B, fragment: Frag];
     static is: (object: any) => object is RHU_ELEMENT;
 }
 type ElementInstance<T extends RHU_ELEMENT> = T extends RHU_ELEMENT<infer Bindings> ? Bindings : never;
+export declare class RHU_ELEMENT_OPEN<T extends RHU_ELEMENT = any> extends RHU_NODE {
+    element: T;
+    constructor(element: T);
+    box(): this;
+    unbox(): this;
+    copy(): RHU_ELEMENT_OPEN<T>;
+    bind(key?: PropertyKey): this;
+    then(callback: (element: ElementInstance<T>, children?: Iterable<Node>) => void): this;
+    dom<B extends ElementInstance<T> | void = void>(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: B extends void ? any : B, fragment: Node];
+    static is: (object: any) => object is RHU_ELEMENT_OPEN;
+}
 export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<string>> {
     constructor(binding: PropertyKey);
     protected _value?: string;
@@ -38,22 +52,25 @@ export declare class RHU_MACRO<T extends MacroClass = MacroClass> extends RHU_EL
     html: RHU_HTML;
     args: MacroParameters<T>;
     constructor(html: RHU_HTML, type: T, args: MacroParameters<T>);
-    copy(): RHU_MACRO;
+    open(): RHU_ELEMENT_OPEN<RHU_MACRO<T>>;
+    copy(): RHU_MACRO<T>;
     protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: InstanceType<T>, fragment: DocumentFragment];
     static is: (object: any) => object is RHU_MACRO;
 }
 export type MACRO<F extends FACTORY<any>> = RHU_MACRO<F extends FACTORY<infer T> ? T : any>;
-export declare class RHU_MACRO_OPEN<T extends MacroClass = MacroClass> extends RHU_MACRO<T> {
-    copy(): RHU_MACRO_OPEN;
-    static is: (object: any) => object is RHU_MACRO_OPEN;
+interface FACTORY_HTML {
+    <T extends {} = any>(first: RHU_HTML["first"], ...interpolations: RHU_HTML["interpolations"]): RHU_HTML<T>;
+    readonly close: RHU_CLOSURE;
 }
-export declare function html<T extends {} = any>(first: RHU_HTML["first"], ...interpolations: RHU_HTML["interpolations"]): RHU_HTML<T>;
+export declare const html: FACTORY_HTML;
 export declare class RHU_HTML<T extends Record<PropertyKey, any> = any> extends RHU_ELEMENT<T, DocumentFragment> {
     static empty: RHU_HTML<any>;
     private first;
     private interpolations;
     constructor(first: RHU_HTML["first"], interpolations: RHU_HTML["interpolations"]);
-    copy(): RHU_HTML;
+    readonly close: RHU_CLOSURE;
+    open(): RHU_ELEMENT_OPEN<RHU_HTML<T>>;
+    copy(): RHU_HTML<T>;
     private stitch;
     protected _dom(target?: Record<PropertyKey, any>): [instance: T, fragment: DocumentFragment];
     static is: (object: any) => object is RHU_HTML;
@@ -63,7 +80,6 @@ export type RHU_COMPONENT = RHU_HTML | RHU_MACRO;
 declare const isFactorySymbol: unique symbol;
 interface FACTORY<T extends MacroClass> {
     (...args: MacroParameters<T>): RHU_MACRO<T>;
-    readonly open: (...args: MacroParameters<T>) => RHU_MACRO<T>;
     readonly close: RHU_CLOSURE;
     readonly [isFactorySymbol]: boolean;
 }
