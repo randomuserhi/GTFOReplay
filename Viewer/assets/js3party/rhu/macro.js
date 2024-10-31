@@ -8,7 +8,6 @@ class RHU_CLOSURE extends RHU_NODE {
 RHU_CLOSURE.instance = new RHU_CLOSURE();
 RHU_CLOSURE.is = Object.prototype.isPrototypeOf.bind(RHU_CLOSURE.prototype);
 export { RHU_CLOSURE };
-const isDocumentFragment = Object.prototype.isPrototypeOf.bind(DocumentFragment.prototype);
 class RHU_ELEMENT extends RHU_NODE {
     constructor() {
         super(...arguments);
@@ -184,7 +183,7 @@ class RHU_HTML extends RHU_ELEMENT {
             throw new SyntaxError("Macro Factory cannot be used to construct a HTML fragment. Did you mean to call the factory?");
         }
         const index = slots.length;
-        if (RHU_ELEMENT.is(interp)) {
+        if (RHU_ELEMENT.is(interp) || isSignal(interp)) {
             slots.push(interp);
             return `<rhu-slot rhu-internal="${index}"></rhu-slot>`;
         }
@@ -267,8 +266,15 @@ class RHU_HTML extends RHU_ELEMENT {
                     throw new Error("Could not find slot id.");
                 }
                 const slot = slots[i];
-                const frag = slot.dom(instance, slotElement.childNodes)[1];
-                slotElement.replaceWith(frag);
+                if (!isSignal(slot)) {
+                    const frag = slot.dom(instance, slotElement.childNodes)[1];
+                    slotElement.replaceWith(frag);
+                }
+                else {
+                    const node = document.createTextNode(`${slot()}`);
+                    slot.on((value) => node.nodeValue = `${value}`);
+                    slotElement.replaceWith(node);
+                }
             }
             catch (e) {
                 slotElement.replaceWith();

@@ -1,4 +1,4 @@
-interface SignalEvent<T = any> {
+export interface SignalEvent<T = any> {
     (): T;
     equals(other: T): boolean;
     on(callback: Callback<T>, options?: {
