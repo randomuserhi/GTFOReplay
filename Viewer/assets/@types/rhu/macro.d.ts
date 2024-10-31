@@ -76,6 +76,7 @@ export declare class RHU_HTML<T extends Record<PropertyKey, any> = any> extends 
     static is: (object: any) => object is RHU_HTML;
 }
 export type HTML<T extends Record<PropertyKey, any> = any> = RHU_HTML<T>;
+export type html<T extends () => RHU_HTML<any>> = ReturnType<T> extends RHU_HTML<infer Binds> ? Binds : any;
 export type RHU_COMPONENT = RHU_HTML | RHU_MACRO;
 declare const isFactorySymbol: unique symbol;
 interface FACTORY<T extends MacroClass> {
