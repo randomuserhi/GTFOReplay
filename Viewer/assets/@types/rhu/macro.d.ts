@@ -12,11 +12,11 @@ export declare class RHU_ELEMENT<T = any, Frag extends Node = Node> extends RHU_
     protected boxed: boolean;
     box(): this;
     unbox(): this;
-    callbacks: Set<(element: T, children?: Iterable<Node>) => void>;
-    then(callback: (element: T, children?: Iterable<Node>) => void): this;
+    callbacks: Set<(element: T, children: RHU_CHILDREN) => void>;
+    then(callback: (element: T, children: RHU_CHILDREN) => void): this;
     copy(): RHU_ELEMENT<T, Frag>;
-    protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: T, fragment: Frag];
-    dom<B extends T | void = void>(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: B extends void ? T : B, fragment: Frag];
+    protected _dom(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: T, fragment: Frag];
+    dom<B extends T | void = void>(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: B extends void ? T : B, fragment: Frag];
     static is: (object: any) => object is RHU_ELEMENT;
 }
 type ElementInstance<T extends RHU_ELEMENT> = T extends RHU_ELEMENT<infer Bindings> ? Bindings : never;
@@ -27,8 +27,8 @@ export declare class RHU_ELEMENT_OPEN<T extends RHU_ELEMENT = any> extends RHU_N
     unbox(): this;
     copy(): RHU_ELEMENT_OPEN<T>;
     bind(key?: PropertyKey): this;
-    then(callback: (element: ElementInstance<T>, children?: Iterable<Node>) => void): this;
-    dom<B extends ElementInstance<T> | void = void>(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: B extends void ? any : B, fragment: Node];
+    then(callback: (element: ElementInstance<T>, children?: RHU_CHILDREN) => void): this;
+    dom<B extends ElementInstance<T> | void = void>(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: B extends void ? any : B, fragment: Node];
     static is: (object: any) => object is RHU_ELEMENT_OPEN;
 }
 export declare class RHU_SIGNAL extends RHU_ELEMENT<Signal<string>> {
@@ -44,7 +44,7 @@ export declare class MacroElement {
     constructor(dom: Node[], bindings?: any);
     static is: (object: any) => object is MacroElement;
 }
-export type RHU_CHILDREN = Iterable<Node>;
+export type RHU_CHILDREN = HTMLCollection;
 type MacroClass = new (dom: Node[], bindings: any, children: RHU_CHILDREN, ...args: any[]) => any;
 type MacroParameters<T extends MacroClass> = T extends new (dom: Node[], bindings: any, children: RHU_CHILDREN, ...args: infer P) => any ? P : never;
 export declare class RHU_MACRO<T extends MacroClass = MacroClass> extends RHU_ELEMENT<InstanceType<T>, DocumentFragment> {
@@ -54,7 +54,7 @@ export declare class RHU_MACRO<T extends MacroClass = MacroClass> extends RHU_EL
     constructor(html: RHU_HTML, type: T, args: MacroParameters<T>);
     open(): RHU_ELEMENT_OPEN<RHU_MACRO<T>>;
     copy(): RHU_MACRO<T>;
-    protected _dom(target?: Record<PropertyKey, any>, children?: Iterable<Node>): [instance: InstanceType<T>, fragment: DocumentFragment];
+    protected _dom(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: InstanceType<T>, fragment: DocumentFragment];
     static is: (object: any) => object is RHU_MACRO;
 }
 export type MACRO<F extends FACTORY<any>> = RHU_MACRO<F extends FACTORY<infer T> ? T : any>;
@@ -117,7 +117,7 @@ export declare class RHU_MAP<K, V, Wrapper extends RHU_COMPONENT = any, Item ext
     assign(entries: Iterable<[key: K, value: V]>): void;
 }
 declare const MapFactory: <K, V, Wrapper extends RHU_COMPONENT, Item extends RHU_COMPONENT>(wrapper: Wrapper, item: Item, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, key: K, value: V) => void) | undefined, update?: ((item: ElementInstance<Item>, key: K, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, key: K, value: V) => void) | undefined) => RHU_MACRO<{
-    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, key: K, value: V) => void) | undefined, update?: ((item: ElementInstance<Item>, key: K, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, key: K, value: V) => void) | undefined): RHU_MAP<K, V, Wrapper, Item>;
+    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: HTMLCollection, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, key: K, value: V) => void) | undefined, update?: ((item: ElementInstance<Item>, key: K, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, key: K, value: V) => void) | undefined): RHU_MAP<K, V, Wrapper, Item>;
     is: (object: any) => object is MacroElement;
 }>;
 export declare class RHU_SET<V, Wrapper extends RHU_COMPONENT = any, Item extends RHU_COMPONENT = any> extends MacroElement {
@@ -139,7 +139,7 @@ export declare class RHU_SET<V, Wrapper extends RHU_COMPONENT = any, Item extend
     assign(entries: Iterable<V>): void;
 }
 declare const SetFactory: <V, Wrapper extends RHU_COMPONENT, Item extends RHU_COMPONENT>(wrapper: Wrapper, item: Item, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V) => void) | undefined) => RHU_MACRO<{
-    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V) => void) | undefined): RHU_SET<V, Wrapper, Item>;
+    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: HTMLCollection, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V) => void) | undefined): RHU_SET<V, Wrapper, Item>;
     is: (object: any) => object is MacroElement;
 }>;
 export declare class RHU_LIST<V, Wrapper extends RHU_COMPONENT = any, Item extends RHU_COMPONENT = any> extends MacroElement {
@@ -163,7 +163,7 @@ export declare class RHU_LIST<V, Wrapper extends RHU_COMPONENT = any, Item exten
     assign(entries: Iterable<V>): void;
 }
 declare const ListFactory: <V, Wrapper extends RHU_COMPONENT, Item extends RHU_COMPONENT>(wrapper: Wrapper, item: Item, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V, index: number) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V, index: number) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V, index: number) => void) | undefined) => RHU_MACRO<{
-    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: RHU_CHILDREN, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V, index: number) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V, index: number) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V, index: number) => void) | undefined): RHU_LIST<V, Wrapper, Item>;
+    new (dom: Node[], bindings: ElementInstance<Wrapper>, children: HTMLCollection, wrapperFactory: RHU_COMPONENT, itemFactory: RHU_COMPONENT, append?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V, index: number) => void) | undefined, update?: ((item: ElementInstance<Item>, value: V, index: number) => void) | undefined, remove?: ((wrapper: ElementInstance<Wrapper>, dom: Node[], item: ElementInstance<Item>, value: V, index: number) => void) | undefined): RHU_LIST<V, Wrapper, Item>;
     is: (object: any) => object is MacroElement;
 }>;
 declare global {

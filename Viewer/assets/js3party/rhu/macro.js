@@ -39,7 +39,7 @@ class RHU_ELEMENT extends RHU_NODE {
     dom(target, children) {
         const result = this._dom(target, children);
         for (const callback of this.callbacks) {
-            callback(result[0], children);
+            callback(result[0], children === undefined ? EmptyHTMLCollection : children);
         }
         return result;
     }
@@ -122,6 +122,7 @@ class MacroElement {
 }
 MacroElement.is = Object.prototype.isPrototypeOf.bind(MacroElement.prototype);
 export { MacroElement };
+const EmptyHTMLCollection = document.createDocumentFragment().children;
 class RHU_MACRO extends RHU_ELEMENT {
     constructor(html, type, args) {
         super();
@@ -142,7 +143,7 @@ class RHU_MACRO extends RHU_ELEMENT {
     _dom(target, children) {
         const [b, frag] = this.html.dom();
         const dom = [...frag.childNodes];
-        const instance = new this.type(dom, b, children === undefined ? [] : children, ...this.args);
+        const instance = new this.type(dom, b, children === undefined ? EmptyHTMLCollection : children, ...this.args);
         if (target !== undefined && this._bind !== undefined && this._bind !== null) {
             if (this._bind in target)
                 throw new SyntaxError(`The binding '${this._bind.toString()}' already exists.`);
@@ -185,7 +186,7 @@ class RHU_HTML extends RHU_ELEMENT {
         }
         else if (RHU_ELEMENT_OPEN.is(interp)) {
             slots.push(interp.element);
-            return `<rhu-slot rhu-internal="${index}" rhu-open>`;
+            return `<rhu-slot rhu-internal="${index}">`;
         }
         else if (RHU_CLOSURE.is(interp)) {
             return `</rhu-slot>`;
@@ -254,7 +255,6 @@ class RHU_HTML extends RHU_ELEMENT {
         for (const slotElement of fragment.querySelectorAll("rhu-slot[rhu-internal]")) {
             try {
                 const attr = slotElement.getAttribute("rhu-internal");
-                const isOpen = slotElement.hasAttribute("rhu-open");
                 if (attr === undefined || attr === null) {
                     throw new Error("Could not find internal attribute.");
                 }
@@ -263,7 +263,7 @@ class RHU_HTML extends RHU_ELEMENT {
                     throw new Error("Could not find slot id.");
                 }
                 const slot = slots[i];
-                const frag = slot.dom(instance, isOpen ? slotElement.childNodes : undefined)[1];
+                const frag = slot.dom(instance, slotElement.children)[1];
                 slotElement.replaceWith(frag);
             }
             catch (e) {
@@ -310,9 +310,9 @@ export class RHU_MAP extends MacroElement {
             this.wrapper = bindings;
         }
         else if (RHU_MACRO.is(wrapperFactory)) {
-            this.wrapper = new wrapperFactory.type(dom, bindings, [], ...wrapperFactory.args);
+            this.wrapper = new wrapperFactory.type(dom, bindings, EmptyHTMLCollection, ...wrapperFactory.args);
             for (const callback of wrapperFactory.callbacks) {
-                callback(this.wrapper);
+                callback(this.wrapper, EmptyHTMLCollection);
             }
         }
         else {
@@ -434,9 +434,9 @@ export class RHU_SET extends MacroElement {
             this.wrapper = bindings;
         }
         else if (RHU_MACRO.is(wrapperFactory)) {
-            this.wrapper = new wrapperFactory.type(dom, bindings, [], ...wrapperFactory.args);
+            this.wrapper = new wrapperFactory.type(dom, bindings, EmptyHTMLCollection, ...wrapperFactory.args);
             for (const callback of wrapperFactory.callbacks) {
-                callback(this.wrapper);
+                callback(this.wrapper, EmptyHTMLCollection);
             }
         }
         else {
@@ -545,9 +545,9 @@ export class RHU_LIST extends MacroElement {
             this.wrapper = bindings;
         }
         else if (RHU_MACRO.is(wrapperFactory)) {
-            this.wrapper = new wrapperFactory.type(dom, bindings, [], ...wrapperFactory.args);
+            this.wrapper = new wrapperFactory.type(dom, bindings, EmptyHTMLCollection, ...wrapperFactory.args);
             for (const callback of wrapperFactory.callbacks) {
-                callback(this.wrapper);
+                callback(this.wrapper, EmptyHTMLCollection);
             }
         }
         else {
