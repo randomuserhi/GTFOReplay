@@ -113,7 +113,7 @@ class RHU_SIGNAL extends RHU_ELEMENT {
             if (node === undefined)
                 return;
             node.nodeValue = `${value}`;
-        }, { guard: () => ref.deref() !== undefined });
+        }, { condition: () => ref.deref() !== undefined });
         return [instance, node, [node]];
     }
 }
@@ -284,7 +284,7 @@ class RHU_HTML extends RHU_ELEMENT {
                         if (node === undefined)
                             return;
                         node.nodeValue = `${value}`;
-                    }, { guard: () => ref.deref() !== undefined });
+                    }, { condition: () => ref.deref() !== undefined });
                     slotElement.replaceWith(node);
                 }
             }

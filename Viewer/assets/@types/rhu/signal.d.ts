@@ -3,9 +3,11 @@ export interface SignalEvent<T = any> {
     equals(other: T): boolean;
     on(callback: Callback<T>, options?: {
         signal?: AbortSignal;
-        guard?: () => boolean;
+        condition?: () => boolean;
     }): Callback<T>;
     off(handle: Callback<T>): boolean;
+    release(): void;
+    check(): number;
 }
 export interface Signal<T> extends SignalEvent<T> {
     (value: T): T;
@@ -21,16 +23,16 @@ export interface Effect {
     (): void;
     [destructors]: (() => void)[];
     release(): void;
+    check(): boolean;
 }
 export declare const isEffect: (obj: any) => obj is Effect;
 export declare function effect(expression: () => ((() => void) | void), dependencies: SignalEvent[], options?: {
     signal?: AbortSignal;
-    guard?: () => boolean;
+    condition?: () => boolean;
 }): Effect;
 export interface Computed<T> extends SignalEvent<T> {
     (): T;
     effect: Effect;
-    release(): void;
 }
 export declare function computed<T>(expression: (set: Signal<T>) => ((() => void) | void), dependencies: SignalEvent[], equality?: Equality<T>, options?: {
     signal?: AbortSignal;

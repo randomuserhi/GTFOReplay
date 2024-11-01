@@ -24,12 +24,12 @@ export function signal(value, equality) {
                     }
                 }
                 ref.value = value;
-                for (const [callback, guard] of callbacks.value) {
-                    if (guard !== undefined && !guard()) {
+                for (const [callback, condition] of callbacks.value) {
+                    if (condition !== undefined && !condition()) {
                         continue;
                     }
                     callback(ref.value);
-                    callbacks.buffer.set(callback, guard);
+                    callbacks.buffer.set(callback, condition);
                 }
                 callbacks.value.clear();
                 const temp = callbacks.buffer;
@@ -46,8 +46,11 @@ export function signal(value, equality) {
     };
     signal.on = function (callback, options) {
         if (!callbacks.value.has(callback)) {
+            if (options?.condition !== undefined && !options.condition()) {
+                return callback;
+            }
             callback(ref.value);
-            callbacks.value.set(callback, options?.guard);
+            callbacks.value.set(callback, options?.condition);
             if (options?.signal !== undefined) {
                 options.signal.addEventListener("abort", () => callbacks.value.delete(callback), { once: true });
             }
@@ -63,6 +66,23 @@ export function signal(value, equality) {
         }
         return equality(ref.value, other);
     };
+    signal.release = function () {
+        callbacks.value.clear();
+        callbacks.buffer.clear();
+    };
+    signal.check = function () {
+        for (const [callback, condition] of callbacks.value) {
+            if (condition !== undefined && !condition()) {
+                continue;
+            }
+            callbacks.buffer.set(callback, condition);
+        }
+        callbacks.value.clear();
+        const temp = callbacks.buffer;
+        callbacks.buffer = callbacks.value;
+        callbacks.value = temp;
+        return callbacks.value.size;
+    };
     Object.setPrototypeOf(signal, proto);
     return signal;
 }
@@ -72,24 +92,14 @@ Object.setPrototypeOf(effectProto, proto);
 export const isEffect = Object.prototype.isPrototypeOf.bind(effectProto);
 export function effect(expression, dependencies, options) {
     const effect = function () {
-        if (options?.guard !== undefined) {
-            if (!options.guard()) {
-                effect.release();
-                return;
-            }
-        }
+        if (!effect.check())
+            return;
         effect[destructors] = [];
         const destructor = expression();
         if (destructor !== undefined) {
             effect[destructors].push(destructor);
         }
     };
-    effect[destructors] = [];
-    const destructor = expression();
-    if (destructor !== undefined) {
-        effect[destructors].push(destructor);
-    }
-    Object.setPrototypeOf(effect, effectProto);
     let deps = [];
     for (const signal of dependencies) {
         if (isEffect(signal))
@@ -109,11 +119,22 @@ export function effect(expression, dependencies, options) {
         }
         deps = undefined;
     };
+    effect.check = function () {
+        if (options?.condition !== undefined) {
+            if (!options.condition()) {
+                effect.release();
+                return false;
+            }
+        }
+        return true;
+    };
+    Object.setPrototypeOf(effect, effectProto);
     if (options?.signal !== undefined) {
         options.signal.addEventListener("abort", () => {
             effect.release();
         }, { once: true });
     }
+    effect();
     return effect;
 }
 const dependencyMap = new WeakMap();
@@ -134,6 +155,12 @@ export function computed(expression, dependencies, equality, options) {
     };
     computed.effect = effect(() => expression(value), dependencies, options);
     computed.release = computed.effect.release;
+    computed.check = function () {
+        if (!computed.effect.check()) {
+            value.release();
+        }
+        return value.check();
+    };
     Object.setPrototypeOf(computed, proto);
     return computed;
 }
