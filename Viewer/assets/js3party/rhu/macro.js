@@ -91,7 +91,9 @@ class RHU_SIGNAL extends RHU_ELEMENT {
         return this;
     }
     copy() {
-        const copy = new RHU_SIGNAL(this._bind).value(this._value);
+        const copy = new RHU_SIGNAL(this._bind);
+        copy._value = this._value;
+        copy._toString = this._toString;
         copy.boxed = this.boxed;
         for (const callback of this.callbacks.values()) {
             copy.then(callback);
