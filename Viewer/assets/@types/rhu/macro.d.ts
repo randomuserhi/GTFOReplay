@@ -32,9 +32,9 @@ export declare class RHU_ELEMENT_OPEN<T extends RHU_ELEMENT = any> extends RHU_N
     static is: (object: any) => object is RHU_ELEMENT_OPEN;
 }
 export declare class RHU_SIGNAL<T = any> extends RHU_ELEMENT<Signal<T>> {
-    constructor(binding: PropertyKey, toString?: (value?: T) => string);
-    protected _toString?: (value?: T) => string;
-    string(toString: (value?: T) => string): void;
+    constructor(binding: PropertyKey, toString?: (value: T) => string);
+    protected _toString?: (value: T) => string;
+    string(toString: (value: T) => string): void;
     protected _value: T;
     value(value: T): this;
     copy(): RHU_SIGNAL<T>;
@@ -89,7 +89,7 @@ interface FACTORY<T extends MacroClass> {
 export type Macro<F extends FACTORY<any>> = F extends FACTORY<infer T> ? InstanceType<T> : any;
 interface MacroNamespace {
     <T extends MacroClass>(type: T, html: (...args: MacroParameters<T>) => RHU_HTML): FACTORY<T>;
-    signal<T>(binding: string, value?: T, toString?: (value?: T) => string): RHU_SIGNAL<T>;
+    signal<T>(binding: string, value?: T, toString?: (value: T) => string): RHU_SIGNAL<T>;
     create<T extends RHU_MACRO>(macro: T): T extends RHU_MACRO<infer R> ? InstanceType<R> : never;
     observe(node: Node): void;
     map: typeof MapFactory;
