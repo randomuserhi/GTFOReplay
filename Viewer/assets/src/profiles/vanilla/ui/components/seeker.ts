@@ -126,7 +126,7 @@ export const Seeker = Macro(class Seeker extends MacroElement {
 
         this.mount.append(...children);
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <div m-id="interact" class="${style.bar}">
             <div m-id="bar" class="${style.visualBar}">

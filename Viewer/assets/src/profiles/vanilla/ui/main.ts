@@ -141,7 +141,7 @@ const UI = Macro(class UI extends MacroElement {
         }
         if (view) view.resize();
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         ${Bar().open()}
             ${Button().open().bind("settings")}

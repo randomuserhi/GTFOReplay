@@ -27,7 +27,7 @@ const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
         this.tag = tag;
         this.body.append(...children);
     }
-}, html`
+}, () => html`
     <div m-id="body"></div>
 `);
 
@@ -539,7 +539,7 @@ export const Settings = Macro(class Settings extends MacroElement {
             this.body.replaceChildren(...results);
         });
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <div style="margin-bottom: 20px;">
             <h1>SETTINGS</h1>

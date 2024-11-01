@@ -66,7 +66,7 @@ const moduleListStyles = Style(({ css }) => {
 const ModuleItem = Macro(class ModuleItem extends MacroElement {
     public button: HTMLLIElement;
     public key: Signal<string>;
-}, html`<li m-id="button" class="${moduleListStyles.item}">${Macro.signal("key")}</li>`);
+}, () => html`<li m-id="button" class="${moduleListStyles.item}">${Macro.signal("key")}</li>`);
 
 const ModuleList = Macro(class ModuleList extends MacroElement {
     constructor (dom: Node[], bindings: any) {
@@ -121,7 +121,7 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
     });
 
     public mount: HTMLDivElement;
-}, html`
+}, () => html`
     <div class="${moduleListStyles.wrapper}">
         <div class="${moduleListStyles.sticky}">
             <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
@@ -295,7 +295,7 @@ export const WinNav = Macro(class WinNav extends MacroElement {
 
         this.mount.append(...children);
     }
-}, html`
+}, () => html`
     <nav class="${style.wrapper}">
         <div m-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
             ${icons.cross()}

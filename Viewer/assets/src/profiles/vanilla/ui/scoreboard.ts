@@ -151,7 +151,7 @@ const Slot = Macro(class Slot extends MacroElement {
     private items: RHU_MAP<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>;
 
     public view = signal<Macro<typeof View> | undefined>(undefined);
-}, html`
+}, () => html`
     <tr m-id="wrapper" class="${style.slot}">
         <td m-id="avatar" class="${style.avatar}" style="padding: 10px;"></td>
         <td><span>${Macro.signal("name", "Name")}</span></td>
@@ -304,7 +304,7 @@ export const Scoreboard = Macro(class Scoreboard extends MacroElement {
     }); 
 
     public view = signal<Macro<typeof View> | undefined>(undefined);
-}, html`
+}, () => html`
     <div m-id="wrapper" style="display: none;">
         <table class="${style.wrapper}">
             <tbody m-id="table" style="display: none;">

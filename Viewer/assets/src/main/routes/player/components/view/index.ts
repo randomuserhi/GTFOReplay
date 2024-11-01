@@ -123,4 +123,4 @@ export const View = Macro(class View extends MacroElement {
 
         requestAnimationFrame(() => this.update());
     }
-}, html`<canvas class="${style.canvas}" tabindex="-1"></canvas>`);
+}, () => html`<canvas class="${style.canvas}" tabindex="-1"></canvas>`);

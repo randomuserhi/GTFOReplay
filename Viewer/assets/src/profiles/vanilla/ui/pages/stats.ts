@@ -26,7 +26,7 @@ const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
         this.tag = tag;
         this.body.append(...children);
     }
-}, html`
+}, () => html`
     <div m-id="body"></div>
 `);
 
@@ -49,7 +49,7 @@ const Item = Macro(class Item extends MacroElement {
 
         this.key(key);
     }
-}, html`
+}, () => html`
     <li style="display: flex">
         <span>${Macro.signal("key")}</span>
         <div style="flex: 1"></div>
@@ -118,7 +118,7 @@ const TypeList = Macro(class TypeList extends MacroElement {
         }
         return true;
     });
-}, html`
+}, () => html`
     <div style="display: flex">
         <span style="font-size: 20px;">${Macro.signal("title")}</span>
         <div style="flex: 1"></div>
@@ -693,7 +693,7 @@ export const Stats = Macro(class Stats extends MacroElement {
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <div style="margin-bottom: 20px;">
             <h1>STATS</h1>

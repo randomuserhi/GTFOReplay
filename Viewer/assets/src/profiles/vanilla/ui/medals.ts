@@ -530,7 +530,7 @@ export const Medal = Macro(class Medal extends MacroElement {
         this.value = b.value;
         this.description.replaceChildren(frag);
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <img m-id="img"/>
         <div class="${style.mount}">

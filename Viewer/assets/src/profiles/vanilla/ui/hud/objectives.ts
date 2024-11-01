@@ -332,7 +332,7 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
     private api: ReplayApi | undefined = undefined;
     public reactorIndex = signal<number>(0);
     public view = signal<Macro<typeof View> | undefined>(undefined);
-}, html`
+}, () => html`
     <div m-id="wrapper" class="${style.wrapper}">
         <div m-id="controls" class="${style.controls}">
             <span m-id="left" class="${style.controls.button}">${icons.chevronLeft()}</span>

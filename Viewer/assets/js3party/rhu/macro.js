@@ -308,7 +308,7 @@ function isFactory(object) {
 }
 export const Macro = ((type, html) => {
     const factory = function (...args) {
-        return new RHU_MACRO(html, type, args);
+        return new RHU_MACRO(html(...args), type, args);
     };
     factory.close = RHU_CLOSURE.instance;
     factory[isFactorySymbol] = true;

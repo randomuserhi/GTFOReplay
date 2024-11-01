@@ -226,7 +226,7 @@ const App = Macro(class App extends MacroElement {
     public load(macro: MacroElement) {
         this.body.replaceChildren(...macro.dom);
     }
-}, html`
+}, () => html`
     <div class="${theme} ${style.wrapper}">
         ${WinNav().open().bind("nav")}
             <span>GTFO Replay Viewer</span>

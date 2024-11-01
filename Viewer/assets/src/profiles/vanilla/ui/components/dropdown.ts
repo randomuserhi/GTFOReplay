@@ -105,7 +105,7 @@ const Item = Macro(class Item extends MacroElement {
     public key: Signal<string>;
     public value: any = undefined;
     public button: HTMLSpanElement;
-}, html`<span m-id="button" class="${style.item}">${Macro.signal("key")}</span>`);
+}, () => html`<span m-id="button" class="${style.item}">${Macro.signal("key")}</span>`);
 
 export const Dropdown = Macro(class Dropdown extends MacroElement {
     public wrapper: HTMLDivElement;
@@ -177,7 +177,7 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
         }
         return true;
     });
-}, html`
+}, () => html`
     <div m-id="wrapper" class="${style.wrapper}" tabindex="-1">
         <span m-id="select" class="${style.item}">${Macro.signal("selected")}</span>
         ${

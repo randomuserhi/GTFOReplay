@@ -90,7 +90,7 @@ export const Main = Macro(class Main extends MacroElement {
             this.loadButton.style.display = value ? "none" : "block";
         });
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <div class="${style.empty}">
             <div class="${style.watermark}">${__version__}</div>

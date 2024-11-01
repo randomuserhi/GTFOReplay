@@ -81,7 +81,7 @@ export const Button = Macro(class Button extends MacroElement {
             else this.button.classList.remove(`${style.selected}`);
         });
     }
-}, html`
+}, () => html`
     <button m-id="button" class="${style.button}">
         <div class="${style.highlight}"></div>
         <span m-id="icon"></span>
@@ -96,4 +96,4 @@ export const Bar = Macro(class Bar extends MacroElement {
 
         this.mount.append(...children);
     }
-}, html`<div m-id="mount" class="${style.wrapper}"></div>`);
+}, () => html`<div m-id="mount" class="${style.wrapper}"></div>`);

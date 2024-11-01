@@ -25,4 +25,4 @@ export const Toggle = Macro(class Toggle extends MacroElement {
             e.preventDefault();
         });
     }
-}, html`<button m-id="button" class="${style.toggle}"></button>`);
+}, () => html`<button m-id="button" class="${style.toggle}"></button>`);

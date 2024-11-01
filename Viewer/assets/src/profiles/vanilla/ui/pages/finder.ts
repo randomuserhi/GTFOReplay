@@ -51,7 +51,7 @@ const Item = Macro(class Item extends MacroElement {
             else this.button.style.display = "none";
         });
     }
-}, html`
+}, () => html`
     <div m-id="button" class="${itemStyle.item}">
         <span>${Macro.signal("key")}</span>
     </div>`
@@ -189,7 +189,7 @@ export const Finder = Macro(class Finder extends MacroElement {
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <div style="margin-bottom: 20px;">
             <h1>ITEM FINDER</h1>

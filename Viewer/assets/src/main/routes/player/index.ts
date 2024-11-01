@@ -107,7 +107,7 @@ export const player = Macro(class Player extends MacroElement {
         window.api.send("unlink");
         window.api.send("close");
     }
-}, html`
+}, () => html`
     <div m-id="wrapper" class="${style.wrapper}">
         ${View().bind("view")}
     </div>

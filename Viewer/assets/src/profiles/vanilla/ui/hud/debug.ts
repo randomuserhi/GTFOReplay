@@ -41,7 +41,7 @@ export const Debug = Macro(class Debug extends MacroElement {
     }
 
     public view = signal<Macro<typeof View> | undefined>(undefined);
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         ${Macro.signal("position", "x: 0, y: 0, z: 0")}
     </div>

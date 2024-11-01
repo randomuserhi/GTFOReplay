@@ -119,7 +119,7 @@ export const Info = Macro(class Info extends MacroElement {
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
     }
-}, html`
+}, () => html`
     <div class="${style.wrapper}">
         <div style="margin-bottom: 20px;">
             <h1>REPLAY INFORMATION</h1>

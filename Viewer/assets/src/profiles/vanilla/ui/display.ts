@@ -234,7 +234,7 @@ export const Display = Macro(class Display extends MacroElement {
     public scoreboard: Macro<typeof Scoreboard>;
 
     public view = signal<Macro<typeof View> | undefined>(undefined);
-}, html`
+}, () => html`
     <div m-id="mount" class="${style.view}"></div>
     ${Scoreboard().bind("scoreboard").then((macro) => macro.wrapper.classList.add(`${style.scoreboard}`))}
     <div class="${style.bottom}">
