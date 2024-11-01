@@ -39,7 +39,7 @@ class RHU_ELEMENT extends RHU_NODE {
     dom(target, children) {
         const result = this._dom(target, children);
         for (const callback of this.callbacks) {
-            callback(result[0], children === undefined ? NoChildren : children, result.pop());
+            callback(result[0], children === undefined ? [] : children, result.pop());
         }
         return result;
     }
@@ -142,7 +142,6 @@ class MacroElement {
 }
 MacroElement.is = Object.prototype.isPrototypeOf.bind(MacroElement.prototype);
 export { MacroElement };
-const NoChildren = document.createDocumentFragment().childNodes;
 class RHU_MACRO extends RHU_ELEMENT {
     constructor(html, type, args) {
         super();
@@ -162,9 +161,11 @@ class RHU_MACRO extends RHU_ELEMENT {
         return copy;
     }
     _dom(target, children) {
-        const [b, frag] = this.html.dom();
+        if (children === undefined)
+            children = [];
+        const [b, frag] = this.html(children, ...this.args).dom();
         const dom = [...frag.childNodes];
-        const instance = new this.type(dom, b, children === undefined ? NoChildren : children, ...this.args);
+        const instance = new this.type(dom, b, children, ...this.args);
         if (target !== undefined && this._bind !== undefined && this._bind !== null) {
             if (this._bind in target)
                 throw new SyntaxError(`The binding '${this._bind.toString()}' already exists.`);
@@ -287,7 +288,7 @@ class RHU_HTML extends RHU_ELEMENT {
                 }
                 const slot = slots[i];
                 if (!isSignal(slot)) {
-                    const frag = slot.dom(instance, slotElement.childNodes)[1];
+                    const frag = slot.dom(instance, [...slotElement.childNodes])[1];
                     slotElement.replaceWith(frag);
                 }
                 else {
@@ -322,7 +323,7 @@ function isFactory(object) {
 }
 export const Macro = ((type, html) => {
     const factory = function (...args) {
-        return new RHU_MACRO(html(...args), type, args);
+        return new RHU_MACRO(html, type, args);
     };
     factory.close = RHU_CLOSURE.instance;
     factory[isFactorySymbol] = true;
@@ -345,9 +346,9 @@ export class RHU_MAP extends MacroElement {
             this.wrapper = bindings;
         }
         else if (RHU_MACRO.is(wrapperFactory)) {
-            this.wrapper = new wrapperFactory.type(dom, bindings, NoChildren, ...wrapperFactory.args);
+            this.wrapper = new wrapperFactory.type(dom, bindings, [], ...wrapperFactory.args);
             for (const callback of wrapperFactory.callbacks) {
-                callback(this.wrapper, NoChildren, this.wrapper.dom);
+                callback(this.wrapper, [], this.wrapper.dom);
             }
         }
         else {
@@ -454,7 +455,7 @@ export class RHU_MAP extends MacroElement {
     }
 }
 const MapFactory = function (wrapper, item, append, update, remove) {
-    return new RHU_MACRO(RHU_HTML.is(wrapper) ? wrapper : wrapper.html, (RHU_MAP), [wrapper, item, append, update, remove]);
+    return new RHU_MACRO(RHU_HTML.is(wrapper) ? (() => wrapper) : wrapper.html, (RHU_MAP), [wrapper, item, append, update, remove]);
 };
 html.map = MapFactory;
 export class RHU_SET extends MacroElement {
@@ -469,9 +470,9 @@ export class RHU_SET extends MacroElement {
             this.wrapper = bindings;
         }
         else if (RHU_MACRO.is(wrapperFactory)) {
-            this.wrapper = new wrapperFactory.type(dom, bindings, NoChildren, ...wrapperFactory.args);
+            this.wrapper = new wrapperFactory.type(dom, bindings, [], ...wrapperFactory.args);
             for (const callback of wrapperFactory.callbacks) {
-                callback(this.wrapper, NoChildren, this.wrapper.dom);
+                callback(this.wrapper, [], this.wrapper.dom);
             }
         }
         else {
@@ -565,7 +566,7 @@ export class RHU_SET extends MacroElement {
     }
 }
 const SetFactory = function (wrapper, item, append, update, remove) {
-    return new RHU_MACRO(RHU_HTML.is(wrapper) ? wrapper : wrapper.html, (RHU_SET), [wrapper, item, append, update, remove]);
+    return new RHU_MACRO(RHU_HTML.is(wrapper) ? (() => wrapper) : wrapper.html, (RHU_SET), [wrapper, item, append, update, remove]);
 };
 html.set = SetFactory;
 export class RHU_LIST extends MacroElement {
@@ -580,9 +581,9 @@ export class RHU_LIST extends MacroElement {
             this.wrapper = bindings;
         }
         else if (RHU_MACRO.is(wrapperFactory)) {
-            this.wrapper = new wrapperFactory.type(dom, bindings, NoChildren, ...wrapperFactory.args);
+            this.wrapper = new wrapperFactory.type(dom, bindings, [], ...wrapperFactory.args);
             for (const callback of wrapperFactory.callbacks) {
-                callback(this.wrapper, NoChildren, this.wrapper.dom);
+                callback(this.wrapper, [], this.wrapper.dom);
             }
         }
         else {
@@ -690,7 +691,7 @@ export class RHU_LIST extends MacroElement {
     }
 }
 const ListFactory = function (wrapper, item, append, update, remove) {
-    return new RHU_MACRO(RHU_HTML.is(wrapper) ? wrapper : wrapper.html, (RHU_LIST), [wrapper, item, append, update, remove]);
+    return new RHU_MACRO(RHU_HTML.is(wrapper) ? (() => wrapper) : wrapper.html, (RHU_LIST), [wrapper, item, append, update, remove]);
 };
 html.list = ListFactory;
 const isElement = Object.prototype.isPrototypeOf.bind(Element.prototype);

@@ -46,14 +46,14 @@ export declare class MacroElement {
     constructor(dom: Node[], bindings?: any);
     static is: (object: any) => object is MacroElement;
 }
-export type RHU_CHILDREN = NodeListOf<ChildNode>;
+export type RHU_CHILDREN = Node[];
 type MacroClass = new (dom: Node[], bindings: any, children: RHU_CHILDREN, ...args: any[]) => any;
 type MacroParameters<T extends MacroClass> = T extends new (dom: Node[], bindings: any, children: RHU_CHILDREN, ...args: infer P) => any ? P : never;
 export declare class RHU_MACRO<T extends MacroClass = MacroClass> extends RHU_ELEMENT<InstanceType<T>, DocumentFragment> {
     type: T;
-    html: RHU_HTML;
+    html: RHU_HTML_FACTORY<MacroParameters<T>>;
     args: MacroParameters<T>;
-    constructor(html: RHU_HTML, type: T, args: MacroParameters<T>);
+    constructor(html: RHU_HTML_FACTORY<MacroParameters<T>>, type: T, args: MacroParameters<T>);
     open(): RHU_ELEMENT_OPEN<RHU_MACRO<T>>;
     copy(): RHU_MACRO<T>;
     protected _dom(target?: Record<PropertyKey, any>, children?: RHU_CHILDREN): [instance: InstanceType<T>, fragment: DocumentFragment, dom: Node[]];
@@ -83,7 +83,8 @@ export declare class RHU_HTML<T extends Record<PropertyKey, any> = any> extends 
     static is: (object: any) => object is RHU_HTML;
 }
 export type HTML<T extends Record<PropertyKey, any> = any> = RHU_HTML<T>;
-export type html<T extends () => RHU_HTML<any>> = ReturnType<T> extends RHU_HTML<infer Binds> ? Binds : any;
+type RHU_HTML_FACTORY<Parameters extends any[] = any[]> = (children: RHU_CHILDREN, ...args: Parameters) => RHU_HTML;
+export type html<T extends (...args: any[]) => RHU_HTML<any>> = ReturnType<T> extends RHU_HTML<infer Binds> ? Binds : any;
 export type RHU_COMPONENT = RHU_HTML | RHU_MACRO;
 declare const isFactorySymbol: unique symbol;
 interface FACTORY<T extends MacroClass> {
