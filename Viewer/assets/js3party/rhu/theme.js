@@ -41,6 +41,7 @@ Theme.dispose = (theme) => {
     const el = theme[element];
     if (el === undefined)
         throw new Error("Cannot dispose a non-style object.");
+    theme[element] = undefined;
     el.remove();
 };
 export function tvar(themeVar) {

@@ -71,5 +71,6 @@ Style.dispose = (style) => {
     const el = style[element];
     if (el === undefined)
         throw new Error("Cannot dispose a non-style object.");
+    style[element] = undefined;
     el.remove();
 };
