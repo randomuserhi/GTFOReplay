@@ -1,4 +1,5 @@
 import { isSignal, signal } from "./signal.js";
+const isNode = Object.prototype.isPrototypeOf.bind(Node.prototype);
 class RHU_NODE {
 }
 RHU_NODE.is = Object.prototype.isPrototypeOf.bind(RHU_NODE.prototype);
@@ -204,7 +205,11 @@ class RHU_HTML extends RHU_ELEMENT {
             throw new SyntaxError("Macro Factory cannot be used to construct a HTML fragment. Did you mean to call the factory?");
         }
         const index = slots.length;
-        if (RHU_ELEMENT.is(interp) || isSignal(interp)) {
+        if (isNode(interp)) {
+            slots.push(interp);
+            return `<rhu-slot rhu-internal="${index}"></rhu-slot>`;
+        }
+        else if (RHU_ELEMENT.is(interp) || isSignal(interp)) {
             slots.push(interp);
             return `<rhu-slot rhu-internal="${index}"></rhu-slot>`;
         }
@@ -287,11 +292,7 @@ class RHU_HTML extends RHU_ELEMENT {
                     throw new Error("Could not find slot id.");
                 }
                 const slot = slots[i];
-                if (!isSignal(slot)) {
-                    const frag = slot.dom(instance, [...slotElement.childNodes])[1];
-                    slotElement.replaceWith(frag);
-                }
-                else {
+                if (isSignal(slot)) {
                     const node = document.createTextNode(`${slot()}`);
                     const ref = new WeakRef(node);
                     slot.on((value) => {
@@ -301,6 +302,13 @@ class RHU_HTML extends RHU_ELEMENT {
                         node.nodeValue = `${value}`;
                     }, { condition: () => ref.deref() !== undefined });
                     slotElement.replaceWith(node);
+                }
+                else if (isNode(slot)) {
+                    slotElement.replaceWith(slot);
+                }
+                else {
+                    const frag = slot.dom(instance, [...slotElement.childNodes])[1];
+                    slotElement.replaceWith(frag);
                 }
             }
             catch (e) {
