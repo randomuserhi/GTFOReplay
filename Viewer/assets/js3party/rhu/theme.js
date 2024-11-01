@@ -1,5 +1,6 @@
 import { exists } from "./rhu.js";
 import { ClassName } from "./style.js";
+const element = Symbol("theme.element");
 let id = 69;
 export const ThemeVariable = function (name) {
     if (exists(name)) {
@@ -12,7 +13,7 @@ export const ThemeVariable = function (name) {
 ThemeVariable.prototype[Symbol.toPrimitive] = function () {
     return `var(${this.name})`;
 };
-export function Theme(factory) {
+export const Theme = (factory) => {
     const cn = new ClassName();
     let generatedCode = `.${cn} {`;
     const generator = function (first, ...interpolations) {
@@ -32,9 +33,16 @@ export function Theme(factory) {
     const el = document.createElement("style");
     el.innerHTML = generatedCode;
     document.head.append(el);
+    exports[element] = el;
     Object.assign(cn, exports);
     return cn;
-}
+};
+Theme.dispose = (theme) => {
+    const el = theme[element];
+    if (el === undefined)
+        throw new Error("Cannot dispose a non-style object.");
+    el.remove();
+};
 export function tvar(themeVar) {
     return themeVar.name;
 }
