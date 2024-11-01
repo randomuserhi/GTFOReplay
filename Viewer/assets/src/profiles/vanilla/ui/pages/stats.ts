@@ -51,9 +51,9 @@ const Item = Macro(class Item extends MacroElement {
     }
 }, () => html`
     <li style="display: flex">
-        <span>${Macro.signal("key")}</span>
+        <span>${html.signal("key")}</span>
         <div style="flex: 1"></div>
-        <span>${Macro.signal("value")}</span>
+        <span>${html.signal("value")}</span>
     </li>`
 );
 
@@ -120,9 +120,9 @@ const TypeList = Macro(class TypeList extends MacroElement {
     });
 }, () => html`
     <div style="display: flex">
-        <span style="font-size: 20px;">${Macro.signal("title")}</span>
+        <span style="font-size: 20px;">${html.signal("title")}</span>
         <div style="flex: 1"></div>
-        <span>${Macro.signal("total")}</span>
+        <span>${html.signal("total")}</span>
     </div>
     <span m-id="empty" style="display: block;">None</span>
     <ul m-id="list">
@@ -141,32 +141,32 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                         <li style="display: flex">
                             <span>Bullet Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("bulletDamage")}</span>
+                            <span>${html.signal("bulletDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Melee Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("meleeDamage")}</span>
+                            <span>${html.signal("meleeDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Sentry Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("sentryDamage")}</span>
+                            <span>${html.signal("sentryDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Explosive Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("explosiveDamage")}</span>
+                            <span>${html.signal("explosiveDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Stagger Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("staggerDamage")}</span>
+                            <span>${html.signal("staggerDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Sentry Stagger Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("sentryStaggerDamage")}</span>
+                            <span>${html.signal("sentryStaggerDamage")}</span>
                         </li>
                     </ul>
                 </div>
@@ -216,17 +216,17 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                         <li style="display: flex">
                             <span>Bullet Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("bulletDamage")}</span>
+                            <span>${html.signal("bulletDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Sentry Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("sentryDamage")}</span>
+                            <span>${html.signal("sentryDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Explosive Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("explosiveDamage")}</span>
+                            <span>${html.signal("explosiveDamage")}</span>
                         </li>
                     </ul>
                 </div>
@@ -587,12 +587,12 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                         <li style="display: flex">
                             <span>Revives</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("revives")}</span>
+                            <span>${html.signal("revives")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Silent Shots</span>
                             <div style="flex: 1"></div>
-                            <span>${Macro.signal("silent")}</span>
+                            <span>${html.signal("silent")}</span>
                         </li>
                     </ul>
                 </div>

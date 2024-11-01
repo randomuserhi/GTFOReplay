@@ -136,7 +136,7 @@ export const Info = Macro(class Info extends MacroElement {
                 ">
                     <span>Is Master</span>
                     <div style="flex: 1"></div>
-                    <span>${Macro.signal("isMaster")}</span>
+                    <span>${html.signal("isMaster")}</span>
                 </div>
                 <div m-id="isMasterText" style="display: none; margin-left: 10px;">
                     This replay was recorded by the HOST player. This allows for additional information such as:
@@ -171,7 +171,7 @@ export const Info = Macro(class Info extends MacroElement {
                 ">
                     <span>Version</span>
                     <div style="flex: 1"></div>
-                    <span>${Macro.signal("version")}</span>
+                    <span>${html.signal("version")}</span>
                 </div>
                 <div m-id="versionText" style="margin-left: 10px;">
                 </div>

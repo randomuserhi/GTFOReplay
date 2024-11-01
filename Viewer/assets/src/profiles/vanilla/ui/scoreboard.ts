@@ -154,11 +154,11 @@ const Slot = Macro(class Slot extends MacroElement {
 }, () => html`
     <tr m-id="wrapper" class="${style.slot}">
         <td m-id="avatar" class="${style.avatar}" style="padding: 10px;"></td>
-        <td><span>${Macro.signal("name", "Name")}</span></td>
-        <td><span>${Macro.signal("kills", "0")}</span></td>
-        <td><span>${Macro.signal("assists", "0")}</span></td>
+        <td><span>${html.signal("name", "Name")}</span></td>
+        <td><span>${html.signal("kills", "0")}</span></td>
+        <td><span>${html.signal("assists", "0")}</span></td>
         <td style="padding: 0;">${
-    Macro.map<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>(
+    html.map<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>(
         html`<span m-id="medalList" style="display: flex; gap: 10px;"></span>`,
         Medal())
         .bind("items")}

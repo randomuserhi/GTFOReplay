@@ -53,7 +53,7 @@ const Item = Macro(class Item extends MacroElement {
     }
 }, () => html`
     <div m-id="button" class="${itemStyle.item}">
-        <span>${Macro.signal("key")}</span>
+        <span>${html.signal("key")}</span>
     </div>`
 );
 

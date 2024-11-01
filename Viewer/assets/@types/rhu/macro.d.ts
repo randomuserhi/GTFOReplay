@@ -63,6 +63,11 @@ export type MACRO<F extends FACTORY<any>> = RHU_MACRO<F extends FACTORY<infer T>
 interface FACTORY_HTML {
     <T extends {} = any>(first: RHU_HTML["first"], ...interpolations: RHU_HTML["interpolations"]): RHU_HTML<T>;
     readonly close: RHU_CLOSURE;
+    signal<T>(binding: string, value?: T, toString?: (value: T) => string): RHU_SIGNAL<T>;
+    observe(node: Node): void;
+    map: typeof MapFactory;
+    set: typeof SetFactory;
+    list: typeof ListFactory;
 }
 export declare const html: FACTORY_HTML;
 export declare class RHU_HTML<T extends Record<PropertyKey, any> = any> extends RHU_ELEMENT<T, DocumentFragment> {
@@ -89,12 +94,7 @@ interface FACTORY<T extends MacroClass> {
 export type Macro<F extends FACTORY<any>> = F extends FACTORY<infer T> ? InstanceType<T> : any;
 interface MacroNamespace {
     <T extends MacroClass>(type: T, html: (...args: MacroParameters<T>) => RHU_HTML): FACTORY<T>;
-    signal<T>(binding: string, value?: T, toString?: (value: T) => string): RHU_SIGNAL<T>;
     create<T extends RHU_MACRO>(macro: T): T extends RHU_MACRO<infer R> ? InstanceType<R> : never;
-    observe(node: Node): void;
-    map: typeof MapFactory;
-    set: typeof SetFactory;
-    list: typeof ListFactory;
 }
 export declare const Macro: MacroNamespace;
 type SetValue<T extends Set<any>> = T extends Set<infer V> ? V : unknown;

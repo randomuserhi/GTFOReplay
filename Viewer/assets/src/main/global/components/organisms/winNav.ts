@@ -66,7 +66,7 @@ const moduleListStyles = Style(({ css }) => {
 const ModuleItem = Macro(class ModuleItem extends MacroElement {
     public button: HTMLLIElement;
     public key: Signal<string>;
-}, () => html`<li m-id="button" class="${moduleListStyles.item}">${Macro.signal("key")}</li>`);
+}, () => html`<li m-id="button" class="${moduleListStyles.item}">${html.signal("key")}</li>`);
 
 const ModuleList = Macro(class ModuleList extends MacroElement {
     constructor (dom: Node[], bindings: any) {
@@ -127,7 +127,7 @@ const ModuleList = Macro(class ModuleList extends MacroElement {
             <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
         </div>
         ${
-    Macro.list<string, HTML<{ mount: HTMLUListElement }>, MACRO<typeof ModuleItem>>(
+    html.list<string, HTML<{ mount: HTMLUListElement }>, MACRO<typeof ModuleItem>>(
         html`<ul m-id="mount" class="${moduleListStyles.mount}"></ul>`,
         ModuleItem())
         .bind("items")}
@@ -315,7 +315,7 @@ export const WinNav = Macro(class WinNav extends MacroElement {
             <div m-id="moduleListMount" class="${style.mount}">
                 ${ModuleList().bind("moduleList")}
                 <span style="flex-shrink: 0; margin-top: 5px;"><div m-id="moduleWrapper" class="${style.popup} ${style.error}">
-                    ${Macro.signal("module", "No profile loaded!")}
+                    ${html.signal("module", "No profile loaded!")}
                 </div></span>
             </div>
         </span>

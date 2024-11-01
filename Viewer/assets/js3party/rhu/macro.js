@@ -179,6 +179,7 @@ export const html = function (first, ...interpolations) {
     return new RHU_HTML(first, interpolations);
 };
 html.close = RHU_CLOSURE.instance;
+html.signal = (binding, value, toString) => new RHU_SIGNAL(binding, toString).value(value);
 class RHU_HTML extends RHU_ELEMENT {
     constructor(first, interpolations) {
         super();
@@ -327,7 +328,6 @@ export const Macro = ((type, html) => {
     factory[isFactorySymbol] = true;
     return factory;
 });
-Macro.signal = (binding, value, toString) => new RHU_SIGNAL(binding, toString).value(value);
 Macro.create = (macro) => {
     const [instance, frag] = macro.dom();
     return instance;
@@ -456,7 +456,7 @@ export class RHU_MAP extends MacroElement {
 const MapFactory = function (wrapper, item, append, update, remove) {
     return new RHU_MACRO(RHU_HTML.is(wrapper) ? wrapper : wrapper.html, (RHU_MAP), [wrapper, item, append, update, remove]);
 };
-Macro.map = MapFactory;
+html.map = MapFactory;
 export class RHU_SET extends MacroElement {
     constructor(dom, bindings, children, wrapperFactory, itemFactory, append, update, remove) {
         super(dom, bindings);
@@ -567,7 +567,7 @@ export class RHU_SET extends MacroElement {
 const SetFactory = function (wrapper, item, append, update, remove) {
     return new RHU_MACRO(RHU_HTML.is(wrapper) ? wrapper : wrapper.html, (RHU_SET), [wrapper, item, append, update, remove]);
 };
-Macro.set = SetFactory;
+html.set = SetFactory;
 export class RHU_LIST extends MacroElement {
     constructor(dom, bindings, children, wrapperFactory, itemFactory, append, update, remove) {
         super(dom, bindings);
@@ -692,7 +692,7 @@ export class RHU_LIST extends MacroElement {
 const ListFactory = function (wrapper, item, append, update, remove) {
     return new RHU_MACRO(RHU_HTML.is(wrapper) ? wrapper : wrapper.html, (RHU_LIST), [wrapper, item, append, update, remove]);
 };
-Macro.list = ListFactory;
+html.list = ListFactory;
 const isElement = Object.prototype.isPrototypeOf.bind(Element.prototype);
 const recursiveDispatch = function (node, event) {
     if (isElement(node))
@@ -714,14 +714,14 @@ const observer = new MutationObserver(function (mutationList) {
         }
     }
 });
-Macro.observe = function (target) {
+html.observe = function (target) {
     observer.observe(target, {
         childList: true,
         subtree: true
     });
 };
 const onDocumentLoad = function () {
-    Macro.observe(document);
+    html.observe(document);
 };
 if (document.readyState === "loading")
     document.addEventListener("DOMContentLoaded", onDocumentLoad);

@@ -336,7 +336,7 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
     <div m-id="wrapper" class="${style.wrapper}">
         <div m-id="controls" class="${style.controls}">
             <span m-id="left" class="${style.controls.button}">${icons.chevronLeft()}</span>
-            <span>${Macro.signal("reactor", "REACTOR_111")}</span>
+            <span>${html.signal("reactor", "REACTOR_111")}</span>
             <span m-id="right" class="${style.controls.button}">${icons.chevronRight()}</span>
         </div>
         <div class="${style.progressWrapper}">
@@ -344,15 +344,15 @@ export const ReactorObjective = Macro(class ReactorObjective extends MacroElemen
             <div m-id="progress" class="${style.progressForeground}"></div>
         </div> <!-- progress bar -->
         <div>
-            <span>${Macro.signal("title", "")}</span>
+            <span>${html.signal("title", "")}</span>
         </div>
         <div m-id="timeWrapper" class="${style.timeWrapper}">
             <span>TIME LEFT:</span>
-            <span>${Macro.signal("time", "")}</span>
+            <span>${html.signal("time", "")}</span>
         </div>
         <div class="${style.codeWrapper}">
-            <span>${Macro.signal("codeText", "")}</span>
-            <span class="${style.code}">${Macro.signal("code", "")}</span>
+            <span>${html.signal("codeText", "")}</span>
+            <span class="${style.code}">${html.signal("code", "")}</span>
         </div>
     </div>
 `);

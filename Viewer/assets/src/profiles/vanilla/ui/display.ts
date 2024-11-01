@@ -243,7 +243,7 @@ export const Display = Macro(class Display extends MacroElement {
                 ${icons.pause().bind("pauseIcon")}
                 ${icons.play().bind("playIcon")}
             </button>
-            <div class="${controls.time}">${Macro.signal("time", "00:00 / 00:00")}</div>
+            <div class="${controls.time}">${html.signal("time", "00:00 / 00:00")}</div>
             <div style="flex: 1; user-drag: none; user-select: none;"></div>
             <button m-id="liveButton" class="${controls.button}">
                 <span m-id="liveDot" class="${controls.dot}"></span>

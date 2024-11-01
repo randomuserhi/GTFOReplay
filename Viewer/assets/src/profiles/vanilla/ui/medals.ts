@@ -30,7 +30,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/MVP.png",
         description: html`
         <div>Deal the most damage<br/>(excluding sentry / mines)</div>
-        <div><span style="color: #e9bc29">${Macro.signal("value")}</span> damage dealt</div>
+        <div><span style="color: #e9bc29">${html.signal("value")}</span> damage dealt</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -78,7 +78,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/imposter.png",
         description: html`
         <div>Most damage dealt to teammates (more than 50% damage)</div>
-        <div><span style="color: #e9bc29">${Macro.signal("value")}%</span> damage dealt</div>
+        <div><span style="color: #e9bc29">${html.signal("value")}%</span> damage dealt</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -125,7 +125,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/faker.png",
         description: html`
         <div>Most tongues avoided</div>
-        <div><span style="color: #e9bc29">${Macro.signal("value")}</span> avoided</div>
+        <div><span style="color: #e9bc29">${html.signal("value")}</span> avoided</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -166,7 +166,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/angel.png",
         description: html`
             <div>Most revives</div>
-            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> revives</div>
+            <div><span style="color: #e9bc29">${html.signal("value")}</span> revives</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -204,7 +204,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/support.png",
         description: html`
             <div>Most assists</div>
-            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> assists</div>
+            <div><span style="color: #e9bc29">${html.signal("value")}</span> assists</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -245,7 +245,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/killstealer.png",
         description: html`
             <div>Most kills (excluding sentry / mines), but not most damage</div>
-            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> kills</div>
+            <div><span style="color: #e9bc29">${html.signal("value")}</span> kills</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -290,7 +290,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/sleepy.png",
         description: html`
             <div>Most time spent downed</div>
-            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> time spent</div>
+            <div><span style="color: #e9bc29">${html.signal("value")}</span> time spent</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -333,7 +333,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/fragile.png",
         description: html`
             <div>Most healing items consumed</div>
-            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> items used</div>
+            <div><span style="color: #e9bc29">${html.signal("value")}</span> items used</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -374,7 +374,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/lazy.png",
         description: html`
             <div>Deal more damage with your sentry than your guns.</div>
-            <div>Sentry did <span style="color: #e9bc29">${Macro.signal("value")}%</span> more damage.</div>
+            <div>Sentry did <span style="color: #e9bc29">${html.signal("value")}%</span> more damage.</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -429,7 +429,7 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         icon: "./medals/wolf.png",
         description: html`
             <div>Be the longest sole player alive for atleast 1 minute.</div>
-            <div><span style="color: #e9bc29">${Macro.signal("value")}</span> time spent solo.</div>
+            <div><span style="color: #e9bc29">${html.signal("value")}</span> time spent solo.</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -537,7 +537,7 @@ export const Medal = Macro(class Medal extends MacroElement {
             <span style="
                 font-size: 20px;
                 margin-bottom: 0.4rem;
-            ">${Macro.signal("key", "Surprise!")}</span>
+            ">${html.signal("key", "Surprise!")}</span>
             <span m-id="description" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">You shouldn't be able to see this!</span>
         </div>
     </div>
