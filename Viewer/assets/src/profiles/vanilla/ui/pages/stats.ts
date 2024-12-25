@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
@@ -11,104 +11,64 @@ import { pageStyles } from "./lib.js";
 
 const style = pageStyles;
 
-const FeatureWrapper = Macro(class FeatureWrapper extends MacroElement {
-    private body: HTMLDivElement;
-    public tag: string;
+export const FeatureWrapper = (tag: string) => {
+    interface Public {
+        readonly tag: string
+    }
+    interface Private {
+        readonly body: HTMLDivElement;
+    }
+
+    const dom = html<Mutable<Private & Public>>/**//*html*/`
+        <div m-id="body"></div>
+        `;
+    html(dom).box().children((children) => {
+        dom.body.append(...children);
+    });
     
-    private _frag = new DocumentFragment();
-    get frag() {
-        this._frag.replaceChildren(...this.dom);
-        return this._frag;
+    dom.tag = tag;
+
+    return dom;
+};
+
+const Item = (inKey: string) => {
+    interface Item {
+        readonly key: Signal<string>;
+        readonly value: Signal<string>;
+    }
+    interface Private {
     }
 
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, tag: string) {
-        super(dom, bindings);
-        this.tag = tag;
-        this.body.append(...children);
+    const key = signal(inKey);
+    const value = signal("");
+
+    const dom = html<Mutable<Private & Item>>/**//*html*/`
+        <li style="display: flex">
+            <span>${key}</span>
+            <div style="flex: 1"></div>
+            <span>${value}</span>
+        </li>
+        `;
+    html(dom).box();
+
+    dom.key = key;
+    dom.value = value;
+
+    return dom as html<Item>;
+};
+
+export const TypeList = (inTitle: string) => {
+    interface TypeList {
+        readonly values: Signal<[key: string, value: number][]>;
     }
-}, () => html`
-    <div m-id="body"></div>
-`);
-
-const Item = Macro(class Item extends MacroElement {
-    private _frag = new DocumentFragment();
-    get frag() {
-        this._frag.replaceChildren(...this.dom);
-        return this._frag;
-    }
-
-    public remove() {
-        this._frag.replaceChildren(...this.dom);
-    }
-
-    public key: Signal<string>;
-    public value: Signal<string>;
-
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, key: string) {
-        super(dom, bindings);
-
-        this.key(key);
-    }
-}, () => html`
-    <li style="display: flex">
-        <span>${html.signal("key")}</span>
-        <div style="flex: 1"></div>
-        <span>${html.signal("value")}</span>
-    </li>`
-);
-
-const TypeList = Macro(class TypeList extends MacroElement {
-    private list: HTMLDivElement;
-    private empty: HTMLSpanElement;
-
-    private title: Signal<string>;
-    private total: Signal<string>;
-
-    private _items = new Map<string, Macro<typeof Item>>(); 
-    private items = new Map<string, Macro<typeof Item>>();
-
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, title: string) {
-        super(dom, bindings);
-
-        this.title(title);
-
-        this.values.on((values) => {
-            let total = 0;
-            for (const [key, value] of values) {
-                let item: Macro<typeof Item>;
-                if (this.items.has(key)) {
-                    item = this.items.get(key)!;
-                    this._items.set(key, item);
-                } else {
-                    item = Macro.create(Item(key));
-                    this._items.set(key, item);
-                    this.list.append(item.frag);
-                }
-                item.value(`${value}`);
-
-                total += value;
-            }
-            this.total(`${total}`);
-            
-            for (const [key, item] of this.items) {
-                if (this._items.has(key)) continue;
-                item.remove();
-            }
-            
-            const temp = this.items;
-            this.items = this._items;
-            this._items = temp;
-            this._items.clear();
-
-            if (values.length === 0) {
-                this.empty.style.display = "block";
-            } else {
-                this.empty.style.display = "none";
-            }
-        }, { signal: dispose.signal });
+    interface Private {
+        readonly empty: HTMLSpanElement;
     }
 
-    public values = signal<[key: string, value: number][]>([], (a, b) => {
+    const title = signal(inTitle);
+    const total = signal("total");
+
+    const values = signal<[key: string, value: number][]>([], (a, b) => {
         if (a === undefined && b === undefined) return true;
         if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
@@ -118,21 +78,60 @@ const TypeList = Macro(class TypeList extends MacroElement {
         }
         return true;
     });
-}, () => html`
-    <div style="display: flex">
-        <span style="font-size: 20px;">${html.signal("title")}</span>
-        <div style="flex: 1"></div>
-        <span>${html.signal("total")}</span>
-    </div>
-    <span m-id="empty" style="display: block;">None</span>
-    <ul m-id="list">
-    </ul>
-`);
 
-const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | undefined>) => Macro<typeof FeatureWrapper>)[] = [
+    const list = html.map(values, (values) => values, (kv, el?: html<typeof Item>) => {
+        const [key, value] = kv;
+        if (el === undefined) {
+            el = Item(key);
+        }
+        el.value(`${value}`);
+        return el;
+    });
+
+    const dom = html<Mutable<Private & TypeList>>/**//*html*/`
+        <div style="display: flex">
+            <span style="font-size: 20px;">${title}</span>
+            <div style="flex: 1"></div>
+            <span>${total}</span>
+        </div>
+        <span m-id="empty" style="display: block;">None</span>
+        <ul>
+            ${list}
+        </ul>
+		`;
+    html(dom).box();
+
+    dom.values = values;
+
+    values.on((values) => {
+        let vtotal = 0;
+        for (const [, value] of values) {
+            vtotal += value;
+        }
+        total(`${vtotal}`);
+
+        if (values.length === 0) {
+            dom.empty.style.display = "block";
+        } else {
+            dom.empty.style.display = "none";
+        }
+    }, { signal: dispose.signal });
+
+    return dom as html<TypeList>;
+};
+
+const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | undefined>) => html<typeof FeatureWrapper>)[] = [
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Damage Dealt to Enemies").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            bulletDamage: Signal<string>;
+            meleeDamage: Signal<string>;
+            sentryDamage: Signal<string>;
+            explosiveDamage: Signal<string>;
+            staggerDamage: Signal<string>;
+            sentryStaggerDamage: Signal<string>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Damage Dealt to Enemies")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -141,47 +140,39 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                         <li style="display: flex">
                             <span>Bullet Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("bulletDamage")}</span>
+                            <span>${html.bind(signal(""), "bulletDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Melee Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("meleeDamage")}</span>
+                            <span>${html.bind(signal(""), "meleeDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Sentry Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("sentryDamage")}</span>
+                            <span>${html.bind(signal(""), "sentryDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Explosive Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("explosiveDamage")}</span>
+                            <span>${html.bind(signal(""), "explosiveDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Stagger Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("staggerDamage")}</span>
+                            <span>${html.bind(signal(""), "staggerDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Sentry Stagger Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("sentryStaggerDamage")}</span>
+                            <span>${html.bind(signal(""), "sentryStaggerDamage")}</span>
                         </li>
                     </ul>
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            bulletDamage: Signal<string>;
-            meleeDamage: Signal<string>;
-            sentryDamage: Signal<string>;
-            explosiveDamage: Signal<string>;
-            staggerDamage: Signal<string>;
-            sentryStaggerDamage: Signal<string>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { bulletDamage, meleeDamage, sentryDamage, explosiveDamage, staggerDamage, sentryStaggerDamage } = bindings;
+        const { bulletDamage, meleeDamage, sentryDamage, explosiveDamage, staggerDamage, sentryStaggerDamage } = dom;
 
         v.on((view) => {
             if (view === undefined) return;
@@ -203,11 +194,16 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Damage Dealt to Players").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            bulletDamage: Signal<string>;
+            sentryDamage: Signal<string>;
+            explosiveDamage: Signal<string>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Damage Dealt to Players")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -216,29 +212,24 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                         <li style="display: flex">
                             <span>Bullet Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("bulletDamage")}</span>
+                            <span>${html.bind(signal(""), "bulletDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Sentry Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("sentryDamage")}</span>
+                            <span>${html.bind(signal(""), "sentryDamage")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Explosive Damage</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("explosiveDamage")}</span>
+                            <span>${html.bind(signal(""), "explosiveDamage")}</span>
                         </li>
                     </ul>
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            bulletDamage: Signal<string>;
-            sentryDamage: Signal<string>;
-            explosiveDamage: Signal<string>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { bulletDamage, sentryDamage, explosiveDamage } = bindings;
+        const { bulletDamage, sentryDamage, explosiveDamage } = dom;
 
         v.on((view) => {
             if (view === undefined) return;
@@ -257,23 +248,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Kills").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Kills")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Kills").bind("list")}
+                    ${html.bind(TypeList("Kills"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -304,23 +295,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Sentry Kills").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Sentry Kills")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Sentry Kills").bind("list")}
+                    ${html.bind(TypeList("Sentry Kills"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -351,23 +342,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Mine Kills").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>`
+            ${html.open(FeatureWrapper("Mine Kills")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Mine Kills").bind("list")}
+                    ${html.bind(TypeList("Mine Kills"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -398,23 +389,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Assists").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Assists")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Assists").bind("list")}
+                    ${html.bind(TypeList("Assists"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -445,23 +436,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Tongue Dodges").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Tongue Dodges")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Tongue Dodges").bind("list")}
+                    ${html.bind(TypeList("Tongue Dodges"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -492,23 +483,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Packs Used").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Packs Used")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Packs Used").bind("list")}
+                    ${html.bind(TypeList("Packs Used"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -533,23 +524,23 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Packs Given").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            list: html<typeof TypeList>;
+        }>`
+            ${html.open(FeatureWrapper("Packs Given")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${TypeList("Packs Given").bind("list")}
+                    ${html.bind(TypeList("Packs Given"), "list")}
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            list: Macro<typeof TypeList>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { list } = bindings;
+        const { list } = dom;
         const total = new Map<string, number>();
 
         v.on((view) => {
@@ -574,11 +565,15 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
     (self, v) => {
-        const [bindings, frag] = html`
-            ${FeatureWrapper("Miscellaneous").open().bind("wrapper")}
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            revives: Signal<string>;
+            silent: Signal<string>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Miscellaneous")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
@@ -587,23 +582,19 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
                         <li style="display: flex">
                             <span>Revives</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("revives")}</span>
+                            <span>${html.bind(signal(""), "revives")}</span>
                         </li>
                         <li style="display: flex">
                             <span>Silent Shots</span>
                             <div style="flex: 1"></div>
-                            <span>${html.signal("silent")}</span>
+                            <span>${html.bind(signal(""), "silent")}</span>
                         </li>
                     </ul>
                 </div>
-            ${FeatureWrapper.close}
-        `.dom<{
-            wrapper: Macro<typeof FeatureWrapper>;
-            revives: Signal<string>;
-            silent: Signal<string>;
-        }>();
+            ${html.close()}
+        `;
 
-        const { revives, silent } = bindings;
+        const { revives, silent } = dom;
 
         v.on((view) => {
             if (view === undefined) return;
@@ -621,100 +612,108 @@ const features: ((self: Macro<typeof Stats>, v: Signal<Macro<typeof View> | unde
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
-        return bindings.wrapper;
+        return dom.wrapper;
     },
 ];
 
-export const Stats = Macro(class Stats extends MacroElement {
-    public view = signal<Macro<typeof View> | undefined>(undefined);
-
-    public dropdown: Macro<typeof Dropdown>;
-    private search: HTMLInputElement;
-    private body: HTMLDivElement;
-
-    private features: Macro<typeof FeatureWrapper>[];
-    private fuse: Fuse<Macro<typeof FeatureWrapper>>;
-
-    public active = signal(false);
-
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
-
-        this.features = [];
-        for (const feature of features) {
-            const f = feature(this, this.view);
-            this.features.push(f);
-
-            this.body.append(f.frag);
-        }
-        this.fuse = new Fuse(this.features, {
-            keys: ["tag"]
-        });
-
-        this.search.addEventListener("keyup", () => {
-            let value = this.search.value;
-            value = value.trim();
-            if (value.length === 0) {
-                this.body.replaceChildren(...this.features.map((n) => n.frag));
-                return;
-            }
-            const results = this.fuse.search(value).map((n) => n.item.frag);
-            this.body.replaceChildren(...results);
-        });
-
-        this.view.on((view) => {
-            if (view === undefined) {
-                this.dropdown.options([]);
-                return;
-            }
-
-            view.api.on((api) => {
-                if (!this.active()) return;
-
-                if (api === undefined) {
-                    this.dropdown.options([]);
-                    return;
-                }
-
-                const all = api.get("Vanilla.Player.Snet");
-                if (all === undefined) {
-                    this.dropdown.options([]);
-                    return;
-                }
-
-                const players: [key: string, value: any][] = [];
-                for (const player of all.values()) {
-                    players.push([
-                        player.nickname,
-                        player.snet
-                    ]);
-                }
-                this.dropdown.options(players);
-            }, { signal: dispose.signal });
-        }, { signal: dispose.signal });
+export const Stats = () => {
+    interface Settings {
+        readonly active: Signal<boolean>;
+        readonly view: Signal<html<typeof View> | undefined>;
+        readonly dropdown: html<typeof Dropdown>;
     }
-}, () => html`
-    <div class="${style.wrapper}">
-        <div style="margin-bottom: 20px;">
-            <h1>STATS</h1>
-            <p>View player statistics</p>
-        </div>
-        <div style="
-        position: sticky; 
-        padding: 20px 0; 
-        top: 0px; 
-        background-color: #1f1f29;
-        margin-bottom: 10px;
-        z-index: 100;
-        ">
-            <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
-            <div class="${style.row}" style="
-            margin-top: 20px;
+    interface Private {
+        readonly body: HTMLDivElement;
+        readonly search: HTMLInputElement;
+    }
+    
+    const dropdown = Dropdown();
+    dropdown.wrapper.style.width = "100%";
+
+    const dom = html<Mutable<Private & Settings>>/**//*html*/`
+        <div class="${style.wrapper}">
+            <div style="margin-bottom: 20px;">
+                <h1>STATS</h1>
+                <p>View player statistics</p>
+            </div>
+            <div style="
+            position: sticky; 
+            padding: 20px 0; 
+            top: 0px; 
+            background-color: #1f1f29;
+            margin-bottom: 10px;
+            z-index: 100;
             ">
-                ${Dropdown().bind("dropdown").then((dropdown) => dropdown.wrapper.style.width = "100%")}
+                <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+                <div class="${style.row}" style="
+                margin-top: 20px;
+                ">
+                    ${dropdown}
+                </div>
+            </div>
+            <div m-id="body" class="${style.body}">
             </div>
         </div>
-        <div m-id="body" class="${style.body}">
-        </div>
-    </div>
-    `);
+        `;
+    html(dom).box();
+        
+    dom.view = signal<html<typeof View> | undefined>(undefined);
+    dom.dropdown = dropdown;
+    
+    dom.active = signal(false);
+    const features: html<typeof FeatureWrapper>[] = [];
+    const fuse = new Fuse(features, {
+        keys: ["tag"]
+    });
+    
+    for (const feature of featureList) {
+        const f = feature(dom, dom.view);
+        features.push(f);
+    
+        dom.body.append(...f);
+    }
+    
+    dom.search.addEventListener("keyup", () => {
+        let value = dom.search.value;
+        value = value.trim();
+        if (value.length === 0) {
+            html.replaceChildren(dom.body, ...features);
+            return;
+        }
+        const results = fuse.search(value).map((n) => n.item);
+        html.replaceChildren(dom.body, ...results);
+    });
+
+    dom.view.on((view) => {
+        if (view === undefined) {
+            dropdown.options([]);
+            return;
+        }
+
+        view.api.on((api) => {
+            if (!dom.active()) return;
+
+            if (api === undefined) {
+                dropdown.options([]);
+                return;
+            }
+
+            const all = api.get("Vanilla.Player.Snet");
+            if (all === undefined) {
+                dropdown.options([]);
+                return;
+            }
+
+            const players: [key: string, value: any][] = [];
+            for (const player of all.values()) {
+                players.push([
+                    player.nickname,
+                    player.snet
+                ]);
+            }
+            dropdown.options(players);
+        }, { signal: dispose.signal });
+    }, { signal: dispose.signal });
+    
+    return dom as html<Settings>;
+};

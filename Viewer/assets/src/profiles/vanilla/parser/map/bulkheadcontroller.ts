@@ -71,7 +71,7 @@ ModuleLoader.registerHeader("Vanilla.Map.BulkheadControllers", "0.0.1", {
                 onGround: true,
                 linkedToMachine: false,
                 serialNumber: serialNumber, // 65535 (ushort.MaxValue) indicates item has no serial number
-                itemID: Identifier.create("Internal_Finder_Item", undefined, "DISINFECT_STATION"),
+                itemID: Identifier.create("Internal_Finder_Item", undefined, "BULKHEAD_DC"),
                 player: undefined,
             });
         }

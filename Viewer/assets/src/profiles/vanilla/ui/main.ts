@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
@@ -12,12 +12,12 @@ export const dispose = {
     } 
 };
 
-const ref: { value: undefined | Macro<typeof UI> } = { value: undefined };
-export function ui(): Macro<typeof UI> {
+const ref: { value: undefined | html<typeof UI> } = { value: undefined };
+export function ui(): html<typeof UI> {
     if (ref.value === undefined) {
         if (disposeController !== undefined) disposeController.abort();
         disposeController = new AbortController();
-        ref.value = Macro.create(UI());
+        ref.value = UI();
     }
     return ref.value;
 }
@@ -73,56 +73,68 @@ const style = Style(({ css }) => {
     };
 });
 
-interface Page extends MacroElement {
-    view: Signal<Macro<typeof View> | undefined>;
-    active: Signal<boolean>;
+interface Page {
+    readonly view: Signal<html<typeof View> | undefined>;
+    readonly active: Signal<boolean>;
 }
 
-const UI = Macro(class UI extends MacroElement {
-    public display: Macro<typeof Display>;
-    
-    public settings: Macro<typeof Button>;
-    public stats: Macro<typeof Button>;
-    public finder: Macro<typeof Button>;
-    public info: Macro<typeof Button>;
+const UI = () => {
+    interface UI {
+        load(page: html<Page>): void;
 
-    public pages = new Map<Macro<typeof Button>, Page>();
+        readonly view: Signal<html<typeof View> | undefined>;
 
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
+        readonly display: html<typeof Display>;
 
-        this.pages.set(this.settings, Macro.create(Settings()));
-        this.pages.set(this.finder, Macro.create(Finder()));
-        this.pages.set(this.info, Macro.create(Info()));
-        this.pages.set(this.stats, Macro.create(Stats()));
+        readonly settings: html<typeof Button>;
+        readonly stats: html<typeof Button>;
+        readonly finder: html<typeof Button>;
+        readonly info: html<typeof Button>;
+    }
+    interface Private {
+        readonly window: HTMLDivElement;
 
-        for(const [button, page] of this.pages) {
-            button.button.addEventListener("click", () => {
-                this.load(page);
-            });
-        }
-        
-        this.view.on((view) => {
-            if (view === undefined) return;
-
-            this.display.view(view);
-            for (const page of this.pages.values()) {
-                page.view(view);
-            }
-        }, { signal: dispose.signal });
+        readonly pages: Map<html<typeof Button>, html<Page>>;
+        readonly loadedPage?: html<Page>;
     }
 
-    public view = signal<Macro<typeof View> | undefined>(undefined);
+    const dom = html<Mutable<Private & UI>>/**//*html*/`
+        <div class="${style.wrapper}">
+            ${html.open(Bar())}
+                ${html.open(Button()).bind("settings")}
+                    ${icons.gear()}
+                ${html.close()}
+                ${html.open(Button()).bind("stats")}
+                    ${icons.stats()}
+                ${html.close()}
+                ${html.open(Button()).bind("finder")}
+                    ${icons.finder()}
+                ${html.close()}
+                <div style="flex: 1"></div>
+                ${html.open(Button()).bind("info")}
+                    ${icons.info()}
+                ${html.close()}
+            ${html.close()}
+            <div m-id="window" class="${style.window}" style="display: none;">
+            </div>
+            <div class="${style.body}">
+                ${html.bind(Display(), "display")}
+            </div>
+        </div>
+        `;
+    html(dom).box();
+    
+    dom.view = signal<html<typeof View> | undefined>(undefined);
 
-    private window: HTMLDivElement;
-    private loadedMacro?: MacroElement;
-    public load(macro?: Page) {
+    dom.pages = new Map();
+
+    dom.load = function load(page?: html<Page>) {
         const view = this.display.view();
-        if (this.loadedMacro === macro) macro = undefined;
-        this.loadedMacro = macro;
+        if (this.loadedPage === page) page = undefined;
+        this.loadedPage = page;
         
         for (const [button, page] of this.pages) {
-            if (page !== macro) {
+            if (page !== this.loadedPage) {
                 button.toggle(false);
                 page.active(false);
             } else {
@@ -131,8 +143,8 @@ const UI = Macro(class UI extends MacroElement {
             }
         }
 
-        if (macro !== undefined) {
-            this.window.replaceChildren(...macro.dom);
+        if (page !== undefined) {
+            this.window.replaceChildren(...page);
             this.window.style.display = "block";
         } else {
             if (view) view.canvas.focus();
@@ -140,34 +152,33 @@ const UI = Macro(class UI extends MacroElement {
             this.window.style.display = "none";
         }
         if (view) view.resize();
+    };
+
+    dom.pages.set(dom.settings, Settings());
+    dom.pages.set(dom.finder, Finder());
+    dom.pages.set(dom.info, Info());
+    dom.pages.set(dom.stats, Stats());
+
+    for(const [button, page] of dom.pages) {
+        button.button.addEventListener("click", () => {
+            dom.load(page);
+        });
     }
-}, () => html`
-    <div class="${style.wrapper}">
-        ${Bar().open()}
-            ${Button().open().bind("settings")}
-                ${icons.gear()}
-            ${Button.close}
-            ${Button().open().bind("stats")}
-                ${icons.stats()}
-            ${Button.close}
-            ${Button().open().bind("finder")}
-                ${icons.finder()}
-            ${Button.close}
-            <div style="flex: 1"></div>
-            ${Button().open().bind("info")}
-                ${icons.info()}
-            ${Button.close}
-        ${Bar.close}
-        <div m-id="window" class="${style.window}" style="display: none;">
-        </div>
-        <div class="${style.body}">
-            ${Display().bind("display")}
-        </div>
-    </div>
-    `);
+    
+    dom.view.on((view) => {
+        if (view === undefined) return;
+
+        dom.display.view(view);
+        for (const page of dom.pages.values()) {
+            page.view(view);
+        }
+    }, { signal: dispose.signal });
+
+    return dom as html<UI>;
+};
 
 Render((doc, view) => {
     const main = ui();
     main.view(view);
-    doc.append(...main.dom);
+    doc.append(...main);
 });

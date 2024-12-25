@@ -37,7 +37,7 @@ let replay: Replay | undefined = undefined;
             if (module === undefined) throw new UnknownModuleType(`No module was found for '${id}'.`);
             return [module, id];
         };
-        
+
         try {
             // Parse Typemap
             const headerSize = await BitHelper.readInt(fs);

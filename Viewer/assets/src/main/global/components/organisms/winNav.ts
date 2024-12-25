@@ -1,4 +1,4 @@
-import { HTML, html, MACRO, Macro, MacroElement, RHU_CHILDREN, RHU_LIST } from "@/rhu/macro.js";
+import { html, Mutable } from "@/rhu/html.js";
 import { computed, signal, Signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import Fuse from "fuse.js";
@@ -63,76 +63,95 @@ const moduleListStyles = Style(({ css }) => {
     };
 });
 
-const ModuleItem = Macro(class ModuleItem extends MacroElement {
-    public button: HTMLLIElement;
-    public key: Signal<string>;
-}, () => html`<li m-id="button" class="${moduleListStyles.item}">${html.signal("key")}</li>`);
+const ModuleItem = (key: string) => {
+    interface ModuleItem {
+        readonly button: HTMLLIElement;
+        readonly key: Signal<string>;
+    }
+    interface Private {
 
-const ModuleList = Macro(class ModuleList extends MacroElement {
-    constructor (dom: Node[], bindings: any) {
-        super(dom, bindings);
-    
-        this.input.addEventListener("keyup", () => this.filter(this.input.value));
-
-        this.items.onappend.add((wrapper, dom, item) => {
-            wrapper.mount.append(...dom);
-            item.button.addEventListener("click", () => {
-                // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
-                //window.api.send("defaultModule", item.key());
-                window.api.invoke("loadModule", item.key()).then((response) => {
-                    app().onLoadModule(response);
-                });
-            });
-        });
-        this.items.onupdate.add((item, value) => {
-            item.key(value);
-        });
-
-        this.filtered.on((values) => this.items.assign(values));
     }
 
-    private input: HTMLInputElement;
-    private filter = signal("");
+    const k = signal(key);
+    
+    const dom = html<Mutable<Private & ModuleItem>>/**//*html*/`
+            <li m-id="button" class="${moduleListStyles.item}">${k}</li>
+        `;
+    
+    html(dom).box();
 
-    private items: RHU_LIST<string, HTML<{ mount: HTMLUListElement }>, MACRO<typeof ModuleItem>>;
+    dom.key = k;
 
-    private validation = new Set<string>();
-    public values = signal<string[]>([]);
-    private fuse = new Fuse(this.values(), { keys: ["key"] });
-    private filtered = computed<string[]>((set) => {
-        let values = this.values();
-        this.fuse.setCollection(values);
-        const filter = this.filter();
-        if (filter.trim() !== "") {
-            this.fuse.setCollection(this.values());
-            values = this.fuse.search(filter).map((n) => n.item);
+    return dom as html<ModuleItem>;
+};
+
+const ModuleList = () => {
+    interface ModuleList {
+        readonly values: Signal<string[]>;
+    }
+    interface Private {
+        readonly input: HTMLInputElement;
+    }
+
+    const filter = signal("");
+    const validation = new Set<string>();
+    const values = signal<string[]>([]);
+    const fuse = new Fuse(values(), { keys: ["key"] });
+    const filtered = computed<string[]>((set) => {
+        let filteredValues = values();
+        fuse.setCollection(filteredValues);
+        const str = filter();
+        if (str.trim() !== "") {
+            fuse.setCollection(filteredValues);
+            filteredValues = fuse.search(str).map((n) => n.item);
         }
-        set(values);
-    }, [this.values, this.filter], (a, b) => {
+        set(filteredValues);
+    }, [values, filter], (a, b) => {
         if (a === undefined && b === undefined) return true;
         if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
-        this.validation.clear();
+        validation.clear();
         for (let i = 0; i < a.length; ++i) {
-            this.validation.add(a[i]);
-            if (!this.validation.has(b[i])) return false;
+            validation.add(a[i]);
+            if (!validation.has(b[i])) return false;
         }
         return true;
     });
 
-    public mount: HTMLDivElement;
-}, () => html`
-    <div class="${moduleListStyles.wrapper}">
-        <div class="${moduleListStyles.sticky}">
-            <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
+    const list = html.map(filtered, undefined, (kv, el?: html<typeof ModuleItem>) => {
+        const [, value] = kv;
+        if (el === undefined) {
+            const el = ModuleItem(value);
+            el.button.addEventListener("click", () => {
+                // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
+                //window.api.send("defaultModule", item.key());
+                window.api.invoke("loadModule", el.key()).then((response) => {
+                    app.onLoadModule(response);
+                });
+            });
+            return el;
+        } else {
+            el.key(value);
+            return el;
+        }
+    });
+
+    const dom = html<Mutable<Private & ModuleList>>/**//*html*/`
+        <div class="${moduleListStyles.wrapper}">
+            <div class="${moduleListStyles.sticky}">
+                <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
+            </div>
+            <ul m-id="mount" class="${moduleListStyles.mount}">
+                ${list}
+            </ul>
         </div>
-        ${
-    html.list<string, HTML<{ mount: HTMLUListElement }>, MACRO<typeof ModuleItem>>(
-        html`<ul m-id="mount" class="${moduleListStyles.mount}"></ul>`,
-        ModuleItem())
-        .bind("items")}
-    </div>
-    `);
+        `;
+    html(dom).box();
+
+    dom.values = values;
+
+    return dom as html<ModuleList>;
+};
 
 const style = Style(({ css }) => {
     const height = "40px";
@@ -250,77 +269,91 @@ const style = Style(({ css }) => {
     };
 });
 
-export const WinNav = Macro(class WinNav extends MacroElement {
-    close: HTMLButtonElement;
-    max: HTMLButtonElement;
-    min: HTMLButtonElement;
-    icon: HTMLButtonElement;
-    plugin: HTMLButtonElement;
-    mount: HTMLDivElement;
-
-    error = signal(true);
-    module: Signal<string | undefined>;
-    moduleWrapper: HTMLDivElement;
-    moduleList: Macro<typeof ModuleList>;
-    
-    private moduleListMount: HTMLDivElement;
-    activeModuleList = signal(false);
-
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
-        super(dom, bindings);
-
-        this.plugin.addEventListener("click", () => {
-            this.activeModuleList(!this.activeModuleList());
-        });
-
-        this.activeModuleList.on((value) => {
-            if (value) this.moduleListMount.classList.add(`${style.active}`);
-            else this.moduleListMount.classList.remove(`${style.active}`);
-        });
-
-        this.error.on(value => {
-            if (value) this.moduleWrapper.classList.add(`${style.error}`);
-            else this.moduleWrapper.classList.remove(`${style.error}`);
-        });
-
-        this.close.onclick = () => {
-            window.api.closeWindow();
-        };
-        this.max.onclick = () => {
-            window.api.maximizeWindow();
-        };
-        this.min.onclick = () => {
-            window.api.minimizeWindow();
-        };
-
-        this.mount.append(...children);
+export const WinNav = () => {
+    interface WinNav {
+        readonly module: Signal<string>;
+        readonly error: Signal<boolean>;
+        readonly moduleList: html<typeof ModuleList>;
+        readonly activeModuleList: Signal<boolean>;
+        readonly icon: HTMLButtonElement;
     }
-}, () => html`
-    <nav class="${style.wrapper}">
-        <div m-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
-            ${icons.cross()}
-        </div>
-        <div m-id="max" class="${style.button}" tabindex="-1" role="button" aria-label="Maximize">
-            ${icons.square()}
-        </div>
-        <div m-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
-            ${icons.line()}
-        </div>
-        <div m-id="mount" class="${style.text}">
-        </div>
-        <span style="position: relative;">
-            <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
-                ${icons.plugin()}
+    interface Private {
+        readonly close: HTMLButtonElement;
+        readonly max: HTMLButtonElement;
+        readonly min: HTMLButtonElement;
+        readonly plugin: HTMLButtonElement;
+        readonly mount: HTMLDivElement;
+        readonly moduleListMount: HTMLDivElement;
+        readonly moduleWrapper: HTMLDivElement;
+    }
+    
+    const module = signal("No profile loaded!");
+    const moduleList = ModuleList();
+
+    const dom = html<Mutable<Private & WinNav>>/**//*html*/`
+        <nav class="${style.wrapper}">
+            <div m-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
+                ${icons.cross()}
             </div>
-            <div m-id="moduleListMount" class="${style.mount}">
-                ${ModuleList().bind("moduleList")}
-                <span style="flex-shrink: 0; margin-top: 5px;"><div m-id="moduleWrapper" class="${style.popup} ${style.error}">
-                    ${html.signal("module", "No profile loaded!")}
-                </div></span>
+            <div m-id="max" class="${style.button}" tabindex="-1" role="button" aria-label="Maximize">
+                ${icons.square()}
             </div>
-        </span>
-        <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
-            ${icons.rug()}
-        </div>
-    </nav>
-    `);
+            <div m-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
+                ${icons.line()}
+            </div>
+            <div m-id="mount" class="${style.text}">
+            </div>
+            <span style="position: relative;">
+                <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
+                    ${icons.plugin()}
+                </div>
+                <div m-id="moduleListMount" class="${style.mount}">
+                    ${moduleList}
+                    <span style="flex-shrink: 0; margin-top: 5px;"><div m-id="moduleWrapper" class="${style.popup} ${style.error}">
+                        ${module}
+                    </div></span>
+                </div>
+            </span>
+            <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
+                ${icons.rug()}
+            </div>
+        </nav>
+        `;
+    
+    dom.module = module;
+    dom.moduleList = moduleList;
+
+    const { close, max, min, mount, plugin, moduleListMount, moduleWrapper } = dom;
+    
+    html(dom).box().children((children) => {
+        mount.append(...children);
+    });
+    
+    close.onclick = () => {
+        window.api.closeWindow();
+    };
+    max.onclick = () => {
+        window.api.maximizeWindow();
+    };
+    min.onclick = () => {
+        window.api.minimizeWindow();
+    };
+    
+    dom.activeModuleList = signal(false);
+    dom.activeModuleList.on((value) => {
+        if (value) moduleListMount.classList.add(`${style.active}`);
+        else moduleListMount.classList.remove(`${style.active}`);
+    });
+
+    plugin.addEventListener("click", () => {
+        dom.activeModuleList(!dom.activeModuleList());
+    });
+    
+    dom.error = signal(true);
+    dom.error.on(value => {
+        if (value) moduleWrapper.classList.add(`${style.error}`);
+        else moduleWrapper.classList.remove(`${style.error}`);
+    });
+
+    return dom as html<WinNav>;
+};

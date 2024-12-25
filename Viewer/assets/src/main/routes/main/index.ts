@@ -1,5 +1,5 @@
-import { html, Macro, MacroElement } from "@/rhu/macro.js";
-import { signal } from "@/rhu/signal.js";
+import { html, Mutable } from "@/rhu/html.js";
+import { Signal, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { app } from "../../app.js";
 import { __version__ } from "../../appinfo.js";
@@ -71,36 +71,46 @@ const style = Style(({ css }) => {
     };
 });
 
-export const Main = Macro(class Main extends MacroElement {
-    private loadingWidget: HTMLDivElement;
-    private loadButton: HTMLButtonElement;
-    public video: HTMLVideoElement;
-
-    public loading = signal(false);
-
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
-
-        this.loadButton.addEventListener("click", () => {
-            app().replayfile.click();    
-        });
-
-        this.loading.on((value) => {
-            this.loadingWidget.style.display = value ? "block" : "none";
-            this.loadButton.style.display = value ? "none" : "block";
-        });
+export const Main = () => {
+    interface Main {
+        readonly loading: Signal<boolean>;
     }
-}, () => html`
-    <div class="${style.wrapper}">
-        <div class="${style.empty}">
-            <div class="${style.watermark}">${__version__}</div>
-            <video m-id="video" style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
-                <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">
-            </video>   
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
-                <button m-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
-                <div m-id="loadingWidget" style="display: none;" class="${style.loader}"></div>
+    interface Private {
+        readonly loadingWidget: HTMLDivElement;
+        readonly loadButton: HTMLButtonElement;
+        readonly video: HTMLVideoElement;
+    }
+
+    const loading = signal(false);
+
+    const dom = html<Mutable<Private & Main>>/**//*html*/`
+        <div class="${style.wrapper}">
+            <div class="${style.empty}">
+                <div class="${style.watermark}">${__version__}</div>
+                <video m-id="video" style="position: absolute; width: 100%; height: 100%; object-fit: cover;" muted autoplay loop playsinline disablepictureinpicture>
+                    <source src="https://storage.googleapis.com/gtfo-prod-v1/Trailer_for_website_Pro_Res_2_H_264_24fef05909/Trailer_for_website_Pro_Res_2_H_264_24fef05909.mp4" type="video/mp4">
+                </video>   
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                    <button m-id="loadButton" class="gtfo-button">LOAD REPLAY</button>
+                    <div m-id="loadingWidget" style="display: none;" class="${style.loader}"></div>
+                </div>
             </div>
         </div>
-    </div>
-    `);
+        `;
+    html(dom).box();
+
+    dom.loading = loading;
+
+    const { loadButton, loadingWidget } = dom;
+
+    loadButton.addEventListener("click", () => {
+        app.chooseFile();    
+    });
+
+    loading.on((value) => {
+        loadingWidget.style.display = value ? "block" : "none";
+        loadButton.style.display = value ? "none" : "block";
+    });
+
+    return dom;
+};

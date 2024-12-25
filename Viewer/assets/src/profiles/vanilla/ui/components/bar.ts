@@ -1,5 +1,5 @@
-import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
-import { signal } from "@esm/@/rhu/signal.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 
 const style = Style(({ css }) => {
@@ -65,35 +65,48 @@ const style = Style(({ css }) => {
     };
 });
 
-export const Button = Macro(class Button extends MacroElement {
-    public button: HTMLButtonElement;
-    private icon: HTMLSpanElement;
-
-    public toggle = signal(false);
-
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
-        super(dom, bindings);
-
-        this.icon.replaceWith(...children);
-
-        this.toggle.on((value) => {
-            if (value) this.button.classList.add(`${style.selected}`);
-            else this.button.classList.remove(`${style.selected}`);
-        });
+export const Button = () => {
+    interface Button {
+        readonly button: HTMLButtonElement;
+        toggle: Signal<boolean>;
     }
-}, () => html`
-    <button m-id="button" class="${style.button}">
-        <div class="${style.highlight}"></div>
-        <span m-id="icon"></span>
-    </button>
-    `);
-
-export const Bar = Macro(class Bar extends MacroElement {
-    private mount: HTMLDivElement;
+    interface Private {
+        readonly icon: HTMLSpanElement;
+    }
     
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
-        super(dom, bindings);
+    const dom = html<Mutable<Private & Button>>/**//*html*/`
+        <button m-id="button" class="${style.button}">
+            <div class="${style.highlight}"></div>
+            <span m-id="icon"></span>
+        </button>
+        `;
+    html(dom).box().children((children) => {
+        dom.icon.replaceWith(...children);
+    });
 
-        this.mount.append(...children);
+    dom.toggle = signal(false);
+
+    dom.toggle.on((value) => {
+        if (value) dom.button.classList.add(`${style.selected}`);
+        else dom.button.classList.remove(`${style.selected}`);
+    });
+    
+    return dom as html<Button>;
+};
+
+export const Bar = () => {
+    interface Bar {
     }
-}, () => html`<div m-id="mount" class="${style.wrapper}"></div>`);
+    interface Private {
+        readonly mount: HTMLDivElement;
+    }
+
+    const dom = html<Mutable<Private & Bar>>/**//*html*/`
+        <div m-id="mount" class="${style.wrapper}"></div>
+		`;
+    html(dom).box().children((children) => {
+        dom.mount.append(...children);
+    });
+
+    return dom as html<Bar>;
+};

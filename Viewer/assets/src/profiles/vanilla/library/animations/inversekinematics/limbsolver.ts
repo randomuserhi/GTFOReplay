@@ -1,4 +1,3 @@
-import { exists } from "@esm/@/rhu";
 import { Object3D, Quaternion, Vector3 } from "@esm/three";
 import { Bone, IKSolver, lookRotation, rotationToLocalSpace, vectorSlerp } from "./rootmotion.js";
 
@@ -155,7 +154,7 @@ export class IKSolverArm extends IKSolver {
     }
 
     protected onUpdate(): void {
-        if (!exists(this.target)) return;
+        if (this.target === undefined) return;
 
         this.IKPositionWeight = Math.clamp01(this.IKPositionWeight);
         this.IKRotationWeight = Math.clamp01(this.IKRotationWeight);

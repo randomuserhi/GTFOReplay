@@ -1,4 +1,3 @@
-import { CreateEvent } from "@/rhu";
 import { signal, Signal } from "@/rhu/signal.js";
 import { Scene, WebGLRenderer } from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -222,7 +221,7 @@ export class Renderer {
     }
 
     public resize(width: number, height: number) {
-        this.dispatchEvent(CreateEvent("resize", { width, height }));
+        this.dispatchEvent(new CustomEvent("resize", { detail: { width, height } }));
         this.renderer.setSize(width, height, false);
         this.composer.setSize(width, height);
     }

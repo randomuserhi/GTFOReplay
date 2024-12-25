@@ -1,4 +1,5 @@
 import * as chokidar from "chokidar";
+import { dialog } from "electron";
 import * as fs from "fs";
 
 interface FileHandle { 
@@ -208,6 +209,14 @@ export class FileManager {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
+        ipc.handle("chooseFile", async (_) => {
+            const result = await dialog.showOpenDialog({
+                title:"Select File",
+                properties: ["openFile"]
+            });
+
+            return result.filePaths;
+        });
         ipc.handle("open", async (_, file: FileHandle) => {
             if (this.file !== undefined) {
                 this.file.close();

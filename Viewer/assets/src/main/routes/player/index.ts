@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@/rhu/macro.js";
+import { html, Mutable } from "@/rhu/html.js";
 import { Style } from "@/rhu/style.js";
 import { DataStore } from "../../../replay/datastore.js";
 import { Parser } from "../../../replay/parser.js";
@@ -30,31 +30,49 @@ const style = Style(({ css }) => {
     };
 });
 
-export const player = Macro(class Player extends MacroElement {
-    parser?: Parser;
+export const Player = () => {
+    interface Player {
+        refresh: () => void;
+        open: (path?: string) => Promise<void>;
+        link: (ip: string, port: number) => Promise<void>;
+        unlink: () => Promise<void>;
+        close: () => void; 
 
-    private wrapper: HTMLDivElement;
-    private view: Macro<typeof View>;
-
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
-
-        (window as any).player = this;
+        path?: string;
+        readonly parser?: Parser;
     }
+    interface Private {
+        render: () => void;
 
-    private render() {
+        readonly wrapper: HTMLDivElement;
+        readonly view: html<typeof View>;
+    }
+    
+    const view = View();
+
+    const dom = html<Mutable<Private & Player>>/**//*html*/`
+        <div m-id="wrapper" class="${style.wrapper}">
+            ${view}
+        </div>
+        `;
+    html(dom).box();
+
+    dom.view = view;
+    dom.path = undefined;
+    dom.parser = undefined;
+
+    dom.render = function render() {
         const frag = new DocumentFragment();
         domFunc(frag, this.view);
         this.wrapper.replaceChildren(frag);
-    }
+    };
 
-    public refresh() {
+    dom.refresh = function refresh() {
         this.render();
         this.view.refresh();
-    }
+    };
 
-    public path?: string;
-    public async open(path?: string) {
+    dom.open = async function open(path?: string) {
         this.path = path;
         const file: FileHandle = {
             path, finite: false
@@ -66,7 +84,7 @@ export const player = Macro(class Player extends MacroElement {
 
         this.parser.addEventListener("eoh", () => {
             this.view.ready();
-            app().load(this);
+            app.load(this);
         });
         this.parser.addEventListener("end", () => {
             window.api.send("close");
@@ -83,9 +101,9 @@ export const player = Macro(class Player extends MacroElement {
         DataStore.clear();
 
         this.view.replay(await this.parser.parse(file));
-    }
+    };
 
-    public async link(ip: string, port: number) {
+    dom.link = async function link(ip: string, port: number) {
         const resp: string | undefined = await window.api.invoke("link", ip, port);
         if (resp !== undefined) {
             // TODO(randomuserhi)
@@ -93,30 +111,30 @@ export const player = Macro(class Player extends MacroElement {
             return;
         }
         window.api.send("goLive");
-    }
+    };
 
-    public async unlink () {
+    dom.unlink = async function unlink() {
         window.api.send("unlink");
-    }
+    };
 
-    public close() {
+    dom.close = function close() {
         this.view.renderer.dispose();
         this.view.replay(undefined);
         this.parser?.terminate();
         this.parser = undefined;
         window.api.send("unlink");
         window.api.send("close");
-    }
-}, () => html`
-    <div m-id="wrapper" class="${style.wrapper}">
-        ${View().bind("view")}
-    </div>
-    `);
+    };
 
-let domFunc: (doc: DocumentFragment, view: Macro<typeof View>) => void = (doc, view) => {
-    doc.append(...view.dom);
+    (window as any).player = dom;
+
+    return dom as html<Player>;
 };
 
-export function Render(func: (doc: DocumentFragment, view: Macro<typeof View>) => void) {
+let domFunc: (doc: DocumentFragment, view: html<typeof View>) => void = (doc, view) => {
+    doc.append(...view);
+};
+
+export function Render(func: (doc: DocumentFragment, view: html<typeof View>) => void) {
     domFunc = func;
 }

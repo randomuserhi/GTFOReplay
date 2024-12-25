@@ -1,12 +1,12 @@
-import { html, Macro, MacroElement } from "@/rhu/macro.js";
-import { computed, effect, signal } from "@/rhu/signal.js";
+import { html, Mutable } from "@/rhu/html.js";
+import { Signal, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { Theme } from "@/rhu/theme.js";
 import { ModuleLoader } from "../replay/moduleloader.js";
 import { ASL_VM } from "../replay/vm.js";
 import { WinNav } from "./global/components/organisms/winNav.js";
 import { Main } from "./routes/main/index.js";
-import { player } from "./routes/player/index.js";
+import { Player } from "./routes/player/index.js";
 
 export const theme = Theme(({ theme }) => {
     return {
@@ -42,141 +42,40 @@ const style = Style(({ css }) => {
     };
 });
 
-const App = Macro(class App extends MacroElement {
-    public replayfile: HTMLInputElement;
+const App = () => {
+    interface App {
+        load(page: html): void;
+        onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }): void;
+        chooseFile(): void;
+        
+        readonly nav: html<typeof WinNav>;
+    }
+    interface Private {
+        readonly body: HTMLDivElement;
 
-    private player = Macro.create(player());
-    private main = Macro.create(Main());
+        readonly player: html<typeof Player>;
+        readonly main: html<typeof Main>;
 
-    private body: HTMLDivElement;
-    private nav: Macro<typeof WinNav>;
-
-    private profile = signal<string | undefined>(undefined);
-
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
-
-        window.api.on("console.log", (obj) => console.log(obj)); // Temporary debug
-
-        this.profile.on(value => {
-            if (value === undefined) {
-                this.nav.module("No profile loaded!");
-                this.nav.error(true);
-                return;
-            } 
-            this.nav.module(value);
-            this.nav.error(false);
-        });
-
-        // hot reload event
-        window.api.on("loadScript", async (paths: string[]) => {
-            for (const p of paths) {
-                ASL_VM.load(p);
-            }
-        });
-
-        const moduleListHandle = (response: { success: boolean; modules: string[] | undefined; error: string | undefined; }) => {
-            if (response.success === false) {
-                console.error(response.error);
-                return;
-            }
-            if (response.modules === undefined) {
-                console.error("Module list was undefined despite success.");
-                return;
-            }
-            this.nav.moduleList.values(response.modules);
-        };
-
-        // listen for module list changes
-        window.api.on("moduleList", moduleListHandle);
-
-        // get module list
-        window.api.invoke("moduleList").then((response) => {
-            if (response.success === false) {
-                console.error(response.error);
-                return;
-            }
-            if (response.modules === undefined) {
-                console.error("Module list was undefined despite success.");
-                return;
-            }
-
-            moduleListHandle(response);
-
-            window.api.invoke("defaultModule").then((defaultModule) => {
-                if (response.modules.includes(defaultModule)) {
-                    window.api.invoke("loadModule", defaultModule).then((response) => this.onLoadModule(response));
-                }
-            });
-        });
-
-        window.api.on("startGame", () => {
-            if (this.profile() === undefined) {
-                this.player.unlink();
-                console.error("Unable to start live view as no profile was loaded.");
-            } else {
-                console.log("LIVE VIEW OPEN GAME");
-                this.main.loading(true);
-                this.load(this.main);
-                this.player.open();
-            }
-        }); // Temporary for live viewing games
-
-        // Load replay file
-        this.replayfile.addEventListener("change", (e: any) => {
-            try {
-                const files = e.target.files;
-                if (!files.length) {
-                    console.warn('No file selected!');
-                    return;
-                }
-                const loaded = files.length;
-                if (loaded !== 1) throw new Error("Can only load 1 file.");
-                const file = files[0];
-
-                if (this.profile() === undefined) {
-                    this.nav.activeModuleList(true);
-                    console.error("Unable to load replay as no profile was loaded.");
-                } else {
-                    this.main.loading(true);
-                    this.load(this.main);
-                    this.player.open(file.path);
-                }
-
-                this.replayfile.value = "";
-            } catch (err) {
-                console.error(err);
-            }
-        });
-
-        this.nav.icon.addEventListener("click", () => this.replayfile.click());
-
-        // Upon all modules loading, refresh player
-        ASL_VM.onNoExecutionsLeft(() => {
-            this.player.refresh();
-        });
-
-        // reload module list on click
-        this.nav.activeModuleList.on(async (value) => {
-            if (!value) return;
-
-            const response = await window.api.invoke("moduleList");
-            if (response.success === false) {
-                console.error(response.error);
-                return;
-            }
-            if (response.modules === undefined) {
-                console.error("Module list was undefined despite success.");
-                return;
-            }
-    
-            moduleListHandle(response);
-        });
-
-        this.load(this.main);
+        readonly profile: Signal<string | undefined>;
     }
 
-    public onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }) {
+    const dom = html<Mutable<Private & App>>/**//*html*/`
+        <div class="${theme} ${style.wrapper}">
+            ${html.open(WinNav()).bind("nav")}
+                <span>Random User Template</span>
+            ${html.close()}
+            <!-- Content goes here -->
+            <div m-id="body" class="${style.body}">
+            </div>
+        </div>
+        `;
+    html(dom).box();
+
+    dom.profile = signal<string | undefined>(undefined);
+    dom.player = Player();
+    dom.main = Main();
+
+    dom.onLoadModule = function onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }) {
         if (response.success === false) {
             console.error(response.error);
             this.profile(undefined);
@@ -212,49 +111,151 @@ const App = Macro(class App extends MacroElement {
             this.main.loading(this.player.path !== undefined);
             this.load(this.main);
 
-            // reset file loader
-            this.replayfile.value = "";
-
             this.profile(response.module);
 
             if (this.player.path !== undefined) {
                 ASL_VM.onNoExecutionsLeft(() => this.player.open(this.player.path), { once: true });
             }
         });
-    }
+    };
 
-    public load(macro: MacroElement) {
-        this.body.replaceChildren(...macro.dom);
-    }
-}, () => html`
-    <div class="${theme} ${style.wrapper}">
-        ${WinNav().open().bind("nav")}
-            <span>GTFO Replay Viewer</span>
-        ${WinNav.close}
-        <!-- Content goes here -->
-        <div m-id="body" class="${style.body}">
-        </div>
-        <input m-id="replayfile" type="file" style="display: none;"/>
-    </div>
-    `);
+    dom.load = function load(page: html) {
+        this.body.replaceChildren(...page);
+    };
 
-let _app: Macro<typeof App> | undefined = undefined;
-export function app(): Macro<typeof App> {
-    if (_app === undefined) throw new Error("App has not loaded yet.");
-    return _app;
-}
+    dom.profile.on(value => {
+        if (value === undefined) {
+            dom.nav.module("No profile loaded!");
+            dom.nav.error(true);
+            return;
+        } 
+        dom.nav.module(value);
+        dom.nav.error(false);
+    });
+
+    // hot reload event
+    window.api.on("loadScript", async (paths: string[]) => {
+        for (const p of paths) {
+            ASL_VM.load(p);
+        }
+    });
+
+    const moduleListHandle = (response: { success: boolean; modules: string[] | undefined; error: string | undefined; }) => {
+        if (response.success === false) {
+            console.error(response.error);
+            return;
+        }
+        if (response.modules === undefined) {
+            console.error("Module list was undefined despite success.");
+            return;
+        }
+        dom.nav.moduleList.values(response.modules);
+    };
+
+    // listen for module list changes
+    window.api.on("moduleList", moduleListHandle);
+
+    // get module list
+    window.api.invoke("moduleList").then((response) => {
+        if (response.success === false) {
+            console.error(response.error);
+            return;
+        }
+        if (response.modules === undefined) {
+            console.error("Module list was undefined despite success.");
+            return;
+        }
+
+        moduleListHandle(response);
+
+        window.api.invoke("defaultModule").then((defaultModule) => {
+            if (response.modules.includes(defaultModule)) {
+                window.api.invoke("loadModule", defaultModule).then((response) => dom.onLoadModule(response));
+            }
+        });
+    });
+
+    window.api.on("startGame", () => {
+        if (dom.profile() === undefined) {
+            dom.player.unlink();
+            console.error("Unable to start live view as no profile was loaded.");
+        } else {
+            console.log("LIVE VIEW OPEN GAME");
+            dom.main.loading(true);
+            dom.load(dom.main);
+            dom.player.open();
+        }
+    }); // Temporary for live viewing games
+
+    let isChoosingFile = false;
+    dom.chooseFile = async function chooseFile() {
+        if (isChoosingFile) return;
+        isChoosingFile = true;
+        try {
+            const files: string[] = await window.api.invoke("chooseFile");
+            if (!files.length) {
+                console.warn('No file selected!');
+                return;
+            }
+            const loaded = files.length;
+            if (loaded !== 1) throw new Error("Can only load 1 file.");
+            const file = files[0];
+
+            if (dom.profile() === undefined) {
+                dom.nav.activeModuleList(true);
+                console.error("Unable to load replay as no profile was loaded.");
+            } else {
+                dom.main.loading(true);
+                dom.load(dom.main);
+                console.log(`OPEN FILE FROM DISK ${file}`);
+                dom.player.open(file);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            isChoosingFile = false;
+        }
+    };
+
+    dom.nav.icon.addEventListener("click", async () => {
+        dom.chooseFile();
+    });
+
+    // Upon all modules loading, refresh player
+    ASL_VM.onNoExecutionsLeft(() => {
+        dom.player.refresh();
+    });
+
+    // reload module list on click
+    dom.nav.activeModuleList.on(async (value) => {
+        if (!value) return;
+
+        const response = await window.api.invoke("moduleList");
+        if (response.success === false) {
+            console.error(response.error);
+            return;
+        }
+        if (response.modules === undefined) {
+            console.error("Module list was undefined despite success.");
+            return;
+        }
+
+        moduleListHandle(response);
+    });
+
+    dom.load(dom.main);
+
+    return dom as html<App>;
+};
+
+export const app = App();
 
 // Load app
 const __load__ = () => {
-    _app = Macro.create(App());
-    document.body.replaceChildren(..._app.dom);
+    document.body.replaceChildren(...app);
 };
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", __load__);
 } else {
     __load__();
 }
-
-(window as any).signal = signal;
-(window as any).effect = effect;
-(window as any).computed = computed;

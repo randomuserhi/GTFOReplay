@@ -1,5 +1,5 @@
-import { html, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
-import { signal } from "@esm/@/rhu/signal.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { dispose } from "../main.js";
 
@@ -75,66 +75,74 @@ const style = Style(({ css }) => {
     };
 });
 
-export const Seeker = Macro(class Seeker extends MacroElement {
-    public seeking = signal(false);
-    public hovering = signal(false);
+export const Seeker = () => {
+    interface Seeker {
+        readonly seeking: Signal<boolean>;
+        readonly hovering: Signal<boolean>;
 
-    public mount: HTMLDivElement;
-    private interact: HTMLDivElement;
-    private bar: HTMLDivElement;
-    private progress: HTMLDivElement;
-    
-    value = signal(0);
-    
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
-        super(dom, bindings);
-
-        this.value.guard = Math.clamp01;
-        this.value.on((value) => this.progress.style.width = `${Math.clamp01(value) * 100}%`);
-
-        const doSeek = (x: number) => {
-            if (this.seeking()) {
-                const rect = this.interact.getBoundingClientRect();
-                this.value((x - rect.left) / this.bar.clientWidth);
-            }
-        };
-        window.addEventListener("mousedown", (evt) => {
-            const rect = this.interact.getBoundingClientRect();
-            if (evt.button === 0 && 
-                evt.clientX > rect.left && evt.clientX < rect.left + this.interact.clientWidth &&
-                evt.clientY > rect.top && evt.clientY < rect.top + this.interact.clientHeight) {
-                this.seeking(true);
-                doSeek(evt.clientX);
-            }
-        }, { signal: dispose.signal });
-        window.addEventListener("mouseup", (evt) => { 
-            if (evt.button === 0) {
-                this.seeking(false);
-                doSeek(evt.clientX);
-            }
-        }, { signal: dispose.signal });
-        window.addEventListener("mousemove", (evt) => {
-            doSeek(evt.clientX);
-        }, { signal: dispose.signal });
-
-        this.interact.addEventListener("mouseover", () => {
-            this.hovering(true);
-        });
-        this.interact.addEventListener("mouseout", () => {
-            this.hovering(false);
-        });
-
-        this.mount.append(...children);
+        readonly mount: HTMLDivElement;
+        readonly value: Signal<number>;
     }
-}, () => html`
-    <div class="${style.wrapper}">
-        <div m-id="interact" class="${style.bar}">
-            <div m-id="bar" class="${style.visualBar}">
-                <div m-id="progress" class="${style.visualProgress}">
+    interface Private {
+        readonly interact: HTMLDivElement;
+        readonly bar: HTMLDivElement;
+        readonly progress: HTMLDivElement;
+    }
+
+    const dom = html<Mutable<Private & Seeker>>/**//*html*/`
+        <div class="${style.wrapper}">
+            <div m-id="interact" class="${style.bar}">
+                <div m-id="bar" class="${style.visualBar}">
+                    <div m-id="progress" class="${style.visualProgress}">
+                    </div>
                 </div>
             </div>
+            <div m-id="mount" class="${style.mount}">
+            </div>
         </div>
-        <div m-id="mount" class="${style.mount}">
-        </div>
-    </div>
-    `);
+        `;
+    html(dom).box().children((children) => {
+        dom.mount.append(...children);
+    });
+
+    dom.seeking = signal(false);
+    dom.hovering = signal(false);
+    dom.value = signal(0);
+
+    dom.value.guard = Math.clamp01;
+    dom.value.on((value) => dom.progress.style.width = `${Math.clamp01(value) * 100}%`);
+
+    const doSeek = (x: number) => {
+        if (dom.seeking()) {
+            const rect = dom.interact.getBoundingClientRect();
+            dom.value((x - rect.left) / dom.bar.clientWidth);
+        }
+    };
+    window.addEventListener("mousedown", (evt) => {
+        const rect = dom.interact.getBoundingClientRect();
+        if (evt.button === 0 && 
+            evt.clientX > rect.left && evt.clientX < rect.left + dom.interact.clientWidth &&
+            evt.clientY > rect.top && evt.clientY < rect.top + dom.interact.clientHeight) {
+            dom.seeking(true);
+            doSeek(evt.clientX);
+        }
+    }, { signal: dispose.signal });
+    window.addEventListener("mouseup", (evt) => { 
+        if (evt.button === 0) {
+            dom.seeking(false);
+            doSeek(evt.clientX);
+        }
+    }, { signal: dispose.signal });
+    window.addEventListener("mousemove", (evt) => {
+        doSeek(evt.clientX);
+    }, { signal: dispose.signal });
+
+    dom.interact.addEventListener("mouseover", () => {
+        dom.hovering(true);
+    });
+    dom.interact.addEventListener("mouseout", () => {
+        dom.hovering(false);
+    });
+
+    return dom as html<Seeker>;
+};

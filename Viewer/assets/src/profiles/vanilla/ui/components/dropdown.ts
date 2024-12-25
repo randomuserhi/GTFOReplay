@@ -1,4 +1,4 @@
-import { HTML, html, MACRO, Macro, MacroElement, RHU_MAP } from "@esm/@/rhu/macro.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 
@@ -91,84 +91,44 @@ const style = Style(({ css }) => {
     };
 });
 
-const Item = Macro(class Item extends MacroElement {
-    private _frag = new DocumentFragment();
-    get frag() {
-        this._frag.replaceChildren(...this.dom);
-        return this._frag;
+export const Item = () => {
+    interface Item {
+        key: Signal<string>;
+        value: any;
+        readonly button: HTMLSpanElement;
+    }
+    interface Private {
     }
 
-    public remove() {
-        this._frag.replaceChildren(...this.dom);
+    const key = signal("");
+
+    const dom = html<Mutable<Private & Item>>/**//*html*/`
+        <span m-id="button" class="${style.item}">${key}</span>
+		`;
+    html(dom).box();
+
+    dom.key = key;
+    dom.value = undefined;
+
+    return dom as html<Item>;
+};
+
+export const Dropdown = () => {
+    interface Dropdown {
+        value: Signal<any>;
+        options: Signal<[key: string, value: any][]>;
+        readonly wrapper: HTMLDivElement;
+    }
+    interface Private {
+        readonly select: HTMLDivElement;
     }
 
-    public key: Signal<string>;
-    public value: any = undefined;
-    public button: HTMLSpanElement;
-}, () => html`<span m-id="button" class="${style.item}">${html.signal("key")}</span>`);
+    const active = signal(false);
+    const selected = signal("");
+    const valueMap = new Map<any, string>();
+    const _value = signal<any>(undefined);
 
-export const Dropdown = Macro(class Dropdown extends MacroElement {
-    public wrapper: HTMLDivElement;
-    private select: HTMLDivElement;
-    private selected: Signal<string>;
-    private items: RHU_MAP<string, any, HTML<{ body: HTMLDivElement }>, MACRO<typeof Item>>;
-    private valueMap = new Map<any, string>();
-
-    constructor(dom: Node[], bindings: []) {
-        super(dom, bindings);
-        
-        this.items.onappend.add((wrapper, dom, item) => {
-            wrapper.body.append(...dom);
-            item.button.addEventListener("click", () => {
-                this.active(false);
-                this.value(item.value);
-            });
-        });
-        this.items.onupdate.add((item, key, value) => {
-            item.key(key);
-            item.value = value;
-        });
-
-        this.options.on((values) => {
-            this.items.assign(values);
-
-            for (const [key, value] of values) {
-                this.valueMap.set(value, key);
-            }
-
-            const value = this.value();
-            if (!this.valueMap.has(value)) this.selected("");
-            else this.selected(this.valueMap.get(value)!);
-        });
-
-        this.active.guard = (active) => {
-            if (this.items.size === 0) return false;
-            return active;
-        }; 
-
-        this.active.on((active) => {
-            if (active) this.wrapper.classList.add(`${style.active}`);
-            else this.wrapper.classList.remove(`${style.active}`);
-        });
-
-        this.select.addEventListener("click", () => {
-            this.active(!this.active());
-        });
-
-        this.wrapper.addEventListener("blur", () => {
-            this.active(false);
-        });
-
-        this.value.on((value) => {
-            if (!this.valueMap.has(value)) this.selected("");
-            else this.selected(this.valueMap.get(value)!);
-        });
-    }
-    
-    private active = signal(false);
-
-    public value = signal<any>(undefined);
-    public options = signal<[key: string, value: any][]>([], (a, b) => {
+    const options = signal<[key: string, value: any][]>([], (a, b) => {
         if (a === undefined && b === undefined) return true;
         if (a === undefined || b === undefined) return false;
         if (a.length !== b.length) return false;
@@ -177,13 +137,72 @@ export const Dropdown = Macro(class Dropdown extends MacroElement {
         }
         return true;
     });
-}, () => html`
-    <div m-id="wrapper" class="${style.wrapper}" tabindex="-1">
-        <span m-id="select" class="${style.item}">${html.signal("selected")}</span>
-        ${
-    html.map<string, any, HTML<{ body: HTMLDivElement }>, MACRO<typeof Item>>(
-        html`<div m-id="body" class="${style.body}"></div>`,
-        Item())
-        .bind("items")}
-    </div>
-    `);
+    const list = html.map(options, (values) => values, (kv, el) => {
+        const [key, value] = kv;
+        if (el === undefined) {
+            const el = Item();
+            active(false);
+            el.value = value;
+            el.key(key);
+            el.button.addEventListener("click", () => {
+                active(false);
+                _value(el.value);
+            });
+            return el;
+        } else {
+            el.value = value;
+            el.key(key);
+            return el;
+        }
+    });
+
+    const dom = html<Mutable<Private & Dropdown>>/**//*html*/`
+        <div m-id="wrapper" class="${style.wrapper}" tabindex="-1">
+            <span m-id="select" class="${style.item}">${selected}</span>
+            <div class="${style.body}">
+                ${list}
+            </div>
+        </div>
+        `;
+    html(dom).box();
+
+    dom.value = _value;
+    dom.options = options;
+
+    dom.options.on((values) => {
+        valueMap.clear();
+
+        for (const [key, value] of values) {
+            valueMap.set(value, key);
+        }
+
+        const value = dom.value();
+        if (!valueMap.has(value)) selected("");
+        else selected(valueMap.get(value)!);
+    });
+
+    active.guard = (active) => {
+        if (dom.options().length === 0) return false;
+        return active;
+    }; 
+
+    active.on((active) => {
+        if (active) dom.wrapper.classList.add(`${style.active}`);
+        else dom.wrapper.classList.remove(`${style.active}`);
+    });
+
+    dom.select.addEventListener("click", () => {
+        active(!active());
+    });
+
+    dom.wrapper.addEventListener("blur", () => {
+        active(false);
+    });
+
+    dom.value.on((value) => {
+        if (!valueMap.has(value)) selected("");
+        else selected(valueMap.get(value)!);
+    });
+
+    return dom as html<Dropdown>;
+};

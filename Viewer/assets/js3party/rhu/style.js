@@ -1,8 +1,7 @@
-import { exists } from "./rhu.js";
 import { ThemeVariable } from "./theme.js";
 let id = 69;
 export const ClassName = function (name) {
-    if (exists(name)) {
+    if (name !== undefined) {
         this.name = name;
     }
     else {

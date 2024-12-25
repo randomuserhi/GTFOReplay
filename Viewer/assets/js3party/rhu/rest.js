@@ -1,5 +1,13 @@
-import { exists, parseOptions } from "./rhu.js";
 const _fetch = fetch;
+function parseOptions(template, options) {
+    if (options === undefined)
+        return template;
+    if (template === undefined || template === null)
+        return template;
+    const result = template;
+    Object.assign(result, options);
+    return result;
+}
 export var Rest;
 (function (Rest) {
     function fetch(options) {
@@ -10,14 +18,14 @@ export var Rest;
             parser: undefined
         };
         parseOptions(partialOpt, options);
-        if (!exists(partialOpt.url))
+        if (partialOpt.url === undefined)
             throw new SyntaxError("No fetch url was provided.");
-        if (!exists(partialOpt.fetch))
+        if (partialOpt.fetch === undefined)
             throw new SyntaxError("No fetch options were provided.");
-        if (!exists(partialOpt.callback))
+        if (partialOpt.callback === undefined)
             throw new SyntaxError("No callback was provided.");
         const opt = partialOpt;
-        if (exists(opt.parser)) {
+        if (opt.parser !== undefined) {
             return (async function (...params) {
                 const payload = {
                     urlParams: {},
@@ -25,12 +33,12 @@ export var Rest;
                 };
                 parseOptions(payload, opt.parser(...params));
                 const init = await opt.fetch(...params);
-                if (exists(payload.body)) {
+                if (payload.body !== undefined) {
                     init.body = payload.body;
                 }
                 const url = new URL(await opt.url(...params));
                 for (const key in payload.urlParams)
-                    if (exists(payload.urlParams[key]))
+                    if (payload.urlParams[key] !== undefined)
                         url.searchParams.append(key, payload.urlParams[key]);
                 const response = await _fetch(url, init);
                 return await opt.callback(response);
@@ -54,11 +62,11 @@ export var Rest;
             parser: undefined
         };
         parseOptions(partialOpt, options);
-        if (!exists(partialOpt.url))
+        if (partialOpt.url === undefined)
             throw new SyntaxError("No fetch url was provided.");
-        if (!exists(partialOpt.fetch))
+        if (partialOpt.fetch === undefined)
             throw new SyntaxError("No fetch options were provided.");
-        if (!exists(partialOpt.callback))
+        if (partialOpt.callback === undefined)
             throw new SyntaxError("No callback was provided.");
         const fetch = partialOpt.fetch;
         partialOpt.fetch = async (...params) => {
@@ -69,11 +77,11 @@ export var Rest;
             return request;
         };
         const opt = partialOpt;
-        if (exists(opt.parser)) {
+        if (opt.parser !== undefined) {
             const parser = opt.parser;
             opt.parser = async function (...params) {
                 const payload = await parser(...params);
-                if (exists(payload.body))
+                if (payload.body !== undefined)
                     payload.body = JSON.stringify(payload.body);
                 return payload;
             };

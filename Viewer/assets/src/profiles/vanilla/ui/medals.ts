@@ -1,4 +1,4 @@
-import { html, HTML, Macro, MacroElement, RHU_CHILDREN } from "@esm/@/rhu/macro.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
@@ -8,7 +8,7 @@ import { StatTracker } from "../parser/stattracker/stattracker.js";
 interface MedalRequirement {
     name: string;
     icon: string;
-    description: HTML<{ value: Signal<string> }>;
+    description: () => html<{ value: Signal<string> }>;
     award: (medals: Map<bigint, Map<string, string>>, api: ReplayApi, players: bigint[]) => void;
 }
 
@@ -28,9 +28,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "MVP",
         icon: "./medals/MVP.png",
-        description: html`
+        description: () => html`
         <div>Deal the most damage<br/>(excluding sentry / mines)</div>
-        <div><span style="color: #e9bc29">${html.signal("value")}</span> damage dealt</div>
+        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> damage dealt</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -76,9 +76,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Imposter",
         icon: "./medals/imposter.png",
-        description: html`
+        description: () => html`
         <div>Most damage dealt to teammates (more than 50% damage)</div>
-        <div><span style="color: #e9bc29">${html.signal("value")}%</span> damage dealt</div>
+        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}%</span> damage dealt</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -123,9 +123,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Fancy Feet",
         icon: "./medals/faker.png",
-        description: html`
+        description: () => html`
         <div>Most tongues avoided</div>
-        <div><span style="color: #e9bc29">${html.signal("value")}</span> avoided</div>
+        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> avoided</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -164,9 +164,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Guardian Angel",
         icon: "./medals/angel.png",
-        description: html`
+        description: () => html`
             <div>Most revives</div>
-            <div><span style="color: #e9bc29">${html.signal("value")}</span> revives</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> revives</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -202,9 +202,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Supporter",
         icon: "./medals/support.png",
-        description: html`
+        description: () => html`
             <div>Most assists</div>
-            <div><span style="color: #e9bc29">${html.signal("value")}</span> assists</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> assists</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -243,9 +243,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Kill Stealer",
         icon: "./medals/killstealer.png",
-        description: html`
+        description: () => html`
             <div>Most kills (excluding sentry / mines), but not most damage</div>
-            <div><span style="color: #e9bc29">${html.signal("value")}</span> kills</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> kills</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -288,9 +288,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Sleepy",
         icon: "./medals/sleepy.png",
-        description: html`
+        description: () => html`
             <div>Most time spent downed</div>
-            <div><span style="color: #e9bc29">${html.signal("value")}</span> time spent</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> time spent</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -331,9 +331,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Fragile",
         icon: "./medals/fragile.png",
-        description: html`
+        description: () => html`
             <div>Most healing items consumed</div>
-            <div><span style="color: #e9bc29">${html.signal("value")}</span> items used</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> items used</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -372,9 +372,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Lazy",
         icon: "./medals/lazy.png",
-        description: html`
+        description: () => html`
             <div>Deal more damage with your sentry than your guns.</div>
-            <div>Sentry did <span style="color: #e9bc29">${html.signal("value")}%</span> more damage.</div>
+            <div>Sentry did <span style="color: #e9bc29">${html.bind(signal(""), "value")}%</span> more damage.</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -427,9 +427,9 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
     {
         name: "Lone Wolf",
         icon: "./medals/wolf.png",
-        description: html`
+        description: () => html`
             <div>Be the longest sole player alive for atleast 1 minute.</div>
-            <div><span style="color: #e9bc29">${html.signal("value")}</span> time spent solo.</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> time spent solo.</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -506,39 +506,43 @@ const style = Style(({ css }) => {
     };
 });
 
-export const Medal = Macro(class Medal extends MacroElement {
-    private _frag = new DocumentFragment();
-    get frag() {
-        this._frag.replaceChildren(...this.dom);
-        return this._frag;
+export const Medal = () => {
+    interface Medal {
+        set(key: string, icon: string, description: () => html<{ value: Signal<string> }>): void;
+
+        readonly key: Signal<string>;
+        readonly value: Signal<string>;
+    }
+    interface Private {
+        readonly img: HTMLImageElement;
+        readonly description: HTMLSpanElement;
     }
 
-    public key: Signal<string>;
-    public value = signal("");
+    const key = signal("Surprise!");
 
-    private img: HTMLImageElement;
-    private description: HTMLSpanElement;
+    const dom = html<Mutable<Private & Medal>>/**//*html*/`
+        <div class="${style.wrapper}">
+            <img m-id="img"/>
+            <div class="${style.mount}">
+                <span style="
+                    font-size: 20px;
+                    margin-bottom: 0.4rem;
+                ">${key}</span>
+                <span m-id="description" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">You shouldn't be able to see this!</span>
+            </div>
+        </div>
+        `;
+    html(dom).box();
 
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN) {
-        super(dom, bindings);
-    }
+    dom.key = key;
 
-    public set(key: string, icon: string, description: HTML<{ value: Signal<string> }>) {
+    dom.set = function set(key, icon, description) {
         this.key(key);
         this.img.src = icon;
-        const [b, frag] = description.dom();
-        this.value = b.value;
-        this.description.replaceChildren(frag);
-    }
-}, () => html`
-    <div class="${style.wrapper}">
-        <img m-id="img"/>
-        <div class="${style.mount}">
-            <span style="
-                font-size: 20px;
-                margin-bottom: 0.4rem;
-            ">${html.signal("key", "Surprise!")}</span>
-            <span m-id="description" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">You shouldn't be able to see this!</span>
-        </div>
-    </div>
-    `);
+        const dom = description();
+        this.value = dom.value;
+        this.description.replaceChildren(...dom);
+    };
+
+    return dom as html<Medal>;
+};

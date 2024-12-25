@@ -8,6 +8,7 @@ export interface SignalEvent<T = any> {
     off(handle: Callback<T>): boolean;
     release(): void;
     check(): number;
+    string: (value: T) => string;
 }
 export interface Signal<T> extends SignalEvent<T> {
     (value: T): T;

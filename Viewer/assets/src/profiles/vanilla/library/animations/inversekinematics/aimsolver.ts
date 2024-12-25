@@ -1,4 +1,3 @@
-import { exists } from "@esm/@/rhu/rhu.js";
 import { Object3D, Quaternion, Vector3 } from "@esm/three";
 import { Bone, IKSolverHeuristic, vectorSlerp } from "./rootmotion.js";
 
@@ -64,7 +63,7 @@ export class IKSolverAim extends IKSolverHeuristic {
     }
 
     protected onUpdate(): void {
-        if (!exists(this.target) || !exists(this.transform)) return;
+        if (this.target === undefined || this.transform === undefined) return;
 
         if (this.axis.x === 0 && this.axis.y === 0 && this.axis.z === 0) {
             return;

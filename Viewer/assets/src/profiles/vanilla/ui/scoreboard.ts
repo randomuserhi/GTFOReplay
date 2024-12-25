@@ -1,4 +1,4 @@
-import { HTML, html, MACRO, Macro, MacroElement, RHU_CHILDREN, RHU_MAP } from "@esm/@/rhu/macro.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
 import { Rest } from "@esm/@/rhu/rest.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
@@ -82,89 +82,92 @@ const style = Style(({ css }) => {
     };
 });
 
-const Slot = Macro(class Slot extends MacroElement {
-    public wrapper: HTMLTableElement;
-    private avatar: HTMLTableCellElement;
-    constructor(dom: Node[], bindings: any, children: RHU_CHILDREN, key: bigint) {
-        super(dom, bindings);
+export const Slot = (key: bigint) => {
+    interface Slot {
+        readonly view: Signal<html<typeof View> | undefined>;
+        readonly medals: Signal<Map<string, string>>;
 
-        this.key = key;
-
-        this.health.on((health) => {
-            let bgColor = "rgba(0, 0, 0, 0.9)";
-            if (health <= 0) {
-                bgColor = "rgba(255, 0, 0, 0.5)";
-            }
-            for (const el of this.dom as HTMLElement[]) {
-                el.style.backgroundColor = bgColor;
-            }
-        });
-
-        this.items.onappend.add((wrapper, dom, item, key) => {
-            wrapper.medalList.append(...dom);
-            const medal = MedalDatablock.get(key);
-            if (medal === undefined) throw new Error(`Unable to find medal of type ${key}.`);
-            item.set(key, medal.icon, medal.description);
-        });
-        this.items.onupdate.add((item, key, value) => {
-            item.value(value);
-        });
-
-        this.medals.on((medals) => {
-            this.items.assign(medals);
-        });
-
-        fetchProfilePicture(key).then(frag => { 
-            if (frag !== undefined && frag !== null) {
-                this.avatar.replaceChildren(frag);
-                this.avatar.addEventListener("click", () => {
-                    window.open(`https://steamcommunity.com/profiles/${key}`, '_blank')?.focus();
-                }, { signal: dispose.signal });
-            } 
-        });
-
-        this.name.guard = (name) => {
-            if (name.length > 30) {
-                return `${name.slice(0, 27)}...`;
-            }
-            return name;
-        };
+        readonly name: Signal<string>
+        readonly kills: Signal<string>
+        readonly assists: Signal<string>
+        readonly health: Signal<number>
+    }
+    interface Private {
+        readonly wrapper: HTMLTableElement;
+        readonly avatar: HTMLTableCellElement;
     }
 
-    public remove() {
-        this.wrapper.remove();
-    }
-
-    public key: bigint;
-    public health = signal<number>(100);
-
-    public name: Signal<string>;
-    public kills: Signal<string>;
-    public assists: Signal<string>;
-    public medals = signal<Map<string, string>>(new Map(), (current, next) => {
+    const medals = signal<Map<string, string>>(new Map(), (current, next) => {
         if (current === undefined && next === undefined) return true;
         if (current === undefined || next === undefined) return false;
         if (current.size === 0 && next.size === 0) return true;
         return false;
     });
+    const list = html.map(medals, undefined, (kv, el?: html<typeof Medal>) => {
+        const [key, value] = kv;
+        if (el === undefined) {
+            el = Medal();
+            const medal = MedalDatablock.get(key);
+            if (medal === undefined) throw new Error(`Unable to find medal of type ${key}.`);
+            el.set(key, medal.icon, medal.description);
+        }
+        el.value(value);
+        return el;
+    });
 
-    private items: RHU_MAP<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>;
+    const name = signal("Name");
+    const kills = signal("0");
+    const assists = signal("0");
 
-    public view = signal<Macro<typeof View> | undefined>(undefined);
-}, () => html`
-    <tr m-id="wrapper" class="${style.slot}">
-        <td m-id="avatar" class="${style.avatar}" style="padding: 10px;"></td>
-        <td><span>${html.signal("name", "Name")}</span></td>
-        <td><span>${html.signal("kills", "0")}</span></td>
-        <td><span>${html.signal("assists", "0")}</span></td>
-        <td style="padding: 0;">${
-    html.map<string, string, HTML<{ medalList: HTMLTableCellElement }>, MACRO<typeof Medal>>(
-        html`<span m-id="medalList" style="display: flex; gap: 10px;"></span>`,
-        Medal())
-        .bind("items")}
-        </td>
-    </tr>
-    `);
+    const dom = html<Mutable<Private & Slot>>/**//*html*/`
+        <tr m-id="wrapper" class="${style.slot}">
+            <td m-id="avatar" class="${style.avatar}" style="padding: 10px;"></td>
+            <td><span>${name}</span></td>
+            <td><span>${kills}</span></td>
+            <td><span>${assists}</span></td>
+            <td style="padding: 0;">
+                <span m-id="medalList" style="display: flex; gap: 10px;">
+                    ${list}
+                </span>
+            </td>
+        </tr>
+        `;
+    html(dom).box();
+    
+    dom.view = signal<html<typeof View> | undefined>(undefined);
+
+    dom.name = name;
+    dom.kills = kills;
+    dom.assists = assists;
+    dom.health = signal(0);
+    dom.medals = medals;
+
+    dom.health.on((health) => {
+        let bgColor = "rgba(0, 0, 0, 0.9)";
+        if (health <= 0) {
+            bgColor = "rgba(255, 0, 0, 0.5)";
+        }
+        dom.wrapper.style.backgroundColor = bgColor;
+    });
+
+    fetchProfilePicture(key).then(frag => { 
+        if (frag !== undefined && frag !== null) {
+            dom.avatar.replaceChildren(frag);
+            dom.avatar.addEventListener("click", () => {
+                window.open(`https://steamcommunity.com/profiles/${key}`, '_blank')?.focus();
+            }, { signal: dispose.signal });
+        } 
+    });
+
+    dom.name.guard = (name) => {
+        if (name.length > 30) {
+            return `${name.slice(0, 27)}...`;
+        }
+        return name;
+    };
+
+    return dom as html<Slot>;
+};
 
 const htmlParser = new DOMParser();
 const fetchProfilePicture = Rest.fetch<HTMLDivElement | undefined, [snet: bigint]>({
@@ -178,144 +181,133 @@ const fetchProfilePicture = Rest.fetch<HTMLDivElement | undefined, [snet: bigint
     }
 });
 
-export const Scoreboard = Macro(class Scoreboard extends MacroElement {
-    public wrapper: HTMLDivElement;
-    private table: HTMLTableElement;
+export const Scoreboard = () => {
+    interface Public {
+        readonly view: Signal<html<typeof View> | undefined>;
 
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
-
-        this.view.on((view) => {
-            if (view === undefined) {
-                this.slots([]);
-                return;
-            }
-
-            view.replay.on(() => {
-                this.slots([]);
-            }, { signal: dispose.signal }); 
-
-            this.slots.on((slots) => {
-                const api = view.api();
-                if (api === undefined) return;
-
-                this.awardedMedals.clear();
-                for (const definition of MedalDatablock.values()) {
-                    definition.award(this.awardedMedals, api, slots);
-                }
-
-                const tracker = api.get("Vanilla.StatTracker");
-                const players = api.get("Vanilla.Player.Snet");
-                const status = api.get("Vanilla.Player.Stats");
-                if (players === undefined) return;
-
-                for (const snet of slots) {
-                    const player = players.get(snet);
-                    if (player === undefined) continue;
-
-                    let item: Macro<typeof Slot>;
-                    if (this.items.has(snet)) {
-                        item = this.items.get(snet)!;
-                        this._items.set(snet, item);
-                    } else {
-                        item = Macro.create(Slot(snet));
-                        this._items.set(snet, item);
-                        this.table.append(item.wrapper);
-                    }
-                    item.name(`${player.nickname}`);
-                    const health = status?.get(player.id)?.health;
-                    item.health(health === undefined ? 100 : health);
-
-                    if (this.awardedMedals.has(snet)) item.medals(this.awardedMedals.get(snet)!);
-                    else item.medals(new Map());
-
-                    const stats = tracker?.players.get(snet);
-                    if (stats === undefined) {
-                        item.kills(`0`);
-                        item.assists(`0`);
-                    } else {
-                        let totalKills = 0;
-                        for (const kills of stats.kills.values()) {
-                            totalKills += kills.value;
-                        }
-                        let mineKills = 0;
-                        for (const kills of stats.mineKills.values()) {
-                            mineKills += kills.value;
-                        }
-                        let sentryKills = 0;
-                        for (const kills of stats.sentryKills.values()) {
-                            sentryKills += kills.value;
-                        }
-                        const nonPlayerKills = mineKills + sentryKills;
-                        item.kills(`${totalKills}${(nonPlayerKills != 0 ? ` (${nonPlayerKills})` : "")}`);
-
-                        let totalAssists = 0;
-                        for (const assists of stats.assists.values()) {
-                            totalAssists += assists.value;
-                        }
-                        item.assists(`${totalAssists}`);
-                    }
-                }
-                
-                for (const [key, item] of this.items) {
-                    if (this._items.has(key)) continue;
-                    item.remove();
-                }
-                
-                const temp = this.items;
-                this.items = this._items;
-                this._items = temp;
-                this._items.clear();
-
-                if (slots.length === 0) {
-                    this.table.style.display = "none";
-                } else {
-                    this.table.style.display = "contents";
-                }
-            });
-
-            view.api.on((api) => {
-                if (api === undefined) return;
-                
-                const players = api.get("Vanilla.Player");
-                if (players === undefined) {
-                    this.slots([]);
-                    return;
-                }
-                const slots = [];
-                for (const { snet } of players.values()) {
-                    slots.push(snet);
-                }
-                this.slots(slots);
-            }, { signal: dispose.signal });
-        }, { signal: dispose.signal });
+        readonly wrapper: HTMLDivElement;
+    }
+    interface Private {
+        readonly table: HTMLTableElement;
     }
 
-    private awardedMedals = new Map<bigint, Map<string, string>>();
+    const _view = signal<html<typeof View> | undefined>(undefined);
 
-    private _items = new Map<bigint, Macro<typeof Slot>>(); 
-    private items = new Map<bigint, Macro<typeof Slot>>();
-
-    private slots = signal<bigint[]>([], (current, next) => {
+    const awardedMedals = new Map<bigint, Map<string, string>>();
+    const slots = signal<bigint[]>([], (current, next) => {
         if (current === undefined && next === undefined) return true;
         if (current === undefined || next === undefined) return false;
         if (current.length === 0 && next.length === 0) return true;
         return false;
     }); 
 
-    public view = signal<Macro<typeof View> | undefined>(undefined);
-}, () => html`
-    <div m-id="wrapper" style="display: none;">
-        <table class="${style.wrapper}">
-            <tbody m-id="table" style="display: none;">
-                <tr style="color: white; font-size: 20px;">
-                    <td></td>    
-                    <td></td>
-                    <td style="display: flex; align-items: center; justify-content: center;"><span>K</span></td>
-                    <td style="display: flex; align-items: center; justify-content: center;"><span>A</span></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    `);
+    const list = html.map(slots, function* (slots) { for (const slot of slots) { yield [slot, slot]; } }, (kv, el?: html<typeof Slot>) => {
+        const view = _view();
+        if (view === undefined) return;
+
+        const api = view.api();
+        if (api === undefined) return;
+
+        awardedMedals.clear();
+        for (const definition of MedalDatablock.values()) {
+            definition.award(awardedMedals, api, slots());
+        }
+
+        const tracker = api.get("Vanilla.StatTracker");
+        const players = api.get("Vanilla.Player.Snet");
+        const status = api.get("Vanilla.Player.Stats");
+        if (players === undefined) return;
+
+        const [snet, ] = kv;
+        const player = players.get(snet);
+        if (player === undefined) return;
+
+        if (el === undefined) {
+            el = Slot(snet);
+        }
+
+        el.name(`${player.nickname}`);
+        const health = status?.get(player.id)?.health;
+        el.health(health === undefined ? 100 : health);
+
+        if (awardedMedals.has(snet)) el.medals(awardedMedals.get(snet)!);
+        else el.medals(new Map());
+
+        const stats = tracker?.players.get(snet);
+        if (stats === undefined) {
+            el.kills(`${0}`);
+            el.assists(`${0}`);
+        } else {
+            let totalKills = 0;
+            for (const kills of stats.kills.values()) {
+                totalKills += kills.value;
+            }
+            let mineKills = 0;
+            for (const kills of stats.mineKills.values()) {
+                mineKills += kills.value;
+            }
+            let sentryKills = 0;
+            for (const kills of stats.sentryKills.values()) {
+                sentryKills += kills.value;
+            }
+            const nonPlayerKills = mineKills + sentryKills;
+            el.kills(`${totalKills}${(nonPlayerKills != 0 ? ` (${nonPlayerKills})` : "")}`);
+
+            let totalAssists = 0;
+            for (const assists of stats.assists.values()) {
+                totalAssists += assists.value;
+            }
+            el.assists(`${totalAssists}`);
+        }
+        return el;
+    });
+
+    const dom = html<Mutable<Private & Public>>/**//*html*/`
+        <div m-id="wrapper" style="display: none;">
+            <table class="${style.wrapper}">
+                <tbody m-id="table">
+                    <tr style="color: white; font-size: 20px;">
+                        <td></td>    
+                        <td></td>
+                        <td style="display: flex; align-items: center; justify-content: center;"><span>K</span></td>
+                        <td style="display: flex; align-items: center; justify-content: center;"><span>A</span></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        `;
+    html(dom).box();
+
+    dom.table.append(...list);
+    
+    dom.view = _view;
+
+    dom.view.on((view) => {
+        if (view === undefined) {
+            slots([]);
+            return;
+        }
+
+        view.replay.on(() => {
+            slots([]);
+        }, { signal: dispose.signal }); 
+
+        view.api.on((api) => {
+            if (api === undefined) return;
+            
+            const players = api.get("Vanilla.Player");
+            if (players === undefined) {
+                slots([]);
+                return;
+            }
+            const newSlots = [];
+            for (const { snet } of players.values()) {
+                newSlots.push(snet);
+            }
+            slots(newSlots);
+        }, { signal: dispose.signal });
+    }, { signal: dispose.signal });
+
+    return dom as html<Public>;
+};

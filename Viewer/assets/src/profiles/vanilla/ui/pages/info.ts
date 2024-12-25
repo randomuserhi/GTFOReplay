@@ -1,4 +1,4 @@
-import { html, Macro, MacroElement } from "@esm/@/rhu/macro.js";
+import { html, Mutable } from "@esm/@/rhu/html.js";
 import { effect, Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { dispose } from "../main.js";
@@ -48,147 +48,151 @@ versionInfo.set("0.1.6", `- Fix shooter projectiles being incompatible with EEC
 - Added reactor objective messages
 - Added terminals, reactors, generators, disinfect station and bulkhead controllers to finder tab`);
 
-export const Info = Macro(class Info extends MacroElement {
-    public view = signal<Macro<typeof View> | undefined>(undefined);
-
-    private isMaster: Signal<string>;
-    private isMasterText: HTMLDivElement;
-    private isNotMasterText: HTMLDivElement;
-
-    private version: Signal<string>;
-    private versionText: HTMLDivElement;
-
-    private compatibilityText: HTMLDivElement;
-
-    public active = signal(false);
-
-    constructor(dom: Node[], bindings: any) {
-        super(dom, bindings);
-
-        this.view.on((view) => {
-            if (view === undefined) return;
-
-            this.isMaster.on((value) => {
-                if (value === "TRUE") {
-                    this.isMasterText.style.display = "block";
-                    this.isNotMasterText.style.display = "none";
-                } else {
-                    this.isNotMasterText.style.display = "block";
-                    this.isMasterText.style.display = "none";
-                }
-            });
-
-            this.version.on((value) => {
-                const text = versionInfo.get(value);
-                if (text !== undefined) this.versionText.innerText = text;
-            });
-
-            view.replay.on((replay) => {
-                if (replay === undefined) return;
-
-                const _header = replay.watch("ReplayRecorder.Header");
-                const _metadata = replay.watch("Vanilla.Metadata");
-                effect(() => {
-                    const header = _header();
-                    if (header === undefined) return;
-                    
-                    this.isMaster(`${header.isMaster.toString().toUpperCase()}`);
-                    
-                    let version = "0.0.1";
-                    const metadata = _metadata();
-                    if (metadata !== undefined) version = metadata.version;
-                    this.version(`${version}`);
-
-                    // TODO(randomuserhi): Make more maintainable
-                    const compatability: Node[] = [];
-                    if (metadata !== undefined) {
-                        if (metadata.compatibility_OldBulkheadSound === true) {
-                            const [_, frag] = html`
-                                <a href="https://thunderstore.io/c/gtfo/p/DarkEmperor/OldBulkheadSound/">OldBulkheadSounds</a>
-                                <ul style="margin-left: 10px;">
-                                    <li>- Alert blame may be incorrect for sound events triggered on security doors opening</li>
-                                    <li>- Can't patch 'LG_SecurityDoor.OnDoorIsOpened' due to NativeDetour vs Harmony</li>
-                                </ul>
-                                `.dom();
-                            compatability.push(frag);
-                        }
-                    }
-                    if (compatability.length === 0) this.compatibilityText.innerHTML = "None";
-                    else this.compatibilityText.replaceChildren(...compatability);
-                }, [_header, _metadata]);
-            }, { signal: dispose.signal });
-        }, { signal: dispose.signal });
+export const Info = () => {
+    interface Info {
+        readonly view: Signal<html<typeof View> | undefined>;
+        active: Signal<boolean>;
     }
-}, () => html`
-    <div class="${style.wrapper}">
-        <div style="margin-bottom: 20px;">
-            <h1>REPLAY INFORMATION</h1>
-            <p>Metadata of the current replay</p>
+    interface Private {
+        readonly isMasterText: HTMLDivElement;
+        readonly isNotMasterText: HTMLDivElement;
+        readonly versionText: HTMLDivElement;
+        readonly compatibilityText: HTMLDivElement;
+    }
+
+    const isMaster = signal("");
+    const version = signal("");
+
+    const dom = html<Mutable<Private & Info>>/**//*html*/`
+        <div class="${style.wrapper}">
+            <div style="margin-bottom: 20px;">
+                <h1>REPLAY INFORMATION</h1>
+                <p>Metadata of the current replay</p>
+            </div>
+            <div m-id="body" class="${style.body}">
+                <div class="${style.row}">
+                    <div class="${style.row}" style="
+                    flex-direction: row;
+                    gap: 20px;
+                    align-items: center;
+                    margin-bottom: 10px;
+                    font-size: 20px;
+                    ">
+                        <span>Is Master</span>
+                        <div style="flex: 1"></div>
+                        <span>${isMaster}</span>
+                    </div>
+                    <div m-id="isMasterText" style="display: none; margin-left: 10px;">
+                        This replay was recorded by the HOST player. This allows for additional information such as:
+                        <ul>
+                            <li>- Kills / assists</li>
+                            <li>- Full medal tracking</li>
+                            <li>- Enemy health tracking</li>
+                            <li>- Player stat tracking</li>
+                            <li>- Alert blame</li>
+                            <li>- Silent shot detection</li>
+                        </ul>
+                    </div>
+                    <div m-id="isNotMasterText" style="display: none; margin-left: 10px;">
+                        This replay was recorded by a CLIENT player. This has limited features:
+                        <ul>
+                            <li>- No kill / assist tracking</li>
+                            <li>- Partial medal tracking (Note that some medals may be awarded incorrectly)</li>
+                            <li>- No enemy health tracking</li>
+                            <li>- No player stat tracking</li>
+                            <li>- No alert blame </li>
+                            <li>- No silent shot detection</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="${style.row}">
+                    <div class="${style.row}" style="
+                    flex-direction: row;
+                    gap: 20px;
+                    align-items: center;
+                    margin-bottom: 10px;
+                    font-size: 20px;
+                    ">
+                        <span>Version</span>
+                        <div style="flex: 1"></div>
+                        <span>${version}</span>
+                    </div>
+                    <div m-id="versionText" style="margin-left: 10px;">
+                    </div>
+                </div>
+                <div class="${style.row}">
+                    <div class="${style.row}" style="
+                    flex-direction: row;
+                    gap: 20px;
+                    align-items: center;
+                    margin-bottom: 10px;
+                    font-size: 20px;
+                    ">
+                        <span>Compatibility</span>
+                    </div>
+                    <div m-id="compatibilityText" style="margin-left: 10px;">
+                    </div>
+                </div>
+            </div>
         </div>
-        <div m-id="body" class="${style.body}">
-            <div class="${style.row}">
-                <div class="${style.row}" style="
-                flex-direction: row;
-                gap: 20px;
-                align-items: center;
-                margin-bottom: 10px;
-                font-size: 20px;
-                ">
-                    <span>Is Master</span>
-                    <div style="flex: 1"></div>
-                    <span>${html.signal("isMaster")}</span>
-                </div>
-                <div m-id="isMasterText" style="display: none; margin-left: 10px;">
-                    This replay was recorded by the HOST player. This allows for additional information such as:
-                    <ul>
-                        <li>- Kills / assists</li>
-                        <li>- Full medal tracking</li>
-                        <li>- Enemy health tracking</li>
-                        <li>- Player stat tracking</li>
-                        <li>- Alert blame</li>
-                        <li>- Silent shot detection</li>
-                    </ul>
-                </div>
-                <div m-id="isNotMasterText" style="display: none; margin-left: 10px;">
-                    This replay was recorded by a CLIENT player. This has limited features:
-                    <ul>
-                        <li>- No kill / assist tracking</li>
-                        <li>- Partial medal tracking (Note that some medals may be awarded incorrectly)</li>
-                        <li>- No enemy health tracking</li>
-                        <li>- No player stat tracking</li>
-                        <li>- No alert blame </li>
-                        <li>- No silent shot detection</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="${style.row}">
-                <div class="${style.row}" style="
-                flex-direction: row;
-                gap: 20px;
-                align-items: center;
-                margin-bottom: 10px;
-                font-size: 20px;
-                ">
-                    <span>Version</span>
-                    <div style="flex: 1"></div>
-                    <span>${html.signal("version")}</span>
-                </div>
-                <div m-id="versionText" style="margin-left: 10px;">
-                </div>
-            </div>
-            <div class="${style.row}">
-                <div class="${style.row}" style="
-                flex-direction: row;
-                gap: 20px;
-                align-items: center;
-                margin-bottom: 10px;
-                font-size: 20px;
-                ">
-                    <span>Compatibility</span>
-                </div>
-                <div m-id="compatibilityText" style="margin-left: 10px;">
-                </div>
-            </div>
-        </div>
-    </div>
-    `);
+        `;
+    html(dom).box();
+    
+    dom.view = signal<html<typeof View> | undefined>(undefined);
+    dom.active = signal(false);
+
+    dom.view.on((view) => {
+        if (view === undefined) return;
+
+        isMaster.on((value) => {
+            if (value === "TRUE") {
+                dom.isMasterText.style.display = "block";
+                dom.isNotMasterText.style.display = "none";
+            } else {
+                dom.isNotMasterText.style.display = "block";
+                dom.isMasterText.style.display = "none";
+            }
+        });
+
+        version.on((value) => {
+            const text = versionInfo.get(value);
+            if (text !== undefined) dom.versionText.innerText = text;
+        });
+
+        view.replay.on((replay) => {
+            if (replay === undefined) return;
+
+            const _header = replay.watch("ReplayRecorder.Header");
+            const _metadata = replay.watch("Vanilla.Metadata");
+            effect(() => {
+                const header = _header();
+                if (header === undefined) return;
+                
+                isMaster(`${header.isMaster.toString().toUpperCase()}`);
+                
+                let versionStr = "0.0.1";
+                const metadata = _metadata();
+                if (metadata !== undefined) versionStr = metadata.version;
+                version(`${versionStr}`);
+
+                // TODO(randomuserhi): Make more maintainable
+                const compatability: Node[] = [];
+                if (metadata !== undefined) {
+                    if (metadata.compatibility_OldBulkheadSound === true) {
+                        compatability.push(...html`
+                            <a href="https://thunderstore.io/c/gtfo/p/DarkEmperor/OldBulkheadSound/">OldBulkheadSounds</a>
+                            <ul style="margin-left: 10px;">
+                                <li>- Alert blame may be incorrect for sound events triggered on security doors opening</li>
+                                <li>- Can't patch 'LG_SecurityDoor.OnDoorIsOpened' due to NativeDetour vs Harmony</li>
+                            </ul>
+                            `);
+                    }
+                }
+                if (compatability.length === 0) dom.compatibilityText.innerHTML = "None";
+                else dom.compatibilityText.replaceChildren(...compatability);
+            }, [_header, _metadata]);
+        }, { signal: dispose.signal });
+    }, { signal: dispose.signal });
+
+    return dom as html<Info>;
+};

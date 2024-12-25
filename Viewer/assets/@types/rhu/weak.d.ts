@@ -1,4 +1,12 @@
-import { ReflectConstruct } from "./rhu.js";
+interface Constructor {
+    new (...args: any[]): any;
+    prototype: any;
+}
+interface ReflectConstruct<Base extends Constructor, T> extends Constructor {
+    __reflect__(newTarget: any, args: any[]): T | undefined;
+    __constructor__(...args: any[]): void;
+    __args__(...args: any[]): ConstructorParameters<Base>;
+}
 export interface WeakRefMap<K, V> extends Map<K, V> {
     prototype: WeakRefMap<K, V>;
 }

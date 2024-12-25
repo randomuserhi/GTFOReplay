@@ -1,4 +1,3 @@
-import { CreateEvent } from "@/rhu";
 import { ShimWorker } from "./es-shim-worker.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleLoader } from "./moduleloader.js";
@@ -100,17 +99,17 @@ export class Parser {
                 for (const [key, value] of header) {
                     replay.set(key, value);
                 }
-                this.dispatchEvent(CreateEvent("eoh", undefined));
+                this.dispatchEvent(new CustomEvent("eoh"));
             });
             ipc.on("snapshot", (snapshot: Timeline.Snapshot) => {
                 replay.timeline.push(snapshot);
-                this.dispatchEvent(CreateEvent("snapshot", undefined));
+                this.dispatchEvent(new CustomEvent("snapshot"));
             });
             ipc.on("state", (state: Snapshot) => {
                 replay.snapshots.push(state);
             });
             ipc.on("end", () => {
-                this.dispatchEvent(CreateEvent("end", undefined));
+                this.dispatchEvent(new CustomEvent("end"));
             });
 
             // Start parsing
