@@ -6,6 +6,7 @@ using HarmonyLib;
 using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
+using SNetwork;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -28,6 +29,8 @@ public class Plugin : BasePlugin {
         }
     }
 
+    private static bool isMaster = false;
+
     [ReplayOnElevatorStop]
     private static void OnElevatorStop() {
         pActiveExpedition expdata = RundownManager.GetActiveExpeditionData();
@@ -48,10 +51,14 @@ public class Plugin : BasePlugin {
         };
 
         DanosStaticStore.currentRunDownDataStore = currentRunDownDataStore;
+
+        isMaster = SNet.IsMaster;
     }
 
     [ReplayOnExpeditionEnd]
     private static void OnExpeditionEnd() {
+        if (!isMaster) return; // NOTE(randomuserhi): Only send data if master, as otherwise there aren't any useful stats to record...
+
         try {
             if (DanosStaticStore.currentRunDownDataStore == null) {
                 APILogger.Error("No rundown data store to export.");
