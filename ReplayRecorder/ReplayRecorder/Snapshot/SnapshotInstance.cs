@@ -139,7 +139,7 @@ namespace ReplayRecorder.Snapshot {
             }
 
             private bool handleRemoval = false;
-            public int Write(ByteBuffer buffer) {
+            public int Write(ByteBuffer buffer, long now) {
                 if (tick != 0) return 0;
                 int start = buffer.count;
 
@@ -160,6 +160,16 @@ namespace ReplayRecorder.Snapshot {
                     cycle = cycle % dynamics.Count;
                     ReplayDynamic dynamic = dynamics[cycle++];
 
+                    // Trigger Hooks
+                    Type dynType = dynamic.GetType();
+                    if (Replay.DynamicHooks.ContainsKey(dynType)) {
+                        try {
+                            Replay.DynamicHooks[dynType]?.Invoke(now, dynamic);
+                        } catch (Exception e) {
+                            APILogger.Error($"[DynamicCollection] Failed to trigger hooks for [{dynType}]: {e}.");
+                        }
+                    }
+
                     bool active = dynamic.Active;
                     if (numWritten < max) { // check we are writing within cap
                         if (!dynamic.remove || tickRate == 1) { // check that we only write removal sync if the tick rate matches event rate.
@@ -169,6 +179,15 @@ namespace ReplayRecorder.Snapshot {
                                 int writeIndex = buffer.count; // Store write point to restore back to if dynamic fails to write
 
                                 try {
+                                    // Trigger hooks
+                                    if (Replay.DirtyDynamicHooks.ContainsKey(dynType)) {
+                                        try {
+                                            Replay.DirtyDynamicHooks[dynType]?.Invoke(now, dynamic);
+                                        } catch (Exception e) {
+                                            APILogger.Error($"[DynamicCollection] Failed to trigger dirty hooks for [{dynType}]: {e}.");
+                                        }
+                                    }
+
                                     //dynamic.init = true;
                                     dynamic._Write(buffer);
                                     dynamic.Write(buffer);
@@ -272,7 +291,7 @@ namespace ReplayRecorder.Snapshot {
 
                 foreach (DynamicCollection collection in dynamics.Values) {
                     try {
-                        if (collection.Write(bs) > 0) {
+                        if (collection.Write(bs, now) > 0) {
                             ++numWritten;
                         }
                     } catch (Exception ex) {
@@ -429,12 +448,24 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal bool Trigger(ReplayEvent e) {
+            Type evType = e.GetType();
+            long now = Now;
+
+            // Trigger hooks
+            if (Replay.EventHooks.ContainsKey(evType)) {
+                try {
+                    Replay.EventHooks[evType]?.Invoke(now, e);
+                } catch (Exception ex) {
+                    APILogger.Error($"Failed to trigger event hooks for [{evType}]: {ex}.");
+                }
+            }
+
             try {
-                EventWrapper ev = new EventWrapper(Now, e, pool.Checkout());
+                EventWrapper ev = new EventWrapper(now, e, pool.Checkout());
                 state.events.Add(ev);
                 return true;
             } catch (Exception ex) {
-                APILogger.Error($"Unexpected error occured whilst trying to write Event[{e.GetType()}] at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
+                APILogger.Error($"Unexpected error occured whilst trying to write Event[{evType}] at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
             }
             return false;
         }
@@ -477,6 +508,16 @@ namespace ReplayRecorder.Snapshot {
                 APILogger.Error($"Unable to spawn '{dynType}' as spawn event failed.");
                 return;
             }
+
+            // Trigger Hooks
+            if (Replay.SpawnHooks.ContainsKey(dynType)) {
+                try {
+                    Replay.SpawnHooks[dynType]?.Invoke(Now, dynamic);
+                } catch (Exception ex) {
+                    APILogger.Error($"Failed to trigger spawn hooks for [{dynType}]: {ex}.");
+                }
+            }
+
             state.dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
         [HideFromIl2Cpp]
@@ -488,6 +529,16 @@ namespace ReplayRecorder.Snapshot {
                 APILogger.Error($"Unable to despawn '{dynType}' as despawn event failed.");
                 return;
             }
+
+            // Trigger Hooks
+            if (Replay.DespawnHooks.ContainsKey(dynType)) {
+                try {
+                    Replay.DespawnHooks[dynType]?.Invoke(Now, dynamic);
+                } catch (Exception ex) {
+                    APILogger.Error($"Failed to trigger despawn hooks for [{dynType}]: {ex}.");
+                }
+            }
+
             state.dynamics[dynType].Remove(dynamic.id, errorOnNotFound);
         }
 

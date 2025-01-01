@@ -5,7 +5,7 @@ using ReplayRecorder.API.Attributes;
 
 namespace Vanilla.Player {
     [ReplayData("Vanilla.Player.Stats", "0.0.2")]
-    internal class rPlayerStats : ReplayDynamic {
+    public class rPlayerStats : ReplayDynamic {
         public PlayerAgent player;
 
         public override bool Active => player != null;

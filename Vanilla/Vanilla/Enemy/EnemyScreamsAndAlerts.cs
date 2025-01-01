@@ -11,7 +11,7 @@ using Vanilla.Noises;
 
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Alert", "0.0.1")]
-    internal class rEnemyAlert : Id {
+    public class rEnemyAlert : Id {
         private byte targetSlot;
 
         public rEnemyAlert(EnemyAgent agent, PlayerAgent? target = null) : base(agent.GlobalID) {
@@ -30,8 +30,8 @@ namespace Vanilla.Enemy {
 
     // TODO(randomuserhi): Move to animations...
     [ReplayData("Vanilla.Enemy.Animation.Scream", "0.0.1")]
-    internal class rEnemyScream : Id {
-        internal enum Type {
+    public class rEnemyScream : Id {
+        public enum Type {
             Regular,
             Scout
         }

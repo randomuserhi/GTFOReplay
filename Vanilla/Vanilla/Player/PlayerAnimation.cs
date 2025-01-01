@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Vanilla.Player {
     [ReplayData("Vanilla.Player.Animation.MeleeSwing", "0.0.1")]
-    internal class rMeleeSwing : Id {
+    public class rMeleeSwing : Id {
         private bool charged = false;
 
         public rMeleeSwing(PlayerAgent player, bool charged = false) : base(player.GlobalID) {
@@ -23,32 +23,32 @@ namespace Vanilla.Player {
     }
 
     [ReplayData("Vanilla.Player.Animation.MeleeShove", "0.0.1")]
-    internal class rMeleeShove : Id {
+    public class rMeleeShove : Id {
         public rMeleeShove(PlayerAgent player) : base(player.GlobalID) {
         }
     }
 
     [ReplayData("Vanilla.Player.Animation.ConsumableThrow", "0.0.1")]
-    internal class rConsumableThrow : Id {
+    public class rConsumableThrow : Id {
         public rConsumableThrow(PlayerAgent player) : base(player.GlobalID) {
         }
     }
 
     [ReplayData("Vanilla.Player.Animation.Revive", "0.0.1")]
-    internal class rRevive : Id {
+    public class rRevive : Id {
         public rRevive(PlayerAgent player) : base(player.GlobalID) {
         }
     }
 
     [ReplayData("Vanilla.Player.Animation.Downed", "0.0.1")]
-    internal class rDowned : Id {
+    public class rDowned : Id {
         public rDowned(PlayerAgent player) : base(player.GlobalID) {
         }
     }
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Player.Animation", "0.0.1")]
-    internal class rPlayerAnimation : ReplayDynamic {
+    public class rPlayerAnimation : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
             // NOTE(randomuserhi): Since all events rely on animation being spawned, make sure that is spawned prior to triggering anything.
@@ -257,7 +257,8 @@ namespace Vanilla.Player {
                 return player.Inventory.m_wieldedItem.IsReloading;
             }
         }
-        private bool isReloading = false;
+        public bool isReloading = false;
+        public bool wasReloading = false;
 
         private float _reloadTime {
             get {
@@ -315,6 +316,7 @@ namespace Vanilla.Player {
 
             BitHelper.WriteBytes(chargingThrow, buffer);
 
+            wasReloading = isReloading;
             isReloading = _isReloading;
 
             BitHelper.WriteBytes(isReloading, buffer);

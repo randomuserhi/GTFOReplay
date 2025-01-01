@@ -7,7 +7,7 @@ using SNetwork;
 namespace Vanilla.Events {
     [ReplayData("Vanilla.Checkpoint", "0.0.1")]
     [HarmonyPatch]
-    internal class rCheckpoint : ReplayEvent {
+    public class rCheckpoint : ReplayEvent {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(CheckpointManager), nameof(CheckpointManager.OnStateChange))]

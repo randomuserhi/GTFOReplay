@@ -14,7 +14,7 @@ using UnityEngine;
 namespace Vanilla.StatTracker.Consumable {
     [HarmonyPatch]
     [ReplayData("Vanilla.StatTracker.Pack", "0.0.1")]
-    internal class rPack : ReplayEvent {
+    public class rPack : ReplayEvent {
         [HarmonyPatch]
         private class Patches {
             private static PlayerAgent? sourcePackUser = null;
@@ -142,10 +142,10 @@ namespace Vanilla.StatTracker.Consumable {
             Disinfect
         }
 
-        private Type type;
+        public Type type;
 
-        private ushort source;
-        private ushort target;
+        public ushort source;
+        public ushort target;
 
         public rPack(Type type, Agent source, Agent target) {
             this.type = type;

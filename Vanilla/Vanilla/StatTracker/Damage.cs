@@ -13,7 +13,7 @@ using Vanilla.Mines;
 namespace Vanilla.StatTracker {
     [HarmonyPatch]
     [ReplayData("Vanilla.StatTracker.Damage", "0.0.1")]
-    internal class rDamage : ReplayEvent {
+    public class rDamage : ReplayEvent {
         [HarmonyPatch]
         private static class Patches {
             private static bool sentry = false;
@@ -271,16 +271,16 @@ namespace Vanilla.StatTracker {
             Fall
         }
 
-        private Type type;
+        public Type type;
 
-        private int source;
-        private ushort target;
+        public int source;
+        public ushort target;
 
-        private Identifier gear;
-        private bool sentry;
+        public Identifier gear;
+        public bool sentry;
 
-        private float damage;
-        private float staggerDamage;
+        public float damage;
+        public float staggerDamage;
 
         public rDamage(Agent target, Agent source, Type type, float damage, Identifier gear, bool sentry = false, float staggerMulti = 0) {
             this.type = type;

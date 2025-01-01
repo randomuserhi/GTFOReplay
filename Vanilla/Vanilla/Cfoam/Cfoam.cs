@@ -28,7 +28,7 @@ namespace Vanilla.Cfoam {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Cfoam", "0.0.1")]
-    internal class rCfoam : DynamicPosition {
+    public class rCfoam : DynamicPosition {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.SpawnGlueGunProjectileIfNeeded))]

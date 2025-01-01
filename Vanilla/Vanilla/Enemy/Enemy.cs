@@ -65,7 +65,7 @@ namespace Vanilla.Enemy {
     }
 
     [ReplayData("Vanilla.Enemy", "0.0.4")]
-    internal class rEnemy : DynamicTransform {
+    public class rEnemy : DynamicTransform {
         [HarmonyPatch]
         private static class Patches {
 

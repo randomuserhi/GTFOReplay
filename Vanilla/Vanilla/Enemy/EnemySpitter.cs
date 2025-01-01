@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Spitters.State", "0.0.1")]
-    internal class rSpitter : ReplayDynamic {
+    public class rSpitter : ReplayDynamic {
         public Vector3 position;
         public Quaternion rotation;
         public byte dimension;
@@ -40,14 +40,14 @@ namespace Vanilla.Enemy {
     }
 
     [ReplayData("Vanilla.Enemy.Spitter.Explode", "0.0.1")]
-    internal class rSpitterExplode : Id {
+    public class rSpitterExplode : Id {
         public rSpitterExplode(int id) : base(id) {
         }
     }
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Spitters", "0.0.1")]
-    internal class rSpitters : ReplayHeader {
+    public class rSpitters : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(InfectionSpitter), nameof(InfectionSpitter.AssignCourseNode))]

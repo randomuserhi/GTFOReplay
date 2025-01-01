@@ -88,7 +88,7 @@ public class Plugin : BasePlugin {
     /// <summary>
     /// Send a "game has ended" message to acknowledged clients.
     /// </summary>
-    [ReplayReset]
+    [ReplayOnExpeditionEnd]
     internal static void TriggerGameEnd() {
         ByteBuffer packet = new ByteBuffer();
         BitHelper.WriteBytes((ushort)Net.MessageType.EndGame, packet);

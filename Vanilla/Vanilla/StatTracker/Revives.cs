@@ -10,7 +10,7 @@ using static Agents.AgentReplicatedActions;
 namespace Vanilla.StatTracker {
     [HarmonyPatch]
     [ReplayData("Vanilla.StatTracker.Revive", "0.0.1")]
-    internal class rRevive : ReplayEvent {
+    public class rRevive : ReplayEvent {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(AgentReplicatedActions), nameof(AgentReplicatedActions.DoPlayerRevive))]

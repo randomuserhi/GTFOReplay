@@ -13,7 +13,7 @@ namespace Vanilla.ChainedPuzzles {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Holopath", "0.0.1")]
-    internal class rHolopath : ReplayDynamic {
+    public class rHolopath : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
             private static Dictionary<int, byte> splineDimensions = new Dictionary<int, byte>();

@@ -45,13 +45,15 @@ export class Camera extends ObjectWrapper<PerspectiveCamera> {
     });
 
     private static FUNC_update = {
-        pM: new Matrix4()
+        pM: new Matrix4(),
+        worldPos: new Vector3()
     } as const;
     public update() {
-        const { pM } = Camera.FUNC_update;
+        const { pM, worldPos } = Camera.FUNC_update;
         this.frustum.setFromProjectionMatrix(pM.multiplyMatrices(this.root.projectionMatrix, this.root.matrixWorldInverse));
 
-        this.position({ x: this.root.position.x, y: this.root.position.y, z: this.root.position.z });
+        this.root.getWorldPosition(worldPos);
+        this.position({ x: worldPos.x, y: worldPos.y, z: worldPos.z });
     }
 }
 

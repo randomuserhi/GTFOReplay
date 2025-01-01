@@ -24,7 +24,7 @@ namespace Vanilla.ChainedPuzzles {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Bioscan", "0.0.1")]
-    internal class rBioscan : DynamicPosition {
+    public class rBioscan : DynamicPosition {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(CP_Bioscan_Core), nameof(CP_Bioscan_Core.OnSyncStateChange))]
@@ -70,7 +70,7 @@ namespace Vanilla.ChainedPuzzles {
     }
 
     [ReplayData("Vanilla.Bioscan.Status", "0.0.1")]
-    internal class rBioscanStatus : ReplayDynamic {
+    public class rBioscanStatus : ReplayDynamic {
         private CP_Bioscan_Core bioscan;
         private CP_Bioscan_Graphics graphics;
 

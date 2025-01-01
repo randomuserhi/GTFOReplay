@@ -24,7 +24,7 @@ namespace Vanilla.Enemy {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Projectile", "0.0.1")]
-    internal class rEnemyProjectile : DynamicTransform {
+    public class rEnemyProjectile : DynamicTransform {
         [HarmonyPatch]
         internal static class EnemyProjectilePatches {
             [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]

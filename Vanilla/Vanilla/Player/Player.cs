@@ -102,7 +102,7 @@ namespace Vanilla.Player {
     }
 
     [ReplayData("Vanilla.Player", "0.0.1")]
-    internal class rPlayer : DynamicTransform {
+    public class rPlayer : DynamicTransform {
         public PlayerAgent agent;
 
         private Identifier lastEquipped = Identifier.unknown;

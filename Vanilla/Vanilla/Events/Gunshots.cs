@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Vanilla.Events {
     [HarmonyPatch]
     [ReplayData("Vanilla.Player.Gunshots", "0.0.2")]
-    internal class rGunshot : Id {
+    public class rGunshot : Id {
         [HarmonyPatch]
         private static class Patches {
             private static bool glueShot = false;

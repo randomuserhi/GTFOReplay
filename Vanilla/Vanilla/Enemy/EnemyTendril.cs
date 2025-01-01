@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Vanilla.Enemy {
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Tendril", "0.0.1")]
-    internal class rEnemyTendril : ReplayDynamic {
+    public class rEnemyTendril : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(ScoutAntenna), nameof(ScoutAntenna.DetailUpdate))]

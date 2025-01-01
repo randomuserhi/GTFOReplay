@@ -5,6 +5,6 @@
     /// Synonymous with Replay.OnExpeditionEnd
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class ReplayReset : Attribute {
+    public class ReplayOnExpeditionEnd : Attribute {
     }
 }

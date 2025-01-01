@@ -7,7 +7,7 @@ using ReplayRecorder.Core;
 namespace Vanilla.Enemy {
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.LimbDestruction", "0.0.1")]
-    internal class rLimbDestruction : Id {
+    public class rLimbDestruction : Id {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]

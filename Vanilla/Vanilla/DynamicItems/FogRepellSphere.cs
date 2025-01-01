@@ -24,7 +24,7 @@ namespace Vanilla.DynamicItems {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.FogSphere", "0.0.1")]
-    internal class rFogSphere : DynamicPosition {
+    public class rFogSphere : DynamicPosition {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(FogRepeller_Sphere), nameof(FogRepeller_Sphere.StartRepelling))]

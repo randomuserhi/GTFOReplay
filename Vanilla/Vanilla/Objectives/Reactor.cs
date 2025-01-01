@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Vanilla.Objectives {
     [ReplayData("Vanilla.Objectives.Reactor", "0.0.1")]
-    internal class rReactor : ReplayDynamic {
+    public class rReactor : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(LG_WardenObjective_Reactor), nameof(LG_WardenObjective_Reactor.OnBuildDone))]

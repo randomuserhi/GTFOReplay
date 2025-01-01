@@ -2,7 +2,7 @@
 
 namespace Vanilla.ChainedPuzzles {
     [HarmonyPatch]
-    internal class rBioFake {
+    public class rBioFake {
         [HarmonyPatch]
         private class Patches {
         }

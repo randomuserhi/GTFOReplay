@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Vanilla.Enemy {
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.LimbCustom", "0.0.1")]
-    internal class rLimbCustom : ReplayDynamic {
+    public class rLimbCustom : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(EnemySync), nameof(EnemySync.OnSpawn))]

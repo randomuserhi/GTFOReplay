@@ -21,7 +21,7 @@ namespace Vanilla.StaticItems {
             }
         }
 
-        private LG_PickupItem_Sync item;
+        public LG_PickupItem_Sync item;
 
         public override bool Active => item != null;
         public override bool IsDirty =>

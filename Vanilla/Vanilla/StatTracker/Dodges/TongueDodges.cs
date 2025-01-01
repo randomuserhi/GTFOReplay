@@ -11,7 +11,7 @@ using Vanilla.Enemy;
 namespace Vanilla.StatTracker.Dodges {
     [HarmonyPatch]
     [ReplayData("Vanilla.StatTracker.TongueDodge", "0.0.1")]
-    internal class rTongueDodge : ReplayEvent {
+    public class rTongueDodge : ReplayEvent {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(MovingEnemyTentacleBase), nameof(MovingEnemyTentacleBase.AttackIn))]
@@ -70,8 +70,8 @@ namespace Vanilla.StatTracker.Dodges {
             }
         }
 
-        private ushort source;
-        private ushort target;
+        public ushort source;
+        public ushort target;
 
         public rTongueDodge(EnemyAgent source, PlayerAgent target) {
             this.source = source.GlobalID;

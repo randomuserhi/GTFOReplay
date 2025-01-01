@@ -24,7 +24,7 @@ namespace Vanilla.DynamicItems {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.DynamicItem", "0.0.1")]
-    internal class rDynamicItem : DynamicTransform {
+    public class rDynamicItem : DynamicTransform {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(ItemReplicationManager), nameof(ItemReplicationManager.OnItemSpawn))]

@@ -21,7 +21,7 @@ namespace Vanilla.Sentries {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Sentry", "0.0.1")]
-    internal class rSentry : DynamicRotation {
+    public class rSentry : DynamicRotation {
         [HarmonyPatch]
         private static class Patches {
             [HarmonyPatch(typeof(SentryGunInstance), nameof(SentryGunInstance.OnSpawn))]
