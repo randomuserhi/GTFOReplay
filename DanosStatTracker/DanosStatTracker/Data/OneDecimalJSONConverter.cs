@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿/// Code taken directly from https://github.com/danielmccluskey/gtfostatsmod
+
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DanosStatTracker.Data {

@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿/// Code taken directly from: https://github.com/danielmccluskey/gtfostatsmod
+
+using System.Text.Json.Serialization;
 
 namespace DanosStatTracker.Data {
     public class DanosStaticStore {
