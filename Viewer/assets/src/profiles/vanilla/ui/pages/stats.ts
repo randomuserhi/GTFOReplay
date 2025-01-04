@@ -4,6 +4,7 @@ import type { View } from "@esm/@root/main/routes/player/components/view/index.j
 import Fuse from "@esm/fuse.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { PlayerDatablock } from "../../datablocks/player/player.js";
+import { Identifier, IdentifierHash } from "../../parser/identifier.js";
 import { StatTracker } from "../../parser/stattracker/stattracker.js";
 import { Dropdown } from "../components/dropdown.js";
 import { dispose } from "../main.js";
@@ -122,6 +123,22 @@ export const TypeList = (inTitle: string) => {
 
 const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | undefined>) => html<typeof FeatureWrapper>)[] = [
     (self, v) => {
+        const customSignal = signal<Map<string, Map<IdentifierHash, { type: Identifier; value: number; }>>>(new Map());
+        const customList = html.map(customSignal, undefined, (kv, el?: html<{ value: Signal<string> }>) => {
+            const [key, value] = kv;
+            if (el === undefined) {
+                el = html<{ value: Signal<string> }>/**//*html*/`
+                <li style="display: flex">
+                    <span>${key}</span>
+                    <div style="flex: 1"></div>
+                    <span>${html.bind(signal(""), "value")}</span>
+                </li>
+                `;
+            }
+            el.value(`${Math.round([...value.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
+            return el;
+        });
+
         const dom = html<{
             wrapper: html<typeof FeatureWrapper>;
             bulletDamage: Signal<string>;
@@ -167,6 +184,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "sentryStaggerDamage")}</span>
                         </li>
+                        ${customList}
                     </ul>
                 </div>
             ${html.close()}
@@ -191,6 +209,8 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 explosiveDamage(`${Math.round([...player.enemyDamage.explosiveDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
                 staggerDamage(`${Math.round([...player.enemyDamage.staggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
                 sentryStaggerDamage(`${Math.round([...player.enemyDamage.sentryStaggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
+
+                customSignal(player.enemyDamage.custom);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 

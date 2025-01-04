@@ -1,6 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../../library/factory.js";
+import { EnemyOnDeathEvents } from "../enemy/enemy.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 import { StatTracker } from "../stattracker/stattracker.js";
 
@@ -33,6 +34,64 @@ export interface Damage {
     sentry: boolean;
     staggerDamage: number;
 }
+
+declare module "../enemy/enemy.js" {
+    interface EnemyOnDeathEventTypes {
+        "Vanilla": Damage;
+    }
+}
+
+EnemyOnDeathEvents.register("Vanilla", (snapshot, enemy, hitData) => {
+    // Update kill to last player that hit enemy
+    const statTracker = StatTracker.from(snapshot);
+    const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+                    
+    let lastHit;
+    if (players.has(hitData.source)) {
+        lastHit = players.get(hitData.source)!.snet;
+    } else if(hitData.type === "Explosive") {
+        const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+        const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
+    
+        const detonation = detonations.get(hitData.source);
+        if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
+    
+        const mine = mines.get(hitData.source);
+        if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
+    
+        lastHit = mine.snet;
+    }
+    if (lastHit === undefined) throw new Error(`Could not find player '${hitData.source}'.`);
+                    
+    for (const snet of enemy.players) {
+        const sourceStats = StatTracker.getPlayer(snet, statTracker);
+    
+        const enemyTypeHash = enemy.type.hash;
+        if (snet === lastHit) {
+            if (hitData.type === "Explosive") {
+                if (!sourceStats.mineKills.has(enemyTypeHash)) {
+                    sourceStats.mineKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
+                }
+                sourceStats.mineKills.get(enemyTypeHash)!.value += 1;
+            } else if (hitData.sentry) {
+                if (!sourceStats.sentryKills.has(enemyTypeHash)) {
+                    sourceStats.sentryKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
+                }
+                sourceStats.sentryKills.get(enemyTypeHash)!.value += 1;
+            } else {
+                if (!sourceStats.kills.has(enemyTypeHash)) {
+                    sourceStats.kills.set(enemyTypeHash, { type: enemy.type, value: 0 });
+                }
+                sourceStats.kills.get(enemyTypeHash)!.value += 1;
+            }
+        } else {
+            if (!sourceStats.assists.has(enemyTypeHash)) {
+                sourceStats.assists.set(enemyTypeHash, { type: enemy.type, value: 0 });
+            }
+            sourceStats.assists.get(enemyTypeHash)!.value += 1;
+        }
+    }
+});
 
 // TODO(randomuserhi): Cleanup code
 ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
@@ -84,7 +143,10 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             enemy.players.add(sourceSnet);
             if (enemy.health > 0) {
                 enemy.health -= damage;
-                enemy.lastHit = data;
+                enemy.lastHit = {
+                    type: "Vanilla",
+                    data
+                };
                 enemy.lastHitTime = snapshot.time();
                 if (enemy.health <= 0) {
                     enemy.health = 0;

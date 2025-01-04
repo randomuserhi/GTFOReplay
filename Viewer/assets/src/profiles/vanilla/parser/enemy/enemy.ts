@@ -1,13 +1,11 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
-import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { backwardsCompatEnemyHp } from "../../datablocks/enemy/backwards-compat.js";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
 import { DeathCross } from "../deathcross.js";
-import { Damage } from "../events/damage.js";
 import { Identifier, IdentifierData } from "../identifier.js";
-import { StatTracker } from "../stattracker/stattracker.js";
 import { AnimHandles } from "./animation.js";
 
 ModuleLoader.registerASLModule(module.src);
@@ -54,7 +52,7 @@ export interface Enemy extends DynamicTransform.Type {
     scale: number;
     type: Identifier;
     players: Set<bigint>;
-    lastHit?: Damage;
+    lastHit?: { type: keyof EnemyOnDeathEventTypes, data: any };
     lastHitTime?: number;
     tagged: boolean;
     targetPlayerSlotIndex: number;
@@ -62,6 +60,19 @@ export interface Enemy extends DynamicTransform.Type {
     stagger: number;
     canStagger: boolean;
 }
+
+export interface EnemyOnDeathEventTypes {
+}
+
+const enemyOnDeathEvents = new Map<keyof EnemyOnDeathEventTypes, (snapshot: ReplayApi, enemy: Enemy, data: any) => void>();
+export const EnemyOnDeathEvents = {
+    register<T extends keyof EnemyOnDeathEventTypes>(type: T, factory: (snapshot: ReplayApi, enemy: Enemy, data: EnemyOnDeathEventTypes[T]) => void) {
+        if (enemyOnDeathEvents.has(type)) {
+            console.warn(`Replacing EnemyOnDeathEvent '${type}'.`);
+        }
+        enemyOnDeathEvents.set(type, factory);
+    }
+};
 
 let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
@@ -138,55 +149,11 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
 
             // Check kill stats in the event enemy health prediction fails -> To prevent rewarding kills to enemies despawned by world event - only count enemies that died within 1 second of being hit
             if (enemy.health > 0 && enemy.lastHit !== undefined && enemy.lastHitTime !== undefined && snapshot.time() - enemy.lastHitTime <= 1000) {
-                // Update kill to last player that hit enemy
-                const statTracker = StatTracker.from(snapshot);
-                const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-                
-                let lastHit;
-                if (players.has(enemy.lastHit.source)) {
-                    lastHit = players.get(enemy.lastHit.source)!.snet;
-                } else if(enemy.lastHit.type === "Explosive") {
-                    const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
-                    const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
-
-                    const detonation = detonations.get(enemy.lastHit.source);
-                    if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
-
-                    const mine = mines.get(enemy.lastHit.source);
-                    if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
-
-                    lastHit = mine.snet;
+                const event = enemyOnDeathEvents.get(enemy.lastHit.type);
+                if (event === undefined) {
+                    throw new Error(`Unable to find EnemyOnDeathEvent '${enemy.lastHit.type}'.`);
                 }
-                if (lastHit === undefined) throw new Error(`Could not find player '${enemy.lastHit.source}'.`);
-                
-                for (const snet of enemy.players) {
-                    const sourceStats = StatTracker.getPlayer(snet, statTracker);
-
-                    const enemyTypeHash = enemy.type.hash;
-                    if (snet === lastHit) {
-                        if (enemy.lastHit.type === "Explosive") {
-                            if (!sourceStats.mineKills.has(enemyTypeHash)) {
-                                sourceStats.mineKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                            }
-                            sourceStats.mineKills.get(enemyTypeHash)!.value += 1;
-                        } else if (enemy.lastHit.sentry) {
-                            if (!sourceStats.sentryKills.has(enemyTypeHash)) {
-                                sourceStats.sentryKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                            }
-                            sourceStats.sentryKills.get(enemyTypeHash)!.value += 1;
-                        } else {
-                            if (!sourceStats.kills.has(enemyTypeHash)) {
-                                sourceStats.kills.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                            }
-                            sourceStats.kills.get(enemyTypeHash)!.value += 1;
-                        }
-                    } else {
-                        if (!sourceStats.assists.has(enemyTypeHash)) {
-                            sourceStats.assists.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                        }
-                        sourceStats.assists.get(enemyTypeHash)!.value += 1;
-                    }
-                }
+                event(snapshot, enemy, enemy.lastHit.data);
             }
             enemy.health = 0;
         }

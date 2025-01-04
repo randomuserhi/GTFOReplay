@@ -1,10 +1,14 @@
+import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Color, ColorRepresentation, CylinderGeometry, Group, Mesh, MeshStandardMaterial, Scene } from "@esm/three";
+import { Color, ColorRepresentation, CylinderGeometry, Group, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene, SphereGeometry, Vector3 } from "@esm/three";
 import { MineInstanceDatablock } from "../../datablocks/items/mineinstance.js";
 import { getPlayerColor } from "../../datablocks/player/player.js";
+import { Bezier } from "../../library/bezier.js";
+import { zeroQ } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
 import { Identifier } from "../../parser/identifier.js";
-import { Mine } from "../../parser/player/mine.js";
+import { duration, Mine, MineDetonate } from "../../parser/player/mine.js";
+import { ObjectWrapper } from "../objectwrapper.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -94,6 +98,86 @@ ModuleLoader.registerRender("Mine", (name, api) => {
                     models.delete(id);
                 }
             }
+        } 
+    }]);
+});
+
+declare module "@esm/@root/replay/moduleloader.js" {
+    namespace Typemap {
+        interface RenderPasses {
+            "Vanilla.Mine.ExplosionEffect": void;
+        }
+
+        interface RenderData {
+            "Vanilla.Mine.ExplosionEffect": ExplosionEffectModel[];
+        }
+    }
+}
+
+const geometry = new SphereGeometry(1, 10, 10);
+const material = new MeshPhongMaterial({ color: 0xfc9803 });
+const posBezier = Bezier(.18,.67,.49,.91);
+const sizeBezier = Bezier(.11,.93,.09,.98);
+
+const particleInstanceManager = new DynamicInstanceManager(geometry, material, 100);
+
+class ExplosionEffectModel extends ObjectWrapper<Group> {
+    root: Group = new Group();
+    
+    rings: Mesh[] = [];
+    materials: MeshStandardMaterial[] = [];
+    effect: MineDetonate;
+
+    constructor(effect: MineDetonate) {
+        super();
+
+        this.effect = effect;
+        this.root.position.copy(this.effect.position);
+    }
+
+    private static FUNC_animate = {
+        pM: new Matrix4(),
+        scale: new Vector3(),
+        pos: new Vector3()
+    } as const;
+    public animate(time: number) {
+        const t = (time - this.effect.time) / duration;
+
+        const { pM, scale, pos } = ExplosionEffectModel.FUNC_animate;
+
+        for (const [dir, dist, size] of this.effect.directions) {
+            const s = sizeBezier(1 - t) * size;
+            particleInstanceManager.consume(pM.compose(pos.copy(dir).multiplyScalar(dist * posBezier(t)).add(this.effect.position), zeroQ, scale.set(s, s, s)));
+        }
+    }
+}
+
+ModuleLoader.registerRender("Vanilla.Mine.ExplosionEffect", (name, api) => {
+    const renderLoop = api.getRenderLoop();
+    api.setRenderLoop([...renderLoop, {
+        name, pass: (renderer, snapshot) => {
+            const t = snapshot.time();
+            const _models: ExplosionEffectModel[] = [];
+            const models = renderer.getOrDefault("Vanilla.Mine.ExplosionEffect", Factory("Array"));
+            const explosionEffects = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+            for (const effect of explosionEffects.values()) {
+                if (t - effect.time > duration) continue;
+                
+                const i = _models.length;
+                if (models[i] === undefined) {
+                    const model = new ExplosionEffectModel(effect);
+                    models[i] = model;
+                    model.addToScene(renderer.scene);
+                }
+                const model = models[i];
+                model.animate(t);
+
+                _models.push(models[i]);
+            }
+            for (let i = _models.length; i < models.length; ++i) {
+                models[i].removeFromScene(renderer.scene);
+            }
+            renderer.set("Vanilla.Mine.ExplosionEffect", _models);
         } 
     }]);
 });

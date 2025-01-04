@@ -31,7 +31,7 @@ export class DynamicInstanceManager {
         mat: new Matrix4(),
         temp: new Color()
     } as const;
-    public consume(matrix: Matrix4, color: Color): number {
+    public consume(matrix: Matrix4, color?: Color): number {
         const { mat, temp } = DynamicInstanceManager.FUNC_consume;
 
         if (this.mesh.count >= this.capacity) {
@@ -58,7 +58,9 @@ export class DynamicInstanceManager {
             this.capacity = newCapacity;
         }
 
-        this.mesh.setColorAt(this.mesh.count, color);
+        if (color !== undefined) {
+            this.mesh.setColorAt(this.mesh.count, color);
+        }
         this.mesh.setMatrixAt(this.mesh.count, matrix);
 
         return this.mesh.count++;

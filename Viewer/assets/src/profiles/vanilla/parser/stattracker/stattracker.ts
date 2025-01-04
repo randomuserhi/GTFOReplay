@@ -39,6 +39,9 @@ interface EnemyDamage {
     meleeDamage: Map<IdentifierHash, IdentifiedValue>;
     staggerDamage: Map<IdentifierHash, IdentifiedValue>;
     sentryStaggerDamage: Map<IdentifierHash, IdentifiedValue>;
+
+    // TODO(randomuserhi): Typescript on string key
+    custom: Map<string, Map<IdentifierHash, IdentifiedValue>>;
 }
 
 function EnemyDamage(): EnemyDamage {
@@ -49,6 +52,7 @@ function EnemyDamage(): EnemyDamage {
         meleeDamage: new Map(),
         staggerDamage: new Map(),
         sentryStaggerDamage: new Map(),
+        custom: new Map()
     };
 }
 
@@ -90,7 +94,7 @@ function PlayerStats(snet: bigint): PlayerStats {
         tongueDodges: new Map(),
         _downedTimeStamp: undefined,
         _timeSpentSoloTimeStamp: undefined,
-        silentShots: 0
+        silentShots: 0,
     };
 }
 

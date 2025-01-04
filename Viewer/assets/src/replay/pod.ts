@@ -96,6 +96,13 @@ export namespace Vec {
         result.z = a.z * b;
         return result;
     }
+    export function normalize(result: Vector, a: Vector): Vector {
+        const length = Vec.length(a);
+        result.x = a.x / length;
+        result.y = a.y / length;
+        result.z = a.z / length;
+        return result;
+    }
 }
 
 export interface Quaternion {

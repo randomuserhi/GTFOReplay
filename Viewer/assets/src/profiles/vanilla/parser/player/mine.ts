@@ -1,7 +1,10 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { Quaternion, Vector3 } from "@esm/three";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
+import { xor } from "../../library/random.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 
 ModuleLoader.registerASLModule(module.src);
@@ -122,8 +125,13 @@ export interface MineDetonate {
     time: number;
     trigger: number;
     shot: boolean;
+    position: Pod.Vector;
+    directions: [dir: Pod.Vector, dist: number, scale: number][];
 }
 
+const tempV = new Vector3();
+const tempQ = new Quaternion();
+const coneAngle = 10 * Math.deg2rad;
 ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
     parse: async (bytes) => {
         return {
@@ -134,15 +142,37 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
     },
     exec: async (data, snapshot) => {
         const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+        const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
         
         const { id } = data;
+        
+        if (!mines.has(id)) throw new Error(`Mine of id '${id}' did not exist.`);
+        const mine = mines.get(id)!;
+
         if (detonations.has(id)) throw new Error(`Mine Detonation of id '${id}' already exist.`);
-        detonations.set(id, { ...data, time: snapshot.time() });
+
+        const r = xor(snapshot.time());
+        const directions: MineDetonate["directions"] = [];
+        for (let i = 0; i < 30; ++i) {
+            tempV.set((r() * 2 - 1) * Math.tan(coneAngle), (r() * 2 - 1) * Math.tan(coneAngle), 1);
+            tempV.applyQuaternion(tempQ.copy(mine.rotation)).normalize();
+
+            let scale: number;
+            if (i < 10) {
+                scale = Math.max(r() * 1, 0.1);
+            } else {
+                scale = Math.max(r() * 0.4, 0.01);
+            }
+            directions.push([{ x: tempV.x, y: tempV.y, z: tempV.z }, r() * 8, scale]);
+        }
+
+        detonations.set(id, { ...data, time: snapshot.time(), position: mine.position, directions });
     }
 });
 
 // NOTE(randomuserhi): Keep detonation events around for 1 second to watch for explosion damage events that may reference it
 const detonateClearTime = 1000;
+export const duration = 250; // Animation duration
 ModuleLoader.registerTick((snapshot) => {
     const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
     for (const [id, item] of [...detonations.entries()]) {
