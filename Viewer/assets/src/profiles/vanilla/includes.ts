@@ -59,9 +59,6 @@ const includes = [
     import("./parser/player/sentry.js"),
     import("./parser/player/stats.js"),
     import("./parser/stattracker/stattracker.js"),
-    import("./parser/ewc/explosion.js"),
-    import("./parser/ewc/projectile.js"),
-    import("./parser/ewc/damage.js"),
     import("./renderer/animations/gearfold.js"),
     import("./renderer/animations/human.js"),
     import("./renderer/chainedpuzzles/bioscan.js"),
@@ -105,8 +102,6 @@ const includes = [
     import("./renderer/player/render.js"),
     import("./renderer/player/sentry.js"),
     import("./renderer/renderer.js"),
-    import("./renderer/ewc/explosion.js"),
-    import("./renderer/ewc/projectile.js"),
     import("./ui/components/bar.js"),
     import("./ui/components/dropdown.js"),
     import("./ui/components/seeker.js"),
@@ -123,6 +118,7 @@ const includes = [
     import("./ui/pages/settings.js"),
     import("./ui/pages/stats.js"),
     import("./ui/scoreboard.js"),
+    import("../extensions/ewc/includes.js"),
 ];
 await Promise.all(includes);
 

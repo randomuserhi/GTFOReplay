@@ -1,11 +1,11 @@
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, SphereGeometry, Vector3 } from "@esm/three";
-import { Bezier } from "../../library/bezier.js";
-import { zeroQ } from "../../library/constants.js";
-import { Factory } from "../../library/factory.js";
-import { duration, EWCExplosionEffect } from "../../parser/ewc/explosion.js";
-import { ObjectWrapper } from "../objectwrapper.js";
+import { Bezier } from "../../../vanilla/library/bezier.js";
+import { zeroQ } from "../../../vanilla/library/constants.js";
+import { Factory } from "../../../vanilla/library/factory.js";
+import { ObjectWrapper } from "../../../vanilla/renderer/objectwrapper.js";
+import { duration, EWCExplosionEffect } from "../parser/explosion.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

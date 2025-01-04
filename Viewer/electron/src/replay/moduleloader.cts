@@ -76,7 +76,10 @@ export class ModuleLoader {
         }
 
         try {
-            response.modules = await fs.readdir(this.directory);
+            response.modules = (await fs.readdir(this.directory)).filter(async (path) => {
+                const stat = await fs.stat(path);
+                return stat.isDirectory();
+            });
             response.success = true;
         } catch (e) {
             response.error = `Failed to get module list from '${fullPath}': ${e.toString()}`;

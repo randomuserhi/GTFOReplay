@@ -2,9 +2,9 @@ import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { ColorRepresentation } from "@esm/three";
-import { getPlayerColor } from "../../datablocks/player/player.js";
-import { Factory } from "../../library/factory.js";
-import { DynamicTransform } from "../../library/helpers.js";
+import { getPlayerColor } from "../../../vanilla/datablocks/player/player.js";
+import { Factory } from "../../../vanilla/library/factory.js";
+import { DynamicTransform } from "../../../vanilla/library/helpers.js";
 
 ModuleLoader.registerASLModule(module.src);
 

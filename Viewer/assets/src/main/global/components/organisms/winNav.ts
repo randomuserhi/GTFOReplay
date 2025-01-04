@@ -120,6 +120,8 @@ const ModuleList = () => {
 
     const list = html.map(filtered, undefined, (kv, el?: html<typeof ModuleItem>) => {
         const [, value] = kv;
+        if (value == "extensions") return undefined; // NOTE(randomuserhi): Skip extension folder
+
         if (el === undefined) {
             const el = ModuleItem(value);
             el.button.addEventListener("click", () => {
