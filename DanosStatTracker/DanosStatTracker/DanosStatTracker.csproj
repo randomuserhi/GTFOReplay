@@ -21,6 +21,7 @@
 	</Target>
 
 	<ItemGroup>
+		<Reference Include="../../Dependencies/Danos-GTFOStats.dll" Private="false" />
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\ReplayRecorder.dll" Private="false" />
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\Vanilla.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />

@@ -509,7 +509,10 @@ namespace ReplayRecorder.Snapshot {
                 return;
             }
 
+            state.dynamics[dynType].Add(dynamic, errorOnDuplicate);
+
             // Trigger Hooks
+            // NOTE(randomuserhi): Happens after add to be accessible via Replay.TryGet during hook
             if (Replay.SpawnHooks.ContainsKey(dynType)) {
                 try {
                     Replay.SpawnHooks[dynType]?.Invoke(Now, dynamic);
@@ -517,8 +520,6 @@ namespace ReplayRecorder.Snapshot {
                     APILogger.Error($"Failed to trigger spawn hooks for [{dynType}]: {ex}.");
                 }
             }
-
-            state.dynamics[dynType].Add(dynamic, errorOnDuplicate);
         }
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
@@ -531,6 +532,7 @@ namespace ReplayRecorder.Snapshot {
             }
 
             // Trigger Hooks
+            // NOTE(randomuserhi): Happens before remove to be accessible via Replay.TryGet during hook
             if (Replay.DespawnHooks.ContainsKey(dynType)) {
                 try {
                     Replay.DespawnHooks[dynType]?.Invoke(Now, dynamic);

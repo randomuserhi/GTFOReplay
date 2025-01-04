@@ -3,19 +3,16 @@ using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using DanosStatTracker.Data;
 using HarmonyLib;
-using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using SNetwork;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
-using UnityEngine;
 
 namespace DanosStatTracker.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
+[BepInDependency(ReplayRecorder.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency("danos.GTFOStats", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BasePlugin {
     public override void Load() {
         APILogger.Log("Plugin is loaded!");
@@ -25,89 +22,47 @@ public class Plugin : BasePlugin {
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
 
         if (ConfigManager.Enable) {
-            Replay.RegisterAll();
+            if (IL2CPPChainloader.Instance.Plugins.TryGetValue("danos.GTFOStats", out _)) {
+                APILogger.Debug("Danos-GTFOStats is installed, GTFOReplay will provide additional data.");
+
+                GTFOStats.Data.DanosStaticStore.RegisterJsonContributor(GenerateReplayJson);
+
+                Replay.RegisterAll();
+            }
         }
     }
-
-    private static bool isMaster = false;
 
     [ReplayOnElevatorStop]
     private static void OnElevatorStop() {
-        pActiveExpedition expdata = RundownManager.GetActiveExpeditionData();
-        if ((expdata.tier == eRundownTier.TierA) && (expdata.expeditionIndex == 0)) { }
-
-        var rundownString = AchievementManager.GetCurrentRundownName().ToString();
-        var expeditionTier = expdata.tier.ToString();
-        var expeditionIndex = expdata.expeditionIndex.ToString();
-        var sessionid = expdata.sessionGUID.m_data.ToString();
-
-        DanosRunDownDataStore currentRunDownDataStore = new DanosRunDownDataStore {
-            st = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            rid = rundownString,
-            en = expeditionTier,
-            ei = expeditionIndex,
-            rsg = sessionid,
-            msid = (long)PlayerManager.GetLocalPlayerAgent().Owner.Lookup,
-        };
+        DanosRunDownDataStore currentRunDownDataStore = new DanosRunDownDataStore();
+        currentRunDownDataStore.replayData.isMaster = SNet.IsMaster;
 
         DanosStaticStore.currentRunDownDataStore = currentRunDownDataStore;
 
-        isMaster = SNet.IsMaster;
+        APILogger.Debug("DanosStaticStore Created.");
     }
 
-    [ReplayOnExpeditionEnd]
-    private static void OnExpeditionEnd() {
-        if (!isMaster) return; // NOTE(randomuserhi): Only send data if master, as otherwise there aren't any useful stats to record...
-
+    private static bool isMaster = false;
+    private static string GenerateReplayJson() {
         try {
             if (DanosStaticStore.currentRunDownDataStore == null) {
-                APILogger.Error("No rundown data store to export.");
-                return;
+                APILogger.Error($"Unable to generate Danos JSON, datastore was null.");
+                return string.Empty;
             }
+
             var options = new JsonSerializerOptions {
-                WriteIndented = true, // Optional, for readability
+                WriteIndented = true,
                 Converters = { new OneDecimalJsonConverter() }
             };
-            // Set the end timestamp
-            DanosStaticStore.currentRunDownDataStore.et = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            // Serialize to JSON
-            string json = JsonSerializer.Serialize(DanosStaticStore.currentRunDownDataStore, options);
-
-            // Write to file
-            string filePath = Path.Combine(Application.persistentDataPath, "RunDownData.json");
-            File.WriteAllText(filePath, json);
-
-            APILogger.Debug($"Rundown data exported to {filePath}");
-
-            // Post data to API but await it in a non async method
-            PostDataToAPI(json).Wait();
-        } catch (Exception ex) {
-            APILogger.Error($"Error exporting rundown data: {ex.Message}");
-        }
-    }
-
-    private static async Task PostDataToAPI(string json) {
-        try {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
-
-            using HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("https://gtfoapi.splitstats.io/api/rundown/upload", content);
-
-            if (response.IsSuccessStatusCode) {
-                APILogger.Debug("Data posted to API successfully.");
-            } else {
-                APILogger.Debug($"Error posting data to API: {response.StatusCode}");
+            if (!DanosStaticStore.currentRunDownDataStore.replayData.isMaster) {
+                DanosStaticStore.currentRunDownDataStore.replayData.masterStats = null!;
             }
+
+            return JsonSerializer.Serialize(DanosStaticStore.currentRunDownDataStore, options);
         } catch (Exception ex) {
-            APILogger.Error($"Error posting data to API: {ex.Message}");
-            if (ex.InnerException != null) {
-                APILogger.Error($"Inner Exception: {ex.InnerException.Message}");
-            }
+            APILogger.Error($"Error generating replay data JSON: {ex.Message}");
+            return string.Empty;
         }
     }
 
