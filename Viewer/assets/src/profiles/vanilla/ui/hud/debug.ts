@@ -47,7 +47,7 @@ export const Debug = () => {
             camera.position.on((pos) => {
                 position(`x: ${(Math.round(pos.x * 100) / 100).toFixed(2)}, y: ${(Math.round(pos.y * 100) / 100).toFixed(2)}, z: ${(Math.round(pos.z * 100) / 100).toFixed(2)}`);
             });
-        });
+        }, { signal: dispose.signal });
 
     }, { signal: dispose.signal });
 
