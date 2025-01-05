@@ -58,7 +58,7 @@ ModuleLoader.registerDynamic("EWC.Projectile", "0.0.1", {
             if (!trails.has(id)) trails.set(id, {
                 points: [],
                 dimension: data.dimension,
-                duration: 500,
+                duration: 300,
                 color: projectile.color
             });
             trails.get(id)!.points.push({
