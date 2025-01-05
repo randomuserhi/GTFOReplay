@@ -8,10 +8,13 @@ namespace Vanilla.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 [BepInDependency(OldBulkheadSoundGUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(ExtraWeaponCustomizationGUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BasePlugin {
     // TODO(randomuserhi): Create a better API for handling compatability
     // NOTE(randomuserhi): Compatability issue with LG_SecurityDoor.OnDoorIsOpened
     private const string OldBulkheadSoundGUID = "OldBulkheadSound.GUID";
+
+    private const string ExtraWeaponCustomizationGUID = "Dinorush.ExtraWeaponCustomization";
 
     public override void Load() {
         APILogger.Log("Plugin is loaded!");

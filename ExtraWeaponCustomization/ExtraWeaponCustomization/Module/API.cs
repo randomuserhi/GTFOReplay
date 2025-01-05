@@ -1,7 +1,7 @@
 ﻿using BepInEx.Logging;
-using ReplayRecorder.EWC.BepInEx;
+using ReplayRecorder.ExtraWeaponCustomization.BepInEx;
 
-namespace ReplayRecorder.EWC.BepInEx {
+namespace ReplayRecorder.ExtraWeaponCustomization.BepInEx {
     // REMEMBER TO SET THESE => otherwise program just wont work lmao
     public static class Module {
         public const string GUID = "randomuserhi.ReplayRecorder.EWC";

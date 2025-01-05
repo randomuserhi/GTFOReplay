@@ -126,6 +126,7 @@ export interface MineDetonate {
     trigger: number;
     shot: boolean;
     position: Pod.Vector;
+    rotation: Pod.Quaternion;
     directions: [dir: Pod.Vector, dist: number, scale: number][];
 }
 
@@ -166,7 +167,7 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
             directions.push([{ x: tempV.x, y: tempV.y, z: tempV.z }, r() * 8, scale]);
         }
 
-        detonations.set(id, { ...data, time: snapshot.time(), position: mine.position, directions });
+        detonations.set(id, { ...data, time: snapshot.time(), position: mine.position, rotation: mine.rotation, directions });
     }
 });
 

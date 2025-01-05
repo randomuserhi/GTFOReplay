@@ -1,6 +1,7 @@
+import { signal } from "@esm/@/rhu/signal.js";
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Color, ColorRepresentation, CylinderGeometry, Group, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene, SphereGeometry, Vector3 } from "@esm/three";
+import { CapsuleGeometry, Color, ColorRepresentation, CylinderGeometry, Group, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, Scene, SphereGeometry, Vector3 } from "@esm/three";
 import { MineInstanceDatablock } from "../../datablocks/items/mineinstance.js";
 import { getPlayerColor } from "../../datablocks/player/player.js";
 import { Bezier } from "../../library/bezier.js";
@@ -121,18 +122,30 @@ const sizeBezier = Bezier(.11,.93,.09,.98);
 
 const particleInstanceManager = new DynamicInstanceManager(geometry, material, 100);
 
-class ExplosionEffectModel extends ObjectWrapper<Group> {
+const explosionCapsule = new CapsuleGeometry(2.5, 13.5, 10, 10).translate(0, 6.75, 0).rotateX(Math.PI * 0.5);
+const explosionRadiusMaterial = new MeshPhongMaterial({
+    color: 0xfc9803,
+    transparent: true,
+    opacity: 0.5
+});
+
+export class ExplosionEffectModel extends ObjectWrapper<Group> {
+    static showRadius = signal(false);
+
     root: Group = new Group();
+    range: Mesh;
     
-    rings: Mesh[] = [];
     materials: MeshStandardMaterial[] = [];
     effect: MineDetonate;
 
     constructor(effect: MineDetonate) {
         super();
 
+        this.range = new Mesh(explosionCapsule, explosionRadiusMaterial);
+        this.range.visible = false;
         this.effect = effect;
         this.root.position.copy(this.effect.position);
+        this.root.add(this.range);
     }
 
     private static FUNC_animate = {
@@ -141,6 +154,14 @@ class ExplosionEffectModel extends ObjectWrapper<Group> {
         pos: new Vector3()
     } as const;
     public animate(time: number) {
+        this.root.position.copy(this.effect.position);
+        this.root.quaternion.copy(this.effect.rotation);
+
+        if (ExplosionEffectModel.showRadius()) {
+            this.range.visible = true;
+            return;
+        }
+
         const t = (time - this.effect.time) / duration;
 
         const { pM, scale, pos } = ExplosionEffectModel.FUNC_animate;

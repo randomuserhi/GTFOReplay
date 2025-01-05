@@ -119,8 +119,6 @@ ModuleLoader.registerEvent("EWC.Damage", "0.0.1", {
         // Damage Stats
         if (type === "Explosive") {
             const sourceStats = StatTracker.getPlayer(sourceSnet, statTracker);
-            
-            console.log(`Explosion: ${target} ${enemies.has(target)}`);
 
             if (enemies.has(target)) {
                 const enemy = enemies.get(target)!;

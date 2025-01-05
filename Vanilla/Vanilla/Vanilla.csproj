@@ -21,6 +21,7 @@
 	</Target>
 
 	<ItemGroup>
+		<Reference Include="..\..\Dependencies\ExtraWeaponCustomization.dll" Private="false" />
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\ReplayRecorder.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\BepInEx.Core.dll" Private="false" />

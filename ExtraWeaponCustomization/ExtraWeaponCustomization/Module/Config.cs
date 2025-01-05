@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 
-namespace ReplayRecorder.EWC.BepInEx {
+namespace ReplayRecorder.ExtraWeaponCustomization.BepInEx {
     public static partial class ConfigManager {
         public static ConfigFile configFile;
 

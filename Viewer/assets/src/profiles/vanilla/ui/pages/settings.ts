@@ -5,6 +5,7 @@ import Fuse from "@esm/fuse.js";
 import { FogSphereModel } from "../../renderer/dynamicitems/fogsphere.js";
 import { EnemyModelWrapper } from "../../renderer/enemy/lib.js";
 import { ResourceContainerModel } from "../../renderer/map/resourcecontainers.js";
+import { ExplosionEffectModel } from "../../renderer/player/mine.js";
 import { Dropdown } from "../components/dropdown.js";
 import { Toggle } from "../components/toggle.js";
 import { dispose } from "../main.js";
@@ -497,6 +498,35 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
         });
 
         FogSphereModel.show.on((value) => {
+            toggle.value(value);
+        });
+
+        return dom.wrapper;
+    },
+    (v) => {
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            toggle: html<typeof Toggle>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Show Explosion Radius")).bind("wrapper")}
+                <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <span style="flex: 1; padding-top: 1px;">Show Explosion Radius</span>
+                    ${html.bind(Toggle(), "toggle")}
+                </div>
+            ${html.close()}
+        `;
+
+        const { toggle } = dom;
+
+        toggle.value.on((value) => {
+            ExplosionEffectModel.showRadius(value);
+        });
+
+        ExplosionEffectModel.showRadius.on((value) => {
             toggle.value(value);
         });
 

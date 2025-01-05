@@ -4,7 +4,7 @@ using Player;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 
-namespace ReplayRecorder.EWC {
+namespace ReplayRecorder.ExtraWeaponCustomization {
     [ReplayData("EWC.Damage", "0.0.1")]
     internal class rEWCDamage : ReplayEvent {
         internal static class Hooks {

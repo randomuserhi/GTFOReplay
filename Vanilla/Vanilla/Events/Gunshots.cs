@@ -12,6 +12,21 @@ namespace Vanilla.Events {
     [HarmonyPatch]
     [ReplayData("Vanilla.Player.Gunshots", "0.0.2")]
     public class rGunshot : Id {
+        // NOTE(randomuserhi): Can be used by other mods to cancel the synced recorded shot. For example, EWC has a projectile gun which shoots projectiles instead.
+        //                     Use this to cancel the default behaviour of the recorded tracers.
+        private static List<Func<BulletWeapon, bool>> cancelSyncedShotConditions = new List<Func<BulletWeapon, bool>>();
+        public static void RegisterCancelSyncedShot(Func<BulletWeapon, bool> condition) {
+            cancelSyncedShotConditions.Add(condition);
+        }
+
+        private static bool CancelSyncedShot(BulletWeapon weapon) {
+            foreach (Func<BulletWeapon, bool> condition in cancelSyncedShotConditions) {
+                if (condition(weapon)) return true;
+            }
+
+            return false;
+        }
+
         [HarmonyPatch]
         private static class Patches {
             private static bool glueShot = false;
@@ -126,6 +141,9 @@ namespace Vanilla.Events {
             }
             private static void _Prefix_BulletWeaponSyncFire(BulletWeaponSynced __instance) {
                 autoTrack = false;
+
+                if (CancelSyncedShot(__instance)) return;
+
                 damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
                 owner = __instance.Owner;
 
@@ -188,6 +206,9 @@ namespace Vanilla.Events {
             }
             private static void _Prefix_ShotgunSyncFire(ShotgunSynced __instance) {
                 autoTrack = false;
+
+                if (CancelSyncedShot(__instance)) return;
+
                 damage = __instance.ArchetypeData.GetDamageWithBoosterEffect(__instance.Owner, __instance.ItemDataBlock.inventorySlot);
                 owner = __instance.Owner;
 

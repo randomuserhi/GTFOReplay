@@ -5,7 +5,7 @@ using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using UnityEngine;
 
-namespace ReplayRecorder.EWC {
+namespace ReplayRecorder.ExtraWeaponCustomization {
     internal struct ProjectileTransform : IReplayTransform {
         private EWCProjectileComponentBase projectile;
         private byte dimension;

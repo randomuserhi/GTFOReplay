@@ -5,6 +5,7 @@ import { Bezier } from "../../../vanilla/library/bezier.js";
 import { zeroQ } from "../../../vanilla/library/constants.js";
 import { Factory } from "../../../vanilla/library/factory.js";
 import { ObjectWrapper } from "../../../vanilla/renderer/objectwrapper.js";
+import { ExplosionEffectModel } from "../../../vanilla/renderer/player/mine.js";
 import { duration, EWCExplosionEffect } from "../parser/explosion.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -14,7 +15,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "EWC.Explosion.ExplosionEffect": ExplosionEffectModel[];
+            "EWC.Explosion.ExplosionEffect": EWCExplosionEffectModel[];
         }
     }
 }
@@ -26,18 +27,27 @@ const sizeBezier = Bezier(.3,.65,.46,.97);
 
 const particleInstanceManager = new DynamicInstanceManager(geometry, material, 100);
 
-class ExplosionEffectModel extends ObjectWrapper<Group> {
+const explosionRadiusMaterial = new MeshPhongMaterial({
+    color: 0xfc9803,
+    transparent: true,
+    opacity: 0.5
+});
+
+class EWCExplosionEffectModel extends ObjectWrapper<Group> {
     root: Group = new Group();
+    range: Mesh;
     
-    rings: Mesh[] = [];
     materials: MeshStandardMaterial[] = [];
     effect: EWCExplosionEffect;
 
     constructor(effect: EWCExplosionEffect) {
         super();
 
+        this.range = new Mesh(geometry, explosionRadiusMaterial);
+
         this.effect = effect;
         this.root.position.copy(this.effect.position);
+        this.root.add(this.range);
     }
 
     private static FUNC_animate = {
@@ -46,9 +56,19 @@ class ExplosionEffectModel extends ObjectWrapper<Group> {
         pos: new Vector3()
     } as const;
     public animate(time: number) {
+        this.root.position.copy(this.effect.position);
+
+        if (ExplosionEffectModel.showRadius()) {
+            this.range.scale.set(this.effect.radius, this.effect.radius, this.effect.radius);
+            this.range.visible = true;
+            return;
+        }
+
+        this.range.visible = false;
+
         const t = (time - this.effect.time) / duration;
 
-        const { pM, scale, pos } = ExplosionEffectModel.FUNC_animate;
+        const { pM, scale, pos } = EWCExplosionEffectModel.FUNC_animate;
 
         if (t < 0.4) { 
             const s = this.effect.radius * 0.05 * (t / 0.4);
@@ -67,13 +87,13 @@ ModuleLoader.registerRender("EWC.Explosion.ExplosionEffect", (name, api) => {
     api.setRenderLoop([...renderLoop, {
         name, pass: (renderer, snapshot) => {
             const t = snapshot.time();
-            const _models: ExplosionEffectModel[] = [];
+            const _models: EWCExplosionEffectModel[] = [];
             const models = renderer.getOrDefault("EWC.Explosion.ExplosionEffect", Factory("Array"));
             const explosionEffects = snapshot.getOrDefault("EWC.Explosion.ExplosionEffect", Factory("Array"));
             for (const effect of explosionEffects) {
                 const i = _models.length;
                 if (models[i] === undefined) {
-                    const model = new ExplosionEffectModel(effect);
+                    const model = new EWCExplosionEffectModel(effect);
                     models[i] = model;
                     model.addToScene(renderer.scene);
                 }
