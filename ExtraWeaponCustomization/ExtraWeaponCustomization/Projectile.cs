@@ -1,4 +1,5 @@
-﻿using EWC.CustomWeapon.Properties.Traits.CustomProjectile.Components;
+﻿using API;
+using EWC.CustomWeapon.Properties.Traits.CustomProjectile.Components;
 using LevelGeneration;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -25,11 +26,19 @@ namespace ReplayRecorder.ExtraWeaponCustomization {
     internal class rEWCProjectile : DynamicTransform {
         internal static class Hooks {
             public static void OnSpawn(EWCProjectileComponentBase projectile) {
-                Replay.Spawn(new rEWCProjectile(projectile));
+                try {
+                    Replay.Spawn(new rEWCProjectile(projectile));
+                } catch (Exception e) {
+                    APILogger.Error($"Failed to spawn EWC projectile: {e}");
+                }
             }
 
             public static void OnDespawn(EWCProjectileComponentBase projectile) {
-                Replay.Despawn(new rEWCProjectile(projectile));
+                try {
+                    Replay.Despawn(new rEWCProjectile(projectile));
+                } catch (Exception e) {
+                    APILogger.Error($"Failed to despawn EWC projectile: {e}");
+                }
             }
         }
 
