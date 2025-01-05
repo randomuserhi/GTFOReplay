@@ -321,12 +321,12 @@ namespace Vanilla.Events {
         private bool silent;
 
         // NOTE(randomuserhi): If no source is provided, record with ID of -1
-        public rGunshot(PlayerAgent? source, float damage, Vector3 start, Vector3 end, bool sentry, bool silent) : base(source == null ? -1 : source.GlobalID) {
+        public rGunshot(PlayerAgent? source, float damage, Vector3 start, Vector3 end, bool sentry, bool silent, bool fixStartPos = true) : base(source == null ? -1 : source.GlobalID) {
             dimension = source == null ? (byte)Dimension.GetDimensionFromPos(start).DimensionIndex : (byte)source.DimensionIndex;
             this.damage = damage;
             this.start = start;
             this.silent = silent;
-            if (!sentry && source != null && source.IsLocallyOwned && !source.Owner.IsBot) {
+            if (fixStartPos && !sentry && source != null && source.IsLocallyOwned && !source.Owner.IsBot) {
                 // NOTE(randomuserhi): Check start is within player, otherwise its from penetration and does not need adjusting
                 Vector3 a = source.transform.position; a.y = 0;
                 Vector3 b = this.start; b.y = 0;

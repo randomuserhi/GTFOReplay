@@ -31,16 +31,22 @@ public class Plugin : BasePlugin {
         DamageAPI.PreExplosiveDamage += rEWCDamage.Hooks.Explosive;
         DamageAPI.PreDOTDamage += rEWCDamage.Hooks.DoT;
 
+        FireShotAPI.OnShotFired += rEWCGunShot.Hooks.Trigger;
+
         rGunshot.RegisterCancelSyncedShot(CancelSyncedShot);
     }
 
-    // NOTE(randomuserhi): Cancel synced tracers from projectile weapons.
+    // NOTE(randomuserhi): Cancel synced tracers from projectile weapons and multishot weapons.
     private static bool CancelSyncedShot(BulletWeapon weapon) {
         CustomWeaponComponent? cwc = weapon.GetComponent<CustomWeaponComponent>();
 
         if (cwc == null) return false;
 
         if (cwc.HasTrait<EWC.CustomWeapon.Properties.Traits.Projectile>()) {
+            return true;
+        }
+
+        if (cwc.TryGetTrait<EWC.CustomWeapon.Properties.Traits.MultiShot>(out var multiShot) && multiShot.CancelShot) {
             return true;
         }
 
