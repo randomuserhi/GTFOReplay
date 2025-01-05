@@ -116,6 +116,11 @@ namespace ReplayRecorder.Snapshot {
                     if (errorOnDuplicate) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.id}] already exists in DynamicCollection of type '{Type.FullName}'.");
                     return;
                 }
+                AddNoChecks(dynamic);
+            }
+
+            [HideFromIl2Cpp]
+            internal void AddNoChecks(ReplayDynamic dynamic) {
                 dynamics.Add(dynamic);
                 mapOfDynamics.Add(dynamic.id, dynamic);
             }
@@ -126,9 +131,7 @@ namespace ReplayRecorder.Snapshot {
                     if (errorOnNotFound) throw new ReplayDynamicDoesNotExist($"Dynamic [{id}] does not exist in DynamicCollection of type '{Type.FullName}'.");
                     return;
                 }
-                handleRemoval = true;
-                mapOfDynamics[id].remove = true;
-                mapOfDynamics.Remove(id);
+                RemoveNoChecks(id);
             }
 
             [HideFromIl2Cpp]
@@ -136,6 +139,13 @@ namespace ReplayRecorder.Snapshot {
                 Type dynType = dynamic.GetType();
                 if (!Type.IsAssignableFrom(dynType)) throw new ReplayIncompatibleType($"Cannot remove dynamic of type '{dynType.FullName}' from DynamicCollection of type '{Type.FullName}'.");
                 Remove(dynamic.id);
+            }
+
+            [HideFromIl2Cpp]
+            internal void RemoveNoChecks(int id) {
+                handleRemoval = true;
+                mapOfDynamics[id].remove = true;
+                mapOfDynamics.Remove(id);
             }
 
             private bool handleRemoval = false;
@@ -504,12 +514,17 @@ namespace ReplayRecorder.Snapshot {
             Type dynType = dynamic.GetType();
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
+            if (state.dynamics[dynType].Has(dynamic)) {
+                if (errorOnDuplicate) throw new ReplayDynamicAlreadyExists($"Dynamic [{dynamic.id}] already exists in DynamicCollection of type '{dynType.FullName}'.");
+                return;
+            }
+
             if (!Trigger(new ReplaySpawn(dynamic))) {
                 APILogger.Error($"Unable to spawn '{dynType}' as spawn event failed.");
                 return;
             }
 
-            state.dynamics[dynType].Add(dynamic, errorOnDuplicate);
+            state.dynamics[dynType].AddNoChecks(dynamic);
 
             // Trigger Hooks
             // NOTE(randomuserhi): Happens after add to be accessible via Replay.TryGet during hook
@@ -526,6 +541,11 @@ namespace ReplayRecorder.Snapshot {
             Type dynType = dynamic.GetType();
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
+            if (!state.dynamics[dynType].Has(dynamic)) {
+                if (errorOnNotFound) throw new ReplayDynamicDoesNotExist($"Dynamic [{dynamic.id}] does not exist in DynamicCollection of type '{dynType.FullName}'.");
+                return;
+            }
+
             if (!Trigger(new ReplayDespawn(dynamic))) {
                 APILogger.Error($"Unable to despawn '{dynType}' as despawn event failed.");
                 return;
@@ -541,7 +561,7 @@ namespace ReplayRecorder.Snapshot {
                 }
             }
 
-            state.dynamics[dynType].Remove(dynamic.id, errorOnNotFound);
+            state.dynamics[dynType].RemoveNoChecks(dynamic.id);
         }
 
         private Stopwatch stopwatch = new Stopwatch();
