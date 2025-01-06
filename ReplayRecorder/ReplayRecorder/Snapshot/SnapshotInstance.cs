@@ -1,4 +1,6 @@
-﻿using API;
+﻿extern alias GTFO;
+
+using API;
 using GameData;
 using Globals;
 using Il2CppInterop.Runtime.Attributes;
@@ -7,9 +9,10 @@ using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
 using ReplayRecorder.Snapshot.Exceptions;
+using ReplayRecorder.Steam;
+using Steamworks;
 using System.Collections;
 using System.Diagnostics;
-using System.Net;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -248,7 +251,7 @@ namespace ReplayRecorder.Snapshot {
                 // Insert number of written to start
                 BitHelper.WriteBytes(numWritten, buffer._array, ref index);
 
-                if (ConfigManager.Debug) {
+                if (ConfigManager.Debug && ConfigManager.DebugTicks) {
                     APILogger.Debug($"[DynamicCollection: {Type.FullName}({SnapshotManager.types[Type]})]: {numWritten} dynamics serialized.");
                 }
 
@@ -289,7 +292,7 @@ namespace ReplayRecorder.Snapshot {
                     e.Dispose();
                 }
                 bool eventsWritten = events.Count != 0;
-                APILogger.Debug($"[Events] {events.Count} events written.");
+                if (ConfigManager.DebugTicks) APILogger.Debug($"[Events] {events.Count} events written.");
                 events.Clear();
 
                 // Serialize dynamic properties
@@ -319,12 +322,17 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
+        public void Flush() {
+            if (fs == null) return;
+            fs.Flush();
+        }
 
         private FileStream? fs;
         private int byteOffset = 0;
         private DeltaState state = new DeltaState();
         private ByteBuffer buffer = new ByteBuffer();
         private ByteBuffer _buffer = new ByteBuffer();
+        // private ByteBuffer header = new ByteBuffer();
         internal BufferPool pool = new BufferPool(); // TODO(randomuserhi): Consider creating a new pool to shrink it every so often to keep memory usage low [This can be done by watching number of in use buffers over time]
         private Task? writeTask;
 
@@ -372,7 +380,8 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
             } catch (Exception ex) {
                 APILogger.Error($"Failed to create filestream, falling back to 'replay.gtfo': {ex.Message}");
-                fs = new FileStream("replay.gtfo", FileMode.Create, FileAccess.Write, FileShare.Read);
+                fullpath = "replay.gtfo";
+                fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
             alertedPlayers.Clear();
@@ -419,7 +428,7 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         private void SendBufferOverNetwork(ByteBuffer buffer) {
-            if (Plugin.acknowledged.Count > 0) {
+            if (rSteamManager.readyConnections.Count > 0) {
                 ByteBuffer packet = pool.Checkout();
                 // Header
                 const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
@@ -440,7 +449,10 @@ namespace ReplayRecorder.Snapshot {
             APILogger.Debug($"[Header: {typeof(EndOfHeader).FullName}({SnapshotManager.types[typeof(EndOfHeader)]})]{(eoh.Debug != null ? $": {eoh.Debug}" : "")}");
             eoh.Write(buffer);
 
-            APILogger.Debug($"Acknowledged Clients: {Plugin.acknowledged.Count}");
+            // NOTE(randomuserhi): Save header bytes to use on remote live view
+            // header.Copy(buffer);
+
+            APILogger.Debug($"Acknowledged Clients: {rSteamManager.readyConnections.Count}");
             SendBufferOverNetwork(buffer);
             buffer.Flush(fs);
             buffer.Shrink();
@@ -568,10 +580,10 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         private async Task Send(ByteBuffer packet) {
-            // TODO(randomuserhi): List of tasks so each send is concurrent?
-            foreach (EndPoint connection in Plugin.acknowledged) {
-                if (!Plugin.server.Connections.Contains(connection)) continue;
-                await Plugin.server.RawSendTo(packet.Array, connection);
+            if (rSteamManager.Server != null) {
+                foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
+                    rSteamManager.Server.SendTo(connection, packet.Array);
+                }
             }
             pool.Release(packet);
         }
@@ -676,7 +688,7 @@ namespace ReplayRecorder.Snapshot {
                 timer = 0;
 
                 // Check if all players are alerted of live view
-                if (Plugin.acknowledged.Count > 0 && PlayerManager.PlayerAgentsInLevel.Count > 1) {
+                if (rSteamManager.readyConnections.Count > 0 && PlayerManager.PlayerAgentsInLevel.Count > 1) {
                     bool allAlerted = true;
                     foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
                         if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {

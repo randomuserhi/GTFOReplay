@@ -18,16 +18,21 @@ export class GTFOManager {
             // TODO(randomuserhi)
         });
 
-        this.client.addEventListener("startGame", (bytes) => {
-            const path = BitHelper.readString(bytes);
-            Program.post("console.log", `game started: ${path}`);
+        this.client.addEventListener("startGame", () => {
             Program.post("startGame");
-            // TODO(randomuserhi)
         });
 
         this.client.addEventListener("endGame", () => {
             Program.post("console.log", "game ended");
             // TODO(randomuserhi)
+        });
+
+        this.client.addEventListener("connected", () => {
+            Program.post("liveConnected", "connected");
+        });
+
+        this.client.addEventListener("failedToConnect", () => {
+            Program.post("liveFailedToConnect", "failed to connect");
         });
 
         // Handling file link
@@ -48,9 +53,12 @@ export class GTFOManager {
                 return `${ip}(${port}): ${err.message}`;
             }
         });
-        ipc.on("goLive", () => {
+        ipc.handle("goLive", (_, id: bigint) => {
             if (!this.client.active()) return;
-            this.client.send("acknowledgement", new ByteStream());
+            const packet = new ByteStream();
+            BitHelper.writeULong(id, packet);
+            console.log(`Sending Player: ${id}`);
+            this.client.send("acknowledgement", packet);
         });
         ipc.on("unlink", () => {
             this.client.disconnect();

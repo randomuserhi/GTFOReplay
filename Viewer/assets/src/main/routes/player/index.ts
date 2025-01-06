@@ -34,7 +34,7 @@ export const Player = () => {
     interface Player {
         refresh: () => void;
         open: (path?: string) => Promise<void>;
-        link: (ip: string, port: number) => Promise<void>;
+        link: (steamId: string) => Promise<void>;
         unlink: () => Promise<void>;
         close: () => void; 
 
@@ -103,18 +103,21 @@ export const Player = () => {
         this.view.replay(await this.parser.parse(file));
     };
 
-    dom.link = async function link(ip: string, port: number) {
-        const resp: string | undefined = await window.api.invoke("link", ip, port);
+    dom.link = async function link(steamId: string) {
+        const resp: string | undefined = await window.api.invoke("link", "127.0.0.1", 56759);
         if (resp !== undefined) {
             // TODO(randomuserhi)
             console.error(`Failed to link: ${resp}`);
             return;
         }
-        window.api.send("goLive");
+
+        // TODO(randomuserhi): move somewhere else and allow custom id...
+        window.api.invoke("goLive", BigInt(steamId));
     };
 
     dom.unlink = async function unlink() {
         window.api.send("unlink");
+        app.nav.linkedStatus("Not Linked");
     };
 
     dom.close = function close() {
@@ -123,6 +126,7 @@ export const Player = () => {
         this.parser?.terminate();
         this.parser = undefined;
         window.api.send("unlink");
+        app.nav.linkedStatus("Not Linked");
         window.api.send("close");
     };
 

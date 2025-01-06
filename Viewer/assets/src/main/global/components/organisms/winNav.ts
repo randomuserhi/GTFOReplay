@@ -260,6 +260,46 @@ const style = Style(({ css }) => {
     color: white;
     `;
 
+    const icon = css.class``;
+
+    const linkMount = css.class`
+    position: absolute;
+    top: calc(100%);
+    left: 5px;
+    display: none; 
+    gap: 5px;
+    color: white;
+    padding-top: 5px;
+    `;
+
+    const link = css.class`
+    background-color: #2a2a43;
+    border-radius: 7px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #2f2e44;
+    font-size: 0.75rem;
+    min-width: 100px;
+    flex-shrink: 0;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px
+    `;
+    css`
+    ${icon}:hover ${linkMount} {
+        display: flex;
+    }
+    `;
+
+    const linkInput = css.class`
+    background-color: #12121a;
+    padding: 3px 5px;
+    border-radius: 4px;
+    color: white;
+    width: 100%;
+    `;
+
     return {
         wrapper,
         button,
@@ -267,7 +307,11 @@ const style = Style(({ css }) => {
         popup,
         mount,
         active,
-        error
+        error,
+        link,
+        linkInput,
+        icon,
+        linkMount
     };
 });
 
@@ -278,6 +322,7 @@ export const WinNav = () => {
         readonly moduleList: html<typeof ModuleList>;
         readonly activeModuleList: Signal<boolean>;
         readonly icon: HTMLButtonElement;
+        readonly linkedStatus: Signal<string>;
     }
     interface Private {
         readonly close: HTMLButtonElement;
@@ -287,10 +332,12 @@ export const WinNav = () => {
         readonly mount: HTMLDivElement;
         readonly moduleListMount: HTMLDivElement;
         readonly moduleWrapper: HTMLDivElement;
+        readonly linkInput: HTMLInputElement;
     }
     
     const module = signal("No profile loaded!");
     const moduleList = ModuleList();
+    const linkedStatus = signal("Not Linked");
 
     const dom = html<Mutable<Private & WinNav>>/**//*html*/`
         <nav class="${style.wrapper}">
@@ -316,9 +363,17 @@ export const WinNav = () => {
                     </div></span>
                 </div>
             </span>
-            <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
-                ${icons.rug()}
-            </div>
+            <span style="position: relative;" class="${style.icon}">
+                <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
+                    ${icons.rug()}
+                </div>
+                <div class="${style.linkMount}">
+                    <div class="${style.link}">
+                        <input m-id="linkInput" placeholder="User SteamID" class="${style.linkInput}" type="text" spellcheck="false" autocomplete="false" value=""/>
+                        <div>${linkedStatus}</div>
+                    </div>
+                </div>
+            </span>
         </nav>
         `;
     
@@ -331,6 +386,47 @@ export const WinNav = () => {
         mount.append(...children);
     });
     
+    dom.linkedStatus = linkedStatus;
+
+    dom.linkInput.addEventListener("change", async () => {
+        let id: bigint;
+        try {
+            id = BigInt(dom.linkInput.value.trim());
+        } catch (e) {
+            linkedStatus("Invalid SteamID");
+            console.error(e);
+            return;
+        }
+
+        const resp: string | undefined = await window.api.invoke("link", "127.0.0.1", 56759);
+        if (resp !== undefined) {
+            dom.linkInput.disabled = false;
+            dom.linkInput.style.display = "block";
+
+            linkedStatus(`Failed to link`);
+            console.error(`Failed to link: ${resp}`);
+            return;
+        }
+
+        dom.linkInput.value = "";
+        dom.linkInput.disabled = true;
+        dom.linkInput.style.display = "none";
+        window.api.invoke("goLive", id);
+        linkedStatus(`Connecting to ${id}`);
+    });
+
+    window.api.on("liveConnected", () => {
+        dom.linkInput.disabled = false;
+        dom.linkInput.style.display = "block";
+        linkedStatus("Linked!");
+    });
+
+    window.api.on("liveFailedToConnect", () => {
+        dom.linkInput.disabled = false;
+        dom.linkInput.style.display = "block";
+        linkedStatus("Failed to link");
+    });
+
     close.onclick = () => {
         window.api.closeWindow();
     };

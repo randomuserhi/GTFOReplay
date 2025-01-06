@@ -1,18 +1,23 @@
-﻿using API;
+﻿extern alias GTFO;
+
+using API;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Snapshot;
+using ReplayRecorder.Steam;
 using System.Net;
 
 namespace ReplayRecorder.BepInEx;
 
+// TODO(randomuserhi): Refactor...
+
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 public class Plugin : BasePlugin {
-    internal static HashSet<EndPoint> acknowledged = new HashSet<EndPoint>();
     internal static TCPServer server = new TCPServer();
+    internal static Dictionary<EndPoint, rSteamClient> endPointToClient = new Dictionary<EndPoint, rSteamClient>();
 
     /// <summary>
     /// Is called when a client connects to the TCPServer.
@@ -22,16 +27,6 @@ public class Plugin : BasePlugin {
     /// <param name="endPoint"></param>
     internal static void onAccept(EndPoint endPoint) {
         APILogger.Debug($"{endPoint} connected.");
-
-        if (SnapshotManager.instance == null) return;
-        SnapshotInstance instance = SnapshotManager.instance;
-        /*if (instance.Ready) {
-            ByteBuffer packet = new ByteBuffer();
-            BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
-            BitHelper.WriteBytes(instance.filename, packet);
-
-            _ = server.SendTo(packet.Array, endPoint);
-        }*/
     }
 
     /// <summary>
@@ -50,8 +45,17 @@ public class Plugin : BasePlugin {
         APILogger.Debug($"Received message of type '{type}'.");
         switch (type) {
         case Net.MessageType.Acknowledgement: {
-            APILogger.Debug($"Acknowledged: {endPoint}");
-            acknowledged.Add(endPoint);
+            ulong id = BitHelper.ReadULong(buffer, ref index);
+            APILogger.Debug($"Acknowledged: {endPoint}, connecting to {id}.");
+            if (endPointToClient.ContainsKey(endPoint)) {
+                endPointToClient[endPoint].Dispose();
+                endPointToClient.Remove(endPoint);
+            }
+            rSteamClient steam = new rSteamClient(id, endPoint);
+            steam.onAccept += steam_onAccept;
+            steam.onReceive += steam_onReceive;
+            steam.onFail += steam_onFail;
+            endPointToClient.Add(endPoint, steam);
             break;
         }
         }
@@ -63,14 +67,40 @@ public class Plugin : BasePlugin {
     /// <param name="endPoint"></param>
     internal static void onDisconnect(EndPoint endPoint) {
         APILogger.Debug($"{endPoint} disconnected.");
-        acknowledged.Remove(endPoint);
+        if (endPointToClient.ContainsKey(endPoint)) {
+            endPointToClient[endPoint].Dispose();
+            endPointToClient.Remove(endPoint);
+        }
     }
 
     /// <summary>
     /// Clear all acknowledged clients on closure of TCPServer.
     /// </summary>
     internal static void onClose() {
-        acknowledged.Clear();
+        foreach (rSteamClient client in endPointToClient.Values) {
+            client.Dispose();
+        }
+        endPointToClient.Clear();
+    }
+
+    internal static void steam_onReceive(ArraySegment<byte> buffer, rSteamClient client) {
+        _ = server.RawSendTo(buffer, client.associatedEndPoint);
+    }
+
+    internal static void steam_onFail(rSteamClient client) {
+        ByteBuffer cpacket = new ByteBuffer();
+        BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
+        BitHelper.WriteBytes((ushort)Net.MessageType.FailedToConnect, cpacket);
+
+        _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
+    }
+
+    internal static void steam_onAccept(rSteamClient client) {
+        ByteBuffer cpacket = new ByteBuffer();
+        BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
+        BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
+
+        _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
     }
 
     /// <summary>
@@ -78,11 +108,13 @@ public class Plugin : BasePlugin {
     /// </summary>
     [ReplayInit]
     internal static void TriggerGameStart() {
-        ByteBuffer packet = new ByteBuffer();
-        BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
-        BitHelper.WriteBytes(SnapshotManager.GetInstance().fullpath, packet);
+        if (rSteamManager.Server == null) return;
 
-        _ = server.Send(packet.Array);
+        ByteBuffer packet = new ByteBuffer();
+        BitHelper.WriteBytes(sizeof(ushort), packet); // message size in bytes
+        BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
+
+        rSteamManager.Server.Send(packet.Array);
     }
 
     /// <summary>
@@ -90,10 +122,13 @@ public class Plugin : BasePlugin {
     /// </summary>
     [ReplayOnExpeditionEnd]
     internal static void TriggerGameEnd() {
+        if (rSteamManager.Server == null) return;
+
         ByteBuffer packet = new ByteBuffer();
+        BitHelper.WriteBytes(sizeof(ushort), packet); // message size in bytes
         BitHelper.WriteBytes((ushort)Net.MessageType.EndGame, packet);
 
-        _ = server.Send(packet.Array);
+        rSteamManager.Server.Send(packet.Array);
     }
 
     public override void Load() {

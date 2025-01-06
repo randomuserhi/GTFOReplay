@@ -20,16 +20,26 @@
 		<Delete Files="$(OutputPath)$(AssemblyName).deps.json" />
 	</Target>
 
+	<Target Name="CopyFilesToOutput" AfterTargets="Build">
+		<Copy
+		  SourceFiles="..\..\Dependencies\Steamworks.Net.dll"
+		  DestinationFolder="$(BuildDirectory)\" />
+		<Copy
+		  SourceFiles="..\..\Dependencies\steam_api64.dll"
+		  DestinationFolder="$(BuildDirectory)\" />
+	</Target>
+	
 	<ItemGroup>
+		<Reference Include="..\..\Dependencies\Steamworks.Net.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\BepInEx.Core.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\BepInEx.Unity.IL2CPP.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Common.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Runtime.dll" Private="false" />
-		<Reference Include="$(BepInEx)\interop\*.dll" Private="false" />
-		<Compile Remove="HeavyItem\**" />
-		<EmbeddedResource Remove="HeavyItem\**" />
-		<None Remove="HeavyItem\**" />
+		<Reference Include="$(BepInEx)\interop\SteamWorks_ASM.dll" Private="false" >
+			<Aliases>GTFO</Aliases>
+		</Reference>
+		<Reference Include="$(BepInEx)\interop\*.dll" Exclude="$(BepInEx)\interop\SteamWorks_ASM.dll" Private="false" />
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 

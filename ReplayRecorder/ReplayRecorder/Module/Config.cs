@@ -15,6 +15,12 @@ namespace ReplayRecorder.BepInEx {
                 false,
                 "Enables debug messages when true.");
 
+            debugTicks = configFile.Bind(
+                "Debug",
+                "ticks",
+                false,
+                "Enables debug messages for each tick when true.");
+
             debugDynamics = configFile.Bind(
                 "Debug",
                 "dynamics",
@@ -63,6 +69,12 @@ namespace ReplayRecorder.BepInEx {
             set { debugDynamics.Value = value; }
         }
         private static ConfigEntry<bool> debugDynamics;
+
+        public static bool DebugTicks {
+            get { return debugTicks.Value; }
+            set { debugTicks.Value = value; }
+        }
+        private static ConfigEntry<bool> debugTicks;
 
         public static string ReplayFolder {
             get { return replayFolder.Value; }

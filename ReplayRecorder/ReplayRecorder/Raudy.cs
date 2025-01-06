@@ -5,6 +5,7 @@
 /// - Supports half precision 16-bit floats.
 
 using API;
+using ReplayRecorder.BepInEx;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
@@ -42,6 +43,11 @@ namespace ReplayRecorder {
             count = 0;
         }
 
+        internal void Copy(ByteBuffer other) {
+            _array = new byte[other.count];
+            System.Array.Copy(other._array.Array!, other._array.Offset, _array.Array!, _array.Offset, other.count);
+        }
+
         internal void Reserve(int size, bool increment = false) {
             if (_array.Count - count < size) {
                 byte[] newArray = new byte[Mathf.Max(_array.Count * 2, count + size)];
@@ -52,14 +58,14 @@ namespace ReplayRecorder {
         }
 
         internal void Flush(FileStream fs) {
-            APILogger.Debug($"Flushed snapshot: {count} bytes.");
+            if (ConfigManager.DebugTicks) APILogger.Debug($"Flushed snapshot: {count} bytes.");
             BitHelper.WriteBytes(count, fs);
             fs.Write(Array);
             count = 0;
         }
 
         internal async Task AsyncFlush(FileStream fs) {
-            APILogger.Debug($"Async Flushed snapshot: {count} bytes.");
+            if (ConfigManager.DebugTicks) APILogger.Debug($"Async Flushed snapshot: {count} bytes.");
             BitHelper.WriteBytes(count, fs);
             await fs.WriteAsync(Array).ConfigureAwait(false);
             count = 0;

@@ -15,7 +15,9 @@ namespace ReplayRecorder {
             StartGame,
             EndGame,
             LiveBytes,
-            Acknowledgement
+            Acknowledgement,
+            Connected,
+            FailedToConnect,
         }
     }
 

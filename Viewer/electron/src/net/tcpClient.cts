@@ -14,17 +14,22 @@ interface MessageTypes
     "endGame": void;
     "liveBytes": void;
     "acknowledgement": void;
+    "connected": void;
+    "failedToConnect": void;
 }
 const messageTypes: (keyof MessageTypes)[] = [
     "startGame",
     "endGame",
     "liveBytes",
-    "acknowledgement"
+    "acknowledgement",
+    "connected",
+    "failedToConnect"
 ];
 const messageTypeMap: Map<keyof MessageTypes, number>  = new Map([...messageTypes.entries()].map(([id, type]) => [type, id]));
 
 export class TcpClient {
     private socket: net.Socket | null;
+    private sockId: number = 0;
     private eventMap: Map<string, Set<Function>>;
 
     onClose: () => void | undefined;
@@ -192,12 +197,15 @@ export class TcpClient {
         });
 
         return new Promise<void>((resolve, reject) => {
+            const id = ++this.sockId;
             const errListener = (error: Error) => {
                 socket.off("error", errListener);
                 reject(error);
             };
             socket.on("error", errListener);
             socket.on("close", () => {
+                if (this.sockId != id) return;
+                
                 this.socket?.destroy();
                 this.socket = null; 
 
