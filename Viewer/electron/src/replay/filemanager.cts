@@ -219,7 +219,7 @@ export class FileManager {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
-        ipc.handle("chooseFile", async (_) => {
+        ipc.handle("chooseFile", async () => {
             const result = await dialog.showOpenDialog({
                 title:"Select File",
                 properties: ["openFile"]

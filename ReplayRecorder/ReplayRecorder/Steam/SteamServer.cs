@@ -38,18 +38,21 @@ namespace ReplayRecorder.Steam {
         }
 
         public class Connection {
-            public bool isReady = false;
+            public bool queuePackets = false;
+            public ConcurrentQueue<ArraySegment<byte>> queue = new ConcurrentQueue<ArraySegment<byte>>();
         }
 
         public ConcurrentDictionary<HSteamNetConnection, Connection> currentConnections = new ConcurrentDictionary<HSteamNetConnection, Connection>();
 
-        private ConcurrentQueue<ArraySegment<byte>> queue = new ConcurrentQueue<ArraySegment<byte>>();
-        private List<ArraySegment<byte>> queueBuffer = new List<ArraySegment<byte>>();
+        private ConcurrentQueue<ArraySegment<byte>> resendQueue = new ConcurrentQueue<ArraySegment<byte>>();
+        private List<ArraySegment<byte>> resendQueueBuffer = new List<ArraySegment<byte>>();
 
         private async Task ReceiveMessages(HSteamNetConnection connection) {
             int numMessages = 0;
 
             IntPtr[] messageBuffer = new IntPtr[10];
+
+            Connection conn = currentConnections[connection];
 
             do {
                 numMessages = SteamNetworkingSockets.ReceiveMessagesOnConnection(connection, messageBuffer, messageBuffer.Length);
@@ -64,25 +67,33 @@ namespace ReplayRecorder.Steam {
                     SteamNetworkingMessage_t.Release(messageBuffer[i]);
                 }
 
-                if (!queue.IsEmpty) {
+                // NOTE(randomuserhi): Manage packets that did not send due to overwhelmed socket
+                if (!resendQueue.IsEmpty) {
                     // NOTE(randomuserhi): Get status to not overwhelm network
                     SteamNetConnectionRealTimeStatus_t status = default;
                     SteamNetConnectionRealTimeLaneStatus_t pLanes = default;
                     if (SteamNetworkingSockets.GetConnectionRealTimeStatus(connection, ref status, 0, ref pLanes) == EResult.k_EResultOK) {
                         if (status.m_cbPendingReliable + status.m_cbSentUnackedReliable == 0) {
-                            while (queue.TryDequeue(out var packet)) {
-                                queueBuffer.Add(packet);
+                            while (resendQueue.TryDequeue(out var packet)) {
+                                resendQueueBuffer.Add(packet);
                             }
                             int j = 0;
-                            while (j < queueBuffer.Count) {
-                                if (!SendTo(connection, queueBuffer[j], true)) break;
+                            while (j < resendQueueBuffer.Count) {
+                                if (!SendTo(connection, resendQueueBuffer[j], dequeue: true)) break;
                                 ++j;
                             }
-                            for (; j < queueBuffer.Count; ++j) {
-                                queue.Enqueue(queueBuffer[j]);
+                            for (; j < resendQueueBuffer.Count; ++j) {
+                                resendQueue.Enqueue(resendQueueBuffer[j]);
                             }
-                            queueBuffer.Clear();
+                            resendQueueBuffer.Clear();
                         }
+                    }
+                }
+
+                // Queue packets
+                if (!conn.queuePackets) {
+                    while (conn.queue.TryDequeue(out var packet)) {
+                        SendTo(connection, packet);
                     }
                 }
 
@@ -96,10 +107,18 @@ namespace ReplayRecorder.Steam {
             }
         }
 
-        public bool SendTo(HSteamNetConnection connection, ArraySegment<byte> data, bool dequeue = false) {
-            if (!dequeue && !queue.IsEmpty) {
+        public bool SendTo(HSteamNetConnection connection, ArraySegment<byte> data, bool force = false, bool dequeue = false) {
+            Connection conn = currentConnections[connection];
+
+            if (conn.queuePackets && !force) {
+                // APILogger.Debug("conn.queued data.");
+                conn.queue.Enqueue(data);
+                return true;
+            }
+
+            if (!dequeue && !resendQueue.IsEmpty) {
                 // APILogger.Debug("queued data.");
-                queue.Enqueue(data);
+                resendQueue.Enqueue(data);
                 return true;
             }
 
@@ -142,7 +161,7 @@ namespace ReplayRecorder.Steam {
             for (int i = 0; i < results.Length; ++i) {
                 if (results[i] < 0) {
                     // APILogger.Debug($"Failed to send packet '{i}', Error Code: {results[i]}, queuing for future send...");
-                    queue.Enqueue(buffers[i]);
+                    resendQueue.Enqueue(buffers[i]);
                     success = false;
                 }
             }

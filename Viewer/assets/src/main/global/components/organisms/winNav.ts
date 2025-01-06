@@ -270,6 +270,7 @@ const style = Style(({ css }) => {
     gap: 5px;
     color: white;
     padding-top: 5px;
+    z-index: 1000;
     `;
 
     const link = css.class`

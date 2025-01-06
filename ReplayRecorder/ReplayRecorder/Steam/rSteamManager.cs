@@ -47,55 +47,61 @@ namespace ReplayRecorder.Steam {
         }
 
         internal static void onAccept(HSteamNetConnection connection) {
+            if (Server == null) return;
+
             ByteBuffer cpacket = new ByteBuffer();
             BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
             BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
 
-            Server?.SendTo(connection, cpacket.Array);
+            Server.SendTo(connection, cpacket.Array);
 
             if (SnapshotManager.instance != null) {
                 SnapshotInstance instance = SnapshotManager.instance;
-                if (instance.Ready) {
-                    // Trigger start
+                if (instance.Active) {
+                    // Trigger start if already in level
 
                     ByteBuffer spacket = new ByteBuffer();
                     BitHelper.WriteBytes(sizeof(ushort), spacket); // message size in bytes
                     BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, spacket);
 
-                    Server?.SendTo(connection, spacket.Array);
+                    Server.SendTo(connection, spacket.Array);
 
-                    // Send file
+                    // NOTE(randomuserhi): Need to queue up current packets to send after file is sent
+                    Server.currentConnections[connection].queuePackets = true;
 
-                    byte[] buffer;
+                    // Send file:
+                    Task.Run(() => {
+                        if (Server == null) return;
 
-                    do {
+                        byte[] buffer;
 
-                        instance.Flush();
+                        do {
 
-                        using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-                            using (var ms = new MemoryStream()) {
-                                fs.CopyTo(ms);
-                                buffer = ms.ToArray();
+                            instance.Flush();
+
+                            using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                                using (var ms = new MemoryStream()) {
+                                    fs.CopyTo(ms);
+                                    buffer = ms.ToArray();
+                                }
                             }
-                        }
 
-                    } while (buffer.Length != instance.byteOffset);
+                        } while (buffer.Length != instance.byteOffset);
 
-                    ByteBuffer packet = new ByteBuffer();
+                        ByteBuffer packet = new ByteBuffer();
 
-                    // Header
-                    const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int);
-                    BitHelper.WriteBytes(sizeOfHeader + buffer.Length, packet); // message size in bytes
-                    BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
-                    BitHelper.WriteBytes(0, packet); // offset
-                    BitHelper.WriteBytes(buffer.Length, packet); // number of bytes to read
-                    BitHelper.WriteBytes(buffer, packet, false); // file-bytes
+                        // Header
+                        const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int);
+                        BitHelper.WriteBytes(sizeOfHeader + buffer.Length, packet); // message size in bytes
+                        BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                        BitHelper.WriteBytes(0, packet); // offset
+                        BitHelper.WriteBytes(buffer.Length, packet); // number of bytes to read
+                        BitHelper.WriteBytes(buffer, packet, false); // file-bytes
 
-                    APILogger.Debug($"Sending file....");
+                        Server.SendTo(connection, packet.Array, force: true);
 
-                    Server?.SendTo(connection, packet.Array);
-
-                    APILogger.Debug($"File sent: {buffer.Length} {buffer.Length} {instance.byteOffset}");
+                        Server.currentConnections[connection].queuePackets = false;
+                    });
                 }
             }
 

@@ -429,7 +429,7 @@ namespace ReplayRecorder.Snapshot {
         [HideFromIl2Cpp]
         private void SendBufferOverNetwork(ByteBuffer buffer) {
             if (rSteamManager.readyConnections.Count > 0) {
-                ByteBuffer packet = pool.Checkout();
+                ByteBuffer packet = new ByteBuffer();
                 // Header
                 const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
                 BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // message size in bytes
@@ -585,7 +585,6 @@ namespace ReplayRecorder.Snapshot {
                     rSteamManager.Server.SendTo(connection, packet.Array);
                 }
             }
-            pool.Release(packet);
         }
 
         private int bufferShrinkTick = 0; // tick count to check when to clear buffers

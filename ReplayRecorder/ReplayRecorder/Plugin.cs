@@ -84,7 +84,6 @@ public class Plugin : BasePlugin {
     }
 
     internal static void steam_onReceive(ArraySegment<byte> buffer, rSteamClient client) {
-        APILogger.Debug($"Received packet: {buffer.Count}");
         _ = server.RawSendTo(buffer, client.associatedEndPoint);
     }
 
