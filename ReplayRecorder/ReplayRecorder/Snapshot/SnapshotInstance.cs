@@ -328,7 +328,7 @@ namespace ReplayRecorder.Snapshot {
         }
 
         private FileStream? fs;
-        private int byteOffset = 0;
+        public int byteOffset = 0;
         private DeltaState state = new DeltaState();
         private ByteBuffer buffer = new ByteBuffer();
         private ByteBuffer _buffer = new ByteBuffer();

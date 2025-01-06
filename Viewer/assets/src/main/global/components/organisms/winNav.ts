@@ -323,6 +323,7 @@ export const WinNav = () => {
         readonly activeModuleList: Signal<boolean>;
         readonly icon: HTMLButtonElement;
         readonly linkedStatus: Signal<string>;
+        readonly linkInput: HTMLInputElement;
     }
     interface Private {
         readonly close: HTMLButtonElement;
@@ -332,7 +333,6 @@ export const WinNav = () => {
         readonly mount: HTMLDivElement;
         readonly moduleListMount: HTMLDivElement;
         readonly moduleWrapper: HTMLDivElement;
-        readonly linkInput: HTMLInputElement;
     }
     
     const module = signal("No profile loaded!");

@@ -25,7 +25,7 @@ let replay: Replay | undefined = undefined;
         replay = new Replay();
 
         const fs = new FileStream(ipc, file);
-        
+
         // Cache as much available data
         await fs.cacheAllBytes();
         await fs.cacheNetworkBuffer();

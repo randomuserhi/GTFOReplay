@@ -52,6 +52,7 @@ export class FileStream {
         this.cache = result.cache;
         this.cacheStart = result.cacheStart;
         this.cacheEnd = result.cacheEnd;
+        console.log(`cached net bytes: ${this.cacheStart} ${this.cacheEnd} ${this.cache!.byteLength} bytes!`);
         return true;
     }
 

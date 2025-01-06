@@ -44,7 +44,9 @@ class File {
             this.cyclicEnd.index = 0;
             this.cyclicEnd.offset = offset;
         }
-        if (offset !== this.cyclicEnd.offset) return; // Desynced data stream
+        if (offset !== this.cyclicEnd.offset) {
+            return;
+        }
         for (let i = 0; i < bytes.length; ++i) {
             this.cyclicQueue[this.cyclicEnd.index++] = bytes[i];
             const cycle = this.cyclicEnd.index % this.cyclicQueue.length;
@@ -208,6 +210,14 @@ export class FileManager {
     constructor() {
     }
 
+    public async open(path?: string) {
+        if (this.file !== undefined) {
+            this.file.close();
+        } 
+        this.file = new File(path);
+        await this.file.open();
+    }
+
     public setupIPC(ipc: Electron.IpcMain) {
         ipc.handle("chooseFile", async (_) => {
             const result = await dialog.showOpenDialog({
@@ -218,11 +228,7 @@ export class FileManager {
             return result.filePaths;
         });
         ipc.handle("open", async (_, file: FileHandle) => {
-            if (this.file !== undefined) {
-                this.file.close();
-            } 
-            this.file = new File(file.path);
-            await this.file.open();
+            await this.open(file.path);
         });
         ipc.on("close", () => {
             this.file?.close();

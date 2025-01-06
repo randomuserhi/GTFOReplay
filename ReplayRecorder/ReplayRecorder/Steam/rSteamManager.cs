@@ -56,16 +56,22 @@ namespace ReplayRecorder.Steam {
             if (SnapshotManager.instance != null) {
                 SnapshotInstance instance = SnapshotManager.instance;
                 if (instance.Ready) {
-                    ByteBuffer packet = new ByteBuffer();
-                    BitHelper.WriteBytes(sizeof(ushort), packet); // message size in bytes
-                    BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
+                    // Trigger start
 
-                    Server?.SendTo(connection, packet.Array);
+                    ByteBuffer spacket = new ByteBuffer();
+                    BitHelper.WriteBytes(sizeof(ushort), spacket); // message size in bytes
+                    BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, spacket);
 
-                    Task.Run(() => {
+                    Server?.SendTo(connection, spacket.Array);
+
+                    // Send file
+
+                    byte[] buffer;
+
+                    do {
+
                         instance.Flush();
 
-                        byte[] buffer;
                         using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
                             using (var ms = new MemoryStream()) {
                                 fs.CopyTo(ms);
@@ -73,20 +79,23 @@ namespace ReplayRecorder.Steam {
                             }
                         }
 
-                        ByteBuffer packet = new ByteBuffer();
+                    } while (buffer.Length != instance.byteOffset);
 
-                        // Header
-                        const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int);
-                        BitHelper.WriteBytes(sizeOfHeader + buffer.Length, packet); // message size in bytes
-                        BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
-                        BitHelper.WriteBytes(0, packet); // offset
-                        BitHelper.WriteBytes(buffer.Length, packet); // number of bytes to read
-                        BitHelper.WriteBytes(buffer, packet, false); // file-bytes
+                    ByteBuffer packet = new ByteBuffer();
 
-                        Server?.SendTo(connection, packet.Array);
+                    // Header
+                    const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int);
+                    BitHelper.WriteBytes(sizeOfHeader + buffer.Length, packet); // message size in bytes
+                    BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                    BitHelper.WriteBytes(0, packet); // offset
+                    BitHelper.WriteBytes(buffer.Length, packet); // number of bytes to read
+                    BitHelper.WriteBytes(buffer, packet, false); // file-bytes
 
-                        APILogger.Debug($"Sent: {buffer.Length}");
-                    });
+                    APILogger.Debug($"Sending file....");
+
+                    Server?.SendTo(connection, packet.Array);
+
+                    APILogger.Debug($"File sent: {buffer.Length} {buffer.Length} {instance.byteOffset}");
                 }
             }
 

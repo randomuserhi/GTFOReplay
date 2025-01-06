@@ -18,7 +18,12 @@ export class GTFOManager {
             // TODO(randomuserhi)
         });
 
-        this.client.addEventListener("startGame", () => {
+        this.client.addEventListener("startGame", async () => {
+            console.log("start game!");
+
+            // NOTE(randomuserhi): Close active file, live view starting
+            this.fileManager.open();
+
             Program.post("startGame");
         });
 

@@ -4,7 +4,6 @@ using API;
 using Steamworks;
 using System.Net;
 using System.Runtime.InteropServices;
-using UnityEngine;
 
 namespace ReplayRecorder.Steam {
     internal class rSteamClient : IDisposable {
@@ -14,6 +13,9 @@ namespace ReplayRecorder.Steam {
         public SteamNet.clientOnFail? onFail = null;
 
         internal static HashSet<HSteamNetConnection> localClients = new();
+
+        private bool running = true;
+        private Task? receiveTask = null;
 
         private HSteamNetConnection connection;
         private SteamNetworkingIdentity identity;
@@ -52,39 +54,7 @@ namespace ReplayRecorder.Steam {
                 }
 
                 await Task.Delay(16);
-            } while (numMessages >= 0);
-        }
-
-        public void Send(ArraySegment<byte> data) {
-            const int packetSize = Constants.k_cbMaxSteamNetworkingSocketsMessageSizeSend;
-
-            int numMessages = Mathf.CeilToInt(data.Count / (float)packetSize);
-            IntPtr[] messages = new IntPtr[numMessages];
-            long[] results = new long[numMessages];
-
-            int bytesWritten = 0;
-            int index = 0;
-            while (bytesWritten < data.Count) {
-                int bytesToWrite = Mathf.Min(data.Count - bytesWritten, packetSize);
-                IntPtr packetPtr = SteamGameServerNetworkingUtils.AllocateMessage(bytesToWrite);
-
-                // Copy to managed
-                SteamNetworkingMessage_t packet = SteamNetworkingMessage_t.FromIntPtr(packetPtr);
-
-                packet.m_conn = connection;
-                packet.m_nFlags = Constants.k_nSteamNetworkingSend_Reliable;
-
-                Marshal.Copy(data.Array!, data.Offset + bytesWritten, packet.m_pData, bytesToWrite);
-
-                bytesWritten += bytesToWrite;
-                messages[index] = packetPtr;
-                ++index;
-
-                // Copy back to unmanaged
-                Marshal.StructureToPtr(packet, packetPtr, true);
-            }
-
-            SteamNetworkingSockets.SendMessages(numMessages, messages, results);
+            } while (numMessages >= 0 && running);
         }
 
         private void OnConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t callbackData) {
@@ -105,7 +75,7 @@ namespace ReplayRecorder.Steam {
                 APILogger.Debug($"[Client {connection.m_HSteamNetConnection}] Connection established: {connectionInfo.m_szConnectionDescription}");
                 onAccept?.Invoke(this);
                 connected = true;
-                _ = ReceiveMessages();
+                receiveTask = ReceiveMessages();
                 break;
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
@@ -118,9 +88,14 @@ namespace ReplayRecorder.Steam {
         }
 
         public void Dispose() {
+            running = false;
+            receiveTask?.Wait();
+            receiveTask?.Dispose();
+            receiveTask = null;
             onClose?.Invoke(this);
             localClients.Remove(connection);
             SteamNetworkingSockets.CloseConnection(connection, 0, "Disconnect", false);
+            cb_OnConnectionStatusChanged.Dispose();
         }
     }
 }

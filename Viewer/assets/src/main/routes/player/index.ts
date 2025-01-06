@@ -77,7 +77,10 @@ export const Player = () => {
         const file: FileHandle = {
             path, finite: false
         };
-        await window.api.invoke("open", file);
+        if (path !== undefined) {
+            // Open file if path is provided, otherwise assume live view
+            await window.api.invoke("open", file);
+        }
         if (this.parser !== undefined) this.parser.terminate();
         this.parser = new Parser();
         this.view.replay(undefined);
@@ -117,7 +120,11 @@ export const Player = () => {
 
     dom.unlink = async function unlink() {
         window.api.send("unlink");
+
         app.nav.linkedStatus("Not Linked");
+        app.nav.linkInput.value = "";
+        app.nav.linkInput.disabled = false;
+        app.nav.linkInput.style.display = "block";
     };
 
     dom.close = function close() {
@@ -126,7 +133,12 @@ export const Player = () => {
         this.parser?.terminate();
         this.parser = undefined;
         window.api.send("unlink");
+
         app.nav.linkedStatus("Not Linked");
+        app.nav.linkInput.value = "";
+        app.nav.linkInput.disabled = false;
+        app.nav.linkInput.style.display = "block";
+
         window.api.send("close");
     };
 
