@@ -1,9 +1,14 @@
 ﻿using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ReplayRecorder {
     public static class Utils {
         public const BindingFlags AnyBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+
+        public static string RemoveHTMLTags(string content) {
+            return Regex.Replace(content, "<[^>]*>", "");
+        }
 
         public static string RemoveInvalidCharacters(string content, char replace = '_', bool isFullPath = true) {
             if (string.IsNullOrEmpty(content))

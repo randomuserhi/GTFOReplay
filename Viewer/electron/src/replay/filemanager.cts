@@ -36,6 +36,7 @@ class File {
 
     public receiveLiveBytes(data: { offset: number, bytes: Uint8Array }) {
         const { offset, bytes } = data;
+        console.log(`received: ${offset} ${bytes.length}`);
         if (this.cyclicStart === undefined) {
             this.cyclicStart = {
                 index: 0,
@@ -45,6 +46,7 @@ class File {
             this.cyclicEnd.offset = offset;
         }
         if (offset !== this.cyclicEnd.offset) {
+            console.log(`desynced live bytes: ${offset} ${this.cyclicEnd.offset}`);
             return;
         }
         for (let i = 0; i < bytes.length; ++i) {
@@ -61,6 +63,7 @@ class File {
             }
             ++this.cyclicEnd.offset;
         }
+        console.log(`updated: ${this.cyclicStart?.offset} ${this.cyclicEnd}`);
 
         this.doAllRequests();
     }

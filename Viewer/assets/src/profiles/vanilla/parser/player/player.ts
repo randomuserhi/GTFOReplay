@@ -12,6 +12,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
             "Vanilla.Player": {
                 parse: DynamicTransform.Parse & {
                     equippedId: Identifier;
+                    flashlight: boolean;
                 };
                 spawn: DynamicTransform.Spawn & {
                     snet: bigint;
@@ -38,15 +39,17 @@ export interface Player extends DynamicTransform.Type {
     equippedId: Identifier;
     lastEquippedTime: number;
     lastSilentShotTime: number;
+    flashlight: boolean;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
+let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
     main: {
         parse: async (data, snapshot) => {
             const result = await DynamicTransform.parse(data);
             return {
                 ...result,
                 equippedId: await Identifier.parse(IdentifierData(snapshot), data),
+                flashlight: false
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -83,6 +86,7 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
                 equippedId: Identifier.create(),
                 lastEquippedTime: 0,
                 lastSilentShotTime: 0,
+                flashlight: false
             };
 
             players.set(id, player);
@@ -102,4 +106,29 @@ ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
             players.delete(id);
         }
     }
+});
+playerParser = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.2", {
+    ...playerParser,
+    main: {
+        parse: async (data, snapshot) => {
+            const result = await DynamicTransform.parse(data);
+            return {
+                ...result,
+                equippedId: await Identifier.parse(IdentifierData(snapshot), data),
+                flashlight: await BitHelper.readBool(data)
+            };
+        }, 
+        exec: (id, data, snapshot, lerp) => {
+            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+    
+            if (!players.has(id)) throw new Error(`Player of id '${id}' was not found.`);
+            const player = players.get(id)!;
+            DynamicTransform.lerp(player, data, lerp);
+            if (!Identifier.equals(IdentifierData(snapshot), player.equippedId, data.equippedId)) {
+                Identifier.copy(player.equippedId, data.equippedId);
+                player.lastEquippedTime = snapshot.time();
+            }
+            player.flashlight = data.flashlight;
+        }
+    },
 });

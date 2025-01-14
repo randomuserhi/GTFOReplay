@@ -101,7 +101,7 @@ namespace Vanilla.Player {
         }
     }
 
-    [ReplayData("Vanilla.Player", "0.0.1")]
+    [ReplayData("Vanilla.Player", "0.0.2")]
     public class rPlayer : DynamicTransform {
         public PlayerAgent agent;
 
@@ -112,8 +112,11 @@ namespace Vanilla.Player {
             }
         }
 
+        private bool _flashlightEnabled => agent.Inventory.FlashlightEnabled;
+        private bool flashlightEnabled = false;
+
         public override bool Active => agent != null;
-        public override bool IsDirty => base.IsDirty || equipped != lastEquipped;
+        public override bool IsDirty => base.IsDirty || equipped != lastEquipped || flashlightEnabled != _flashlightEnabled;
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
@@ -122,8 +125,10 @@ namespace Vanilla.Player {
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
             BitHelper.WriteBytes(equipped, buffer);
+            BitHelper.WriteBytes(flashlightEnabled, buffer);
 
             lastEquipped = equipped;
+            flashlightEnabled = _flashlightEnabled;
         }
 
         public override void Spawn(ByteBuffer buffer) {

@@ -355,8 +355,8 @@ namespace ReplayRecorder.Snapshot {
             pActiveExpedition expedition = RundownManager.GetActiveExpeditionData();
             RundownDataBlock data = GameDataBlockBase<RundownDataBlock>.GetBlock(Global.RundownIdToLoad);
             ExpeditionInTierData levelData = data.GetExpeditionData(expedition.tier, expedition.expeditionIndex);
-            string shortName = levelData.GetShortName(expedition.expeditionIndex);
-            string levelName = levelData.Descriptive.PublicName;
+            string shortName = Utils.RemoveHTMLTags(levelData.GetShortName(expedition.expeditionIndex));
+            string levelName = Utils.RemoveHTMLTags(levelData.Descriptive.PublicName);
             DateTime now = DateTime.Now;
 
             filename = string.Format(ConfigManager.ReplayFileName, shortName, now, levelName);
