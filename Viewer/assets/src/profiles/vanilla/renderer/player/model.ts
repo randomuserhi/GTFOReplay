@@ -281,12 +281,16 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         // flashlight
         const { tempVector } = PlayerModel.FUNC_animate;
 
-        this.flashlightLOS.visible = PlayerModel.showFlashlightLineOfSight() && player.flashlight;
+        this.flashlightLOS.visible = PlayerModel.showFlashlightLineOfSight();
 
         if (player.flashlight) {
             this.flashlightMaterial.color = this.color;
+            this.flashlightLOS.scale.x = 0.07;
+            this.flashlightLOS.scale.y = 0.07;
         } else {
             this.flashlightMaterial.color = white;
+            this.flashlightLOS.scale.x = 0.01;
+            this.flashlightLOS.scale.y = 0.01;
         }
 
         this.root.remove(this.flashlightLOS);
