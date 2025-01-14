@@ -13,6 +13,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
                 parse: DynamicTransform.Parse & {
                     equippedId: Identifier;
                     flashlight: boolean;
+                    flashlightRange: number;
                 };
                 spawn: DynamicTransform.Spawn & {
                     snet: bigint;
@@ -40,6 +41,7 @@ export interface Player extends DynamicTransform.Type {
     lastEquippedTime: number;
     lastSilentShotTime: number;
     flashlight: boolean;
+    flashlightRange: number;
 }
 
 let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
@@ -49,7 +51,8 @@ let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.re
             return {
                 ...result,
                 equippedId: await Identifier.parse(IdentifierData(snapshot), data),
-                flashlight: false
+                flashlight: false,
+                flashlightRange: 1000
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -86,7 +89,8 @@ let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.re
                 equippedId: Identifier.create(),
                 lastEquippedTime: 0,
                 lastSilentShotTime: 0,
-                flashlight: false
+                flashlight: false,
+                flashlightRange: 1000
             };
 
             players.set(id, player);
@@ -115,7 +119,8 @@ playerParser = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.2", {
             return {
                 ...result,
                 equippedId: await Identifier.parse(IdentifierData(snapshot), data),
-                flashlight: await BitHelper.readBool(data)
+                flashlight: await BitHelper.readBool(data),
+                flashlightRange: await BitHelper.readHalf(data)
             };
         }, 
         exec: (id, data, snapshot, lerp) => {
@@ -129,6 +134,7 @@ playerParser = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.2", {
                 player.lastEquippedTime = snapshot.time();
             }
             player.flashlight = data.flashlight;
+            player.flashlightRange = data.flashlightRange;
         }
     },
 });

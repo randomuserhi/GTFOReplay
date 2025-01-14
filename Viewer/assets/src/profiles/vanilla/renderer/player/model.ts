@@ -1,5 +1,6 @@
+import { signal } from "@esm/@/rhu/signal.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Group, Object3D, Vector3 } from "@esm/three";
+import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemArchetype, ItemDatablock } from "../../datablocks/items/item.js";
@@ -8,6 +9,7 @@ import { IKSolverAim } from "../../library/animations/inversekinematics/aimsolve
 import { IKSolverArm, TrigonometricBone } from "../../library/animations/inversekinematics/limbsolver.js";
 import { Bone } from "../../library/animations/inversekinematics/rootmotion.js";
 import { AnimBlend, Avatar, difference, toAnim } from "../../library/animations/lib.js";
+import { white } from "../../library/constants.js";
 import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { InventorySlot, inventorySlotMap, inventorySlots, PlayerBackpack } from "../../parser/player/backpack.js";
@@ -138,7 +140,11 @@ class EquippedItem {
     }
 }
 
+const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
+
 export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>]> {
+    public static showFlashlightLineOfSight = signal(false);
+    
     private aimIK: IKSolverAim = new IKSolverAim();
     private aimTarget: Object3D;
     
@@ -162,6 +168,9 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private animOffset: number = Math.random() * 10;
 
     private tmp?: Text;
+
+    private flashlightLOS: Mesh;
+    private flashlightMaterial: MeshPhongMaterial;
 
     constructor() {
         super();
@@ -244,6 +253,12 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.leftIK.bone2 = new TrigonometricBone(this.skeleton.joints.leftLowerArm, 1);
         this.leftIK.bone3 = new TrigonometricBone(this.skeleton.joints.leftHand, 1);
         this.leftIK.initiate(this.leftIK.root);
+
+        // Setup flashlightLOS
+        this.flashlightMaterial = new MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+        this.flashlightLOS = new Mesh(cylinder, this.flashlightMaterial);
+        this.flashlightLOS.scale.set(0.07, 0.07, 1000);
+        this.root.add(this.flashlightLOS);
     }
 
     public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>) {
@@ -258,14 +273,32 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     
         this.updateTmp(player, camera, stats, backpack);
     }
-
+    
     private animate(dt: number, time: number, player: Player, anim: PlayerAnimState) {
         this._animate(dt, time, player, anim);
         this.updateSkeleton(dt, player.position, player.rotation);
+
+        // flashlight
+        const { tempVector } = PlayerModel.FUNC_animate;
+
+        this.flashlightLOS.visible = PlayerModel.showFlashlightLineOfSight() && player.flashlight;
+
+        if (player.flashlight) {
+            this.flashlightMaterial.color = this.color;
+        } else {
+            this.flashlightMaterial.color = white;
+        }
+
+        this.root.remove(this.flashlightLOS);
+        this.flashlightLOS.scale.z = player.flashlightRange;
+        this.flashlightLOS.position.copy(this.visual.joints.head.getWorldPosition(tempVector));
+        this.flashlightLOS.lookAt(tempVector.add(anim.targetLookDir));
+        this.root.attach(this.flashlightLOS);
     }
 
     private static FUNC_animate = {
-        tempAvatar: new Avatar(HumanJoints)
+        tempAvatar: new Avatar(HumanJoints),
+        tempVector: new Vector3()
     } as const;
     private _animate(dt: number, time: number, player: Player, anim: PlayerAnimState) {
         const { tempAvatar } = PlayerModel.FUNC_animate;

@@ -112,23 +112,29 @@ namespace Vanilla.Player {
             }
         }
 
-        private bool _flashlightEnabled => agent.Inventory.FlashlightEnabled;
+        private bool _flashlightEnabled => agent.Inventory != null ? agent.Inventory.FlashlightEnabled : false;
         private bool flashlightEnabled = false;
 
+        private float _flashlightRange => agent.Inventory != null && agent.Inventory.FlashlightEnabled ? agent.Inventory.m_flashlight.range : 1000.0f;
+        private float flashlightRange = 1000.0f;
+
         public override bool Active => agent != null;
-        public override bool IsDirty => base.IsDirty || equipped != lastEquipped || flashlightEnabled != _flashlightEnabled;
+        public override bool IsDirty => base.IsDirty || equipped != lastEquipped || flashlightEnabled != _flashlightEnabled || flashlightRange != _flashlightRange;
 
         public rPlayer(PlayerAgent player) : base(player.GlobalID, new AgentTransform(player)) {
             agent = player;
         }
 
         public override void Write(ByteBuffer buffer) {
+            flashlightEnabled = _flashlightEnabled;
+            flashlightRange = _flashlightRange;
+
             base.Write(buffer);
             BitHelper.WriteBytes(equipped, buffer);
             BitHelper.WriteBytes(flashlightEnabled, buffer);
+            BitHelper.WriteHalf(flashlightRange, buffer);
 
             lastEquipped = equipped;
-            flashlightEnabled = _flashlightEnabled;
         }
 
         public override void Spawn(ByteBuffer buffer) {
