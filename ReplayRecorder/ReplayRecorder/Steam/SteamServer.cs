@@ -1,6 +1,7 @@
 ﻿extern alias GTFO;
 
 using API;
+using ReplayRecorder.BepInEx;
 using Steamworks;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -180,13 +181,21 @@ namespace ReplayRecorder.Steam {
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting:
                 APILogger.Debug($"[Server] Incoming connection from: {connectionInfo.m_szConnectionDescription}");
 
-                // Accept the connection
-                EResult acceptResult = SteamNetworkingSockets.AcceptConnection(connection);
-                if (acceptResult != EResult.k_EResultOK) {
-                    APILogger.Debug($"[Server] Failed to accept connection: {acceptResult}");
-                    SteamNetworkingSockets.CloseConnection(connection, 0, "Failed to accept", false);
+                ulong steamID = connectionInfo.m_identityRemote.GetSteamID64();
+
+                if (steamID == SteamUser.GetSteamID().m_SteamID ||
+                    ConfigManager.allowAnySpectator ||
+                    ConfigManager.steamIDWhitelist.Contains(steamID)) {
+                    // Accept the connection
+                    EResult acceptResult = SteamNetworkingSockets.AcceptConnection(connection);
+                    if (acceptResult != EResult.k_EResultOK) {
+                        APILogger.Debug($"[Server] Failed to accept connection: {acceptResult}");
+                        SteamNetworkingSockets.CloseConnection(connection, 0, "Failed to accept", false);
+                    } else {
+                        APILogger.Warn($"[Server] Allowed {steamID} to spectate your lobby.");
+                    }
                 } else {
-                    APILogger.Debug("[Server] Connection accepted!");
+                    APILogger.Warn($"[Server] Rejected {steamID} from spectating your lobby.");
                 }
                 break;
 

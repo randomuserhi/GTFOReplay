@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using API;
+using BepInEx;
 using BepInEx.Configuration;
 
 namespace ReplayRecorder.BepInEx {
@@ -49,7 +50,29 @@ namespace ReplayRecorder.BepInEx {
                 "separateByRundown",
                 false,
                 "Will create a new folder for each rundown. E.g R1A1 replay will be stored in path/to/replay/folder/R1/R1A1");
+
+            spectatorWhiteList = configFile.Bind(
+                "Settings",
+                "spectatorWhiteList",
+                "",
+                "Comma separated list of Steam64 IDs of players allowed to connect and spectate your games. A value of 'ALL' allows anyone to connect. You do not need to whitelist yourself.");
+
+            if (SpectatorWhiteList.Trim().ToLower() != "all") {
+                string[] IDs = SpectatorWhiteList.Split(",");
+                foreach (string ID in IDs) {
+                    if (ulong.TryParse(ID.Trim(), out ulong id)) {
+                        steamIDWhitelist.Add(id);
+                    } else {
+                        APILogger.Error($"Unable to parse Steam64 ID: {ID}");
+                    }
+                }
+            } else {
+                allowAnySpectator = true;
+            }
         }
+
+        public static bool allowAnySpectator = false;
+        public static List<ulong> steamIDWhitelist = new List<ulong>();
 
         public static bool Debug {
             get { return debug.Value; }
@@ -87,6 +110,12 @@ namespace ReplayRecorder.BepInEx {
             set { replayFilename.Value = value; }
         }
         private static ConfigEntry<string> replayFilename;
+
+        public static string SpectatorWhiteList {
+            get { return spectatorWhiteList.Value; }
+            set { spectatorWhiteList.Value = value; }
+        }
+        private static ConfigEntry<string> spectatorWhiteList;
 
         public static bool SeparateByRundown {
             get { return separateByRundown.Value; }
