@@ -1,11 +1,16 @@
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Group, Mesh, MeshPhongMaterial } from "@esm/three";
+import { ColorRepresentation, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { getPlayerColor } from "../../../datablocks/player/player.js";
 import { loadGLTFGeometry } from "../../../library/modelloader.js";
 import { Model } from "../../../library/models/lib.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation";
 import { Enemy } from "../../../parser/enemy/enemy.js";
 import { EnemyModelWrapper } from "../lib.js";
+
+export interface FlyerSettings {
+    scale?: number;
+    color: ColorRepresentation;
+}
 
 export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
     anchor: Group = new Group();
@@ -18,11 +23,24 @@ export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
 
     material: MeshPhongMaterial;
 
+    public settings: FlyerSettings = { color: 0xff0000 };
+    public applySettings(settings?: FlyerSettings) {
+        if (settings !== undefined && this.settings !== settings) {
+            for (const key in settings) {
+                (this.settings as any)[key] = (settings as any)[key];
+            }
+        }
+
+        if (this.settings.scale !== undefined) {
+            this.anchor.scale.set(this.settings.scale, this.settings.scale, this.settings.scale);
+        }
+    }
+
     constructor() {
         super();
 
         const material = this.material = new MeshPhongMaterial({
-            color: 0xff0000
+            color: this.settings.color
         });
 
         loadGLTFGeometry("../js3party/models/meatball.glb", false).then((model) => this.eye.add(new Mesh(model, material)));
@@ -51,7 +69,7 @@ export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
         if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
             this.material.color.set(getPlayerColor(enemy.targetPlayerSlotIndex));
         } else {
-            this.material.color.set(0xff0000);
+            this.material.color.set(this.settings.color);
         }
 
         const drift = 30;

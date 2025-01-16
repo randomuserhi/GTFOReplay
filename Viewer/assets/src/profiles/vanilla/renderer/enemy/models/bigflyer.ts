@@ -1,11 +1,16 @@
 import * as Pod from "@esm/@root/replay/pod.js";
-import { EulerOrder, Group, Mesh, MeshPhongMaterial } from "@esm/three";
+import { ColorRepresentation, EulerOrder, Group, Mesh, MeshPhongMaterial } from "@esm/three";
 import { getPlayerColor } from "../../../datablocks/player/player.js";
 import { loadGLTFGeometry } from "../../../library/modelloader.js";
 import { Model } from "../../../library/models/lib.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation";
 import { Enemy } from "../../../parser/enemy/enemy.js";
 import { EnemyModelWrapper } from "../lib.js";
+
+export interface BigFlyerSettings {
+    scale?: number;
+    color: ColorRepresentation;
+}
 
 export class BigFlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
     anchor: Group = new Group();
@@ -21,11 +26,24 @@ export class BigFlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
 
     material: MeshPhongMaterial;
 
+    public settings: BigFlyerSettings = { color: 0xff0000 };
+    public applySettings(settings?: BigFlyerSettings) {
+        if (settings !== undefined && this.settings !== settings) {
+            for (const key in settings) {
+                (this.settings as any)[key] = (settings as any)[key];
+            }
+        }
+    
+        if (this.settings.scale !== undefined) {
+            this.anchor.scale.set(this.settings.scale, this.settings.scale, this.settings.scale);
+        }
+    }
+
     constructor() {
         super();
 
         const material = this.material = new MeshPhongMaterial({
-            color: 0xff0000
+            color: this.settings.color
         });
 
         const scale = 1.3;
@@ -84,7 +102,7 @@ export class BigFlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
         if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
             this.material.color.set(getPlayerColor(enemy.targetPlayerSlotIndex));
         } else {
-            this.material.color.set(0xff0000);
+            this.material.color.set(this.settings.color);
         }
 
         time /= 1000; // animations are dealt with in seconds
