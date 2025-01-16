@@ -9,7 +9,7 @@ import { EnemyModelWrapper } from "../lib.js";
 
 export interface FlyerSettings {
     scale?: number;
-    color: ColorRepresentation;
+    color?: ColorRepresentation;
 }
 
 export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
@@ -69,7 +69,7 @@ export class FlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
         if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
             this.material.color.set(getPlayerColor(enemy.targetPlayerSlotIndex));
         } else {
-            this.material.color.set(this.settings.color);
+            this.material.color.set(this.settings.color!);
         }
 
         const drift = 30;
