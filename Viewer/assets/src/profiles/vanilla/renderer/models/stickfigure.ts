@@ -124,6 +124,19 @@ export interface StickFigureSettings {
         rightLowerArm: { scale?: number, type?: StickModelType };
     }>;
 
+    hide?: Partial<{
+        head: boolean;
+        body: boolean;
+        leftUpperLeg: boolean;
+        leftLowerLeg: boolean;
+        rightUpperLeg: boolean;
+        rightLowerLeg: boolean;
+        leftUpperArm: boolean;
+        leftLowerArm: boolean;
+        rightUpperArm: boolean;
+        rightLowerArm: boolean;
+    }>;
+
     defaultPose?: Partial<AvatarStructure<HumanJoints, QuaternionLike>>;
 
     headScale?: Vector3Like;
@@ -162,11 +175,18 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
     public color: Color = new Color();
 
     public settings: StickFigureSettings = {};
+
+    private static FUNC_applySettings = {
+        tempAvatar: createAvatarStruct(HumanJoints, () => new Quaternion()),
+    } as const;
     public applySettings(settings?: StickFigureSettings) {
         this._applySettings(settings);
 
         // Setup default pose before grabbing inverse matrices for tumour attachments
+        const { tempAvatar } = StickFigure.FUNC_applySettings;
         for (const joint of HumanJoints) {
+            tempAvatar[joint].copy(this.visual.joints[joint].quaternion); // Save original pose
+
             const quaternion = this.settings.defaultPose === undefined ? undefined : this.settings.defaultPose[joint];
             if (quaternion !== undefined) {
                 this.visual.joints[joint].quaternion.copy(quaternion);
@@ -177,6 +197,11 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         for (const joint of HumanJoints) {
             this.visual.joints[joint].updateWorldMatrix(true, true);
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
+        }
+
+        // Restore original pose
+        for (const joint of HumanJoints) {
+            this.visual.joints[joint].quaternion.copy(tempAvatar[joint]);
         }
     }
     // NOTE(randomuserhi): Internal application of settings that does not recalculate matrices
@@ -319,61 +344,83 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
 
         const point = getInstanceOrDefault(instancing, this.settings.points, "Sphere");
 
-        if (valueOrUndefined(this.settings.parts?.body?.type, "Cylinder")) {
+        if (!this.settings.hide?.body && valueOrUndefined(this.settings.parts?.body?.type, "Cylinder")) {
             point.consume(points[0], this.color);
             point.consume(points[1], this.color);
         }
 
-        if (valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder")) {
+        if (!this.settings.hide?.leftUpperArm && valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder")) {
             point.consume(points[2], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder") || valueOrUndefined(this.settings.parts?.leftLowerArm?.type , "Cylinder")) {
+        if ((!this.settings.hide?.leftLowerArm && valueOrUndefined(this.settings.parts?.leftUpperArm?.type, "Cylinder")) || 
+            (!this.settings.hide?.leftLowerArm && valueOrUndefined(this.settings.parts?.leftLowerArm?.type , "Cylinder"))) {
             point.consume(points[3], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.leftLowerArm?.type, "Cylinder")) {
+        if (!this.settings.hide?.leftLowerArm && valueOrUndefined(this.settings.parts?.leftLowerArm?.type, "Cylinder")) {
             point.consume(points[4], this.color);
         }
 
-        if (valueOrUndefined(this.settings.parts?.rightUpperArm?.type, "Cylinder")) {
+        if (!this.settings.hide?.rightUpperArm && valueOrUndefined(this.settings.parts?.rightUpperArm?.type, "Cylinder")) {
             point.consume(points[5], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.rightUpperArm?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
+        if ((!this.settings.hide?.rightUpperArm && valueOrUndefined(this.settings.parts?.rightUpperArm?.type , "Cylinder")) || 
+            (!this.settings.hide?.rightLowerArm && valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder"))) {
             point.consume(points[6], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
+        if (!this.settings.hide?.rightLowerArm && valueOrUndefined(this.settings.parts?.rightLowerArm?.type , "Cylinder")) {
             point.consume(points[7], this.color);
         }
 
-        if (valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder")) {
+        if (!this.settings.hide?.leftUpperLeg && valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder")) {
             point.consume(points[8], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
+        if ((!this.settings.hide?.leftUpperLeg && valueOrUndefined(this.settings.parts?.leftUpperLeg?.type , "Cylinder")) || 
+            (!this.settings.hide?.leftLowerLeg && valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder"))) {
             point.consume(points[9], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
+        if (!this.settings.hide?.leftLowerLeg && valueOrUndefined(this.settings.parts?.leftLowerLeg?.type , "Cylinder")) {
             point.consume(points[10], this.color);
         }
 
-        if (valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder")) {
+        if (!this.settings.hide?.rightUpperLeg && valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder")) {
             point.consume(points[11], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder") || valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
+        if ((!this.settings.hide?.rightUpperLeg && valueOrUndefined(this.settings.parts?.rightUpperLeg?.type , "Cylinder")) || 
+            (!this.settings.hide?.rightLowerLeg && valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder"))) {
             point.consume(points[12], this.color);
         }
-        if (valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
+        if (!this.settings.hide?.rightLowerLeg && valueOrUndefined(this.settings.parts?.rightLowerLeg?.type , "Cylinder")) {
             point.consume(points[13], this.color);
         }
         
         let i = 0;
-        getInstanceOrDefault(instancing, this.settings.parts?.body?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftUpperArm?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftLowerArm?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightUpperArm?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightLowerArm?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftUpperLeg?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.leftLowerLeg?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightUpperLeg?.type, "Cylinder").consume(parts[i++], this.color);
-        getInstanceOrDefault(instancing, this.settings.parts?.rightLowerLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        if (!this.settings.hide?.body) {
+            getInstanceOrDefault(instancing, this.settings.parts?.body?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.leftUpperArm) {
+            getInstanceOrDefault(instancing, this.settings.parts?.leftUpperArm?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.leftLowerArm) {
+            getInstanceOrDefault(instancing, this.settings.parts?.leftLowerArm?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.rightUpperArm) {
+            getInstanceOrDefault(instancing, this.settings.parts?.rightUpperArm?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.rightLowerArm) {
+            getInstanceOrDefault(instancing, this.settings.parts?.rightLowerArm?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.leftUpperLeg) {
+            getInstanceOrDefault(instancing, this.settings.parts?.leftUpperLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.leftLowerLeg) {
+            getInstanceOrDefault(instancing, this.settings.parts?.leftLowerLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.rightUpperLeg) {
+            getInstanceOrDefault(instancing, this.settings.parts?.rightUpperLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        }
+        if (!this.settings.hide?.rightLowerLeg) {
+            getInstanceOrDefault(instancing, this.settings.parts?.rightLowerLeg?.type, "Cylinder").consume(parts[i++], this.color);
+        }
     }
 
     public head: Matrix4 = new Matrix4();

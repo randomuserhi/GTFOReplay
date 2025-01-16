@@ -182,7 +182,7 @@ const fetchProfilePicture = Rest.fetch<HTMLDivElement | undefined, [snet: bigint
 });
 
 export const Scoreboard = () => {
-    interface Public {
+    interface Scoreboard {
         readonly view: Signal<html<typeof View> | undefined>;
 
         readonly wrapper: HTMLDivElement;
@@ -262,7 +262,7 @@ export const Scoreboard = () => {
         return el;
     });
 
-    const dom = html<Mutable<Private & Public>>/**//*html*/`
+    const dom = html<Mutable<Private & Scoreboard>>/**//*html*/`
         <div m-id="wrapper" style="display: none;">
             <table class="${style.wrapper}">
                 <tbody m-id="table">
@@ -309,5 +309,5 @@ export const Scoreboard = () => {
         }, { signal: dispose.signal });
     }, { signal: dispose.signal });
 
-    return dom as html<Public>;
+    return dom as html<Scoreboard>;
 };

@@ -102,7 +102,10 @@ export class BigFlyerModel extends Model<[enemy: Enemy, anim: EnemyAnimState]> {
         if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
             this.material.color.set(getPlayerColor(enemy.targetPlayerSlotIndex));
         } else {
-            this.material.color.set(this.settings.color!);
+            this.material.color.set(0xff0000);
+            if (this.settings.color !== undefined) {
+                this.material.color.set(this.settings.color);
+            }
         }
 
         time /= 1000; // animations are dealt with in seconds
