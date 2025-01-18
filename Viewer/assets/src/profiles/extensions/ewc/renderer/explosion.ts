@@ -66,7 +66,7 @@ class EWCExplosionEffectModel extends ObjectWrapper<Group> {
 
         this.range.visible = false;
 
-        const t = (time - this.effect.time) / duration;
+        const t = Math.clamp01((time - this.effect.time) / duration);
 
         const { pM, scale, pos } = EWCExplosionEffectModel.FUNC_animate;
 

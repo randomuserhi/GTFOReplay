@@ -40,7 +40,9 @@ ModuleLoader.registerEvent("EWC.Explosion", "0.0.1", {
     exec: async (data, snapshot) => {
         const explosionEffects = snapshot.getOrDefault("EWC.Explosion.ExplosionEffect", Factory("Array"));
 
-        const r = xor(snapshot.time());
+        const time = snapshot.time();
+
+        const r = xor(time);
         const directions: EWCExplosionEffect["directions"] = [];
         for (let i = 0; i < 20; ++i) {
             const vec = {
@@ -58,7 +60,7 @@ ModuleLoader.registerEvent("EWC.Explosion", "0.0.1", {
         }
 
         explosionEffects.push({ 
-            time: snapshot.time(),
+            time,
             ...data,
             directions
         });
