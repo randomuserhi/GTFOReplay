@@ -77,6 +77,25 @@ namespace Vanilla.StaticItems {
                 container.dimension = (byte)node.m_dimension.DimensionIndex;
             }
 
+            // NOTE(randomuserhi):
+            //
+            // Errors when mods use MTFO and include a blank Artifact datablock, `GameData_ArtifactDatablock_bin.json` as below:
+            /*
+                {
+                    "Headers": [],
+                    "Blocks": [],
+                    "LastPersistentID": 17
+                }
+            */
+            //
+            // Fix this by not calling SpawnArtifact when no artifact blocks are available.
+            [HarmonyPatch(typeof(LG_ResourceContainer_Storage), nameof(LG_ResourceContainer_Storage.SpawnArtifact))]
+            [HarmonyPrefix]
+            [HarmonyPriority(Priority.High)]
+            private static bool OnSpawnArtifact(LG_ResourceContainer_Storage __instance, ResourceContainerSpawnData pack, Transform align, int randomSeed) {
+                return ArtifactDataBlock.Wrapper.Blocks.Count > 0;
+            }
+
             [HarmonyPatch(typeof(LG_ResourceContainerBuilder), nameof(LG_ResourceContainerBuilder.SetupFunctionGO))]
             [HarmonyPostfix]
             private static void OnBuild(LG_ResourceContainerBuilder __instance, LG_LayerType layer, GameObject GO) {
