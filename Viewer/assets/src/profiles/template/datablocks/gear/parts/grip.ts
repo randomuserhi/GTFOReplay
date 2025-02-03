@@ -1,4 +1,4 @@
-import { GearPartGripDatablock } from "../../../../vanilla/datablocks/gear/parts/grip.js";
+import { GearPartGripDatablock } from "@asl/vanilla/datablocks/gear/parts/grip.js";
 
 GearPartGripDatablock.clear();
 

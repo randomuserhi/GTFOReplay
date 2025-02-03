@@ -1,7 +1,7 @@
+import { Factory } from "@asl/vanilla/library/factory.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { CylinderGeometry, LineBasicMaterial, Mesh, MeshStandardMaterial, Quaternion, SphereGeometry } from "@esm/three";
-import { Factory } from "../../../vanilla/library/factory.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {

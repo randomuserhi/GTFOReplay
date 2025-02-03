@@ -1,4 +1,4 @@
-import { GearPartMagDatablock } from "../../../../vanilla/datablocks/gear/parts/mag.js";
+import { GearPartMagDatablock } from "@asl/vanilla/datablocks/gear/parts/mag.js";
 
 GearPartMagDatablock.clear();
 

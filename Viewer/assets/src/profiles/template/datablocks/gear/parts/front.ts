@@ -1,5 +1,5 @@
-import { GearAnimDatablock } from "../../../../vanilla/datablocks/gear/animation.js";
-import { GearPartFrontDatablock } from "../../../../vanilla/datablocks/gear/parts/front.js";
+import { GearAnimDatablock } from "@asl/vanilla/datablocks/gear/animation.js";
+import { GearPartFrontDatablock } from "@asl/vanilla/datablocks/gear/parts/front.js";
 
 GearPartFrontDatablock.clear();
 

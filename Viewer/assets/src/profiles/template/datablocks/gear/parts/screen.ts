@@ -1,4 +1,4 @@
-import { GearPartScreenDatablock } from "../../../../vanilla/datablocks/gear/parts/screen.js";
+import { GearPartScreenDatablock } from "@asl/vanilla/datablocks/gear/parts/screen.js";
 
 GearPartScreenDatablock.clear();
 

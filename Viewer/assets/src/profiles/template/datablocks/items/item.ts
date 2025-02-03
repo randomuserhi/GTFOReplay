@@ -1,10 +1,10 @@
+import { ItemDatablock } from "@asl/vanilla/datablocks/items/item.js";
+import { PlayerAnimDatablock } from "@asl/vanilla/datablocks/player/animation.js";
+import { Identifier } from "@asl/vanilla/parser/identifier.js";
+import { ItemGLTFModel } from "@asl/vanilla/renderer/models/prebuilt/itemGLTF.js";
+import { Keycard } from "@asl/vanilla/renderer/models/prebuilt/keycard.js";
+import { Pack } from "@asl/vanilla/renderer/models/prebuilt/pack.js";
 import type { ColorRepresentation } from "@esm/three";
-import { ItemDatablock } from "../../../vanilla/datablocks/items/item.js";
-import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
-import { Identifier } from "../../../vanilla/parser/identifier.js";
-import { ItemGLTFModel } from "../../../vanilla/renderer/models/prebuilt/itemGLTF.js";
-import { Keycard } from "../../../vanilla/renderer/models/prebuilt/keycard.js";
-import { Pack } from "../../../vanilla/renderer/models/prebuilt/pack.js";
 
 ItemDatablock.clear();
 

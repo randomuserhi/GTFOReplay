@@ -1,8 +1,8 @@
+import { Factory } from "@asl/vanilla/library/factory.js";
+import { Enemy, EnemyOnDeathEvents } from "@asl/vanilla/parser/enemy/enemy.js";
+import { StatTracker } from "@asl/vanilla/parser/stattracker/stattracker.js";
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
-import { Factory } from "../../../vanilla/library/factory.js";
-import { Enemy, EnemyOnDeathEvents } from "../../../vanilla/parser/enemy/enemy.js";
-import { StatTracker } from "../../../vanilla/parser/stattracker/stattracker.js";
 
 ModuleLoader.registerASLModule(module.src);
 
@@ -27,7 +27,7 @@ export interface EWCDamage {
     damage: number;
 }
 
-declare module "../../../vanilla/parser/enemy/enemy.js" {
+declare module "@asl/vanilla/parser/enemy/enemy.js" {
     interface EnemyOnDeathEventTypes {
         "EWC": EWCDamage;
     }

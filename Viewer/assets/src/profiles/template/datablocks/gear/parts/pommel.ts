@@ -1,4 +1,4 @@
-import { GearPartPommelDatablock } from "../../../../vanilla/datablocks/gear/parts/pommel.js";
+import { GearPartPommelDatablock } from "@asl/vanilla/datablocks/gear/parts/pommel.js";
 
 const root = `../js3party/models/GearParts/Pommel`;
 

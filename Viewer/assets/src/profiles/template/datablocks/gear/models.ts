@@ -1,10 +1,10 @@
+import { GearAnimDatablock } from "@asl/vanilla/datablocks/gear/animation.js";
+import { GearDatablock, MeleeArchetype } from "@asl/vanilla/datablocks/gear/models.js";
+import { PlayerAnimDatablock } from "@asl/vanilla/datablocks/player/animation.js";
+import { Identifier } from "@asl/vanilla/parser/identifier.js";
+import { GearBuilder } from "@asl/vanilla/renderer/models/gearbuilder.js";
+import { HackingTool } from "@asl/vanilla/renderer/models/prebuilt/hackingtool.js";
 import { Vector3 } from "@esm/three";
-import { GearAnimDatablock } from "../../../vanilla/datablocks/gear/animation.js";
-import { GearDatablock, MeleeArchetype } from "../../../vanilla/datablocks/gear/models.js";
-import { PlayerAnimDatablock } from "../../../vanilla/datablocks/player/animation.js";
-import { Identifier } from "../../../vanilla/parser/identifier.js";
-import { GearBuilder } from "../../../vanilla/renderer/models/gearbuilder.js";
-import { HackingTool } from "../../../vanilla/renderer/models/prebuilt/hackingtool.js";
 
 export const hammerArchetype: MeleeArchetype = {
     equipAnim: PlayerAnimDatablock.Equip_Melee,

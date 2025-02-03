@@ -5,7 +5,7 @@ import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { PlayerDatablock } from "../datablocks/player/player.js";
 import { StatTracker } from "../parser/stattracker/stattracker.js";
 
-interface MedalRequirement {
+export interface MedalRequirement {
     name: string;
     icon: string;
     description: () => html<{ value: Signal<string> }>;

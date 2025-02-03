@@ -1,12 +1,12 @@
 
-import { EnemyDatablock } from "../../../vanilla/datablocks/enemy/enemy.js";
-import type { Enemy } from "../../../vanilla/parser/enemy/enemy.js";
-import { Identifier } from "../../../vanilla/parser/identifier.js";
-import type { EnemyModelWrapper } from "../../../vanilla/renderer/enemy/lib.js";
-import { BigFlyerModel } from "../../../vanilla/renderer/enemy/models/bigflyer.js";
-import { FlyerModel } from "../../../vanilla/renderer/enemy/models/flyer.js";
-import { HumanoidEnemyModel } from "../../../vanilla/renderer/enemy/models/humanoid.js";
-import { SquidModel } from "../../../vanilla/renderer/enemy/models/squid.js";
+import { EnemyDatablock } from "@asl/vanilla/datablocks/enemy/enemy.js";
+import type { Enemy } from "@asl/vanilla/parser/enemy/enemy.js";
+import { Identifier } from "@asl/vanilla/parser/identifier.js";
+import type { EnemyModelWrapper } from "@asl/vanilla/renderer/enemy/lib.js";
+import { BigFlyerModel } from "@asl/vanilla/renderer/enemy/models/bigflyer.js";
+import { FlyerModel } from "@asl/vanilla/renderer/enemy/models/flyer.js";
+import { HumanoidEnemyModel } from "@asl/vanilla/renderer/enemy/models/humanoid.js";
+import { SquidModel } from "@asl/vanilla/renderer/enemy/models/squid.js";
 
 EnemyDatablock.clear();
 

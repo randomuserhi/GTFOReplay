@@ -15,7 +15,7 @@ let replay: Replay | undefined = undefined;
         send: self.postMessage.bind(self)
     });
     ipc.on("init", async (file: FileHandle, links: string[], baseURI?: string) => {
-        const vm = new VM({ isParser: true }, baseURI);
+        const vm = new VM({ isParser: true }, baseURI, "../profiles");
         await Promise.all(links.map(async link => (vm.load(link)).then(module => module.execution)));
         parse(vm, file);
     });

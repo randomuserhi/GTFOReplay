@@ -1,4 +1,4 @@
-import { GearPartSightDatablock } from "../../../../vanilla/datablocks/gear/parts/sight.js";
+import { GearPartSightDatablock } from "@asl/vanilla/datablocks/gear/parts/sight.js";
 
 GearPartSightDatablock.clear();
 

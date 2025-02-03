@@ -1,4 +1,4 @@
-import { GearPartTargetingDatablock } from "../../../../vanilla/datablocks/gear/parts/targeting.js";
+import { GearPartTargetingDatablock } from "@asl/vanilla/datablocks/gear/parts/targeting.js";
 
 GearPartTargetingDatablock.clear();
 

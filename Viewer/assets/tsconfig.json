@@ -17,6 +17,9 @@
       "@/*": ["./@types/*"],
       "troika-three-text": ["./@types/troika-three-text"],
 
+      // @asl aliases for asl root functionality
+      "@asl/*": ["../assets/src/profiles/*"],
+
       // @esm aliases for babel support for the modules folder
       "@esm/@root/*": ["../assets/src/*"],
       "@esm/fuse.js": ["./node_modules/fuse.js"],

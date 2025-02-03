@@ -639,7 +639,14 @@ html.map = ((signal, iterator, factory) => {
                 const pos = dom._existingEls.size;
                 const old = dom.existingEls.get(key);
                 const oldEl = old === undefined ? undefined : old[0];
-                const el = factory(kv, oldEl);
+                let el = undefined;
+                try {
+                    el = factory(kv, oldEl);
+                }
+                catch (e) {
+                    console.error(e);
+                    continue;
+                }
                 if (oldEl === undefined && el === undefined)
                     continue;
                 const inOrder = old === undefined || prev === undefined || old[1] > prev;

@@ -1,11 +1,11 @@
+import { Bezier } from "@asl/vanilla/library/bezier.js";
+import { zeroQ } from "@asl/vanilla/library/constants.js";
+import { Factory } from "@asl/vanilla/library/factory.js";
+import { ObjectWrapper } from "@asl/vanilla/renderer/objectwrapper.js";
+import { ExplosionEffectModel } from "@asl/vanilla/renderer/player/mine.js";
 import { DynamicInstanceManager } from "@esm/@root/replay/instancing.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Group, Matrix4, Mesh, MeshPhongMaterial, MeshStandardMaterial, SphereGeometry, Vector3 } from "@esm/three";
-import { Bezier } from "../../../vanilla/library/bezier.js";
-import { zeroQ } from "../../../vanilla/library/constants.js";
-import { Factory } from "../../../vanilla/library/factory.js";
-import { ObjectWrapper } from "../../../vanilla/renderer/objectwrapper.js";
-import { ExplosionEffectModel } from "../../../vanilla/renderer/player/mine.js";
 import { duration, EWCExplosionEffect } from "../parser/explosion.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {

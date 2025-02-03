@@ -1,4 +1,4 @@
-import { GearPartHandleDatablock } from "../../../../vanilla/datablocks/gear/parts/handle.js";
+import { GearPartHandleDatablock } from "@asl/vanilla/datablocks/gear/parts/handle.js";
 
 GearPartHandleDatablock.clear();
 

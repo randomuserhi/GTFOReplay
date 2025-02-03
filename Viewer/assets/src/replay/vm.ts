@@ -10,6 +10,7 @@ export interface ASLModule {
     ready(): void;
     error(e: any, message?: string): Error;
     rel(path: string): string;
+    root(path: string): string;
     exports: Record<PropertyKey, any>;
 }
 
@@ -17,5 +18,5 @@ export interface Metadata {
     isParser: boolean;
 }
 
-export const ASL_VM = new VM<Metadata>({ isParser: false });
+export const ASL_VM = new VM<Metadata>({ isParser: false }, undefined, "../profiles");
 (window as any).vm = ASL_VM;

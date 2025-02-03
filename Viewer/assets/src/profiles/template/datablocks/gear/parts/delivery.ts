@@ -1,4 +1,4 @@
-import { GearPartDeliveryDatablock } from "../../../../vanilla/datablocks/gear/parts/delivery.js";
+import { GearPartDeliveryDatablock } from "@asl/vanilla/datablocks/gear/parts/delivery.js";
 
 GearPartDeliveryDatablock.clear();
 

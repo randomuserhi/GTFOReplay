@@ -1,4 +1,4 @@
-import { GearPartFlashlightDatablock } from "../../../../vanilla/datablocks/gear/parts/flashlight.js";
+import { GearPartFlashlightDatablock } from "@asl/vanilla/datablocks/gear/parts/flashlight.js";
 
 GearPartFlashlightDatablock.clear();
 

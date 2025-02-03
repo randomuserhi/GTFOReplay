@@ -126,21 +126,21 @@ ModuleLoader.registerTick((snapshot) => {
 
             const playerStats = StatTracker.getPlayer(player.snet, statTracker);
 
-            let isSolo = status.health > 0;
-            if (isSolo) {
+            playerStats._isSolo = status.health > 0;
+            if (playerStats._isSolo) {
                 for (const other of stats.values()) {
                     if (other.id === status.id) continue;
 
                     if (other.health > 0) {
-                        isSolo = false;
+                        playerStats._isSolo = false;
                         break;
                     }
                 }
             }
 
-            if (playerStats._timeSpentSoloTimeStamp === undefined && isSolo) {
+            if (playerStats._timeSpentSoloTimeStamp === undefined && playerStats._isSolo) {
                 playerStats._timeSpentSoloTimeStamp = time;
-            } else if (playerStats._timeSpentSoloTimeStamp !== undefined && !isSolo) {
+            } else if (playerStats._timeSpentSoloTimeStamp !== undefined && !playerStats._isSolo) {
                 playerStats.timeSpentSolo += time - playerStats._timeSpentSoloTimeStamp;
                 playerStats._timeSpentSoloTimeStamp = undefined;
             }

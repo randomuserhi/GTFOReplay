@@ -76,6 +76,10 @@ class Module {
         return new URL(path, this.src).toString();
     }
 
+    public root(path: string) {
+        return new URL(`${this.vm.rootPath}/${path}`, this.vm.baseURI).toString();
+    }
+
     public _exports: Record<PropertyKey, any> = {};
     private proxy: Record<PropertyKey, any> = new Proxy(this, {
         set(module, prop, newValue) {
@@ -159,12 +163,18 @@ interface ExecutionCallback {
     }
 }
 
+const rootPrefix = "@asl";
+
 export class VM<T = any> {
     readonly baseURI: string | undefined;
+    readonly rootPath: string | undefined;
     readonly metadata?: T;
-    constructor(metadata?: T, baseURI?: string) {
+    constructor(metadata?: T, baseURI?: string, rootPath?: string) {
+        // baseURI is the base URL for all requests involving a file path
+        // rootPath allows you to specify a "@asl" prefix such that loading an ASL path: "@asl/file.js" loads "{baseURI}/{rootPath}/file.js"
+
         this.baseURI = baseURI === undefined ? globalThis.document === undefined ? undefined : globalThis.document.baseURI : baseURI;
-        
+        this.rootPath = rootPath !== undefined ? new URL(rootPath, this.baseURI).toString() : undefined;
         try {
             this.metadata = structuredClone(metadata);
         } catch {
@@ -274,7 +284,12 @@ export class VM<T = any> {
                 try {
                     switch (type) {
                     case "asl": {
-                        const resolvedPath = new URL(_path, _path.startsWith(".") ? module.src : undefined).toString();
+                        let resolvedPath: string;
+                        if (_path.startsWith(`${rootPrefix}/`) && this.rootPath !== undefined) {
+                            resolvedPath = new URL(_path.replace(rootPrefix, this.rootPath), this.baseURI).toString();
+                        } else {
+                            resolvedPath = new URL(_path, _path.startsWith(".") ? module.src : this.baseURI).toString();
+                        }
                         Archetype.traverse(module, resolvedPath);
                         const m = await this._load(resolvedPath, module);
                         if (m === module) throw new Error("Cannot 'require()' self");

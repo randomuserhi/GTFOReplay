@@ -1,7 +1,7 @@
+import { MineInstanceDatablock } from "@asl/vanilla/datablocks/items/mineinstance.js";
+import { loadGLTF } from "@asl/vanilla/library/modelloader.js";
+import { Identifier } from "@asl/vanilla/parser/identifier.js";
 import { Group, Material, Mesh, MeshPhongMaterial } from "@esm/three";
-import { MineInstanceDatablock } from "../../../vanilla/datablocks/items/mineinstance.js";
-import { loadGLTF } from "../../../vanilla/library/modelloader.js";
-import { Identifier } from "../../../vanilla/parser/identifier.js";
 
 MineInstanceDatablock.clear();
 

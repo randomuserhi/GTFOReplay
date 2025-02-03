@@ -45,8 +45,7 @@ EnemyOnDeathEvents.register("Vanilla", (snapshot, enemy, hitData) => {
     // Update kill to last player that hit enemy
     const statTracker = StatTracker.from(snapshot);
     const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-                    
-    let lastHit;
+    let lastHit: bigint | undefined;
     if (players.has(hitData.source)) {
         lastHit = players.get(hitData.source)!.snet;
     } else if(hitData.type === "Explosive") {

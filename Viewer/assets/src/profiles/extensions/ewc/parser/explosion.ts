@@ -1,8 +1,8 @@
+import { Factory } from "@asl/vanilla/library/factory.js";
+import { xor } from "@asl/vanilla/library/random.js";
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { Factory } from "../../../vanilla/library/factory.js";
-import { xor } from "../../../vanilla/library/random.js";
 
 ModuleLoader.registerASLModule(module.src);
 

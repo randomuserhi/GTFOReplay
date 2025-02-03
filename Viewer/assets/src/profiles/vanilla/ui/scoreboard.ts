@@ -210,7 +210,11 @@ export const Scoreboard = () => {
 
         awardedMedals.clear();
         for (const definition of MedalDatablock.values()) {
-            definition.award(awardedMedals, api, slots());
+            try {
+                definition.award(awardedMedals, api, slots());
+            } catch (e) {
+                console.error(module.error(e));
+            }
         }
 
         const tracker = api.get("Vanilla.StatTracker");
