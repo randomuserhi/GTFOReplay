@@ -53,6 +53,53 @@ namespace Vanilla {
         private ushort id;
         private Type type;
 
+        public static void WriteToRNetPacket(Identifier identifier, ByteBuffer buffer) {
+            Type type = identifier.type;
+            if (type == Type.Alias_Gear) {
+                type = Type.Gear;
+            }
+
+            BitHelper.WriteBytes((byte)type, buffer);
+            BitHelper.WriteBytes(identifier.id, buffer);
+            BitHelper.WriteBytes(identifier.stringKey == null ? string.Empty : identifier.stringKey, buffer);
+        }
+
+        public static Identifier ReadFromRNetPacket(ArraySegment<byte> bytes, ref int index) {
+            Type type = (Type)BitHelper.ReadByte(bytes, ref index);
+            ushort id = BitHelper.ReadUShort(bytes, ref index);
+            string stringKey = BitHelper.ReadString(bytes, ref index);
+
+            switch (type) {
+            case Type.Unknown:
+                return unknown;
+            case Type.Gear: {
+                if (GearTable.ContainsKey(stringKey)) {
+                    id = GearTable[stringKey];
+                } else {
+                    id = AssignId();
+                    GearTable.Add(stringKey, id);
+                }
+
+                return new Identifier() {
+                    type = Type.Alias_Gear,
+                    stringKey = stringKey,
+                    id = id
+                };
+            }
+            case Type.Alias_Gear: {
+                throw new Exception("Should not receive identifier type Alias_Gear from network.");
+            }
+            case Type.Enemy:
+            case Type.Item:
+            case Type.Vanity:
+                return new Identifier() {
+                    type = type,
+                    id = id,
+                };
+            default: throw new NotImplementedException();
+            }
+        }
+
         public void Write(ByteBuffer buffer) {
             switch (type) {
             case Type.Gear: throw new Exception("GearKey is an internal type that gets written when a new Gear Alias is created. Should not be written directly.");

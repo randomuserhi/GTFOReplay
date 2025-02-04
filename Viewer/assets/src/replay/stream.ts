@@ -32,14 +32,14 @@ export class FileStream {
     private cacheStart: number;
     private cacheEnd: number;
     public async cacheBytes(numBytes: number): Promise<void> {
-        console.log(`cached: ${numBytes} bytes!`);
+        //console.log(`cached: ${numBytes} bytes!`);
         this.cache = await this.ipc.invoke("getBytes", this.index, numBytes, !this.finite);
         this.cacheStart = this.index;
         this.cacheEnd = this.index + numBytes;
     }
     public async cacheAllBytes(): Promise<void> {
         this.cache = await this.ipc.invoke("getAllBytes");
-        console.log(`cached: ${this.cache!.byteLength} bytes!`);
+        //console.log(`cached: ${this.cache!.byteLength} bytes!`);
         this.cacheStart = 0;
         this.cacheEnd = 0 + this.cache!.byteLength;
     }
@@ -52,7 +52,7 @@ export class FileStream {
         this.cache = result.cache;
         this.cacheStart = result.cacheStart;
         this.cacheEnd = result.cacheEnd;
-        console.log(`cached net bytes: ${this.cacheStart} ${this.cacheEnd} ${this.cache!.byteLength} bytes!`);
+        //console.log(`cached net bytes: ${this.cacheStart} ${this.cacheEnd} ${this.cache!.byteLength} bytes!`);
         return true;
     }
 

@@ -69,7 +69,7 @@ namespace Vanilla.ChainedPuzzles {
         }
     }
 
-    [ReplayData("Vanilla.Bioscan.Status", "0.0.1")]
+    [ReplayData("Vanilla.Bioscan.Status", "0.0.2")]
     public class rBioscanStatus : ReplayDynamic {
         private CP_Bioscan_Core bioscan;
         private CP_Bioscan_Graphics graphics;

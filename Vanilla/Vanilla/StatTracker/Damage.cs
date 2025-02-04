@@ -44,7 +44,7 @@ namespace Vanilla.StatTracker {
                 if (!SNet.IsMaster) return;
 
                 float damage = data.damage.Get(__instance.HealthMax);
-                Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Fall, Mathf.Min(__instance.Health, damage)));
+                Sync.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Fall, Mathf.Min(__instance.Health, damage)));
             }
 
             [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveTentacleAttackDamage))]
@@ -58,7 +58,7 @@ namespace Vanilla.StatTracker {
                     damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, damage);
                 }
                 damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.MeleeResistance, damage);
-                Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Tongue, Mathf.Min(__instance.Health, damage)));
+                Sync.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Tongue, Mathf.Min(__instance.Health, damage)));
             }
 
             [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveShooterProjectileDamage))]
@@ -72,7 +72,7 @@ namespace Vanilla.StatTracker {
                     damage = AgentModifierManager.ApplyModifier(source, AgentModifier.StandardWeaponDamage, damage);
                 }
                 damage = AgentModifierManager.ApplyModifier(__instance.Owner, AgentModifier.ProjectileResistance, damage);
-                Replay.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Projectile, Mathf.Min(__instance.Health, damage)));
+                Sync.Trigger(new rDamage(__instance.Owner, __instance.Owner, rDamage.Type.Projectile, Mathf.Min(__instance.Health, damage)));
             }
 
             [HarmonyPatch(typeof(Dam_PlayerDamageBase), nameof(Dam_PlayerDamageBase.ReceiveExplosionDamage))]
@@ -83,7 +83,7 @@ namespace Vanilla.StatTracker {
 
                 if (MineManager.currentDetonateEvent != null) {
                     float damage = data.damage.Get(__instance.HealthMax);
-                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
+                    Sync.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
                 }
             }
 
@@ -95,7 +95,7 @@ namespace Vanilla.StatTracker {
 
                 if (data.source.TryGet(out Agent source)) {
                     float damage = AgentModifierManager.ApplyModifier(source, AgentModifier.MeleeDamage, data.damage.Get(__instance.DamageMax));
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage)));
+                    Sync.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, Mathf.Min(__instance.Health, damage)));
                 }
             }
 
@@ -122,7 +122,7 @@ namespace Vanilla.StatTracker {
                     }
                     float damage = data.damage.Get(__instance.HealthMax);
                     APILogger.Debug($"{__instance.Owner.Owner.NickName} was hit by {source.Cast<PlayerAgent>().Owner.NickName} -> {damage}");
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
+                    Sync.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
                 }
             }
 
@@ -149,7 +149,7 @@ namespace Vanilla.StatTracker {
                     }
                     float damage = data.damage.Get(__instance.HealthMax);
                     APILogger.Debug($"{__instance.Owner.Owner.NickName} was hit by {source.Cast<PlayerAgent>().Owner.NickName} -> {damage}");
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
+                    Sync.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, Mathf.Min(__instance.Health, damage), gear, sentry));
                 }
             }
 
@@ -162,7 +162,7 @@ namespace Vanilla.StatTracker {
                 APILogger.Debug($"local explosive");
                 if (MineManager.currentDetonateEvent != null) {
                     float damage = data.damage.Get(__instance.HealthMax);
-                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
+                    Sync.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, Mathf.Min(__instance.Health, damage)));
                 }
             }
 
@@ -180,7 +180,7 @@ namespace Vanilla.StatTracker {
 
                     damage = Mathf.Min(__instance.Health, damage);
                     stagger = HandlePouncerStagger(__instance, damage, Mathf.Min(remainingStaggerDamage, stagger));
-                    Replay.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, damage, false, stagger));
+                    Sync.Trigger(new rDamage(__instance.Owner, MineManager.currentDetonateEvent.id, rDamage.Type.Explosive, damage, false, stagger));
                 } else {
                     APILogger.Error("Unable to find detonation event. This should not happen.");
                 }
@@ -210,7 +210,7 @@ namespace Vanilla.StatTracker {
 
                     damage = Mathf.Min(__instance.Health, damage);
                     stagger = HandlePouncerStagger(__instance, damage, Mathf.Min(remainingStaggerDamage, stagger));
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, damage, gear, false, stagger));
+                    Sync.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Melee, damage, gear, false, stagger));
                 }
             }
 
@@ -242,7 +242,8 @@ namespace Vanilla.StatTracker {
 
                     damage = Mathf.Min(__instance.Health, damage);
                     stagger = HandlePouncerStagger(__instance, damage, Mathf.Min(remainingStaggerDamage, stagger));
-                    Replay.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, damage, gear, sentry, stagger));
+
+                    Sync.Trigger(new rDamage(__instance.Owner, source, rDamage.Type.Bullet, damage, gear, sentry, stagger));
                 }
             }
 
@@ -350,6 +351,48 @@ namespace Vanilla.StatTracker {
             BitHelper.WriteBytes(gear, buffer);
             BitHelper.WriteBytes(sentry, buffer);
             BitHelper.WriteHalf(staggerDamage, buffer);
+        }
+
+        private static class Sync {
+            const string eventName = "Vanilla.StatTracker.Damage";
+
+            [ReplayPluginLoad]
+            private static void Load() {
+                RNet.Register(eventName, OnReceive);
+            }
+
+            private static ByteBuffer packet = new ByteBuffer();
+
+            public static void Trigger(rDamage damage) {
+                Replay.Trigger(damage);
+
+                ByteBuffer packet = Sync.packet;
+                packet.Clear();
+
+                BitHelper.WriteBytes((byte)damage.type, packet);
+                BitHelper.WriteBytes(damage.source, packet);
+                BitHelper.WriteBytes(damage.target, packet);
+                BitHelper.WriteHalf(damage.damage, packet);
+                Identifier.WriteToRNetPacket(damage.gear, packet);
+                BitHelper.WriteBytes(damage.sentry, packet);
+                BitHelper.WriteHalf(damage.staggerDamage, packet);
+
+                RNet.Trigger(eventName, packet);
+            }
+
+            private static void OnReceive(ulong sender, ArraySegment<byte> packet) {
+                int index = 0;
+
+                Type type = (Type)BitHelper.ReadByte(packet, ref index);
+                int source = BitHelper.ReadInt(packet, ref index);
+                ushort target = BitHelper.ReadUShort(packet, ref index);
+                float damage = BitHelper.ReadHalf(packet, ref index);
+                Identifier gear = Identifier.ReadFromRNetPacket(packet, ref index);
+                bool sentry = BitHelper.ReadBool(packet, ref index);
+                float staggerDamage = BitHelper.ReadHalf(packet, ref index);
+
+                Replay.Trigger(new rDamage(target, source, type, damage, gear, sentry, staggerDamage));
+            }
         }
     }
 }

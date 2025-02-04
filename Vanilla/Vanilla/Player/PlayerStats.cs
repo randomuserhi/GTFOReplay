@@ -8,7 +8,7 @@ namespace Vanilla.Player {
     public class rPlayerStats : ReplayDynamic {
         public PlayerAgent player;
 
-        public override bool Active => player != null;
+        public override bool Active => player != null && player.Owner != null;
         public override bool IsDirty => health != oldHealth ||
                                         infection != oldInfection ||
                                         primaryAmmo != oldPrimaryAmmo ||

@@ -69,7 +69,7 @@ namespace Vanilla.Player {
         private Identifier lastVanityPallete = Identifier.unknown;
         private Identifier vanityPallete => GetVanityItem(ClothesType.Palette);
 
-        public override bool Active => agent != null;
+        public override bool Active => agent != null && agent.Owner != null;
         public override bool IsDirty =>
             melee != lastMelee ||
             primary != lastPrimary ||

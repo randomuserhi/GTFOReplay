@@ -12,7 +12,7 @@ using Vanilla.Noises;
 namespace Vanilla.Enemy {
     [ReplayData("Vanilla.Enemy.Alert", "0.0.1")]
     public class rEnemyAlert : Id {
-        private byte targetSlot;
+        public byte targetSlot;
 
         public rEnemyAlert(EnemyAgent agent, PlayerAgent? target = null) : base(agent.GlobalID) {
             if (target == null) {
@@ -20,6 +20,9 @@ namespace Vanilla.Enemy {
             } else {
                 this.targetSlot = (byte)target.PlayerSlotIndex;
             }
+        }
+        public rEnemyAlert(int id, byte targetSlot) : base(id) {
+            this.targetSlot = targetSlot;
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -154,15 +157,15 @@ namespace Vanilla.Enemy {
             int instance = self.GetInstanceID();
             if (enemiesWokenFromScream.ContainsKey(instance)) {
                 enemiesWokenFromScream.Remove(instance);
-                Replay.Trigger(new rEnemyAlert(self));
+                Sync.Trigger(new rEnemyAlert(self));
                 APILogger.Debug("Enemy was woken by a scream.");
             } else {
                 if (NoiseTracker.CurrentNoise != null) {
                     PlayerAgent? player = NoiseTracker.CurrentNoise.source;
                     APILogger.Debug("Detection from noise manager.");
-                    Replay.Trigger(new rEnemyAlert(self, player));
+                    Sync.Trigger(new rEnemyAlert(self, player));
                 } else {
-                    Replay.Trigger(new rEnemyAlert(self, null));
+                    Sync.Trigger(new rEnemyAlert(self, null));
                 }
             }
         }
@@ -184,7 +187,7 @@ namespace Vanilla.Enemy {
                 int instance = self.GetInstanceID();
                 if (enemiesWokenFromScream.ContainsKey(instance)) {
                     enemiesWokenFromScream.Remove(instance);
-                    Replay.Trigger(new rEnemyAlert(self));
+                    Sync.Trigger(new rEnemyAlert(self));
                     APILogger.Debug("Enemy was woken by a scream.");
                 } else {
                     PlayerAgent? player = null;
@@ -193,7 +196,7 @@ namespace Vanilla.Enemy {
                         player = NoiseTracker.CurrentNoise.source;
                         APILogger.Debug("Detection from noise manager.");
                     } else player = target.m_agent.TryCast<PlayerAgent>();
-                    Replay.Trigger(new rEnemyAlert(self, player));
+                    Sync.Trigger(new rEnemyAlert(self, player));
                 }
                 triggered = true;
             }
@@ -202,6 +205,38 @@ namespace Vanilla.Enemy {
         [HarmonyPostfix]
         private static void WakeUpTriggerReset() {
             triggered = false;
+        }
+
+        private static class Sync {
+            const string eventName = "Vanilla.Enemy.Alert";
+
+            [ReplayPluginLoad]
+            private static void Load() {
+                RNet.Register(eventName, OnReceive);
+            }
+
+            private static ByteBuffer packet = new ByteBuffer();
+
+            public static void Trigger(rEnemyAlert alert) {
+                Replay.Trigger(alert);
+
+                ByteBuffer packet = Sync.packet;
+                packet.Clear();
+
+                BitHelper.WriteBytes(alert.id, packet);
+                BitHelper.WriteBytes(alert.targetSlot, packet);
+
+                RNet.Trigger(eventName, packet);
+            }
+
+            private static void OnReceive(ulong sender, ArraySegment<byte> packet) {
+                int index = 0;
+
+                int id = BitHelper.ReadInt(packet, ref index);
+                byte targetSlot = BitHelper.ReadByte(packet, ref index);
+
+                Replay.Trigger(new rEnemyAlert(id, targetSlot));
+            }
         }
     }
 }

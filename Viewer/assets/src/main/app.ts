@@ -62,7 +62,7 @@ const App = () => {
     const dom = html<Mutable<Private & App>>/**//*html*/`
         <div class="${theme} ${style.wrapper}">
             ${html.open(WinNav()).bind("nav")}
-                <span>Random User Template</span>
+                <span>GTFO Replay</span>
             ${html.close()}
             <!-- Content goes here -->
             <div m-id="body" class="${style.body}">

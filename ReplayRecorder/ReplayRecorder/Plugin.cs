@@ -139,8 +139,11 @@ public class Plugin : BasePlugin {
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
 
         ClassInjector.RegisterTypeInIl2Cpp<SnapshotInstance>();
+
         Replay.RegisterAll();
+
         RundownManager.OnExpeditionGameplayStarted += Replay.OnGameplayStart;
+        RNet.Init();
 
         server.onAccept += onAccept;
         server.onReceive += onReceive;

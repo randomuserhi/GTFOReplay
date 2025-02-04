@@ -64,15 +64,30 @@ export interface Enemy extends DynamicTransform.Type {
 export interface EnemyOnDeathEventTypes {
 }
 
-const enemyOnDeathEvents = new Map<keyof EnemyOnDeathEventTypes, (snapshot: ReplayApi, enemy: Enemy, data: any) => void>();
+const enemyOnDeathEvents = new Map<keyof EnemyOnDeathEventTypes, Set<(snapshot: ReplayApi, enemy: Enemy, data: any) => void>>();
 export const EnemyOnDeathEvents = {
     register<T extends keyof EnemyOnDeathEventTypes>(type: T, factory: (snapshot: ReplayApi, enemy: Enemy, data: EnemyOnDeathEventTypes[T]) => void) {
         if (enemyOnDeathEvents.has(type)) {
             console.warn(`Replacing EnemyOnDeathEvent '${type}'.`);
         }
-        enemyOnDeathEvents.set(type, factory);
+        if (!enemyOnDeathEvents.has(type)) {
+            enemyOnDeathEvents.set(type, new Set());
+        }
+        enemyOnDeathEvents.get(type)!.add(factory);
     }
 };
+
+export function TriggerEnemyOnDeathEvents(snapshot: ReplayApi, enemy: Enemy) {
+    if (enemy.lastHit === undefined || enemy.lastHitTime === undefined || snapshot.time() - enemy.lastHitTime > 1000) return;
+
+    const events = enemyOnDeathEvents.get(enemy.lastHit.type);
+    if (events === undefined) {
+        throw new Error(`Unable to find EnemyOnDeathEvent '${enemy.lastHit.type}'.`);
+    }
+    for (const event of events) {
+        event(snapshot, enemy, enemy.lastHit.data);
+    }
+}
 
 let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
     main: {
@@ -148,12 +163,8 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
             enemies.delete(id);
 
             // Check kill stats in the event enemy health prediction fails -> To prevent rewarding kills to enemies despawned by world event - only count enemies that died within 1 second of being hit
-            if (enemy.health > 0 && enemy.lastHit !== undefined && enemy.lastHitTime !== undefined && snapshot.time() - enemy.lastHitTime <= 1000) {
-                const event = enemyOnDeathEvents.get(enemy.lastHit.type);
-                if (event === undefined) {
-                    throw new Error(`Unable to find EnemyOnDeathEvent '${enemy.lastHit.type}'.`);
-                }
-                event(snapshot, enemy, enemy.lastHit.data);
+            if (enemy.health > 0) {
+                TriggerEnemyOnDeathEvents(snapshot, enemy);
             }
             enemy.health = 0;
         }

@@ -68,7 +68,7 @@ namespace Vanilla.StatTracker.Consumable {
                         PlayerAgent? player = source.TryCast<PlayerAgent>();
                         if (player != null) {
                             APILogger.Debug($"Player {player.Owner.NickName} used healing item on {__instance.Owner.Owner.NickName}.");
-                            Replay.Trigger(new rPack(rPack.Type.HealingItem, source, __instance.Owner));
+                            Sync.Trigger(new rPack(rPack.Type.HealingItem, source, __instance.Owner));
                         }
                     }
                 }
@@ -97,13 +97,13 @@ namespace Vanilla.StatTracker.Consumable {
                     PlayerAgent target = player.PlayerAgent.Cast<PlayerAgent>();
                     if (sourcePackUser != null) {
                         APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used {type} on {target.Owner.NickName}.");
-                        Replay.Trigger(new rPack(type, sourcePackUser, target));
+                        Sync.Trigger(new rPack(type, sourcePackUser, target));
                     } else if (SNetUtils.TryGetSender(__instance.m_giveAmmoPacket.m_packet, out SNet_Player? sender)) {
                         APILogger.Debug($"Player {sender.NickName} used {type} on {target.Owner.NickName}.");
-                        Replay.Trigger(new rPack(type, sender.PlayerAgent.Cast<PlayerAgent>(), target));
+                        Sync.Trigger(new rPack(type, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                     } else {
                         APILogger.Debug($"Player {target.Owner.NickName} used {type}.");
-                        Replay.Trigger(new rPack(type, target, target));
+                        Sync.Trigger(new rPack(type, target, target));
                     }
                 }
 
@@ -121,13 +121,13 @@ namespace Vanilla.StatTracker.Consumable {
                     PlayerAgent target = __instance.Owner;
                     if (sourcePackUser != null) {
                         APILogger.Debug($"Player {sourcePackUser.Owner.NickName} used disinfect pack on {target.Owner.NickName}.");
-                        Replay.Trigger(new rPack(Type.Disinfect, sourcePackUser, target));
+                        Sync.Trigger(new rPack(Type.Disinfect, sourcePackUser, target));
                     } else if (SNetUtils.TryGetSender(__instance.m_receiveModifyInfectionPacket, out SNet_Player? sender)) {
                         APILogger.Debug($"Player {sender.NickName} used disinfect pack on {target.Owner.NickName}.");
-                        Replay.Trigger(new rPack(Type.Disinfect, sender.PlayerAgent.Cast<PlayerAgent>(), target));
+                        Sync.Trigger(new rPack(Type.Disinfect, sender.PlayerAgent.Cast<PlayerAgent>(), target));
                     } else {
                         APILogger.Debug($"Player {target.Owner.NickName} used disinfect pack.");
-                        Replay.Trigger(new rPack(Type.Disinfect, target, target));
+                        Sync.Trigger(new rPack(Type.Disinfect, target, target));
                     }
                 }
 
@@ -153,10 +153,50 @@ namespace Vanilla.StatTracker.Consumable {
             this.target = target.GlobalID;
         }
 
+        public rPack(Type type, ushort source, ushort target) {
+            this.type = type;
+            this.source = source;
+            this.target = target;
+        }
+
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes((byte)type, buffer);
             BitHelper.WriteBytes(source, buffer);
             BitHelper.WriteBytes(target, buffer);
+        }
+
+        private static class Sync {
+            const string eventName = "Vanilla.StatTracker.Pack";
+
+            [ReplayPluginLoad]
+            private static void Load() {
+                RNet.Register(eventName, OnReceive);
+            }
+
+            private static ByteBuffer packet = new ByteBuffer();
+
+            public static void Trigger(rPack pack) {
+                Replay.Trigger(pack);
+
+                ByteBuffer packet = Sync.packet;
+                packet.Clear();
+
+                BitHelper.WriteBytes((byte)pack.type, packet);
+                BitHelper.WriteBytes(pack.source, packet);
+                BitHelper.WriteBytes(pack.target, packet);
+
+                RNet.Trigger(eventName, packet);
+            }
+
+            private static void OnReceive(ulong sender, ArraySegment<byte> packet) {
+                int index = 0;
+
+                Type type = (Type)BitHelper.ReadByte(packet, ref index);
+                ushort source = BitHelper.ReadUShort(packet, ref index);
+                ushort target = BitHelper.ReadUShort(packet, ref index);
+
+                Replay.Trigger(new rPack(type, source, target));
+            }
         }
     }
 }

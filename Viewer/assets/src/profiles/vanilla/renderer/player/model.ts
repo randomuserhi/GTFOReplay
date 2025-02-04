@@ -160,7 +160,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private backpack: Group = new Group();
     private backpackAligns: Group[] = new Array(inventorySlots.length);
 
-    private lastArchetype: Archetype;
+    private lastArchetype: Archetype | undefined;
     private meleeArchetype: MeleeArchetype = defaultArchetype;
     private itemArchetype: ItemArchetype;
     private gunArchetype: GunArchetype;
@@ -320,6 +320,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         const equipTime = time - (player.lastEquippedTime / 1000);
         switch (this.lastArchetype) {
+        case undefined: this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
         case "pistol": this.skeleton.override(PlayerAnimDatablock.pistolMovement.sample(offsetTime)); break;
         case "rifle": this.skeleton.override(PlayerAnimDatablock.rifleMovement.sample(offsetTime)); break;
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
@@ -327,11 +328,12 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         
         if (this.lastArchetype !== this.equippedItem?.type) {
             const blend = Math.clamp01(equipTime / 0.2);
-            if (blend === 1 && this.equippedItem !== undefined) {
+            if (blend === 1) {
                 this.lastArchetype = this.equippedItem?.type;
             }
 
             switch (this.equippedItem?.type) {
+            case undefined: this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
             case "pistol": this.skeleton.blend(PlayerAnimDatablock.pistolMovement.sample(offsetTime), blend); break;
             case "rifle": this.skeleton.blend(PlayerAnimDatablock.rifleMovement.sample(offsetTime), blend); break;
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;

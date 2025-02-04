@@ -8,6 +8,16 @@ using UnityEngine;
 namespace ReplayRecorder {
     [HarmonyPatch]
     internal class GameEventManager {
+        private static bool initialized = false;
+        [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.PostSetup))]
+        [HarmonyPrefix]
+        private static void SteamSetup() {
+            if (initialized) return;
+
+            initialized = true;
+            Replay.OnPluginLoad?.Invoke();
+        }
+
         [HarmonyPatch(typeof(ElevatorRide), nameof(ElevatorRide.StartElevatorRide))]
         [HarmonyPostfix]
         private static void StartElevatorRide() {

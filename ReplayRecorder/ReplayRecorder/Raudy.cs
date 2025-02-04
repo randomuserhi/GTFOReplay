@@ -39,7 +39,7 @@ namespace ReplayRecorder {
         internal int count = 0;
         public int Count => count;
 
-        internal void Clear() {
+        public void Clear() {
             count = 0;
         }
 

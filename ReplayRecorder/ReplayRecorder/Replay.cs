@@ -1,7 +1,9 @@
 ﻿using API;
 using Il2CppInterop.Runtime.Attributes;
+using Player;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using ReplayRecorder.Core;
 using ReplayRecorder.Exceptions;
 using ReplayRecorder.Snapshot;
 using System.Diagnostics.CodeAnalysis;
@@ -40,7 +42,10 @@ namespace ReplayRecorder {
                 m.GetCustomAttribute<ReplayOnElevatorStop>() != null ||
                 m.GetCustomAttribute<ReplayHook>() != null ||
                 m.GetCustomAttribute<ReplaySpawnHook>() != null ||
-                m.GetCustomAttribute<ReplayDespawnHook>() != null)
+                m.GetCustomAttribute<ReplayDespawnHook>() != null ||
+                m.GetCustomAttribute<ReplayOnPlayerSpawn>() != null ||
+                m.GetCustomAttribute<ReplayOnPlayerDespawn>() != null ||
+                m.GetCustomAttribute<ReplayPluginLoad>() != null)
             ) {
                 if (method.IsStatic) {
                     try {
@@ -117,6 +122,15 @@ namespace ReplayRecorder {
                         } else if (method.GetCustomAttribute<ReplayOnElevatorStop>() != null) {
                             type = nameof(ReplayOnElevatorStop);
                             OnElevatorStop += (Action)method.CreateDelegate(typeof(Action));
+                        } else if (method.GetCustomAttribute<ReplayOnPlayerSpawn>() != null) {
+                            type = nameof(ReplayOnPlayerSpawn);
+                            ReplayPlayerManager.OnPlayerSpawn += (Action<PlayerAgent>)CreateCompatibleDelegate(method, typeof(Action<PlayerAgent>));
+                        } else if (method.GetCustomAttribute<ReplayOnPlayerDespawn>() != null) {
+                            type = nameof(ReplayOnPlayerDespawn);
+                            ReplayPlayerManager.OnPlayerDespawn += (Action<int>)CreateCompatibleDelegate(method, typeof(Action<int>));
+                        } else if (method.GetCustomAttribute<ReplayPluginLoad>() != null) {
+                            type = nameof(ReplayPluginLoad);
+                            OnPluginLoad += (Action)method.CreateDelegate(typeof(Action));
                         } else {
                             OnExpeditionEnd += (Action)method.CreateDelegate(typeof(Action));
                         }
@@ -331,6 +345,13 @@ namespace ReplayRecorder {
         /// Synonymous to attribute [ReplayTick].
         /// </summary>
         public static Action? OnTick;
+
+        /// <summary>
+        /// Trigged once when the game loads (Same as when a created monobehaviour's Start function would run). 
+        /// 
+        /// Synonymous to attribute [ReplayPluginLoad].
+        /// </summary>
+        public static Action? OnPluginLoad;
 
         /// <summary>
         /// Actions that trigger when a given event is triggered. 

@@ -5,7 +5,6 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using SNetwork;
-using UnityEngine;
 
 namespace Vanilla.StaticItems {
     internal class rDoor {
@@ -26,8 +25,8 @@ namespace Vanilla.StaticItems {
         private Type type;
         private byte size;
 
-        public rDoor(Type type, LG_Gate gate, MonoBehaviourExtended mono, int serialNumber, bool isCheckpoint = false) {
-            id = gate.GetInstanceID();
+        public rDoor(Type type, LG_Door_Sync sync, LG_Gate gate, MonoBehaviourExtended mono, int serialNumber, bool isCheckpoint = false) {
+            id = sync.m_stateReplicator.Replicator.Key;
             this.gate = gate;
             this.mono = mono;
             this.serialNumber = (ushort)serialNumber;
@@ -129,14 +128,14 @@ namespace Vanilla.StaticItems {
             [HarmonyPrefix]
             private static void Weak_DoorStateChange(LG_WeakDoor __instance, pDoorState state) {
                 if (DoorReplayManager.doorStatus(__instance.LastStatus) != DoorReplayManager.doorStatus(state.status))
-                    Replay.Trigger(new rDoorStatusChange(__instance.Gate.GetInstanceID(), state.status));
+                    Replay.Trigger(new rDoorStatusChange(__instance.m_sync.Cast<LG_Door_Sync>().m_stateReplicator.Replicator.Key, state.status));
             }
 
             [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.OnSyncDoorStatusChange))]
             [HarmonyPrefix]
             private static void Security_DoorStateChange(LG_SecurityDoor __instance, pDoorState state) {
                 if (DoorReplayManager.doorStatus(__instance.LastStatus) != DoorReplayManager.doorStatus(state.status))
-                    Replay.Trigger(new rDoorStatusChange(__instance.Gate.GetInstanceID(), state.status));
+                    Replay.Trigger(new rDoorStatusChange(__instance.m_sync.Cast<LG_Door_Sync>().m_stateReplicator.Replicator.Key, state.status));
             }
         }
 
@@ -162,7 +161,7 @@ namespace Vanilla.StaticItems {
             private static void WeakDoor_Punch(LG_WeakDoor_Destruction __instance) {
                 LG_WeakDoor? weakDoor = __instance.m_core.TryCast<LG_WeakDoor>();
                 if (weakDoor == null) return;
-                Replay.Trigger(new rDoorPunch(weakDoor.Gate.GetInstanceID()));
+                Replay.Trigger(new rDoorPunch(weakDoor.m_sync.Cast<LG_Door_Sync>().m_stateReplicator.Replicator.Key));
             }
         }
 
@@ -178,14 +177,14 @@ namespace Vanilla.StaticItems {
             [HarmonyPatch(typeof(LG_WeakDoor), nameof(LG_WeakDoor.Setup))]
             [HarmonyPostfix]
             private static void WeakDoor_Setup(LG_WeakDoor __instance, LG_Gate gate) {
-                DoorReplayManager.doors.Add(new rDoor(rDoor.Type.WeakDoor, gate, __instance, __instance.m_serialNumber, __instance.IsCheckpointDoor));
+                DoorReplayManager.doors.Add(new rDoor(rDoor.Type.WeakDoor, __instance.m_sync.Cast<LG_Door_Sync>()!, gate, __instance, __instance.m_serialNumber, __instance.IsCheckpointDoor));
                 DoorReplayManager.weakDoors.Add(new rWeakDoor(__instance));
             }
 
             [HarmonyPatch(typeof(LG_SecurityDoor), nameof(LG_SecurityDoor.Setup))]
             [HarmonyPostfix]
             private static void SecurityDoor_Setup(LG_SecurityDoor __instance, LG_Gate gate) {
-                DoorReplayManager.doors.Add(new rDoor(rDoor.Type.SecurityDoor, gate, __instance, __instance.m_serialNumber, __instance.IsCheckpointDoor));
+                DoorReplayManager.doors.Add(new rDoor(rDoor.Type.SecurityDoor, __instance.m_sync.Cast<LG_Door_Sync>()!, gate, __instance, __instance.m_serialNumber, __instance.IsCheckpointDoor));
             }
 
             // Write map data once all loaded (elevator ride stops when level is finished loading)
@@ -211,12 +210,13 @@ namespace Vanilla.StaticItems {
         public override bool IsDirty => health != prevHealth || _lock0 != lock0 || _lock1 != lock1;
 
         private float damageTaken = 0;
+        private byte _health = byte.MaxValue;
         private byte health {
             get {
                 if (SNet.IsMaster) {
                     return (byte)(byte.MaxValue * destruction.m_health / door.m_healthMax);
                 } else {
-                    return (byte)(byte.MaxValue * (Mathf.Max(door.m_healthMax - damageTaken, 0)) / door.m_healthMax);
+                    return _health;
                 }
             }
         }
@@ -252,7 +252,7 @@ namespace Vanilla.StaticItems {
         private byte lock1 => (byte)GetLockType(1);
         private byte _lock1 = (byte)LockType.None;
 
-        public rWeakDoor(LG_WeakDoor door) : base(door.Gate.GetInstanceID()) {
+        public rWeakDoor(LG_WeakDoor door) : base(door.m_sync.Cast<LG_Door_Sync>().m_stateReplicator.Replicator.Key) {
             this.door = door;
             damageTaken = door.m_healthMax;
 
@@ -275,6 +275,10 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(_lock1, buffer);
                 BitHelper.WriteBytes(_lock0, buffer);
             }
+
+            if (SNet.IsMaster) {
+                Sync.Trigger(id, health);
+            }
         }
 
         public override void Spawn(ByteBuffer buffer) {
@@ -289,6 +293,38 @@ namespace Vanilla.StaticItems {
             } else {
                 BitHelper.WriteBytes(_lock1, buffer);
                 BitHelper.WriteBytes(_lock0, buffer);
+            }
+        }
+
+        private static class Sync {
+            const string eventName = "Vanilla.Map.WeakDoor";
+
+            [ReplayPluginLoad]
+            private static void Load() {
+                RNet.Register(eventName, OnReceive);
+            }
+
+            private static ByteBuffer packet = new ByteBuffer();
+
+            public static void Trigger(int id, byte health) {
+                ByteBuffer packet = Sync.packet;
+                packet.Clear();
+
+                BitHelper.WriteBytes(id, packet);
+                BitHelper.WriteBytes(health, packet);
+
+                RNet.Trigger(eventName, packet);
+            }
+
+            private static void OnReceive(ulong sender, ArraySegment<byte> packet) {
+                int index = 0;
+
+                int id = BitHelper.ReadInt(packet, ref index);
+                byte health = BitHelper.ReadByte(packet, ref index);
+
+                if (Replay.TryGet<rWeakDoor>(id, out rWeakDoor door)) {
+                    door._health = health;
+                }
             }
         }
     }

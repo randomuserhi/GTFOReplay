@@ -194,7 +194,7 @@ namespace Vanilla.Player {
             return (byte)(value * byte.MaxValue);
         }
 
-        public override bool Active => player != null;
+        public override bool Active => player != null && player.Owner != null;
         public override bool IsDirty {
             get {
                 if (equipped != lastEquipped) {

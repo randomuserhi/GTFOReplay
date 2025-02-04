@@ -1,7 +1,7 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../../library/factory.js";
-import { EnemyOnDeathEvents } from "../enemy/enemy.js";
+import { EnemyOnDeathEvents, TriggerEnemyOnDeathEvents } from "../enemy/enemy.js";
 import { Identifier, IdentifierData } from "../identifier.js";
 import { StatTracker } from "../stattracker/stattracker.js";
 
@@ -150,34 +150,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
                 if (enemy.health <= 0) {
                     enemy.health = 0;
 
-                    for (const snet of enemy.players) {
-                        const sourceStats = StatTracker.getPlayer(snet, statTracker);
-
-                        const enemyTypeHash = enemy.type.hash;
-                        if (snet === sourceSnet) {
-                            if (type === "Explosive") {
-                                if (!sourceStats.mineKills.has(enemyTypeHash)) {
-                                    sourceStats.mineKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                                }
-                                sourceStats.mineKills.get(enemyTypeHash)!.value += 1;
-                            } else if (sentry)  {
-                                if (!sourceStats.sentryKills.has(enemyTypeHash)) {
-                                    sourceStats.sentryKills.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                                }
-                                sourceStats.sentryKills.get(enemyTypeHash)!.value += 1;
-                            } else {
-                                if (!sourceStats.kills.has(enemyTypeHash)) {
-                                    sourceStats.kills.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                                }
-                                sourceStats.kills.get(enemyTypeHash)!.value += 1;
-                            }
-                        } else {
-                            if (!sourceStats.assists.has(enemyTypeHash)) {
-                                sourceStats.assists.set(enemyTypeHash, { type: enemy.type, value: 0 });
-                            }
-                            sourceStats.assists.get(enemyTypeHash)!.value += 1;
-                        }
-                    }
+                    TriggerEnemyOnDeathEvents(snapshot, enemy);
                 }
             }
         }
@@ -226,7 +199,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
 
             if (players.has(target)) {
                 const player = players.get(target)!;
-                if (data.sentry) {
+                if (sentry) {
                     if (!sourceStats.playerDamage.sentryDamage.has(player.snet)) {
                         sourceStats.playerDamage.sentryDamage.set(player.snet, 0);
                     }
@@ -240,7 +213,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             } else if (enemies.has(target)) {
                 const enemy = enemies.get(target)!;
                 const enemyTypeHash = enemy.type.hash;
-                if (data.sentry) {
+                if (sentry) {
                     if (!sourceStats.enemyDamage.sentryDamage.has(enemyTypeHash)) {
                         sourceStats.enemyDamage.sentryDamage.set(enemyTypeHash, { type: enemy.type, value: 0 });
                     }
