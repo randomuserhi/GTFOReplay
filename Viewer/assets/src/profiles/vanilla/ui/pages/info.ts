@@ -47,6 +47,8 @@ versionInfo.set("0.1.6", `- Fix shooter projectiles being incompatible with EEC
 - Added terminal serial numbers
 - Added reactor objective messages
 - Added terminals, reactors, generators, disinfect station and bulkhead controllers to finder tab`);
+versionInfo.set("0.1.7", `- Added communication between players that have replay mod
+- If host has replay mod, clients with replay mod gain damage information etc...`);
 
 export const Info = () => {
     interface Info {
