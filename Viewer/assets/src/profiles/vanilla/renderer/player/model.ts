@@ -160,7 +160,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private backpack: Group = new Group();
     private backpackAligns: Group[] = new Array(inventorySlots.length);
 
-    private lastArchetype: Archetype | undefined;
+    private lastArchetype: Archetype | undefined = "default";
     private meleeArchetype: MeleeArchetype = defaultArchetype;
     private itemArchetype: ItemArchetype;
     private gunArchetype: GunArchetype;
@@ -318,6 +318,11 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         animVelocity.y = anim.velocity.z;
         animCrouch.x = anim.crouch;
 
+        if (anim.state === "inElevator") {
+            this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime));
+            return;
+        }
+
         const equipTime = time - (player.lastEquippedTime / 1000);
         switch (this.lastArchetype) {
         case "default": this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
@@ -325,8 +330,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         case "rifle": this.skeleton.override(PlayerAnimDatablock.rifleMovement.sample(offsetTime)); break;
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
         }
-        
-        if (this.lastArchetype !== this.equippedItem?.type) {
+
+        if ((this.equippedItem === undefined && this.lastArchetype != "default") || (this.lastArchetype !== this.equippedItem?.type)) {
             const blend = Math.clamp01(equipTime / 0.2);
             if (blend === 1) {
                 this.lastArchetype = Identifier.isKnown(player.equippedId) ? this.equippedItem?.type : "default";
