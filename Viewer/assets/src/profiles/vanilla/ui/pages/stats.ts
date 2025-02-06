@@ -5,6 +5,7 @@ import Fuse from "@esm/fuse.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { PlayerDatablock } from "../../datablocks/player/player.js";
+import { Factory } from "../../library/factory.js";
 import { Identifier, IdentifierHash } from "../../parser/identifier.js";
 import { PlayerStats, StatTracker } from "../../parser/stattracker/stattracker.js";
 import { Dropdown } from "../components/dropdown.js";
@@ -672,6 +673,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             wrapper: html<typeof FeatureWrapper>;
             revives: Signal<string>;
             silent: Signal<string>;
+            hasReplayMod: Signal<string>;
         }>/**//*html*/`
             ${html.open(FeatureWrapper("Miscellaneous")).bind("wrapper")}
                 <div class="${style.row}" style="
@@ -679,6 +681,11 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 ">
                     <span>Miscellaneous</span>
                     <ul>
+                        <li style="display: flex">
+                            <span>HasReplayMod</span>
+                            <div style="flex: 1"></div>
+                            <span>${html.bind(signal(""), "hasReplayMod")}</span>
+                        </li>
                         <li style="display: flex">
                             <span>Revives</span>
                             <div style="flex: 1"></div>
@@ -694,7 +701,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             ${html.close()}
         `;
 
-        const { revives, silent } = dom;
+        const { revives, silent, hasReplayMod } = dom;
 
         v.on((view) => {
             if (view === undefined) return;
@@ -705,10 +712,24 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
+                if (snet === undefined) {
+                    revives(`0`);
+                    silent(`0`);
+                    hasReplayMod(`-`);
+                    return;
+                }
+
                 const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 revives(`${player.revives}`);
                 silent(`${player.silentShots}`);
+                const players = api.getOrDefault("Vanilla.Player.Snet", Factory("Map"));
+                const p = players.get(snet);
+                if (p === undefined) throw new Error(`Could not find player with snet '${snet}'`);
+                const core = api.getOrDefault("ReplayRecorder.Player", Factory("Map"));
+                const c = core.get(p.id);
+                if (c === undefined) throw new Error(`Could not find player with id '${p.id}'`);
+                hasReplayMod(`${(c.hasReplayMod ? "True" : "False")}`);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 

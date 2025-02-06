@@ -29,7 +29,12 @@ export function signal(value, equality) {
                     if (condition !== undefined && !condition()) {
                         continue;
                     }
-                    callback(ref.value);
+                    try {
+                        callback(ref.value);
+                    }
+                    catch (e) {
+                        console.error(e);
+                    }
                     callbacks.buffer.set(callback, condition);
                 }
                 callbacks.value.clear();
@@ -50,7 +55,12 @@ export function signal(value, equality) {
             if (options?.condition !== undefined && !options.condition()) {
                 return callback;
             }
-            callback(ref.value);
+            try {
+                callback(ref.value);
+            }
+            catch (e) {
+                console.error(e);
+            }
             callbacks.value.set(callback, options?.condition);
             if (options?.signal !== undefined) {
                 options.signal.addEventListener("abort", () => callbacks.value.delete(callback), { once: true });

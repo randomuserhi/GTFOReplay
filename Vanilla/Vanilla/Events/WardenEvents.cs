@@ -18,24 +18,22 @@ namespace Vanilla.Events {
         private static int _id = 0;
 
         private static void SpawnSurvivalEventsForLayer(LG_LayerType layer) {
-            var state = WardenObjectiveManager.CurrentState;
             for (int i = 0; i < WardenObjectiveManager.GetWardenObjectiveCountForLayer(layer); ++i) {
                 if (!WardenObjectiveManager.TryGetWardenObjectiveDataForLayer(layer, i, out var data)) {
                     continue;
                 }
 
-                var status = state.GetLayerStatus(layer);
-                if (data.Type != eWardenObjectiveType.Survival ||
-                    (status != eWardenObjectiveStatus.Started && status != eWardenObjectiveStatus.WardenObjectivePartiallySolved)) {
-                    continue;
-                }
+                if (data.Type != eWardenObjectiveType.Survival) continue;
 
-                Replay.Spawn(new rWardenEventSurvival(_id++, data, layer));
+                Replay.Spawn(new rWardenEventSurvival(_id++, data, layer, i));
             }
         }
 
         public override bool IsDirty {
             get {
+                var currentState = WardenObjectiveManager.CurrentState;
+                var status = currentState.GetLayerStatus(layer);
+
                 float extraTime = WardenObjectiveManager.GetExtraTime();
 
                 float start = WardenObjectiveManager.CurrentState.GetStartTimeFromLayer(layer) + data.Survival_TimeToActivate;
@@ -48,17 +46,40 @@ namespace Vanilla.Events {
                     end += extraTime;
                 }
 
+
                 float timeLeft;
                 State state;
-                if (Clock.ExpeditionProgressionTime > end) {
+                int currentChainIndex = 0;
+
+                switch (layer) {
+                case LG_LayerType.MainLayer: {
+                    currentChainIndex = currentState.main_chainIndex;
+                }
+                break;
+                case LG_LayerType.SecondaryLayer: {
+                    currentChainIndex = currentState.second_chainIndex;
+                }
+                break;
+                case LG_LayerType.ThirdLayer: {
+                    currentChainIndex = currentState.third_chainIndex;
+                }
+                break;
+                }
+
+                if (chainIndex != currentChainIndex) {
                     timeLeft = 0;
-                    state = State.Completed;
-                } else if (Clock.ExpeditionProgressionTime > start) {
-                    timeLeft = end - Clock.ExpeditionProgressionTime;
-                    state = State.Survival;
+                    state = chainIndex < currentChainIndex ? State.Inactive : State.Completed;
                 } else {
-                    timeLeft = start - Clock.ExpeditionProgressionTime;
-                    state = State.TimeToActivate;
+                    if (Clock.ExpeditionProgressionTime > end) {
+                        timeLeft = 0;
+                        state = State.Completed;
+                    } else if (Clock.ExpeditionProgressionTime > start) {
+                        timeLeft = end - Clock.ExpeditionProgressionTime;
+                        state = State.Survival;
+                    } else {
+                        timeLeft = start - Clock.ExpeditionProgressionTime;
+                        state = State.TimeToActivate;
+                    }
                 }
 
                 bool result = this.timeLeft != timeLeft || this.state != state;
@@ -86,9 +107,11 @@ namespace Vanilla.Events {
 
         private LG_LayerType layer;
 
-        public rWardenEventSurvival(int id, WardenObjectiveDataBlock data, LG_LayerType layer) : base(id) {
-            this.data = data;
+        private int chainIndex;
 
+        public rWardenEventSurvival(int id, WardenObjectiveDataBlock data, LG_LayerType layer, int chainIndex) : base(id) {
+            this.data = data;
+            this.chainIndex = chainIndex;
             this.layer = layer;
         }
 
