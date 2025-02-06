@@ -6,6 +6,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using UnityEngine;
 using UnityEngine.AI;
+using Vanilla.BepInEx;
 
 namespace Vanilla.Map {
     internal class Surface {
@@ -259,16 +260,21 @@ namespace Vanilla.Map {
             }
 
             // subdivide mesh and fix poor positions
-            APILogger.Warn($"Subdividing meshes (Shouldn't take longer than a minute, if it does try restarting your game - Though waiting will eventually work):");
-            _start = Raudy.Now;
+            if (ConfigManager.SubdivideNavMesh) {
+                APILogger.Warn($"Subdividing meshes (Shouldn't take longer than a minute - If it takes too long, you can disable subdivision in config):");
+                _start = Raudy.Now;
+            }
             for (int i = 0; i < surfaces.Length; ++i) {
                 Surface surface = surfaces[i];
-                (vertices, indices) = Subdivide(surface.mesh!);
-                surface.mesh!.Clear();
-                surface.mesh.vertices = vertices;
-                surface.mesh.triangles = indices;
 
-                surface.mesh!.RecalculateBounds();
+                if (ConfigManager.SubdivideNavMesh) {
+                    (vertices, indices) = Subdivide(surface.mesh!);
+                    surface.mesh!.Clear();
+                    surface.mesh.vertices = vertices;
+                    surface.mesh.triangles = indices;
+                    surface.mesh!.RecalculateBounds();
+                }
+
                 float low = surface.mesh!.bounds.center.y - surface.mesh!.bounds.extents.y;
                 if (low < MapUtils.lowestPoint[(byte)dimension.DimensionIndex]) {
                     MapUtils.lowestPoint[(byte)dimension.DimensionIndex] = low;
@@ -276,12 +282,13 @@ namespace Vanilla.Map {
 
                 Replay.Trigger(new rMapGeometry((byte)dimension.DimensionIndex, surface));
                 surfaces[i].mesh = null;
-                GC.Collect();
 
-                APILogger.Warn($"Subdivided {i + 1}/{surfaces.Length}...");
+                GC.Collect();
             }
-            _end = Raudy.Now;
-            APILogger.Warn($"Subdivided surfaces in {(_end - _start) / 1000f} seconds.");
+            if (ConfigManager.SubdivideNavMesh) {
+                _end = Raudy.Now;
+                APILogger.Warn($"Subdivided surfaces in {(_end - _start) / 1000f} seconds.");
+            }
         }
 
         [ReplayOnElevatorStop]
