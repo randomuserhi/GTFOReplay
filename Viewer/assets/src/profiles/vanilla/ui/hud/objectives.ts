@@ -176,7 +176,7 @@ export const ObjectiveDisplay = () => {
         <div m-id="wrapper" class="${style.wrapper}">
             <div m-id="controls" class="${style.controls}">
                 <span m-id="left" class="${style.controls.button}">${icons.chevronLeft()}</span>
-                <span>${reactorText}</span>
+                <span style="min-width: 100px;">${reactorText}</span>
                 <span m-id="right" class="${style.controls.button}">${icons.chevronRight()}</span>
             </div>
             <div m-id="progressWrapper" class="${style.progressWrapper}">
@@ -361,6 +361,7 @@ export const ObjectiveDisplay = () => {
 
             const event = activeSurvivalEvents[index];
 
+            title(``);
             time(`${msToTime(event.timeLeft * 1000, true, false)}`);
 
             switch(event.state) {
@@ -369,15 +370,19 @@ export const ObjectiveDisplay = () => {
                 dom.wrapper.classList.remove(`${style.verify}`);
                 dom.wrapper.classList.add(`${style.intense}`);
 
-                title(`${event.survivalText}`);
+                reactorText(`${event.survivalText}`);
             } break;
             case "TimeToActivate": {
                 dom.wrapper.classList.add(`${style.warmup}`);
                 dom.wrapper.classList.remove(`${style.verify}`);
                 dom.wrapper.classList.remove(`${style.intense}`);
 
-                title(`${event.toActivateText}`);
+                reactorText(`${event.toActivateText}`);
             } break;
+            }
+
+            if (reactorText().trim() === "") {
+                reactorText(`WARDEN SURVIVAL EVENT`);
             }
         }
         
