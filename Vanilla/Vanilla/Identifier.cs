@@ -159,7 +159,7 @@ namespace Vanilla {
                 return type.GetHashCode();
             }
 
-            return type.GetHashCode() ^ stringKey.GetHashCode() ^ id.GetHashCode();
+            return HashCode.Combine(type, stringKey, id);
         }
 
         private static void From(GearIDRange gear, ref Identifier identifier) {

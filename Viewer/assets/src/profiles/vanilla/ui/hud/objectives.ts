@@ -62,6 +62,7 @@ const style = Style(({ css }) => {
     `;
 
     const progressWrapper = css.class`
+    display: block;
     position: relative;
     width: 80%;
     max-width: 800px;
@@ -150,16 +151,17 @@ const style = Style(({ css }) => {
     };
 });
 
-export const ReactorObjective = () => {
+export const ObjectiveDisplay = () => {
     interface ReactorObjective {
-        readonly reactorIndex: Signal<number>;
+        readonly index: Signal<number>;
         readonly view: Signal<html<typeof View> | undefined>;
     }
     interface Private {
         readonly wrapper: HTMLDivElement;
+        readonly progressWrapper: HTMLDivElement;
+        readonly timeWrapper: HTMLDivElement;
         readonly progress: HTMLDivElement;
         readonly controls: HTMLDivElement;
-        readonly timeWrapper: HTMLDivElement;
         readonly left: HTMLSpanElement;
         readonly right: HTMLSpanElement;
     }
@@ -177,7 +179,7 @@ export const ReactorObjective = () => {
                 <span>${reactorText}</span>
                 <span m-id="right" class="${style.controls.button}">${icons.chevronRight()}</span>
             </div>
-            <div class="${style.progressWrapper}">
+            <div m-id="progressWrapper" class="${style.progressWrapper}">
                 <div class="${style.progressBackground}"></div>
                 <div m-id="progress" class="${style.progressForeground}"></div>
             </div> <!-- progress bar -->
@@ -185,7 +187,6 @@ export const ReactorObjective = () => {
                 <span>${title}</span>
             </div>
             <div m-id="timeWrapper" class="${style.timeWrapper}">
-                <span>TIME LEFT:</span>
                 <span>${time}</span>
             </div>
             <div class="${style.codeWrapper}">
@@ -197,7 +198,7 @@ export const ReactorObjective = () => {
     html(dom).box();
 
     dom.view = signal<html<typeof View> | undefined>(undefined);
-    dom.reactorIndex = signal(0);
+    dom.index = signal(0);
 
     let api: ReplayApi | undefined = undefined;
 
@@ -215,131 +216,171 @@ export const ReactorObjective = () => {
 
         const reactors = api.getOrDefault("Vanilla.Objectives.Reactor", Factory("Map"));
         const activeReactors = [...reactors.values()].filter(r => r.status !== "Inactive_idle" && r.status !== "Active_idle");
-        
-        if (activeReactors.length > 1) {
+
+        const survivalEvents = api.getOrDefault("Vanilla.WardenEvents.Survival", Factory("Map"));
+        const activeSurvivalEvents = [...survivalEvents.values()].filter(e => e.state !== "Inactive" && e.state !== "Completed");
+
+        const totalNumEvents = activeReactors.length + activeSurvivalEvents.length;
+
+        if (totalNumEvents > 1) {
             dom.controls.style.display = "flex";
         } else {
             dom.controls.style.display = "none";
         }
 
-        let reactorIndex = dom.reactorIndex();
-        if (reactorIndex < 0 || reactorIndex >= activeReactors.length) {
-            reactorIndex = 0;
+        let index = dom.index();
+        if (index < 0 || index >= totalNumEvents) {
+            index = 0;
         }
-        dom.reactorIndex(reactorIndex);
+        dom.index(index);
 
-        if (reactorIndex === 0) {
+        if (index === 0) {
             dom.left.classList.remove(`${style.controls.active}`);
         } else {
             dom.left.classList.add(`${style.controls.active}`);
         }
-        if (reactorIndex === activeReactors.length - 1) {
+        if (index === totalNumEvents - 1) {
             dom.right.classList.remove(`${style.controls.active}`);
         } else {
             dom.right.classList.add(`${style.controls.active}`);
         }
         
-        const reactor = activeReactors[reactorIndex];
-        if (reactor === undefined) {
+        if (totalNumEvents === 0) {
             hide();
             return;
         }
 
-        reactorText(`REACTOR_${reactor.serialNumber}`);
-
         dom.wrapper.style.display = "flex";
-        time(`${msToTime(reactor.waveDuration * (1 - reactor.waveProgress) * 1000, true, false)}`);
-        dom.progress.style.width = `${reactor.waveProgress * 100}%`;
 
-        switch (reactor.status) {
-        case "Startup_intro":{
-            dom.wrapper.classList.add(`${style.warmup}`);
-            dom.wrapper.classList.remove(`${style.verify}`);
-            dom.wrapper.classList.remove(`${style.intense}`);
+        if (index < activeReactors.length) {
             dom.timeWrapper.style.display = "flex";
-
-            title(`REACTOR STARTUP TEST (${reactor.wave + 1} of ${reactor.numWaves}) WARMING UP..`);
-        } break;
-        case "Startup_waitForVerify":{
-            dom.wrapper.classList.remove(`${style.warmup}`);
-            dom.wrapper.classList.add(`${style.verify}`);
-            dom.wrapper.classList.remove(`${style.intense}`);
-            dom.timeWrapper.style.display = "flex";
-
-            title(`SECURITY VERIFICATION (${reactor.wave + 1} of ${reactor.numWaves})`);
-
-            const codeTerminalSerial = reactor.codeTerminalSerial[reactor.wave];
-            if (codeTerminalSerial === 65535) {
-                codeText("REACTOR CODE:");
-                code(`${reactor.codes[reactor.wave].toUpperCase()}`);
-            } else {
-                codeText("REACTOR CODE IN LOG FILE ON");
-                code(`TERMINAL_${codeTerminalSerial}`);
+            dom.progressWrapper.style.display = "block";
+    
+            const reactor = activeReactors[index];
+    
+            reactorText(`REACTOR_${reactor.serialNumber}`);
+    
+            time(`TIME LEFT: ${msToTime(reactor.waveDuration * (1 - reactor.waveProgress) * 1000, true, false)}`);
+            dom.progress.style.width = `${reactor.waveProgress * 100}%`;
+    
+            switch (reactor.status) {
+            case "Startup_intro":{
+                dom.wrapper.classList.add(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+                dom.timeWrapper.style.display = "flex";
+    
+                title(`REACTOR STARTUP TEST (${reactor.wave + 1} of ${reactor.numWaves}) WARMING UP..`);
+            } break;
+            case "Startup_waitForVerify":{
+                dom.wrapper.classList.remove(`${style.warmup}`);
+                dom.wrapper.classList.add(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+                dom.timeWrapper.style.display = "flex";
+    
+                title(`SECURITY VERIFICATION (${reactor.wave + 1} of ${reactor.numWaves})`);
+    
+                const codeTerminalSerial = reactor.codeTerminalSerial[reactor.wave];
+                if (codeTerminalSerial === 65535) {
+                    codeText("REACTOR CODE:");
+                    code(`${reactor.codes[reactor.wave].toUpperCase()}`);
+                } else {
+                    codeText("REACTOR CODE IN LOG FILE ON");
+                    code(`TERMINAL_${codeTerminalSerial}`);
+                }
+            } break;
+            case "Startup_complete": {
+                dom.wrapper.classList.add(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+                dom.timeWrapper.style.display = "none";
+    
+                title(`REACTOR STARTUP COMPLETE`);
+                dom.progress.style.width = `100%`;
+            } break;
+    
+            case "Shutdown_intro": {
+                dom.wrapper.classList.add(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+                dom.timeWrapper.style.display = "none";
+    
+                title(`REACTOR SHUTTING DOWN ...`);
+            } break;
+            case "Shutdown_waitForVerify": {
+                dom.wrapper.classList.remove(`${style.warmup}`);
+                dom.wrapper.classList.add(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+                dom.timeWrapper.style.display = "none";
+    
+                title(`SECURITY VERIFICATION TO START SHUTDOWN`);
+    
+                const codeTerminalSerial = reactor.codeTerminalSerial[reactor.wave];
+                if (codeTerminalSerial === 65535) {
+                    codeText("REACTOR CODE:");
+                    code(`${reactor.codes[reactor.wave].toUpperCase()}`);
+                } else {
+                    codeText("REACTOR CODE IN LOG FILE ON");
+                    code(`TERMINAL_${codeTerminalSerial}`);
+                }
+            } break;
+            case "Shutdown_puzzleChaos": {
+                dom.wrapper.classList.remove(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.add(`${style.intense}`);
+                dom.timeWrapper.style.display = "none";
+    
+                title(`COMPLETE SCAN TO FINISH REACTOR SHUTDOWN`);
+                dom.progress.style.width = `100%`;
+            } break;
+            case "Shutdown_complete": {
+                dom.wrapper.classList.add(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+                dom.timeWrapper.style.display = "none";
+    
+                title(`REACTOR SHUTDOWN COMPLETE`);
+                dom.progress.style.width = `100%`;
+            } break;
+    
+            default: {
+                dom.wrapper.classList.remove(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.add(`${style.intense}`);
+                dom.timeWrapper.style.display = "flex";
+    
+                title(`REACTOR PERFORMING HIGH INTENSITY (${reactor.wave + 1}/${reactor.numWaves})`);
+            } break;
             }
-        } break;
-        case "Startup_complete": {
-            dom.wrapper.classList.add(`${style.warmup}`);
-            dom.wrapper.classList.remove(`${style.verify}`);
-            dom.wrapper.classList.remove(`${style.intense}`);
-            dom.timeWrapper.style.display = "none";
-
-            title(`REACTOR STARTUP COMPLETE`);
-            dom.progress.style.width = `100%`;
-        } break;
-
-        case "Shutdown_intro": {
-            dom.wrapper.classList.add(`${style.warmup}`);
-            dom.wrapper.classList.remove(`${style.verify}`);
-            dom.wrapper.classList.remove(`${style.intense}`);
-            dom.timeWrapper.style.display = "none";
-
-            title(`REACTOR SHUTTING DOWN ...`);
-        } break;
-        case "Shutdown_waitForVerify": {
-            dom.wrapper.classList.remove(`${style.warmup}`);
-            dom.wrapper.classList.add(`${style.verify}`);
-            dom.wrapper.classList.remove(`${style.intense}`);
-            dom.timeWrapper.style.display = "none";
-
-            title(`SECURITY VERIFICATION TO START SHUTDOWN`);
-
-            const codeTerminalSerial = reactor.codeTerminalSerial[reactor.wave];
-            if (codeTerminalSerial === 65535) {
-                codeText("REACTOR CODE:");
-                code(`${reactor.codes[reactor.wave].toUpperCase()}`);
-            } else {
-                codeText("REACTOR CODE IN LOG FILE ON");
-                code(`TERMINAL_${codeTerminalSerial}`);
-            }
-        } break;
-        case "Shutdown_puzzleChaos": {
-            dom.wrapper.classList.remove(`${style.warmup}`);
-            dom.wrapper.classList.remove(`${style.verify}`);
-            dom.wrapper.classList.add(`${style.intense}`);
-            dom.timeWrapper.style.display = "none";
-
-            title(`COMPLETE SCAN TO FINISH REACTOR SHUTDOWN`);
-            dom.progress.style.width = `100%`;
-        } break;
-        case "Shutdown_complete": {
-            dom.wrapper.classList.add(`${style.warmup}`);
-            dom.wrapper.classList.remove(`${style.verify}`);
-            dom.wrapper.classList.remove(`${style.intense}`);
-            dom.timeWrapper.style.display = "none";
-
-            title(`REACTOR SHUTDOWN COMPLETE`);
-            dom.progress.style.width = `100%`;
-        } break;
-
-        default: {
-            dom.wrapper.classList.remove(`${style.warmup}`);
-            dom.wrapper.classList.remove(`${style.verify}`);
-            dom.wrapper.classList.add(`${style.intense}`);
+        } 
+        index -= activeReactors.length;
+        if (index < 0) return;
+        if (index < activeSurvivalEvents.length) {
             dom.timeWrapper.style.display = "flex";
+            dom.progressWrapper.style.display = "none";
 
-            title(`REACTOR PERFORMING HIGH INTENSITY (${reactor.wave + 1}/${reactor.numWaves})`);
-        } break;
+            const event = activeSurvivalEvents[index];
+
+            time(`${msToTime(event.timeLeft * 1000, true, false)}`);
+
+            switch(event.state) {
+            case "Survival": {
+                dom.wrapper.classList.remove(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.add(`${style.intense}`);
+
+                title(`${event.survivalText}`);
+            } break;
+            case "TimeToActivate": {
+                dom.wrapper.classList.add(`${style.warmup}`);
+                dom.wrapper.classList.remove(`${style.verify}`);
+                dom.wrapper.classList.remove(`${style.intense}`);
+
+                title(`${event.toActivateText}`);
+            } break;
+            }
         }
+        
     };
 
     dom.view.on((view) => {
@@ -353,13 +394,13 @@ export const ReactorObjective = () => {
 
     dom.left.addEventListener("click", () => {
         if (!dom.left.classList.contains(`${style.controls.active}`)) return;
-        dom.reactorIndex(dom.reactorIndex() - 1);
+        dom.index(dom.index() - 1);
         update(api);
     }, { signal: dispose.signal });
 
     dom.right.addEventListener("click", () => {
         if (!dom.right.classList.contains(`${style.controls.active}`)) return;
-        dom.reactorIndex(dom.reactorIndex() + 1);
+        dom.index(dom.index() + 1);
         update(api);
     }, { signal: dispose.signal });
 

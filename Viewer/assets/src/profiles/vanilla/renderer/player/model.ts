@@ -688,12 +688,13 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             const health = `Health: ${Math.round(stats.health * 100).toString().padStart(3)}%`;
             const infectionValue = Math.round(stats.infection * 100);
             const infection = `${(infectionValue >= 10 ? ` (${infectionValue.toString().padStart(3)}%)` : "")}`;
+            const stamina = stats.stamina == 1 ? "" : `\n🏃 ${Math.round(stats.stamina * 100).toString().padStart(3)}%`;
             if (backpack === undefined) {
                 this.tmp.text = `${nickname}
 ${health}${infection}
 Main: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
 Special: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
-Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%${stamina}`;
                 this.tmp.colorRanges = {
                     0: this.color,
                     [nickname.length]: 0xffffff,
@@ -706,7 +707,7 @@ Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
 ${health}${infection}
 ${(main !== undefined ? main : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
 ${(special !== undefined ? special : "Special")}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
-${(tool !== undefined ? tool : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+${(tool !== undefined ? tool : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%${stamina}`;
                 this.tmp.colorRanges = {
                     0: this.color,
                     [nickname.length]: 0xffffff,

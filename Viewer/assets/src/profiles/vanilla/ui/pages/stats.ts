@@ -3,9 +3,10 @@ import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
+import { GearDatablock } from "../../datablocks/gear/models.js";
 import { PlayerDatablock } from "../../datablocks/player/player.js";
 import { Identifier, IdentifierHash } from "../../parser/identifier.js";
-import { StatTracker } from "../../parser/stattracker/stattracker.js";
+import { PlayerStats, StatTracker } from "../../parser/stattracker/stattracker.js";
 import { Dropdown } from "../components/dropdown.js";
 import { dispose } from "../main.js";
 import { pageStyles } from "./lib.js";
@@ -211,6 +212,85 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 sentryStaggerDamage(`${Math.round([...player.enemyDamage.sentryStaggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
 
                 customSignal(player.enemyDamage.custom);
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
+
+        return dom.wrapper;
+    },
+    (self, v) => {
+        const gears = signal<PlayerStats["accuracy"]>(new Map());
+        const list = html.map(gears, undefined, (kv, el?: html<{
+            name: Signal<string>;
+            hitRate: Signal<string>;
+            critRate: Signal<string>;
+            avgHitPerShot: Signal<string>;
+        }>) => {
+            if (el === undefined) {
+                el = html`
+                <ul>
+                    <li style="margin-bottom: 5px;">
+                        <span>${html.bind(signal(""), "name")}</span>
+                    </li>
+                    <li style="display: flex">
+                        <span>Hit Rate</span>
+                        <div style="flex: 1"></div>
+                        <span>${html.bind(signal(""), "hitRate")}</span>
+                    </li>
+                    <li style="display: flex">
+                        <span>Crit Rate</span>
+                        <div style="flex: 1"></div>
+                        <span>${html.bind(signal(""), "critRate")}</span>
+                    </li>
+                    <li style="display: flex">
+                        <span>Average Hit Per Bullet</span>
+                        <div style="flex: 1"></div>
+                        <span>${html.bind(signal(""), "avgHitPerShot")}</span>
+                    </li>
+                </ul>
+                `;
+            }
+
+            const [,v] = kv;
+
+            const gear = GearDatablock.get(v.gear);
+            let name = "Unknown Gear";
+            if (gear?.name !== undefined) {
+                name = gear.name;
+            }
+
+            el.name(name);
+            el.hitRate(`${Math.round((v.hits / v.total) * 1000) / 10}%`);
+            el.critRate(`${Math.round((v.crits / v.hits) * 1000) / 10}%`);
+            el.avgHitPerShot(`${Math.round((v.pierceHits / v.hits) * 10) / 10}`);
+
+            return el;
+        });
+
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Accuracy")).bind("wrapper")}
+                <div class="${style.row}" style="
+                gap: 10px;
+                ">
+                    <span>Accuracy</span>
+                    ${list}
+                </div>
+            ${html.close()}
+        `;
+
+        v.on((view) => {
+            if (view === undefined) return;
+
+            view.api.on((api) => {
+                if (!self.active()) return;
+
+                if (api === undefined) return;
+
+                const snet = self.dropdown.value();
+                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                
+                gears(player.accuracy);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 

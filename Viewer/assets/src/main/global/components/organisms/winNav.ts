@@ -82,8 +82,6 @@ const ModuleItem = (key: string) => {
 
     dom.key = k;
 
-    console.log("bruh");
-
     return dom as html<ModuleItem>;
 };
 

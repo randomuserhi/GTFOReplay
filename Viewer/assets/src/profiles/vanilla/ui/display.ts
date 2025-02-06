@@ -7,7 +7,7 @@ import { DataStore } from "@esm/@root/replay/datastore.js";
 import { Seeker } from "./components/seeker.js";
 import { msToTime } from "./helper.js";
 import { Debug } from "./hud/debug.js";
-import { ReactorObjective } from "./hud/objectives.js";
+import { ObjectiveDisplay } from "./hud/objectives.js";
 import { dispose, ui } from "./main.js";
 import { Scoreboard } from "./scoreboard.js";
 
@@ -124,7 +124,7 @@ export const Display = () => {
         readonly liveButton: HTMLButtonElement;
         readonly liveDot: HTMLSpanElement;
         readonly debug: html<typeof Debug>;
-        readonly objective: html<typeof ReactorObjective>;
+        readonly objective: html<typeof ObjectiveDisplay>;
     }
 
     const time = signal("00:00 / 00:00");
@@ -148,7 +148,7 @@ export const Display = () => {
             ${html.close()}
         </div>
         ${html.bind(Debug(), "debug")}
-        ${html.bind(ReactorObjective(), "objective")}
+        ${html.bind(ObjectiveDisplay(), "objective")}
         `;
     html(dom).box();
     

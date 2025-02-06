@@ -32,6 +32,8 @@ export interface PlayerStats {
     toolAmmo: number;
     consumableAmmo: number;
     resourceAmmo: number;
+
+    stamina: number;
 }
 
 const parse = async (data: ByteStream): Promise<Omit<PlayerStats, "id">> => {
@@ -44,6 +46,8 @@ const parse = async (data: ByteStream): Promise<Omit<PlayerStats, "id">> => {
         toolAmmo: await BitHelper.readByte(data) / 255,
         consumableAmmo: await BitHelper.readByte(data) / 255,
         resourceAmmo: await BitHelper.readByte(data) / 255,
+
+        stamina: 1
     };
 };
 
@@ -112,6 +116,25 @@ let parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
 });
 parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.2", {
     ...parser
+});
+parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.3", {
+    ...parser,
+    main: {
+        ...parser.main,
+        parse: async (data) => {
+            const result = await parse(data);
+            result.stamina = await BitHelper.readByte(data) / 255;
+            return result;
+        }
+    },
+    spawn: {
+        ...parser.spawn,
+        parse: async (data) => {
+            const result = await parse(data);
+            result.stamina = await BitHelper.readByte(data) / 255;
+            return result;
+        }
+    }
 });
 
 ModuleLoader.registerTick((snapshot) => {

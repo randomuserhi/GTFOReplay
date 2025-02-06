@@ -19,7 +19,7 @@ namespace Vanilla.Events {
             cancelSyncedShotConditions.Add(condition);
         }
 
-        private static bool CancelSyncedShot(BulletWeapon weapon) {
+        internal static bool CancelSyncedShot(BulletWeapon weapon) {
             foreach (Func<BulletWeapon, bool> condition in cancelSyncedShotConditions) {
                 if (condition(weapon)) return true;
             }

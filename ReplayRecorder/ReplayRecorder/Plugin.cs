@@ -142,7 +142,7 @@ public class Plugin : BasePlugin {
 
         Replay.RegisterAll();
 
-        RundownManager.OnExpeditionGameplayStarted += Replay.OnGameplayStart;
+        RundownManager.OnExpeditionGameplayStarted += (Action)OnGameplayStart;
         RNet.Init();
 
         server.onAccept += onAccept;
@@ -150,6 +150,10 @@ public class Plugin : BasePlugin {
         server.onClose += onClose;
         server.onDisconnect += onDisconnect;
         server.Bind(new IPEndPoint(IPAddress.Any, 56759));
+    }
+
+    private static void OnGameplayStart() {
+        Replay.OnGameplayStart?.Invoke();
     }
 
     private static Harmony? harmony;

@@ -276,10 +276,10 @@ namespace Vanilla.Map {
 
                 Replay.Trigger(new rMapGeometry((byte)dimension.DimensionIndex, surface));
                 surfaces[i].mesh = null;
+                GC.Collect();
 
                 APILogger.Warn($"Subdivided {i + 1}/{surfaces.Length}...");
             }
-            GC.Collect();
             _end = Raudy.Now;
             APILogger.Warn($"Subdivided surfaces in {(_end - _start) / 1000f} seconds.");
         }

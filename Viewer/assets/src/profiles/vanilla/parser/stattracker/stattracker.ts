@@ -56,8 +56,9 @@ function EnemyDamage(): EnemyDamage {
     };
 }
 
-interface PlayerStats {
+export interface PlayerStats {
     snet: bigint;
+    accuracy: Map<IdentifierHash, { gear: Identifier, total: number, hits: number, crits: number, pierceHits: number, pierceCrits: number }>;
     enemyDamage: EnemyDamage;
     playerDamage: PlayerDamage;
     revives: number;
@@ -80,6 +81,7 @@ interface PlayerStats {
 function PlayerStats(snet: bigint): PlayerStats {
     return {
         snet,
+        accuracy: new Map(),
         enemyDamage: EnemyDamage(),
         playerDamage: PlayerDamage(),
         revives: 0,
