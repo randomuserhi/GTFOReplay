@@ -127,7 +127,7 @@ export const View = () => {
                     this.renderer.render(dt / 1000, api);
                 }
             } catch (e) {
-                ASL_VM.verboseError(e);
+                console.error(ASL_VM.verboseError(e));
             }
         }
 

@@ -60,6 +60,7 @@ const includes = [
     import("./parser/player/player.js"),
     import("./parser/player/sentry.js"),
     import("./parser/player/stats.js"),
+    import("./parser/player/core.js"),
     import("./parser/stattracker/stattracker.js"),
     import("./renderer/animations/gearfold.js"),
     import("./renderer/animations/human.js"),
