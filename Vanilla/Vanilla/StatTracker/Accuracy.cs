@@ -6,6 +6,7 @@ using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using SNetwork;
 using UnityEngine;
 using Vanilla.Events;
 
@@ -38,12 +39,16 @@ namespace Vanilla.StatTracker {
                 }
                 Sync.Trigger(new rGunshotInfo(currentPlayer, currentWeapon, (byte)currentBullet.hits, (byte)currentBullet.crits));
 
+                lastHit = null;
                 currentBullet.crits = 0;
                 currentBullet.hits = 0;
             }
 
             private static void PrepareWeapon(BulletWeapon weapon) {
-                if (weapon.Owner == null || !weapon.Owner.IsLocallyOwned) return;
+                if (weapon.Owner == null) return;
+                if (!SNet.IsMaster && weapon.Owner.Owner.IsBot) return;
+                if (!weapon.Owner.Owner.IsBot && !weapon.Owner.IsLocallyOwned) return;
+
                 if (rGunshot.CancelSyncedShot(weapon)) return;
 
                 lastHit = null;
@@ -89,6 +94,7 @@ namespace Vanilla.StatTracker {
             [HarmonyPrefix]
             private static void Prefix_BulletWeaponSyncFire(BulletWeaponSynced __instance) {
                 if (__instance.Owner == null || !__instance.Owner.Owner.IsBot) return;
+
                 PrepareWeapon(__instance);
             }
             [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
@@ -101,6 +107,7 @@ namespace Vanilla.StatTracker {
             [HarmonyPrefix]
             private static void Prefix_ShotgunSyncFire(ShotgunSynced __instance) {
                 if (__instance.Owner == null || !__instance.Owner.Owner.IsBot) return;
+
                 PrepareWeapon(__instance);
             }
             [HarmonyPatch(typeof(ShotgunSynced), nameof(ShotgunSynced.Fire))]

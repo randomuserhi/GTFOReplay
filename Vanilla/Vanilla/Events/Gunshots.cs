@@ -326,7 +326,7 @@ namespace Vanilla.Events {
             this.damage = damage;
             this.start = start;
             this.silent = silent;
-            if (fixStartPos && !sentry && source != null && !source.Owner.IsBot) {
+            if (fixStartPos && !sentry && source != null) {
                 // NOTE(randomuserhi): Check start is within player, otherwise its from penetration and does not need adjusting
                 Vector3 a = source.transform.position; a.y = 0;
                 Vector3 b = this.start; b.y = 0;

@@ -260,9 +260,9 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             }
 
             el.name(name);
-            el.hitRate(`${Math.round((v.hits / v.total) * 1000) / 10}%`);
-            el.critRate(`${Math.round((v.crits / v.hits) * 1000) / 10}%`);
-            el.avgHitPerShot(`${Math.round((v.pierceHits / v.hits) * 10) / 10}`);
+            el.hitRate(`${Math.round((v.hits / Math.clamp(v.total, 1, Infinity)) * 1000) / 10}%`);
+            el.critRate(`${Math.round((v.crits / Math.clamp(v.hits, 1, Infinity)) * 1000) / 10}%`);
+            el.avgHitPerShot(`${Math.round((v.pierceHits / Math.clamp(v.hits, 1, Infinity)) * 10) / 10}`);
 
             return el;
         });
