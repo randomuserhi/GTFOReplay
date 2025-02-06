@@ -172,9 +172,9 @@ namespace Vanilla.StatTracker {
                 ++currentBullet.hits;
             }
 
-            [HarmonyPatch(typeof(LG_LockDamage), nameof(LG_LockDamage.BulletDamage))]
+            [HarmonyPatch(typeof(LG_WeakLockDamage), nameof(LG_WeakLockDamage.BulletDamage))]
             [HarmonyPrefix]
-            public static void Prefix_LockBulletDamage(LG_LockDamage __instance, Agent sourceAgent) {
+            public static void Prefix_LockBulletDamage(LG_WeakLockDamage __instance, Agent sourceAgent) {
                 if (__instance.Health <= 0) return;
                 if (currentPlayer == null) return;
 

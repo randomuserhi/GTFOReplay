@@ -320,7 +320,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         const equipTime = time - (player.lastEquippedTime / 1000);
         switch (this.lastArchetype) {
-        case undefined: this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
+        case "default": this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
         case "pistol": this.skeleton.override(PlayerAnimDatablock.pistolMovement.sample(offsetTime)); break;
         case "rifle": this.skeleton.override(PlayerAnimDatablock.rifleMovement.sample(offsetTime)); break;
         default: this.skeleton.override(this.meleeArchetype.movementAnim.sample(offsetTime)); break;
@@ -329,11 +329,11 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         if (this.lastArchetype !== this.equippedItem?.type) {
             const blend = Math.clamp01(equipTime / 0.2);
             if (blend === 1) {
-                this.lastArchetype = this.equippedItem?.type;
+                this.lastArchetype = Identifier.isKnown(player.equippedId) ? this.equippedItem?.type : "default";
             }
 
             switch (this.equippedItem?.type) {
-            case undefined: this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
+            case "default": this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime)); break;
             case "pistol": this.skeleton.blend(PlayerAnimDatablock.pistolMovement.sample(offsetTime), blend); break;
             case "rifle": this.skeleton.blend(PlayerAnimDatablock.rifleMovement.sample(offsetTime), blend); break;
             default: this.skeleton.blend(this.meleeArchetype.movementAnim.sample(offsetTime), blend); break;

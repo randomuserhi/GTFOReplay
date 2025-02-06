@@ -9,7 +9,8 @@ export type Archetype =
     "melee" |
     "pistol" |
     "rifle" |
-    "consumable";
+    "consumable" |
+    "default";
 
 export interface ItemArchetype {
     equipAnim?: HumanAnimation;
