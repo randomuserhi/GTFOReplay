@@ -80,7 +80,6 @@ interface RHU_HTML {
     open<T = any>(object: T | RHU_NODE<T>): RHU_NODE<T>;
     bind<T = any>(object: T | RHU_NODE<T>, name: PropertyKey): RHU_NODE<T>;
     box<T extends Record<PropertyKey, any> = Record<PropertyKey, any>>(html: RHU_FRAG<T> | RHU_NODE<RHU_FRAG<T>>): RHU_NODE<RHU_FRAG<T>>;
-    children<T extends Record<PropertyKey, any> = Record<PropertyKey, any>>(html: RHU_FRAG<T> | RHU_NODE<RHU_FRAG<T>>, cb: (children: RHU_CHILDREN) => void): RHU_NODE<RHU_FRAG<T>>;
     transform<T = any>(object: T | RHU_NODE<T>, transform: (node: T) => void): RHU_NODE<T>;
     map<T, H extends RHU_FRAG, K = T extends any[] ? number : T extends Map<infer K, any> ? K : any, V = T extends (infer V)[] ? V : T extends Map<any, infer V> ? V : any>(signal: Signal<T>, iterator: undefined, factory: (kv: [k: K, v: V], el?: H) => H | undefined): RHU_FRAG<{
         readonly signal: Signal<T>;

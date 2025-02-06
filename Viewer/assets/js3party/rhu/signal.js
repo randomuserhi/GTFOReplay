@@ -12,15 +12,33 @@ export function signal(value, equality) {
         if (args.length !== 0) {
             let [value] = args;
             if (signal.guard !== undefined) {
-                value = signal.guard(value, ref.value);
+                try {
+                    value = signal.guard(value, ref.value);
+                }
+                catch (e) {
+                    console.error(e);
+                }
             }
-            if ((equality === undefined && ref.value !== value) ||
-                (equality !== undefined && !equality(ref.value, value))) {
+            let isNotEqual = (equality === undefined && ref.value !== value);
+            if (!isNotEqual && equality !== undefined) {
+                try {
+                    isNotEqual = !equality(ref.value, value);
+                }
+                catch (e) {
+                    console.error(e);
+                }
+            }
+            if (isNotEqual) {
                 const dependencies = dependencyMap.get(signal);
                 if (dependencies !== undefined) {
                     for (const effect of dependencies) {
                         for (const destructor of effect[destructors]) {
-                            destructor();
+                            try {
+                                destructor();
+                            }
+                            catch (e) {
+                                console.error(e);
+                            }
                         }
                     }
                 }

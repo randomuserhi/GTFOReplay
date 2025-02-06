@@ -623,7 +623,12 @@ html.map = ((signal, iterator, factory) => {
         const internal = dom[DOM];
         let kvIter = undefined;
         if (iterator !== undefined) {
-            kvIter = iterator(value);
+            try {
+                kvIter = iterator(value);
+            }
+            catch (e) {
+                console.error(e);
+            }
         }
         else if (isMap(value) || isArray(value)) {
             kvIter = value.entries();
