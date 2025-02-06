@@ -36,6 +36,8 @@ const includes = [
     import("./parser/events/packuse.js"),
     import("./parser/events/revive.js"),
     import("./parser/events/tonguedodge.js"),
+    import("./parser/events/gunshotinfo.js"),
+    import("./parser/events/wardeneventsurvival.js"),
     import("./parser/header.js"),
     import("./parser/identifier.js"),
     import("./parser/map/bulkheadcontroller.js"),
