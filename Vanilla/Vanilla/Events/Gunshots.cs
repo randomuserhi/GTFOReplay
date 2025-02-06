@@ -174,7 +174,7 @@ namespace Vanilla.Events {
                             if (hitEnemy) {
                                 num5++;
                             }
-                            Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
+                            Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry, silent));
                             flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
                             vector = hit.point + fireDir * 0.1f;
                             num4 += hit.distance;
@@ -185,7 +185,7 @@ namespace Vanilla.Events {
                         num3++;
                     }
                 } else if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
-                    Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
+                    Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry, silent));
                 }
             }
             [HarmonyPatch(typeof(BulletWeaponSynced), nameof(BulletWeaponSynced.Fire))]
@@ -264,7 +264,7 @@ namespace Vanilla.Events {
                                 if (hitEnemy) {
                                     num5++;
                                 }
-                                Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
+                                Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry, silent));
                                 flag = !hit.collider.gameObject.IsInLayerMask(LayerManager.MASK_BULLETWEAPON_PIERCING_PASS);
                                 vector = hit.point + fireDir * 0.1f;
                                 num4 += hit.distance;
@@ -275,7 +275,7 @@ namespace Vanilla.Events {
                             num3++;
                         }
                     } else if (Physics.Raycast(vector, fireDir, out RaycastHit hit, maxRayDist, LayerManager.MASK_BULLETWEAPON_RAY)) {
-                        Replay.Trigger(new rGunshot(owner, damage, alignTransform.position, hit.point, sentry, silent));
+                        Replay.Trigger(new rGunshot(owner, damage, vector, hit.point, sentry, silent));
                     }
                 }
             }
@@ -326,7 +326,7 @@ namespace Vanilla.Events {
             this.damage = damage;
             this.start = start;
             this.silent = silent;
-            if (fixStartPos && !sentry && source != null && source.IsLocallyOwned && !source.Owner.IsBot) {
+            if (fixStartPos && !sentry && source != null && !source.Owner.IsBot) {
                 // NOTE(randomuserhi): Check start is within player, otherwise its from penetration and does not need adjusting
                 Vector3 a = source.transform.position; a.y = 0;
                 Vector3 b = this.start; b.y = 0;

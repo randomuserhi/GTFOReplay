@@ -31,10 +31,12 @@ namespace Vanilla.StatTracker {
             };
 
             private static void TriggerBullet() {
+                if (currentPlayer == null) return;
+
                 if (currentBullet.hits > byte.MaxValue || currentBullet.crits > byte.MaxValue) {
                     APILogger.Warn($"Number of enemies hit / crit for this bullet exceeded maximum value of {byte.MaxValue}.");
                 }
-                Sync.Trigger(new rGunshotInfo(currentPlayer!, currentWeapon, (byte)currentBullet.hits, (byte)currentBullet.crits));
+                Sync.Trigger(new rGunshotInfo(currentPlayer, currentWeapon, (byte)currentBullet.hits, (byte)currentBullet.crits));
 
                 currentBullet.crits = 0;
                 currentBullet.hits = 0;
