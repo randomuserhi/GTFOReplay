@@ -80,7 +80,7 @@ namespace Vanilla.Player {
         private byte stamina {
             get {
                 if (player.IsLocallyOwned) {
-                    return (byte)(byte.MaxValue * (Mathf.Clamp01(player.Stamina.m_currentStamina) / 1.0f));
+                    return (byte)(byte.MaxValue * Mathf.Clamp01(player.Stamina.m_currentStamina));
                 } else {
                     return _stamina;
                 }

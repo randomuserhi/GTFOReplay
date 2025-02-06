@@ -83,6 +83,7 @@ let parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             status.toolAmmo = data.toolAmmo;
             status.consumableAmmo = data.consumableAmmo;
             status.resourceAmmo = data.resourceAmmo;
+            status.stamina = data.stamina;
 
             updateStats(stats, status, snapshot);            
         }
