@@ -2,6 +2,7 @@
 using API;
 using Gear;
 using HarmonyLib;
+using LevelGeneration;
 using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
@@ -152,6 +153,32 @@ namespace Vanilla.StatTracker {
                 if (__instance.m_type == eLimbDamageType.Weakspot) {
                     ++currentBullet.crits;
                 }
+            }
+
+            [HarmonyPatch(typeof(Dam_PlayerDamageLimb), nameof(Dam_PlayerDamageLimb.BulletDamage))]
+            [HarmonyPrefix]
+            public static void Prefix_PlayerLimbBulletDamage(Dam_PlayerDamageLimb __instance, Agent sourceAgent) {
+                if (!__instance.m_base.Owner.Alive) return;
+                if (currentPlayer == null) return;
+
+                ++currentBullet.hits;
+            }
+
+            [HarmonyPatch(typeof(GenericDamageComponent), nameof(GenericDamageComponent.BulletDamage))]
+            [HarmonyPrefix]
+            public static void Prefix_GenericBulletDamage(GenericDamageComponent __instance, Agent sourceAgent) {
+                if (currentPlayer == null) return;
+
+                ++currentBullet.hits;
+            }
+
+            [HarmonyPatch(typeof(LG_LockDamage), nameof(LG_LockDamage.BulletDamage))]
+            [HarmonyPrefix]
+            public static void Prefix_LockBulletDamage(LG_LockDamage __instance, Agent sourceAgent) {
+                if (__instance.Health <= 0) return;
+                if (currentPlayer == null) return;
+
+                ++currentBullet.hits;
             }
         }
 
