@@ -1,4 +1,5 @@
-﻿using Il2CppInterop.Runtime.Attributes;
+﻿using API;
+using Il2CppInterop.Runtime.Attributes;
 using ReplayRecorder.Core;
 using System.Runtime.CompilerServices;
 
@@ -32,7 +33,10 @@ namespace ReplayRecorder {
             if (messageId != 1) return;
 
             string eventName = BitHelper.ReadString(packet, ref index);
-            if (!eventMap.ContainsKey(eventName)) return;
+            if (!eventMap.ContainsKey(eventName)) {
+                APILogger.Warn($"Received unknown RNet event, '{eventName}'.");
+                return;
+            }
 
             int payloadSize = BitHelper.ReadInt(packet, ref index);
 

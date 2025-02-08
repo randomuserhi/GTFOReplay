@@ -1,6 +1,7 @@
 ﻿using Agents;
 using API;
 using Enemies;
+using Gear;
 using HarmonyLib;
 using Player;
 using ReplayRecorder;
@@ -112,7 +113,7 @@ namespace Vanilla.StatTracker {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                            if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                            if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
                                 gear = Identifier.From(currentEquipped);
                             }
                         } else {
@@ -139,7 +140,7 @@ namespace Vanilla.StatTracker {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                            if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                            if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
                                 gear = Identifier.From(currentEquipped);
                             }
                         } else {
@@ -198,7 +199,7 @@ namespace Vanilla.StatTracker {
                     if (player != null) {
                         // Get weapon used
                         ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                        if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                        if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
                             gear = Identifier.From(currentEquipped);
                         }
                     }
@@ -227,7 +228,7 @@ namespace Vanilla.StatTracker {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                            if (currentEquipped.IsWeapon && currentEquipped.CanReload) {
+                            if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
                                 gear = Identifier.From(currentEquipped);
                             }
                         } else {

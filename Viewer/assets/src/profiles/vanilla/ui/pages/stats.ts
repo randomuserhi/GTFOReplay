@@ -253,7 +253,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
 
             const [,v] = kv;
 
-            const gear = GearDatablock.get(v.gear);
+            const gear = GearDatablock.getOrMatchCategory(v.gear);
             let name = "Unknown Gear";
             if (gear?.name !== undefined) {
                 name = gear.name;

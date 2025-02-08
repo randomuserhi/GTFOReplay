@@ -15,6 +15,13 @@ namespace ReplayRecorder.Core {
             SNetUtils.SNetUtils.OnReceive += Receive;
         }
 
+        // Used to queue hasReplayMod request prior player spawning
+        private static HashSet<ulong> hasReplayModButWaiting = new HashSet<ulong>();
+        [ReplayInit]
+        private static void Init() {
+            hasReplayModButWaiting.Clear();
+        }
+
         private static void Receive(ArraySegment<byte> packet, ulong from) {
             int index = 0;
             byte messageId = BitHelper.ReadByte(packet, ref index);
@@ -22,14 +29,12 @@ namespace ReplayRecorder.Core {
 
             rPlayer? player = players.FirstOrDefault((p) => p != null && p.snet == from, null);
             if (player?.agent?.Owner == null) {
-                APILogger.Warn($"Received packet from player with snet '{from}', but no player was found.");
+                hasReplayModButWaiting.Add(from);
                 return;
             }
 
             playersWithReplayMod.RemoveAll((Il2CppSystem.Predicate<SNet_Player>)((p) => p.Lookup == player.snet));
             playersWithReplayMod.Add(player.agent.Owner);
-
-            APILogger.Warn($"player with snet '{from}' has replay mod.");
 
             player._hasReplayMod = true;
         }
@@ -50,7 +55,7 @@ namespace ReplayRecorder.Core {
         }
 
         [ReplayOnHeaderCompletion]
-        private static void Init() {
+        private static void OnHeaderCompletion() {
             players.Clear();
 
             foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
@@ -58,6 +63,7 @@ namespace ReplayRecorder.Core {
             }
         }
 
+        private static float broadcastTimer = 0.0f;
         [ReplayTick]
         private static void Tick() {
             PlayerAgent[] agents = PlayerManager.PlayerAgentsInLevel.ToArray();
@@ -74,9 +80,21 @@ namespace ReplayRecorder.Core {
             players = _players;
             _players = temp;
 
+            bool broadcast = Clock.Time > broadcastTimer;
+            if (broadcast) {
+                broadcastTimer = Clock.Time + 1.0f;
+            }
+
             foreach (PlayerAgent player in agents) {
                 if (!players.Any(p => p.id == player.GlobalID)) {
                     Spawn(player);
+                }
+
+                // Broadcast that we have replay mod once a second
+                if (broadcast && player.Owner.Lookup != SNet.LocalPlayer.Lookup) {
+                    SNetUtils.SNetUtils._playerBuff.Clear();
+                    SNetUtils.SNetUtils._playerBuff.Add(player.Owner);
+                    SNetUtils.SNetUtils.SendBytes(pingPacket.Array, SNetUtils.SNetUtils._playerBuff);
                 }
             }
         }
@@ -100,13 +118,9 @@ namespace ReplayRecorder.Core {
 
             if (agent.Owner.Lookup == SNet.LocalPlayer.Lookup) {
                 player._hasReplayMod = true;
-            } else {
-                SNetUtils.SNetUtils._playerBuff.Clear();
-                SNetUtils.SNetUtils._playerBuff.Add(agent.Owner);
-                SNetUtils.SNetUtils.SendBytes(pingPacket.Array, SNetUtils.SNetUtils._playerBuff);
             }
 
-            Replay.Spawn(player);
+            Replay.Spawn(player, hasReplayModButWaiting.Remove(agent.Owner.Lookup));
             players.Add(player);
 
             OnPlayerSpawn?.Invoke(player.agent);
@@ -153,10 +167,11 @@ namespace ReplayRecorder.Core {
             public override bool Active => agent != null && agent.Owner != null;
             public override bool IsDirty => hasReplayMod != _hasReplayMod || isMaster != _isMaster;
 
-            public rPlayer(PlayerAgent player) : base(player.GlobalID) {
+            public rPlayer(PlayerAgent player, bool hasReplayMod = false) : base(player.GlobalID) {
                 snet = player.Owner.Lookup;
                 name = player.Owner.NickName;
                 agent = player;
+                this.hasReplayMod = hasReplayMod;
             }
 
             public override void Write(ByteBuffer buffer) {

@@ -81,6 +81,15 @@ class ExtendedGearDatablock {
         return this.categories.get(this.category(key)!);
     }
 
+    public getOrMatchCategory(key: Identifier) {
+        let result = this.get(key);
+        if (result === undefined) {
+            // Possibly a reskin of another gear -> try match category
+            result = this.matchCategory(key);
+        }
+        return result;
+    }
+
     public set(key: Identifier, value: GearDatablock) {
         this.datablock.set(key, value);
         const category = this.category(key);
