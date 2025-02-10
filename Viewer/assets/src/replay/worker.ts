@@ -180,7 +180,7 @@ let replay: Replay | undefined = undefined;
             }
         } catch (err) {
             if (!(err instanceof RangeError)) {
-                throw new Error(`Failed to parse replay:\n\n${vm.verboseError(err)}`);
+                ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}` });
             }
         }
 

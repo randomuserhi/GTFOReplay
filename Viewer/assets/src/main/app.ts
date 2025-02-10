@@ -33,6 +33,7 @@ const style = Style(({ css }) => {
     overflow: hidden;
     `;
     const body = css.class`
+    position: relative;
     flex: 1;
     `;
 

@@ -82,7 +82,7 @@ namespace ReplayRecorder.Core {
 
             bool broadcast = Clock.Time > broadcastTimer;
             if (broadcast) {
-                broadcastTimer = Clock.Time + 1.0f;
+                broadcastTimer = Clock.Time + 5.0f;
             }
 
             foreach (PlayerAgent player in agents) {

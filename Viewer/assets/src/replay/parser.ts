@@ -111,6 +111,9 @@ export class Parser {
             ipc.on("end", () => {
                 this.dispatchEvent(new CustomEvent("end"));
             });
+            ipc.on("error", (err: { message: string, verbose: string }) => {
+                this.dispatchEvent(new CustomEvent("error", { detail: err }));
+            });
 
             // Start parsing
             ipc.send("init", file, [...ModuleLoader.links.values()], document.baseURI);

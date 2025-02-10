@@ -38,7 +38,6 @@ namespace Vanilla.StatTracker {
                 if (currentBullet.hits > byte.MaxValue || currentBullet.crits > byte.MaxValue) {
                     APILogger.Warn($"Number of enemies hit / crit for this bullet exceeded maximum value of {byte.MaxValue}.");
                 }
-                APILogger.Error($"Trigger bullet: {currentWeapon.ToString()}");
                 Sync.Trigger(new rGunshotInfo(currentPlayer, currentWeapon, (byte)currentBullet.hits, (byte)currentBullet.crits));
 
                 lastHit = null;
