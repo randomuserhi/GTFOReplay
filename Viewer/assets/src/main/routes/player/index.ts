@@ -129,7 +129,7 @@ export const Player = () => {
         this.parser.addEventListener("error", ((err: { message: string, verbose: string }) => {
             console.error(err.verbose);
             const e = errors();
-            e.push(err.message);
+            e.unshift(err.message);
             errors(e);
         }) as any);
 
