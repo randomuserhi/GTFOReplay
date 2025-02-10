@@ -28,8 +28,6 @@ const style = Style(({ css }) => {
     const errorlist = css.class`
     position: absolute;
     top: 0px;
-    display: flex;
-    flex-direction: column;
     width: 100%;
     color: white;
     background-color: red;
