@@ -16,18 +16,18 @@ namespace Vanilla.StatTracker {
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Player.Gunshots.Info", "0.0.1")]
-    internal class rGunshotInfo : Id {
+    public class rGunshotInfo : Id {
         [HarmonyPatch]
-        private static class Patches {
-            private struct BulletInfo {
+        public static class Patches {
+            public struct BulletInfo {
                 public int hits;
                 public int crits;
             }
 
             private static Vector3? lastHit = null;
             private static Identifier currentWeapon = Identifier.unknown;
-            private static PlayerAgent? currentPlayer = null;
-            private static BulletInfo currentBullet = new BulletInfo() {
+            public static PlayerAgent? currentPlayer = null;
+            public static BulletInfo currentBullet = new BulletInfo() {
                 hits = 0,
                 crits = 0
             };
@@ -41,6 +41,7 @@ namespace Vanilla.StatTracker {
                 Sync.Trigger(new rGunshotInfo(currentPlayer, currentWeapon, (byte)currentBullet.hits, (byte)currentBullet.crits));
 
                 lastHit = null;
+                currentWeapon = Identifier.unknown;
                 currentBullet.crits = 0;
                 currentBullet.hits = 0;
             }
@@ -207,7 +208,7 @@ namespace Vanilla.StatTracker {
             BitHelper.WriteBytes(numCrits, buffer);
         }
 
-        private static class Sync {
+        public static class Sync {
             const string eventName = "Vanilla.Player.Gunshots.Info";
 
             [ReplayPluginLoad]

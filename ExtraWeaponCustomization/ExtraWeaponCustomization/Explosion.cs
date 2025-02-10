@@ -3,7 +3,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using UnityEngine;
 
-namespace ReplayRecorder.ExtraWeaponCustomization {
+namespace ReplayRecorder.EWC {
     [ReplayData("EWC.Explosion", "0.0.1")]
     internal class rEWCExplosion : ReplayEvent {
         internal static class Hooks {

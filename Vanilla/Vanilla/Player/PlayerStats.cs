@@ -1,5 +1,4 @@
-﻿using API;
-using Player;
+﻿using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -156,9 +155,7 @@ namespace Vanilla.Player {
                 int player = BitHelper.ReadInt(packet, ref index);
                 byte stamina = BitHelper.ReadByte(packet, ref index);
 
-                APILogger.Debug($"REC!: {player} {stamina}");
                 if (Replay.TryGet<rPlayerStats>(player, out var stats)) {
-                    APILogger.Debug($"HAS!: {player} {stamina}");
                     stats._stamina = stamina;
                 }
             }

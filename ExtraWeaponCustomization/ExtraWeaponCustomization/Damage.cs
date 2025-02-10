@@ -4,16 +4,16 @@ using Player;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 
-namespace ReplayRecorder.ExtraWeaponCustomization {
+namespace ReplayRecorder.EWC {
     [ReplayData("EWC.Damage", "0.0.1")]
     internal class rEWCDamage : ReplayEvent {
         internal static class Hooks {
-            public static void Explosive(float damage, EnemyAgent enemy, PlayerAgent? player) {
+            public static void Explosive(float damage, EnemyAgent enemy, Dam_EnemyDamageLimb limb, PlayerAgent? player) {
                 if (player == null) return;
                 Sync.Trigger(new rEWCDamage(Type.Explosive, damage, player, enemy));
             }
 
-            public static void DoT(float damage, EnemyAgent enemy, PlayerAgent? player) {
+            public static void DoT(float damage, EnemyAgent enemy, Dam_EnemyDamageLimb limb, PlayerAgent? player) {
                 if (player == null) return;
                 Sync.Trigger(new rEWCDamage(Type.DoT, damage, player, enemy));
             }

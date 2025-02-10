@@ -7,7 +7,7 @@ using Gear;
 using HarmonyLib;
 using Vanilla.Events;
 
-namespace ReplayRecorder.ExtraWeaponCustomization.BepInEx;
+namespace ReplayRecorder.EWC.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 [BepInDependency(ReplayRecorder.BepInEx.Module.GUID, BepInDependency.DependencyFlags.HardDependency)]
@@ -33,20 +33,30 @@ public class Plugin : BasePlugin {
 
         FireShotAPI.OnShotFired += rEWCGunShot.Hooks.Trigger;
 
+        ProjectileAPI.OnProjectileDestroyed += EWCAccuracy.OnProjectileDespawn;
+        ProjectileAPI.OnProjectileHit += EWCAccuracy.OnProjectileHit;
+        FireShotAPI.OnShotFired += EWCAccuracy.OnShotFired;
+        FireShotAPI.PreShotFired += EWCAccuracy.PreShotFired;
+        DamageAPI.PreExplosiveDamage += EWCAccuracy.OnExplosiveDamage;
+
         rGunshot.RegisterCancelSyncedShot(CancelSyncedShot);
     }
 
-    // NOTE(randomuserhi): Cancel synced tracers from projectile weapons and multishot weapons.
+    // NOTE(randomuserhi): Cancel synced tracers from projectile weapons and multishot/thickbullet weapons.
     private static bool CancelSyncedShot(BulletWeapon weapon) {
         CustomWeaponComponent? cwc = weapon.GetComponent<CustomWeaponComponent>();
 
         if (cwc == null) return false;
 
-        if (cwc.HasTrait<EWC.CustomWeapon.Properties.Traits.Projectile>()) {
+        if (cwc.HasTrait<global::EWC.CustomWeapon.Properties.Traits.Projectile>()) {
             return true;
         }
 
-        if (cwc.TryGetTrait<EWC.CustomWeapon.Properties.Traits.MultiShot>(out var multiShot) && multiShot.CancelShot) {
+        if (cwc.TryGetTrait<global::EWC.CustomWeapon.Properties.Traits.MultiShot>(out var multiShot) && multiShot.CancelShot) {
+            return true;
+        }
+
+        if (cwc.TryGetTrait<global::EWC.CustomWeapon.Properties.Traits.ThickBullet>(out var thickBullet)) {
             return true;
         }
 

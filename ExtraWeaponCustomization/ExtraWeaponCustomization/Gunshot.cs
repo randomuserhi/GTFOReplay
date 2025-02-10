@@ -2,7 +2,7 @@
 using UnityEngine;
 using Vanilla.Events;
 
-namespace ReplayRecorder.ExtraWeaponCustomization {
+namespace ReplayRecorder.EWC {
     internal class rEWCGunShot {
         internal static class Hooks {
             public static void Trigger(HitData hit, Vector3 start, Vector3 end) {

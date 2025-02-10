@@ -6,7 +6,7 @@ using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using UnityEngine;
 
-namespace ReplayRecorder.ExtraWeaponCustomization {
+namespace ReplayRecorder.EWC {
     internal struct ProjectileTransform : IReplayTransform {
         private EWCProjectileComponentBase projectile;
         private byte dimension;
@@ -34,11 +34,7 @@ namespace ReplayRecorder.ExtraWeaponCustomization {
             }
 
             public static void OnDespawn(EWCProjectileComponentBase projectile) {
-                try {
-                    Replay.Despawn(new rEWCProjectile(projectile));
-                } catch (Exception e) {
-                    APILogger.Error($"Failed to despawn EWC projectile: {e}");
-                }
+                Replay.TryDespawn<rEWCProjectile>(projectile.SyncID);
             }
         }
 
