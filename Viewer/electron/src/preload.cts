@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld(
         maximizeWindow() { // When window.api.closeWindow() is called, send "maximizeWindow" event to ipcMain
             ipcRenderer.send("maximizeWindow");
         },
+        openDevTools() {
+            ipcRenderer.send("openDevTools");
+        },
 
         // NOTE(randomuserhi): https://stackoverflow.com/a/68350101
         // Exposes a listener to allow Renderer to listen to messages from Main

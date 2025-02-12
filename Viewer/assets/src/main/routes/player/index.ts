@@ -1,5 +1,4 @@
 import { html, Mutable } from "@/rhu/html.js";
-import { always, Signal, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { DataStore } from "../../../replay/datastore.js";
 import { Parser } from "../../../replay/parser.js";
@@ -25,24 +24,9 @@ const style = Style(({ css }) => {
     }
     `;
 
-    const errorlist = css.class`
-    position: absolute;
-    top: 0px;
-    width: 100%;
-    color: white;
-    background-color: red;
-    z-index: 1000;
-    `;
-
-    const error = css.class`
-    padding: 3px;
-    `;
-
     return {
         wrapper,
-        canvas,
-        errorlist,
-        error
+        canvas
     };
 });
 
@@ -66,25 +50,7 @@ export const Player = () => {
     
     const view = View();
 
-    const errors = signal<string[]>([], always);
-    const errorlist = html.map(errors, undefined, (kv, el?: html<{message: Signal<string>}>) => {
-        const [,v] = kv;
-        
-        if (el === undefined) {
-            el = html`
-            <div class=${style.error}>
-                <span>${html.bind(signal(""), "message")}</span>
-            </div>
-            `;
-        }
-
-        el.message(v);
-
-        return el;
-    });
-
     const dom = html<Mutable<Private & Player>>/**//*html*/`
-        <div class="${style.errorlist}">${errorlist}</div>
         <div m-id="wrapper" class="${style.wrapper}">
             ${view}
         </div>
@@ -128,9 +94,7 @@ export const Player = () => {
         });
         this.parser.addEventListener("error", ((err: { message: string, verbose: string }) => {
             console.error(err.verbose);
-            const e = errors();
-            e.unshift(err.message);
-            errors(e);
+            this.view.addLog(err.message);
         }) as any);
 
         if (path !== undefined) {
@@ -144,7 +108,7 @@ export const Player = () => {
         DataStore.clear();
 
         // Clear errors
-        errors([]);
+        this.view.clearLogs();
 
         this.view.replay(await this.parser.parse(file));
     };

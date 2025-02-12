@@ -1,10 +1,11 @@
 import { html, Mutable } from "@/rhu/html.js";
-import { Signal, signal } from "@/rhu/signal.js";
+import { always, Signal, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
 import { ReplayApi } from "../../../../../replay/moduleloader.js";
 import { Renderer } from "../../../../../replay/renderer.js";
 import { Replay, Snapshot } from "../../../../../replay/replay.js";
 import { ASL_VM } from "../../../../../replay/vm.js";
+import * as icons from "../../../../global/components/atoms/icons/index.js";
 
 const style = Style(({ css }) => {
     const canvas = css.class`
@@ -18,8 +19,40 @@ const style = Style(({ css }) => {
     }
     `;
 
+    const logs = css.class`
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    color: white;
+    background-color: red;
+    z-index: 1000;
+    `;
+
+    const log = css.class`
+    padding: 3px 7px;
+    display: flex;
+    `;
+
+    const logText = css.class`
+    cursor: pointer;
+    `;
+    css`
+    ${logText}:hover {
+        text-decoration: underline;
+    }
+    `;
+
+    const cross = css.class`
+    padding: 0 3px;
+    color: white;
+    `;
+
     return {
-        canvas
+        canvas,
+        logs,
+        log,
+        logText,
+        cross
     };
 });
 
@@ -29,6 +62,9 @@ export const View = () => {
         update(): void;
         refresh(): void;
         resize(): void;
+        
+        addLog(message: string): void;
+        clearLogs(): void;
 
         readonly renderer: Renderer;
         readonly replay: Signal<Replay | undefined>;
@@ -49,7 +85,39 @@ export const View = () => {
         prevTime: number;
     }
     
+    const logs = signal<string[]>([], always);
+    const logList = html.map(logs, undefined, (kv, el?: html<{message: Signal<string>; text: HTMLSpanElement; close: HTMLButtonElement, index: number}>) => {
+        const [k,v] = kv;
+        
+        if (el === undefined) {
+            el = html`
+            <div class="${style.log}">
+                <span m-id="text" class="${style.logText}">${html.bind(signal(""), "message")}</span>
+                <span style="flex: 1;"></span>
+                <button m-id="close" class="${style.cross}">${icons.cross()}</button>
+            </div>
+            `;
+
+            el.text.addEventListener("click", () => {
+                window.api.openDevTools();
+            });
+
+            el.close.addEventListener("click", () => {
+                if (el?.index === undefined) return;
+                const e = logs();
+                e.splice(el.index, 1);
+                logs(e);
+            });
+        }
+
+        el.index = k;
+        el.message(v);
+
+        return el;
+    });
+
     const dom = html<Mutable<Private & View>>/**//*html*/`
+        <div class="${style.logs}">${logList}</div>
         <canvas m-id="canvas" class="${style.canvas}" tabindex="-1"></canvas>
         `;
     html(dom).box();
@@ -143,6 +211,17 @@ export const View = () => {
         const replay = dom.replay();
         return Math.clamp(time, 0, replay !== undefined ? replay.length() : 0);
     };
+    
+    dom.addLog = (message) => {
+        const l = logs();
+        l.unshift(message);
+        logs(l);
+    };
+
+    dom.clearLogs = () => {
+        logs([]);
+    };
+    
     dom.update();
 
     return dom as html<View>;

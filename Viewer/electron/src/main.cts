@@ -85,6 +85,12 @@ export default class Program {
 
             Program.win.minimize();
         });
+        ipcMain.on("openDevTools", (e) => {
+            if (!Program.isTrustedFrame(e.senderFrame)) return;
+            if (Program.win === null) return;
+
+            Program.win.webContents.openDevTools();
+        });
     }
 
     // TODO(randomuserhi): Typescript template events - Front End as well

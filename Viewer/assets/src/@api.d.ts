@@ -3,6 +3,7 @@ declare namespace Electron {
         closeWindow(): void;
         maximizeWindow(): void;
         minimizeWindow(): void;
+        openDevTools(): void;
 
         // TODO(randomuserhi): typescript templates -> also consider Promise API
         on(event: string, callback: (...args: any[]) => void): void;
