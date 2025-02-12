@@ -41,7 +41,6 @@ namespace Vanilla.StatTracker {
                 Sync.Trigger(new rGunshotInfo(currentPlayer, currentWeapon, (byte)currentBullet.hits, (byte)currentBullet.crits));
 
                 lastHit = null;
-                currentWeapon = Identifier.unknown;
                 currentBullet.crits = 0;
                 currentBullet.hits = 0;
             }
