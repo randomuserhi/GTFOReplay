@@ -13,6 +13,7 @@ using ReplayRecorder.Steam;
 using Steamworks;
 using System.Collections;
 using System.Diagnostics;
+using System.IO.Compression;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -648,6 +649,21 @@ namespace ReplayRecorder.Snapshot {
             if (fs != null) {
                 fs.Flush();
                 fs.Dispose();
+
+                // Zip replay
+                Task.Run(() => {
+                    try {
+                        using (FileStream zipToOpen = new FileStream($"{fullpath}.compressed", FileMode.Create)) {
+                            using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Create)) {
+                                archive.CreateEntryFromFile(fullpath, filename, System.IO.Compression.CompressionLevel.SmallestSize);
+                            }
+                        }
+                        File.Delete(fullpath);
+                    } catch (Exception ex) {
+                        APILogger.Error($"Failed to compress replay:\n{ex}");
+                    }
+                });
+
                 fs = null;
             }
 

@@ -1,6 +1,9 @@
 import * as chokidar from "chokidar";
 import { dialog } from "electron";
 import * as fs from "fs";
+import path from "path";
+import * as yauzl from "yauzl";
+import Program from "../main.cjs";
 
 interface FileHandle { 
     path: string;
@@ -207,18 +210,69 @@ class File {
     }
 }
 
+const zipSignature = Buffer.from([0x50, 0x4B, 0x03, 0x04]); // "PK\x03\x04"
+function isZipFile(filePath: string) {
+    const buffer = Buffer.alloc(4);
+
+    const fd = fs.openSync(filePath, 'r');
+    fs.readSync(fd, buffer, 0, 4, 0);
+    fs.closeSync(fd);
+
+    return buffer.equals(zipSignature);
+}
+
 export class FileManager {
     file?: File;
 
     constructor() {
     }
 
-    public async open(path?: string) {
+    private async _open(filePath?: string) {
+        this.file = new File(filePath);
+        await this.file.open();
+    }
+
+    public open(filePath?: string): Promise<void> {
         if (this.file !== undefined) {
             this.file.close();
-        } 
-        this.file = new File(path);
-        await this.file.open();
+        }
+
+        // check if file is a zip -> if it is uncompress it to temp location and open that
+        if (filePath !== undefined && isZipFile(filePath)) {
+            return new Promise((resolve, reject) => {
+                yauzl.open(filePath, { lazyEntries: true }, (err, zipfile) => {
+                    if (err) return reject(err);
+    
+                    if (zipfile.entryCount !== 1) return reject(new Error("Compressed replays must follow the format of a single replay file in an archive."));
+
+                    zipfile.on("entry", (entry) => {
+                        if (!entry.fileName.endsWith('/')) {
+                            // File entry (Should only be 1 file entry in zipped replay)
+                            
+                            zipfile.openReadStream(entry, (err, readStream) => {
+                                if (err) return reject(err);
+    
+                                const extractedPath = path.join(__dirname, "/temp.replay");
+                                Program.post("console.log", `Zipped replay => extracted to '${extractedPath}'`);
+                                
+                                const writeStream = fs.createWriteStream(extractedPath);
+                                readStream.pipe(writeStream);
+    
+                                writeStream.on('finish', async () => {
+                                    resolve(await this._open(extractedPath));
+                                });
+                            });
+                        }
+                    });
+                    zipfile.on("end", resolve);
+                    zipfile.on("error", reject);
+                    
+                    zipfile.readEntry();
+                });
+            });
+        } else {
+            return this._open(filePath);
+        }
     }
 
     public setupIPC(ipc: Electron.IpcMain) {

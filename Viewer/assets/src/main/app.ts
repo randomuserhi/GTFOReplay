@@ -134,6 +134,9 @@ const App = () => {
         dom.nav.error(false);
     });
 
+    // console log
+    window.api.on("console.log", (msg) => console.log(msg));
+
     // hot reload event
     window.api.on("loadScript", async (paths: string[]) => {
         for (const p of paths) {

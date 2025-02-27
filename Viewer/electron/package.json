@@ -24,7 +24,8 @@
     "@types/ws": "^8.5.4",
     "chokidar": "^3.6.0",
     "electron-squirrel-startup": "^1.0.1",
-    "ws": "^8.13.0"
+    "ws": "^8.13.0",
+    "yauzl": "^3.2.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
