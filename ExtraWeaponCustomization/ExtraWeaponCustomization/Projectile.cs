@@ -4,6 +4,7 @@ using LevelGeneration;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ReplayRecorder.EWC {
@@ -24,6 +25,11 @@ namespace ReplayRecorder.EWC {
 
     [ReplayData("EWC.Projectile", "0.0.1")]
     internal class rEWCProjectile : DynamicTransform {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetId(EWCProjectileComponentBase projectile) {
+            return projectile.SyncID + (projectile.PlayerIndex << 16);
+        }
+
         internal static class Hooks {
             public static void OnSpawn(EWCProjectileComponentBase projectile) {
                 try {
@@ -34,13 +40,13 @@ namespace ReplayRecorder.EWC {
             }
 
             public static void OnDespawn(EWCProjectileComponentBase projectile) {
-                Replay.TryDespawn<rEWCProjectile>(projectile.SyncID);
+                Replay.TryDespawn<rEWCProjectile>(GetId(projectile));
             }
         }
 
         EWCProjectileComponentBase projectile;
 
-        public rEWCProjectile(EWCProjectileComponentBase projectile) : base(projectile.SyncID, new ProjectileTransform(projectile)) {
+        public rEWCProjectile(EWCProjectileComponentBase projectile) : base(GetId(projectile), new ProjectileTransform(projectile)) {
             this.projectile = projectile;
         }
 

@@ -48,19 +48,7 @@ public class Plugin : BasePlugin {
 
         if (cwc == null) return false;
 
-        if (cwc.HasTrait<global::EWC.CustomWeapon.Properties.Traits.Projectile>()) {
-            return true;
-        }
-
-        if (cwc.TryGetTrait<global::EWC.CustomWeapon.Properties.Traits.MultiShot>(out var multiShot) && multiShot.CancelShot) {
-            return true;
-        }
-
-        if (cwc.TryGetTrait<global::EWC.CustomWeapon.Properties.Traits.ThickBullet>(out var thickBullet)) {
-            return true;
-        }
-
-        return false;
+        return cwc.ShotComponent!.OverrideVanillaShot;
     }
 
     private static Harmony? harmony;
