@@ -26,7 +26,8 @@ namespace ReplayRecorder.EWC {
     [ReplayData("EWC.Projectile", "0.0.1")]
     internal class rEWCProjectile : DynamicTransform {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetId(EWCProjectileComponentBase projectile) {
+        public static int GetUniqueId(EWCProjectileComponentBase projectile) {
+            // NOTE(randomuserhi): projectile.SyncID is only unique per player
             return projectile.SyncID + (projectile.PlayerIndex << 16);
         }
 
@@ -40,13 +41,13 @@ namespace ReplayRecorder.EWC {
             }
 
             public static void OnDespawn(EWCProjectileComponentBase projectile) {
-                Replay.TryDespawn<rEWCProjectile>(GetId(projectile));
+                Replay.TryDespawn<rEWCProjectile>(GetUniqueId(projectile));
             }
         }
 
         EWCProjectileComponentBase projectile;
 
-        public rEWCProjectile(EWCProjectileComponentBase projectile) : base(GetId(projectile), new ProjectileTransform(projectile)) {
+        public rEWCProjectile(EWCProjectileComponentBase projectile) : base(GetUniqueId(projectile), new ProjectileTransform(projectile)) {
             this.projectile = projectile;
         }
 
