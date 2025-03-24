@@ -12,7 +12,6 @@
 		<BepInEx>E:\GTFO mods\BepInExPack_GTFO\BepInEx</BepInEx>
 		<AdditionalIncludes>E:\GTFO mods\BepInEx\Plugins</AdditionalIncludes>
 		<BuildDirectory>E:\GTFO mods\BepInEx\Plugins\ReplayRecorder\Extensions</BuildDirectory>
-		<DotNetFolder>D:\Steam\steamapps\common\GTFO\dotnet\</DotNetFolder>
 		<CoreLibFolder>..\..\Dependencies\corlib\</CoreLibFolder>
 		<OutputPath>$(BuildDirectory)</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -24,8 +23,6 @@
 
 	<ItemGroup>
 		<Reference Include="..\..\Dependencies\ExtraWeaponCustomization.dll" Private="false" />
-		<Reference Include="$(CoreLibFolder)\*.dll" Private="false" />
-		<Reference Include="$(DotNetFolder)\System.Private.CoreLib.dll" Private="false" />
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\ReplayRecorder.dll" Private="false" />
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\Vanilla.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />
