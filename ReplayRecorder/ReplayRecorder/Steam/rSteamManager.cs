@@ -2,6 +2,7 @@
 
 using API;
 using HarmonyLib;
+using Player;
 using ReplayRecorder.Snapshot;
 using SNetwork;
 using Steamworks;
@@ -131,6 +132,25 @@ namespace ReplayRecorder.Steam {
 
         internal static void onDisconnect(HSteamNetConnection connection) {
             readyConnections.Remove(connection);
+
+            // Remove spectator from log list in current instance
+            // TODO(randomuserhi): probably move this logic elsewhere
+            if (SnapshotManager.instance != null) {
+                SnapshotManager.instance.spectators.Remove(connection);
+
+                long id = SteamNetworkingSockets.GetConnectionUserData(connection);
+                if (id == -1) return;
+                CSteamID steamID = new CSteamID((ulong)id);
+                string name = SteamFriends.GetFriendPersonaName(steamID);
+
+                const int maxLen = 50;
+                string message = $"[GTFOReplay]: {name} is no longer spectating.";
+                while (message.Length > maxLen) {
+                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
+                    message = message.Substring(maxLen).Trim();
+                }
+                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
+            }
         }
 
         internal static void onClose() {

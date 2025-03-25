@@ -389,6 +389,7 @@ namespace ReplayRecorder.Snapshot {
                 fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
             }
 
+            spectators.Clear();
             alertedPlayers.Clear();
             alertedPlayers.Add(PlayerManager.GetLocalPlayerAgent().Owner.Lookup);
             pool = new BufferPool();
@@ -716,6 +717,9 @@ namespace ReplayRecorder.Snapshot {
         // NOTE(randomuserhi): Keeps track of players aware that live view is in use
         private HashSet<ulong> alertedPlayers = new HashSet<ulong>();
 
+        // NOTE(randomuserhi): Keep track of logged spectators
+        internal HashSet<HSteamNetConnection> spectators = new HashSet<HSteamNetConnection>();
+
         public float tickRate = 1f / 20f;
         private float timer = 0;
         private void Update() {
@@ -746,29 +750,49 @@ namespace ReplayRecorder.Snapshot {
                 timer = 0;
 
                 // Check if all players are alerted of live view
-                if (rSteamManager.readyConnections.Count > 0 && PlayerManager.PlayerAgentsInLevel.Count > 1) {
-                    bool allAlerted = true;
-                    foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
-                        if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {
-                            allAlerted = false;
-                            break;
-                        }
-                    }
+                if (rSteamManager.readyConnections.Count > 0) {
+                    const int maxLen = 50;
 
-                    if (!allAlerted) {
-                        foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
-                            if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {
-                                alertedPlayers.Add(player.Owner.Lookup);
-                            }
-                        }
+                    foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Values) {
+                        if (!spectators.Add(connection)) continue;
 
-                        const int maxLen = 50;
-                        string message = "GTFOReplay Live View is in use. This allows the spectating user to see all item and enemy locations which may be considered cheating.";
+                        long id = SteamNetworkingSockets.GetConnectionUserData(connection);
+                        if (id == -1) return;
+
+                        CSteamID steamID = new CSteamID((ulong)id);
+                        string name = SteamFriends.GetFriendPersonaName(steamID);
+
+                        string message = $"[GTFOReplay]: {name} is spectating.";
                         while (message.Length > maxLen) {
                             PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
                             message = message.Substring(maxLen).Trim();
                         }
                         PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
+                    }
+
+                    if (PlayerManager.PlayerAgentsInLevel.Count > 1) {
+                        bool allAlerted = true;
+                        foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
+                            if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {
+                                allAlerted = false;
+                                break;
+                            }
+                        }
+
+                        if (!allAlerted) {
+                            foreach (PlayerAgent player in PlayerManager.PlayerAgentsInLevel) {
+                                if (!alertedPlayers.Contains(player.Owner.Lookup) && player.Owner.IsInGame) {
+                                    alertedPlayers.Add(player.Owner.Lookup);
+                                }
+                            }
+
+                            string message = "GTFOReplay Live View is in use. This allows the spectating user to see all item and enemy locations which may be considered cheating.";
+                            while (message.Length > maxLen) {
+                                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
+                                message = message.Substring(maxLen).Trim();
+                            }
+                            PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
+                        }
                     }
                 }
 
