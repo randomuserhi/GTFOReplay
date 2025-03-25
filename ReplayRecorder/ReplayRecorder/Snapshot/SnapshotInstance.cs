@@ -753,10 +753,10 @@ namespace ReplayRecorder.Snapshot {
                 if (rSteamManager.Server != null && rSteamManager.readyConnections.Count > 0) {
                     const int maxLen = 50;
 
-                    foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Values) {
+                    foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
                         if (!spectators.Add(connection)) continue;
 
-                        string message = $"[GTFOReplay]: {rSteamManager.Server.currentConnections[connection].steamName} is spectating.";
+                        string message = $"[GTFOReplay]: {rSteamManager.Server.currentConnections[connection].name} is spectating.";
                         while (message.Length > maxLen) {
                             PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
                             message = message.Substring(maxLen).Trim();

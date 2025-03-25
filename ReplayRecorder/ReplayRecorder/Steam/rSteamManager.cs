@@ -46,6 +46,7 @@ namespace ReplayRecorder.Steam {
             Server.onAccept += onAccept;
             Server.onDisconnect += onDisconnect;
             Server.onClose += onClose;
+            Server.onReceive += onReceive;
         }
 
         internal static void onAccept(HSteamNetConnection connection) {
@@ -56,78 +57,94 @@ namespace ReplayRecorder.Steam {
             BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
 
             Server.SendTo(connection, cpacket.Array);
+        }
 
-            if (SnapshotManager.instance != null) {
-                SnapshotInstance instance = SnapshotManager.instance;
-                if (instance.Active) {
-                    // Trigger start if already in level
-                    // TODO(randomuserhi): Make sure this happens AFTER the client recieves the Net.MessageType.Connected message
+        internal static void onReceive(ArraySegment<byte> buffer, HSteamNetConnection connection) {
+            if (Server == null) return;
 
-                    APILogger.Debug("Already in match, sending start signal");
+            int index = 0;
+            Net.MessageType type = (Net.MessageType)BitHelper.ReadUShort(buffer, ref index);
+            APILogger.Warn($"Received message of type '{type}'.");
+            switch (type) {
+            case Net.MessageType.Connected: {
+                string name = BitHelper.ReadString(buffer, ref index);
+                APILogger.Warn($"{name} is spectating.");
+                Server.currentConnections[connection].name = name;
 
-                    ByteBuffer spacket = new ByteBuffer();
-                    BitHelper.WriteBytes(sizeof(ushort) + 1, spacket); // message size in bytes
-                    BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, spacket);
-                    BitHelper.WriteBytes(instance.replayInstanceId, spacket);
+                if (SnapshotManager.instance != null) {
+                    SnapshotInstance instance = SnapshotManager.instance;
+                    if (instance.Active) {
+                        // Trigger start if already in level
+                        // TODO(randomuserhi): Make sure this happens AFTER the client recieves the Net.MessageType.Connected message
 
-                    Server.SendTo(connection, spacket.Array);
+                        APILogger.Debug("Already in match, sending start signal");
 
-                    APILogger.Debug("Already in match, sending initial bytes:");
+                        ByteBuffer spacket = new ByteBuffer();
+                        BitHelper.WriteBytes(sizeof(ushort) + 1, spacket); // message size in bytes
+                        BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, spacket);
+                        BitHelper.WriteBytes(instance.replayInstanceId, spacket);
 
-                    // Send file:
-                    Task.Run(async () => {
-                        if (Server == null) return;
+                        Server.SendTo(connection, spacket.Array);
 
-                        byte[] buffer;
+                        APILogger.Debug("Already in match, sending initial bytes:");
 
-                        int currentOffset = instance.byteOffset;
+                        // Send file:
+                        Task.Run(async () => {
+                            if (Server == null) return;
 
-                        do {
+                            byte[] buffer;
 
-                            instance.Flush();
+                            int currentOffset = instance.byteOffset;
 
-                            using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-                                using (var ms = new MemoryStream()) {
-                                    fs.CopyTo(ms);
-                                    buffer = ms.ToArray();
+                            do {
+
+                                instance.Flush();
+
+                                using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                                    using (var ms = new MemoryStream()) {
+                                        fs.CopyTo(ms);
+                                        buffer = ms.ToArray();
+                                    }
                                 }
+
+                            } while (buffer.Length < currentOffset);
+
+                            try {
+                                int bytesSent = 0;
+                                while (bytesSent < buffer.Length) {
+                                    const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
+
+                                    int bytesToSend = Mathf.Min(buffer.Length - bytesSent, SteamServer.maxPacketSize - sizeOfHeader - sizeof(int));
+
+                                    ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
+
+                                    // Header
+                                    BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
+                                    BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                                    BitHelper.WriteBytes(instance.replayInstanceId, packet); // replay instance id
+                                    BitHelper.WriteBytes(bytesSent, packet); // offset
+                                    BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
+                                    BitHelper.WriteBytes(new ArraySegment<byte>(buffer, bytesSent, bytesToSend), packet, false); // file-bytes
+
+                                    Server.SendTo(connection, packet.Array);
+
+                                    bytesSent += bytesToSend;
+
+                                    APILogger.Debug($"Sending init {bytesSent}/{buffer.Length} ...");
+
+                                    if (bytesSent < buffer.Length) await Task.Delay(16); // NOTE(randomuserhi): Avoid straining the network
+                                }
+                            } catch (Exception e) {
+                                APILogger.Error($"Unable to send initial bytes: {e}");
                             }
-
-                        } while (buffer.Length < currentOffset);
-
-                        try {
-                            int bytesSent = 0;
-                            while (bytesSent < buffer.Length) {
-                                const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
-
-                                int bytesToSend = Mathf.Min(buffer.Length - bytesSent, SteamServer.maxPacketSize - sizeOfHeader - sizeof(int));
-
-                                ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
-
-                                // Header
-                                BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
-                                BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
-                                BitHelper.WriteBytes(instance.replayInstanceId, packet); // replay instance id
-                                BitHelper.WriteBytes(bytesSent, packet); // offset
-                                BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
-                                BitHelper.WriteBytes(new ArraySegment<byte>(buffer, bytesSent, bytesToSend), packet, false); // file-bytes
-
-                                Server.SendTo(connection, packet.Array);
-
-                                bytesSent += bytesToSend;
-
-                                APILogger.Debug($"Sending init {bytesSent}/{buffer.Length} ...");
-
-                                if (bytesSent < buffer.Length) await Task.Delay(16); // NOTE(randomuserhi): Avoid straining the network
-                            }
-                        } catch (Exception e) {
-                            APILogger.Error($"Unable to send initial bytes: {e}");
-                        }
-                    });
+                        });
+                    }
                 }
-            }
 
-            readyConnections.Add(connection);
+                readyConnections.Add(connection);
+                break;
+            }
+            }
         }
 
         internal static void onDisconnect(HSteamNetConnection connection) {
@@ -139,7 +156,7 @@ namespace ReplayRecorder.Steam {
                 SnapshotManager.instance.spectators.Remove(connection);
 
                 const int maxLen = 50;
-                string message = $"[GTFOReplay]: {Server.currentConnections[connection].steamName} is no longer spectating.";
+                string message = $"[GTFOReplay]: {Server.currentConnections[connection].name} is no longer spectating.";
                 while (message.Length > maxLen) {
                     PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
                     message = message.Substring(maxLen).Trim();

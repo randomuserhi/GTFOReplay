@@ -8,6 +8,7 @@ using Il2CppInterop.Runtime.Injection;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Snapshot;
 using ReplayRecorder.Steam;
+using SNetwork;
 using System.Net;
 
 namespace ReplayRecorder.BepInEx;
@@ -97,11 +98,21 @@ public class Plugin : BasePlugin {
     }
 
     internal static void steam_onAccept(rSteamClient client) {
-        ByteBuffer cpacket = new ByteBuffer();
-        BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
-        BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
+        {
+            ByteBuffer cpacket = new ByteBuffer();
+            BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
+            BitHelper.WriteBytes(SNet.LocalPlayer.NickName, cpacket);
 
-        _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
+            client.Send(cpacket.Array);
+        }
+
+        {
+            ByteBuffer cpacket = new ByteBuffer();
+            BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
+            BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
+
+            _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
+        }
     }
 
     /// <summary>
