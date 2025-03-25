@@ -21,6 +21,8 @@ namespace ReplayRecorder.Steam {
     }
 
     internal class SteamServer : IDisposable {
+        public const int maxPacketSize = 81920;
+
         public SteamNet.onAccept? onAccept = null;
         public SteamNet.onReceive? onReceive = null;
         public SteamNet.onDisconnect? onDisconnect = null;
@@ -35,72 +37,81 @@ namespace ReplayRecorder.Steam {
             server = SteamNetworkingSockets.CreateListenSocketP2P(0, 0, new SteamNetworkingConfigValue_t[] { });
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
+        }
 
+        public struct ResendRequest {
+            public ArraySegment<byte> bytes;
         }
 
         public class Connection {
-            public bool queuePackets = false;
-            public ConcurrentQueue<ArraySegment<byte>> queue = new ConcurrentQueue<ArraySegment<byte>>();
+            public ConcurrentQueue<ResendRequest> resendQueue = new ConcurrentQueue<ResendRequest>();
+            public List<ResendRequest> resendQueueBuffer = new List<ResendRequest>();
+
+            private HSteamNetConnection connection;
+            private SteamServer server;
+            public bool running = true;
+
+            public Connection(SteamServer server, HSteamNetConnection connection) {
+                this.connection = connection;
+                this.server = server;
+
+                _ = ReceiveMessages();
+            }
+
+            public void Dispose() {
+                running = false;
+            }
+
+            public async Task ReceiveMessages() {
+                int numMessages = 0;
+
+                IntPtr[] messageBuffer = new IntPtr[10];
+
+                do {
+                    numMessages = SteamNetworkingSockets.ReceiveMessagesOnConnection(connection, messageBuffer, messageBuffer.Length);
+                    for (int i = 0; i < numMessages; ++i) {
+                        SteamNetworkingMessage_t message = SteamNetworkingMessage_t.FromIntPtr(messageBuffer[i]);
+
+                        byte[] data = new byte[message.m_cbSize];
+                        Marshal.Copy(message.m_pData, data, 0, data.Length);
+
+                        server.onReceive?.Invoke(data, connection);
+
+                        SteamNetworkingMessage_t.Release(messageBuffer[i]);
+                    }
+
+                    // NOTE(randomuserhi): Manage packets that did not send due to overwhelmed socket
+                    if (!resendQueue.IsEmpty) {
+                        // NOTE(randomuserhi): Get status to not overwhelm network
+                        SteamNetConnectionRealTimeStatus_t status = default;
+                        SteamNetConnectionRealTimeLaneStatus_t pLanes = default;
+                        if (SteamNetworkingSockets.GetConnectionRealTimeStatus(connection, ref status, 0, ref pLanes) == EResult.k_EResultOK) {
+                            if (status.m_cbPendingReliable + status.m_cbSentUnackedReliable == 0) {
+                                while (resendQueue.TryDequeue(out var packet)) {
+                                    resendQueueBuffer.Add(packet);
+                                }
+                                int j = 0;
+                                while (j < resendQueueBuffer.Count) {
+                                    if (!server.SendTo(connection, resendQueueBuffer[j].bytes, dequeue: true)) break;
+                                    await Task.Delay(16);
+                                    ++j;
+                                }
+                                for (; j < resendQueueBuffer.Count; ++j) {
+                                    resendQueue.Enqueue(resendQueueBuffer[j]);
+                                }
+                                resendQueueBuffer.Clear();
+                            } else {
+                                APILogger.Debug($"Waiting to resend: pending - {status.m_cbPendingReliable} unack - {status.m_cbSentUnackedReliable}");
+                            }
+                        }
+                    }
+
+                    await Task.Delay(16);
+                } while (numMessages >= 0 && running);
+            }
         }
 
         public ConcurrentDictionary<HSteamNetConnection, Connection> currentConnections = new ConcurrentDictionary<HSteamNetConnection, Connection>();
-
-        private ConcurrentQueue<ArraySegment<byte>> resendQueue = new ConcurrentQueue<ArraySegment<byte>>();
-        private List<ArraySegment<byte>> resendQueueBuffer = new List<ArraySegment<byte>>();
-
-        private async Task ReceiveMessages(HSteamNetConnection connection) {
-            int numMessages = 0;
-
-            IntPtr[] messageBuffer = new IntPtr[10];
-
-            Connection conn = currentConnections[connection];
-
-            do {
-                numMessages = SteamNetworkingSockets.ReceiveMessagesOnConnection(connection, messageBuffer, messageBuffer.Length);
-                for (int i = 0; i < numMessages; ++i) {
-                    SteamNetworkingMessage_t message = SteamNetworkingMessage_t.FromIntPtr(messageBuffer[i]);
-
-                    byte[] data = new byte[message.m_cbSize];
-                    Marshal.Copy(message.m_pData, data, 0, data.Length);
-
-                    onReceive?.Invoke(data, connection);
-
-                    SteamNetworkingMessage_t.Release(messageBuffer[i]);
-                }
-
-                // NOTE(randomuserhi): Manage packets that did not send due to overwhelmed socket
-                if (!resendQueue.IsEmpty) {
-                    // NOTE(randomuserhi): Get status to not overwhelm network
-                    SteamNetConnectionRealTimeStatus_t status = default;
-                    SteamNetConnectionRealTimeLaneStatus_t pLanes = default;
-                    if (SteamNetworkingSockets.GetConnectionRealTimeStatus(connection, ref status, 0, ref pLanes) == EResult.k_EResultOK) {
-                        if (status.m_cbPendingReliable + status.m_cbSentUnackedReliable == 0) {
-                            while (resendQueue.TryDequeue(out var packet)) {
-                                resendQueueBuffer.Add(packet);
-                            }
-                            int j = 0;
-                            while (j < resendQueueBuffer.Count) {
-                                if (!SendTo(connection, resendQueueBuffer[j], dequeue: true)) break;
-                                ++j;
-                            }
-                            for (; j < resendQueueBuffer.Count; ++j) {
-                                resendQueue.Enqueue(resendQueueBuffer[j]);
-                            }
-                            resendQueueBuffer.Clear();
-                        }
-                    }
-                }
-
-                // Queue packets
-                if (!conn.queuePackets) {
-                    while (conn.queue.TryDequeue(out var packet)) {
-                        SendTo(connection, packet);
-                    }
-                }
-
-                await Task.Delay(16);
-            } while (numMessages >= 0 && running);
-        }
 
         public void Send(ArraySegment<byte> data) {
             foreach (HSteamNetConnection connection in currentConnections.Keys) {
@@ -108,24 +119,22 @@ namespace ReplayRecorder.Steam {
             }
         }
 
-        public bool SendTo(HSteamNetConnection connection, ArraySegment<byte> data, bool force = false, bool dequeue = false) {
+        public bool SendTo(HSteamNetConnection connection, ArraySegment<byte> data, bool dequeue = false) {
             Connection conn = currentConnections[connection];
 
-            if (conn.queuePackets && !force) {
-                // APILogger.Debug("conn.queued data.");
-                conn.queue.Enqueue(data);
-                return true;
-            }
-
-            if (!dequeue && !resendQueue.IsEmpty) {
+            if (!dequeue && !conn.resendQueue.IsEmpty) {
                 // APILogger.Debug("queued data.");
-                resendQueue.Enqueue(data);
+                conn.resendQueue.Enqueue(new ResendRequest() { bytes = data });
                 return true;
             }
 
-            const int packetSize = Constants.k_cbMaxSteamNetworkingSocketsMessageSizeSend;
+            if (data.Count > maxPacketSize) {
+                APILogger.Error("Failed to send packet, packet was larger than maximum message send size.");
+                throw new Exception("Failed to send packet, packet was larger than maximum message send size.");
+            }
 
-            int numMessages = Mathf.CeilToInt(data.Count / (float)packetSize);
+            //int numMessages = Mathf.CeilToInt(data.Count / (float)maxPacketSize);
+            const int numMessages = 1;
             IntPtr[] messages = new IntPtr[numMessages];
             ArraySegment<byte>[] buffers = new ArraySegment<byte>[numMessages];
             long[] results = new long[numMessages];
@@ -133,7 +142,7 @@ namespace ReplayRecorder.Steam {
             int bytesWritten = 0;
             int index = 0;
             while (bytesWritten < data.Count) {
-                int bytesToWrite = Mathf.Min(data.Count - bytesWritten, packetSize);
+                int bytesToWrite = Mathf.Min(data.Count - bytesWritten, maxPacketSize);
                 IntPtr packetPtr = SteamGameServerNetworkingUtils.AllocateMessage(bytesToWrite);
 
                 // Copy to managed
@@ -161,11 +170,16 @@ namespace ReplayRecorder.Steam {
 
             for (int i = 0; i < results.Length; ++i) {
                 if (results[i] < 0) {
-                    // APILogger.Debug($"Failed to send packet '{i}', Error Code: {results[i]}, queuing for future send...");
-                    resendQueue.Enqueue(buffers[i]);
-                    success = false;
+                    APILogger.Debug($"Failed to send packet, Error Code: {results[i]}");
+                    if (-results[i] == (long)EResult.k_EResultLimitExceeded) {
+                        conn.resendQueue.Enqueue(new ResendRequest { bytes = buffers[i] });
+                        APILogger.Debug($"Requeued packet.");
+                        success = false;
+                    }
                 }
             }
+
+            // APILogger.Debug($"Sent[{success}] {data.Count} bytes.");
 
             return success;
         }
@@ -199,21 +213,23 @@ namespace ReplayRecorder.Steam {
                 }
                 break;
 
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected:
+            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected: {
                 APILogger.Debug($"[Server] Connection established: {connectionInfo.m_szConnectionDescription}");
-                Connection conn = new Connection();
+                Connection conn = new Connection(this, connection);
                 currentConnections.AddOrUpdate(connection, conn, (key, old) => { return conn; });
                 onAccept?.Invoke(connection);
-                receiveTask = ReceiveMessages(connection);
                 break;
+            }
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
+            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally: {
                 APILogger.Debug($"[Server] Connection closed: {connectionInfo.m_szEndDebug}");
-                currentConnections.Remove(connection, out _);
+                currentConnections.Remove(connection, out Connection? conn);
+                conn?.Dispose();
                 onDisconnect?.Invoke(connection);
                 SteamNetworkingSockets.CloseConnection(connection, 0, "Closed", false);
                 break;
+            }
             }
         }
 

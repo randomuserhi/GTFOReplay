@@ -84,6 +84,7 @@ public class Plugin : BasePlugin {
     }
 
     internal static void steam_onReceive(ArraySegment<byte> buffer, rSteamClient client) {
+        APILogger.Debug($"Received {buffer.Count} bytes.");
         _ = server.RawSendTo(buffer, client.associatedEndPoint);
     }
 
@@ -109,10 +110,16 @@ public class Plugin : BasePlugin {
     [ReplayInit]
     internal static void TriggerGameStart() {
         if (rSteamManager.Server == null) return;
+        SnapshotInstance? instance = SnapshotManager.instance;
+        if (instance == null) {
+            APILogger.Error("Snapshot instance was not running, but tried to trigger network game start.");
+            return;
+        }
 
         ByteBuffer packet = new ByteBuffer();
-        BitHelper.WriteBytes(sizeof(ushort), packet); // message size in bytes
+        BitHelper.WriteBytes(sizeof(ushort) + 1, packet); // message size in bytes
         BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
+        BitHelper.WriteBytes(instance.replayInstanceId, packet);
 
         rSteamManager.Server.Send(packet.Array);
     }

@@ -57,18 +57,9 @@ namespace ReplayRecorder {
             if (increment) count += size;
         }
 
-        internal void Flush(FileStream fs) {
-            if (ConfigManager.DebugTicks) APILogger.Debug($"Flushed snapshot: {count} bytes.");
-            BitHelper.WriteBytes(count, fs);
-            fs.Write(Array);
-            count = 0;
-        }
-
         internal async Task AsyncFlush(FileStream fs) {
             if (ConfigManager.DebugTicks) APILogger.Debug($"Async Flushed snapshot: {count} bytes.");
-            BitHelper.WriteBytes(count, fs);
             await fs.WriteAsync(Array).ConfigureAwait(false);
-            count = 0;
         }
 
         internal void Shrink() {

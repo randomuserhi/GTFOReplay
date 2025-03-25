@@ -18,12 +18,14 @@ export class GTFOManager {
             // TODO(randomuserhi)
         });
 
-        this.client.addEventListener("startGame", async () => {
-            console.log("start game!");
-
-            // NOTE(randomuserhi): Close active file, live view starting
+        this.client.addEventListener("startGame", async (bytes) => {
+            const replayInstanceId = BitHelper.readByte(bytes);
+                
+            // Open a new net file and link to replay instance to start live view
             this.fileManager.open();
-
+            this.fileManager.link(replayInstanceId);
+            
+            console.log(`start game! ${replayInstanceId}`);
             Program.post("startGame");
         });
 
@@ -43,6 +45,7 @@ export class GTFOManager {
         // Handling file link
         this.client.addEventListener("liveBytes", (bytes) => {
             this.fileManager.file?.receiveLiveBytes({
+                replayInstanceId: BitHelper.readByte(bytes),
                 offset: BitHelper.readInt(bytes),
                 bytes: BitHelper.readBytes(BitHelper.readInt(bytes), bytes)
             });

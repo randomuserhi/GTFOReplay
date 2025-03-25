@@ -6,6 +6,7 @@ using ReplayRecorder.Snapshot;
 using SNetwork;
 using Steamworks;
 using System.Collections.Concurrent;
+using UnityEngine;
 
 namespace ReplayRecorder.Steam {
     public class ConcurrentHashSet<T> : ConcurrentDictionary<T, byte>
@@ -59,21 +60,26 @@ namespace ReplayRecorder.Steam {
                 SnapshotInstance instance = SnapshotManager.instance;
                 if (instance.Active) {
                     // Trigger start if already in level
+                    // TODO(randomuserhi): Make sure this happens AFTER the client recieves the Net.MessageType.Connected message
+
+                    APILogger.Debug("Already in match, sending start signal");
 
                     ByteBuffer spacket = new ByteBuffer();
-                    BitHelper.WriteBytes(sizeof(ushort), spacket); // message size in bytes
+                    BitHelper.WriteBytes(sizeof(ushort) + 1, spacket); // message size in bytes
                     BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, spacket);
+                    BitHelper.WriteBytes(instance.replayInstanceId, spacket);
 
                     Server.SendTo(connection, spacket.Array);
 
-                    // NOTE(randomuserhi): Need to queue up current packets to send after file is sent
-                    Server.currentConnections[connection].queuePackets = true;
+                    APILogger.Debug("Already in match, sending initial bytes:");
 
                     // Send file:
-                    Task.Run(() => {
+                    Task.Run(async () => {
                         if (Server == null) return;
 
                         byte[] buffer;
+
+                        int currentOffset = instance.byteOffset;
 
                         do {
 
@@ -86,21 +92,36 @@ namespace ReplayRecorder.Steam {
                                 }
                             }
 
-                        } while (buffer.Length != instance.byteOffset);
+                        } while (buffer.Length < currentOffset);
 
-                        ByteBuffer packet = new ByteBuffer();
+                        try {
+                            int bytesSent = 0;
+                            while (bytesSent < buffer.Length) {
+                                const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
 
-                        // Header
-                        const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int);
-                        BitHelper.WriteBytes(sizeOfHeader + buffer.Length, packet); // message size in bytes
-                        BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
-                        BitHelper.WriteBytes(0, packet); // offset
-                        BitHelper.WriteBytes(buffer.Length, packet); // number of bytes to read
-                        BitHelper.WriteBytes(buffer, packet, false); // file-bytes
+                                int bytesToSend = Mathf.Min(buffer.Length - bytesSent, SteamServer.maxPacketSize - sizeOfHeader - sizeof(int));
 
-                        Server.SendTo(connection, packet.Array, force: true);
+                                ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
 
-                        Server.currentConnections[connection].queuePackets = false;
+                                // Header
+                                BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
+                                BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                                BitHelper.WriteBytes(instance.replayInstanceId, packet); // replay instance id
+                                BitHelper.WriteBytes(bytesSent, packet); // offset
+                                BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
+                                BitHelper.WriteBytes(new ArraySegment<byte>(buffer, bytesSent, bytesToSend), packet, false); // file-bytes
+
+                                Server.SendTo(connection, packet.Array);
+
+                                bytesSent += bytesToSend;
+
+                                APILogger.Debug($"Sending init {bytesSent}/{buffer.Length} ...");
+
+                                if (bytesSent < buffer.Length) await Task.Delay(16); // NOTE(randomuserhi): Avoid straining the network
+                            }
+                        } catch (Exception e) {
+                            APILogger.Error($"Unable to send initial bytes: {e}");
+                        }
                     });
                 }
             }

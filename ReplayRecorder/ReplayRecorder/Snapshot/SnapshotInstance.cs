@@ -346,6 +346,10 @@ namespace ReplayRecorder.Snapshot {
         private bool completedHeader = false;
         private HashSet<Type> unwrittenHeaders = new HashSet<Type>();
 
+        // Used by Net code to determine which replay bytes belong to
+        private static byte _replayInstanceId = 0;
+        internal byte replayInstanceId = 0;
+
         internal string fullpath = "replay.gtfo";
         internal string filename = "replay.gtfo";
         internal void Init() {
@@ -391,6 +395,7 @@ namespace ReplayRecorder.Snapshot {
 
             byteOffset = 0;
             buffer.Clear();
+            buffer.Reserve(sizeof(int), true); // Reserve space to write size of buffer
             SnapshotManager.types.Write(buffer);
 
             foreach (Type t in SnapshotManager.types.headers) {
@@ -401,6 +406,8 @@ namespace ReplayRecorder.Snapshot {
             foreach (Type t in SnapshotManager.types.dynamics) {
                 state.dynamics.Add(t, new DynamicCollection(t, this));
             }
+
+            replayInstanceId = _replayInstanceId++;
         }
 
         [HideFromIl2Cpp]
@@ -428,19 +435,46 @@ namespace ReplayRecorder.Snapshot {
         }
 
         [HideFromIl2Cpp]
-        private void SendBufferOverNetwork(ByteBuffer buffer) {
+        private async Task SendBufferOverNetwork(ByteBuffer buffer) {
             if (rSteamManager.readyConnections.Count > 0) {
-                ByteBuffer packet = new ByteBuffer();
-                // Header
-                const int sizeOfHeader = sizeof(ushort) + sizeof(int) + sizeof(int) + sizeof(int);
-                BitHelper.WriteBytes(sizeOfHeader + buffer.count, packet); // message size in bytes
-                BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
-                BitHelper.WriteBytes(byteOffset, packet); // offset
-                BitHelper.WriteBytes(sizeof(int) + buffer.count, packet); // number of bytes to read
-                BitHelper.WriteBytes(buffer.Array, packet); // file-bytes
-                _ = Send(packet);
+                int numBytes = buffer.count; // For debugging
+
+                try {
+                    int bytesSent = 0;
+                    while (bytesSent < buffer.count) {
+                        const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
+
+                        int bytesToSend = Mathf.Min(buffer.count - bytesSent, SteamServer.maxPacketSize - sizeOfHeader - sizeof(int));
+
+                        ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
+
+                        // Header
+                        BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
+                        BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                        BitHelper.WriteBytes(replayInstanceId, packet); // replay instance id
+                        BitHelper.WriteBytes(byteOffset + bytesSent, packet); // offset
+                        BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
+                        BitHelper.WriteBytes(new ArraySegment<byte>(buffer._array.Array!, buffer._array.Offset + bytesSent, bytesToSend), packet, false); // file-bytes
+
+                        if (rSteamManager.Server != null) {
+                            foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
+                                rSteamManager.Server.SendTo(connection, packet.Array);
+                            }
+                        }
+
+                        bytesSent += bytesToSend;
+
+                        APILogger.Debug($"Sending Snapshot {bytesSent}/{buffer.count} ...");
+
+                        if (bytesSent < buffer.count) await Task.Delay(16); // NOTE(randomuserhi): Avoid straining the network
+                    }
+
+                    APILogger.Debug($"Finished send: {bytesSent} / {numBytes} - {buffer.count}"); // NOTE(randomuserhi): Due to multithreading - need to check if buffer.count == numBytes
+                } catch (Exception e) {
+                    APILogger.Error($"Unable to send snapshot bytes: {e}");
+                }
             }
-            byteOffset += sizeof(int) + buffer.count;
+            byteOffset += buffer.count;
         }
 
         private void OnHeaderComplete() {
@@ -454,8 +488,15 @@ namespace ReplayRecorder.Snapshot {
             // header.Copy(buffer);
 
             APILogger.Debug($"Acknowledged Clients: {rSteamManager.readyConnections.Count}");
-            SendBufferOverNetwork(buffer);
-            buffer.Flush(fs);
+
+            // insert size of buffer at start
+            int index = 0;
+            BitHelper.WriteBytes(buffer.count - sizeof(int), buffer._array, ref index);
+            APILogger.Debug($"Header size: {buffer.count - sizeof(int)}");
+
+            // NOTE(randomuserhi): Have to wait for headers to complete before continuing
+            Task.WaitAll(buffer.AsyncFlush(fs), SendBufferOverNetwork(buffer));
+            buffer.Clear();
             buffer.Shrink();
 
             Replay.OnHeaderCompletion?.Invoke();
@@ -579,15 +620,6 @@ namespace ReplayRecorder.Snapshot {
 
         private Stopwatch stopwatch = new Stopwatch();
 
-        [HideFromIl2Cpp]
-        private async Task Send(ByteBuffer packet) {
-            if (rSteamManager.Server != null) {
-                foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
-                    rSteamManager.Server.SendTo(connection, packet.Array);
-                }
-            }
-        }
-
         private int bufferShrinkTick = 0; // tick count to check when to clear buffers
         private int peakInUse = 0;
         private void Tick() {
@@ -613,6 +645,7 @@ namespace ReplayRecorder.Snapshot {
 
             // Clear write buffer
             buffer.Clear();
+            buffer.Reserve(sizeof(int), true); // reserve space for size of buffer
 
             bool success;
             try {
@@ -623,14 +656,24 @@ namespace ReplayRecorder.Snapshot {
             }
 
             if (success) {
-                SendBufferOverNetwork(buffer);
+                // insert size of buffer to start
+                int index = 0;
+                BitHelper.WriteBytes(buffer.Count - sizeof(int), buffer._array, ref index);
+
                 float startWait = stopwatch.ElapsedMilliseconds;
                 if (writeTask != null) {
                     writeTask.Wait();
                 }
                 waitForWrite = stopwatch.ElapsedMilliseconds - startWait;
 
-                writeTask = buffer.AsyncFlush(fs);
+                // Create write task
+                ByteBuffer writeBuffer = buffer;
+                writeTask = Task.Run(() => {
+                    Task.WaitAll(writeBuffer.AsyncFlush(fs), SendBufferOverNetwork(writeBuffer));
+                    writeBuffer.Clear();
+                });
+
+                // Swap internal buffers
                 ByteBuffer temp = _buffer;
                 _buffer = buffer;
                 buffer = temp;

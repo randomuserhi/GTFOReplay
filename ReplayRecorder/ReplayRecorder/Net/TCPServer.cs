@@ -170,10 +170,12 @@ namespace ReplayRecorder {
             if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
                 await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
                 try {
+                    APILogger.Debug($"Start Send");
                     int sent = await connection.socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
                     while (sent < data.Count) {
                         sent += await connection.socket.SendAsync(new ArraySegment<byte>(data.Array!, data.Offset + sent, data.Count - sent), SocketFlags.None).ConfigureAwait(false);
                     }
+                    APILogger.Debug($"End Send {sent} {data.Count}");
                 } catch (SocketException) {
                     return;
                 } finally {
