@@ -51,9 +51,14 @@ namespace ReplayRecorder.Steam {
             private SteamServer server;
             public bool running = true;
 
-            public Connection(SteamServer server, HSteamNetConnection connection) {
+            public string steamName;
+            public ulong steamID;
+
+            public Connection(SteamServer server, HSteamNetConnection connection, string steamName, ulong steamID) {
                 this.connection = connection;
                 this.server = server;
+                this.steamName = steamName;
+                this.steamID = steamID;
 
                 _ = ReceiveMessages();
             }
@@ -191,11 +196,12 @@ namespace ReplayRecorder.Steam {
             if (connectionInfo.m_hListenSocket != server) return;
             if (rSteamClient.localClients.Contains(connection)) return;
 
+            ulong steamID = connectionInfo.m_identityRemote.GetSteamID64();
+            string steamName = SteamFriends.GetFriendPersonaName(new CSteamID(steamID));
+
             switch (connectionInfo.m_eState) {
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting:
                 APILogger.Debug($"[Server] Incoming connection from: {connectionInfo.m_szConnectionDescription}");
-
-                ulong steamID = connectionInfo.m_identityRemote.GetSteamID64();
 
                 if (steamID == SteamUser.GetSteamID().m_SteamID ||
                     ConfigManager.allowAnySpectator ||
@@ -206,16 +212,16 @@ namespace ReplayRecorder.Steam {
                         APILogger.Debug($"[Server] Failed to accept connection: {acceptResult}");
                         SteamNetworkingSockets.CloseConnection(connection, 0, "Failed to accept", false);
                     } else {
-                        APILogger.Warn($"[Server] Allowed {steamID} to spectate your lobby.");
+                        APILogger.Warn($"[Server] Allowed {steamName}[{steamID}] to spectate your lobby.");
                     }
                 } else {
-                    APILogger.Warn($"[Server] Rejected {steamID} from spectating your lobby.");
+                    APILogger.Warn($"[Server] Rejected {steamName}[{steamID}] from spectating your lobby.");
                 }
                 break;
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected: {
-                APILogger.Debug($"[Server] Connection established: {connectionInfo.m_szConnectionDescription}");
-                Connection conn = new Connection(this, connection);
+                APILogger.Debug($"[Server] Connection established with {steamName}[{steamID}]: {connectionInfo.m_szConnectionDescription}");
+                Connection conn = new Connection(this, connection, steamName, steamID);
                 currentConnections.AddOrUpdate(connection, conn, (key, old) => { return conn; });
                 onAccept?.Invoke(connection);
                 break;
@@ -223,10 +229,10 @@ namespace ReplayRecorder.Steam {
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally: {
-                APILogger.Debug($"[Server] Connection closed: {connectionInfo.m_szEndDebug}");
+                APILogger.Debug($"[Server] Connection to {steamName}[{steamID}] is closed: {connectionInfo.m_szEndDebug}");
+                onDisconnect?.Invoke(connection);
                 currentConnections.Remove(connection, out Connection? conn);
                 conn?.Dispose();
-                onDisconnect?.Invoke(connection);
                 SteamNetworkingSockets.CloseConnection(connection, 0, "Closed", false);
                 break;
             }

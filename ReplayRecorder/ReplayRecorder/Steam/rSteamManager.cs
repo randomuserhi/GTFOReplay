@@ -135,16 +135,11 @@ namespace ReplayRecorder.Steam {
 
             // Remove spectator from log list in current instance
             // TODO(randomuserhi): probably move this logic elsewhere
-            if (SnapshotManager.instance != null) {
+            if (SnapshotManager.instance != null && Server != null) {
                 SnapshotManager.instance.spectators.Remove(connection);
 
-                long id = SteamNetworkingSockets.GetConnectionUserData(connection);
-                if (id == -1) return;
-                CSteamID steamID = new CSteamID((ulong)id);
-                string name = SteamFriends.GetFriendPersonaName(steamID);
-
                 const int maxLen = 50;
-                string message = $"[GTFOReplay]: {name} is no longer spectating.";
+                string message = $"[GTFOReplay]: {Server.currentConnections[connection].steamName} is no longer spectating.";
                 while (message.Length > maxLen) {
                     PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
                     message = message.Substring(maxLen).Trim();

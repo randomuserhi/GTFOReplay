@@ -750,19 +750,13 @@ namespace ReplayRecorder.Snapshot {
                 timer = 0;
 
                 // Check if all players are alerted of live view
-                if (rSteamManager.readyConnections.Count > 0) {
+                if (rSteamManager.Server != null && rSteamManager.readyConnections.Count > 0) {
                     const int maxLen = 50;
 
                     foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Values) {
                         if (!spectators.Add(connection)) continue;
 
-                        long id = SteamNetworkingSockets.GetConnectionUserData(connection);
-                        if (id == -1) return;
-
-                        CSteamID steamID = new CSteamID((ulong)id);
-                        string name = SteamFriends.GetFriendPersonaName(steamID);
-
-                        string message = $"[GTFOReplay]: {name} is spectating.";
+                        string message = $"[GTFOReplay]: {rSteamManager.Server.currentConnections[connection].steamName} is spectating.";
                         while (message.Length > maxLen) {
                             PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
                             message = message.Substring(maxLen).Trim();
