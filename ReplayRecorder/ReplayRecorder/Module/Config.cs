@@ -59,6 +59,12 @@ namespace ReplayRecorder.BepInEx {
                 "",
                 "Comma separated list of Steam64 IDs of players allowed to connect and spectate your games. A value of 'ALL' allows anyone to connect. You do not need to whitelist yourself.");
 
+            whiteListFriends = configFile.Bind(
+                "Settings",
+                "whiteListFriends",
+                true,
+                "When set to true, considers any steam friends as part of the spectatorWhiteList.");
+
             configWatcher = new FileSystemWatcher(Paths.ConfigPath, file) {
                 NotifyFilter = NotifyFilters.LastWrite,
                 EnableRaisingEvents = true
@@ -137,6 +143,12 @@ namespace ReplayRecorder.BepInEx {
             set { spectatorWhiteList.Value = value; }
         }
         private static ConfigEntry<string> spectatorWhiteList;
+
+        public static bool WhiteListFriends {
+            get { return whiteListFriends.Value; }
+            set { whiteListFriends.Value = value; }
+        }
+        private static ConfigEntry<bool> whiteListFriends;
 
         public static bool SeparateByRundown {
             get { return separateByRundown.Value; }

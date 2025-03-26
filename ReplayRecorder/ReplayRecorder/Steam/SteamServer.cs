@@ -208,6 +208,7 @@ namespace ReplayRecorder.Steam {
 
                 if (steamID == SteamUser.GetSteamID().m_SteamID ||
                     ConfigManager.allowAnySpectator ||
+                    (ConfigManager.WhiteListFriends && SteamFriends.GetFriendRelationship(new CSteamID(steamID)) == EFriendRelationship.k_EFriendRelationshipFriend) ||
                     ConfigManager.steamIDWhitelist.Contains(steamID)) {
                     // Accept the connection
                     EResult acceptResult = SteamNetworkingSockets.AcceptConnection(connection);
