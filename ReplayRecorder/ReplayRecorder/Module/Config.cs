@@ -5,10 +5,12 @@ using BepInEx.Configuration;
 namespace ReplayRecorder.BepInEx {
     public static partial class ConfigManager {
         public static ConfigFile configFile;
+        private static FileSystemWatcher configWatcher;
 
         static ConfigManager() {
-            string text = Path.Combine(Paths.ConfigPath, $"{Module.Name}.cfg");
-            configFile = new ConfigFile(text, true);
+            string file = $"{Module.Name}.cfg";
+            string path = Path.Combine(Paths.ConfigPath, file);
+            configFile = new ConfigFile(path, true);
 
             debug = configFile.Bind(
                 "Debug",
@@ -57,6 +59,25 @@ namespace ReplayRecorder.BepInEx {
                 "",
                 "Comma separated list of Steam64 IDs of players allowed to connect and spectate your games. A value of 'ALL' allows anyone to connect. You do not need to whitelist yourself.");
 
+            configWatcher = new FileSystemWatcher(Paths.ConfigPath, file) {
+                NotifyFilter = NotifyFilters.LastWrite,
+                EnableRaisingEvents = true
+            };
+            configWatcher.Changed += async (object sender, FileSystemEventArgs args) => {
+                configWatcher.EnableRaisingEvents = false;
+                await Task.Delay(500);
+                APILogger.Warn("Reloading config...");
+                configFile.Reload();
+                LoadSpectatorWhiteList();
+                await Task.Delay(500);
+                configWatcher.EnableRaisingEvents = true;
+            };
+
+            LoadSpectatorWhiteList();
+        }
+
+        private static void LoadSpectatorWhiteList() {
+            steamIDWhitelist.Clear();
             if (SpectatorWhiteList.Trim().ToLower() != "all") {
                 string[] IDs = SpectatorWhiteList.Split(",");
                 foreach (string ID in IDs) {
