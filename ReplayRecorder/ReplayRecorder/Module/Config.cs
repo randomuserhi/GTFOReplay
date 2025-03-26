@@ -65,6 +65,12 @@ namespace ReplayRecorder.BepInEx {
                 true,
                 "When set to true, considers any steam friends as part of the spectatorWhiteList.");
 
+            disableLeaveJoinMessages = configFile.Bind(
+                "Settings",
+                "disableLeaveJoinMessages",
+                false,
+                "When set to true, disables the spectators join / leave messages.");
+
             configWatcher = new FileSystemWatcher(Paths.ConfigPath, file) {
                 NotifyFilter = NotifyFilters.LastWrite,
                 EnableRaisingEvents = true
@@ -149,6 +155,12 @@ namespace ReplayRecorder.BepInEx {
             set { whiteListFriends.Value = value; }
         }
         private static ConfigEntry<bool> whiteListFriends;
+
+        public static bool DisableLeaveJoinMessages {
+            get { return disableLeaveJoinMessages.Value; }
+            set { disableLeaveJoinMessages.Value = value; }
+        }
+        private static ConfigEntry<bool> disableLeaveJoinMessages;
 
         public static bool SeparateByRundown {
             get { return separateByRundown.Value; }

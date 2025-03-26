@@ -3,6 +3,7 @@
 using API;
 using HarmonyLib;
 using Player;
+using ReplayRecorder.BepInEx;
 using ReplayRecorder.Snapshot;
 using SNetwork;
 using Steamworks;
@@ -157,11 +158,14 @@ namespace ReplayRecorder.Steam {
 
                 const int maxLen = 50;
                 string message = $"[GTFOReplay]: {Server.currentConnections[connection].name} is no longer spectating.";
-                while (message.Length > maxLen) {
-                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
-                    message = message.Substring(maxLen).Trim();
+                APILogger.Warn(message);
+                if (!ConfigManager.DisableLeaveJoinMessages) {
+                    while (message.Length > maxLen) {
+                        PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
+                        message = message.Substring(maxLen).Trim();
+                    }
+                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
                 }
-                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
             }
         }
 
