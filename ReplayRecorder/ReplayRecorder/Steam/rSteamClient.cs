@@ -41,6 +41,11 @@ namespace ReplayRecorder.Steam {
         private ConcurrentQueue<ResendRequest> resendQueue = new ConcurrentQueue<ResendRequest>();
         private List<ResendRequest> resendQueueBuffer = new List<ResendRequest>();
 
+        // NOTE(randomuserhi): Takes ownership of `data` byte array passed in. This means that if a packet fails to send,
+        //                     and the packet is queued for use in the future, if you make changes to the byte buffer it will
+        //                     corrupt the packet on resend.
+        //
+        //                     Avoid changing the bytes in the passed `data` array once sent to this function.
         public bool Send(ArraySegment<byte> data, bool dequeue = false) {
 
             if (!dequeue && !resendQueue.IsEmpty) {
@@ -53,6 +58,8 @@ namespace ReplayRecorder.Steam {
                 APILogger.Error("Failed to send packet, packet was larger than maximum message send size.");
                 throw new Exception("Failed to send packet, packet was larger than maximum message send size.");
             }
+
+            // NOTE(randomuserhi): Used to support splitting packets - but removed the protocol, the below code is a remnant of that
 
             //int numMessages = Mathf.CeilToInt(data.Count / (float)maxPacketSize);
             const int numMessages = 1;
