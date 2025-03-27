@@ -12,7 +12,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "Vanilla.Enemy.Alerts": AlertModel[];
+            "Vanilla.Enemy.Alerts": Map<number, AlertModel>;
         }
     }
 }
@@ -49,14 +49,7 @@ class AlertModel extends ObjectWrapper<Group> {
 
     public update(enemy: EnemyModelWrapper) {
         enemy.model.root.add(this.root);
-
-        if (this.hasPlayer) {
-            this.root.scale.set(1.5, 1.5, 1.5);
-            this.root.position.set(0, enemy.tmpHeight + 1, 0);
-        } else {
-            this.root.scale.set(1.49, 1.49, 1.49);
-            this.root.position.set(0, enemy.tmpHeight + 1, 0);
-        }
+        this.root.position.set(0, enemy.tmpHeight + 1, 0);
     }
 }
 
@@ -64,8 +57,8 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, {
         name, pass: (renderer, snapshot) => {
-            const _models: AlertModel[] = [];
-            const models = renderer.getOrDefault("Vanilla.Enemy.Alerts", Factory("Array"));
+            const seen = new Set<number>();
+            const models = renderer.getOrDefault("Vanilla.Enemy.Alerts", Factory("Map"));
             const alerts = snapshot.getOrDefault("Vanilla.Enemy.Alert", Factory("Array"));
             const enemies = renderer.getOrDefault("Enemies", Factory("Map"));
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
@@ -74,29 +67,27 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
                 const enemy = enemies.get(alert.enemy)!;
                 if (!enemy.model.isVisible()) continue;
 
-                const i = _models.length;
-                if (models[i] === undefined) {
-                    const model = new AlertModel(0xffffff);
-                    models[i] = model;
+                let model = models.get(alert.enemy);
+                if (model === undefined) {
+                    model = new AlertModel(0xffffff);
+                    models.set(alert.enemy, model);
                 }
-                const model = models[i];
                 
-                let color: ColorRepresentation = 0xffffff;
-                model.hasPlayer = false;
-                if (alert.player !== undefined && players.has(alert.player)) {
-                    color = getPlayerColor(players.get(alert.player)!.slot);
+                if (!model.hasPlayer && alert.player !== undefined && players.has(alert.player)) {
+                    model.material.color.set(getPlayerColor(players.get(alert.player)!.slot));
                     model.hasPlayer = true;
                 }
-                model.material.color.set(color);
 
                 model.update(enemy);
 
-                _models.push(model);
+                seen.add(alert.enemy);
             }
-            for (let i = _models.length; i < models.length; ++i) {
-                models[i].removeFromParent();
+            for (const enemy of [...models.keys()]) {
+                if (!seen.has(enemy)) {
+                    models.get(enemy)!.removeFromParent();
+                    models.delete(enemy);
+                }
             }
-            renderer.set("Vanilla.Enemy.Alerts", _models);
         } 
     }]);
 });
