@@ -68,24 +68,28 @@ export default class Program {
 
     private static setupIPC(): void {
         ipcMain.on("closeWindow", (e) => {
+            if (e.senderFrame === null) return;
             if (!Program.isTrustedFrame(e.senderFrame)) return;
             if (Program.win === null) return;
             
             Program.win.close();
         });
         ipcMain.on("maximizeWindow", (e) => {
+            if (e.senderFrame === null) return;
             if (!Program.isTrustedFrame(e.senderFrame)) return;
             if (Program.win === null) return;
 
             Program.win.isMaximized() ? Program.win.unmaximize() : Program.win.maximize();
         });
         ipcMain.on("minimizeWindow", (e) => {
+            if (e.senderFrame === null) return;
             if (!Program.isTrustedFrame(e.senderFrame)) return;
             if (Program.win === null) return;
 
             Program.win.minimize();
         });
         ipcMain.on("openDevTools", (e) => {
+            if (e.senderFrame === null) return;
             if (!Program.isTrustedFrame(e.senderFrame)) return;
             if (Program.win === null) return;
 

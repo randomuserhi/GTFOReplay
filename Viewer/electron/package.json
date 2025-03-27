@@ -36,12 +36,11 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
     "@electron-forge/plugin-fuses": "^7.4.0",
     "@electron/fuses": "^1.8.0",
-    "@types/electron": "^1.6.10",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "copyfiles": "^2.4.1",
     "del-cli": "^5.1.0",
-    "electron": "^31.0.1",
+    "electron": "^35.1.1",
     "eslint": "^8.56.0",
     "eslint-plugin-unused-imports": "^3.1.0",
     "typescript": "^5.3.3"

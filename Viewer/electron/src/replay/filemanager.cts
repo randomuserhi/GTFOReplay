@@ -238,8 +238,8 @@ class File {
                 });
                 stream.on("error", reject);
                 const chunks: Buffer[] = [];
-                stream.on("data", (chunk: Buffer) => {
-                    chunks.push(chunk);
+                stream.on("data", (chunk: Buffer | string) => {
+                    chunks.push(chunk as Buffer);
                 });
                 stream.on("end", () => {
                     const buffer = Buffer.concat(chunks);
@@ -275,8 +275,8 @@ class File {
             });
             stream.on("error", reject);
             const chunks: Buffer[] = [];
-            stream.on("data", (chunk: Buffer) => {
-                chunks.push(chunk);
+            stream.on("data", (chunk: Buffer | string) => {
+                chunks.push(chunk as Buffer);
             });
             stream.on("end", () => {
                 resolve(Buffer.concat(chunks));
