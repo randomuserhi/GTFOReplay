@@ -54,8 +54,8 @@ class AlertModel extends ObjectWrapper<Group> {
             this.root.scale.set(1.5, 1.5, 1.5);
             this.root.position.set(0, enemy.tmpHeight + 1, 0);
         } else {
-            this.root.scale.set(1.4, 1.4, 1.4);
-            this.root.position.set(0, enemy.tmpHeight + 1.05, 0);
+            this.root.scale.set(1.49, 1.49, 1.4);
+            this.root.position.set(0, enemy.tmpHeight + 1, 0);
         }
     }
 }
