@@ -22,6 +22,7 @@ const cylinder = new CylinderGeometry(0.5, 0.5, 2, 10, 10);
 
 class AlertModel extends ObjectWrapper<Group> {
     material: MeshPhongMaterial;
+    hasPlayer: boolean;
 
     constructor(color: ColorRepresentation) {
         super();
@@ -42,11 +43,20 @@ class AlertModel extends ObjectWrapper<Group> {
 
         this.root.add(model);
         this.root.scale.set(1.5, 1.5, 1.5);
+
+        this.hasPlayer = false;
     }
 
     public update(enemy: EnemyModelWrapper) {
         enemy.model.root.add(this.root);
-        this.root.position.set(0, enemy.tmpHeight + 1, 0);
+
+        if (this.hasPlayer) {
+            this.root.scale.set(1.5, 1.5, 1.5);
+            this.root.position.set(0, enemy.tmpHeight + 1, 0);
+        } else {
+            this.root.scale.set(1.4, 1.4, 1.4);
+            this.root.position.set(0, enemy.tmpHeight + 1.1, 0);
+        }
     }
 }
 
@@ -72,8 +82,10 @@ ModuleLoader.registerRender("Vanilla.Enemy.Alerts", (name, api) => {
                 const model = models[i];
                 
                 let color: ColorRepresentation = 0xffffff;
+                model.hasPlayer = false;
                 if (alert.player !== undefined && players.has(alert.player)) {
                     color = getPlayerColor(players.get(alert.player)!.slot);
+                    model.hasPlayer = true;
                 }
                 model.material.color.set(color);
 
