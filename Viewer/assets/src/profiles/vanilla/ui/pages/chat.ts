@@ -109,7 +109,7 @@ export const Chat = () => {
         const m = html`
         <li m-id="item" class="${messageStyle.wrapper} ${messageStyle.right}">
             <div class="${messageStyle.text}">
-                ${new Text(message)}
+                ${document.createTextNode(message)}
             </div>
         </li>
         `;
@@ -162,10 +162,10 @@ export const Chat = () => {
             <li class="${messageStyle.wrapper} ${messageStyle.left} ${messageStyle.acked}">
                 ${spectator === undefined || lastUser === spectator ? "" : /*html*/`
                 <div style="font-size: 10px; padding: 5px;">
-                    ${new Text(`${spectator} (${player.nickname})`)}
+                    ${document.createTextNode(`${spectator} (${player.nickname})`)}
                 </div>`}
                 <div class="${messageStyle.text}">
-                    ${new Text(match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim())}
+                    ${document.createTextNode(match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim())}
                 </div>
             </li>
             `;
@@ -179,10 +179,10 @@ export const Chat = () => {
             <li class="${messageStyle.wrapper} ${messageStyle.left}">
                 ${lastUser === steamId ? "" : /*html*/`
                 <div style="font-size: 10px; padding: 5px;">
-                    ${new Text(player.nickname)}
+                    ${document.createTextNode(player.nickname)}
                 </div>`}
                 <div class="${messageStyle.text}" style="background-color: ${colors.back}; color: ${colors.front};">
-                    ${new Text(message)}
+                    ${document.createTextNode(message)}
                 </div>
             </li>
             `;
