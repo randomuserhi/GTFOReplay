@@ -152,7 +152,7 @@ namespace ReplayRecorder.Steam {
                     MainThread.Run(() => {
                         if (!SNet.LocalPlayer.IsInLobby) return;
 
-                        sendMessageToSpectators = false;
+                        spectatorMessageSender = conn;
 
                         const int maxLen = 49 - 2;
                         message = $"[{conn.name}] " + message;
@@ -162,7 +162,7 @@ namespace ReplayRecorder.Steam {
                         }
                         PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {message}");
 
-                        sendMessageToSpectators = true;
+                        spectatorMessageSender = null;
 
                         ByteBuffer packet = new ByteBuffer();
                         BitHelper.WriteBytes(sizeof(ushort) + sizeof(ushort), packet);
@@ -226,12 +226,12 @@ namespace ReplayRecorder.Steam {
         }
 
         // TODO(randomuserhi): Chat patches -> Should definitely move elsewhere lol
-        private static bool sendMessageToSpectators = true;
+
+        private static SteamServer.Connection? spectatorMessageSender = null;
         [ReplayRecorder.API.Attributes.ReplayPluginLoad]
         private static void OnLoad() {
             PlayerChatManager.OnIncomingChatMessage += (Action<string, SNet_Player, SNet_Player>)((string msg, SNet_Player srcPlayer, SNet_Player dstPlayer) => {
                 if (Server == null) return;
-                if (!sendMessageToSpectators) return;
 
                 ByteBuffer packet = new ByteBuffer();
                 packet.Reserve(sizeof(int), true);
@@ -241,7 +241,18 @@ namespace ReplayRecorder.Steam {
                 int index = 0;
                 BitHelper.WriteBytes(packet.count - sizeof(int), packet.Array, ref index);
 
-                Server.Send(packet.Array);
+                if (spectatorMessageSender == null) {
+                    Task.Run(() => Server.Send(packet.Array));
+                } else {
+                    HSteamNetConnection _sender = spectatorMessageSender.connection;
+                    Task.Run(() => {
+                        foreach (HSteamNetConnection connection in Server.currentConnections.Keys) {
+                            if (connection != _sender) {
+                                Server.SendTo(connection, packet.Array);
+                            }
+                        }
+                    });
+                }
             });
         }
     }

@@ -96,7 +96,7 @@ export const Chat = () => {
     dom.view = signal<html<typeof View> | undefined>(undefined);
     dom.active = signal(false);
     
-    let lastUser: bigint | undefined = undefined;
+    let lastUser: bigint | string | undefined = undefined;
     
     dom.chat.addEventListener("keydown", async (e) => {
         if (e.key !== 'Enter' && e.keyCode !== 13) return;
@@ -130,7 +130,11 @@ export const Chat = () => {
         sentMessages.set(await window.api.invoke("sendChatMessage", message), state);
     });
 
+    const spectatorNameRegex = /> \[(.*)\]/;
     const onInGameMessage = window.api.on("inGameMessage", (steamId: bigint, message: string) => {
+        message = message.trim();
+        if (message.length === 0) return;
+
         const replay = dom.view()?.replay();
         const snapshot = dom.view()?.snapshot;
         if (snapshot === undefined || replay === undefined) return;
@@ -140,21 +144,48 @@ export const Chat = () => {
         const player = players.get(steamId)!;
         if (player === undefined) return;
 
-        const colors = getPlayerChatColor(player.slot);
+        let m: html;
 
-        const m = html`
-        <li class="${messageStyle.wrapper} ${messageStyle.left}">
-            ${lastUser === steamId ? "" : /*html*/`
-            <div style="font-size: 10px; padding: 5px;">
-                ${player.nickname}
-            </div>`}
-            <div class="${messageStyle.text}" style="background-color: ${colors.back}; color: ${colors.front};">
-                ${message}
-            </div>
-        </li>
-        `;
+        if (message[0] === ">") {
+            // From spectator, probably (could be impersonated)
 
-        lastUser = steamId;
+            const match = message.match(spectatorNameRegex);
+            let spectator = undefined;
+            if (match !== null) {
+                spectator = match[1];
+            }
+
+            m = html`
+            <li class="${messageStyle.wrapper} ${messageStyle.left} ${messageStyle.acked}">
+                ${spectator === undefined || lastUser === spectator ? "" : /*html*/`
+                <div style="font-size: 10px; padding: 5px;">
+                    ${spectator}
+                </div>`}
+                <div class="${messageStyle.text}">
+                    ${match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim()}
+                </div>
+            </li>
+            `;
+
+            lastUser = spectator;
+        } else {
+            // From player
+            const colors = getPlayerChatColor(player.slot);
+
+            m = html`
+            <li class="${messageStyle.wrapper} ${messageStyle.left}">
+                ${lastUser === steamId ? "" : /*html*/`
+                <div style="font-size: 10px; padding: 5px;">
+                    ${player.nickname}
+                </div>`}
+                <div class="${messageStyle.text}" style="background-color: ${colors.back}; color: ${colors.front};">
+                    ${message}
+                </div>
+            </li>
+            `;
+
+            lastUser = steamId;
+        }
         
         dom.list.append(...m);
         dom.list.scroll({ top: dom.list.scrollHeight });
