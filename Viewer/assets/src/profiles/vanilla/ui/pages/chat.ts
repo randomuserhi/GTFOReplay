@@ -160,7 +160,7 @@ export const Chat = () => {
 
             m = html`
             <li class="${messageStyle.wrapper} ${messageStyle.left} ${messageStyle.acked}">
-                ${spectator === undefined || lastUser === spectator ? "" : /*html*/`
+                ${spectator === undefined || lastUser === spectator ? "" : html`
                 <div style="font-size: 10px; padding: 5px;">
                     ${document.createTextNode(`${spectator} (${player.nickname})`)}
                 </div>`}
@@ -179,7 +179,7 @@ export const Chat = () => {
             <li class="${messageStyle.wrapper} ${messageStyle.left}">
                 ${lastUser === steamId ? "" : /*html*/`
                 <div style="font-size: 10px; padding: 5px;">
-                    ${document.createTextNode(player.nickname)}
+                    ${document.createTextNode(`${player.nickname}`)}
                 </div>`}
                 <div class="${messageStyle.text}" style="background-color: ${colors.back}; color: ${colors.front};">
                     ${document.createTextNode(message)}
