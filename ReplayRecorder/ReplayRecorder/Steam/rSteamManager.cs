@@ -7,19 +7,9 @@ using ReplayRecorder.BepInEx;
 using ReplayRecorder.Snapshot;
 using SNetwork;
 using Steamworks;
-using System.Collections.Concurrent;
 using UnityEngine;
 
 namespace ReplayRecorder.Steam {
-    public class ConcurrentHashSet<T> : ConcurrentDictionary<T, byte>
-    where T : notnull {
-        const byte DummyByte = byte.MinValue;
-
-        public bool Contains(T item) => ContainsKey(item);
-        public bool Add(T item) => TryAdd(item, DummyByte);
-        public bool Remove(T item) => TryRemove(item, out _);
-    }
-
     [HarmonyPatch]
     internal static class rSteamManager {
         private static bool initialized = false;
@@ -65,7 +55,7 @@ namespace ReplayRecorder.Steam {
 
             int index = 0;
             Net.MessageType type = (Net.MessageType)BitHelper.ReadUShort(buffer, ref index);
-            APILogger.Warn($"Received message of type '{type}'.");
+            APILogger.Debug($"Received message of type '{type}'.");
             switch (type) {
             case Net.MessageType.Connected: {
                 string name = BitHelper.ReadString(buffer, ref index);
@@ -145,26 +135,69 @@ namespace ReplayRecorder.Steam {
                 readyConnections.Add(connection);
                 break;
             }
+            case Net.MessageType.InGameMessage: {
+                // TODO(randomuserhi): Move this logic elsewhere
+                if (Server.currentConnections.TryGetValue(connection, out SteamServer.Connection? conn) && conn != null) {
+                    ushort messageId = BitHelper.ReadUShort(buffer, ref index); // Used to acknowledge sent messages
+
+                    int length = BitHelper.ReadUShort(buffer, ref index);
+                    if (length > 150) return; // Ignore messages longer than 150 bytes
+
+                    string message = Utils.RemoveHTMLTags(BitHelper.ReadString(buffer, length, ref index).Trim());
+                    APILogger.Warn($"Spectator Message > > {conn.name}: {message}");
+                    if (message.Length == 0) return; // Ignore messages of 0 length;
+
+                    if (ConfigManager.MuteChat) return;
+
+                    MainThread.Run(() => {
+                        if (!SNet.LocalPlayer.IsInLobby) return;
+
+                        sendMessageToSpectators = false;
+
+                        const int maxLen = 49 - 2;
+                        message = $"[{conn.name}] " + message;
+                        while (message.Length > maxLen) {
+                            PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {message.Substring(0, maxLen).Trim()}");
+                            message = message.Substring(maxLen).Trim();
+                        }
+                        PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {message}");
+
+                        sendMessageToSpectators = true;
+
+                        ByteBuffer packet = new ByteBuffer();
+                        BitHelper.WriteBytes(sizeof(ushort) + sizeof(ushort), packet);
+                        BitHelper.WriteBytes((ushort)Net.MessageType.AckInGameMessage, packet);
+                        BitHelper.WriteBytes(messageId, packet);
+
+                        Server?.SendTo(conn.connection, packet.Array);
+                    });
+                }
+                break;
+            }
             }
         }
 
         internal static void onDisconnect(HSteamNetConnection connection) {
             readyConnections.Remove(connection);
 
-            // Remove spectator from log list in current instance
-            // TODO(randomuserhi): probably move this logic elsewhere
-            if (SnapshotManager.instance != null && Server != null) {
-                SnapshotManager.instance.spectators.Remove(connection);
+            if (Server != null && Server.currentConnections.ContainsKey(connection)) {
+                APILogger.Warn($"{Server.currentConnections[connection].name} is no longer spectating");
 
-                const int maxLen = 50;
-                string message = $"[GTFOReplay]: {Server.currentConnections[connection].name} is no longer spectating.";
-                APILogger.Warn(message);
-                if (!ConfigManager.DisableLeaveJoinMessages) {
-                    while (message.Length > maxLen) {
-                        PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
-                        message = message.Substring(maxLen).Trim();
+                // Remove spectator from log list in current instance
+                // TODO(randomuserhi): probably move this logic elsewhere
+                if (SnapshotManager.instance != null) {
+                    SnapshotManager.instance.spectators.Remove(connection);
+
+                    const int maxLen = 50;
+                    string message = $"[{Server.currentConnections[connection].name}] is no longer spectating.";
+                    APILogger.Warn(message);
+                    if (!ConfigManager.DisableLeaveJoinMessages) {
+                        while (message.Length > maxLen) {
+                            PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
+                            message = message.Substring(maxLen).Trim();
+                        }
+                        PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
                     }
-                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
                 }
             }
         }
@@ -190,6 +223,26 @@ namespace ReplayRecorder.Steam {
             GameServer.Shutdown();
 
             APILogger.Debug("Shutdown Steamworks!");
+        }
+
+        // TODO(randomuserhi): Chat patches -> Should definitely move elsewhere lol
+        private static bool sendMessageToSpectators = true;
+        [ReplayRecorder.API.Attributes.ReplayPluginLoad]
+        private static void OnLoad() {
+            PlayerChatManager.OnIncomingChatMessage += (Action<string, SNet_Player, SNet_Player>)((string msg, SNet_Player srcPlayer, SNet_Player dstPlayer) => {
+                if (Server == null) return;
+                if (!sendMessageToSpectators) return;
+
+                ByteBuffer packet = new ByteBuffer();
+                packet.Reserve(sizeof(int), true);
+                BitHelper.WriteBytes((ushort)Net.MessageType.InGameMessage, packet);
+                BitHelper.WriteBytes(srcPlayer.Lookup, packet);
+                BitHelper.WriteBytes(msg, packet);
+                int index = 0;
+                BitHelper.WriteBytes(packet.count - sizeof(int), packet.Array, ref index);
+
+                Server.Send(packet.Array);
+            });
         }
     }
 }

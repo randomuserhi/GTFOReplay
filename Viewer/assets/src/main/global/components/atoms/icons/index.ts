@@ -1,3 +1,4 @@
+export * from "./chat.js";
 export * from "./chevronLeft.js";
 export * from "./chevronRight.js";
 export * from "./crossIcon.js";

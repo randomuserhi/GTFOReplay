@@ -125,6 +125,9 @@ const ModuleList = () => {
         if (el === undefined) {
             const el = ModuleItem(value);
             el.button.addEventListener("click", () => {
+                // Unlink when changing profile
+                app.player.unlink();
+
                 // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
                 //window.api.send("defaultModule", item.key());
                 window.api.invoke("loadModule", el.key()).then((response) => {

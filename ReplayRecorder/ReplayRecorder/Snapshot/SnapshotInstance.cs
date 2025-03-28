@@ -756,7 +756,7 @@ namespace ReplayRecorder.Snapshot {
                     foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
                         if (!spectators.Add(connection)) continue;
 
-                        string message = $"[GTFOReplay]: {rSteamManager.Server.currentConnections[connection].name} is spectating.";
+                        string message = $"[{rSteamManager.Server.currentConnections[connection].name}] is spectating.";
                         APILogger.Warn(message);
                         if (!ConfigManager.DisableLeaveJoinMessages) {
                             while (message.Length > maxLen) {

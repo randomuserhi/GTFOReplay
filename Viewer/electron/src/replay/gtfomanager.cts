@@ -42,6 +42,13 @@ export class GTFOManager {
             Program.post("liveFailedToConnect", "failed to connect");
         });
 
+        this.client.addEventListener("inGameMessage", (bytes) => {
+            Program.post("inGameMessage", BitHelper.readULong(bytes), BitHelper.readString(bytes));
+        });
+        this.client.addEventListener("ackInGameMessage", (bytes) => {
+            Program.post("ackInGameMessage", BitHelper.readUShort(bytes));
+        });
+
         // Handling file link
         this.client.addEventListener("liveBytes", (bytes) => {
             this.fileManager.file?.receiveLiveBytes({
@@ -53,6 +60,16 @@ export class GTFOManager {
     }
 
     public setupIPC(ipc: Electron.IpcMain) {
+        let messageId = 0;
+        ipc.handle("sendChatMessage", async (_, message: string) => {
+            if (!this.client.active()) return;
+            const packet = new ByteStream();
+            const id = (messageId++) % 65536;
+            BitHelper.writeUShort(id, packet);
+            BitHelper.writeString(message, packet);
+            this.client.send("inGameMessage", packet);
+            return id;
+        });
         ipc.handle("link", async (_, ip: string, port: number) => {
             try {
                 await this.client.connect(ip, port);
@@ -68,7 +85,7 @@ export class GTFOManager {
             console.log(`Sending Player: ${id}`);
             this.client.send("acknowledgement", packet);
         });
-        ipc.on("unlink", () => {
+        ipc.handle("unlink", () => {
             this.client.disconnect();
         });
     }

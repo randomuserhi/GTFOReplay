@@ -38,6 +38,7 @@ module.ready();
 /* eslint-disable-next-line sort-imports */
 import { Bar, Button } from "./components/bar.js";
 import { Display } from "./display.js";
+import { Chat } from "./pages/chat.js";
 import { Finder } from "./pages/finder.js";
 import { Info } from "./pages/info.js";
 import { Settings } from "./pages/settings.js";
@@ -89,6 +90,7 @@ const UI = () => {
         readonly settings: html<typeof Button>;
         readonly stats: html<typeof Button>;
         readonly finder: html<typeof Button>;
+        readonly chat: html<typeof Button>;
         readonly info: html<typeof Button>;
     }
     interface Private {
@@ -111,6 +113,9 @@ const UI = () => {
                     ${icons.finder()}
                 ${html.close()}
                 <div style="flex: 1"></div>
+                ${html.open(Button()).bind("chat")}
+                    ${icons.chat()}
+                ${html.close()}
                 ${html.open(Button()).bind("info")}
                     ${icons.info()}
                 ${html.close()}
@@ -158,6 +163,7 @@ const UI = () => {
     dom.pages.set(dom.finder, Finder());
     dom.pages.set(dom.info, Info());
     dom.pages.set(dom.stats, Stats());
+    dom.pages.set(dom.chat, Chat());
 
     for(const [button, page] of dom.pages) {
         button.button.addEventListener("click", () => {

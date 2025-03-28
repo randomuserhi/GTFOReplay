@@ -27,7 +27,7 @@ public class Plugin : BasePlugin {
     /// </summary>
     /// <param name="endPoint"></param>
     internal static void onAccept(EndPoint endPoint) {
-        APILogger.Debug($"{endPoint} connected.");
+        APILogger.Warn($"[Viewer] {endPoint} connected.");
     }
 
     /// <summary>
@@ -59,6 +59,12 @@ public class Plugin : BasePlugin {
             endPointToClient.Add(endPoint, steam);
             break;
         }
+        default: {
+            if (endPointToClient.ContainsKey(endPoint)) {
+                endPointToClient[endPoint].Send(buffer);
+            }
+            break;
+        }
         }
     }
 
@@ -67,7 +73,7 @@ public class Plugin : BasePlugin {
     /// </summary>
     /// <param name="endPoint"></param>
     internal static void onDisconnect(EndPoint endPoint) {
-        APILogger.Debug($"{endPoint} disconnected.");
+        APILogger.Warn($"[Viewer] {endPoint} disconnected.");
         if (endPointToClient.ContainsKey(endPoint)) {
             endPointToClient[endPoint].Dispose();
             endPointToClient.Remove(endPoint);
@@ -157,6 +163,7 @@ public class Plugin : BasePlugin {
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
 
         ClassInjector.RegisterTypeInIl2Cpp<SnapshotInstance>();
+        ClassInjector.RegisterTypeInIl2Cpp<MainThread>();
 
         Replay.RegisterAll();
 

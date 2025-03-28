@@ -501,6 +501,12 @@ namespace ReplayRecorder {
             return temp;
         }
 
+        public static string ReadString(ArraySegment<byte> source, int length, ref int index) {
+            string temp = Encoding.UTF8.GetString(source.Array!, source.Offset + index, length);
+            index += length;
+            return temp;
+        }
+
         // UNITY BitHelper functions:
 
         public const int SizeOfVector3 = sizeof(float) * 3;

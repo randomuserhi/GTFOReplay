@@ -2,7 +2,8 @@ import { contextBridge, ipcRenderer } from "electron";
 
 // TODO(randomuserhi): Look into https://stackoverflow.com/a/57656281/9642458 for better security
 
-const listeners = new Map<string, Map<(event: Electron.IpcRendererEvent, ...args: any[]) => void, (...args: any[]) => void>>();
+let callbackId = 0;
+const listeners = new Map<string, Map<number, (event: Electron.IpcRendererEvent, ...args: any[]) => void>>();
 contextBridge.exposeInMainWorld(
     "api", {
         closeWindow() { // When window.api.closeWindow() is called, send "closeWindow" event to ipcMain
@@ -24,18 +25,24 @@ contextBridge.exposeInMainWorld(
         // To send from Main:
         // window.webContents.send("event-name", ...args);
         on(event: string, callback: (...args: any[]) => void) {
-            const cb = (_: Electron.IpcRendererEvent, ...args: any[]) => callback(...args);
             if (!listeners.has(event)) listeners.set(event, new Map());
             const collection = listeners.get(event)!;
-            if (collection.has(callback)) return;
-            collection.set(callback, cb);
+
+            const id = callbackId++;
+            const cb = (_: Electron.IpcRendererEvent, ...args: any[]) => callback(...args);
+
+            collection.set(id, cb);
             ipcRenderer.on(event, cb);
+
+            return id;
         },
-        off(event: string, callback: (...args: any[]) => void) {
+        off(event: string, callbackId: number) {
             if (!listeners.has(event)) return;
             const collection = listeners.get(event)!;
-            if (!collection.has(callback)) return;
-            ipcRenderer.off(event, collection.get(callback)!);
+            if (!collection.has(callbackId)) return;
+
+            ipcRenderer.off(event, collection.get(callbackId)!);
+            collection.delete(callbackId);
         },
         send(event: string, ...args: any[]) {
             ipcRenderer.send(event, ...args);

@@ -50,13 +50,12 @@ const App = () => {
         chooseFile(): void;
         
         readonly nav: html<typeof WinNav>;
+        readonly player: html<typeof Player>;
     }
     interface Private {
         readonly body: HTMLDivElement;
 
-        readonly player: html<typeof Player>;
         readonly main: html<typeof Main>;
-
         readonly profile: Signal<string | undefined>;
     }
 

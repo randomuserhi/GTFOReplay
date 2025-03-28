@@ -114,19 +114,19 @@ export const Player = () => {
     };
 
     dom.link = async function link(steamId: string) {
+        await window.api.invoke("unlink");
+
         const resp: string | undefined = await window.api.invoke("link", "127.0.0.1", 56759);
         if (resp !== undefined) {
             // TODO(randomuserhi)
             console.error(`Failed to link: ${resp}`);
             return;
         }
-
-        // TODO(randomuserhi): move somewhere else and allow custom id...
         window.api.invoke("goLive", BigInt(steamId));
     };
 
     dom.unlink = async function unlink() {
-        window.api.send("unlink");
+        await window.api.invoke("unlink");
 
         app.nav.linkedStatus("Not Linked");
         app.nav.linkInput.value = "";

@@ -71,6 +71,12 @@ namespace ReplayRecorder.BepInEx {
                 false,
                 "When set to true, disables the spectators join / leave messages.");
 
+            muteChat = configFile.Bind(
+                "Settings",
+                "muteChat",
+                false,
+                "When set to true, disables the spectator chat.");
+
             configWatcher = new FileSystemWatcher(Paths.ConfigPath, file) {
                 NotifyFilter = NotifyFilters.LastWrite,
                 EnableRaisingEvents = true
@@ -161,6 +167,12 @@ namespace ReplayRecorder.BepInEx {
             set { disableLeaveJoinMessages.Value = value; }
         }
         private static ConfigEntry<bool> disableLeaveJoinMessages;
+
+        public static bool MuteChat {
+            get { return muteChat.Value; }
+            set { muteChat.Value = value; }
+        }
+        private static ConfigEntry<bool> muteChat;
 
         public static bool SeparateByRundown {
             get { return separateByRundown.Value; }

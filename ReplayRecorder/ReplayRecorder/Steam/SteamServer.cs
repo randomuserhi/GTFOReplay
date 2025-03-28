@@ -8,6 +8,15 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace ReplayRecorder.Steam {
+    public class ConcurrentHashSet<T> : ConcurrentDictionary<T, byte>
+    where T : notnull {
+        const byte DummyByte = byte.MinValue;
+
+        public bool Contains(T item) => ContainsKey(item);
+        public bool Add(T item) => TryAdd(item, DummyByte);
+        public bool Remove(T item) => TryRemove(item, out _);
+    }
+
     internal static class SteamNet {
         public delegate void onConnect(HSteamNetConnection connection);
         public delegate void onAccept(HSteamNetConnection connection);
@@ -47,7 +56,7 @@ namespace ReplayRecorder.Steam {
             public ConcurrentQueue<ResendRequest> resendQueue = new ConcurrentQueue<ResendRequest>();
             public List<ResendRequest> resendQueueBuffer = new List<ResendRequest>();
 
-            private HSteamNetConnection connection;
+            public readonly HSteamNetConnection connection;
             private SteamServer server;
             public bool running = true;
 
@@ -200,11 +209,11 @@ namespace ReplayRecorder.Steam {
             if (connectionInfo.m_hListenSocket != server) return;
             if (rSteamClient.localClients.Contains(connection)) return;
 
+            ulong steamID = connectionInfo.m_identityRemote.GetSteamID64();
+
             switch (connectionInfo.m_eState) {
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting:
                 APILogger.Debug($"[Server] Incoming connection from: {connectionInfo.m_szConnectionDescription}");
-
-                ulong steamID = connectionInfo.m_identityRemote.GetSteamID64();
 
                 if (steamID == SteamUser.GetSteamID().m_SteamID ||
                     ConfigManager.allowAnySpectator ||
@@ -221,10 +230,11 @@ namespace ReplayRecorder.Steam {
                 } else {
                     APILogger.Warn($"[Server] Rejected {steamID} from spectating your lobby.");
                 }
+
                 break;
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected: {
-                APILogger.Debug($"[Server] Connection established: {connectionInfo.m_szConnectionDescription}");
+                APILogger.Warn($"[Server] Connection established: {connectionInfo.m_szConnectionDescription}");
                 Connection conn = new Connection(this, connection);
                 currentConnections.AddOrUpdate(connection, conn, (key, old) => { return conn; });
                 onAccept?.Invoke(connection);
@@ -233,7 +243,7 @@ namespace ReplayRecorder.Steam {
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally: {
-                APILogger.Debug($"[Server] Connection closed: {connectionInfo.m_szEndDebug}");
+                APILogger.Warn($"[Server] Connection closed: {connectionInfo.m_szConnectionDescription} {connectionInfo.m_szEndDebug}");
                 onDisconnect?.Invoke(connection);
                 currentConnections.Remove(connection, out Connection? conn);
                 conn?.Dispose();
