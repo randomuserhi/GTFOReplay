@@ -113,8 +113,11 @@ export const Chat = () => {
             </div>
         </li>
         `;
+        const doScroll = dom.list.offsetHeight + dom.list.scrollTop >= dom.list.scrollHeight;
         dom.list.append(...m);
-        dom.list.scroll({ top: dom.list.scrollHeight });
+        if (doScroll) {
+            dom.list.scroll({ top: dom.list.scrollHeight });
+        }
 
         lastUser = undefined;
         
@@ -187,8 +190,11 @@ export const Chat = () => {
             lastUser = steamId;
         }
         
+        const doScroll = dom.list.offsetHeight + dom.list.scrollTop >= dom.list.scrollHeight;
         dom.list.append(...m);
-        dom.list.scroll({ top: dom.list.scrollHeight });
+        if (doScroll) {
+            dom.list.scroll({ top: dom.list.scrollHeight });
+        }
     });
     const ackInGameMessage = window.api.on("ackInGameMessage", (messageId: number) => {
         if (!sentMessages.has(messageId)) return;
