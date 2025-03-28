@@ -39,7 +39,7 @@ namespace ReplayRecorder.BepInEx {
             replayFolder = configFile.Bind(
                 "Settings",
                 "replayFolder",
-                "./",
+                "./Replays",
                 "Location of which replays will be stored. If invalid, defaults to the games location.");
             replayFilename = configFile.Bind(
                 "Settings",
