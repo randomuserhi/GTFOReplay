@@ -162,7 +162,7 @@ export const Chat = () => {
             <li class="${messageStyle.wrapper} ${messageStyle.left} ${messageStyle.acked}">
                 ${spectator === undefined || lastUser === spectator ? "" : /*html*/`
                 <div style="font-size: 10px; padding: 5px;">
-                    ${spectator}
+                    ${`${spectator} (${player.nickname})`}
                 </div>`}
                 <div class="${messageStyle.text}">
                     ${match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim()}
