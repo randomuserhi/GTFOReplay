@@ -365,11 +365,14 @@ namespace ReplayRecorder.Snapshot {
             DateTime now = DateTime.Now;
 
             filename = string.Format(ConfigManager.ReplayFileName, shortName, now, levelName);
-            string path = ConfigManager.ReplayFolder;
+            string path = Utils.RemoveInvalidCharacters(ConfigManager.ReplayFolder);
             filename = Utils.RemoveInvalidCharacters(filename, isFullPath: false);
+
+            Directory.CreateDirectory(path);
             if (!Directory.Exists(path)) {
                 path = "./";
             }
+
             string dirPath;
             if (ConfigManager.SeparateByRundown) {
                 dirPath = Path.Combine(path, Utils.RemoveInvalidCharacters(data.name));

@@ -177,7 +177,7 @@ export const Chat = () => {
 
             m = html`
             <li class="${messageStyle.wrapper} ${messageStyle.left}">
-                ${lastUser === steamId ? "" : /*html*/`
+                ${lastUser === steamId ? "" : html`
                 <div style="font-size: 10px; padding: 5px;">
                     ${document.createTextNode(`${player.nickname}`)}
                 </div>`}
