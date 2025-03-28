@@ -102,7 +102,7 @@ export const Chat = () => {
         if (e.key !== 'Enter' && e.keyCode !== 13) return;
         if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
 
-        const message = dom.chat.value.replace(/<\/?[^>]+(>|$)/g, "").trim();
+        const message = dom.chat.value.replace(/<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g, "").trim();
         if (message.length === 0) return;
         else if (message.length > 150) return; // TODO(randomuserhi): message too long error
 

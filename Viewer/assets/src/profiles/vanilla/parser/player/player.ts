@@ -74,7 +74,7 @@ let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.re
                 ...spawn,
                 snet: await BitHelper.readULong(data),
                 slot: await BitHelper.readByte(data),
-                nickname: (await BitHelper.readString(data)).replace(/<\/?[^>]+(>|$)/g, "")
+                nickname: (await BitHelper.readString(data)).replace(/<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g, "")
             };
             return result;
         },
