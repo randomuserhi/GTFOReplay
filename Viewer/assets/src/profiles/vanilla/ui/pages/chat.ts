@@ -102,14 +102,14 @@ export const Chat = () => {
         if (e.key !== 'Enter' && e.keyCode !== 13) return;
         if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
 
-        const message = dom.chat.value.trim();
+        const message = dom.chat.value.replace(/<\/?[^>]+(>|$)/g, "").trim();
         if (message.length === 0) return;
         else if (message.length > 150) return; // TODO(randomuserhi): message too long error
 
         const m = html`
         <li m-id="item" class="${messageStyle.wrapper} ${messageStyle.right}">
             <div class="${messageStyle.text}">
-                ${message}
+                ${new Text(message)}
             </div>
         </li>
         `;
@@ -162,10 +162,10 @@ export const Chat = () => {
             <li class="${messageStyle.wrapper} ${messageStyle.left} ${messageStyle.acked}">
                 ${spectator === undefined || lastUser === spectator ? "" : /*html*/`
                 <div style="font-size: 10px; padding: 5px;">
-                    ${`${spectator} (${player.nickname})`}
+                    ${new Text(`${spectator} (${player.nickname})`)}
                 </div>`}
                 <div class="${messageStyle.text}">
-                    ${match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim()}
+                    ${new Text(match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim())}
                 </div>
             </li>
             `;
@@ -179,10 +179,10 @@ export const Chat = () => {
             <li class="${messageStyle.wrapper} ${messageStyle.left}">
                 ${lastUser === steamId ? "" : /*html*/`
                 <div style="font-size: 10px; padding: 5px;">
-                    ${player.nickname}
+                    ${new Text(player.nickname)}
                 </div>`}
                 <div class="${messageStyle.text}" style="background-color: ${colors.back}; color: ${colors.front};">
-                    ${message}
+                    ${new Text(message)}
                 </div>
             </li>
             `;
