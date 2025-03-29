@@ -228,9 +228,38 @@ namespace ReplayRecorder.Steam {
         // TODO(randomuserhi): Chat patches -> Should definitely move elsewhere lol
 
         private static SteamServer.Connection? spectatorMessageSender = null;
+        [HarmonyPatch(typeof(PlayerChatManager), nameof(PlayerChatManager.WantToSentTextMessage))]
+        [HarmonyPrefix]
+        private static void OnWantToSendMessage(PlayerAgent fromPlayer, string message, PlayerAgent toPlayer) {
+            if (fromPlayer.Owner.Lookup != SNet.LocalPlayer.Lookup) return; // Ignore messages not from local player
+            if (Server == null) return;
+
+            ByteBuffer packet = new ByteBuffer();
+            packet.Reserve(sizeof(int), true);
+            BitHelper.WriteBytes((ushort)Net.MessageType.InGameMessage, packet);
+            BitHelper.WriteBytes(fromPlayer.Owner.Lookup, packet);
+            BitHelper.WriteBytes(message, packet);
+            int index = 0;
+            BitHelper.WriteBytes(packet.count - sizeof(int), packet.Array, ref index);
+
+            if (spectatorMessageSender == null) {
+                Task.Run(() => Server.Send(packet.Array));
+            } else {
+                HSteamNetConnection _sender = spectatorMessageSender.connection;
+                Task.Run(() => {
+                    foreach (HSteamNetConnection connection in Server.currentConnections.Keys) {
+                        if (connection != _sender) {
+                            Server.SendTo(connection, packet.Array);
+                        }
+                    }
+                });
+            }
+        }
+
         [ReplayRecorder.API.Attributes.ReplayPluginLoad]
         private static void OnLoad() {
             PlayerChatManager.OnIncomingChatMessage += (Action<string, SNet_Player, SNet_Player>)((string msg, SNet_Player srcPlayer, SNet_Player dstPlayer) => {
+                if (srcPlayer.Lookup == SNet.LocalPlayer.Lookup) return; // Ignore local messages, they are handled by a local patch
                 if (Server == null) return;
 
                 ByteBuffer packet = new ByteBuffer();
@@ -241,18 +270,7 @@ namespace ReplayRecorder.Steam {
                 int index = 0;
                 BitHelper.WriteBytes(packet.count - sizeof(int), packet.Array, ref index);
 
-                if (spectatorMessageSender == null) {
-                    Task.Run(() => Server.Send(packet.Array));
-                } else {
-                    HSteamNetConnection _sender = spectatorMessageSender.connection;
-                    Task.Run(() => {
-                        foreach (HSteamNetConnection connection in Server.currentConnections.Keys) {
-                            if (connection != _sender) {
-                                Server.SendTo(connection, packet.Array);
-                            }
-                        }
-                    });
-                }
+                Task.Run(() => Server.Send(packet.Array));
             });
         }
     }
