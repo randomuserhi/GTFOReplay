@@ -113,11 +113,8 @@ export const Chat = () => {
             </div>
         </li>
         `;
-        const doScroll = dom.list.offsetHeight + dom.list.scrollTop >= dom.list.scrollHeight;
         dom.list.append(...m);
-        if (doScroll) {
-            dom.list.scroll({ top: dom.list.scrollHeight });
-        }
+        dom.list.scroll({ top: dom.list.scrollHeight });
 
         lastUser = undefined;
         
@@ -190,7 +187,7 @@ export const Chat = () => {
             lastUser = steamId;
         }
         
-        const doScroll = dom.list.offsetHeight + dom.list.scrollTop >= dom.list.scrollHeight;
+        const doScroll = dom.list.scrollHeight - dom.list.scrollTop <= dom.list.clientHeight + 1;
         dom.list.append(...m);
         if (doScroll) {
             dom.list.scroll({ top: dom.list.scrollHeight });
