@@ -50,6 +50,9 @@ namespace ReplayRecorder.Steam {
             Server.SendTo(connection, cpacket.Array);
         }
 
+        // NOTE(randomuserhi): Probably should move somewhere else, just an incrementing count for spectators with invalid names
+        internal static ushort anonymous = 0;
+
         internal static void onReceive(ArraySegment<byte> buffer, HSteamNetConnection connection) {
             if (Server == null) return;
 
@@ -58,7 +61,9 @@ namespace ReplayRecorder.Steam {
             APILogger.Debug($"Received message of type '{type}'.");
             switch (type) {
             case Net.MessageType.Connected: {
-                string name = BitHelper.ReadString(buffer, ref index);
+                string name = Utils.RemoveHTMLTags(BitHelper.ReadString(buffer, ref index)).Trim();
+                if (name.Length == 0) name = $"Spectator_{anonymous++}";
+                if (name.Length > 25) name = name.Substring(0, 25);
                 APILogger.Warn($"{name} is spectating.");
                 Server.currentConnections[connection].name = name;
 
