@@ -17,8 +17,23 @@ namespace ReplayRecorder.BepInEx;
 
 [BepInPlugin(Module.GUID, Module.Name, Module.Version)]
 public class Plugin : BasePlugin {
+    internal class Connection : IDisposable {
+        public rSteamClient client;
+        public rSteamClient chat;
+
+        public Connection(rSteamClient client, rSteamClient chat) {
+            this.client = client;
+            this.chat = chat;
+        }
+
+        public void Dispose() {
+            client.Dispose();
+            chat.Dispose();
+        }
+    }
+
     internal static TCPServer server = new TCPServer();
-    internal static Dictionary<EndPoint, rSteamClient> endPointToClient = new Dictionary<EndPoint, rSteamClient>();
+    internal static Dictionary<EndPoint, Connection> endPointToClient = new Dictionary<EndPoint, Connection>();
 
     /// <summary>
     /// Is called when a client connects to the TCPServer.
@@ -52,19 +67,32 @@ public class Plugin : BasePlugin {
                 endPointToClient[endPoint].Dispose();
                 endPointToClient.Remove(endPoint);
             }
-            rSteamClient steam = new rSteamClient(id, endPoint);
+            rSteamClient steam = new rSteamClient(id, 10420, endPoint);
             steam.onAccept += steam_onAccept;
             steam.onReceive += steam_onReceive;
             steam.onFail += steam_onFail;
-            endPointToClient.Add(endPoint, steam);
+
+            // TODO(randomuserhi):
+            rSteamClient chat = new rSteamClient(id, 10069, endPoint);
+            chat.onAccept += _steam_onAccept;
+            chat.onReceive += steam_onReceive;
+
+            endPointToClient.Add(endPoint, new Connection(steam, chat));
+            break;
+        }
+        case Net.MessageType.InGameMessage: {
+            // NOTE(randomuserhi): Send messages on a separate socket
+            if (endPointToClient.ContainsKey(endPoint)) {
+                endPointToClient[endPoint].chat.Send(buffer);
+            }
             break;
         }
         default: {
             if (endPointToClient.ContainsKey(endPoint)) {
-                endPointToClient[endPoint].Send(buffer);
+                endPointToClient[endPoint].client.Send(buffer);
             }
+            break;
         }
-        break;
         }
     }
 
@@ -84,7 +112,7 @@ public class Plugin : BasePlugin {
     /// Clear all acknowledged clients on closure of TCPServer.
     /// </summary>
     internal static void onClose() {
-        foreach (rSteamClient client in endPointToClient.Values) {
+        foreach (Connection client in endPointToClient.Values) {
             client.Dispose();
         }
         endPointToClient.Clear();
@@ -98,8 +126,8 @@ public class Plugin : BasePlugin {
         case Net.MessageType.ForwardMessage: {
             APILogger.Debug($"[Client] Forwarded {buffer.Count - index} bytes.");
             _ = server.RawSendTo(new ArraySegment<byte>(buffer.Array!, buffer.Offset + index, buffer.Count - index), client.associatedEndPoint);
+            break;
         }
-        break;
         default: throw new Exception($"[Client] Unknown message type: {type}");
         }
     }
@@ -112,22 +140,22 @@ public class Plugin : BasePlugin {
         _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
     }
 
+    internal static void _steam_onAccept(rSteamClient client) {
+        ByteBuffer cpacket = new ByteBuffer();
+        BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
+        BitHelper.WriteBytes(SNet.LocalPlayer.NickName, cpacket);
+
+        client.Send(cpacket.Array);
+    }
+
     internal static void steam_onAccept(rSteamClient client) {
-        {
-            ByteBuffer cpacket = new ByteBuffer();
-            BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
-            BitHelper.WriteBytes(SNet.LocalPlayer.NickName, cpacket);
+        _steam_onAccept(client);
 
-            client.Send(cpacket.Array);
-        }
+        ByteBuffer cpacket = new ByteBuffer();
+        BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
+        BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
 
-        {
-            ByteBuffer cpacket = new ByteBuffer();
-            BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
-            BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
-
-            _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
-        }
+        _ = server.RawSendTo(cpacket.Array, client.associatedEndPoint);
     }
 
     /// <summary>

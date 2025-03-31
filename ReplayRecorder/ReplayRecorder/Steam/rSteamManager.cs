@@ -14,6 +14,7 @@ namespace ReplayRecorder.Steam {
     internal static class rSteamManager {
         private static bool initialized = false;
         public static SteamServer? Server { get; private set; } = null;
+        public static SteamServer? ChatServer { get; private set; } = null;
         public static ConcurrentHashSet<HSteamNetConnection> readyConnections = new ConcurrentHashSet<HSteamNetConnection>();
 
         [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.PostSetup))]
@@ -30,22 +31,26 @@ namespace ReplayRecorder.Steam {
                 APILogger.Debug($"[STEAMWORKS] {type}: {message}");
             });*/
 
-            unsafe {
-                int bufferSize = 25 * 1024 * 1024;
+            /*unsafe {
+                int bufferSize = 10 * 1024 * 1024;
                 int* bufferSize_ptr = &bufferSize;
                 if (!SteamNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, (IntPtr)bufferSize_ptr)) {
                     APILogger.Warn("Failed to increase SendBufferSize!");
                 }
-            }
+            }*/
 
             APILogger.Debug("Initialized Steamworks!");
 
-            Server = new SteamServer();
+            Server = new SteamServer(10420, 5 * 1024 * 1024);
 
             Server.onAccept += onAccept;
             Server.onDisconnect += onDisconnect;
             Server.onClose += onClose;
             Server.onReceive += onReceive;
+
+            ChatServer = new SteamServer(10069);
+            ChatServer.onReceive += chat_onReceive;
+            // TODO(randomuserhi): ...
         }
 
         internal static void onAccept(HSteamNetConnection connection) {
@@ -60,9 +65,6 @@ namespace ReplayRecorder.Steam {
                 Server.SendTo(connection, cpacket.Array);
             }
         }
-
-        // NOTE(randomuserhi): Probably should move somewhere else, just an incrementing count for spectators with invalid names
-        internal static ushort anonymous = 0;
 
         internal static void onReceive(ArraySegment<byte> buffer, HSteamNetConnection connection) {
             if (Server == null) return;
@@ -153,9 +155,30 @@ namespace ReplayRecorder.Steam {
                 readyConnections.Add(connection);
                 break;
             }
+            case Net.MessageType.InGameMessage: throw new Exception("[Server] Should not handle InGameMessage on main socket.");
+            }
+        }
+
+        // NOTE(randomuserhi): Probably should move somewhere else, just an incrementing count for spectators with invalid names
+        internal static ushort anonymous = 0;
+        internal static void chat_onReceive(ArraySegment<byte> buffer, HSteamNetConnection connection) {
+            if (ChatServer == null) return;
+
+            int index = 0;
+            Net.MessageType type = (Net.MessageType)BitHelper.ReadUShort(buffer, ref index);
+            APILogger.Debug($"Received message of type '{type}'.");
+            switch (type) {
+            case Net.MessageType.Connected: {
+                string name = Utils.RemoveHTMLTags(BitHelper.ReadString(buffer, ref index)).Trim();
+                if (name.Length == 0) name = $"Spectator_{anonymous++}";
+                if (name.Length > 25) name = name.Substring(0, 25);
+                APILogger.Warn($"Setup chat socket for {name}.");
+                ChatServer.currentConnections[connection].name = name;
+                break;
+            }
             case Net.MessageType.InGameMessage: {
                 // TODO(randomuserhi): Move this logic elsewhere
-                if (Server.currentConnections.TryGetValue(connection, out SteamServer.Connection? conn) && conn != null) {
+                if (ChatServer.currentConnections.TryGetValue(connection, out SteamServer.Connection? conn) && conn != null) {
                     ushort messageId = BitHelper.ReadUShort(buffer, ref index); // Used to acknowledge sent messages
 
                     int length = BitHelper.ReadUShort(buffer, ref index);
@@ -188,7 +211,7 @@ namespace ReplayRecorder.Steam {
                         BitHelper.WriteBytes((ushort)Net.MessageType.AckInGameMessage, packet);
                         BitHelper.WriteBytes(messageId, packet);
 
-                        Server?.SendTo(conn.connection, packet.Array);
+                        ChatServer.SendTo(conn.connection, packet.Array);
                     });
                 }
                 break;
@@ -251,7 +274,7 @@ namespace ReplayRecorder.Steam {
         [HarmonyPrefix]
         private static void OnWantToSendMessage(PlayerAgent fromPlayer, string message, PlayerAgent toPlayer) {
             if (fromPlayer.Owner.Lookup != SNet.LocalPlayer.Lookup) return; // Ignore messages not from local player
-            if (Server == null) return;
+            if (ChatServer == null) return;
 
             ByteBuffer packet = new ByteBuffer();
             BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
@@ -263,13 +286,13 @@ namespace ReplayRecorder.Steam {
             BitHelper.WriteBytes(packet.count - sizeof(ushort) - sizeof(int), packet.Array, ref index);
 
             if (spectatorMessageSender == null) {
-                Task.Run(() => Server.Send(packet.Array));
+                Task.Run(() => ChatServer.Send(packet.Array));
             } else {
                 HSteamNetConnection _sender = spectatorMessageSender.connection;
                 Task.Run(() => {
-                    foreach (HSteamNetConnection connection in Server.currentConnections.Keys) {
+                    foreach (HSteamNetConnection connection in ChatServer.currentConnections.Keys) {
                         if (connection != _sender) {
-                            Server.SendTo(connection, packet.Array);
+                            ChatServer.SendTo(connection, packet.Array);
                         }
                     }
                 });
@@ -280,7 +303,7 @@ namespace ReplayRecorder.Steam {
         private static void OnLoad() {
             PlayerChatManager.OnIncomingChatMessage += (Action<string, SNet_Player, SNet_Player>)((string msg, SNet_Player srcPlayer, SNet_Player dstPlayer) => {
                 if (srcPlayer.Lookup == SNet.LocalPlayer.Lookup) return; // Ignore local messages, they are handled by a local patch
-                if (Server == null) return;
+                if (ChatServer == null) return;
 
                 ByteBuffer packet = new ByteBuffer();
                 BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
@@ -291,7 +314,7 @@ namespace ReplayRecorder.Steam {
                 BitHelper.WriteBytes(msg, packet);
                 BitHelper.WriteBytes(packet.count - sizeof(ushort) - sizeof(int), packet.Array, ref index);
 
-                Task.Run(() => Server.Send(packet.Array));
+                Task.Run(() => ChatServer.Send(packet.Array));
             });
         }
     }

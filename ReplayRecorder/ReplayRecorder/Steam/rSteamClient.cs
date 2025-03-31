@@ -28,12 +28,12 @@ namespace ReplayRecorder.Steam {
         public readonly EndPoint associatedEndPoint;
         private bool connected = false;
 
-        public rSteamClient(ulong steamid, EndPoint associatedEndPoint) {
+        public rSteamClient(ulong steamid, int virtualPort, EndPoint associatedEndPoint) {
             this.associatedEndPoint = associatedEndPoint;
 
             identity = default;
             identity.SetSteamID(new CSteamID(steamid));
-            connection = SteamNetworkingSockets.ConnectP2P(ref identity, 0, 0, null);
+            connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, 0, null);
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }

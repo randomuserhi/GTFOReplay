@@ -42,8 +42,19 @@ namespace ReplayRecorder.Steam {
         private Task? receiveTask = null;
         private Callback<SteamNetConnectionStatusChangedCallback_t> cb_OnConnectionStatusChanged;
 
-        public SteamServer() {
-            server = SteamNetworkingSockets.CreateListenSocketP2P(0, 0, null);
+        public SteamServer(int virtualPort, int sendBufferSize = -1) {
+            if (sendBufferSize <= 0) server = SteamNetworkingSockets.CreateListenSocketP2P(virtualPort, 0, null);
+            else {
+                server = SteamNetworkingSockets.CreateListenSocketP2P(virtualPort, 1, new SteamNetworkingConfigValue_t[] {
+                    new SteamNetworkingConfigValue_t {
+                        m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize,
+                        m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
+                        m_val = new SteamNetworkingConfigValue_t.OptionValue() {
+                            m_int32 = sendBufferSize
+                        }
+                    }
+                });
+            }
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }
