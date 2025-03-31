@@ -448,11 +448,12 @@ namespace ReplayRecorder.Snapshot {
                     while (bytesSent < buffer.count) {
                         const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
 
-                        int bytesToSend = Mathf.Min(buffer.count - bytesSent, SteamServer.maxPacketSize - sizeOfHeader - sizeof(int));
+                        int bytesToSend = Mathf.Min(buffer.count - bytesSent, SteamServer.maxPacketSize - sizeof(ushort) - sizeOfHeader - sizeof(int));
 
                         ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
 
                         // Header
+                        BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
                         BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
                         BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
                         BitHelper.WriteBytes(replayInstanceId, packet); // replay instance id
@@ -469,8 +470,6 @@ namespace ReplayRecorder.Snapshot {
                         bytesSent += bytesToSend;
 
                         APILogger.Debug($"Sending Snapshot {bytesSent}/{buffer.count} ...");
-
-                        if (bytesSent < buffer.count) await Task.Delay(16); // NOTE(randomuserhi): Avoid straining the network
                     }
 
                     APILogger.Debug($"Finished send: {bytesSent} / {numBytes} - {buffer.count}"); // NOTE(randomuserhi): Due to multithreading - need to check if buffer.count == numBytes

@@ -43,15 +43,7 @@ namespace ReplayRecorder.Steam {
         private Callback<SteamNetConnectionStatusChangedCallback_t> cb_OnConnectionStatusChanged;
 
         public SteamServer() {
-            server = SteamNetworkingSockets.CreateListenSocketP2P(0, 1, new SteamNetworkingConfigValue_t[] {
-                new SteamNetworkingConfigValue_t {
-                    m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize,
-                    m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                    m_val = new SteamNetworkingConfigValue_t.OptionValue() {
-                        m_int32 = 25 * 1024 * 1024 // NOTE(randomuserhi): Up pending buffer limit to 25MB as the server may need to send large amounts of data for replay to catch up
-                    }
-                }
-            });
+            server = SteamNetworkingSockets.CreateListenSocketP2P(0, 0, null);
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }
@@ -108,7 +100,6 @@ namespace ReplayRecorder.Steam {
                         int j = 0;
                         while (j < resendQueueBuffer.Count) {
                             if (!server.SendTo(connection, resendQueueBuffer[j].bytes, dequeue: true)) break;
-                            await Task.Delay(16);
                             ++j;
                         }
                         for (; j < resendQueueBuffer.Count; ++j) {

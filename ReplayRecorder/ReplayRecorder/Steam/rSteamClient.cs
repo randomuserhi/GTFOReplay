@@ -33,7 +33,7 @@ namespace ReplayRecorder.Steam {
 
             identity = default;
             identity.SetSteamID(new CSteamID(steamid));
-            connection = SteamNetworkingSockets.ConnectP2P(ref identity, 0, 0, new SteamNetworkingConfigValue_t[] { });
+            connection = SteamNetworkingSockets.ConnectP2P(ref identity, 0, 0, null);
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }
@@ -139,7 +139,6 @@ namespace ReplayRecorder.Steam {
                     int j = 0;
                     while (j < resendQueueBuffer.Count) {
                         if (!Send(resendQueueBuffer[j].bytes, dequeue: true)) break;
-                        await Task.Delay(16);
                         ++j;
                     }
                     for (; j < resendQueueBuffer.Count; ++j) {

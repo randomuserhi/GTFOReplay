@@ -63,8 +63,8 @@ public class Plugin : BasePlugin {
             if (endPointToClient.ContainsKey(endPoint)) {
                 endPointToClient[endPoint].Send(buffer);
             }
-            break;
         }
+        break;
         }
     }
 
@@ -91,8 +91,17 @@ public class Plugin : BasePlugin {
     }
 
     internal static void steam_onReceive(ArraySegment<byte> buffer, rSteamClient client) {
-        APILogger.Debug($"Forwarded {buffer.Count} bytes.");
-        _ = server.RawSendTo(buffer, client.associatedEndPoint);
+        int index = 0;
+        Net.MessageType type = (Net.MessageType)BitHelper.ReadUShort(buffer, ref index);
+        APILogger.Debug($"[Client] Received message of type '{type}'.");
+        switch (type) {
+        case Net.MessageType.ForwardMessage: {
+            APILogger.Debug($"[Client] Forwarded {buffer.Count - index} bytes.");
+            _ = server.RawSendTo(new ArraySegment<byte>(buffer.Array!, buffer.Offset + index, buffer.Count - index), client.associatedEndPoint);
+        }
+        break;
+        default: throw new Exception($"[Client] Unknown message type: {type}");
+        }
     }
 
     internal static void steam_onFail(rSteamClient client) {
@@ -134,6 +143,7 @@ public class Plugin : BasePlugin {
         }
 
         ByteBuffer packet = new ByteBuffer();
+        BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
         BitHelper.WriteBytes(sizeof(ushort) + 1, packet); // message size in bytes
         BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, packet);
         BitHelper.WriteBytes(instance.replayInstanceId, packet);
@@ -149,6 +159,7 @@ public class Plugin : BasePlugin {
         if (rSteamManager.Server == null) return;
 
         ByteBuffer packet = new ByteBuffer();
+        BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
         BitHelper.WriteBytes(sizeof(ushort), packet); // message size in bytes
         BitHelper.WriteBytes((ushort)Net.MessageType.EndGame, packet);
 

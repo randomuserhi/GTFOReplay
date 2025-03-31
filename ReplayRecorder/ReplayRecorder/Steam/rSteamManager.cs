@@ -30,6 +30,14 @@ namespace ReplayRecorder.Steam {
                 APILogger.Debug($"[STEAMWORKS] {type}: {message}");
             });*/
 
+            unsafe {
+                int bufferSize = 25 * 1024 * 1024;
+                int* bufferSize_ptr = &bufferSize;
+                if (!SteamNetworkingUtils.SetConfigValue(ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize, ESteamNetworkingConfigScope.k_ESteamNetworkingConfig_Global, IntPtr.Zero, ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32, (IntPtr)bufferSize_ptr)) {
+                    APILogger.Warn("Failed to increase SendBufferSize!");
+                }
+            }
+
             APILogger.Debug("Initialized Steamworks!");
 
             Server = new SteamServer();
@@ -43,11 +51,14 @@ namespace ReplayRecorder.Steam {
         internal static void onAccept(HSteamNetConnection connection) {
             if (Server == null) return;
 
-            ByteBuffer cpacket = new ByteBuffer();
-            BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
-            BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
+            {
+                ByteBuffer cpacket = new ByteBuffer();
+                BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, cpacket);
+                BitHelper.WriteBytes(sizeof(ushort), cpacket); // message size in bytes
+                BitHelper.WriteBytes((ushort)Net.MessageType.Connected, cpacket);
 
-            Server.SendTo(connection, cpacket.Array);
+                Server.SendTo(connection, cpacket.Array);
+            }
         }
 
         // NOTE(randomuserhi): Probably should move somewhere else, just an incrementing count for spectators with invalid names
@@ -76,6 +87,7 @@ namespace ReplayRecorder.Steam {
                         APILogger.Debug("Already in match, sending start signal");
 
                         ByteBuffer spacket = new ByteBuffer();
+                        BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, spacket);
                         BitHelper.WriteBytes(sizeof(ushort) + 1, spacket); // message size in bytes
                         BitHelper.WriteBytes((ushort)Net.MessageType.StartGame, spacket);
                         BitHelper.WriteBytes(instance.replayInstanceId, spacket);
@@ -110,11 +122,12 @@ namespace ReplayRecorder.Steam {
                                 while (bytesSent < buffer.Length) {
                                     const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
 
-                                    int bytesToSend = Mathf.Min(buffer.Length - bytesSent, SteamServer.maxPacketSize - sizeOfHeader - sizeof(int));
+                                    int bytesToSend = Mathf.Min(buffer.Length - bytesSent, SteamServer.maxPacketSize - sizeof(ushort) - sizeOfHeader - sizeof(int));
 
                                     ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
 
                                     // Header
+                                    BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
                                     BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
                                     BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
                                     BitHelper.WriteBytes(instance.replayInstanceId, packet); // replay instance id
@@ -170,6 +183,7 @@ namespace ReplayRecorder.Steam {
                         spectatorMessageSender = null;
 
                         ByteBuffer packet = new ByteBuffer();
+                        BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
                         BitHelper.WriteBytes(sizeof(ushort) + sizeof(ushort), packet);
                         BitHelper.WriteBytes((ushort)Net.MessageType.AckInGameMessage, packet);
                         BitHelper.WriteBytes(messageId, packet);
@@ -240,12 +254,13 @@ namespace ReplayRecorder.Steam {
             if (Server == null) return;
 
             ByteBuffer packet = new ByteBuffer();
+            BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
+            int index = packet.count;
             packet.Reserve(sizeof(int), true);
             BitHelper.WriteBytes((ushort)Net.MessageType.InGameMessage, packet);
             BitHelper.WriteBytes(fromPlayer.Owner.Lookup, packet);
             BitHelper.WriteBytes(message, packet);
-            int index = 0;
-            BitHelper.WriteBytes(packet.count - sizeof(int), packet.Array, ref index);
+            BitHelper.WriteBytes(packet.count - sizeof(ushort) - sizeof(int), packet.Array, ref index);
 
             if (spectatorMessageSender == null) {
                 Task.Run(() => Server.Send(packet.Array));
@@ -268,12 +283,13 @@ namespace ReplayRecorder.Steam {
                 if (Server == null) return;
 
                 ByteBuffer packet = new ByteBuffer();
+                BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
+                int index = packet.count;
                 packet.Reserve(sizeof(int), true);
                 BitHelper.WriteBytes((ushort)Net.MessageType.InGameMessage, packet);
                 BitHelper.WriteBytes(srcPlayer.Lookup, packet);
                 BitHelper.WriteBytes(msg, packet);
-                int index = 0;
-                BitHelper.WriteBytes(packet.count - sizeof(int), packet.Array, ref index);
+                BitHelper.WriteBytes(packet.count - sizeof(ushort) - sizeof(int), packet.Array, ref index);
 
                 Task.Run(() => Server.Send(packet.Array));
             });

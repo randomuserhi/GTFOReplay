@@ -19,7 +19,8 @@ namespace ReplayRecorder {
             Connected,
             FailedToConnect,
             InGameMessage,
-            AckInGameMessage
+            AckInGameMessage,
+            ForwardMessage
         }
     }
 
