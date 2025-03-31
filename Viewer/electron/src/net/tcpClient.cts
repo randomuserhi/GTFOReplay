@@ -108,6 +108,7 @@ export class TcpClient {
         const socket = this.socket = new net.Socket();
 
         // TODO(randomuserhi): Handling Integer Overflow
+        // TODO(randomusehri): Max message size to prevent too much memory being allocated
         const headerSize: number = 4;
         let read: number = 0;
         let state: "waiting" | "reading" = "waiting";
@@ -158,7 +159,7 @@ export class TcpClient {
                                     (recvBuffer[3] << 24);
                         }
                         if (msgSize > 0) { // Transition to reading state when there is a message
-                            //console.log(`msgSize: ${msgSize}`);
+                            // console.log(`msgSize: ${msgSize}`);
                             state = "reading";
                         }
                     }
