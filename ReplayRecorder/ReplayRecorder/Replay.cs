@@ -1,4 +1,5 @@
 ﻿using API;
+using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
 using Player;
 using ReplayRecorder.API;
@@ -6,6 +7,7 @@ using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using ReplayRecorder.Exceptions;
 using ReplayRecorder.Snapshot;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -149,12 +151,15 @@ namespace ReplayRecorder {
         /// Registers all attributes in the calling assembly.
         /// </summary>
         public static void RegisterAll() {
-            foreach (Type t in Assembly.GetCallingAssembly().GetTypes()) {
+            Assembly? assembly = new StackTrace()?.GetFrame(1)?.GetMethod()?.ReflectedType?.Assembly;
+            if (assembly == null) throw new Exception("Unable to find assembly.");
+
+            AccessTools.GetTypesFromAssembly(assembly).Do(delegate (Type t) {
                 if (t.GetCustomAttribute<ReplayData>() != null) {
                     RegisterType(t);
                 }
                 RegisterMethods(t);
-            }
+            });
         }
 
         /// <summary>
