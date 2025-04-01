@@ -28,12 +28,24 @@ namespace ReplayRecorder.Steam {
         public readonly EndPoint associatedEndPoint;
         private bool connected = false;
 
-        public rSteamClient(ulong steamid, int virtualPort, EndPoint associatedEndPoint) {
+        public rSteamClient(ulong steamid, int virtualPort, EndPoint associatedEndPoint, int receiveBufferSize = -1) {
             this.associatedEndPoint = associatedEndPoint;
 
             identity = default;
             identity.SetSteamID(new CSteamID(steamid));
-            connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, 0, null);
+
+            if (receiveBufferSize <= 0) connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, 0, null);
+            else {
+                connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, 1, new SteamNetworkingConfigValue_t[] {
+                    new SteamNetworkingConfigValue_t {
+                        m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_RecvBufferSize,
+                        m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
+                        m_val = new SteamNetworkingConfigValue_t.OptionValue() {
+                            m_int32 = receiveBufferSize
+                        }
+                    }
+                });
+            }
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }

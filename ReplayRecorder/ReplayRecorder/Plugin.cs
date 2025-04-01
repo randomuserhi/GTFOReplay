@@ -67,7 +67,7 @@ public class Plugin : BasePlugin {
                 endPointToClient[endPoint].Dispose();
                 endPointToClient.Remove(endPoint);
             }
-            rSteamClient steam = new rSteamClient(id, 10420, endPoint);
+            rSteamClient steam = new rSteamClient(id, 10420, endPoint, 5 * 1024 * 1024);
             steam.onAccept += steam_onAccept;
             steam.onReceive += steam_onReceive;
             steam.onFail += steam_onFail;
