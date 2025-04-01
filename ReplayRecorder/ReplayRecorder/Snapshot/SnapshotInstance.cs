@@ -8,6 +8,7 @@ using Player;
 using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
+using ReplayRecorder.Net;
 using ReplayRecorder.Snapshot.Exceptions;
 using ReplayRecorder.Steam;
 using Steamworks;
@@ -440,7 +441,7 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         private async Task SendBufferOverNetwork(ByteBuffer buffer) {
-            if (rSteamManager.readyConnections.Count > 0) {
+            if (HostClient.Main.readyConnections.Count > 0) {
                 int numBytes = buffer.count; // For debugging
 
                 try {
@@ -448,22 +449,23 @@ namespace ReplayRecorder.Snapshot {
                     while (bytesSent < buffer.count) {
                         const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
 
-                        int bytesToSend = Mathf.Min(buffer.count - bytesSent, SteamServer.maxPacketSize - sizeof(ushort) - sizeOfHeader - sizeof(int));
+                        int bytesToSend = Mathf.Min(buffer.count - bytesSent, rSteamServer.maxPacketSize - sizeof(ushort) - sizeOfHeader - sizeof(int));
 
                         ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
+                        // host -> client : Forward message to viewer
+                        BitHelper.WriteBytes((ushort)HostClient.MessageType.ForwardMessage, packet);
 
-                        // Header
-                        BitHelper.WriteBytes((ushort)Net.MessageType.ForwardMessage, packet);
+                        // Message to forward to viewer
                         BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
-                        BitHelper.WriteBytes((ushort)Net.MessageType.LiveBytes, packet); // message type
+                        BitHelper.WriteBytes((ushort)ClientViewer.MessageType.LiveBytes, packet); // message type
                         BitHelper.WriteBytes(replayInstanceId, packet); // replay instance id
                         BitHelper.WriteBytes(byteOffset + bytesSent, packet); // offset
                         BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
                         BitHelper.WriteBytes(new ArraySegment<byte>(buffer._array.Array!, buffer._array.Offset + bytesSent, bytesToSend), packet, false); // file-bytes
 
-                        if (rSteamManager.Server != null) {
-                            foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
-                                rSteamManager.Server.SendTo(connection, packet.Array);
+                        if (HostClient.Main.socket != null) {
+                            foreach (HSteamNetConnection connection in HostClient.Main.readyConnections.Keys) {
+                                HostClient.Main.socket.SendTo(connection, packet.Array);
                             }
                         }
 
@@ -490,7 +492,7 @@ namespace ReplayRecorder.Snapshot {
             // NOTE(randomuserhi): Save header bytes to use on remote live view
             // header.Copy(buffer);
 
-            APILogger.Debug($"Acknowledged Clients: {rSteamManager.readyConnections.Count}");
+            APILogger.Debug($"Acknowledged Clients: {HostClient.Main.readyConnections.Count}");
 
             // insert size of buffer at start
             int index = 0;
@@ -752,13 +754,13 @@ namespace ReplayRecorder.Snapshot {
                 timer = 0;
 
                 // Check if all players are alerted of live view
-                if (rSteamManager.Server != null && rSteamManager.readyConnections.Count > 0) {
+                if (HostClient.Main.socket != null && HostClient.Main.readyConnections.Count > 0) {
                     const int maxLen = 50;
 
-                    foreach (HSteamNetConnection connection in rSteamManager.readyConnections.Keys) {
+                    foreach (HSteamNetConnection connection in HostClient.Main.readyConnections.Keys) {
                         if (!spectators.Add(connection)) continue;
 
-                        string message = $"[{rSteamManager.Server.currentConnections[connection].name}] is spectating.";
+                        string message = $"[{HostClient.Main.socket.currentConnections[connection].name}] is spectating.";
                         APILogger.Warn(message);
                         if (!ConfigManager.DisableLeaveJoinMessages) {
                             while (message.Length > maxLen) {

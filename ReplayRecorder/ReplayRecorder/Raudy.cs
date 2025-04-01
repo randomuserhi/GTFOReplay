@@ -211,6 +211,76 @@ namespace ReplayRecorder {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void _WriteBytes(byte* source, int size, ArraySegment<byte> destination, int index) {
+            for (int i = 0; i < size;) {
+                destination[index++] = source[i++];
+            }
+        }
+
+        public static unsafe void WriteBytes(byte value, ArraySegment<byte> destination, int index) {
+            destination[index++] = value;
+        }
+
+        public static void WriteBytes(bool value, ArraySegment<byte> destination, int index) {
+            WriteBytes((byte)(value ? 1 : 0), destination, index);
+        }
+
+        public static unsafe void WriteBytes(ulong value, ArraySegment<byte> destination, int index) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ulong), destination, index);
+        }
+
+        public static unsafe void WriteBytes(uint value, ArraySegment<byte> destination, int index) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(uint), destination, index);
+        }
+
+        public static unsafe void WriteBytes(ushort value, ArraySegment<byte> destination, int index) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(ushort), destination, index);
+        }
+
+        public static unsafe void WriteBytes(long value, ArraySegment<byte> destination, int index) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(long), destination, index);
+        }
+
+        public static unsafe void WriteBytes(int value, ArraySegment<byte> destination, int index) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(int), destination, index);
+        }
+
+        public static unsafe void WriteBytes(short value, ArraySegment<byte> destination, int index) {
+            if (!BitConverter.IsLittleEndian) value = ReverseEndianness(value);
+            _WriteBytes((byte*)&value, sizeof(short), destination, index);
+        }
+
+        public static unsafe void WriteBytes(float value, ArraySegment<byte> destination, int index) {
+            int to32 = *((int*)&value);
+            if (!BitConverter.IsLittleEndian) to32 = ReverseEndianness(to32);
+            _WriteBytes((byte*)&to32, sizeof(int), destination, index);
+        }
+
+        public static unsafe void WriteBytes(string value, ArraySegment<byte> destination, int index) {
+            byte[] temp = Encoding.UTF8.GetBytes(value);
+            if (temp.Length > ushort.MaxValue) throw new BitHelperBufferTooLarge($"String value is too large, byte length must be smaller than {ushort.MaxValue}.");
+            WriteBytes((ushort)temp.Length, destination, index);
+            Array.Copy(temp, 0, destination.Array!, destination.Offset + index, temp.Length);
+            index += temp.Length;
+        }
+
+        public static unsafe void WriteBytes(ArraySegment<byte> buffer, ArraySegment<byte> destination, int index) {
+            WriteBytes(buffer.Count, destination, index);
+            Array.Copy(buffer.Array!, buffer.Offset, destination.Array!, destination.Offset + index, buffer.Count);
+            index += buffer.Count;
+        }
+
+        // Special function to halve precision of float
+        public static void WriteHalf(float value, ArraySegment<byte> destination, int index) {
+            WriteBytes(FloatToHalf(value), destination, index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void _WriteBytes(byte* bytes, int size, ByteBuffer buffer) {
             buffer.Reserve(size);
             for (int i = 0; i < size; ++i) {

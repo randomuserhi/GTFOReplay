@@ -1,37 +1,21 @@
-﻿using API;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 
 namespace ReplayRecorder {
-    internal static class Net {
-        public delegate void onConnect(EndPoint endpoint);
-        public delegate void onAccept(EndPoint endpoint);
-        public delegate void onReceive(ArraySegment<byte> buffer, EndPoint endpoint);
-        public delegate void onDisconnect(EndPoint endpoint);
-        public delegate void onClose();
-
-        public enum MessageType {
-            StartGame,
-            EndGame,
-            LiveBytes,
-            Acknowledgement,
-            Connected,
-            FailedToConnect,
-            InGameMessage,
-            AckInGameMessage,
-            ForwardMessage
-        }
-    }
-
     internal class TCPServer : IDisposable {
+        public delegate void OnAccept(EndPoint endpoint);
+        public delegate void OnReceive(ArraySegment<byte> buffer, EndPoint endpoint);
+        public delegate void OnDisconnect(EndPoint endpoint);
+        public delegate void OnClose();
+
         private readonly int bufferSize;
         private Socket? socket;
 
-        public Net.onAccept? onAccept = null;
-        public Net.onReceive? onReceive = null;
-        public Net.onDisconnect? onDisconnect = null;
-        public Net.onClose? onClose = null;
+        public OnAccept? onAccept = null;
+        public OnReceive? onReceive = null;
+        public OnDisconnect? onDisconnect = null;
+        public OnClose? onClose = null;
 
         private class Connection : IDisposable {
             public enum State {
@@ -132,7 +116,6 @@ namespace ReplayRecorder {
                             connection.bytesWritten += bytesToWrite;
                             bytesRead += bytesToWrite;
 
-                            APILogger.Debug($"read: {connection.bytesWritten} {connection.messageSize}");
                             if (connection.bytesWritten == connection.messageSize) {
                                 connection.state = Connection.State.waiting;
                                 onReceive?.Invoke(new ArraySegment<byte>(connection.messageBuffer, 0, connection.messageSize), connection.remoteEP);
@@ -173,12 +156,10 @@ namespace ReplayRecorder {
             if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
                 await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
                 try {
-                    APILogger.Debug($"Start Send");
                     int sent = await connection.socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
                     while (sent < data.Count) {
                         sent += await connection.socket.SendAsync(new ArraySegment<byte>(data.Array!, data.Offset + sent, data.Count - sent), SocketFlags.None).ConfigureAwait(false);
                     }
-                    APILogger.Debug($"End Send {sent} {data.Count}");
                 } catch (SocketException) {
                     return;
                 } finally {
@@ -191,7 +172,6 @@ namespace ReplayRecorder {
             if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
                 await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
                 try {
-
                     if (data.Count > int.MaxValue) {
                         return; // TODO(randomuserhi): Throw exception...
                     }

@@ -8,53 +8,29 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace ReplayRecorder.Steam {
-    public class ConcurrentHashSet<T> : ConcurrentDictionary<T, byte>
-    where T : notnull {
-        const byte DummyByte = byte.MinValue;
+    internal class rSteamServer : IDisposable {
+        public delegate void OnAccept(HSteamNetConnection connection);
+        public delegate void OnReceive(ArraySegment<byte> buffer, HSteamNetConnection connection);
+        public delegate void OnDisconnect(HSteamNetConnection connection);
+        public delegate void OnClose();
 
-        public bool Contains(T item) => ContainsKey(item);
-        public bool Add(T item) => TryAdd(item, DummyByte);
-        public bool Remove(T item) => TryRemove(item, out _);
-    }
-
-    internal static class SteamNet {
-        public delegate void onConnect(HSteamNetConnection connection);
-        public delegate void onAccept(HSteamNetConnection connection);
-        public delegate void clientOnAccept(rSteamClient connection);
-        public delegate void onReceive(ArraySegment<byte> buffer, HSteamNetConnection connection);
-        public delegate void clientOnReceive(ArraySegment<byte> buffer, rSteamClient connection);
-        public delegate void onDisconnect(HSteamNetConnection connection);
-        public delegate void onClose();
-        public delegate void clientOnClose(rSteamClient connection);
-        public delegate void clientOnFail(rSteamClient connection);
-    }
-
-    internal class SteamServer : IDisposable {
         public const int maxPacketSize = 81920;
 
-        public SteamNet.onAccept? onAccept = null;
-        public SteamNet.onReceive? onReceive = null;
-        public SteamNet.onDisconnect? onDisconnect = null;
-        public SteamNet.onClose? onClose = null;
+        public OnAccept? onAccept = null;
+        public OnReceive? onReceive = null;
+        public OnDisconnect? onDisconnect = null;
+        public OnClose? onClose = null;
 
         private HSteamListenSocket server;
-        private bool running = true;
         private Task? receiveTask = null;
         private Callback<SteamNetConnectionStatusChangedCallback_t> cb_OnConnectionStatusChanged;
 
-        public SteamServer(int virtualPort, int sendBufferSize = -1) {
-            if (sendBufferSize <= 0) server = SteamNetworkingSockets.CreateListenSocketP2P(virtualPort, 0, null);
-            else {
-                server = SteamNetworkingSockets.CreateListenSocketP2P(virtualPort, 1, new SteamNetworkingConfigValue_t[] {
-                    new SteamNetworkingConfigValue_t {
-                        m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize,
-                        m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                        m_val = new SteamNetworkingConfigValue_t.OptionValue() {
-                            m_int32 = sendBufferSize
-                        }
-                    }
-                });
-            }
+        private readonly string debugName;
+
+        public rSteamServer(int virtualPort, SteamNetworkingConfigValue_t[]? options = null, string debugName = "Server") {
+            this.debugName = debugName;
+
+            server = SteamNetworkingSockets.CreateListenSocketP2P(virtualPort, options == null ? 0 : options.Length, options);
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }
@@ -68,12 +44,12 @@ namespace ReplayRecorder.Steam {
             public List<ResendRequest> resendQueueBuffer = new List<ResendRequest>();
 
             public readonly HSteamNetConnection connection;
-            private SteamServer server;
+            private rSteamServer server;
             public bool running = true;
 
             public string name = "Unknown";
 
-            public Connection(SteamServer server, HSteamNetConnection connection) {
+            public Connection(rSteamServer server, HSteamNetConnection connection) {
                 this.connection = connection;
                 this.server = server;
 
@@ -215,7 +191,7 @@ namespace ReplayRecorder.Steam {
 
             switch (connectionInfo.m_eState) {
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting:
-                APILogger.Debug($"[Server] Incoming connection from: {connectionInfo.m_szConnectionDescription}");
+                APILogger.Debug($"[{debugName}] Incoming connection from: {connectionInfo.m_szConnectionDescription}");
 
                 if (steamID == SteamUser.GetSteamID().m_SteamID ||
                     ConfigManager.allowAnySpectator ||
@@ -224,19 +200,19 @@ namespace ReplayRecorder.Steam {
                     // Accept the connection
                     EResult acceptResult = SteamNetworkingSockets.AcceptConnection(connection);
                     if (acceptResult != EResult.k_EResultOK) {
-                        APILogger.Debug($"[Server] Failed to accept connection: {acceptResult}");
+                        APILogger.Debug($"[{debugName}] Failed to accept connection: {acceptResult}");
                         SteamNetworkingSockets.CloseConnection(connection, 0, "Failed to accept", false);
                     } else {
-                        APILogger.Warn($"[Server] Allowed {steamID} to spectate your lobby.");
+                        APILogger.Warn($"[{debugName}] Allowed {steamID} to spectate your lobby.");
                     }
                 } else {
-                    APILogger.Warn($"[Server] Rejected {steamID} from spectating your lobby.");
+                    APILogger.Warn($"[{debugName}] Rejected {steamID} from spectating your lobby.");
                 }
 
                 break;
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected: {
-                APILogger.Warn($"[Server] Connection established: {connectionInfo.m_szConnectionDescription}");
+                APILogger.Warn($"[{debugName}] Connection established: {connectionInfo.m_szConnectionDescription}");
                 Connection conn = new Connection(this, connection);
                 currentConnections.AddOrUpdate(connection, conn, (key, old) => { return conn; });
                 onAccept?.Invoke(connection);
@@ -245,7 +221,7 @@ namespace ReplayRecorder.Steam {
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally: {
-                APILogger.Warn($"[Server] Connection closed: {connectionInfo.m_szConnectionDescription} {connectionInfo.m_szEndDebug}");
+                APILogger.Warn($"[{debugName}] Connection closed: {connectionInfo.m_szConnectionDescription} {connectionInfo.m_szEndDebug}");
                 onDisconnect?.Invoke(connection);
                 currentConnections.Remove(connection, out Connection? conn);
                 conn?.Dispose();
@@ -256,7 +232,6 @@ namespace ReplayRecorder.Steam {
         }
 
         public void Dispose() {
-            running = false;
             receiveTask?.Wait();
             receiveTask?.Dispose();
             receiveTask = null;
@@ -264,7 +239,7 @@ namespace ReplayRecorder.Steam {
             SteamNetworkingSockets.CloseListenSocket(server);
             onClose?.Invoke();
 
-            APILogger.Debug("[Server] Listen server closed.");
+            APILogger.Debug("[{debugName}] Listen server closed.");
         }
     }
 }

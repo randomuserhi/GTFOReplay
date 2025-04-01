@@ -3,17 +3,21 @@
 using API;
 using Steamworks;
 using System.Collections.Concurrent;
-using System.Net;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using static ReplayRecorder.Steam.SteamServer;
+using static ReplayRecorder.Steam.rSteamServer;
 
 namespace ReplayRecorder.Steam {
     internal class rSteamClient : IDisposable {
-        public SteamNet.clientOnAccept? onAccept = null;
-        public SteamNet.clientOnReceive? onReceive = null;
-        public SteamNet.clientOnClose? onClose = null;
-        public SteamNet.clientOnFail? onFail = null;
+        public delegate void OnAccept(rSteamClient connection);
+        public delegate void OnReceive(ArraySegment<byte> buffer, rSteamClient connection);
+        public delegate void OnClose(rSteamClient connection);
+        public delegate void OnFail(rSteamClient connection);
+
+        public OnAccept? onAccept = null;
+        public OnReceive? onReceive = null;
+        public OnClose? onClose = null;
+        public OnFail? onFail = null;
 
         internal static HashSet<HSteamNetConnection> localClients = new();
 
@@ -25,27 +29,18 @@ namespace ReplayRecorder.Steam {
 
         private Callback<SteamNetConnectionStatusChangedCallback_t> cb_OnConnectionStatusChanged;
 
-        public readonly EndPoint associatedEndPoint;
         private bool connected = false;
 
-        public rSteamClient(ulong steamid, int virtualPort, EndPoint associatedEndPoint, int receiveBufferSize = -1) {
-            this.associatedEndPoint = associatedEndPoint;
+        private readonly string debugName;
+
+        public rSteamClient(ulong steamid, int virtualPort, SteamNetworkingConfigValue_t[]? options = null, string debugName = "Client") {
+            this.debugName = debugName;
 
             identity = default;
             identity.SetSteamID(new CSteamID(steamid));
 
-            if (receiveBufferSize <= 0) connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, 0, null);
-            else {
-                connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, 1, new SteamNetworkingConfigValue_t[] {
-                    new SteamNetworkingConfigValue_t {
-                        m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_RecvBufferSize,
-                        m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
-                        m_val = new SteamNetworkingConfigValue_t.OptionValue() {
-                            m_int32 = receiveBufferSize
-                        }
-                    }
-                });
-            }
+            connection = SteamNetworkingSockets.ConnectP2P(ref identity, virtualPort, options == null ? 0 : options.Length, options);
+            localClients.Add(connection);
 
             cb_OnConnectionStatusChanged = Callback<SteamNetConnectionStatusChangedCallback_t>.Create(OnConnectionStatusChanged);
         }
@@ -101,7 +96,7 @@ namespace ReplayRecorder.Steam {
                 // Copy back to unmanaged
                 Marshal.StructureToPtr(packet, packetPtr, true);
 
-                APILogger.Debug($"[Client] Sent packet({dequeue}): {bytesWritten}/{data.Count}");
+                APILogger.Debug($"[{debugName}] Sent packet({dequeue}): {bytesWritten}/{data.Count}");
             }
 
             SteamNetworkingSockets.SendMessages(numMessages, messages, results);
@@ -110,10 +105,10 @@ namespace ReplayRecorder.Steam {
 
             for (int i = 0; i < results.Length; ++i) {
                 if (results[i] < 0) {
-                    APILogger.Debug($"[Client] Failed to send packet, Error Code: {results[i]}");
+                    APILogger.Debug($"[{debugName}] Failed to send packet, Error Code: {results[i]}");
                     if (-results[i] == (long)EResult.k_EResultLimitExceeded) {
                         resendQueue.Enqueue(new ResendRequest { bytes = buffers[i] });
-                        APILogger.Debug($"Requeued packet.");
+                        APILogger.Debug($"[{debugName}] Requeued packet.");
                         success = false;
                     }
                 }
@@ -169,16 +164,14 @@ namespace ReplayRecorder.Steam {
 
             SteamNetConnectionInfo_t connectionInfo = callbackData.m_info;
 
-            localClients.Add(connection);
-
             switch (connectionInfo.m_eState) {
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting:
-                APILogger.Warn($"[Client {connection.m_HSteamNetConnection}] Connecting to: {connectionInfo.m_szConnectionDescription}");
+                APILogger.Warn($"[{debugName}] {connection.m_HSteamNetConnection} Connecting to: {connectionInfo.m_szConnectionDescription}");
                 connected = false;
                 break;
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected:
-                APILogger.Warn($"[Client {connection.m_HSteamNetConnection}] Connection established: {connectionInfo.m_szConnectionDescription}");
+                APILogger.Warn($"[{debugName}] {connection.m_HSteamNetConnection} Connection established: {connectionInfo.m_szConnectionDescription}");
                 onAccept?.Invoke(this);
                 connected = true;
                 receiveTask = ReceiveMessages();
@@ -186,7 +179,7 @@ namespace ReplayRecorder.Steam {
 
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
-                APILogger.Warn($"[Client {connection.m_HSteamNetConnection}] Connection closed: {connectionInfo.m_szEndDebug}, established: {connected}");
+                APILogger.Warn($"[{debugName}] {connection.m_HSteamNetConnection} Connection closed: {connectionInfo.m_szEndDebug}, established: {connected}");
                 if (connected == false) onFail?.Invoke(this);
                 Dispose();
                 break;
