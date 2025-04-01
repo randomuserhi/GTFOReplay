@@ -9,6 +9,7 @@ using SNetwork;
 using Steamworks;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text;
 using UnityEngine;
 
 namespace ReplayRecorder.Net {
@@ -371,11 +372,26 @@ namespace ReplayRecorder.Net {
 
                             const int maxLen = 49 - 2;
                             message = $"[{conn.name}] " + message;
-                            while (message.Length > maxLen) {
-                                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {message.Substring(0, maxLen).Trim()}");
-                                message = message.Substring(maxLen).Trim();
+                            string[] words = message.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                            StringBuilder currentLine = new StringBuilder();
+                            int i = 0;
+                            while (i < words.Length) {
+                                string word = words[i++];
+                                while (word.Length > maxLen) {
+                                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {word.Substring(0, maxLen)}");
+                                    word = word.Substring(maxLen);
+                                }
+
+                                currentLine.Clear();
+                                currentLine.Append(word);
+
+                                while (i < words.Length && currentLine.Length + words[i].Length < maxLen) {
+                                    currentLine.Append(" ");
+                                    currentLine.Append(words[i++]);
+                                }
+
+                                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {currentLine.ToString()}");
                             }
-                            PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {message}");
 
                             spectatorMessageSender = null;
 
