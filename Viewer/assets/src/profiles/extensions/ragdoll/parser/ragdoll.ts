@@ -1,4 +1,4 @@
-// NOTE(randomuserhi): The renderer for ragdolls is integrated into vanilla for ease of implementation
+// NOTE(randomuserhi): The renderer for ragdolls is integrated into vanilla player model for ease of implementation
 
 import { AvatarLike } from "@asl/vanilla/library/animations/lib.js";
 import { Factory } from "@asl/vanilla/library/factory.js";
