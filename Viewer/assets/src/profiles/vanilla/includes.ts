@@ -122,6 +122,7 @@ const includes = [
     import("./ui/pages/stats.js"),
     import("./ui/scoreboard.js"),
     import("../extensions/ewc/includes.js"),
+    import("../extensions/ragdoll/includes.js"),
 ];
 await Promise.all(includes);
 

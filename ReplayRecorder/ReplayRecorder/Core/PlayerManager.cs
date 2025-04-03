@@ -43,12 +43,14 @@ namespace ReplayRecorder.Core {
         private static class SpawningPatches {
             [HarmonyPatch(typeof(PlayerSync), nameof(PlayerSync.OnSpawn))]
             [HarmonyPostfix]
+            [HarmonyPriority(Priority.Last)]
             private static void OnSpawn(PlayerSync __instance) {
                 Spawn(__instance.m_agent);
             }
 
             [HarmonyPatch(typeof(PlayerSync), nameof(PlayerSync.OnDespawn))]
             [HarmonyPostfix]
+            [HarmonyPriority(Priority.Last)]
             private static void OnDespawn(PlayerSync __instance) {
                 Despawn(__instance.m_agent);
             }

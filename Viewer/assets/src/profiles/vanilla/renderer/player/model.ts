@@ -2,6 +2,7 @@ import { signal } from "@esm/@/rhu/signal.js";
 import * as Pod from "@esm/@root/replay/pod.js";
 import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
+import { Ragdoll } from "@root/profiles/extensions/ragdoll/parser/ragdoll.js";
 import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemArchetype, ItemDatablock } from "../../datablocks/items/item.js";
 import { animCrouch, animVelocity, PlayerAnimDatablock } from "../../datablocks/player/animation.js";
@@ -138,7 +139,7 @@ class EquippedItem {
 
 const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
 
-export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>]> {
+export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll]> {
     public static showFlashlightLineOfSight = signal(false);
     
     private aimIK: IKSolverAim = new IKSolverAim();
@@ -257,12 +258,12 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.root.add(this.flashlightLOS);
     }
 
-    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>) {
+    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll) {
         if (!this.isVisible()) return;
 
         this.updateBackpack(database, player, backpack, sentries);
 
-        this.animate(dt, time, player, anim);
+        this.animate(dt, time, player, anim, ragdoll);
         
         this.draw();
         this.visual.joints.rightHand.add(this.handAttachment);
@@ -270,8 +271,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.updateTmp(player, camera, stats, backpack);
     }
     
-    private animate(dt: number, time: number, player: Player, anim: PlayerAnimState) {
-        this._animate(dt, time, player, anim);
+    private animate(dt: number, time: number, player: Player, anim: PlayerAnimState, ragdoll?: Ragdoll) {
+        this._animate(dt, time, player, anim, ragdoll);
         this.updateSkeleton(dt, player.position, player.rotation);
 
         // flashlight
@@ -300,7 +301,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         tempAvatar: new Avatar(HumanJoints),
         tempVector: new Vector3()
     } as const;
-    private _animate(dt: number, time: number, player: Player, anim: PlayerAnimState) {
+    private _animate(dt: number, time: number, player: Player, anim: PlayerAnimState, ragdoll?: Ragdoll) {
         const { tempAvatar } = PlayerModel.FUNC_animate;
 
         this.skeleton.joints.rightHand.add(this.handAttachment);
@@ -316,6 +317,12 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         if (anim.state === "inElevator") {
             this.skeleton.override(PlayerAnimDatablock.defaultMovement.sample(offsetTime));
+            return;
+        }
+
+        // NOTE(randomuserhi): RagdollMode mod - https://thunderstore.io/c/gtfo/p/Brandonious/Ragdoll_Mode/
+        if (ragdoll !== undefined && ragdoll.enabled && ragdoll.avatar !== undefined) {
+            this.skeleton.override(ragdoll.avatar);
             return;
         }
 
