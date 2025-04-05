@@ -1,4 +1,5 @@
 import * as chokidar from "chokidar";
+import { randomUUID } from "crypto";
 import { dialog } from "electron";
 import * as fs from "fs";
 import path from "path";
@@ -297,6 +298,9 @@ function isZipFile(filePath: string) {
     return buffer.equals(zipSignature);
 }
 
+const uuid = randomUUID();
+const tempPath = path.join(__dirname, `/temp-${uuid}.replay`);
+
 export class FileManager {
     file?: File;
 
@@ -333,14 +337,13 @@ export class FileManager {
                             zipfile.openReadStream(entry, (err, readStream) => {
                                 if (err) return reject(err);
     
-                                const extractedPath = path.join(__dirname, "/temp.replay");
-                                Program.post("console.log", `Zipped replay => extracted to '${extractedPath}'`);
+                                Program.post("console.log", `Zipped replay => extracted to '${tempPath}'`);
                                 
-                                const writeStream = fs.createWriteStream(extractedPath);
+                                const writeStream = fs.createWriteStream(tempPath);
                                 readStream.pipe(writeStream);
     
-                                writeStream.on('finish', async () => {
-                                    resolve(await this._open(extractedPath));
+                                writeStream.on("finish", async () => {
+                                    resolve(await this._open(tempPath));
                                 });
                             });
                         }
@@ -354,6 +357,10 @@ export class FileManager {
         } else {
             return this._open(filePath);
         }
+    }
+
+    public dispose() {
+        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
     }
 
     public setupIPC(ipc: Electron.IpcMain) {

@@ -43,6 +43,10 @@ export default class Program {
 
         this.fileManager = new FileManager();
         this.fileManager.setupIPC(ipcMain);
+        Program.app.on("before-quit", () => {
+            // NOTE(randomuserhi): Clean up temporary files generated 
+            Program.fileManager?.dispose();
+        });
 
         this.gtfoManager = new GTFOManager(this.fileManager);
         this.gtfoManager.setupIPC(ipcMain);
@@ -116,8 +120,15 @@ export default class Program {
     }
 
     static main(app: Electron.App): void {
+        process.on("SIGINT", () => {
+            app.quit(); // Gracefully trigger app shutdown
+        });
         Program.app = app;
-        Program.app.on('window-all-closed', Program.onWindowAllClosed);
-        Program.app.on('ready', Program.onReady);
+        Program.app.on("window-all-closed", Program.onWindowAllClosed);
+        if (Program.app.isReady()) {
+            Program.onReady();
+        } else {
+            Program.app.on("ready", Program.onReady);
+        }
     }
 }

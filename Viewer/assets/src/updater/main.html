@@ -1,0 +1,40 @@
+<!-- renderer -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- import style sheet -->
+<link rel="stylesheet" href="../main/default.css">
+<link rel="stylesheet" href="../main/fonts.css">
+
+<head>
+	<meta charset="UTF-8">
+	<base target="_blank">
+
+	<!-- 
+	 Content Security Policy (CSP)
+	 - [CSP](https://content-security-policy.com/) 
+	 - [electron CSP](https://www.electronjs.org/docs/latest/tutorial/security#csp-meta-tag)
+	   - Make sure to fully read about electron security (https://www.electronjs.org/docs/latest/tutorial/security)
+
+	 'unsafe-eval' is needed for RHU to work, shouldn't be a security issue since we don't eval any js
+	  externally from a server / user input. 
+	-->
+	<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:;">
+
+	<title>GTFO Replay Viewer</title>
+
+	<script type="importmap">
+	{
+		"imports": {
+			"@root/": "../",
+			"@/rhu/": "../js3party/rhu/"
+		}
+	}
+	</script>
+	<script type="module" src="./app.js"></script>
+</head>
+
+<body></body>
+
+</html>

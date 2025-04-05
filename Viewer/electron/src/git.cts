@@ -1,0 +1,1 @@
+export const __git_tag__ = "v0.3.2";
