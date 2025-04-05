@@ -679,7 +679,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1692746085033619525, guid: a6d9eea7f5082d94f8bef9eae308c831, type: 3}
       propertyPath: clips.Array.size
-      value: 421
+      value: 422
       objectReference: {fileID: 0}
     - target: {fileID: 1692746085033619525, guid: a6d9eea7f5082d94f8bef9eae308c831, type: 3}
       propertyPath: clips.Array.data[0]
@@ -2365,6 +2365,10 @@ PrefabInstance:
       propertyPath: clips.Array.data[420]
       value: 
       objectReference: {fileID: 7400000, guid: 60a7433ae93003d449fe7b8db88b0c61, type: 2}
+    - target: {fileID: 1692746085033619525, guid: a6d9eea7f5082d94f8bef9eae308c831, type: 3}
+      propertyPath: clips.Array.data[421]
+      value: 
+      objectReference: {fileID: 7400000, guid: 4b5aeddfb5359b746b03022637e96c3c, type: 2}
     - target: {fileID: 1852075595142323883, guid: a6d9eea7f5082d94f8bef9eae308c831, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
@@ -2691,7 +2695,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8957756633652092728, guid: a6d9eea7f5082d94f8bef9eae308c831, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

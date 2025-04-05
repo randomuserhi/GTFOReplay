@@ -257,6 +257,7 @@ const enemyAnimationClipNames = [
     "Monster_Hit_Right_01",
     "Melee_Sequence_Fwd",
     "RU_Melee_Sequence_A",
+    "RU_Melee_Walk_Sequence_A",
     "Monster_Attack_06_shortened",
     "Monster_Attack_180_L",
     "RU_Jump_In",
@@ -577,7 +578,7 @@ const RU_HibernateDetect = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.Ru_Hibernate_Detect_Loop_0, x: 1, y: 0, timescale: 0.2 },
 ], animDetection);
 
-const RU_Melee_Sequence_A_Fast = new ScaledAnim(HumanJoints, enemyAnimationClips.RU_Melee_Sequence_A, 2);
+const RU_Melee_Sequence_A_Fast = new ScaledAnim(HumanJoints, enemyAnimationClips.RU_Melee_Walk_Sequence_A, 1.5);
 
 /*const LO_Ability_Fire_A = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_A, enemyAnimationClips.LO_Ability_Fire_Out_A);
 const LO_Ability_Fire_B = mergeAnims(enemyAnimationClips.LO_Ability_Fire_In_B, enemyAnimationClips.LO_Ability_Fire_Out_B);
