@@ -360,6 +360,8 @@ export class FileManager {
     }
 
     public dispose() {
+        this.file?.close();
+        this.file = undefined;
         if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
     }
 

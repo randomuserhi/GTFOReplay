@@ -25,6 +25,8 @@ export default class Program {
     static gtfoManager: GTFOManager;
 
     private static onWindowAllClosed(): void {
+        Program.fileManager?.dispose();
+
         if (process.platform !== "darwin") {
             Program.app.quit();
         }
@@ -32,6 +34,7 @@ export default class Program {
 
     private static onClose(): void {
         // Dereference the window object. 
+        Program.fileManager?.dispose();
         Program.win = null;
     }
 
