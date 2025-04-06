@@ -46,9 +46,27 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
     private material: MeshStandardMaterial;
 
     private tag?: Text;
+    private label?: Text;
     
     constructor() {
         super();
+
+        this.label = new Text();
+        this.label.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.label.fontSize = 0.5;
+        this.label.textAlign = "center";
+        this.label.anchorX = "center";
+        this.label.anchorY = "bottom";
+        this.label.color = 0xffffff;
+        this.label.text = `Terminal Ping`;
+        this.label.colorRanges = {
+            0: 0xffffff,
+        };
+        this.label.material.depthTest = false;
+        this.label.material.depthWrite = false;
+        this.label.renderOrder = Infinity;
+        this.label.position.set(0, 1.8, 0);
+        this.root.add(this.label);
 
         this.tag = new Text();
         this.tag.font = "./fonts/oxanium/Oxanium-ExtraBold.ttf";
@@ -64,6 +82,7 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
         this.tag.material.depthTest = false;
         this.tag.material.depthWrite = false;
         this.tag.renderOrder = Infinity;
+        this.tag.position.set(0, -0.2, 0);
         this.root.add(this.tag);
 
         loadTexture(defaultIcon).then((texture) => {
@@ -110,12 +129,20 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
         this.root.scale.set(scale, scale, 1);
         this.root.lookAt(camPos);
         
-        if (this.tag !== undefined) this.tag.fontSize = lerp * 0.5 + 0.2;
+        if (this.label !== undefined) {
+            this.label.text = ping.slot !== 255 ? "Player Ping" : "Terminal Ping";
+            this.label.position.set(0, lerp * 0.5 + 1.8, 0);
+            this.label.fontSize = lerp * 0.3 + 0.3;
+        }
+        if (this.tag !== undefined) this.tag.fontSize = lerp * 0.5 + 0.5;
     }
 
     public dispose(): void {
         this.tag?.dispose();
         this.tag = undefined;
+
+        this.label?.dispose();
+        this.label = undefined;
     }
 }
 
