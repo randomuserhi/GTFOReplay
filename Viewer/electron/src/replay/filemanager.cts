@@ -298,13 +298,14 @@ function isZipFile(filePath: string) {
     return buffer.equals(zipSignature);
 }
 
-const uuid = randomUUID();
-const tempPath = path.join(__dirname, `/temp-${uuid}.replay`);
-
 export class FileManager {
     file?: File;
+    readonly uuid: string;
+    readonly tempPath: string;
 
     constructor() {
+        this.uuid = randomUUID();
+        this.tempPath = path.join(__dirname, `/temp-${this.uuid}.replay`);
     }
 
     private async _open(filePath?: string) {
@@ -337,13 +338,13 @@ export class FileManager {
                             zipfile.openReadStream(entry, (err, readStream) => {
                                 if (err) return reject(err);
     
-                                Program.post("console.log", `Zipped replay => extracted to '${tempPath}'`);
+                                Program.post("console.log", `Zipped replay => extracted to '${this.tempPath}'`);
                                 
-                                const writeStream = fs.createWriteStream(tempPath);
+                                const writeStream = fs.createWriteStream(this.tempPath);
                                 readStream.pipe(writeStream);
     
                                 writeStream.on("finish", async () => {
-                                    resolve(await this._open(tempPath));
+                                    resolve(await this._open(this.tempPath));
                                 });
                             });
                         }
@@ -362,7 +363,7 @@ export class FileManager {
     public dispose() {
         this.file?.close();
         this.file = undefined;
-        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        if (fs.existsSync(this.tempPath)) fs.unlinkSync(this.tempPath);
     }
 
     public setupIPC(ipc: Electron.IpcMain) {

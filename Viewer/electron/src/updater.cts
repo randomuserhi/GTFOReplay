@@ -217,7 +217,7 @@ export default class Updater {
 
                 // Relaunch
                 Updater.app.relaunch({ args: process.argv.slice(1).concat(["--skip-launcher"]) });
-                Updater.app.exit();
+                Updater.app.quit();
 
                 return undefined;
             } catch (e) {

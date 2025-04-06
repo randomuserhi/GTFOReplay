@@ -25,8 +25,6 @@ export default class Program {
     static gtfoManager: GTFOManager;
 
     private static onWindowAllClosed(): void {
-        Program.fileManager?.dispose();
-
         if (process.platform !== "darwin") {
             Program.app.quit();
         }
@@ -34,25 +32,24 @@ export default class Program {
 
     private static onClose(): void {
         // Dereference the window object. 
-        Program.fileManager?.dispose();
         Program.win = null;
     }
 
     private static onReady(): void {
         Program.setupIPC();
 
-        this.moduleLoader = new ModuleLoader(Program.post, path.resolve(__dirname, "assets/profiles"));
-        this.moduleLoader.setupIPC(ipcMain);
+        Program.moduleLoader = new ModuleLoader(Program.post, path.resolve(__dirname, "assets/profiles"));
+        Program.moduleLoader.setupIPC(ipcMain);
 
-        this.fileManager = new FileManager();
-        this.fileManager.setupIPC(ipcMain);
+        Program.fileManager = new FileManager();
+        Program.fileManager.setupIPC(ipcMain);
         Program.app.on("before-quit", () => {
             // NOTE(randomuserhi): Clean up temporary files generated 
             Program.fileManager?.dispose();
         });
 
-        this.gtfoManager = new GTFOManager(this.fileManager);
-        this.gtfoManager.setupIPC(ipcMain);
+        Program.gtfoManager = new GTFOManager(Program.fileManager);
+        Program.gtfoManager.setupIPC(ipcMain);
 
         Program.win = new BrowserWindow({
             frame: false, // remove the window frame
