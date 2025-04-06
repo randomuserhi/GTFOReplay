@@ -13,6 +13,9 @@
     "removeComments": true,
     "sourceMap": false,
     "paths": {
+      // Fix for three js webgpu module
+      "three/webgpu": ["./node_modules/@types/three/build/three.webgpu.d.ts"],
+
       "@root/*": ["../assets/src/*"],
       "@/*": ["./@types/*"],
       "troika-three-text": ["./@types/troika-three-text"],

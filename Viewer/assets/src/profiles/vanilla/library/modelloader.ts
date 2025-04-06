@@ -1,4 +1,4 @@
-import { BufferGeometry, Group, Mesh } from '@esm/three';
+import { BufferGeometry, Group, Mesh, Texture, TextureLoader } from '@esm/three';
 import { DRACOLoader } from '@esm/three/examples/jsm/loaders/DRACOLoader.js';
 import { GLTFLoader } from '@esm/three/examples/jsm/loaders/GLTFLoader.js';
 import * as BufferGeometryUtils from '@esm/three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -112,6 +112,34 @@ export async function loadGLTF(path: string): Promise<() => Group> {
         loadingGLTF.set(path, { promise, terminate });
     } else {
         console.warn("Unable to obtain termination from model loading promise. This shouldn't happen!");
+    }
+    return promise; 
+}
+
+const loadedTextures = new Map<string, Texture>();
+const loadingTextures = new Map<string, { promise: Promise<Texture>; terminate: (reason: any) => void }>();
+const textureLoader = new TextureLoader();
+
+export function loadTexture(path: string): Promise<Texture> {
+    if (loadedTextures.has(path)) {
+        return new Promise((resolve) => {
+            resolve(loadedTextures.get(path)!);
+        });
+    }
+
+    if (loadingTextures.has(path)) {
+        return loadingTextures.get(path)!.promise;
+    }
+
+    let terminate: ((reason: any) => void) | undefined = undefined;
+    const promise = new Promise<Texture>((resolve, reject) => {
+        terminate = reject;
+        resolve(textureLoader.load(path));
+    });
+    if (terminate !== undefined) {
+        loadingTextures.set(path, { promise, terminate });
+    } else {
+        console.warn("Unable to obtain termination from image loading promise. This shouldn't happen!");
     }
     return promise; 
 }

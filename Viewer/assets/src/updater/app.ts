@@ -134,7 +134,7 @@ const App = () => {
     }
 
     const text = signal("Checking for updates ...");
-    const progress = signal(0);
+    const progress = signal(1);
     progress.guard = (newValue) => {
         return Math.max(0, Math.min(1, newValue));
     };
