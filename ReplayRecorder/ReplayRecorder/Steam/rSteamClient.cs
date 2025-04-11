@@ -110,6 +110,8 @@ namespace ReplayRecorder.Steam {
                         resendQueue.Enqueue(new ResendRequest { bytes = buffers[i] });
                         APILogger.Debug($"[{debugName}] Requeued packet.");
                         success = false;
+                    } else {
+                        APILogger.Error($"[{debugName}] Failed to send packet, Error Code: {results[i]}");
                     }
                 }
             }
@@ -140,18 +142,25 @@ namespace ReplayRecorder.Steam {
 
                 // NOTE(randomuserhi): Manage packets that did not send due to overwhelmed socket
                 if (!resendQueue.IsEmpty) {
-                    while (resendQueue.TryDequeue(out var packet)) {
-                        resendQueueBuffer.Add(packet);
+                    // NOTE(randomuserhi): Get status to not overwhelm network
+                    SteamNetConnectionRealTimeStatus_t status = default;
+                    SteamNetConnectionRealTimeLaneStatus_t pLanes = default;
+                    if (SteamNetworkingSockets.GetConnectionRealTimeStatus(connection, ref status, 0, ref pLanes) == EResult.k_EResultOK) {
+                        if (status.m_cbPendingReliable + status.m_cbSentUnackedReliable == 0) {
+                            while (resendQueue.TryDequeue(out var packet)) {
+                                resendQueueBuffer.Add(packet);
+                            }
+                            int j = 0;
+                            while (j < resendQueueBuffer.Count) {
+                                if (!Send(resendQueueBuffer[j].bytes, dequeue: true)) break;
+                                ++j;
+                            }
+                            for (; j < resendQueueBuffer.Count; ++j) {
+                                resendQueue.Enqueue(resendQueueBuffer[j]);
+                            }
+                            resendQueueBuffer.Clear();
+                        }
                     }
-                    int j = 0;
-                    while (j < resendQueueBuffer.Count) {
-                        if (!Send(resendQueueBuffer[j].bytes, dequeue: true)) break;
-                        ++j;
-                    }
-                    for (; j < resendQueueBuffer.Count; ++j) {
-                        resendQueue.Enqueue(resendQueueBuffer[j]);
-                    }
-                    resendQueueBuffer.Clear();
                 }
 
                 await Task.Delay(16);

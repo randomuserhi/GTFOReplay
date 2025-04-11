@@ -29,13 +29,13 @@ namespace ReplayRecorder.Net {
                 this.associatedEndPoint = associatedEndPoint;
 
                 main = new rSteamClient(host, mainVPort, new SteamNetworkingConfigValue_t[] {
-                    new SteamNetworkingConfigValue_t {
+                    /*new SteamNetworkingConfigValue_t {
                         m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_RecvBufferSize,
                         m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
                         m_val = new SteamNetworkingConfigValue_t.OptionValue() {
                             m_int32 = 10 * 1024 * 1024 // Increase recieve buffer to 10MB
                         }
-                    }
+                    }*/
                 }, "MainClient");
                 slave = new rSteamClient(host, slaveVPort, null, "SlaveClient");
 
@@ -106,13 +106,13 @@ namespace ReplayRecorder.Net {
                 if (socket != null) return;
 
                 socket = new rSteamServer(mainVPort, new SteamNetworkingConfigValue_t[] {
-                    new SteamNetworkingConfigValue_t {
+                    /*new SteamNetworkingConfigValue_t {
                         m_eValue = ESteamNetworkingConfigValue.k_ESteamNetworkingConfig_SendBufferSize,
                         m_eDataType = ESteamNetworkingConfigDataType.k_ESteamNetworkingConfig_Int32,
                         m_val = new SteamNetworkingConfigValue_t.OptionValue() {
                             m_int32 = 10 * 1024 * 1024 // Increase send buffer to 10MB
                         }
-                    }
+                    }*/
                 }, "MainServer");
 
                 socket.onAccept += onAccept;

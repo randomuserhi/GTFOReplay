@@ -132,6 +132,7 @@ class NetBuffer {
         
         this.ranges = newRanges;
 
+        // console.log(this.ranges);
         // TODO(randomuserhi): display the byte range for feedback when loading spectator view
     }
 }
