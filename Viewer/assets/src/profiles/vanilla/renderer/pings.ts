@@ -85,14 +85,15 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
         this.tag.position.set(0, -0.2, 0);
         this.root.add(this.tag);
 
+        this.material = new MeshStandardMaterial({
+            color: new Color(0xffffff),
+            transparent: true,
+            depthTest: false,
+            depthWrite: false
+        });
+
         loadTexture(defaultIcon).then((texture) => {
-            this.material = new MeshStandardMaterial({
-                map: texture,
-                color: new Color(0xffffff),
-                transparent: true,
-                depthTest: false,
-                depthWrite: false
-            });
+            this.material.map = texture;
             this.quad = new Mesh(geometry, this.material);
             this.quad.renderOrder = Infinity;
             this.quad.position.set(0, 1, 0);
