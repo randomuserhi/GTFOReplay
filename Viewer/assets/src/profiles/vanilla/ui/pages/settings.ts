@@ -425,6 +425,10 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                     if (metadata === undefined) return;
 
                     dom.wrapper.body.style.display = metadata?.compatibility_NoArtifact ? "none" : "block";
+
+                    if (metadata?.compatibility_NoArtifact) {
+                        toggle.value(false);
+                    }
                 }, { signal: dispose.signal });
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
