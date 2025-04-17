@@ -190,6 +190,15 @@ export const Info = () => {
                             </ul>
                             `);
                     }
+                    if (metadata.compatibility_NoArtifact === true) {
+                        compatability.push(...html`
+                            <a href="https://thunderstore.io/c/gtfo/p/Secta_aivar/PAIR/">PAIR (Or other rundowns without Artifact DB)</a>
+                            <ul style="margin-left: 10px;">
+                                <li>- Can't acquire resource locker debug information</li>
+                                <li>- Can't patch 'LG_ResourceContainerBuilder.SetupFunctionGO' as it causes checksum errors when no artifacts are present</li>
+                            </ul>
+                            `);
+                    }
                 }
                 if (compatability.length === 0) dom.compatibilityText.innerHTML = "None";
                 else dom.compatibilityText.replaceChildren(...compatability);

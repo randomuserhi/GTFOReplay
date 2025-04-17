@@ -9,6 +9,7 @@ using Player;
 using ReplayRecorder.SNetUtils;
 using SNetwork;
 using System.Reflection;
+using Vanilla.BepInEx;
 using Vanilla.Metadata;
 
 namespace Vanilla.Noises {
@@ -86,8 +87,8 @@ namespace Vanilla.Noises {
             }
         }
 
-        internal static void OldBulkheadSound_Compatability(Harmony harmony, string OldBulkheadSoundGUID) {
-            rMetadata.OldBulkheadSound_Compatability = true;
+        internal static void OldBulkheadSound_Compatability(string OldBulkheadSoundGUID) {
+            rMetadata.OldBulkheadSound_Compatibility = true;
 
             if (IL2CPPChainloader.Instance.Plugins.TryGetValue(OldBulkheadSoundGUID, out _)) {
                 APILogger.Warn("Replay mod is incompatible with DarkEmperor-OldBulkheadSound due to a patch to 'LG_SecurityDoor.OnDoorIsOpened'. This compatability layer disables that patch, possible causing incorrect alert blame.");
@@ -100,8 +101,8 @@ namespace Vanilla.Noises {
                 return;
             }
 
-            rMetadata.OldBulkheadSound_Compatability = false;
-            harmony.Patch(
+            rMetadata.OldBulkheadSound_Compatibility = false;
+            Plugin.harmony!.Patch(
                 SecurityDoor_OnDoorIsOpened,
                 prefix: new HarmonyMethod(typeof(Noises).GetMethod(nameof(Prefix_SecurityDoor_OnDoorIsOpened), ReplayRecorder.Utils.AnyBindingFlags))
                 );

@@ -25,8 +25,8 @@ public class Plugin : BasePlugin {
 
         APILogger.Log("Debug is " + (ConfigManager.Debug ? "Enabled" : "Disabled"));
 
-        Noises.Noises.OldBulkheadSound_Compatability(harmony, OldBulkheadSoundGUID);
+        Noises.Noises.OldBulkheadSound_Compatability(OldBulkheadSoundGUID);
     }
 
-    private static Harmony? harmony;
+    internal static Harmony? harmony;
 }

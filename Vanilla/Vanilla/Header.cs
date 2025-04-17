@@ -3,11 +3,12 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 
 namespace Vanilla.Metadata {
-    [ReplayData("Vanilla.Metadata", "0.0.2")]
+    [ReplayData("Vanilla.Metadata", "0.0.3")]
     internal class rMetadata : ReplayHeader {
-        const string Version = "0.1.7";
+        const string Version = "0.1.8";
 
-        public static bool OldBulkheadSound_Compatability = false;
+        public static bool OldBulkheadSound_Compatibility = false;
+        public static bool NoArtifact_Compatibility = false;
 
         [ReplayInit]
         private static void Init() {
@@ -16,7 +17,8 @@ namespace Vanilla.Metadata {
 
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(Version, buffer);
-            BitHelper.WriteBytes(OldBulkheadSound_Compatability, buffer);
+            BitHelper.WriteBytes(OldBulkheadSound_Compatibility, buffer);
+            BitHelper.WriteBytes(NoArtifact_Compatibility, buffer);
         }
     }
 }

@@ -1,11 +1,15 @@
 ﻿using AIGraph;
+using API;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using System.Reflection;
 using UnityEngine;
+using Vanilla.BepInEx;
+using Vanilla.Metadata;
 
 namespace Vanilla.StaticItems {
     [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.1")]
@@ -88,17 +92,36 @@ namespace Vanilla.StaticItems {
                 }
             */
             //
-            // Fix this by not calling SpawnArtifact when no artifact blocks are available.
-            [HarmonyPatch(typeof(LG_ResourceContainer_Storage), nameof(LG_ResourceContainer_Storage.SpawnArtifact))]
-            [HarmonyPrefix]
-            [HarmonyPriority(Priority.High)]
-            private static bool OnSpawnArtifact(LG_ResourceContainer_Storage __instance, ResourceContainerSpawnData pack, Transform align, int randomSeed) {
-                return ArtifactDataBlock.Wrapper.Blocks.Count > 0;
+            // This issue is super problematic as it causes checksum error between users that have replay mod and users that do not, so I have to 
+            // remove patches involving LG_ResourceContainerBuilder.SetupFunctionGO if no artifact datablock is present
+            private static bool patched = false;
+            [HarmonyPatch(typeof(GameDataInit), nameof(GameDataInit.Initialize))]
+            [HarmonyPostfix]
+            private static void Patch_LG_ResourceContainerBuilder() {
+                if (patched) return;
+                patched = true;
+
+                rMetadata.NoArtifact_Compatibility = true;
+
+                MethodInfo? LG_ResourceContainerBuilder_SetupFunctionGO = typeof(LG_ResourceContainerBuilder).GetMethod(nameof(LG_ResourceContainerBuilder.SetupFunctionGO));
+                if (LG_ResourceContainerBuilder_SetupFunctionGO == null) {
+                    APILogger.Error("[Patch_LG_ResourceContainerBuilder] Failed to patch - Method 'LG_ResourceContainerBuilder.SetupFunctionGO' was not found.");
+                    return;
+                }
+
+                if (ArtifactDataBlock.Wrapper.Blocks.Count == 0) {
+                    APILogger.Warn("Debug resource containers will be disabled - missing 'GameData_ArtifactDatablock_bin.json'");
+                    return;
+                }
+
+                rMetadata.NoArtifact_Compatibility = false;
+                Plugin.harmony!.Patch(
+                    LG_ResourceContainerBuilder_SetupFunctionGO,
+                    postfix: new HarmonyMethod(typeof(Patches).GetMethod(nameof(Postfix_LG_ResourceContainerBuilder_OnBuild), Utils.AnyBindingFlags))
+                    );
             }
 
-            [HarmonyPatch(typeof(LG_ResourceContainerBuilder), nameof(LG_ResourceContainerBuilder.SetupFunctionGO))]
-            [HarmonyPostfix]
-            private static void OnBuild(LG_ResourceContainerBuilder __instance, LG_LayerType layer, GameObject GO) {
+            private static void Postfix_LG_ResourceContainerBuilder_OnBuild(LG_ResourceContainerBuilder __instance, LG_LayerType layer, GameObject GO) {
                 if (__instance.m_function != ExpeditionFunction.ResourceContainerWeak) return;
                 LG_WeakResourceContainer? comp = GO.GetComponentInChildren<LG_WeakResourceContainer>();
                 if (comp == null) return;
@@ -114,6 +137,8 @@ namespace Vanilla.StaticItems {
 
                 ConsumableDistributionDataBlock? consumableData = GameDataBlockBase<ConsumableDistributionDataBlock>.GetBlock(__instance.m_node.m_zone.m_settings.m_zoneData.ConsumableDistributionInZone);
                 if (consumableData == null) return;
+                UnityEngine.Random.State oldState = UnityEngine.Random.state;
+
                 UnityEngine.Random.InitState(__instance.m_randomSeed);
 
                 float[] array = new float[consumableData.SpawnData.Count];
@@ -123,6 +148,8 @@ namespace Vanilla.StaticItems {
                 BuilderWeightedRandom builderWeightedRandom = new BuilderWeightedRandom();
                 builderWeightedRandom.Setup(array);
                 container.consumableType = Identifier.Item(consumableData.SpawnData[builderWeightedRandom.GetRandomIndex(UnityEngine.Random.value)].ItemID);
+
+                UnityEngine.Random.state = oldState;
             }
 
             [HarmonyPatch(typeof(AIG_CourseNode), nameof(AIG_CourseNode.RegisterContainer))]

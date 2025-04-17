@@ -733,8 +733,8 @@ EnemyAnimHandlesDatablock.set("enemyGiant", {
     blend: 10,
     screams: [
         EnemyAnimDatablock.Monster_Taunt_01,
-        EnemyAnimDatablock.Monster_Taunt_01,
-        EnemyAnimDatablock.Monster_Taunt_01,
+        EnemyAnimDatablock.Monster_Taunt_01, // Not actually defined in vanilla game
+        EnemyAnimDatablock.Monster_Taunt_01, // Not actually defined in vanilla game
     ],
     ladderClimb: EnemyAnimDatablock.CA_Walk_Fwd_A,
     melee: {

@@ -17,9 +17,9 @@ const style = pageStyles;
 export const FeatureWrapper = (tag: string) => {
     interface Public {
         readonly tag: string
+        readonly body: HTMLDivElement;
     }
     interface Private {
-        readonly body: HTMLDivElement;
     }
 
     const dom = html<Mutable<Private & Public>>/**//*html*/`
@@ -414,6 +414,20 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
         ResourceContainerModel.debug.on((value) => {
             toggle.value(value);
         });
+
+        v.on((view) => {
+            if (view === undefined) return;
+
+            view.replay.on((replay) => {
+                if (replay === undefined) return;
+
+                replay.watch("Vanilla.Metadata").on((metadata) => {
+                    if (metadata === undefined) return;
+
+                    dom.wrapper.body.style.display = metadata?.compatibility_NoArtifact ? "none" : "block";
+                }, { signal: dispose.signal });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return dom.wrapper;
     },
