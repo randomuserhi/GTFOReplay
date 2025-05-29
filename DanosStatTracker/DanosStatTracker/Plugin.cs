@@ -6,6 +6,7 @@ using HarmonyLib;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using SNetwork;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace DanosStatTracker.BepInEx;
@@ -24,12 +25,15 @@ public class Plugin : BasePlugin {
         if (ConfigManager.Enable) {
             if (IL2CPPChainloader.Instance.Plugins.TryGetValue("danos.GTFOStats", out _)) {
                 APILogger.Debug("Danos-GTFOStats is installed, GTFOReplay will provide additional data.");
-
-                GTFOStats.Data.DanosStaticStore.RegisterJsonContributor(GenerateReplayJson);
-
-                Replay.RegisterAll();
+                Register();
             }
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void Register() {
+        GTFOStats.Data.DanosStaticStore.RegisterJsonContributor(GenerateReplayJson);
+        Replay.RegisterAll();
     }
 
     [ReplayOnElevatorStop]

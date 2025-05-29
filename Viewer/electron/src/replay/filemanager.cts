@@ -127,7 +127,6 @@ class NetBuffer {
                 end = Math.max(end, range.end);
             }
         }
-        
         newRanges.push({ start, end });
         
         this.ranges = newRanges;

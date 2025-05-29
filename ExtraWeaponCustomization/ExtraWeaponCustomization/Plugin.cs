@@ -42,13 +42,9 @@ public class Plugin : BasePlugin {
         rGunshot.RegisterCancelSyncedShot(CancelSyncedShot);
     }
 
-    // NOTE(randomuserhi): Cancel synced tracers from projectile weapons and multishot/thickbullet weapons.
     private static bool CancelSyncedShot(BulletWeapon weapon) {
         CustomWeaponComponent? cwc = weapon.GetComponent<CustomWeaponComponent>();
-
-        if (cwc == null) return false;
-
-        return cwc.ShotComponent!.OverrideVanillaShot;
+        return cwc != null;
     }
 
     private static Harmony? harmony;
