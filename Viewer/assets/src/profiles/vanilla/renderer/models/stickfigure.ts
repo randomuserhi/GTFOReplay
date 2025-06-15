@@ -145,6 +145,8 @@ export interface StickFigureSettings {
     armScale?: Vector3Like;
     legScale?: Vector3Like;
 
+    tumourScale?: number;
+
     scale?: number;
 
     color?: ColorRepresentation;
@@ -199,6 +201,13 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
         }
 
+        // Update attached objects
+        for (const attachedObj of this.attachedObjects) {
+            attachedObj.obj.matrix.copy(attachedObj.mat);
+            if (attachedObj.applyTumourScaling && this.settings.tumourScale !== undefined) attachedObj.obj.scale.multiply({ x: this.settings.tumourScale, y: this.settings.tumourScale, z: this.settings.tumourScale });
+            attachedObj.obj.applyMatrix4(this.inverseMatrix[attachedObj.limb]);
+        }
+
         // Restore original pose
         for (const joint of HumanJoints) {
             this.visual.joints[joint].quaternion.copy(tempAvatar[joint]);
@@ -237,7 +246,9 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
             this.visual.joints.spine2.scale.copy(this.settings.chestScale);
         }
 
-        if (this.settings.scale !== undefined) this.anchor.scale.set(this.settings.scale, this.settings.scale, this.settings.scale);
+        if (this.settings.scale !== undefined) {
+            this.anchor.scale.set(this.settings.scale, this.settings.scale, this.settings.scale);
+        }
         if (this.settings.rotOffset !== undefined) {
             this.anchor.rotateX(Math.deg2rad * this.settings.rotOffset.x);
             this.anchor.rotateY(Math.deg2rad * this.settings.rotOffset.y);
@@ -289,7 +300,10 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
     }
 
     // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
-    public addToLimb(obj: Object3D, limb: HumanJoints) {
+    private attachedObjects: { obj: Object3D, mat: Matrix4, limb: HumanJoints, applyTumourScaling: boolean }[] = [];
+    public addToLimb(obj: Object3D, limb: HumanJoints, applyTumourScaling: boolean = true) {
+        this.attachedObjects.push({ obj, mat: new Matrix4().copy(obj.matrix), limb, applyTumourScaling });
+        if (applyTumourScaling && this.settings.tumourScale !== undefined) obj.scale.multiply({ x: this.settings.tumourScale, y: this.settings.tumourScale, z: this.settings.tumourScale });
         this.visual.joints[limb].add(obj);
         obj.applyMatrix4(this.inverseMatrix[limb]);
     }
