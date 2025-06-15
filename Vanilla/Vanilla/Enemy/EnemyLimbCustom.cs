@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Vanilla.Enemy {
     [HarmonyPatch]
-    [ReplayData("Vanilla.Enemy.LimbCustom", "0.0.1")]
+    [ReplayData("Vanilla.Enemy.LimbCustom", "0.0.2")]
     public class rLimbCustom : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
@@ -153,7 +153,21 @@ namespace Vanilla.Enemy {
 
         private Vector3 offset {
             get {
-                return limb.m_base.Owner.transform.InverseTransformDirection(limb.transform.position - limb.m_base.Owner.transform.position);
+                Vector3 offset = limb.m_base.Owner.transform.InverseTransformDirection(limb.transform.position - limb.m_base.Owner.transform.position);
+                offset.x /= limb.m_base.Owner.transform.lossyScale.x;
+                offset.y /= limb.m_base.Owner.transform.lossyScale.y;
+                offset.z /= limb.m_base.Owner.transform.lossyScale.z;
+                return offset;
+            }
+        }
+
+        private float scale {
+            get {
+                return Mathf.Max(
+                    limb.transform.lossyScale.x / limb.m_base.Owner.transform.lossyScale.x,
+                    limb.transform.lossyScale.y / limb.m_base.Owner.transform.lossyScale.y,
+                    limb.transform.lossyScale.z / limb.m_base.Owner.transform.lossyScale.z
+                );
             }
         }
 
@@ -177,7 +191,7 @@ namespace Vanilla.Enemy {
             BitHelper.WriteBytes(limb.m_base.Owner.GlobalID, buffer);
             BitHelper.WriteBytes((byte)bone, buffer);
             BitHelper.WriteHalf(offset, buffer);
-            BitHelper.WriteHalf(limb.transform.lossyScale.x / Mathf.Max(limb.m_base.Owner.transform.lossyScale.x), buffer);
+            BitHelper.WriteHalf(scale, buffer);
         }
     }
 }

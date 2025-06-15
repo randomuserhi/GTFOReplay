@@ -95,7 +95,10 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 model.mesh.scale.set(limb.scale, limb.scale, limb.scale);
                 model.mesh.quaternion.set(0, 0, 0, 1);
                 model.mesh.position.set(limb.offset.x, limb.offset.y, limb.offset.z);
-                model.mesh.position.divideScalar(enemy.scale);
+                if (limb.fixScale) {
+                    // NOTE(randomuserhi): Backwards compatability with old recorded limbs that had improper offsets
+                    model.mesh.position.divideScalar(enemy.scale);    
+                }
                 skeleton.addToLimb(model.mesh, limb.bone);
             }
 

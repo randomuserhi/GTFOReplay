@@ -35,9 +35,10 @@ export interface LimbCustom {
     offset: Pod.Vector;
     scale: number;
     active: boolean;
+    fixScale: boolean; // NOTE(randomuserhi): Backwards compatability with old recorded limbs that had improper offsets
 }
 
-ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
+let limbCustomParser: ModuleLoader.DynamicModule<"Vanilla.Enemy.LimbCustom"> = ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
     main: {
         parse: async (data) => {
             return {
@@ -67,7 +68,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
             if (limbs.has(id)) throw new Error(`Limb of id '${id}' already exists.`);
 
             limbs.set(id, { 
-                ...data, active: true
+                ...data, active: true, fixScale: true
             });
         }
     },
@@ -81,4 +82,18 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
             limbs.delete(id);
         }
     }
+});
+limbCustomParser = ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.2", {
+    ...limbCustomParser,
+    spawn: {
+        ...limbCustomParser.spawn,
+        exec: (id, data, snapshot) => {
+            const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
+        
+            if (limbs.has(id)) throw new Error(`Limb of id '${id}' already exists.`);
+            limbs.set(id, { 
+                ...data, active: true, fixScale: false
+            });
+        }
+    },
 });

@@ -145,9 +145,10 @@ export interface StickFigureSettings {
     armScale?: Vector3Like;
     legScale?: Vector3Like;
 
-    tumourScale?: number;
+    tumourScale?: number; // Local scale of tumours
+    figureScale?: number; // Scale of stick figure not including tumour scale / location
 
-    scale?: number;
+    scale?: number; // Scales the entire stick figure, including tumour scale & location
 
     color?: ColorRepresentation;
 }
@@ -188,7 +189,11 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         // Setup default pose before grabbing inverse matrices for tumour attachments
         const { tempAvatar, oldScale } = StickFigure.FUNC_applySettings;
         oldScale.copy(this.anchor.scale);
-        this.anchor.scale.set(1, 1, 1);
+        if (this.settings.figureScale === undefined) {
+            this.anchor.scale.set(1, 1, 1);
+        } else {
+            this.anchor.scale.set(this.settings.figureScale, this.settings.figureScale, this.settings.figureScale);
+        }
         for (const joint of HumanJoints) {
             tempAvatar[joint].copy(this.visual.joints[joint].quaternion); // Save original pose
 
@@ -252,9 +257,14 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
             this.visual.joints.spine2.scale.copy(this.settings.chestScale);
         }
 
-        if (this.settings.scale !== undefined) {
+        if (this.settings.scale !== undefined && this.settings.figureScale !== undefined) {
+            this.anchor.scale.set(this.settings.scale * this.settings.figureScale, this.settings.scale * this.settings.figureScale, this.settings.scale * this.settings.figureScale);
+        } else if (this.settings.figureScale !== undefined) {
+            this.anchor.scale.set(this.settings.figureScale, this.settings.figureScale, this.settings.figureScale);
+        } else if (this.settings.scale !== undefined) {
             this.anchor.scale.set(this.settings.scale, this.settings.scale, this.settings.scale);
         }
+
         if (this.settings.rotOffset !== undefined) {
             this.anchor.rotateX(Math.deg2rad * this.settings.rotOffset.x);
             this.anchor.rotateY(Math.deg2rad * this.settings.rotOffset.y);
