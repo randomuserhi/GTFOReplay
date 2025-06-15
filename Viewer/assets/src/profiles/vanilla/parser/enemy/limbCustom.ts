@@ -65,6 +65,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.LimbCustom", "0.0.1", {
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
         
             if (limbs.has(id)) throw new Error(`Limb of id '${id}' already exists.`);
+
             limbs.set(id, { 
                 ...data, active: true
             });

@@ -2,7 +2,7 @@ import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Mesh, MeshPhongMaterial } from "@esm/three";
 import { Factory } from "../../library/factory.js";
 import { isCulled } from "../../library/models/lib.js";
-import { Sphere } from "../../library/models/primitives.js";
+import { UnitySphere } from "../../library/models/primitives.js";
 import { EnemyModelWrapper } from "./lib.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -62,9 +62,11 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             const models = renderer.getOrDefault("Enemy.LimbCustom", Factory("Map"));
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
             const skeletons = renderer.getOrDefault("Enemies", Factory("Map"));
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
             for (const [id, limb] of limbs) {
                 if (!skeletons.has(limb.owner)) continue;
                 const skeleton = skeletons.get(limb.owner)!;
+                const enemy = enemies.get(limb.owner)!;
 
                 if (!models.has(id)) {
                     const material = new MeshPhongMaterial({
@@ -74,7 +76,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     material.opacity = 0.8;
                     material.depthWrite = false;
         
-                    const geometry = Sphere;
+                    const geometry = UnitySphere;
         
                     const mesh = new Mesh(geometry, material);
                 
@@ -93,6 +95,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 model.mesh.scale.set(limb.scale, limb.scale, limb.scale);
                 model.mesh.quaternion.set(0, 0, 0, 1);
                 model.mesh.position.set(limb.offset.x, limb.offset.y, limb.offset.z);
+                model.mesh.position.divideScalar(enemy.scale);
                 skeleton.addToLimb(model.mesh, limb.bone);
             }
 

@@ -180,12 +180,15 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
 
     private static FUNC_applySettings = {
         tempAvatar: createAvatarStruct(HumanJoints, () => new Quaternion()),
+        oldScale: new Vector3()
     } as const;
     public applySettings(settings?: StickFigureSettings) {
         this._applySettings(settings);
 
         // Setup default pose before grabbing inverse matrices for tumour attachments
-        const { tempAvatar } = StickFigure.FUNC_applySettings;
+        const { tempAvatar, oldScale } = StickFigure.FUNC_applySettings;
+        oldScale.copy(this.anchor.scale);
+        this.anchor.scale.set(1, 1, 1);
         for (const joint of HumanJoints) {
             tempAvatar[joint].copy(this.visual.joints[joint].quaternion); // Save original pose
 
@@ -212,6 +215,9 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         for (const joint of HumanJoints) {
             this.visual.joints[joint].quaternion.copy(tempAvatar[joint]);
         }
+
+        // Restore original scale
+        this.anchor.scale.copy(oldScale);
     }
     // NOTE(randomuserhi): Internal application of settings that does not recalculate matrices
     public _applySettings(settings?: StickFigureSettings) {
