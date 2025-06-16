@@ -16,8 +16,8 @@ namespace Vanilla.BepInEx {
                 "Enables debug messages when true.");
 
             recordEnemyRagdolls = configFile.Bind(
-                "RecordEnemyRagdolls",
-                "enable",
+                "Settings",
+                "recordEnemyRagdolls",
                 false,
                 "Enables enemy ragdolls when true. Storing ragdoll information is very expensive and will increase replay file sizes. Preferably do not enable this, its mostly a for fun option.");
 
