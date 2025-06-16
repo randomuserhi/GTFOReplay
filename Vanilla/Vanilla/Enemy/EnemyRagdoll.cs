@@ -5,6 +5,7 @@ using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using UnityEngine;
+using Vanilla.BepInEx;
 
 namespace Vanilla.Enemy {
     [HarmonyPatch]
@@ -14,6 +15,8 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(EnemyBehaviour), nameof(EnemyBehaviour.ChangeState), new Type[] { typeof(EB_States) })]
             [HarmonyPrefix]
             private static void Behaviour_ChangeState(EnemyBehaviour __instance, EB_States state) {
+                if (!ConfigManager.RecordEnemyRagdolls) return;
+
                 if (__instance.m_currentStateName != state && state == EB_States.Dead) {
                     Spawn(__instance.m_ai.m_enemyAgent);
                     return;

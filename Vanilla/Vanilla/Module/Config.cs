@@ -15,6 +15,12 @@ namespace Vanilla.BepInEx {
                 false,
                 "Enables debug messages when true.");
 
+            recordEnemyRagdolls = configFile.Bind(
+                "RecordEnemyRagdolls",
+                "enable",
+                false,
+                "Enables enemy ragdolls when true. Storing ragdoll information is very expensive and will increase replay file sizes. Preferably do not enable this, its mostly a for fun option.");
+
             subdivideNavMesh = configFile.Bind(
                 "Map",
                 "subdivideNavMesh",
@@ -27,6 +33,12 @@ namespace Vanilla.BepInEx {
             set { debug.Value = value; }
         }
         private static ConfigEntry<bool> debug;
+
+        public static bool RecordEnemyRagdolls {
+            get { return recordEnemyRagdolls.Value; }
+            set { recordEnemyRagdolls.Value = value; }
+        }
+        private static ConfigEntry<bool> recordEnemyRagdolls;
 
         public static bool SubdivideNavMesh {
             get { return subdivideNavMesh.Value; }

@@ -5,7 +5,7 @@ import { getPlayerColor } from "../../../datablocks/player/player.js";
 import { zeroV } from "../../../library/constants.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation.js";
 import { Enemy } from "../../../parser/enemy/enemy.js";
-import { defaultHumanStructure, HumanAnimation, HumanJoints } from "../../animations/human.js";
+import { HumanAnimation, HumanJoints } from "../../animations/human.js";
 import { StickFigure } from "../../models/stickfigure.js";
 import { EnemyModelWrapper } from "../lib.js";
 
@@ -53,10 +53,7 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim?: EnemyA
             }
 
             return;
-        } else {
-            this.skeleton.root.position.copy(defaultHumanStructure["hip"]);
         }
-        
 
         if (anim === undefined) throw new Error("anim should not be undefined here!");
 
