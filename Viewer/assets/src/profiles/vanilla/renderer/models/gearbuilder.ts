@@ -182,9 +182,26 @@ export class GearBuilder extends GearModel {
         try {
             if (path === undefined) throw new Error(`Could not find payload type of '${payloadType}'.`);
 
-            const gltf = await loadGLTF(path);
+            const gltf = typeof(path) === "string" ? await loadGLTF(path) : path;
             const model = gltf();
-            this.setAlign(type, model, part, partAlignPriority);
+            if (part.offsetPos !== undefined) {
+                model.position.copy(part.offsetPos);
+            }
+            if (part.offsetRot !== undefined) {
+                if (part.unit === undefined || part.unit === "rad") {
+                    model.rotation.set(part.offsetRot.x, part.offsetRot.y, part.offsetRot.z, "YXZ");
+                } else if (part.unit === "deg") {
+                    model.rotation.set(part.offsetRot.x * Math.deg2rad, part.offsetRot.y * Math.deg2rad, part.offsetRot.z * Math.deg2rad, "YXZ");
+                } else {
+                    throw new Error(`Invalid unit: ${part.unit}`);
+                }
+            }
+            if (part.offsetScale !== undefined) {
+                model.scale.copy(part.offsetScale);
+            }
+            const root = new Group();
+            root.add(model);
+            this.setAlign(type, root, part, partAlignPriority);
             if (part.fold !== undefined) {
                 const fold = this.findObjectByName(model, part.fold);
                 if (fold !== undefined) {
@@ -199,8 +216,8 @@ export class GearBuilder extends GearModel {
                     this.foldObjects.push(f);
                 }
             }
-            model.traverse(this.setMaterial);
-            return model;
+            root.traverse(this.setMaterial);
+            return root;
         }  catch (err) {
             throw module.error(err, `Failed to load payload part '${payloadType}' - '${path}'`);
         }
@@ -214,9 +231,26 @@ export class GearBuilder extends GearModel {
             partPrio: ComponentType[];
         }[]) {
         try {
-            const gltf = await loadGLTF(part.path);
+            const gltf = typeof(part.path) === "string" ? await loadGLTF(part.path) : part.path;
             const model = gltf();
-            this.setAlign(type, model, part, partAlignPriority);
+            if (part.offsetPos !== undefined) {
+                model.position.copy(part.offsetPos);
+            }
+            if (part.offsetRot !== undefined) {
+                if (part.unit === undefined || part.unit === "rad") {
+                    model.rotation.set(part.offsetRot.x, part.offsetRot.y, part.offsetRot.z, "YXZ");
+                } else if (part.unit === "deg") {
+                    model.rotation.set(part.offsetRot.x * Math.deg2rad, part.offsetRot.y * Math.deg2rad, part.offsetRot.z * Math.deg2rad, "YXZ");
+                } else {
+                    throw new Error(`Invalid unit: ${part.unit}`);
+                }
+            }
+            if (part.offsetScale !== undefined) {
+                model.scale.copy(part.offsetScale);
+            }
+            const root = new Group();
+            root.add(model);
+            this.setAlign(type, root, part, partAlignPriority);
             if (part.fold !== undefined) {
                 const fold = this.findObjectByName(model, part.fold);
                 if (fold !== undefined) {
@@ -231,8 +265,8 @@ export class GearBuilder extends GearModel {
                     this.foldObjects.push(f);
                 }
             }
-            model.traverse(this.setMaterial);
-            return model;
+            root.traverse(this.setMaterial);
+            return root;
         }  catch (err) {
             throw module.error(err, `Failed to load part '${part.path}'`);
         }

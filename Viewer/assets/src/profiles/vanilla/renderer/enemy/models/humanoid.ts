@@ -1,14 +1,15 @@
+import { EnemyRagdoll } from "@root/profiles/vanilla/parser/enemy/enemyRagdoll.js";
 import { animCrouch, animDetection, animVelocity, EnemyAnimDatablock } from "../../../datablocks/enemy/animation.js";
 import { PlayerAnimDatablock } from "../../../datablocks/player/animation.js";
 import { getPlayerColor } from "../../../datablocks/player/player.js";
 import { zeroV } from "../../../library/constants.js";
 import { EnemyAnimState } from "../../../parser/enemy/animation.js";
 import { Enemy } from "../../../parser/enemy/enemy.js";
-import { HumanAnimation } from "../../animations/human.js";
+import { defaultHumanStructure, HumanAnimation, HumanJoints } from "../../animations/human.js";
 import { StickFigure } from "../../models/stickfigure.js";
 import { EnemyModelWrapper } from "../lib.js";
 
-export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAnimState]> {
+export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll]> {
     private readonly wrapper: EnemyModelWrapper;
     private animOffset: number = Math.random() * 10;
 
@@ -18,20 +19,20 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
         this.wrapper.tagTarget = this.visual.joints.spine1;
     }
 
-    public render(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+    public render(dt: number, time: number, enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll) {
         if (!this.isVisible()) return;
 
         if (enemy.head === false) this._applySettings({ headScale: zeroV });
-        this.animate(dt, time, enemy, anim);
+        this.animate(dt, time, enemy, anim, ragdoll);
         this.draw();
     }
 
-    protected animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
-        this._animate(dt, time, enemy, anim);
+    protected animate(dt: number, time: number, enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll) {
+        this._animate(dt, time, enemy, anim, ragdoll);
         this.updateSkeleton(dt, enemy.position, enemy.rotation);
     }
 
-    private _animate(dt: number, time: number, enemy: Enemy, anim: EnemyAnimState) {
+    private _animate(dt: number, time: number, enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll) {
         const { animHandle } = this.wrapper;
 
         if (EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255) {
@@ -42,6 +43,22 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim: EnemyAn
                 this.color.set(this.settings.color);
             }
         }
+
+        if (ragdoll !== undefined) {
+            // TODO(randomuserhi): Come up with a better way to do this...
+            for (const joint of HumanJoints) {
+                if (ragdoll.avatar[joint] === undefined) continue;
+                this.visual.joints[joint].removeFromParent();
+                this.visual.joints[joint].position.copy(ragdoll.avatar[joint]!);
+            }
+
+            return;
+        } else {
+            this.skeleton.root.position.copy(defaultHumanStructure["hip"]);
+        }
+        
+
+        if (anim === undefined) throw new Error("anim should not be undefined here!");
 
         this.offset.rotation.set(0, 0, 0);
 

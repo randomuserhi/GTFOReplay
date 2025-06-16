@@ -194,7 +194,7 @@ namespace ReplayRecorder {
         /// </summary>
         /// <typeparam name="T">The dynamic type to configure.</typeparam>
         /// <param name="tickRate">The frequency that this type gets recorded at. E.g 1 - every tick, 2 - every other tick, 3 - every third tick etc...</param>
-        /// <param name="max">The maximum number of dynamic updates that can be written each tick.</param>
+        /// <param name="max">The maximum number of dynamics checked each tick. Unchecked dynamics roll over and are checked next tick.</param>
         [HideFromIl2Cpp]
         public static void Configure<T>(int tickRate = 1, int max = int.MaxValue) where T : ReplayDynamic => SnapshotManager.GetInstance().Configure<T>(tickRate, max);
 

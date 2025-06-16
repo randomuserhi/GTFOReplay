@@ -13,6 +13,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
         interface RenderData {
             "Enemies": Map<number, EnemyModelWrapper>;
+            "Enemies.Ragdolls": Map<number, EnemyModelWrapper>;
             "Enemy.LimbCustom": Map<number, { mesh: Mesh, material: MeshPhongMaterial }>;
         }
     }
@@ -58,14 +59,51 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
             }
         } 
     }, { 
+        name, pass: (renderer, snapshot, dt) => {
+            const time = snapshot.time();
+            const models = renderer.getOrDefault("Enemies.Ragdolls", Factory("Map"));
+            const ragdolls = snapshot.getOrDefault("Vanilla.Enemy.Ragdoll", Factory("Map"));
+            const camera = renderer.get("Camera")!;
+            const players = snapshot.getOrDefault("Vanilla.Player.Slots", Factory("Array"));
+            for (const [id, ragdoll] of ragdolls) {
+                if (!models.has(id)) {
+                    const wrapper = new EnemyModelWrapper(ragdoll);
+                    models.set(id, wrapper);
+                    wrapper.model.addToScene(renderer.scene);
+                }
+
+                const wrapper = models.get(id)!;
+                const model = wrapper.model;
+                model.setVisible(ragdoll.dimension === renderer.get("Dimension"));
+                
+                model.render(dt, time, ragdoll, undefined, ragdoll);
+                wrapper.updateTmp(ragdoll, undefined, camera, players);
+            }
+
+            for (const [id, wrapper] of [...models.entries()]) {
+                if (!ragdolls.has(id)) {
+                    wrapper.model.removeFromScene(renderer.scene);
+                    wrapper.dispose();
+                    models.delete(id);
+                }
+            }
+        } 
+    }, { 
         name, pass: (renderer, snapshot) => {
+            // TODO(randomuserhi): Fix ragdoll logic before re-enabling tumours on them
             const models = renderer.getOrDefault("Enemy.LimbCustom", Factory("Map"));
             const limbs = snapshot.getOrDefault("Vanilla.Enemy.LimbCustom", Factory("Map"));
             const skeletons = renderer.getOrDefault("Enemies", Factory("Map"));
+            //const ragdolls = renderer.getOrDefault("Enemies.Ragdolls", Factory("Map"));
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
             for (const [id, limb] of limbs) {
-                if (!skeletons.has(limb.owner)) continue;
-                const skeleton = skeletons.get(limb.owner)!;
+                let skeleton : EnemyModelWrapper | undefined = undefined;
+                skeleton = skeletons.get(limb.owner);
+                /*if (skeleton === undefined) {
+                    skeleton = ragdolls.get(limb.owner);
+                }*/
+                if (skeleton === undefined) continue;
+
                 const enemy = enemies.get(limb.owner)!;
 
                 if (!models.has(id)) {
@@ -91,7 +129,6 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
 
                 model.mesh.visible = limb.active;
 
-                // TODO(randomuserhi): I should only need to add once on creation... why need to add every frame?
                 model.mesh.scale.set(limb.scale, limb.scale, limb.scale);
                 model.mesh.quaternion.set(0, 0, 0, 1);
                 model.mesh.position.set(limb.offset.x, limb.offset.y, limb.offset.z);

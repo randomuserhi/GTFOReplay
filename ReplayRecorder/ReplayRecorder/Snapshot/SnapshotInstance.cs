@@ -61,12 +61,12 @@ namespace ReplayRecorder.Snapshot {
             public Type Type { get; private set; }
             public ushort Id { get; private set; }
 
-            public int max = int.MaxValue;
-            private int cycle = 0;
+            public int maxPerTick = int.MaxValue;
+            private int currentDynamic = 0;
 
             public int tickRate = 1;
             private int tick = 0;
-            public bool Tick {
+            private bool performTick {
                 get {
                     tick = (tick + 1) % Mathf.Clamp(tickRate, 1, int.MaxValue);
                     return tick == 0;
@@ -155,7 +155,9 @@ namespace ReplayRecorder.Snapshot {
 
             private bool handleRemoval = false;
             public int Write(ByteBuffer buffer, long now) {
-                if (tick != 0) return 0;
+                if (!performTick) return 0;
+                if (dynamics.Count == 0) return 0;
+
                 int start = buffer.count;
 
                 int numWritten = 0;
@@ -171,9 +173,10 @@ namespace ReplayRecorder.Snapshot {
                 handleRemoval = false;
 
                 if (_handleRemoval) _dynamics.Clear();
+                int numChecked = 0; // Keep track of number of dynamics checked
+                int offset = currentDynamic = currentDynamic % dynamics.Count; // Restart where we left off from last tick
                 for (int i = 0; i < dynamics.Count; i++) {
-                    cycle = cycle % dynamics.Count;
-                    ReplayDynamic dynamic = dynamics[cycle++];
+                    ReplayDynamic dynamic = dynamics[(offset + i) % dynamics.Count];
 
                     // Trigger Hooks
                     Type dynType = dynamic.GetType();
@@ -186,7 +189,8 @@ namespace ReplayRecorder.Snapshot {
                     }
 
                     bool active = dynamic.Active;
-                    if (numWritten < max) { // check we are writing within cap
+                    if (numChecked++ < maxPerTick) { // check we are within cap of maximum dynamics to check per tick
+                        ++currentDynamic;
                         if (!dynamic.remove || tickRate == 1) { // check that we only write removal sync if the tick rate matches event rate.
                             if (active && (dynamic.IsDirty/* || !dynamic.init*/)) {
                                 if (ConfigManager.Debug && ConfigManager.DebugDynamics) APILogger.Debug($"[Dynamic: {dynamic.GetType().FullName}({SnapshotManager.types[dynamic.GetType()]})]{(dynamic.Debug != null ? $": {dynamic.Debug}" : "")}");
@@ -236,6 +240,9 @@ namespace ReplayRecorder.Snapshot {
 
                     if (_handleRemoval && !dynamic.remove) {
                         _dynamics.Add(dynamic);
+                    } else if (i < currentDynamic) {
+                        // Shift index back as we removed a previous item
+                        --currentDynamic;
                     }
                 }
                 if (_handleRemoval) {
@@ -511,7 +518,7 @@ namespace ReplayRecorder.Snapshot {
         internal void Configure<T>(int tickRate, int max) where T : ReplayDynamic {
             Type dynType = typeof(T);
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
-            state.dynamics[dynType].max = max;
+            state.dynamics[dynType].maxPerTick = max;
             state.dynamics[dynType].tickRate = tickRate;
         }
 

@@ -12,7 +12,7 @@ import { HumanJoints } from "../animations/human.js";
 import { Camera } from "../renderer.js";
 
 export class EnemyModelWrapper {
-    model: Model<[enemy: Enemy, anim: EnemyAnimState]>;
+    model: Model<[enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll]>;
 
     tmp?: Text;
     tmpHeight: number;
@@ -68,7 +68,7 @@ export class EnemyModelWrapper {
     private static FUNC_updateTmp = {
         tagPos: new Vector3()
     } as const;
-    public updateTmp(enemy: Enemy, anim: EnemyAnimState, camera: Camera, players: (Player | undefined)[]) {
+    public updateTmp(enemy: Enemy, anim: EnemyAnimState | undefined, camera: Camera, players: (Player | undefined)[]) {
         if (this.tmp === undefined || this.tag === undefined) return;
 
         this.tmp.position.y = this.tmpHeight;
@@ -94,10 +94,10 @@ export class EnemyModelWrapper {
             color = getPlayerColor(player.slot); 
         }
 
-        const inStagger = anim.state === "Hitreact" || anim.state === "HitReactFlyer" || anim.state === "FloaterHitReact";
+        const inStagger = anim !== undefined && (anim.state === "Hitreact" || anim.state === "HitReactFlyer" || anim.state === "FloaterHitReact");
 
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
-State: ${anim.state}
+State: ${anim !== undefined ? anim.state : "Ragdoll"}
 Anim: ${enemy.animHandle}
 HP: ${Math.round(enemy.health * 10) / 10}${enemy.stagger !== Infinity ? `\nStagger: ${Math.round(enemy.stagger * 10000) / 100}%${enemy.canStagger ? `` : ` (DISABLED)`}${inStagger ? ` (STAGGERED)` : ``}` : ``}
 Target: `;
@@ -148,5 +148,6 @@ Target: `;
 module.ready();
 
 /* eslint-disable-next-line sort-imports */
+import { EnemyRagdoll } from "../../parser/enemy/enemyRagdoll.js";
 import { HumanoidEnemyModel } from "./models/humanoid.js";
 
