@@ -7,6 +7,7 @@ export interface Metadata {
     version: string;
     compatibility_OldBulkheadSound: boolean; 
     compatibility_NoArtifact: boolean;
+    recordEnemyRagdolls: boolean;
 }
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -24,6 +25,7 @@ ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.1", {
             version: await BitHelper.readString(data),
             compatibility_OldBulkheadSound: false,
             compatibility_NoArtifact: false,
+            recordEnemyRagdolls: false,
         });
     }
 });
@@ -43,6 +45,15 @@ ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.3", {
         header.set("Vanilla.Metadata", {
             ...header.get("Vanilla.Metadata")!,
             compatibility_NoArtifact: await BitHelper.readBool(data),
+        });
+    }
+});
+ModuleLoader.registerHeader("Vanilla.Metadata", "0.0.4", {
+    parse: async (data, header, snapshot) => {
+        await ModuleLoader.getHeader(["Vanilla.Metadata", "0.0.3"]).parse(data, header, snapshot);
+        header.set("Vanilla.Metadata", {
+            ...header.get("Vanilla.Metadata")!,
+            recordEnemyRagdolls: await BitHelper.readBool(data),
         });
     }
 });

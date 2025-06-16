@@ -74,7 +74,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
 
                 const wrapper = models.get(id)!;
                 const model = wrapper.model;
-                model.setVisible(ragdoll.dimension === renderer.get("Dimension"));
+                model.setVisible(ragdoll.dimension === renderer.get("Dimension") && EnemyModelWrapper.showRagdolls());
                 
                 model.render(dt, time, ragdoll, undefined, ragdoll);
                 wrapper.updateTmp(ragdoll, undefined, camera, players);

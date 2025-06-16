@@ -199,6 +199,14 @@ export const Info = () => {
                             </ul>
                             `);
                     }
+                    if (metadata.recordEnemyRagdolls === false) {
+                        compatability.push(...html`
+                            <div>Enamy Ragdolls are not present in this replay.</div>
+                            <ul style="margin-left: 10px;">
+                                <li>- Most people disable enemy ragdolls from being recorded to reduce sizes of replays.</li>
+                            </ul>
+                            `);
+                    }
                 }
                 if (compatability.length === 0) dom.compatibilityText.innerHTML = "None";
                 else dom.compatibilityText.replaceChildren(...compatability);

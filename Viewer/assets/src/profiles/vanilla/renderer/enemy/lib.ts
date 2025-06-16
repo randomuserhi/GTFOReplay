@@ -64,6 +64,7 @@ export class EnemyModelWrapper {
 
     public static showInfo = signal(false);
     public static aggroColour = signal(false);
+    public static showRagdolls = signal(true);
 
     private static FUNC_updateTmp = {
         tagPos: new Vector3()

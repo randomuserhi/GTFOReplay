@@ -454,12 +454,12 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
 
         const { toggle } = dom;
 
-        toggle.value.on((value) => {
-            EnemyModelWrapper.showInfo(value);
-        });
-
         EnemyModelWrapper.showInfo.on((value) => {
             toggle.value(value);
+        });
+
+        toggle.value.on((value) => {
+            EnemyModelWrapper.showInfo(value);
         });
 
         return dom.wrapper;
@@ -483,13 +483,60 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
 
         const { toggle } = dom;
 
+        EnemyModelWrapper.aggroColour.on((value) => {
+            toggle.value(value);
+        });
+
         toggle.value.on((value) => {
             EnemyModelWrapper.aggroColour(value);
         });
 
-        EnemyModelWrapper.aggroColour.on((value) => {
+        return dom.wrapper;
+    },
+    (v) => {
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+            toggle: html<typeof Toggle>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Show Enemy Ragdolls")).bind("wrapper")}
+                <div class="${style.row}" style="
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+                ">
+                    <span style="flex: 1; padding-top: 1px;">Show Enemy Ragdolls</span>
+                    ${html.bind(Toggle(), "toggle")}
+                </div>
+            ${html.close()}
+        `;
+
+        const { toggle } = dom;
+
+        EnemyModelWrapper.showRagdolls.on((value) => {
             toggle.value(value);
         });
+
+        toggle.value.on((value) => {
+            EnemyModelWrapper.showRagdolls(value);
+        });
+
+        v.on((view) => {
+            if (view === undefined) return;
+
+            view.replay.on((replay) => {
+                if (replay === undefined) return;
+
+                replay.watch("Vanilla.Metadata").on((metadata) => {
+                    if (metadata === undefined) return;
+
+                    dom.wrapper.body.style.display = metadata?.recordEnemyRagdolls ? "block" : "none";
+
+                    if (metadata?.compatibility_NoArtifact) {
+                        toggle.value(false);
+                    }
+                }, { signal: dispose.signal });
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
 
         return dom.wrapper;
     },
@@ -541,12 +588,12 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
 
         const { toggle } = dom;
 
-        toggle.value.on((value) => {
-            ExplosionEffectModel.showRadius(value);
-        });
-
         ExplosionEffectModel.showRadius.on((value) => {
             toggle.value(value);
+        });
+
+        toggle.value.on((value) => {
+            ExplosionEffectModel.showRadius(value);
         });
 
         return dom.wrapper;

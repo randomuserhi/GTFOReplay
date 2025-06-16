@@ -1,9 +1,10 @@
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
+using Vanilla.BepInEx;
 
 namespace Vanilla.Metadata {
-    [ReplayData("Vanilla.Metadata", "0.0.3")]
+    [ReplayData("Vanilla.Metadata", "0.0.4")]
     internal class rMetadata : ReplayHeader {
         const string Version = "0.1.8";
 
@@ -19,6 +20,7 @@ namespace Vanilla.Metadata {
             BitHelper.WriteBytes(Version, buffer);
             BitHelper.WriteBytes(OldBulkheadSound_Compatibility, buffer);
             BitHelper.WriteBytes(NoArtifact_Compatibility, buffer);
+            BitHelper.WriteBytes(ConfigManager.RecordEnemyRagdolls, buffer);
         }
     }
 }
