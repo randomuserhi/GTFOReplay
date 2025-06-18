@@ -381,8 +381,6 @@ export class GearBuilder extends GearModel {
 
     private static FUNC_build = {
         worldPos: new Vector3(),
-        worldRot: new Quaternion(),
-        partWorldRot: new Quaternion()
     } as const;
     private build() {
         const key = Identifier.create("Gear", undefined, this.json);
@@ -659,7 +657,7 @@ export class GearBuilder extends GearModel {
             }
 
             // Set offsets
-            const { worldPos, worldRot, partWorldRot } = GearBuilder.FUNC_build;
+            const { worldPos } = GearBuilder.FUNC_build;
             if (this.aligns.lefthand !== undefined) {
                 this.aligns.lefthand.obj.getWorldPosition(worldPos);
                 this.parts.worldToLocal(worldPos);
@@ -668,13 +666,14 @@ export class GearBuilder extends GearModel {
                 this.leftHand = undefined;
             }
             if (this.aligns.righthand !== undefined) {
+                this.parts.updateWorldMatrix(true, true);
                 this.aligns.righthand.obj.getWorldPosition(worldPos);
                 this.parts.worldToLocal(worldPos);
-                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone();
+                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({x: -0.005, y: -0.025, z: -0.035}); // Offset for who knows what reason?
 		
-                this.aligns.righthand.obj.getWorldQuaternion(worldRot);
+                /*this.aligns.righthand.obj.getWorldQuaternion(worldRot);
                 this.parts.getWorldQuaternion(partWorldRot);
-                this.equipOffsetRot = worldRot.premultiply(partWorldRot.invert()).multiply(new Quaternion(0, 0.7071, 0, 0.7071)).clone();
+                this.equipOffsetRot = worldRot.premultiply(partWorldRot.invert()).multiply(new Quaternion(0, 0.7071, 0, 0.7071)).clone();*/
             }
         }).catch((e) => {
             throw module.error(e);
@@ -699,28 +698,65 @@ export class GearBuilder extends GearModel {
 
     private static FUNC_animate = {
         temp: new Quaternion(),
-        tempVec: new Vector3()
+        tempVec: new Vector3(),
+        tempObj: new Object3D(),
+        tempRoot: new Object3D(),
     } as const;
     public animate(t: number): void {
-        const { temp, tempVec } = GearBuilder.FUNC_animate;
+        const { temp, tempVec, tempObj, tempRoot } = GearBuilder.FUNC_animate;
 
         this.material.color.set(0x999999);
 
         if (this.datablock !== undefined) {
             let gunAnim = this.datablock.gunArchetype?.gunFoldAnim;
-            let autoFindAnim = false;
             if (gunAnim === undefined) {
                 gunAnim = this.gunFoldAnim?.anim;
-                autoFindAnim = true;
             }
             if (gunAnim !== undefined) {
-                this.leftHand?.position.copy(gunAnim.sample(t * gunAnim.duration).root);
-                
-                // NOTE(randomuserhi): For backwards compatability with old profiles, only add offset if auto-find animations are used (aka animation not specified).
-                if (autoFindAnim && this.aligns.lefthand !== undefined && this.leftHandGrip !== undefined) {
-                    this.aligns.lefthand.obj.getWorldPosition(tempVec);
-                    this.parts.worldToLocal(tempVec);    
-                    this.leftHand?.position.add(tempVec);
+                if (this.aligns.lefthand !== undefined) {
+                    const obj = this.aligns.lefthand.obj;
+		
+                    // Set root to origin (makes transforms relative to gun when we detach parts)
+                    const rootParent = this.parts.parent;
+                    tempRoot.position.copy(this.parts.position);
+                    tempRoot.quaternion.copy(this.parts.quaternion);
+                    tempRoot.scale.copy(this.parts.scale);
+                    this.parts.removeFromParent();
+                    this.parts.position.set(0, 0, 0);
+                    this.parts.scale.set(1, 1, 1);
+                    this.parts.quaternion.set(0, 0, 0, 1);
+
+                    // Detach part from parent to apply transforms in world space 
+                    // (ignore scale issues etc... due to blender models being scaled 0.01 and rotated 90 deg on X axis)
+                    const parent = obj.parent;
+                    obj.getWorldPosition(tempObj.position);
+                    obj.getWorldQuaternion(tempObj.quaternion);
+                    obj.getWorldScale(tempObj.scale);
+                    obj.removeFromParent();
+                    obj.position.copy(tempObj.position);
+                    obj.quaternion.copy(tempObj.quaternion);
+                    obj.scale.copy(tempObj.scale);
+        
+                    obj.position.copy(gunAnim.sample(t * gunAnim.duration).root);
+
+                    // Re-attach part to parent
+                    if (parent !== undefined && parent !== null) {
+                        parent.attach(obj);
+                    }
+
+                    // Re-attach root to parent
+                    if (rootParent !== undefined && rootParent !== null) {
+                        rootParent.add(this.parts);
+                        this.parts.position.copy(tempRoot.position);
+                        this.parts.quaternion.copy(tempRoot.quaternion);
+                        this.parts.scale.copy(tempRoot.scale);
+                    }
+		
+                    obj.getWorldPosition(tempVec);
+                    this.parts.worldToLocal(tempVec);
+                    this.leftHand?.position.copy(tempVec);
+                } else {
+                    this.leftHand?.position.copy(gunAnim.sample(t * gunAnim.duration).root);
                 }
             }
         }

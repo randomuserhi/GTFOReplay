@@ -64,7 +64,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
     }
 
     private void GetPositionString(StringBuilder sb, string name, Transform transform) {
-        Vector3 localPosition = transform.localPosition;
+        Vector3 localPosition = transform.position;
         sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
     }
 

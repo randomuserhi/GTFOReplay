@@ -237,7 +237,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             new Bone(this.skeleton.joints.spine2, 0.8),
             new Bone(this.skeleton.joints.rightShoulder, 0),
             new Bone(this.skeleton.joints.rightUpperArm, 0.1),
-            new Bone(this.skeleton.joints.rightHand, 1),
+            new Bone(this.skeleton.joints.rightHand, 1)
         ];
         this.aimIK.initiate(this.aimIK.root);
 
@@ -256,6 +256,10 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.flashlightLOS = new Mesh(cylinder, this.flashlightMaterial);
         this.flashlightLOS.scale.set(0.07, 0.07, 1000);
         this.root.add(this.flashlightLOS);
+
+        /*const test = new Mesh(UnitySphere, this.flashlightMaterial);
+        test.scale.set(0.1, 0.1, 0.1);
+        this.handAttachment.add(test);*/
     }
 
     public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll) {
