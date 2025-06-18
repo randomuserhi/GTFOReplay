@@ -18,7 +18,6 @@ import { GearPartSightDatablock } from "../../datablocks/gear/parts/sight.js";
 import { GearPartStockDatablock } from "../../datablocks/gear/parts/stock.js";
 import { GearPartTargetingDatablock } from "../../datablocks/gear/parts/targeting.js";
 import { loadGLTF } from "../../library/modelloader.js";
-import { UnitySphere } from "../../library/models/primitives.js";
 import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../animations/gearfold.js";
 import { GearModel } from "./gear.js";
@@ -664,7 +663,7 @@ export class GearBuilder extends GearModel {
                 this.parts.worldToLocal(worldPos);
                 this.leftHandGrip = worldPos.clone();
 
-                this.aligns.lefthand.obj.add(new Mesh(UnitySphere, this.material));
+                // this.aligns.lefthand.obj.add(new Mesh(UnitySphere, this.material));
             } else {
                 this.leftHand = undefined;
             }
