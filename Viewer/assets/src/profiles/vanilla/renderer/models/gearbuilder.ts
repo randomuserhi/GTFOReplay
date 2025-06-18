@@ -18,6 +18,7 @@ import { GearPartSightDatablock } from "../../datablocks/gear/parts/sight.js";
 import { GearPartStockDatablock } from "../../datablocks/gear/parts/stock.js";
 import { GearPartTargetingDatablock } from "../../datablocks/gear/parts/targeting.js";
 import { loadGLTF } from "../../library/modelloader.js";
+import { UnitySphere } from "../../library/models/primitives.js";
 import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../animations/gearfold.js";
 import { GearModel } from "./gear.js";
@@ -662,6 +663,8 @@ export class GearBuilder extends GearModel {
                 this.aligns.lefthand.obj.getWorldPosition(worldPos);
                 this.parts.worldToLocal(worldPos);
                 this.leftHandGrip = worldPos.clone();
+
+                this.aligns.lefthand.obj.add(new Mesh(UnitySphere, this.material));
             } else {
                 this.leftHand = undefined;
             }
@@ -669,8 +672,10 @@ export class GearBuilder extends GearModel {
                 this.parts.updateWorldMatrix(true, true);
                 this.aligns.righthand.obj.getWorldPosition(worldPos);
                 this.parts.worldToLocal(worldPos);
-                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({x: -0.005, y: -0.025, z: -0.035}); // Offset for who knows what reason?
+                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({ x: -0.05, y: -0.015, z: -0.15 }); // Offset as needs to match hand not handAttachment
 		
+                //this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
+
                 /*this.aligns.righthand.obj.getWorldQuaternion(worldRot);
                 this.parts.getWorldQuaternion(partWorldRot);
                 this.equipOffsetRot = worldRot.premultiply(partWorldRot.invert()).multiply(new Quaternion(0, 0.7071, 0, 0.7071)).clone();*/

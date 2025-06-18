@@ -63,9 +63,14 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
         sb.Append($"\"{name}\":{{\"position\":{{\"x\":{-transform.localPosition.x},\"y\":{transform.localPosition.y},\"z\":{transform.localPosition.z}}},\"rotation\":{{\"x\":{transform.localRotation.x},\"y\":{transform.localRotation.y},\"z\":{transform.localRotation.z},\"w\":{transform.localRotation.w}}}}}");
     }
 
+    public bool stock_pistol = false;
+
     private void GetPositionString(StringBuilder sb, string name, Transform transform) {
         Vector3 localPosition = transform.position;
-        sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
+        if (stock_pistol)
+            sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{-localPosition.y},\"z\":{-localPosition.z}}}");
+        else
+            sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
     }
 
     private void GetRotationString(StringBuilder sb, string name, Transform transform) {
