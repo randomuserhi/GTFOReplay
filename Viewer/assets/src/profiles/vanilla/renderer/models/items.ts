@@ -1,14 +1,15 @@
 import { Object3D, QuaternionLike, Vector3Like } from "@esm/three";
+import { zeroV } from "../../library/constants.js";
 import { Model } from "../../library/models/lib.js";
 
 export class ItemModel extends Model {
-    offsetPos: Vector3Like;
-    offsetRot: QuaternionLike;
+    offsetPos?: Vector3Like;
+    offsetRot?: QuaternionLike;
 
-    equipOffsetPos: Vector3Like;
-    equipOffsetRot: QuaternionLike;
+    equipOffsetPos?: Vector3Like;
+    equipOffsetRot?: QuaternionLike;
 
-    leftHandGrip: Vector3Like;
+    leftHandGrip?: Vector3Like;
     leftHand?: Object3D;
 
     readonly type: "Gear" | "Item" = "Item"; 
@@ -17,25 +18,11 @@ export class ItemModel extends Model {
         super();
 
         this.root.add(this.leftHand = new Object3D());
-        this.offsetPos = {
-            x: 0, y: 0, z: 0
-        };
-        this.offsetRot = {
-            x: 0, y: 0, z: 0, w: 0
-        };
-        this.equipOffsetPos = {
-            x: 0, y: 0, z: 0
-        };
-        this.equipOffsetRot = {
-            x: 0, y: 0, z: 0, w: 1
-        };
-        this.leftHandGrip = {
-            x: 0, y: 0, z: 0
-        };
     }
 
     public reset() {
-        this.leftHand?.position.copy(this.leftHandGrip);
+        if (this.leftHandGrip !== undefined) this.leftHand?.position.copy(this.leftHandGrip);
+        else this.leftHand?.position.copy(zeroV);
     }
 
     public inLevel() {

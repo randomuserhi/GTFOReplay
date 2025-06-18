@@ -1,4 +1,4 @@
-import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3Like } from "@esm/three";
+import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3, Vector3Like } from "@esm/three";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { GearPartDeliveryDatablock } from "../../datablocks/gear/parts/delivery.js";
 import { GearPartFlashlightDatablock } from "../../datablocks/gear/parts/flashlight.js";
@@ -30,7 +30,7 @@ export class GearBuilder extends GearModel {
     readonly parts = new Group();
 
     aligns: Partial<Record<
-    "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver", 
+    "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver" | "lefthand" | "righthand", 
     { obj: Object3D, source: ComponentType }>> = {};
 
     foldObjects: { obj: Object3D, offset: Quaternion, base: Quaternion, anim?: GearFoldAnimation }[] = [];
@@ -109,7 +109,7 @@ export class GearBuilder extends GearModel {
         part: { aligns?: {
             alignType: AlignType;
             alignName: string;
-        }[]; },
+        }[]; foldAnim?: GearFoldAnimation; },
         partAlignPriority?: {
             alignType: AlignType;
             partPrio: ComponentType[];
@@ -119,6 +119,12 @@ export class GearBuilder extends GearModel {
         for (const align of part.aligns) {
             const object = this.findObjectByName(group, align.alignName);
             if (object === undefined) continue;
+
+            if (part.foldAnim != undefined) {
+                if (this.gunFoldAnim === undefined || this.higherPriority(this.gunFoldAnim.source, component, align.alignType, partAlignPriority)) {
+                    this.gunFoldAnim = { anim: part.foldAnim, source: component };
+                }
+            }
 
             switch (align.alignType) {
             case "Sight": {
@@ -164,6 +170,16 @@ export class GearBuilder extends GearModel {
             case "Receiver": {
                 if (this.aligns.receiver === undefined || this.higherPriority(this.aligns.receiver.source, component, align.alignType, partAlignPriority)) {
                     this.aligns.receiver = { obj: object, source: component };
+                }
+            } break;
+            case "LeftHand": {
+                if (this.aligns.lefthand === undefined || this.higherPriority(this.aligns.lefthand.source, component, align.alignType, partAlignPriority)) {
+                    this.aligns.lefthand = { obj: object, source: component };
+                }
+            } break;
+            case "RightHand": {
+                if (this.aligns.righthand === undefined || this.higherPriority(this.aligns.righthand.source, component, align.alignType, partAlignPriority)) {
+                    this.aligns.righthand = { obj: object, source: component };
                 }
             } break;
             }
@@ -294,6 +310,8 @@ export class GearBuilder extends GearModel {
 
     datablock?: GearDatablock;
 
+    gunFoldAnim?: { anim?: GearFoldAnimation, source: ComponentType };
+
     private static FUNC_transformPart = {
         temp: new Object3D(),
         root: new Object3D()
@@ -361,6 +379,11 @@ export class GearBuilder extends GearModel {
         }
     }
 
+    private static FUNC_build = {
+        worldPos: new Vector3(),
+        worldRot: new Quaternion(),
+        partWorldRot: new Quaternion()
+    } as const;
     private build() {
         const key = Identifier.create("Gear", undefined, this.json);
         this.datablock = GearDatablock.get(key);
@@ -398,6 +421,8 @@ export class GearBuilder extends GearModel {
         this.payload = undefined;
         this.payloadType = payloadType[0]; // Default type
         this.targeting = undefined;
+
+        this.gunFoldAnim = undefined; // Default animation
 
         // Extract types for some models
         for (const key in this.schematic.Comps) {
@@ -628,6 +653,29 @@ export class GearBuilder extends GearModel {
                 if (this.aligns.targeting !== undefined) this.attach(this.targeting, this.aligns.targeting.obj);
                 else this.parts.add(this.targeting);
             }
+
+            if ((this.datablock?.type === "pistol" || this.datablock?.type === "rifle") && this.gunFoldAnim === undefined && this.datablock?.gunArchetype?.gunFoldAnim === undefined) {
+                console.warn(`No reload animation was found for '${this.json}'`);
+            }
+
+            // Set offsets
+            const { worldPos, worldRot, partWorldRot } = GearBuilder.FUNC_build;
+            if (this.aligns.lefthand !== undefined) {
+                this.aligns.lefthand.obj.getWorldPosition(worldPos);
+                this.parts.worldToLocal(worldPos);
+                this.leftHandGrip = worldPos.clone();
+            } else {
+                this.leftHand = undefined;
+            }
+            if (this.aligns.righthand !== undefined) {
+                this.aligns.righthand.obj.getWorldPosition(worldPos);
+                this.parts.worldToLocal(worldPos);
+                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone();
+		
+                this.aligns.righthand.obj.getWorldQuaternion(worldRot);
+                this.parts.getWorldQuaternion(partWorldRot);
+                this.equipOffsetRot = worldRot.premultiply(partWorldRot.invert()).multiply(new Quaternion(0, 0.7071, 0, 0.7071)).clone();
+            }
         }).catch((e) => {
             throw module.error(e);
         });
@@ -650,17 +698,31 @@ export class GearBuilder extends GearModel {
     }
 
     private static FUNC_animate = {
-        temp: new Quaternion()
+        temp: new Quaternion(),
+        tempVec: new Vector3()
     } as const;
     public animate(t: number): void {
+        const { temp, tempVec } = GearBuilder.FUNC_animate;
+
         if (this.datablock !== undefined) {
-            const gunArchetype = this.datablock.gunArchetype;
-            if (gunArchetype !== undefined) {
-                this.leftHand?.position.copy(gunArchetype.gunFoldAnim.sample(t * gunArchetype.gunFoldAnim.duration).root);
+            let gunAnim = this.datablock.gunArchetype?.gunFoldAnim;
+            let autoFindAnim = false;
+            if (gunAnim === undefined) {
+                gunAnim = this.gunFoldAnim?.anim;
+                autoFindAnim = true;
+            }
+            if (gunAnim !== undefined) {
+                this.leftHand?.position.copy(gunAnim.sample(t * gunAnim.duration).root);
+                
+                // NOTE(randomuserhi): For backwards compatability with old profiles, only add offset if auto-find animations are used (aka animation not specified).
+                if (autoFindAnim && this.aligns.lefthand !== undefined && this.leftHandGrip !== undefined) {
+                    this.aligns.lefthand.obj.getWorldPosition(tempVec);
+                    this.parts.worldToLocal(tempVec);    
+                    this.leftHand?.position.add(tempVec);
+                }
             }
         }
 
-        const { temp } = GearBuilder.FUNC_animate;
         for (const fold of this.foldObjects) {
             if (fold.anim === undefined) continue;
             fold.obj.quaternion.copy(fold.anim.sample(t * fold.anim.duration).joints.fold).multiply(temp.copy(fold.offset));

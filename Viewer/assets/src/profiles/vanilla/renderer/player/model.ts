@@ -10,7 +10,7 @@ import { IKSolverAim } from "../../library/animations/inversekinematics/aimsolve
 import { IKSolverArm, TrigonometricBone } from "../../library/animations/inversekinematics/limbsolver.js";
 import { Bone } from "../../library/animations/inversekinematics/rootmotion.js";
 import { AnimBlend, Avatar, difference, toAnim } from "../../library/animations/lib.js";
-import { white } from "../../library/constants.js";
+import { white, zeroQ, zeroV } from "../../library/constants.js";
 import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { InventorySlot, inventorySlotMap, inventorySlots, PlayerBackpack } from "../../parser/player/backpack.js";
@@ -160,7 +160,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private lastArchetype: Archetype | undefined = "default";
     private meleeArchetype: MeleeArchetype = defaultArchetype;
     private itemArchetype: ItemArchetype;
-    private gunArchetype: GunArchetype;
+    private gunArchetype: GunArchetype | undefined;
 
     private animOffset: number = Math.random() * 10;
 
@@ -496,8 +496,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     this.aimIK.update();
 
                     const reloadTime = time - (anim.lastReloadTransition / 1000);
-                    if (this.gunArchetype !== undefined && anim.isReloading && reloadTime < anim.reloadDurationInSeconds) {
-                        if (this.gunArchetype.gunFoldAnim !== undefined && this.equippedItem.model !== undefined) {
+                    if (anim.isReloading && reloadTime < anim.reloadDurationInSeconds) {
+                        if (this.equippedItem.model !== undefined) {
                             if (this.equippedItem.model.type === "Gear") {
                                 const model = this.equippedItem.model as GearModel;
                                 const t = reloadTime / anim.reloadDurationInSeconds;
@@ -507,7 +507,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                             }
                             
                             if (this.equippedItem.model.leftHand !== undefined) {
-                                if (this.gunArchetype.offset !== undefined) {
+                                if (this.gunArchetype?.offset !== undefined) {
                                     this.equippedItem.model.leftHand.position.add(this.gunArchetype.offset);
                                 }
                                 this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
@@ -659,20 +659,21 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     } break;
                     case "pistol":
                     case "rifle": {
-                        const archetype = item.gunArchetype;
-                        if (archetype !== undefined) {
-                            this.gunArchetype = archetype;
-                        }
+                        this.gunArchetype = item.gunArchetype;
                     } break;
                     }
 
                     this.equipped.add(item.model.root);
-                    item.model.root.position.copy(item.model.equipOffsetPos);
-                    item.model.root.quaternion.copy(item.model.equipOffsetRot);
+                    if (item.model.equipOffsetPos !== undefined) item.model.root.position.copy(item.model.equipOffsetPos);
+                    else item.model.root.position.copy(zeroV);
+                    if (item.model.equipOffsetRot !== undefined) item.model.root.quaternion.copy(item.model.equipOffsetRot);
+                    else item.model.root.quaternion.copy(zeroQ);
                 } else {
                     this.backpackAligns[i].add(item.model.root);
-                    item.model.root.position.copy(item.model.offsetPos);
-                    item.model.root.quaternion.copy(item.model.offsetRot);
+                    if (item.model.offsetPos !== undefined) item.model.root.position.copy(item.model.offsetPos);
+                    else item.model.root.position.copy(zeroV);
+                    if (item.model.offsetRot !== undefined) item.model.root.quaternion.copy(item.model.offsetRot);
+                    else item.model.root.quaternion.copy(zeroQ);
                 }
             }
         }
