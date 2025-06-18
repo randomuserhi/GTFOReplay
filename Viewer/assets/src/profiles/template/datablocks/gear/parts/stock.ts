@@ -1,3 +1,4 @@
+import { GearAnimDatablock } from "@asl/vanilla/datablocks/gear/animation.js";
 import { GearPartStockDatablock } from "@asl/vanilla/datablocks/gear/parts/stock.js";
 
 GearPartStockDatablock.clear();
@@ -66,14 +67,17 @@ GearPartStockDatablock.set(21, {
 });
 GearPartStockDatablock.set(17, {
     path: `${root}/Stock_Bullpop_1.glb`,
+    foldAnim: GearAnimDatablock.Stock_Bullpup_1_reload_1,
     aligns: [{alignType:"Magazine", alignName:"a_Mag"},{alignType:"RightHand", alignName:"RightHand"},{alignType:"LeftHand", alignName:"LeftHand"}]
 });
 GearPartStockDatablock.set(18, {
     path: `${root}/Stock_Pistol_1.glb`,
+    foldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
     aligns: [{alignType:"RightHand", alignName:"RightHand"},{alignType:"Magazine", alignName:"a_mag"},{alignType:"LeftHand", alignName:"LeftHand"}]
 });
 GearPartStockDatablock.set(22, {
     path: `${root}/Stock_Pistol_2.glb`,
+    foldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1,
     aligns: [{alignType:"RightHand", alignName:"RightHand"},{alignType:"Magazine", alignName:"a_mag"},{alignType:"LeftHand", alignName:"LeftHand"}]
 });
 GearPartStockDatablock.set(19, {

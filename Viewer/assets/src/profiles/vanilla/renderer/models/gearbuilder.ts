@@ -704,6 +704,8 @@ export class GearBuilder extends GearModel {
     public animate(t: number): void {
         const { temp, tempVec } = GearBuilder.FUNC_animate;
 
+        this.material.color.set(0x999999);
+
         if (this.datablock !== undefined) {
             let gunAnim = this.datablock.gunArchetype?.gunFoldAnim;
             let autoFindAnim = false;
@@ -731,6 +733,9 @@ export class GearBuilder extends GearModel {
 
     public reset(): void {
         super.reset();
+
+        this.material.color.set(0xcccccc);
+
         for (const fold of this.foldObjects) {
             fold.obj.quaternion.copy(fold.base);
         }
