@@ -10,6 +10,7 @@ export interface AvatarLike<T extends string = string> {
     joints: Record<T, Joint>;
 }
 
+// NOTE(randomuserhi): By default, an avatar does not support any manipulation, you must set rot and pos to non-undefined values on each joint to enable them.
 export class Avatar<T extends string = string> {
     joints: Record<T, Joint>;
     keys: ReadonlyArray<T>;
