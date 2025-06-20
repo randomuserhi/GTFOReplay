@@ -342,7 +342,7 @@ namespace Vanilla.Events {
                         posFlat.y = 0;
                         Vector3 displacement = Vector3.zero;
                         if (source.Locomotion.m_currentStateEnum != PlayerLocomotion.PLOC_State.Crouch) {
-                            displacement = Vector3.down * 0.45f;
+                            displacement = Vector3.down * ((source.IsLocallyOwned && !source.Owner.IsBot) ? 0.45f : 0.25f);
                         }
                         this.start = wieldedItem.GearPartHolder.transform.position + displacement + (posFlat - footCenter);
                     } else {
