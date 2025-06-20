@@ -2,6 +2,8 @@ import { Anim, AnimBlend, AnimFunc, Avatar, AvatarLike, AvatarMask, AvatarSkelet
 
 export const GearFoldJoints = [
     "fold",
+    "mag",
+    "leftHand"
 ] as const;
 export type GearFoldJoints = typeof GearFoldJoints[number];
 

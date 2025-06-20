@@ -17,6 +17,7 @@ import { GearPartScreenDatablock } from "../../datablocks/gear/parts/screen.js";
 import { GearPartSightDatablock } from "../../datablocks/gear/parts/sight.js";
 import { GearPartStockDatablock } from "../../datablocks/gear/parts/stock.js";
 import { GearPartTargetingDatablock } from "../../datablocks/gear/parts/targeting.js";
+import { Joint } from "../../library/animations/lib.js";
 import { loadGLTF } from "../../library/modelloader.js";
 import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../animations/gearfold.js";
@@ -33,7 +34,7 @@ export class GearBuilder extends GearModel {
     "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver" | "lefthand" | "righthand", 
     { obj: Object3D, source: ComponentType }>> = {};
 
-    foldObjects: { obj: Object3D, offset: Quaternion, base: Quaternion, anim?: GearFoldAnimation }[] = [];
+    foldObjects: { obj: Object3D, offset: Quaternion, anim?: GearFoldAnimation }[] = [];
 
     public material = new MeshPhongMaterial({ color: 0xcccccc });
 
@@ -224,11 +225,9 @@ export class GearBuilder extends GearModel {
                     const f = {
                         obj: fold,
                         offset: new Quaternion(),
-                        base: new Quaternion(),
                         anim: part.foldAnim
                     };
                     if (part.foldOffsetRot !== undefined) f.offset.copy(part.foldOffsetRot);
-                    if (part.baseFoldRot !== undefined) f.base.copy(part.baseFoldRot);
                     this.foldObjects.push(f);
                 }
             }
@@ -273,11 +272,9 @@ export class GearBuilder extends GearModel {
                     const f = {
                         obj: fold,
                         offset: new Quaternion(),
-                        base: new Quaternion(),
                         anim: part.foldAnim
                     };
                     if (part.foldOffsetRot !== undefined) f.offset.copy(part.foldOffsetRot);
-                    if (part.baseFoldRot !== undefined) f.base.copy(part.baseFoldRot);
                     this.foldObjects.push(f);
                 }
             }
@@ -474,6 +471,8 @@ export class GearBuilder extends GearModel {
             } break;
             case "MagPart": {
                 const part = GearPartMagDatablock.get(component.v);
+                console.log(this.json);
+                console.log(part);
                 if (part === undefined) console.warn(`Could not find mag part '${component.v}'.`);
                 else {
                     pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
@@ -673,7 +672,7 @@ export class GearBuilder extends GearModel {
                 this.parts.worldToLocal(worldPos);
                 this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({ x: -0.05, y: -0.015, z: -0.15 }); // Offset as needs to match hand not handAttachment
 		
-                //this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
+                // this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
 
                 /*this.aligns.righthand.obj.getWorldQuaternion(worldRot);
                 this.parts.getWorldQuaternion(partWorldRot);
@@ -700,14 +699,62 @@ export class GearBuilder extends GearModel {
         target.attach(obj);
     }
 
-    private static FUNC_animate = {
-        temp: new Quaternion(),
+    private static FUNC_animatePart = {
         tempVec: new Vector3(),
         tempObj: new Object3D(),
         tempRoot: new Object3D(),
     } as const;
+    private animatePart(obj: Object3D, ref: Object3D, frame: Joint) {
+        const { tempVec, tempObj, tempRoot } = GearBuilder.FUNC_animatePart;
+
+        // Set root to origin (makes transforms relative to gun when we detach parts)
+        const rootParent = this.parts.parent;
+        tempRoot.position.copy(this.parts.position);
+        tempRoot.quaternion.copy(this.parts.quaternion);
+        tempRoot.scale.copy(this.parts.scale);
+        this.parts.removeFromParent();
+        this.parts.position.set(0, 0, 0);
+        this.parts.scale.set(1, 1, 1);
+        this.parts.quaternion.set(0, 0, 0, 1);
+
+        // Detach part from parent to apply transforms in world space 
+        // (ignore scale issues etc... due to blender models being scaled 0.01 and rotated 90 deg on X axis)
+        // refer to https://discussions.unity.com/t/fbx-scale-0-01-blend-file-scale-1-1-1/514915/2
+        const parent = ref.parent;
+        ref.getWorldPosition(tempObj.position);
+        ref.getWorldQuaternion(tempObj.quaternion);
+        ref.getWorldScale(tempObj.scale);
+        ref.removeFromParent();
+        ref.position.copy(tempObj.position);
+        ref.quaternion.copy(tempObj.quaternion);
+        ref.scale.copy(tempObj.scale);
+        
+        if (frame.pos !== undefined) ref.position.copy(frame.pos);
+        if (frame.rot !== undefined) ref.quaternion.copy(frame.rot);
+
+        // Re-attach part to parent
+        if (parent !== undefined && parent !== null) {
+            parent.attach(ref);
+        }
+
+        // Re-attach root to parent
+        if (rootParent !== undefined && rootParent !== null) {
+            rootParent.add(this.parts);
+            this.parts.position.copy(tempRoot.position);
+            this.parts.quaternion.copy(tempRoot.quaternion);
+            this.parts.scale.copy(tempRoot.scale);
+        }
+		
+        ref.getWorldPosition(tempVec);
+        this.parts.worldToLocal(tempVec);
+        obj.position.copy(tempVec);
+    }
+
+    private static FUNC_animate = {
+        temp: new Quaternion(),
+    } as const;
     public animate(t: number): void {
-        const { temp, tempVec, tempObj, tempRoot } = GearBuilder.FUNC_animate;
+        const { temp } = GearBuilder.FUNC_animate;
 
         this.material.color.set(0x999999);
 
@@ -717,67 +764,27 @@ export class GearBuilder extends GearModel {
                 gunAnim = this.gunFoldAnim?.anim;
             }
             if (gunAnim !== undefined) {
-                if (this.aligns.lefthand !== undefined) {
-                    const obj = this.aligns.lefthand.obj;
-		
-                    // Set root to origin (makes transforms relative to gun when we detach parts)
-                    const rootParent = this.parts.parent;
-                    tempRoot.position.copy(this.parts.position);
-                    tempRoot.quaternion.copy(this.parts.quaternion);
-                    tempRoot.scale.copy(this.parts.scale);
-                    this.parts.removeFromParent();
-                    this.parts.position.set(0, 0, 0);
-                    this.parts.scale.set(1, 1, 1);
-                    this.parts.quaternion.set(0, 0, 0, 1);
-
-                    // Detach part from parent to apply transforms in world space 
-                    // (ignore scale issues etc... due to blender models being scaled 0.01 and rotated 90 deg on X axis)
-                    const parent = obj.parent;
-                    obj.getWorldPosition(tempObj.position);
-                    obj.getWorldQuaternion(tempObj.quaternion);
-                    obj.getWorldScale(tempObj.scale);
-                    obj.removeFromParent();
-                    obj.position.copy(tempObj.position);
-                    obj.quaternion.copy(tempObj.quaternion);
-                    obj.scale.copy(tempObj.scale);
-        
-                    obj.position.copy(gunAnim.sample(t * gunAnim.duration).root);
-
-                    // Re-attach part to parent
-                    if (parent !== undefined && parent !== null) {
-                        parent.attach(obj);
-                    }
-
-                    // Re-attach root to parent
-                    if (rootParent !== undefined && rootParent !== null) {
-                        rootParent.add(this.parts);
-                        this.parts.position.copy(tempRoot.position);
-                        this.parts.quaternion.copy(tempRoot.quaternion);
-                        this.parts.scale.copy(tempRoot.scale);
-                    }
-		
-                    obj.getWorldPosition(tempVec);
-                    this.parts.worldToLocal(tempVec);
-                    this.leftHand?.position.copy(tempVec);
-                } else {
-                    this.leftHand?.position.copy(gunAnim.sample(t * gunAnim.duration).root);
+                if (this.aligns.lefthand !== undefined && this.leftHand !== undefined) {
+                    this.animatePart(this.leftHand, this.aligns.lefthand.obj, gunAnim.sample(t * gunAnim.duration).joints.leftHand);
+                }
+                if (this.mag !== undefined && this.aligns.mag !== undefined) {
+                    this.animatePart(this.mag, this.aligns.mag.obj, gunAnim.sample(t * gunAnim.duration).joints.mag);
                 }
             }
         }
 
         for (const fold of this.foldObjects) {
             if (fold.anim === undefined) continue;
-            fold.obj.quaternion.copy(fold.anim.sample(t * fold.anim.duration).joints.fold).multiply(temp.copy(fold.offset));
+            const frame = fold.anim.sample(t * fold.anim.duration);
+            if (frame.joints.fold.rot !== undefined) {
+                fold.obj.quaternion.copy(frame.joints.fold.rot).multiply(temp.copy(fold.offset));
+            }
         }
     }
 
     public reset(): void {
         super.reset();
-
+        this.animate(0);
         this.material.color.set(0xcccccc);
-
-        for (const fold of this.foldObjects) {
-            fold.obj.quaternion.copy(fold.base);
-        }
     }
 }

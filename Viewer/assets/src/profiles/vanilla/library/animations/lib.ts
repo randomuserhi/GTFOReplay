@@ -1,23 +1,25 @@
 import * as Pod from "@esm/@root/replay/pod.js";
 import { Object3D, Quaternion, QuaternionLike, Vector2Like, Vector3, Vector3Like } from "@esm/three";
 
+export interface Joint {
+    rot?: QuaternionLike;
+    pos?: Vector3Like; 
+}
+
 export interface AvatarLike<T extends string = string> {
-    root: Vector3Like;
-    joints: Record<T, QuaternionLike>;
+    joints: Record<T, Joint>;
 }
 
 export class Avatar<T extends string = string> {
-    root: Vector3Like;
-    joints: Record<T, QuaternionLike>;
+    joints: Record<T, Joint>;
     keys: ReadonlyArray<T>;
     
     constructor(joints: ReadonlyArray<T>) {
-        this.root = Pod.Vec.zero();
-        this.joints = {} as Record<T, QuaternionLike>;
+        this.joints = {} as Record<T, Joint>;
         this.keys = joints;
 
         for (const key of this.keys) {
-            this.joints[key] = Pod.Quat.identity();
+            this.joints[key] = {};
         }
     }
 }
@@ -37,18 +39,16 @@ const _vtemp: Vector3 = new Vector3();
 const _qtemp: Quaternion = new Quaternion();
 const _qtempPod: Pod.Quaternion = Pod.Quat.identity();
 export class AvatarSkeleton<T extends string = string> {
-    root: Object3D;
     joints: Record<T, Object3D>;
     keys: ReadonlyArray<T>;
 
-    constructor(joints: ReadonlyArray<T>, root: T) {
+    constructor(joints: ReadonlyArray<T>) {
         this.joints = {} as Record<T, Object3D>;
         this.keys = joints;
         
         for (const key of this.keys) {
             this.joints[key] = new Object3D();
         }
-        this.root = this.joints[root];
     }
 
     public setPos(structure: AvatarStructure<T>) {
@@ -64,28 +64,27 @@ export class AvatarSkeleton<T extends string = string> {
     }
 
     public override(frame: AvatarLike<T>, mask?: AvatarMask<T>): AvatarSkeleton<T> {
-        if (mask === undefined || mask.root === true) {
-            this.root.position.copy(frame.root);
-        }
-    
         for (const key of this.keys) {
             if (mask === undefined || mask.joints[key] === true) {
-                this.joints[key].quaternion.copy(frame.joints[key]);
+                if (frame.joints[key].rot !== undefined) this.joints[key].quaternion.copy(frame.joints[key].rot!);
+                if (frame.joints[key].pos !== undefined) this.joints[key].position.copy(frame.joints[key].pos!);
             }
         }
         return this;
     }
     
     public additive(diff: AvatarLike<T>, weight: number, mask?: AvatarMask<T>): AvatarSkeleton<T> {
-        if (mask === undefined || mask.root === true) {
-            const position = this.root.position;
-            position.lerp(_vtemp.copy(position).add(diff.root), weight);
-        }
-    
         for (const key of this.keys) {
             if (mask === undefined || mask.joints[key] === true) {
-                const quaternion = this.joints[key].quaternion;
-                quaternion.slerp(_qtemp.copy(Pod.Quat.mul(_qtempPod, quaternion, diff.joints[key])), weight);
+                if (diff.joints[key].rot !== undefined) {
+                    const quaternion = this.joints[key].quaternion;
+                    quaternion.slerp(_qtemp.copy(Pod.Quat.mul(_qtempPod, quaternion, diff.joints[key].rot!)), weight);
+                }
+
+                if (diff.joints[key].pos !== undefined) {
+                    const position = this.joints[key].position;
+                    position.lerp(_vtemp.copy(position).add(diff.joints[key].pos!), weight);
+                }
             }
         }
         return this;
@@ -93,16 +92,17 @@ export class AvatarSkeleton<T extends string = string> {
 
     public blend(frame: AvatarLike<T>, weight:number, mask?: AvatarMask<T>) {
         if (weight === 0) return this;
-
-        if (mask === undefined || mask.root === true) {
-            const position = this.root.position;
-            position.lerp(frame.root, weight);
-        }
-    
         for (const key of this.keys) {
             if (mask === undefined || mask.joints[key] === true) {
-                const quaternion = this.joints[key].quaternion;
-                quaternion.copy(Pod.Quat.slerp(_qtempPod, quaternion, frame.joints[key], weight));
+                if (frame.joints[key].rot !== undefined) {
+                    const quaternion = this.joints[key].quaternion;
+                    quaternion.copy(Pod.Quat.slerp(_qtempPod, quaternion, frame.joints[key].rot!, weight));
+                }
+
+                if (frame.joints[key].pos !== undefined) {
+                    const position = this.joints[key].position;
+                    position.lerp(frame.joints[key].pos!, weight);
+                }
             }
         }
         return this;
@@ -110,7 +110,6 @@ export class AvatarSkeleton<T extends string = string> {
 }
 
 export interface AvatarMask<T extends string = string> {
-    root: boolean;
     joints: Partial<Record<T, boolean>>;
 }
 
@@ -141,10 +140,14 @@ export function toAnim<T extends string>(joints: ReadonlyArray<T>, rate: number,
 }
 
 export function difference<T extends string>(skeleton: AvatarLike<T>, reference: AvatarLike<T>, frame: AvatarLike<T>) {
-    Pod.Vec.sub(skeleton.root, frame.root, reference.root);
-
     for (const key in skeleton.joints) {
-        Pod.Quat.mul(skeleton.joints[key], reference.joints[key], Pod.Quat.inverse(_qtempPod, frame.joints[key]));
+        if (skeleton.joints[key].rot !== undefined && reference.joints[key].rot !== undefined && frame.joints[key].rot !== undefined) {
+            Pod.Quat.mul(skeleton.joints[key].rot!, reference.joints[key].rot!, Pod.Quat.inverse(_qtempPod, frame.joints[key].rot!));
+        }
+
+        if (skeleton.joints[key].pos !== undefined && reference.joints[key].pos !== undefined && frame.joints[key].pos !== undefined) {
+            Pod.Vec.sub(skeleton.joints[key].pos!, frame.joints[key].pos!, reference.joints[key].pos!);
+        }
     }
 
     return skeleton;
@@ -152,17 +155,11 @@ export function difference<T extends string>(skeleton: AvatarLike<T>, reference:
 
 export function empty<T extends string>(joints: ReadonlyArray<T>) {
     const avatar: AvatarLike<T> = {
-        root: { x: 0, y: 0, z: 0 },
         joints: {}
     } as AvatarLike<T>;
 
     for (const joint of joints) {
-        avatar.joints[joint] = {
-            x: 0,
-            y: 0,
-            z: 0,
-            w: 1
-        };
+        avatar.joints[joint] = {};
     }
 
     return new Anim(joints, 0.05, 0.01, [avatar]);
@@ -215,16 +212,36 @@ export class Anim<T extends string = string> implements AnimFunc<T> {
         const a = this.frames[min];
         const b = this.frames[min + 1 >= (this.frames.length - 1) ? this.frames.length - 1 : min + 1];
         if (a !== b) {
-            Pod.Vec.lerp(this.cache.root, a.root, b.root, lerp);
-    
             for (const joint in this.cache.joints) {
-                Pod.Quat.slerp(this.cache.joints[joint], a.joints[joint], b.joints[joint], lerp);
+                if (a.joints[joint].rot !== undefined && b.joints[joint].rot !== undefined) {
+                    if (this.cache.joints[joint].rot === undefined) this.cache.joints[joint].rot = Pod.Quat.identity();
+                    Pod.Quat.slerp(this.cache.joints[joint].rot!, a.joints[joint].rot!, b.joints[joint].rot!, lerp);
+                } else {
+                    this.cache.joints[joint].rot = undefined;
+                }
+
+                if (a.joints[joint].pos !== undefined && b.joints[joint].pos !== undefined) {
+                    if (this.cache.joints[joint].pos === undefined) this.cache.joints[joint].pos = Pod.Vec.zero();
+                    Pod.Vec.lerp(this.cache.joints[joint].pos!, a.joints[joint].pos!, b.joints[joint].pos!, lerp);
+                } else {
+                    this.cache.joints[joint].pos = undefined;
+                }
             }
         } else {
-            Pod.Vec.copy(this.cache.root, a.root);
-    
             for (const joint in this.cache.joints) {
-                Pod.Quat.copy(this.cache.joints[joint], a.joints[joint]);
+                if (a.joints[joint].rot !== undefined) {
+                    if (this.cache.joints[joint].rot === undefined) this.cache.joints[joint].rot = Pod.Quat.identity();
+                    Pod.Quat.copy(this.cache.joints[joint].rot!, a.joints[joint].rot!);
+                } else {
+                    this.cache.joints[joint].rot = undefined;
+                }
+
+                if (a.joints[joint].pos !== undefined) {
+                    if (this.cache.joints[joint].pos === undefined) this.cache.joints[joint].pos = Pod.Vec.zero();
+                    Pod.Vec.copy(this.cache.joints[joint].pos!, a.joints[joint].pos!);
+                } else {
+                    this.cache.joints[joint].pos = undefined;
+                }
             }
         }
     
@@ -356,45 +373,6 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
         return weights;
     }
 
-    private blendRoot() {
-        if (this.numStates === 0) return;
-        
-        for (let i = 0; i < this.numStates; ++i) {
-            const state = this.states[i];
-            while (i >= this.buffer.length) {
-                this.buffer.push({
-                    value: undefined,
-                    weight: 0
-                });
-            }
-            this.buffer[i].value = state.anim.root;
-            this.buffer[i].weight = state.weight;
-        }
-        
-        let length = this.numStates;
-        while (length > 1) {
-            let newLength = 0;
-            for (let i = 0; i < length;) {
-                const idx = newLength++;
-                const a = i++;
-                const b = i++;
-                if (b < length) {
-                    const total = this.buffer[a].weight + this.buffer[b].weight;
-                    const lerp = this.buffer[b].weight / total;
-                    Pod.Vec.lerp(this.buffer[idx].value, this.buffer[a].value, this.buffer[b].value, lerp);
-                    this.buffer[idx].weight = total;
-                } else {
-                    Pod.Vec.copy(this.buffer[idx].value, this.buffer[a].value);
-                    this.buffer[idx].weight = this.buffer[a].weight;
-                }
-            }
-        
-            length = newLength;
-        }
-        
-        Pod.Vec.copy(this.cache.root, this.buffer[0].value);
-    }
-
     private blendJoint(key: T) {
         if (this.numStates === 0) return;
 
@@ -420,10 +398,23 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
                 if (b < length) {
                     const total = this.buffer[a].weight + this.buffer[b].weight;
                     const lerp = this.buffer[b].weight / total;
-                    Pod.Quat.slerp(this.buffer[idx].value, this.buffer[a].value, this.buffer[b].value, lerp);
+                    
+                    if (this.buffer[idx].value.rot !== undefined && this.buffer[a].value.rot !== undefined && this.buffer[b].value.rot !== undefined) {
+                        Pod.Quat.slerp(this.buffer[idx].value.rot, this.buffer[a].value.rot, this.buffer[b].value.rot, lerp);
+                    }
+                    if (this.buffer[idx].value.pos !== undefined && this.buffer[a].value.pos !== undefined && this.buffer[b].value.pos !== undefined) {
+                        Pod.Vec.lerp(this.buffer[idx].value.pos, this.buffer[a].value.pos, this.buffer[b].value.pos, lerp);
+                    }
+                    
                     this.buffer[idx].weight = total;
                 } else {
-                    Pod.Quat.copy(this.buffer[idx].value, this.buffer[a].value);
+                    if (this.buffer[idx].value.rot !== undefined && this.buffer[a].value.rot !== undefined) {
+                        Pod.Quat.copy(this.buffer[idx].value.rot, this.buffer[a].value.rot);
+                    }
+                    if (this.buffer[idx].value.pos !== undefined && this.buffer[a].value.pos !== undefined) {
+                        Pod.Vec.copy(this.buffer[idx].value.pos, this.buffer[a].value.pos);
+                    }
+                    
                     this.buffer[idx].weight = this.buffer[a].weight;
                 }
             }
@@ -431,7 +422,18 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
             length = newLength;
         }
 
-        Pod.Quat.copy(this.cache.joints[key], this.buffer[0].value);
+        if (this.buffer[0].value.rot !== undefined) {
+            if (this.cache.joints[key].rot === undefined) this.cache.joints[key].rot = Pod.Quat.identity();
+            Pod.Quat.copy(this.cache.joints[key].rot!, this.buffer[0].value.rot!);
+        } else {
+            this.cache.joints[key].rot = undefined;
+        }
+        if (this.buffer[0].value.pos !== undefined) {
+            if (this.cache.joints[key].pos === undefined) this.cache.joints[key].pos = Pod.Vec.zero();
+            Pod.Vec.copy(this.cache.joints[key].pos!, this.buffer[0].value.pos!);
+        } else {
+            this.cache.joints[key].pos = undefined;
+        }
     }
 
     public sample(t: number, timescale?: number): Avatar<T> {        
@@ -449,8 +451,6 @@ export class AnimBlend<T extends string> implements AnimFunc<T> {
             this.states[this.numStates].anim = frame;
             this.states[this.numStates++].weight = weight;
         }
-
-        this.blendRoot();
         
         for (const joint of this.joints) {
             this.blendJoint(joint);

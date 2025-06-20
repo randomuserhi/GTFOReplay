@@ -41,34 +41,33 @@ ModuleLoader.registerDynamic("RagdollMode.Ragdoll", "0.0.1", {
             };
             if (result.enabled) {
                 result.avatar = {
-                    root: { x: 0, y: 0, z: 0 },
                     joints: {
-                        hip: await BitHelper.readHalfQuaternion(data),
+                        hip: { rot: await BitHelper.readHalfQuaternion(data) },
 
-                        leftUpperLeg: await BitHelper.readHalfQuaternion(data),
-                        leftLowerLeg: await BitHelper.readHalfQuaternion(data),
-                        leftFoot: await BitHelper.readHalfQuaternion(data),
+                        leftUpperLeg: { rot: await BitHelper.readHalfQuaternion(data) },
+                        leftLowerLeg: { rot: await BitHelper.readHalfQuaternion(data) },
+                        leftFoot: { rot: await BitHelper.readHalfQuaternion(data) },
 
-                        rightUpperLeg: await BitHelper.readHalfQuaternion(data),
-                        rightLowerLeg: await BitHelper.readHalfQuaternion(data),
-                        rightFoot: await BitHelper.readHalfQuaternion(data),
+                        rightUpperLeg: { rot: await BitHelper.readHalfQuaternion(data) },
+                        rightLowerLeg: { rot: await BitHelper.readHalfQuaternion(data) },
+                        rightFoot: { rot: await BitHelper.readHalfQuaternion(data) },
 
-                        spine0: await BitHelper.readHalfQuaternion(data),
-                        spine1: await BitHelper.readHalfQuaternion(data),
-                        spine2: await BitHelper.readHalfQuaternion(data),
+                        spine0: { rot: await BitHelper.readHalfQuaternion(data) },
+                        spine1: { rot: await BitHelper.readHalfQuaternion(data) },
+                        spine2: { rot: await BitHelper.readHalfQuaternion(data) },
 
-                        leftShoulder: await BitHelper.readHalfQuaternion(data),
-                        leftUpperArm: await BitHelper.readHalfQuaternion(data),
-                        leftLowerArm: await BitHelper.readHalfQuaternion(data),
-                        leftHand: await BitHelper.readHalfQuaternion(data),
+                        leftShoulder: { rot: await BitHelper.readHalfQuaternion(data) },
+                        leftUpperArm:{ rot: await BitHelper.readHalfQuaternion(data) },
+                        leftLowerArm: { rot: await BitHelper.readHalfQuaternion(data) },
+                        leftHand: { rot: await BitHelper.readHalfQuaternion(data) },
 
-                        rightShoulder: await BitHelper.readHalfQuaternion(data),
-                        rightUpperArm: await BitHelper.readHalfQuaternion(data),
-                        rightLowerArm: await BitHelper.readHalfQuaternion(data),
-                        rightHand: await BitHelper.readHalfQuaternion(data),
+                        rightShoulder: { rot: await BitHelper.readHalfQuaternion(data) },
+                        rightUpperArm: { rot: await BitHelper.readHalfQuaternion(data) },
+                        rightLowerArm: { rot: await BitHelper.readHalfQuaternion(data) },
+                        rightHand: { rot: await BitHelper.readHalfQuaternion(data) },
 
-                        neck: await BitHelper.readHalfQuaternion(data),
-                        head: await BitHelper.readHalfQuaternion(data),
+                        neck: { rot: await BitHelper.readHalfQuaternion(data) },
+                        head: { rot: await BitHelper.readHalfQuaternion(data) },
                     }
                 };
             }
@@ -86,7 +85,9 @@ ModuleLoader.registerDynamic("RagdollMode.Ragdoll", "0.0.1", {
                 ragdoll.avatar = data.avatar;
             } else {
                 for (const joint of HumanJoints) {
-                    Pod.Quat.slerp(ragdoll.avatar.joints[joint], ragdoll.avatar.joints[joint], data.avatar.joints[joint], lerp);
+                    if (ragdoll.avatar.joints[joint].rot !== undefined && data.avatar.joints[joint].rot !== undefined) {
+                        Pod.Quat.slerp(ragdoll.avatar.joints[joint].rot!, ragdoll.avatar.joints[joint].rot!, data.avatar.joints[joint].rot!, lerp);
+                    }
                 }
             }
         }

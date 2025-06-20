@@ -100,16 +100,21 @@ public class AnimationClipRecorder : MonoBehaviour {
     private void GetRotationString(StringBuilder sb, string name, Transform transform) {
         Quaternion rot = transform.localRotation;
         rot.Normalize();
-        sb.Append($"\"{name}\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}");
+        sb.Append($"\"{name}\":{{\"rot\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}}}");
+    }
+
+    private void GetJointString(StringBuilder sb, string name, Transform transform) {
+        Vector3 localPosition = transform.localPosition;
+        Quaternion rot = transform.localRotation;
+        rot.Normalize();
+        sb.Append($"\"{name}\":{{\"pos\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}},\"rot\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}}}");
     }
 
     private StringBuilder SaveCurrentFrame(StringBuilder sb) {
         sb.Append("    {");
 
-        GetPositionString(sb, "root", hip); sb.Append(",");
-
         sb.Append("\"joints\":{");
-        GetRotationString(sb, "hip", hip); sb.Append(",");
+        GetJointString(sb, "hip", hip); sb.Append(",");
 
         GetRotationString(sb, "leftUpperLeg", leftUpperLeg); sb.Append(",");
         GetRotationString(sb, "leftLowerLeg", leftLowerLeg); sb.Append(",");

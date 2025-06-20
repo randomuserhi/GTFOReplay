@@ -13,6 +13,7 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
 
     public Transform fold;
     public Transform leftHand;
+    public Transform mag;
 
     // Start is called before the first frame update
     private void Start() {
@@ -63,29 +64,31 @@ public class FoldAnimationClipRecorder : MonoBehaviour {
         sb.Append($"\"{name}\":{{\"position\":{{\"x\":{-transform.localPosition.x},\"y\":{transform.localPosition.y},\"z\":{transform.localPosition.z}}},\"rotation\":{{\"x\":{transform.localRotation.x},\"y\":{transform.localRotation.y},\"z\":{transform.localRotation.z},\"w\":{transform.localRotation.w}}}}}");
     }
 
-    public bool stock_pistol = false;
-
     private void GetPositionString(StringBuilder sb, string name, Transform transform) {
         Vector3 localPosition = transform.position;
-        if (stock_pistol)
-            sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{-localPosition.y},\"z\":{-localPosition.z}}}");
-        else
-            sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
+        sb.Append($"\"{name}\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}}");
     }
 
     private void GetRotationString(StringBuilder sb, string name, Transform transform) {
         Quaternion rot = transform.localRotation;
         rot.Normalize();
-        sb.Append($"\"{name}\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}");
+        sb.Append($"\"{name}\":{{\"rot\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}}}");
+    }
+
+    private void GetJointString(StringBuilder sb, string name, Transform transform) {
+        Vector3 localPosition = transform.position;
+        Quaternion rot = transform.rotation;
+        rot.Normalize();
+        sb.Append($"\"{name}\":{{\"pos\":{{\"x\":{-localPosition.x},\"y\":{localPosition.y},\"z\":{localPosition.z}}},\"rot\":{{\"x\":{rot.x},\"y\":{-rot.y},\"z\":{-rot.z},\"w\":{rot.w}}}}}");
     }
 
     private StringBuilder SaveCurrentFrame(StringBuilder sb) {
         sb.Append("    {");
 
-        GetPositionString(sb, "root", leftHand); sb.Append(",");
-
         sb.Append("\"joints\":{");
-        GetRotationString(sb, "fold", fold);
+        GetRotationString(sb, "fold", fold); sb.Append(",");
+        GetJointString(sb, "mag", mag); sb.Append(",");
+        GetJointString(sb, "leftHand", leftHand);
 
         sb.Append("}}");
 

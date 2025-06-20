@@ -148,7 +148,7 @@ namespace Vanilla.Enemy {
         }
     }
 
-    [ReplayData("Vanilla.Enemy.Ragdoll", "0.0.1")]
+    [ReplayData("Vanilla.Enemy.Ragdoll", "0.0.2")]
     public class rEnemyRagdoll : DynamicTransform {
         public EnemyAgent agent;
         public RagdollPartManager ragdoll;
@@ -266,6 +266,7 @@ namespace Vanilla.Enemy {
             BitHelper.WriteHalf(agent.SizeMultiplier, buffer);
             BitHelper.WriteBytes(Identifier.From(agent), buffer);
             BitHelper.WriteHalf(agent.Damage.HealthMax, buffer);
+            BitHelper.WriteBytes(agent.m_headLimb.m_health > 0, buffer);
             WriteAvatar(buffer);
         }
     }

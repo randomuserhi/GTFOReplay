@@ -107,14 +107,8 @@ GearPartFrontDatablock.set(23, {
     aligns: [{alignType:"Muzzle", alignName:"Front_M"},{alignType:"ShellEject", alignName:"Front_SE"},{alignType:"Magazine", alignName:"a_Mag"},{alignType:"Flashlight", alignName:"Front_Flash"},{alignType:"LeftHand", alignName:"LeftHand"},{alignType:"RightHand", alignName:"RightHand"}]
 });
 GearPartFrontDatablock.set(36, {
-    path: `${root}/Front_Revolver_1_Gripalign.glb`,
+    path: `${root}/Front_Revolver_1_GripAlign.glb`,
     fold: "a_RevolverFold",
-    baseFoldRot: {
-        x: 0,
-        y: 0,
-        z: 0.7071,
-        w: 0.7071,
-    },
     foldOffsetRot: {
         x: 0,
         y: 0,
@@ -127,12 +121,6 @@ GearPartFrontDatablock.set(36, {
 GearPartFrontDatablock.set(35, {
     path: `${root}/Front_Revolver_2.glb`,
     fold: "a_Fold",
-    baseFoldRot: {
-        x: 0.7071,
-        y: 0,
-        z: 0,
-        w: 0.7071
-    },
     foldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
     aligns: [{alignType:"Muzzle", alignName:"Front_M"},{alignType:"ShellEject", alignName:"Front_SE"},{alignType:"Magazine", alignName:"a_Mag"},{alignType:"Flashlight", alignName:"Front_Flash"},{alignType:"LeftHand", alignName:"LeftHand"},{alignType:"SightLook", alignName:"Sight_align"}]
 });

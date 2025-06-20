@@ -190,12 +190,6 @@ GearPartReceiverDatablock.set(22, {
 GearPartReceiverDatablock.set(16, {
     path: `${root}/Receiver_Revolver_1_Gripalign.glb`,
     fold: "a_RevolverFold",
-    baseFoldRot: {
-        x: 0,
-        y: 0,
-        z: 0.7071,
-        w: 0.7071,
-    },
     foldOffsetRot: {
         x: 0,
         y: 0,
@@ -222,12 +216,6 @@ GearPartReceiverDatablock.set(16, {
 GearPartReceiverDatablock.set(17, {
     path: `${root}/Receiver_Revolver_2.glb`,
     fold: "a_Fold",
-    baseFoldRot: {
-        x: 0.7071,
-        y: 0,
-        z: 0,
-        w: 0.7071
-    },
     foldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
     aligns: [
         {

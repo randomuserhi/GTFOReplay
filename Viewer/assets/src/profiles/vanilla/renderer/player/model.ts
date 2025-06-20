@@ -24,7 +24,6 @@ import { StickFigure } from "../models/stickfigure.js";
 import { Camera } from "../renderer.js";
 
 const upperBodyMask: HumanMask = {
-    root: false,
     joints: { 
         spine0: true,
         spine1: true,
@@ -227,7 +226,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.skeleton.joints.rightHand.add(this.handAttachment);
 
         // Setup IK
-        this.aimIK.root = this.skeleton.root;
+        this.aimIK.root = this.skeleton.joints["hip"];
         this.aimIK.transform = this.handAttachment;
         this.aimIK.target = this.aimTarget = new Object3D();
         this.aimIK.tolerance = 0.1;
@@ -240,8 +239,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             new Bone(this.skeleton.joints.rightHand, 1)
         ];
         this.aimIK.initiate(this.aimIK.root);
-
-        this.leftIK.root = this.skeleton.root;
+        
+        this.leftIK.root = this.skeleton.joints["hip"];
         this.leftIK.rightArm = false;
         this.leftIK.IKPositionWeight = 1;
         this.leftIK.target = this.leftTarget = new Object3D();
@@ -250,16 +249,16 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.leftIK.bone2 = new TrigonometricBone(this.skeleton.joints.leftLowerArm, 1);
         this.leftIK.bone3 = new TrigonometricBone(this.skeleton.joints.leftHand, 1);
         this.leftIK.initiate(this.leftIK.root);
-
+        
         // Setup flashlightLOS
         this.flashlightMaterial = new MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
         this.flashlightLOS = new Mesh(cylinder, this.flashlightMaterial);
         this.flashlightLOS.scale.set(0.07, 0.07, 1000);
         this.root.add(this.flashlightLOS);
 
-        /*const test = new Mesh(UnitySphere, this.flashlightMaterial);
+        /*{ const test = new Mesh(UnitySphere, this.flashlightMaterial);
         test.scale.set(0.1, 0.1, 0.1);
-        this.handAttachment.add(test);*/
+        this.handAttachment.add(test); }*/
     }
 
     public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll) {
@@ -302,7 +301,14 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     }
 
     private static FUNC_animate = {
-        tempAvatar: new Avatar(HumanJoints),
+        tempAvatar: (() => {
+            const avatar = new Avatar(HumanJoints);
+            for (const joint of avatar.keys) {
+                avatar.joints[joint].rot = Pod.Quat.identity();
+            }
+            avatar.joints["hip"].pos = Pod.Vec.zero();
+            return avatar;
+        })(),
         tempVector: new Vector3()
     } as const;
     private _animate(dt: number, time: number, player: Player, anim: PlayerAnimState, ragdoll?: Ragdoll) {

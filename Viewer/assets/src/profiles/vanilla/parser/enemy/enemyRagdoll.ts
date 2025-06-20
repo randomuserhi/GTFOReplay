@@ -24,6 +24,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
                     scale: number;
                     type: Identifier;
                     maxHealth: number;
+                    head: boolean;
                     avatar: EnemyRagdoll["avatar"];
                 };
                 despawn: void;
@@ -40,7 +41,7 @@ export interface EnemyRagdoll extends Enemy, DynamicTransform.Type {
     avatar: Partial<Record<HumanJoints, Pod.Vector>>;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Enemy.Ragdoll", "0.0.1", {
+let enemyRagdoll = ModuleLoader.registerDynamic("Vanilla.Enemy.Ragdoll", "0.0.1", {
     main: {
         parse: async (data) => {
             const transform = await DynamicTransform.parse(data);
@@ -97,6 +98,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Ragdoll", "0.0.1", {
                 scale: await BitHelper.readHalf(data),
                 type: await Identifier.parse(IdentifierData(snapshot), data),
                 maxHealth: await BitHelper.readHalf(data),
+                head: true,
                 avatar: {
                     hip: await BitHelper.readHalfVector(data),
 
@@ -133,7 +135,6 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Ragdoll", "0.0.1", {
                 id, 
                 ...data, 
                 health: 0,
-                head: true,
                 players: new Set(),
                 tagged: false,
                 consumedPlayerSlotIndex: 255,
@@ -153,4 +154,47 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Ragdoll", "0.0.1", {
             ragdolls.delete(id);
         }
     }
+});
+enemyRagdoll = ModuleLoader.registerDynamic("Vanilla.Enemy.Ragdoll", "0.0.2", {
+    ...enemyRagdoll,
+    spawn: {
+        ...enemyRagdoll.spawn,
+        parse: async (data, snapshot) => {
+            const spawn = await DynamicTransform.spawn(data);
+            return {
+                ...spawn,
+                animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
+                scale: await BitHelper.readHalf(data),
+                type: await Identifier.parse(IdentifierData(snapshot), data),
+                maxHealth: await BitHelper.readHalf(data),
+                head: await BitHelper.readBool(data),
+                avatar: {
+                    hip: await BitHelper.readHalfVector(data),
+
+                    leftUpperLeg: await BitHelper.readHalfVector(data),
+                    leftLowerLeg: await BitHelper.readHalfVector(data),
+                    leftFoot: await BitHelper.readHalfVector(data),
+
+                    rightUpperLeg: await BitHelper.readHalfVector(data),
+                    rightLowerLeg: await BitHelper.readHalfVector(data),
+                    rightFoot: await BitHelper.readHalfVector(data),
+
+                    spine1: await BitHelper.readHalfVector(data),
+
+                    leftShoulder:await BitHelper.readHalfVector(data),
+                    leftUpperArm: await BitHelper.readHalfVector(data),
+                    leftLowerArm: await BitHelper.readHalfVector(data),
+                    leftHand: await BitHelper.readHalfVector(data),
+
+                    rightShoulder: await BitHelper.readHalfVector(data),
+                    rightUpperArm:await BitHelper.readHalfVector(data),
+                    rightLowerArm: await BitHelper.readHalfVector(data),
+                    rightHand: await BitHelper.readHalfVector(data),
+
+                    neck: await BitHelper.readHalfVector(data),
+                    head: await BitHelper.readHalfVector(data),
+                }
+            };
+        },
+    },
 });

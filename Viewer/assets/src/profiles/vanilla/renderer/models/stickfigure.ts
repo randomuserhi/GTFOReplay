@@ -168,8 +168,8 @@ function valueOrUndefined(obj: any, value: any): boolean {
 export class StickFigure<T extends any[] = []> extends Model<T> {
     private worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
 
-    public skeleton: HumanSkeleton = new AvatarSkeleton(HumanJoints, "hip");
-    public visual: HumanSkeleton = new AvatarSkeleton(HumanJoints, "hip");
+    public skeleton: HumanSkeleton = new AvatarSkeleton(HumanJoints);
+    public visual: HumanSkeleton = new AvatarSkeleton(HumanJoints);
     private inverseMatrix: AvatarStructure<HumanJoints, Matrix4> = createAvatarStruct(HumanJoints, () => new Matrix4());
 
     public anchor: Group = new Group();
@@ -353,7 +353,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         for (const key of HumanJoints) {
             this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
         }
-        this.visual.root.position.lerp(this.skeleton.root.position, blendFactor);
+        this.visual.joints["hip"].position.lerp(this.skeleton.joints["hip"].position, blendFactor);
     }
 
     // NOTE(randomuserhi): requires updateSkeleton to be called prior

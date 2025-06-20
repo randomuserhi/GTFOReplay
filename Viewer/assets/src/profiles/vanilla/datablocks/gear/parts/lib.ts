@@ -10,7 +10,6 @@ export interface GearPartDatablock {
     offsetScale?: Vector3Like;
     fold?: string;
     foldOffsetRot?: QuaternionLike;
-    baseFoldRot?: QuaternionLike;
     foldAnim?: GearFoldAnimation;
     aligns?: {
         alignType: AlignType;
