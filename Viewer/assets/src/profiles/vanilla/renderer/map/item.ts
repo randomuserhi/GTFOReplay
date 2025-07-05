@@ -19,6 +19,7 @@ ModuleLoader.registerRender("Vanilla.Items", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
+            const mines = renderer.getOrDefault("Mine", Factory("Map"));
             const models = renderer.getOrDefault("Items", Factory("Map"));
             const collection = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
             for (const [id, item] of collection) {
@@ -34,7 +35,11 @@ ModuleLoader.registerRender("Vanilla.Items", (name, api) => {
                 const model = models.get(id)!;
                 model.root.position.copy(item.position);
                 model.root.quaternion.copy(item.rotation);
-                model.setVisible(item.onGround && item.dimension === renderer.get("Dimension"));
+                if (!mines.has(id)) { // Special check to see if the item exists as a deployed mine, if so it does not need to be rendered
+                    model.setVisible(item.onGround && item.dimension === renderer.get("Dimension"));
+                } else {
+                    model.setVisible(false);
+                }
             }
 
             for (const [id, model] of [...models.entries()]) {

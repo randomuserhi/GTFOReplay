@@ -19,6 +19,7 @@ ModuleLoader.registerRender("DynamicItem", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
         name, pass: (renderer, snapshot) => {
+            const mines = renderer.getOrDefault("Mine", Factory("Map"));
             const models = renderer.getOrDefault("DynamicItem", Factory("Map"));
             const collection = snapshot.getOrDefault("Vanilla.DynamicItem", Factory("Map"));
             for (const [id, item] of collection) {
@@ -33,7 +34,11 @@ ModuleLoader.registerRender("DynamicItem", (name, api) => {
                 const model = models.get(id)!;
                 model.root.position.copy(item.position);
                 model.root.quaternion.copy(item.rotation);
-                model.setVisible(item.dimension === renderer.get("Dimension"));
+                if (mines.has(item.id))
+                    // Special case to not display dynamic items for placed mines
+                    model.setVisible(false);
+                else
+                    model.setVisible(item.dimension === renderer.get("Dimension"));
             }
 
             for (const [id, model] of [...models.entries()]) {

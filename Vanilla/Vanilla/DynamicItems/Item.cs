@@ -44,7 +44,7 @@ namespace Vanilla.DynamicItems {
 
         public override bool IsDirty => base.IsDirty;
 
-        public rDynamicItem(Item item, Identifier type, byte dimension) : base(item.GetInstanceID(), new ItemTransform(item, dimension)) {
+        public rDynamicItem(Item item, Identifier type, byte dimension) : base(item.gameObject.GetInstanceID(), new ItemTransform(item, dimension)) {
             this.item = item;
             this.type = type;
         }
