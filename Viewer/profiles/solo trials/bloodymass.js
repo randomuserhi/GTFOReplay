@@ -1,6 +1,6 @@
 const { Mesh, MeshPhongMaterial, Vector3, Euler } = await require("three", "esm");
-const { loadGLTFGeometry } = await require("../vanilla/library/modelloader.js", "asl");
-const { HumanoidEnemyModel } = await require("../vanilla/renderer/enemy/models/humanoid.js", "asl");
+const { loadGLTFGeometry } = await require("@asl/vanilla/library/modelloader.js", "asl");
+const { HumanoidEnemyModel } = await require("@asl/vanilla/renderer/enemy/models/humanoid.js", "asl");
 exports.BloodMassModel = class extends HumanoidEnemyModel {
   constructor(wrapper) {
     super(wrapper);

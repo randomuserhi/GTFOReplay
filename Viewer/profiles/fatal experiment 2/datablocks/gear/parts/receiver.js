@@ -1,5 +1,6 @@
 const { GearAnimDatablock } = await require("../../../../vanilla/datablocks/gear/animation.js", "asl");
 const { GearPartReceiverDatablock } = await require("../../../../vanilla/datablocks/gear/parts/receiver.js", "asl");
+const { mergeAnims } = await require("@asl/vanilla/library/animations/lib.js", "asl");
 GearPartReceiverDatablock.clear();
 const root = `../js3party/models/GearParts/Receiver`;
 GearPartReceiverDatablock.set(5, {
@@ -65,44 +66,44 @@ GearPartReceiverDatablock.set(14, {
 GearPartReceiverDatablock.set(15, {
   path: `${root}/Receiver_Short_Shotgun_2.glb`,
   aligns: [{alignType:"Flashlight",alignName:"Receiver_Flash"},{alignType:"Sight",alignName:"Receiver_Sight"}],
-	fold: "BreakPoint",
-	foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1
+  foldAnim: GearAnimDatablock.Short_Shotgun_2_Parts_Reload,
+  fold: "BreakPoint"
 });
 GearPartReceiverDatablock.set(22, {
   path: `${root}/Receiver_Short_Shotgun_2.glb`,
   aligns: [{alignType:"Flashlight",alignName:"Receiver_Flash"},{alignType:"Sight",alignName:"Receiver_Sight"}],
-	fold: "BreakPoint",
-	foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1
+  foldAnim: GearAnimDatablock.Short_Shotgun_2_Parts_Reload,
+  fold: "BreakPoint"
 });
 GearPartReceiverDatablock.set(16, {
   path: `${root}/Receiver_Revolver_1_GripAlign.glb`,
   aligns: [{alignType:"SightLook",alignName:"Receiver_Sight"},{alignType:"Flashlight",alignName:"Front_Flash"},{alignType:"Sight",alignName:"Receiver_Sight"}],
-    fold: "a_RevolverFold",
-    baseFoldRot: {
-		x: 0,
-		y: 0,
-		z: 0.7071,
-		w: 0.7071
-	},
-	foldOffsetRot: {
-		x: 0,
-		y: 0,
-		z: 0.7071,
-		w: 0.7071
-	},
-	foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1
+  foldAnim: GearAnimDatablock.Revolver_Front_1_Reload_1,
+  fold: "a_RevolverFold",
+  baseFoldRot: {
+    x: 0,
+    y: 0,
+    z: 0.7071,
+    w: 0.7071
+  },
+  foldOffsetRot: {
+    x: 0,
+    y: 0,
+    z: 0.7071,
+    w: 0.7071
+  }
 });
 GearPartReceiverDatablock.set(17, {
   path: `${root}/Receiver_Revolver_2.glb`,
   aligns: [{alignType:"SightLook",alignName:"Receiver_Sight"},{alignType:"Flashlight",alignName:"Front_Flash"},{alignType:"Sight",alignName:"Receiver_Sight"}],
-	fold: "a_Fold",
-	baseFoldRot: {
-		x: 0.7071,
-		y: 0,
-		z: 0,
-		w: 0.7071
-	},
-	foldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0
+  foldAnim: GearAnimDatablock.Front_Revolver_2_Reload_0,
+  fold: "a_Fold",
+  baseFoldRot: {
+    x: 0.7071,
+    y: 0,
+    z: 0,
+    w: 0.7071
+  }
 });
 GearPartReceiverDatablock.set(18, {
   path: `${root}/Receiver_UZI_1.glb`,

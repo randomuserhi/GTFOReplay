@@ -1,5 +1,6 @@
 const { GearAnimDatablock } = await require("../../../../vanilla/datablocks/gear/animation.js", "asl");
 const { GearPartHandleDatablock } = await require("../../../../vanilla/datablocks/gear/parts/handle.js", "asl");
+const { mergeAnims } = await require("@asl/vanilla/library/animations/lib.js", "asl");
 GearPartHandleDatablock.clear();
 const root = `../js3party/models/GearParts/Handle`;
 GearPartHandleDatablock.set(2, {

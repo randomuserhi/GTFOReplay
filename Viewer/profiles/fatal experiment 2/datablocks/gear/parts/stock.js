@@ -1,5 +1,6 @@
 const { GearAnimDatablock } = await require("../../../../vanilla/datablocks/gear/animation.js", "asl");
 const { GearPartStockDatablock } = await require("../../../../vanilla/datablocks/gear/parts/stock.js", "asl");
+const { mergeAnims } = await require("@asl/vanilla/library/animations/lib.js", "asl");
 GearPartStockDatablock.clear();
 const root = `../js3party/models/GearParts/Stock`;
 GearPartStockDatablock.set(12, {
@@ -64,11 +65,13 @@ GearPartStockDatablock.set(21, {
 });
 GearPartStockDatablock.set(17, {
   path: `${root}/Stock_Bullpop_1.glb`,
-  aligns: [{alignType:"Magazine",alignName:"a_Mag"},{alignType:"RightHand",alignName:"RightHand"},{alignType:"LeftHand",alignName:"LeftHand"}]
+  aligns: [{alignType:"Magazine",alignName:"a_Mag"},{alignType:"RightHand",alignName:"RightHand"},{alignType:"LeftHand",alignName:"LeftHand"}],
+  foldAnim: GearAnimDatablock.Stock_Bullpup_1_reload_1
 });
 GearPartStockDatablock.set(18, {
   path: `${root}/Stock_Pistol_1.glb`,
-  aligns: [{alignType:"RightHand",alignName:"RightHand"},{alignType:"Magazine",alignName:"a_mag"},{alignType:"LeftHand",alignName:"LeftHand"}]
+  aligns: [{alignType:"RightHand",alignName:"RightHand"},{alignType:"Magazine",alignName:"a_mag"},{alignType:"LeftHand",alignName:"LeftHand"}],
+  foldAnim: GearAnimDatablock.Stock_Pistol_1_reload_1
 });
 GearPartStockDatablock.set(19, {
   path: `${root}/Stock_UZI_2.glb`,
@@ -88,5 +91,6 @@ GearPartStockDatablock.set(22, {
 });
 GearPartStockDatablock.set(144, {
   path: `${root}/Stock_Bullpop_1.glb`,
-  aligns: [{alignType:"Magazine",alignName:"a_Mag"},{alignType:"RightHand",alignName:"RightHand"},{alignType:"LeftHand",alignName:"LeftHand"}]
+  aligns: [{alignType:"Magazine",alignName:"a_Mag"},{alignType:"RightHand",alignName:"RightHand"},{alignType:"LeftHand",alignName:"LeftHand"}],
+  foldAnim: GearAnimDatablock.Stock_Bullpup_1_reload_1
 });

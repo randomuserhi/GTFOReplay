@@ -1,9 +1,9 @@
-const { EnemyDatablock } = await require("../../../vanilla/datablocks/enemy/enemy.js", "asl");
-const { Identifier } = await require("../../../vanilla/parser/identifier.js", "asl");
-const { BigFlyerModel } = await require("../../../vanilla/renderer/enemy/models/bigflyer.js", "asl");
-const { FlyerModel } = await require("../../../vanilla/renderer/enemy/models/flyer.js", "asl");
-const { HumanoidEnemyModel } = await require("../../../vanilla/renderer/enemy/models/humanoid.js", "asl");
-const { SquidModel } = await require("../../../vanilla/renderer/enemy/models/squid.js", "asl");
+const { EnemyDatablock } = await require("@asl/vanilla/datablocks/enemy/enemy.js", "asl");
+const { Identifier } = await require("@asl/vanilla/parser/identifier.js", "asl");
+const { BigFlyerModel } = await require("@asl/vanilla/renderer/enemy/models/bigflyer.js", "asl");
+const { FlyerModel } = await require("@asl/vanilla/renderer/enemy/models/flyer.js", "asl");
+const { HumanoidEnemyModel } = await require("@asl/vanilla/renderer/enemy/models/humanoid.js", "asl");
+const { SquidModel } = await require("@asl/vanilla/renderer/enemy/models/squid.js", "asl");
 const { BloodMassModel } = await require("../../bloodymass.js", "asl");
 EnemyDatablock.clear();
 

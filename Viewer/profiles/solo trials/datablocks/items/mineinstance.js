@@ -1,7 +1,7 @@
 const { MeshPhongMaterial } = await require("three", "esm");
-const { MineInstanceDatablock } = await require("../../../vanilla/datablocks/items/mineinstance.js", "asl");
-const { loadGLTF } = await require("../../../vanilla/library/modelloader.js", "asl");
-const { Identifier } = await require("../../../vanilla/parser/identifier.js", "asl");
+const { MineInstanceDatablock } = await require("@asl/vanilla/datablocks/items/mineinstance.js", "asl");
+const { loadGLTF } = await require("@asl/vanilla/library/modelloader.js", "asl");
+const { Identifier } = await require("@asl/vanilla/parser/identifier.js", "asl");
 MineInstanceDatablock.clear();
 function ApplyMaterial(model, material) {
   model.traverse(obj => {

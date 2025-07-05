@@ -1,5 +1,6 @@
 const { GearAnimDatablock } = await require("../../../../vanilla/datablocks/gear/animation.js", "asl");
 const { GearPartScreenDatablock } = await require("../../../../vanilla/datablocks/gear/parts/screen.js", "asl");
+const { mergeAnims } = await require("@asl/vanilla/library/animations/lib.js", "asl");
 GearPartScreenDatablock.clear();
 const root = `../js3party/models/GearParts/Screen`;
 GearPartScreenDatablock.set(2, {
@@ -36,11 +37,13 @@ GearPartScreenDatablock.set(9, {
 });
 GearPartScreenDatablock.set(16, {
   path: `${root}/../Front/Front_AutoShotgun_1.glb`,
-  aligns: [{alignType:"Muzzle",alignName:"Front_M"},{alignType:"ShellEject",alignName:"Front_SE"},{alignType:"Magazine",alignName:"a_mag"},{alignType:"Flashlight",alignName:"Front_Flash"},{alignType:"LeftHand",alignName:"LeftHand"}]
+  aligns: [{alignType:"Muzzle",alignName:"Front_M"},{alignType:"ShellEject",alignName:"Front_SE"},{alignType:"Magazine",alignName:"a_mag"},{alignType:"Flashlight",alignName:"Front_Flash"},{alignType:"LeftHand",alignName:"LeftHand"}],
+  foldAnim: GearAnimDatablock.Front_AutoShotgun_1_animation_reload_0
 });
 GearPartScreenDatablock.set(14, {
   path: `${root}/../Front/Front_Rifle_3.glb`,
-  aligns: []
+  aligns: [],
+  foldAnim: GearAnimDatablock.Front_Rifle_3_reload_animation_1
 });
 GearPartScreenDatablock.set(17, {
   path: `${root}/Consumable_MediumFlashlight.glb`,

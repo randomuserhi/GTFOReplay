@@ -1,9 +1,9 @@
-const { EnemyDatablock } = await require("../../../vanilla/datablocks/enemy/enemy.js", "asl");
-const { Identifier } = await require("../../../vanilla/parser/identifier.js", "asl");
-const { BigFlyerModel } = await require("../../../vanilla/renderer/enemy/models/bigflyer.js", "asl");
-const { FlyerModel } = await require("../../../vanilla/renderer/enemy/models/flyer.js", "asl");
-const { HumanoidEnemyModel } = await require("../../../vanilla/renderer/enemy/models/humanoid.js", "asl");
-const { SquidModel } = await require("../../../vanilla/renderer/enemy/models/squid.js", "asl");
+const { EnemyDatablock } = await require("@asl/vanilla/datablocks/enemy/enemy.js", "asl");
+const { Identifier } = await require("@asl/vanilla/parser/identifier.js", "asl");
+const { BigFlyerModel } = await require("@asl/vanilla/renderer/enemy/models/bigflyer.js", "asl");
+const { FlyerModel } = await require("@asl/vanilla/renderer/enemy/models/flyer.js", "asl");
+const { HumanoidEnemyModel } = await require("@asl/vanilla/renderer/enemy/models/humanoid.js", "asl");
+const { SquidModel } = await require("@asl/vanilla/renderer/enemy/models/squid.js", "asl");
 const { BloodMassModel } = await require("../../bloodymass.js", "asl");
 EnemyDatablock.clear();
 
@@ -112,6 +112,97 @@ EnemyDatablock.set(Identifier.create("Enemy", 16), {
         z: 1.2
       },
       color: 0xff8080
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 18), {
+  name: "Afflicted Striker",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      headScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+      },
+      chestScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      color: 0xccffcc
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 75), {
+  name: "Afflicted Shooter",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale * shooterScale,
+      headScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+      },
+      chestScale: {
+        x: 1.15,
+        y: 1.15,
+        z: 1.15
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      parts: {
+        head: {
+          type: "Shooter"
+        }
+      },
+      color: 0xccffcc
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 55), {
+  name: "Afflicted Frank",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65
+      },
+      chestScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      legScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      color: 0xccffcc
     });
     return model;
   }
@@ -376,6 +467,28 @@ EnemyDatablock.set(Identifier.create("Enemy", 174), {
   }
 });
 
+EnemyDatablock.set(Identifier.create("Enemy", 175), {
+  name: "Withered Shooter",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale * shooterScale,
+      headScale: {
+        x: 1.25,
+        y: 1.0,
+        z: 1.0
+      },
+      parts: {
+        head: {
+          type: "Shooter"
+        }
+      },
+      color: 0xa00000
+    });
+    return model;
+  }
+});
+
 EnemyDatablock.set(Identifier.create("Enemy", 176), {
   name: "Withered Frank",
   model: (wrapper, enemy) => {
@@ -477,6 +590,70 @@ EnemyDatablock.set(Identifier.create("Enemy", 180), {
         head: {
           type: "Shooter"
         }
+      },
+      color: 0xcc0000
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 185), {
+  name: "Hallowed Charger",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      parts: {
+        head: {
+          type: "Charger"
+        }
+      },
+      neckScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.3,
+        z: 1.2
+      },
+      color: 0xcc0000
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 187), {
+  name: "Hallowed Frank",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      posOffset: {
+        x: 0.0,
+        y: 0.2,
+        z: 0.0
+      },
+      headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65
+      },
+      chestScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      legScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
       },
       color: 0xcc0000
     });
@@ -957,6 +1134,33 @@ EnemyDatablock.set(Identifier.create("Enemy", 155), {
   }
 });
 
+EnemyDatablock.set(Identifier.create("Enemy", 171), {
+  name: "Emperor Grappler",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      parts: {
+        head: {
+          type: "Charger"
+        }
+      },
+      headScale: {
+        x: 0.7,
+        y: 0.7,
+        z: 0.7
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      color: 0xc080ff
+    });
+    return model;
+  }
+});
+
 EnemyDatablock.set(Identifier.create("Enemy", 45), {
   name: "Bleeder",
   model: (wrapper, enemy) => {
@@ -1035,6 +1239,32 @@ EnemyDatablock.set(Identifier.create("Enemy", 156), {
   }
 });
 
+EnemyDatablock.set(Identifier.create("Enemy", 182), {
+  name: "Emperor Bleeder",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      parts: {
+        head: {
+          type: "Charger"
+        }
+      },
+      headScale: {
+        x: 0.7,
+        y: 0.7,
+        z: 0.7
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+    });
+    return model;
+  }
+});
+
 EnemyDatablock.set(Identifier.create("Enemy", 77), {
   name: "Sidestepper",
   model: (wrapper, enemy) => {
@@ -1075,6 +1305,133 @@ EnemyDatablock.set(Identifier.create("Enemy", 81), {
       },
       transparent: true,
       color: 0x00ff80
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 142), {
+  name: "Crystalline Striker",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      color: 0x444444
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 146), {
+  name: "Crystalline Shooter",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      parts: {
+        head: {
+          type: "Shooter"
+        }
+      },
+      headScale: {
+        x: 1.25,
+        y: 1.0,
+        z: 1.0
+      },
+      scale: enemy.scale * shooterScale,
+      color: 0x444444
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 143), {
+  name: "Crystalline Brawler",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      chestScale: {
+        x: 1.25,
+        y: 1.25,
+        z: 1.25
+      },
+      armScale: {
+        x: 1.1,
+        y: 1.3,
+        z: 1.1
+      },
+      color: 0x444444
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 144), {
+  name: "Crystalline Charger",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      parts: {
+        head: {
+          type: "Charger"
+        }
+      },
+      neckScale: {
+        x: 1.1,
+        y: 1.1,
+        z: 1.1
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.3,
+        z: 1.2
+      },
+      color: 0x444444
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 147), {
+  name: "Crystalline Sidestepper",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      parts: {
+        head: {
+          type: "Charger"
+        }
+      },
+      headScale: {
+        x: 1.2,
+        y: 1.0,
+        z: 1.0
+      },
+      color: 0x444444
+    });
+    return model;
+  }
+});
+
+EnemyDatablock.set(Identifier.create("Enemy", 145), {
+  name: "Crystalline Frank",
+  model: (wrapper, enemy) => {
+    const model = new HumanoidEnemyModel(wrapper);
+    model.applySettings({
+      scale: enemy.scale,
+      headScale: {
+        x: 0.65,
+        y: 0.65,
+        z: 0.65
+      },
+      armScale: {
+        x: 1.2,
+        y: 1.2,
+        z: 1.2
+      },
+      color: 0x444444
     });
     return model;
   }

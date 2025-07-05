@@ -1,9 +1,9 @@
-const { ItemDatablock } = await require("../../../vanilla/datablocks/items/item.js", "asl");
-const { PlayerAnimDatablock } = await require("../../../vanilla/datablocks/player/animation.js", "asl");
-const { Identifier } = await require("../../../vanilla/parser/identifier.js", "asl");
-const { ItemGLTFModel } = await require("../../../vanilla/renderer/models/prebuilt/itemGLTF.js", "asl");
-const { Keycard } = await require("../../../vanilla/renderer/models/prebuilt/keycard.js", "asl");
-const { Pack } = await require("../../../vanilla/renderer/models/prebuilt/pack.js", "asl");
+const { ItemDatablock } = await require("@asl/vanilla/datablocks/items/item.js", "asl");
+const { PlayerAnimDatablock } = await require("@asl/vanilla/datablocks/player/animation.js", "asl");
+const { Identifier } = await require("@asl/vanilla/parser/identifier.js", "asl");
+const { ItemGLTFModel } = await require("@asl/vanilla/renderer/models/prebuilt/itemGLTF.js", "asl");
+const { Keycard } = await require("@asl/vanilla/renderer/models/prebuilt/keycard.js", "asl");
+const { Pack } = await require("@asl/vanilla/renderer/models/prebuilt/pack.js", "asl");
 ItemDatablock.clear();
 ItemDatablock.set(Identifier.create("Item", 102), {
   type: "consumable",

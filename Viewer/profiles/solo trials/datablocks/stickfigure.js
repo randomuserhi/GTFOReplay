@@ -1,5 +1,5 @@
-const { StickModelDatablock } = await require("../../vanilla/datablocks/stickfigure.js", "asl");
-const { Cylinder, Sphere } = await require("../../vanilla/library/models/primitives.js", "asl");
+const { StickModelDatablock } = await require("@asl/vanilla/datablocks/stickfigure.js", "asl");
+const { Cylinder, Sphere } = await require("@asl/vanilla/library/models/primitives.js", "asl");
 StickModelDatablock.clear();
 StickModelDatablock.set("Sphere", {
   geometry: Sphere

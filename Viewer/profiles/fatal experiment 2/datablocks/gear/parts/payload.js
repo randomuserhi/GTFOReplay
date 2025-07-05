@@ -1,6 +1,6 @@
-const { GearPartPayloadDatablock } = await require("../../../../vanilla/datablocks/gear/parts/payload.js", "asl");
-GearPartPayloadDatablock.clear();
+const { GearPartPayloadDatablock } = await require("@asl/vanilla/datablocks/gear/parts/payload.js", "asl");
 const root = `../js3party/models/GearParts/Payload`;
+GearPartPayloadDatablock.clear();
 GearPartPayloadDatablock.set(1, {
   paths: {
     Explosive: `${root}/Payload_Mine_1.glb`,
