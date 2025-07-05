@@ -1,4 +1,5 @@
-import { Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3, Vector3Like } from "@esm/three";
+import * as Pod from "@esm/@root/replay/pod.js";
+import { ColorRepresentation, Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3, Vector3Like } from "@esm/three";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { GearPartDeliveryDatablock } from "../../datablocks/gear/parts/delivery.js";
 import { GearPartFlashlightDatablock } from "../../datablocks/gear/parts/flashlight.js";
@@ -37,6 +38,8 @@ export class GearBuilder extends GearModel {
     foldObjects: { obj: Object3D, offset: Quaternion, anim?: GearFoldAnimation }[] = [];
 
     public material = new MeshPhongMaterial({ color: 0xcccccc });
+    public color: ColorRepresentation = 0xcccccc;
+    public reloadColor: ColorRepresentation = 0x999999;
 
     private setMaterial = (obj: Object3D) => {
         const mesh = obj as Mesh;
@@ -309,6 +312,13 @@ export class GearBuilder extends GearModel {
 
     gunFoldAnim?: { anim?: GearFoldAnimation, source: ComponentType };
 
+    partTransformations: Map<"mag" | "receiver" | "front" | "stock" | "sight" | "flashlight" | "handle" | "head" | "neck" | "pommel" | "delivery" | "grip" | "main" | "payload" | "screen" | "targeting", {
+        position?: Vector3Like,
+        scale?: Vector3Like,
+        rotation?: Vector3Like,
+        unit: "deg" | "rad"
+    }> = new Map();
+
     private static FUNC_transformPart = {
         temp: new Object3D(),
         root: new Object3D()
@@ -320,9 +330,12 @@ export class GearBuilder extends GearModel {
             scale: Vector3Like,
             rotation: Vector3Like
         }>, unit: "deg" | "rad" = "rad") {
+
         const obj: Group | undefined = this[part] as Group | undefined;
         if (obj === undefined) return;
         
+        this.partTransformations.set(part, { ...transformation, unit });
+
         const { temp, root } = exports.GearBuilder.FUNC_transformPart;
             
         // Set root to origin (makes transforms relative to gun when we detach parts)
@@ -419,6 +432,8 @@ export class GearBuilder extends GearModel {
 
         this.gunFoldAnim = undefined; // Default animation
 
+        this.partTransformations.clear();
+
         // Extract types for some models
         for (const key in this.schematic.Comps) {
             if (key === "Length") continue;
@@ -471,8 +486,6 @@ export class GearBuilder extends GearModel {
             } break;
             case "MagPart": {
                 const part = GearPartMagDatablock.get(component.v);
-                console.log(this.json);
-                console.log(part);
                 if (part === undefined) console.warn(`Could not find mag part '${component.v}'.`);
                 else {
                     pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
@@ -752,11 +765,12 @@ export class GearBuilder extends GearModel {
 
     private static FUNC_animate = {
         temp: new Quaternion(),
+        tempObj: new Object3D(),
     } as const;
     public animate(t: number): void {
-        const { temp } = GearBuilder.FUNC_animate;
+        const { temp, tempObj } = GearBuilder.FUNC_animate;
 
-        this.material.color.set(0x999999);
+        this.material.color.set(this.reloadColor);
 
         if (this.datablock !== undefined) {
             let gunAnim = this.datablock.gunArchetype?.gunFoldAnim;
@@ -764,11 +778,46 @@ export class GearBuilder extends GearModel {
                 gunAnim = this.gunFoldAnim?.anim;
             }
             if (gunAnim !== undefined) {
+
+                const frame = gunAnim.sample(t * gunAnim.duration);
+                const leftHand = frame.joints.leftHand;
+                const mag = frame.joints.mag;
+
+                // Apply runtime transformations
+                if (this.partTransformations.has("mag")) {
+                    const transformation = this.partTransformations.get("mag")!;
+                    
+                    if (leftHand.pos !== undefined && transformation.position !== undefined) {
+                        Pod.Vec.add(leftHand.pos, leftHand.pos, transformation.position);
+                    }
+                    
+                    if (mag.pos !== undefined && transformation.position !== undefined) {
+                        Pod.Vec.add(mag.pos, mag.pos, transformation.position);
+                    }
+
+                    if (mag.rot !== undefined && transformation.rotation !== undefined) {
+                        tempObj.quaternion.copy(mag.rot);
+                        if (transformation.unit === "deg") {
+                            tempObj.rotateY(transformation.rotation.y * Math.deg2rad);
+                            tempObj.rotateX(transformation.rotation.x * Math.deg2rad);
+                            tempObj.rotateZ(transformation.rotation.z * Math.deg2rad);
+                        } else if (transformation.unit === "rad") {
+                            tempObj.rotateY(transformation.rotation.y);
+                            tempObj.rotateX(transformation.rotation.x);
+                            tempObj.rotateZ(transformation.rotation.z);
+                        } else {
+                            throw new Error(`Unknown units '${transformation.unit}'. Only 'deg' or 'rad' are supported.`);
+                        }
+
+                        Pod.Quat.copy(mag.rot, tempObj.quaternion);
+                    }
+                }
+
                 if (this.aligns.lefthand !== undefined && this.leftHand !== undefined) {
-                    this.animatePart(this.leftHand, this.aligns.lefthand.obj, gunAnim.sample(t * gunAnim.duration).joints.leftHand);
+                    this.animatePart(this.leftHand, this.aligns.lefthand.obj, leftHand);
                 }
                 if (this.mag !== undefined && this.aligns.mag !== undefined) {
-                    this.animatePart(this.mag, this.aligns.mag.obj, gunAnim.sample(t * gunAnim.duration).joints.mag);
+                    this.animatePart(this.mag, this.aligns.mag.obj, mag);
                 }
             }
         }
@@ -785,6 +834,6 @@ export class GearBuilder extends GearModel {
     public reset(): void {
         super.reset();
         this.animate(0);
-        this.material.color.set(0xcccccc);
+        this.material.color.set(this.color);
     }
 }
