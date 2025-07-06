@@ -409,7 +409,7 @@ export class GearBuilder extends GearModel {
             child.removeFromParent();
         }
 
-        const pending: Promise<void>[] = [];
+        let pending: Promise<void> = Promise.resolve();
 
         this.mag = undefined;
         this.receiver = undefined;
@@ -458,7 +458,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartStockDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find stock part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.stock !== undefined) console.warn("Multiple stock parts found, the last to load will be used.");
                         this.stock = model;
                     }));
@@ -468,7 +468,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartFrontDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find front part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.front !== undefined) console.warn("Multiple front parts found, the last to load will be used.");
                         this.front = model;
                     }));
@@ -478,7 +478,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartReceiverDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find receiver part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.receiver !== undefined) console.warn("Multiple receiver parts found, the last to load will be used.");
                         this.receiver = model;
                     }));
@@ -488,7 +488,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartMagDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find mag part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.mag !== undefined) console.warn("Multiple mag parts found, the last to load will be used.");
                         this.mag = model;
                     }));
@@ -498,7 +498,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartSightDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find sight part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.sight !== undefined) console.warn("Multiple sight parts found, the last to load will be used.");
                         this.sight = model;
                     }));
@@ -508,7 +508,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartFlashlightDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find flashlight part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.flashlight !== undefined) console.warn("Multiple flashlight parts found, the last to load will be used.");
                         this.flashlight = model;
                     }));
@@ -518,7 +518,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartHandleDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find melee handle part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.handle !== undefined) console.warn("Multiple melee handle parts found, the last to load will be used.");
                         this.handle = model;
                     }));
@@ -528,7 +528,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartHeadDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find melee head part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.head !== undefined) console.warn("Multiple melee head parts found, the last to load will be used.");
                         this.head = model;
                     }));
@@ -538,7 +538,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartNeckDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find melee neck part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.neck !== undefined) console.warn("Multiple melee neck parts found, the last to load will be used.");
                         this.neck = model;
                     }));
@@ -548,7 +548,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartPommelDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find melee pommel part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.pommel !== undefined) console.warn("Multiple melee pommel parts found, the last to load will be used.");
                         this.pommel = model;
                     }));
@@ -558,7 +558,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartDeliveryDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find tool delivery part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.delivery !== undefined) console.warn("Multiple tool delivery parts found, the last to load will be used.");
                         this.delivery = model;
                     }));
@@ -568,7 +568,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartGripDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find tool grip part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.grip !== undefined) console.warn("Multiple tool grip parts found, the last to load will be used.");
                         this.grip = model;
                     }));
@@ -578,7 +578,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartMainDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find tool main part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.main !== undefined) console.warn("Multiple tool main parts found, the last to load will be used.");
                         this.main = model;
                     }));
@@ -588,7 +588,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartPayloadDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find tool payload part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPayloadPart(type, this.payloadType, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPayloadPart(type, this.payloadType, part, partAlignPriority).then((model) => {
                         if (this.payload !== undefined) console.warn("Multiple tool payload parts found, the last to load will be used.");
                         this.payload = model;
                     }));
@@ -598,7 +598,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartScreenDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find tool screen part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.screen !== undefined) console.warn("Multiple tool screen parts found, the last to load will be used.");
                         this.screen = model;
                     }));
@@ -608,7 +608,7 @@ export class GearBuilder extends GearModel {
                 const part = GearPartTargetingDatablock.get(component.v);
                 if (part === undefined) console.warn(`Could not find tool targeting part '${component.v}'.`);
                 else {
-                    pending.push(this.loadPart(type, part, partAlignPriority).then((model) => {
+                    pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.targeting !== undefined) console.warn("Multiple tool targeting parts found, the last to load will be used.");
                         this.targeting = model;
                     }));
@@ -617,7 +617,7 @@ export class GearBuilder extends GearModel {
             }
         }
 
-        return Promise.all(pending).then(() => {
+        return pending.then(() => {
             if (this.receiver !== undefined) {
                 if (this.aligns.receiver !== undefined) this.attach(this.receiver, this.aligns.receiver.obj);
                 else this.parts.add(this.receiver);
@@ -684,18 +684,12 @@ export class GearBuilder extends GearModel {
                 this.aligns.righthand.obj.getWorldPosition(worldPos);
                 this.parts.worldToLocal(worldPos);
                 this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({ x: -0.05, y: -0.015, z: -0.15 }); // Offset as needs to match hand not handAttachment
-
+                
                 // this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
 
                 /*this.aligns.righthand.obj.getWorldQuaternion(worldRot);
                 this.parts.getWorldQuaternion(partWorldRot);
                 this.equipOffsetRot = worldRot.premultiply(partWorldRot.invert()).multiply(new Quaternion(0, 0.7071, 0, 0.7071)).clone();*/
-            }
-
-            // Apply offsets immediately if attached to something (e.g player)
-            if (this.root.parent != null) {
-                if (this.equipOffsetPos !== undefined) this.root.position.copy(this.equipOffsetPos);
-                if (this.equipOffsetRot !== undefined) this.root.quaternion.copy(this.equipOffsetRot);
             }
         }).catch((e) => {
             throw module.error(e);
