@@ -1,6 +1,6 @@
 import { signal } from "@esm/@/rhu/signal.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3D, Vector3 } from "@esm/three";
+import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { Ragdoll } from "@root/profiles/extensions/ragdoll/parser/ragdoll.js";
 import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
@@ -620,6 +620,10 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         }
     }
 
+    private static FUNC_updateBackpack = {
+        spearPosOffset: new Vector3(0.1, 0.3, 0),
+        spearRotOffset: new Quaternion(0, 0, -0.1736482, 0.9848078)
+    } as const;
     private updateBackpack(database: IdentifierData, player: Player, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>) {
         if (backpack === undefined) return;
 
@@ -678,6 +682,14 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     else item.model.root.position.copy(zeroV);
                     if (item.model.equipOffsetRot !== undefined) item.model.root.quaternion.copy(item.model.equipOffsetRot);
                     else item.model.root.quaternion.copy(zeroQ);
+
+                    // NOTE(randomuserhi): Special check to apply additional offset for spear
+                    //                     This offset *should* really be stored in the animation, but this works fine
+                    if (this.meleeArchetype.movementAnim === PlayerAnimDatablock.spearMovement) {
+                        const { spearPosOffset, spearRotOffset } = PlayerModel.FUNC_updateBackpack;
+                        item.model.root.position.add(spearPosOffset);
+                        item.model.root.quaternion.multiply(spearRotOffset);
+                    }
                 } else {
                     this.backpackAligns[i].add(item.model.root);
                     if (item.model.offsetPos !== undefined) item.model.root.position.copy(item.model.offsetPos);

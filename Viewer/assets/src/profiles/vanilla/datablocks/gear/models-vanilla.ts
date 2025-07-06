@@ -120,8 +120,6 @@ GearDatablock.set(
     ), {
         model: (gearJSON) => {
             const model = new GearBuilder(gearJSON);
-            model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
-            model.equipOffsetRot = { x: 0, y: 0, z: -0.1736482, w: 0.9848078 };
             return model;
         },
         type: "melee",
@@ -136,8 +134,6 @@ GearDatablock.set(
     ), {
         model: (gearJSON) => {
             const model = new GearBuilder(gearJSON);
-            model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
-            model.equipOffsetRot = { x: 0, y: 0, z: -0.1736482, w: 0.9848078 };
             return model;
         },
         type: "melee",
