@@ -1,7 +1,7 @@
 import { ItemDatablock } from "@asl/vanilla/datablocks/items/item.js";
 import { PlayerAnimDatablock } from "@asl/vanilla/datablocks/player/animation.js";
 import { Identifier } from "@asl/vanilla/parser/identifier.js";
-import { ItemModel } from "@asl/vanilla/renderer/models/items";
+import { ItemModel } from "@asl/vanilla/renderer/models/items.js";
 import { ItemGLTFModel } from "@asl/vanilla/renderer/models/prebuilt/itemGLTF.js";
 import { Keycard } from "@asl/vanilla/renderer/models/prebuilt/keycard.js";
 import { Pack } from "@asl/vanilla/renderer/models/prebuilt/pack.js";

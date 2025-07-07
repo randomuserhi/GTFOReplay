@@ -701,6 +701,7 @@ GearDatablock.set(Identifier.create("Gear", undefined, `{"Ver":1,"Name":"MACO Dr
   name: "Combat Spear",
   type: "melee",
   meleeArchetype: exports.spearArchetype, // valid choices: hammerArchetype, spearArchetype, knifeArchetype, batArchetype
+  baseItem: Identifier.create("Item", 162),
   model: gearJSON => {
     const model = new GearBuilder(gearJSON);
     return model;

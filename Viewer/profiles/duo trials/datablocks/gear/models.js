@@ -266,6 +266,7 @@ GearDatablock.set(Identifier.create("Gear", undefined, `{"Ver":1,"Name":"Courage
   name: "Combat Spear",
   type: "melee",
   meleeArchetype: exports.spearArchetype, // valid choices: hammerArchetype, spearArchetype, knifeArchetype, batArchetype
+  baseItem: Identifier.create("Item", 162),
   model: gearJSON => {
     const model = new GearBuilder(gearJSON); 
     model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };

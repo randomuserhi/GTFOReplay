@@ -1,10 +1,45 @@
-const { ItemDatablock } = await require("../../../vanilla/datablocks/items/item.js", "asl");
-const { PlayerAnimDatablock } = await require("../../../vanilla/datablocks/player/animation.js", "asl");
-const { Identifier } = await require("../../../vanilla/parser/identifier.js", "asl");
-const { ItemGLTFModel } = await require("../../../vanilla/renderer/models/prebuilt/itemGLTF.js", "asl");
-const { Keycard } = await require("../../../vanilla/renderer/models/prebuilt/keycard.js", "asl");
-const { Pack } = await require("../../../vanilla/renderer/models/prebuilt/pack.js", "asl");
+const { ItemDatablock } = await require("@asl/vanilla/datablocks/items/item.js", "asl");
+const { PlayerAnimDatablock } = await require("@asl/vanilla/datablocks/player/animation.js", "asl");
+const { Identifier } = await require("@asl/vanilla/parser/identifier.js", "asl");
+const { ItemModel } = await require("@asl/vanilla/renderer/models/items.js", "asl");
+const { ItemGLTFModel } = await require("@asl/vanilla/renderer/models/prebuilt/itemGLTF.js", "asl");
+const { Keycard } = await require("@asl/vanilla/renderer/models/prebuilt/keycard.js", "asl");
+const { Pack } = await require("@asl/vanilla/renderer/models/prebuilt/pack.js", "asl");
 ItemDatablock.clear();
+ItemDatablock.set(Identifier.create("Item", 162), {
+    type: "melee",
+    name: "GEAR_Spear",
+    model: () => {
+        const model = new ItemModel();
+        model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
+        model.equipOffsetRot = { x: 0, y: 0, z: -0.1736482, w: 0.9848078 };
+        return model;
+    },
+});
+ItemDatablock.set(Identifier.create("Item", 163), {
+    type: "melee",
+    name: "GEAR_Bat",
+    model: () => {
+        const model = new ItemModel();
+        return model;
+    },
+});
+ItemDatablock.set(Identifier.create("Item", 161), {
+    type: "melee",
+    name: "GEAR_Knife",
+    model: () => {
+        const model = new ItemModel();
+        return model;
+    },
+});
+ItemDatablock.set(Identifier.create("Item", 100), {
+    type: "melee",
+    name: "GEAR_SledgeHammer",
+    model: () => {
+        const model = new ItemModel();
+        return model;
+    },
+});
 ItemDatablock.set(Identifier.create("Item", 102), {
   type: "consumable",
   serial: "MEDIPACK",
