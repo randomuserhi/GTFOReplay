@@ -18,6 +18,7 @@ import { GearPartScreenDatablock } from "../../datablocks/gear/parts/screen.js";
 import { GearPartSightDatablock } from "../../datablocks/gear/parts/sight.js";
 import { GearPartStockDatablock } from "../../datablocks/gear/parts/stock.js";
 import { GearPartTargetingDatablock } from "../../datablocks/gear/parts/targeting.js";
+import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Joint } from "../../library/animations/lib.js";
 import { loadGLTF } from "../../library/modelloader.js";
 import { Identifier } from "../../parser/identifier.js";
@@ -309,6 +310,7 @@ export class GearBuilder extends GearModel {
     targeting?: Group;
 
     datablock?: GearDatablock;
+    baseItem?: ItemDatablock;
 
     gunFoldAnim?: { anim?: GearFoldAnimation, source: ComponentType };
 
@@ -391,6 +393,7 @@ export class GearBuilder extends GearModel {
 
     private static FUNC_build = {
         worldPos: new Vector3(),
+        root: new Object3D()
     } as const;
     private build() {
         const key = Identifier.create("Gear", undefined, this.json);
@@ -402,6 +405,13 @@ export class GearBuilder extends GearModel {
         }
         const partAlignPriority = this.datablock?.partAlignPriority;
         
+        if (this.datablock !== undefined && this.datablock.baseItem !== undefined) {
+            this.baseItem = ItemDatablock.get(this.datablock.baseItem);
+            if (this.baseItem === undefined) {
+                console.warn(`Gear '${key.stringKey}' has the baseItem ${this.datablock.baseItem} but was unable to find it in ItemDatablock.`);
+            }
+        }
+
         this.aligns = {};
         this.foldObjects = [];
 
@@ -618,6 +628,18 @@ export class GearBuilder extends GearModel {
         }
 
         return pending.then(() => {
+            const { worldPos, root } = GearBuilder.FUNC_build;
+
+            // Set root to origin (makes transforms relative to gun when we detach parts)
+            const rootParent = this.parts.parent;
+            root.position.copy(this.parts.position);
+            root.quaternion.copy(this.parts.quaternion);
+            root.scale.copy(this.parts.scale);
+            this.parts.removeFromParent();
+            this.parts.position.set(0, 0, 0);
+            this.parts.scale.set(1, 1, 1);
+            this.parts.quaternion.set(0, 0, 0, 1);
+
             if (this.receiver !== undefined) {
                 if (this.aligns.receiver !== undefined) this.attach(this.receiver, this.aligns.receiver.obj);
                 else this.parts.add(this.receiver);
@@ -668,28 +690,41 @@ export class GearBuilder extends GearModel {
                 console.warn(`No reload animation was found for '${this.json}'`);
             }
 
-            // Set offsets
-            const { worldPos } = GearBuilder.FUNC_build;
+            // Set equip offset (right hand align) and left hand placement (left hand align)
+
+            const baseItemModel = this.baseItem?.model === undefined ? undefined : this.baseItem.model();
+
             if (this.aligns.lefthand !== undefined) {
                 this.aligns.lefthand.obj.getWorldPosition(worldPos);
-                this.parts.worldToLocal(worldPos);
                 this.leftHandGrip = worldPos.clone();
 
                 // this.aligns.lefthand.obj.add(new Mesh(UnitySphere, this.material));
+            } else if (baseItemModel !== undefined) {
+                // Fall back to base item, when available
+                this.leftHandGrip = baseItemModel.leftHandGrip;
+                if (baseItemModel.leftHand === undefined) this.leftHand = undefined;
             } else {
+                // No left hand offset specified
                 this.leftHand = undefined;
             }
-            if (this.aligns.righthand !== undefined) {
-                this.parts.updateWorldMatrix(true, true);
-                this.aligns.righthand.obj.getWorldPosition(worldPos);
-                this.parts.worldToLocal(worldPos);
-                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({ x: -0.05, y: -0.015, z: -0.15 }); // Offset as needs to match hand not handAttachment
-                
-                // this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
 
-                /*this.aligns.righthand.obj.getWorldQuaternion(worldRot);
-                this.parts.getWorldQuaternion(partWorldRot);
-                this.equipOffsetRot = worldRot.premultiply(partWorldRot.invert()).multiply(new Quaternion(0, 0.7071, 0, 0.7071)).clone();*/
+            if (this.aligns.righthand !== undefined) {
+                this.aligns.righthand.obj.getWorldPosition(worldPos);
+                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({ x: -0.05, y: -0.015, z: -0.15 }); // Offset as needs to match hand not handAttachment
+
+                // this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
+            } else if (baseItemModel !== undefined) {
+                // Fall back to base item when available
+                this.equipOffsetPos = baseItemModel.equipOffsetPos;
+                this.equipOffsetRot = baseItemModel.equipOffsetRot;
+            }
+
+            // Re-attach root to parent
+            if (rootParent !== undefined && rootParent !== null) {
+                rootParent.add(this.parts);
+                this.parts.position.copy(root.position);
+                this.parts.quaternion.copy(root.quaternion);
+                this.parts.scale.copy(root.scale);
             }
         }).catch((e) => {
             throw module.error(e);

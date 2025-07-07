@@ -1,12 +1,51 @@
 import { ItemDatablock } from "@asl/vanilla/datablocks/items/item.js";
 import { PlayerAnimDatablock } from "@asl/vanilla/datablocks/player/animation.js";
 import { Identifier } from "@asl/vanilla/parser/identifier.js";
+import { ItemModel } from "@asl/vanilla/renderer/models/items";
 import { ItemGLTFModel } from "@asl/vanilla/renderer/models/prebuilt/itemGLTF.js";
 import { Keycard } from "@asl/vanilla/renderer/models/prebuilt/keycard.js";
 import { Pack } from "@asl/vanilla/renderer/models/prebuilt/pack.js";
 import type { ColorRepresentation } from "@esm/three";
 
 ItemDatablock.clear();
+
+ItemDatablock.set(Identifier.create("Item", 162), {
+    type: "melee",
+    name: "GEAR_Spear",
+    model: () => {
+        const model = new ItemModel();
+        model.equipOffsetPos = { x: 0.1, y: 0.3, z: 0 };
+        model.equipOffsetRot = { x: 0, y: 0, z: -0.1736482, w: 0.9848078 };
+        return model;
+    },
+});
+
+ItemDatablock.set(Identifier.create("Item", 163), {
+    type: "melee",
+    name: "GEAR_Bat",
+    model: () => {
+        const model = new ItemModel();
+        return model;
+    },
+});
+
+ItemDatablock.set(Identifier.create("Item", 161), {
+    type: "melee",
+    name: "GEAR_Knife",
+    model: () => {
+        const model = new ItemModel();
+        return model;
+    },
+});
+
+ItemDatablock.set(Identifier.create("Item", 100), {
+    type: "melee",
+    name: "GEAR_SledgeHammer",
+    model: () => {
+        const model = new ItemModel();
+        return model;
+    },
+});
 
 ItemDatablock.set(Identifier.create("Item", 102), {
     type: "consumable",

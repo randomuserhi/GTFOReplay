@@ -123,6 +123,7 @@ GearDatablock.set(
             return model;
         },
         type: "melee",
+        baseItem: Identifier.create("Item", 162),
         meleeArchetype: spearArchetype,
         name: "Spear"
     }
@@ -137,6 +138,7 @@ GearDatablock.set(
             return model;
         },
         type: "melee",
+        baseItem: Identifier.create("Item", 162),
         meleeArchetype: spearArchetype,
         name: "Spear"
     }

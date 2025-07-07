@@ -34,6 +34,7 @@ export interface GearDatablock {
     name?: string;
     meleeArchetype?: MeleeArchetype;
     gunArchetype?: GunArchetype;
+    baseItem?: Identifier;
 
     // NOTE(randomuserhi): Only relevant to gear builder
     partAlignPriority?: {

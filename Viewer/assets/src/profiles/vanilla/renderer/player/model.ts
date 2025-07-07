@@ -682,14 +682,6 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     else item.model.root.position.copy(zeroV);
                     if (item.model.equipOffsetRot !== undefined) item.model.root.quaternion.copy(item.model.equipOffsetRot);
                     else item.model.root.quaternion.copy(zeroQ);
-
-                    // NOTE(randomuserhi): Special check to apply additional offset for spear
-                    //                     This offset *should* really be stored in the animation, but this works fine
-                    if (this.meleeArchetype.movementAnim === PlayerAnimDatablock.spearMovement) {
-                        const { spearPosOffset, spearRotOffset } = PlayerModel.FUNC_updateBackpack;
-                        item.model.root.position.add(spearPosOffset);
-                        item.model.root.quaternion.multiply(spearRotOffset);
-                    }
                 } else {
                     this.backpackAligns[i].add(item.model.root);
                     if (item.model.offsetPos !== undefined) item.model.root.position.copy(item.model.offsetPos);
