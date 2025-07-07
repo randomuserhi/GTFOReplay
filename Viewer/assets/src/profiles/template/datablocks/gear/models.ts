@@ -124,6 +124,7 @@ GearDatablock.set(
         },
         type: "melee",
         meleeArchetype: spearArchetype,
+        baseItem: Identifier.create("Item", 162),
         name: "Spear"
     }
 );
@@ -138,6 +139,7 @@ GearDatablock.set(
         },
         type: "melee",
         meleeArchetype: spearArchetype,
+        baseItem: Identifier.create("Item", 162),
         name: "Spear"
     }
 );
