@@ -12,7 +12,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
             "Vanilla.Sentry": {
                 parse: DynamicRotation.Parse;
                 spawn: DynamicTransform.Spawn & {
-                    owner: number;
+                    owner?: number;
                 };
                 despawn: void;
             };
@@ -26,11 +26,11 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
 export interface Sentry extends DynamicTransform.Type {
     id: number;
-    owner: number;
+    owner?: number;
     baseRot: Pod.Quaternion;
 }
 
-ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
+let parser = ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
     main: {
         parse: async (data) => {
             const result = await DynamicRotation.parse(data);
@@ -70,4 +70,18 @@ ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
             sentries.delete(id);
         }
     }
+});
+parser = ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.2", {
+    ...parser,
+    spawn: {
+        ...parser.spawn,
+        parse: async (data) => {
+            const spawn = await DynamicTransform.spawn(data);
+            const result = {
+                ...spawn,
+                owner: await BitHelper.readBool(data) ? await BitHelper.readUShort(data) : undefined
+            };
+            return result;
+        }
+    },
 });

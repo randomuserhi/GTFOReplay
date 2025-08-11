@@ -20,7 +20,7 @@ namespace Vanilla.Sentries {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Sentry", "0.0.1")]
+    [ReplayData("Vanilla.Sentry", "0.0.2")]
     public class rSentry : DynamicRotation {
         [HarmonyPatch]
         private static class Patches {
@@ -52,7 +52,12 @@ namespace Vanilla.Sentries {
             BitHelper.WriteBytes(spawnDimension, buffer);
             BitHelper.WriteBytes(spawnPosition, buffer);
             base.Spawn(buffer);
-            BitHelper.WriteBytes(sentry.Owner.GlobalID, buffer);
+            if (sentry.Owner != null) {
+                BitHelper.WriteBytes(true, buffer);
+                BitHelper.WriteBytes(sentry.Owner.GlobalID, buffer);
+            } else {
+                BitHelper.WriteBytes(false, buffer);
+            }
         }
     }
 }

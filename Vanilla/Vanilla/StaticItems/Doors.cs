@@ -52,7 +52,7 @@ namespace Vanilla.StaticItems {
         public void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(id, buffer);
 
-            BitHelper.WriteBytes((byte)gate.m_progressionSourceArea.m_courseNode.m_dimension.DimensionIndex, buffer);
+            BitHelper.WriteBytes((byte)Dimension.GetDimensionFromPos(mono.transform.position).DimensionIndex, buffer);
             BitHelper.WriteBytes(mono.transform.position, buffer);
             BitHelper.WriteHalf(mono.transform.rotation, buffer);
 

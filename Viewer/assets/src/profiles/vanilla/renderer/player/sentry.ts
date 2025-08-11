@@ -152,7 +152,7 @@ ModuleLoader.registerRender("Sentry", (name, api) => {
             for (const [id, sentry] of sentries) {
                 if (!models.has(id)) {
                     let color: ColorRepresentation = 0xffffff;
-                    if (players.has(sentry.owner)) {
+                    if (sentry.owner !== undefined && players.has(sentry.owner)) {
                         color = getPlayerColor(players.get(sentry.owner)!.slot);
                     }
                     const model = new SentryModel(new Color(color));
@@ -161,7 +161,7 @@ ModuleLoader.registerRender("Sentry", (name, api) => {
                 }
 
                 const model = models.get(id)!;
-                model.update(sentry, db, backpack.get(sentry.owner));
+                model.update(sentry, db, sentry.owner === undefined ? undefined : backpack.get(sentry.owner));
                 model.setVisible(sentry.dimension === renderer.get("Dimension"));
             }
 
