@@ -213,10 +213,11 @@ namespace Vanilla.Events {
                 owner = __instance.Owner;
 
                 Transform alignTransform = __instance.MuzzleAlign;
-                //Vector3 vector = alignTransform.position;
-                Vector3 vector = __instance.Owner.AnimatorBody.GetBoneTransform(HumanBodyBones.Head).position;
 
                 for (int i = 0; i < __instance.ArchetypeData.ShotgunBulletCount; i++) {
+                    //Vector3 vector = alignTransform.position;
+                    Vector3 vector = __instance.Owner.AnimatorBody.GetBoneTransform(HumanBodyBones.Head).position;
+
                     float f = __instance.m_segmentSize * (float)i;
                     float angOffsetX = 0f;
                     float angOffsetY = 0f;
