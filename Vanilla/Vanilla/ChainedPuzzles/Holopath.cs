@@ -16,6 +16,11 @@ namespace Vanilla.ChainedPuzzles {
     public class rHolopath : ReplayDynamic {
         [HarmonyPatch]
         private static class Patches {
+            [ReplayInit]
+            private static void Init() {
+                splineDimensions.Clear();
+            }
+
             private static Dictionary<int, byte> splineDimensions = new Dictionary<int, byte>();
             private static void RegisterSplineDimension(int instance, byte dimension) {
                 if (!splineDimensions.ContainsKey(instance)) {

@@ -1,4 +1,3 @@
-import { ThemeVariable } from "./theme.js";
 export type ClassName<T extends {} = {}> = {
     [Symbol.toPrimitive]: () => string;
     name: string;
@@ -9,8 +8,8 @@ interface ClassNameConstructor {
 }
 export declare const ClassName: ClassNameConstructor;
 interface Generator {
-    (first: TemplateStringsArray, ...interpolations: (string | ClassName | ThemeVariable)[]): void;
-    class<T extends {} = {}>(first: TemplateStringsArray, ...interpolations: (string | ThemeVariable)[]): ClassName & T;
+    (first: TemplateStringsArray, ...interpolations: (string | ClassName)[]): void;
+    class<T extends {} = {}>(first: TemplateStringsArray, ...interpolations: (string)[]): ClassName & T;
 }
 interface Factory {
     css: Generator;

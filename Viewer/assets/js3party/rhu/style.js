@@ -1,4 +1,6 @@
-import { ThemeVariable } from "./theme.js";
+/// Style.ts 
+///
+/// @randomuserhi
 let id = 69;
 export const ClassName = function (name) {
     if (name !== undefined) {
@@ -22,9 +24,6 @@ export const Style = ((factory) => {
                 if (interpolation instanceof ClassName) {
                     generatedCode += `.${interpolation}`;
                 }
-                else if (interpolation instanceof ThemeVariable) {
-                    generatedCode += `${interpolation}`;
-                }
                 else {
                     generatedCode += interpolation;
                 }
@@ -42,12 +41,7 @@ export const Style = ((factory) => {
             for (let i = 0; i < interpolations.length; ++i) {
                 const interpolation = interpolations[i];
                 if (typeof interpolation === "object") {
-                    if (interpolation instanceof ThemeVariable) {
-                        generatedCode += `${interpolation}`;
-                    }
-                    else {
-                        generatedCode += interpolation;
-                    }
+                    generatedCode += interpolation;
                 }
                 else {
                     generatedCode += interpolation;
