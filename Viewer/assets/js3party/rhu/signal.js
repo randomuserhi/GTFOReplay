@@ -101,7 +101,7 @@ export function signal(value, equality) {
                 // Trigger effect dependencies AFTER updating internal value
                 if (dependencies !== undefined) {
                     for (const effect of dependencies) {
-                        effect();
+                        effect[internal].trigger();
                     }
                 }
             }
@@ -210,11 +210,8 @@ export function effect(expression, dependencies, options) {
     // Instantiate main object and interface
     const effect = function Effect() {
         const self = effect[internal];
-        // Check guard
-        if (!effect.check())
-            return;
-        // Execute effect
-        self.destructor = expression();
+        self.destructor?.();
+        self.trigger();
     };
     effect.release = function () {
         if (dependencySets === undefined)
@@ -236,7 +233,15 @@ export function effect(expression, dependencies, options) {
     Object.setPrototypeOf(effect, effectProto);
     // Generate internal state
     effect[internal] = {
-        destructor: undefined
+        destructor: undefined,
+        trigger: function () {
+            const self = effect[internal];
+            // Check guard
+            if (!effect.check())
+                return;
+            // Execute effect
+            self.destructor = expression();
+        }
     };
     // Add effect to dependency map
     for (const signal of dependencies) {
@@ -256,7 +261,7 @@ export function effect(expression, dependencies, options) {
         // If required, create abort signal event to clear effect.
         options.signal.addEventListener("abort", () => { effect.release(); }, { once: true });
     }
-    // Execute effect for the first time
+    // Execute effect for the first time manually
     effect();
     return effect;
 }
