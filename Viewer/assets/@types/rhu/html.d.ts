@@ -228,7 +228,15 @@ export declare namespace RHU {
         remove(target: globalThis.Node | RHU.Component, ...nodes: (globalThis.Node | RHU.Component)[]): void;
         replaceWith(target: globalThis.Node | RHU.Component, ...nodes: (globalThis.Node | RHU.Component)[]): void;
         replaceChildren(target: Element, ...nodes: (globalThis.Node | RHU.Component)[]): void;
+        /** Watch a node for `mount` and `dismount` events */
+        observe(node: globalThis.Node): void;
     }
 }
 export declare const html: RHU.HTML;
+declare global {
+    interface GlobalEventHandlersEventMap {
+        "mount": CustomEvent;
+        "dismount": CustomEvent;
+    }
+}
 export {};

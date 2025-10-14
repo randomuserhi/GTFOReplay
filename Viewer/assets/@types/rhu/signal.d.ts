@@ -6,6 +6,8 @@ type Equality<T> = (a?: T, b?: T) => boolean;
 export interface SignalBase<T = any> {
     /** @returns Value stored within the signal */
     (): T;
+    /** toPrimitive conversion for type coercion. Typically just returns the stored internal value. */
+    [Symbol.toPrimitive](hint: "string" | "number" | "default"): any;
     /**
      * Check if the value within the signal equals another according to
      * its equality function.
@@ -82,8 +84,15 @@ export declare const isSignal: <T>(obj: any) => obj is SignalBase<T>;
  */
 export declare function signal<T>(value: T, equality?: Equality<T>): Signal<T>;
 export interface Effect {
-    /** Exectues the effect regardless of dependencies. */
-    (): void;
+    /**
+     * Exectues the effect regardless of dependencies.
+     *
+     * Executes effect destructor when NOT provided the internal flag. This is because signals trigger destructors manually to
+     * ensure proper order of events.
+     *
+     * When called externally, the destructors should run immediately.
+     */
+    (caller?: typeof internal): void;
     /**
      * Releases the effect, removing it from internal dependency chain.
      * The effect is no longer triggered when its dependencies change.
@@ -94,6 +103,22 @@ export interface Effect {
     [internal]: {
         /** Destructor thats called prior the effect triggering. */
         destructor: (() => void) | void | undefined;
+        /**
+         * Keeps track of dependency sets this effect is apart of.
+         *
+         * Uses a weak ref such that when a dependency is cleaned up, the set can be GC'd even if this effect holds a reference to it.
+         */
+        dependencySets: (WeakRef<Set<Effect>>[]) | undefined;
+        /**
+         * The abort signal the effect is assigned.
+         * When the abort signal is triggered, the effect automatically destroys itself.
+         */
+        signal?: AbortSignal;
+        /**
+         * A condition that determines when the effect should destroy itself.
+         * This condition is checked when the effect is due to be triggered.
+         */
+        condition?: () => boolean;
     };
     /** Debug name that can be used for debugging. */
     __name__: string | undefined;
