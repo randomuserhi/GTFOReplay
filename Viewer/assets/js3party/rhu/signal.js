@@ -21,7 +21,7 @@ const dependencyMap = new WeakMap();
  * Used for identifying signal objects.
  */
 const signalProto = {};
-/** Utiltiy function that checks if the provided object is a signal. */
+/** Utility function that checks if the provided object is a signal. */
 export const isSignal = Object.prototype.isPrototypeOf.bind(signalProto);
 /**
  * Signal prototype implementation.

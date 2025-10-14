@@ -493,12 +493,35 @@ function stitch(interp, slots) {
     }
 }
 const defineProperties = Object.defineProperties;
-/** Helper function that binds a value to the target instance. */
+/** Tag used to tell the difference between a regular array and an array that holds a collection of binds. */
+const bindArrayTag = Symbol("RHU_HTML.[[BIND_ARRAY_TAG]]");
+/** Utility function that checks if the provided object is the special array holding a collection of binds. */
+const isBindArray = ((obj) => /**Array.isArray(obj) &&*/ bindArrayTag in obj);
+/**
+ * Helper function that binds a value to the target instance.
+ * If the bind already exists, converts it to an array and pushes the new value.
+ */
 function bind(instance, key, value) {
-    if (key in instance)
-        throw new Error(`The binding '${key.toString()}' already exists.`);
-    instance[key] = value;
-    instance[DOM].binds.push(key);
+    if (key in instance) {
+        // If the key already exists, then the value should be converted to a "bind array".
+        // A "bind array" is just a tagged js array indicating it holds a collection of values.
+        // This is to distinguish it from a regular array so that we can support a collection of arrays.
+        if (isBindArray(instance[key])) {
+            // If it is already a bind array, push the value to it.
+            instance[key].push(value);
+        }
+        else {
+            // If it is not already a bind array, make it one.
+            const collection = [instance[key], value];
+            collection[bindArrayTag] = undefined;
+            instance[key] = collection;
+        }
+    }
+    else {
+        // If the key does not exist, store it as a single value.
+        instance[key] = value;
+        instance[DOM].binds.push(key);
+    }
 }
 /**
  * Helper function that creates a weak reference to the fragment marker and binds it to the component.
