@@ -13,6 +13,7 @@ using Vanilla.Events;
 
 namespace Vanilla.StatTracker {
     // TODO(randomuserhi): manage bots
+    // TODO(randomuserhi): sentry support
 
     [HarmonyPatch]
     [ReplayData("Vanilla.Player.Gunshots.Info", "0.0.1")]
