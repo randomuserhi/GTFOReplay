@@ -1,6 +1,8 @@
 ﻿using Agents;
 using API;
 using Enemies;
+using EWC.CustomWeapon;
+using EWC.CustomWeapon.Enums;
 using EWC.CustomWeapon.Properties.Traits.CustomProjectile.Components;
 using EWC.Utils;
 using Gear;
@@ -29,7 +31,7 @@ namespace ReplayRecorder.EWC {
         }
 
         public static void OnProjectileDespawn(EWCProjectileComponentBase projectile) {
-            if (!projectile.IsLocal) return;
+            if (!projectile.IsManaged) return;
 
             if (!projectiles.ContainsKey(projectile.SyncID)) {
                 projectiles.Add(projectile.SyncID, new BulletInfo());
@@ -40,13 +42,13 @@ namespace ReplayRecorder.EWC {
             if (bullet.hits > byte.MaxValue || bullet.crits > byte.MaxValue) {
                 APILogger.Warn($"Number of enemies hit / crit for this bullet exceeded maximum value of {byte.MaxValue}.");
             }
-            rGunshotInfo.Sync.Trigger(new rGunshotInfo(PlayerManager.GetLocalPlayerAgent(), Identifier.From(projectile.Settings.CWC.Weapon), (byte)bullet.hits, (byte)bullet.crits));
+            rGunshotInfo.Sync.Trigger(new rGunshotInfo(projectile.Settings.CWC.Owner.Player, Identifier.From(projectile.Settings.CWC.Weapon.Component), (byte)bullet.hits, (byte)bullet.crits));
 
             projectiles.Remove(projectile.SyncID);
         }
 
         public static void OnProjectileHit(EWCProjectileComponentBase projectile, IDamageable? damageable) {
-            if (!projectile.IsLocal) return;
+            if (!projectile.IsManaged) return;
 
             if (damageable == null) return;
 
@@ -88,20 +90,24 @@ namespace ReplayRecorder.EWC {
         private static PlayerAgent? currentPlayer = null;
         private static BulletInfo currentBullet = new BulletInfo();
 
-        public static void PreShotFired(HitData hit, Ray ray) {
+        public static void PreShotFired(HitData hit, Ray ray, WeaponType weaponType) {
             if (!SNet.IsMaster && hit.owner.Owner.IsBot) return;
             if (!hit.owner.Owner.IsBot && !hit.owner.IsLocallyOwned) return;
 
             currentPlayer = hit.owner;
 
             currentWeapon = Identifier.unknown;
-            ItemEquippable currentEquipped = currentPlayer.Inventory.m_wieldedItem;
-            if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
-                currentWeapon = Identifier.From(currentEquipped);
+            if (weaponType.HasFlag(WeaponType.Sentry) && CustomWeaponManager.TryGetSentry(currentPlayer, out var info)) {
+                currentWeapon = Identifier.From(info.sentry);
+            } else {
+                ItemEquippable currentEquipped = currentPlayer.Inventory.m_wieldedItem;
+                if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
+                    currentWeapon = Identifier.From(currentEquipped);
+                }
             }
         }
 
-        public static void OnShotFired(HitData hit, Vector3 start, Vector3 end) {
+        public static void OnShotFired(HitData hit, Vector3 start, Vector3 end, WeaponType weaponType) {
             if (currentPlayer == null) return;
 
             if (currentBullet.hits > byte.MaxValue || currentBullet.crits > byte.MaxValue) {
@@ -114,7 +120,7 @@ namespace ReplayRecorder.EWC {
             currentBullet.hits = 0;
         }
 
-        public static void OnExplosiveDamage(float damage, EnemyAgent enemy, Dam_EnemyDamageLimb limb, PlayerAgent? player) {
+        public static void OnExplosiveDamage(float damage, EnemyAgent enemy, Dam_EnemyDamageLimb limb, PlayerAgent? player, OwnerType ownerType) {
             if (!enemy.Alive) return;
 
             // EWC handler
@@ -132,6 +138,10 @@ namespace ReplayRecorder.EWC {
                     ++rGunshotInfo.Patches.currentBullet.crits;
                 }
             }
+        }
+
+        public static void OnShrapnelDamage(float damage, EnemyAgent enemy, Dam_EnemyDamageLimb limb, PlayerAgent? player, OwnerType ownerType) {
+            OnExplosiveDamage(damage, enemy, limb, player, ownerType);
         }
 
         [HarmonyPatch(typeof(Dam_EnemyDamageLimb), nameof(Dam_EnemyDamageLimb.BulletDamage))]

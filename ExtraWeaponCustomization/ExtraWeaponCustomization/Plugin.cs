@@ -29,6 +29,7 @@ public class Plugin : BasePlugin {
         ExplosionAPI.OnExplosionSpawned += rEWCExplosion.Hooks.Trigger;
 
         DamageAPI.PreExplosiveDamage += rEWCDamage.Hooks.Explosive;
+        DamageAPI.PreShrapnelDamage += rEWCDamage.Hooks.Shrapnel;
         DamageAPI.PreDOTDamage += rEWCDamage.Hooks.DoT;
 
         FireShotAPI.OnShotFired += rEWCGunShot.Hooks.Trigger;
@@ -38,6 +39,7 @@ public class Plugin : BasePlugin {
         FireShotAPI.OnShotFired += EWCAccuracy.OnShotFired;
         FireShotAPI.PreShotFired += EWCAccuracy.PreShotFired;
         DamageAPI.PreExplosiveDamage += EWCAccuracy.OnExplosiveDamage;
+        DamageAPI.PreShrapnelDamage += EWCAccuracy.OnShrapnelDamage;
 
         rGunshot.RegisterCancelSyncedShot(CancelSyncedShot);
     }
