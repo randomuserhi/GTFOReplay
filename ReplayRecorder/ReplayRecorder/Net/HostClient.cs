@@ -370,7 +370,8 @@ namespace ReplayRecorder.Net {
 
                             spectatorMessageSender = conn;
 
-                            const int maxLen = 49 - 2;
+                            const string prefix = $"<#3ef>> ";
+                            int maxLen = 49 - prefix.Length;
                             message = $"[{conn.name}] " + message;
                             string[] words = message.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
                             StringBuilder currentLine = new StringBuilder();
@@ -378,7 +379,7 @@ namespace ReplayRecorder.Net {
                             while (i < words.Length) {
                                 string word = words[i++];
                                 while (word.Length > maxLen) {
-                                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {word.Substring(0, maxLen)}");
+                                    PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"{prefix}{word.Substring(0, maxLen)}");
                                     word = word.Substring(maxLen);
                                 }
 
@@ -390,7 +391,7 @@ namespace ReplayRecorder.Net {
                                     currentLine.Append(words[i++]);
                                 }
 
-                                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"> {currentLine.ToString()}");
+                                PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), $"{prefix}{currentLine.ToString()}");
                             }
 
                             spectatorMessageSender = null;

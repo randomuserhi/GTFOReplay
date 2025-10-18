@@ -147,7 +147,7 @@ namespace Vanilla.StatTracker {
             [HarmonyPatch(typeof(Dam_EnemyDamageLimb), nameof(Dam_EnemyDamageLimb.BulletDamage))]
             [HarmonyPrefix]
             public static void Prefix_EnemyLimbBulletDamage(Dam_EnemyDamageLimb __instance, Agent sourceAgent) {
-                if (!__instance.m_base.Owner.Alive) return;
+                // if (!__instance.m_base.Owner.Alive) return;
                 if (currentPlayer == null) return;
 
                 ++currentBullet.hits;
@@ -159,7 +159,7 @@ namespace Vanilla.StatTracker {
             [HarmonyPatch(typeof(Dam_PlayerDamageLimb), nameof(Dam_PlayerDamageLimb.BulletDamage))]
             [HarmonyPrefix]
             public static void Prefix_PlayerLimbBulletDamage(Dam_PlayerDamageLimb __instance, Agent sourceAgent) {
-                if (!__instance.m_base.Owner.Alive) return;
+                // if (!__instance.m_base.Owner.Alive) return;
                 if (currentPlayer == null) return;
 
                 ++currentBullet.hits;

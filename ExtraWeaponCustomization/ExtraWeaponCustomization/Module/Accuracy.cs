@@ -59,7 +59,9 @@ namespace ReplayRecorder.EWC {
             BulletInfo bullet = projectiles[projectile.SyncID];
 
             Dam_EnemyDamageLimb? enemy = damageable.TryCast<Dam_EnemyDamageLimb>();
-            if (enemy != null && enemy.m_base.Owner.Alive) {
+            if (enemy != null) {
+                // if (!enemy.m_base.Owner.Alive) return;
+
                 bullet.hits += 1;
                 if (enemy.m_type == eLimbDamageType.Weakspot) {
                     bullet.crits += 1;
@@ -69,13 +71,17 @@ namespace ReplayRecorder.EWC {
             }
 
             Dam_PlayerDamageLimb? player = damageable.TryCast<Dam_PlayerDamageLimb>();
-            if (player != null && player.m_base.Owner.Alive) {
+            if (player != null) {
+                // if (!player.m_base.Owner.Alive) return;
+
                 bullet.hits += 1;
                 return;
             }
 
             LG_WeakLockDamage? weakLock = damageable.TryCast<LG_WeakLockDamage>();
-            if (weakLock != null && weakLock.Health > 0) {
+            if (weakLock != null) {
+                if (weakLock.Health <= 0) return;
+
                 bullet.hits += 1;
                 return;
             }
