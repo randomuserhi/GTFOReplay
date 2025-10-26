@@ -146,7 +146,7 @@ export const Chat = () => {
 
         let m: html;
 
-        if (message[0] === ">") {
+        if (message[0] === "<") {
             // From spectator, probably (could be impersonated)
 
             const match = message.match(spectatorNameRegex);
