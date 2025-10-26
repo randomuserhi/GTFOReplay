@@ -410,6 +410,30 @@ namespace ReplayRecorder.Net {
                     }
                     break;
                 }
+                case MessageType.MindControlClear: {
+                    if (!SNet.IsMaster) return;
+
+                    int selectedEnemy = BitHelper.ReadInt(buffer, ref index);
+                    if (selectedEnemy != int.MaxValue && EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                        MainThread.Run(() => {
+                            controller.ClearPositions();
+                        });
+                    }
+                    break;
+                }
+                case MessageType.MindControlPosition: {
+                    if (!SNet.IsMaster) return;
+
+                    int selectedEnemy = BitHelper.ReadInt(buffer, ref index);
+                    Vector3 pos = BitHelper.ReadHalfVector3(buffer, ref index);
+                    if (selectedEnemy != int.MaxValue && EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                        MainThread.Run(() => {
+                            controller.ClearPositions();
+                            controller.AddPosition(pos);
+                        });
+                    }
+                    break;
+                }
                 default: {
                     APILogger.Error($"[SlaveServer] No behaviour defined for message of type '{type}'");
                     break;
@@ -481,7 +505,10 @@ namespace ReplayRecorder.Net {
         public enum MessageType {
             ForwardMessage,
             Connected,
-            InGameMessage
+            InGameMessage,
+
+            MindControlPosition,
+            MindControlClear
         }
 
         private const int mainVPort = 10420;

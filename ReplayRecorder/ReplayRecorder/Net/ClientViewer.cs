@@ -16,7 +16,10 @@ namespace ReplayRecorder.Net {
             Connected,          // client -> viewer : successfully connected to host
             FailedToConnect,    // client -> viewer : failed to connect to host
             InGameMessage,      // viewer <> client : chat message being sent or recieved between host and viewer
-            AckInGameMessage    // client -> viewer : host has acknowledged and recieved the sent chat message
+            AckInGameMessage,   // client -> viewer : host has acknowledged and recieved the sent chat message
+
+            MindControlPosition,// viewer -> client : send location to move enemy
+            MindControlClear    // viewer -> client : clear commands on enemy
         }
 
         public static TCPServer socket = new TCPServer();
@@ -60,6 +63,26 @@ namespace ReplayRecorder.Net {
                 if (endPointToSteam.ContainsKey(endPoint)) {
                     // Convert message type
                     BitHelper.WriteBytes((ushort)HostClient.MessageType.InGameMessage, buffer, 0);
+
+                    // Forward in game messages via slave socket to avoid congestion with replay stream
+                    endPointToSteam[endPoint].slave.Send(buffer);
+                }
+                break;
+            }
+            case MessageType.MindControlPosition: {
+                if (endPointToSteam.ContainsKey(endPoint)) {
+                    // Convert message type
+                    BitHelper.WriteBytes((ushort)HostClient.MessageType.MindControlPosition, buffer, 0);
+
+                    // Forward in game messages via slave socket to avoid congestion with replay stream
+                    endPointToSteam[endPoint].slave.Send(buffer);
+                }
+                break;
+            }
+            case MessageType.MindControlClear: {
+                if (endPointToSteam.ContainsKey(endPoint)) {
+                    // Convert message type
+                    BitHelper.WriteBytes((ushort)HostClient.MessageType.MindControlClear, buffer, 0);
 
                     // Forward in game messages via slave socket to avoid congestion with replay stream
                     endPointToSteam[endPoint].slave.Send(buffer);

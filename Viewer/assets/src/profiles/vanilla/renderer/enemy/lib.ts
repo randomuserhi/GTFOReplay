@@ -98,6 +98,7 @@ export class EnemyModelWrapper {
         const inStagger = anim !== undefined && (anim.state === "Hitreact" || anim.state === "HitReactFlyer" || anim.state === "FloaterHitReact");
 
         this.tmp.text = `${(this.datablock !== undefined ? this.datablock.name : enemy.type.hash)}
+GlobalId: ${enemy.id}
 State: ${anim !== undefined ? anim.state : "Ragdoll"}
 Anim: ${enemy.animHandle}
 HP: ${Math.round(enemy.health * 10) / 10}${enemy.stagger !== Infinity ? `\nStagger: ${Math.round(enemy.stagger * 10000) / 100}%${enemy.canStagger ? `` : ` (DISABLED)`}${inStagger ? ` (STAGGERED)` : ``}` : ``}
@@ -108,7 +109,7 @@ Target: `;
         };
         this.tmp.text += target;
 
-        this.tmp.visible = EnemyModelWrapper.showInfo();
+        this.tmp.visible = EnemyModelWrapper.showInfo() || Controls.selected() === enemy.id;
 
         this.orientateText(this.tmp, camera, 0.3, 0.05);
         this.orientateText(this.tag, camera, 0.5, 0.1);
@@ -150,5 +151,6 @@ module.ready();
 
 /* eslint-disable-next-line sort-imports */
 import { EnemyRagdoll } from "../../parser/enemy/enemyRagdoll.js";
+import { Controls } from "../controls.js";
 import { HumanoidEnemyModel } from "./models/humanoid.js";
 

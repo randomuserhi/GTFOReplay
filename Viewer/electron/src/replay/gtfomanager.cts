@@ -61,6 +61,23 @@ export class GTFOManager {
 
     public setupIPC(ipc: Electron.IpcMain) {
         let messageId = 0;
+        // TO BE REMOVED
+        ipc.handle("mindControlPosition", async (_, id: number, x: number, y: number, z:number) => {
+            if (!this.client.active()) return;
+            const packet = new ByteStream();
+            BitHelper.writeInt(id, packet);
+            BitHelper.writeHalf(x, packet);
+            BitHelper.writeHalf(y, packet);
+            BitHelper.writeHalf(z, packet);
+            this.client.send("mindControlPosition", packet);
+        });
+        ipc.handle("mindControlClear", async (_, id: number) => {
+            if (!this.client.active()) return;
+            const packet = new ByteStream();
+            BitHelper.writeInt(id, packet);
+            this.client.send("mindControlClear", packet);
+        });
+
         ipc.handle("sendChatMessage", async (_, message: string) => {
             if (!this.client.active()) return;
             const packet = new ByteStream();

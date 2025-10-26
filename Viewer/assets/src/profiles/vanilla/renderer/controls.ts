@@ -1,8 +1,9 @@
+import { Enemy } from "@asl/vanilla/parser/enemy/enemy.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { DataStore } from "@esm/@root/replay/datastore.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import type { Renderer } from "@esm/@root/replay/renderer.js";
-import { PerspectiveCamera, Quaternion, Vector3, Vector3Like } from "@esm/three";
+import { PerspectiveCamera, Quaternion, Raycaster, Sphere, Vector2, Vector3, Vector3Like } from "@esm/three";
 import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
 import { Factory } from "../library/factory.js";
 import { dispose, ui } from "../ui/main.js";
@@ -54,6 +55,11 @@ export class Controls {
     backward: boolean;
     left: boolean;
     right: boolean;
+
+    mouseRight: boolean = false;
+    mouseLeft: boolean = false;
+    mouseMiddle: boolean = false;
+    mousePos: Vector2 = new Vector2();
 
     speed: number;
 
@@ -239,6 +245,13 @@ export class Controls {
                 e.preventDefault();
                 display.scoreboard.wrapper.style.display = "block";
                 break;
+
+            case 67: // c key
+                // to be removed
+                if (Controls.selected !== undefined) {
+                    window.api.invoke("mindControlClear", Controls.selected);
+                }
+                break;
             }
         };
         window.addEventListener("keydown", this.keydown, { signal: dispose.signal });
@@ -247,10 +260,19 @@ export class Controls {
             this.focus = true;
             
             //e.preventDefault();
-            if (e.button === 0)
+            if (e.button === 0) {
                 mouse.left = true;
-            else if (e.button === 2)
+                this.mouseLeft = true;
+            } else if (e.button === 2) {
                 mouse.right = true;
+                this.mouseRight = true;
+            } else if (e.button === 1) {
+                this.mouseMiddle = true;
+                e.preventDefault();
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            this.mousePos.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
 
             old.x = mouse.x;
             old.y = mouse.y;
@@ -277,13 +299,28 @@ export class Controls {
         window.addEventListener("mousemove", this.mousemove, { signal: dispose.signal });
         this.mouseup = (e) => {
             e.preventDefault();
-            if (e.button === 0)
+            if (e.button === 0) {
                 mouse.left = false;
-            else if (e.button === 2)
+                this.mouseLeft = false;
+            } else if (e.button === 2) {
                 mouse.right = false;
+                this.mouseRight = false;
+            } else if (e.button === 1) {
+                this.mouseMiddle = false;
+                e.preventDefault();
+            }
         };
         canvas.addEventListener("mouseup", this.mouseup, { signal: dispose.signal });
     }
+
+    // to be removed... testing clicking stuff
+    private raycaster = new Raycaster();
+    private clicked1 = false;
+    private clicked2 = false;
+
+    public static selected = signal<number | undefined>(undefined);
+    private clickSphere: Sphere = new Sphere(undefined, 1);
+    public enableMindControl = false;
 
     public update(snapshot: ReplayApi, dt: number) {
         const renderer = this.renderer;
@@ -304,6 +341,69 @@ export class Controls {
             camera.root.getWorldPosition(worldPos);
             camera.root.parent = renderer.scene;
             camera.root.position.copy(worldPos);
+        }
+
+        this.raycaster.setFromCamera(this.mousePos, camera.root);
+
+        if (this.mouseMiddle && !this.clicked2) {
+            this.clicked2 = true;
+
+            let enemy: Enemy | undefined = undefined;
+            let dist: number | undefined = undefined;
+
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
+            for (const e of enemies.values()) {
+                this.clickSphere.center.copy(e.position);
+                this.clickSphere.center.setY(this.clickSphere.center.y + 1);
+                if (this.raycaster.ray.intersectsSphere(this.clickSphere)) {
+                    const p = e.position;
+                    const d = camera.root.position.distanceToSquared(p);
+                    if (enemy === undefined || dist === undefined || d < dist) {
+                        dist = d;
+                        enemy = e;
+                    }
+                }
+            }
+
+            Controls.selected(enemy?.id);
+            console.log(`Selected: ${Controls.selected()}`);
+
+        } else if (!this.mouseMiddle) {
+            this.clicked2 = false;
+        }
+
+        // to be removed
+        if (this.enableMindControl) {
+            if (this.mouseRight && !this.clicked1) {
+                this.clicked1 = true;
+
+                let point: Vector3 | undefined = undefined;
+                let dist: number | undefined = undefined;
+
+                const geometryGroups = renderer.getOrDefault("Maps", Factory("Map"));
+                for (const group of geometryGroups.values()) {
+                    for (const geom of group) {
+                        const intersects = this.raycaster.intersectObject(geom, false);
+                        if (intersects.length > 0) {
+                            for (let i = 0; i < intersects.length; ++i) {
+                                const p = intersects[i].point;
+                                const d = camera.root.position.distanceToSquared(p);
+                                if (point === undefined || dist === undefined || d < dist) {
+                                    dist = d;
+                                    point = p;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (point !== undefined && Controls.selected !== undefined) {
+                    console.log('Clicked point on mesh:', point);
+                    window.api.invoke("mindControlPosition", Controls.selected, -point.x, point.y, point.z);
+                }
+            } else if (!this.mouseRight) {
+                this.clicked1 = false;
+            }
         }
 
         if (this.slot !== undefined) {

@@ -130,7 +130,7 @@ export const Chat = () => {
         sentMessages.set(await window.api.invoke("sendChatMessage", message), state);
     });
 
-    const spectatorNameRegex = /> \[(.*)\]/;
+    const spectatorNameRegex = /<#3ef>> \[(.*)\]/;
     const onInGameMessage = window.api.on("inGameMessage", (steamId: bigint, message: string) => {
         message = message.trim();
         if (message.length === 0) return;
