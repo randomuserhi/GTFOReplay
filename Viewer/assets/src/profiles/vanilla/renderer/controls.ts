@@ -249,7 +249,7 @@ export class Controls {
             case 67: // c key
                 // to be removed
                 if (this.enableMindControl && Controls.selected() !== undefined) {
-                    window.api.invoke("mindControlClear", Controls.selected);
+                    window.api.invoke("mindControlClear", Controls.selected());
                 }
                 break;
             }
