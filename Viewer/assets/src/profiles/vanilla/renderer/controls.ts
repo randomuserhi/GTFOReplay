@@ -399,7 +399,7 @@ export class Controls {
 
                 if (point !== undefined && Controls.selected !== undefined) {
                     console.log('Clicked point on mesh:', point);
-                    window.api.invoke("mindControlPosition", Controls.selected, -point.x, point.y, point.z);
+                    window.api.invoke("mindControlPosition", Controls.selected(), -point.x, point.y, point.z);
                 }
             } else if (!this.mouseRight) {
                 this.clicked1 = false;

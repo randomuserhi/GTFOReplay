@@ -1,1 +1,1 @@
-export const __git_tag__ = "v0.4.4";
+export const __git_tag__ = "v0.4.5";
