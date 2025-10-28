@@ -1,6 +1,8 @@
 ﻿using Agents;
+using API;
 using Enemies;
 using HarmonyLib;
+using Player;
 using SNetwork;
 using UnityEngine;
 
@@ -22,6 +24,9 @@ namespace ReplayRecorder {
                 // fliers just cant be controlled with current logic
 
                 EnemyAgent agent = __instance.m_agent;
+
+                // No controlling pouncers - they are broken
+                if (agent.GetComponent<PouncerBehaviour>() != null) return;
 
                 EnemyController controller = agent.gameObject.AddComponent<EnemyController>();
                 controller.AssignAgent(agent);
@@ -56,34 +61,67 @@ namespace ReplayRecorder {
 
             private static bool DisableWhenControlledPatch(EnemyAI ai) {
                 if (!SNet.IsMaster) return true;
-                if (controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) && !controller.IsControlled) return true;
-                return false;
-            }
+                if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return true;
 
-            private static bool InCombatPatch(EnemyAI ai, ref bool __result) {
-                if (!SNet.IsMaster) return true;
-                if (controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) && !controller.IsControlled) return true;
-
-                // If enemy is under manual control, do not allow attacks / screams
-                __result = false;
-                return false;
+                // Only disable behaviour updates if type is not attack
+                return controller.commandBuffer.Peek().type == Command.Type.Attack;
             }
 
             [HarmonyPatch(typeof(EB_InCombat), nameof(EB_InCombat.TryAttacks))]
             [HarmonyPrefix]
-            private static bool Postfix_TryAttacks(EB_InCombat __instance, ref bool __result) {
-                return InCombatPatch(__instance.m_ai, ref __result);
+            private static bool Prefix_TryAttacks(EB_InCombat __instance, ref bool __result) {
+                if (!SNet.IsMaster) return true;
+                EnemyAI ai = __instance.m_ai;
+                if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return true;
+
+                if (controller.commandBuffer.Peek().type == Command.Type.Attack) {
+                    // Allow attacks
+                    return true;
+                } else {
+                    // Disable attacks for other commands
+                    __result = false;
+                    return false;
+                }
+            }
+            [HarmonyPatch(typeof(EB_InCombat), nameof(EB_InCombat.TryStrafe))]
+            [HarmonyPrefix]
+            private static bool Prefix_TryStrafe(EB_InCombat __instance, ref bool __result) {
+                if (!SNet.IsMaster) return true;
+                EnemyAI ai = __instance.m_ai;
+                if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return true;
+
+                if (controller.commandBuffer.Peek().type == Command.Type.Attack) {
+                    if ((ai.Abilities.HasAbility(AgentAbility.Melee) && !ai.Abilities.IsAbilityReady(AgentAbility.Melee)) ||
+                        (ai.Abilities.HasAbility(AgentAbility.Ranged) && !ai.Abilities.IsAbilityReady(AgentAbility.Ranged))) {
+                        // Allow strafing if abilities are on cooldown
+                        return true;
+                    }
+                    // No strafing if abilities are not on cooldown
+                    __result = false;
+                    return false;
+                } else {
+                    // Disable strafing completely for other commands
+                    __result = false;
+                    return false;
+                }
             }
             [HarmonyPatch(typeof(EB_InCombat), nameof(EB_InCombat.TryScream))]
             [HarmonyPrefix]
-            private static bool Postfix_TryScream(EB_InCombat __instance, ref bool __result) {
-                return InCombatPatch(__instance.m_ai, ref __result);
+            private static bool Prefix_TryScream(EB_InCombat __instance, ref bool __result) {
+                if (!SNet.IsMaster) return true;
+                EnemyAI ai = __instance.m_ai;
+                if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return true;
+
+                // Do not allow screams if under control
+                __result = false;
+                return false;
             }
-            [HarmonyPatch(typeof(EB_InCombatFlyer), nameof(EB_InCombatFlyer.TryAttacks))]
+
+            /*[HarmonyPatch(typeof(EB_InCombatFlyer), nameof(EB_InCombatFlyer.TryAttacks))]
             [HarmonyPrefix]
-            private static bool Postfix_FlyerTryAttacks(EB_InCombat __instance, ref bool __result) {
+            private static bool Prefix_FlyerTryAttacks(EB_InCombat __instance, ref bool __result) {
                 return InCombatPatch(__instance.m_ai, ref __result);
-            }
+            }*/
         }
 
         // List of all controllers, mapped by globalid.
@@ -100,12 +138,27 @@ namespace ReplayRecorder {
 #pragma warning restore CS8618
 
         public class Command {
+            public enum Type {
+                Move,
+                Attack
+            }
+
+            public Type type;
+
+            public PlayerAgent? target = null;
+
             public Vector3 position;
             public Vector3 destination;
 
             public Command(Vector3 pos) {
+                type = Type.Move;
                 position = pos;
                 destination = pos;
+            }
+
+            public Command(PlayerAgent target) {
+                type = Type.Attack;
+                this.target = target;
             }
         }
 
@@ -133,8 +186,22 @@ namespace ReplayRecorder {
             commandBuffer.Enqueue(new Command(pos));
         }
 
-        public void ClearPositions() {
-            commandBuffer.Clear();
+        public void AddTarget(PlayerAgent target) {
+            commandBuffer.Enqueue(new Command(target));
+        }
+
+        public void ClearCommands() {
+            if (commandBuffer.Count > 0) {
+                commandBuffer.Clear();
+
+                // Important or enemy may freeze waiting for advance timer
+                behaviourData.m_advanceTimer = 0.0f;
+
+                // Important or enemy might not be in the right state
+                Patches.DontRecurse = true;
+                behaviour.ChangeState(EB_States.InCombat);
+                Patches.DontRecurse = false;
+            }
         }
 
         // NavMesh.SamplePosition(target, out hit, float.PositiveInfinity, 1)
@@ -145,6 +212,54 @@ namespace ReplayRecorder {
         public void UpdateBehaviour() {
             if (!IsControlled) return;
 
+            // Perform move command
+            Command command = commandBuffer.Peek();
+
+            switch (command.type) {
+            case Command.Type.Move:
+                MoveCommand(command);
+                break;
+            case Command.Type.Attack:
+                AttackCommand(command);
+                break;
+            }
+        }
+
+        private void AttackCommand(Command command) {
+            // Set agent to aggressive
+            if (ai.Mode != AgentMode.Agressive) {
+                ai.Mode = AgentMode.Agressive;
+                ai.ModeChange();
+            }
+
+            // Awake enemy if asleep
+            EB_Hibernating? state = behaviour.m_currentState.TryCast<EB_Hibernating>();
+            if (state != null) {
+                locomotion.ChangeState(ES_StateEnum.PathMove);
+
+                Patches.DontRecurse = true;
+                behaviour.ChangeState(EB_States.InCombat);
+                Patches.DontRecurse = false;
+            }
+
+            // Always advance towards player
+            behaviourData.m_advanceTimer = 0.0f;
+
+            if (command.target == null) return;
+
+            // Set target
+            if (ai.m_target == null || ai.m_target.m_agent == null || ai.m_target.m_agent.GlobalID != command.target.GlobalID) {
+                ai.SetTarget(command.target);
+            }
+
+            // Dequeue command if they are dead
+            if (!command.target.Alive) {
+                commandBuffer.Dequeue();
+                APILogger.Debug("Target dead!");
+            }
+        }
+
+        private void MoveCommand(Command command) {
             // Allow hitreact and ladders
             switch (locomotion.CurrentStateEnum) {
             case ES_StateEnum.Hitreact:
@@ -155,20 +270,17 @@ namespace ReplayRecorder {
                 return;
             }
 
-            float now = Clock.Time;
-
-            // TODO(randomuserhi): Support command variants, right now only move command
-
-            // Perform move command
-            Command target = commandBuffer.Peek();
-
             // Set agent to aggressive
             if (ai.Mode != AgentMode.Agressive) {
                 ai.Mode = AgentMode.Agressive;
                 ai.ModeChange();
             }
 
-            ai.m_enemyAgent.TargetLookDir = (target.destination - ai.transform.position).normalized;
+            if (ai.m_target == null || !ai.m_target.m_hasLineOfSight) {
+                ai.m_enemyAgent.TargetLookDir = (command.destination - ai.transform.position).normalized;
+            } else {
+                ai.m_enemyAgent.TargetLookDir = ai.m_target.m_dir;
+            }
 
             // Set state to move to goal
             if (locomotion.CurrentStateEnum != ES_StateEnum.PathMove) {
@@ -193,8 +305,8 @@ namespace ReplayRecorder {
             if (ai.m_navMeshAgent.isOnNavMesh) {
 
                 // if enemy and destination are on the same course node
-                ai.m_navMeshAgent.destination = target.position;
-                target.destination = ai.m_navMeshAgent.destination;
+                ai.m_navMeshAgent.destination = command.position;
+                command.destination = ai.m_navMeshAgent.destination;
 
                 // TODO(randomuserhi): Handle when enemy is not in same course node / path is blocked
                 //                     needs to path to nearest location within course node etc...
@@ -205,6 +317,7 @@ namespace ReplayRecorder {
                 //                     coursenode navigation stuff won't work for this
             }
 
+            // TODO(randomuserhi)
             // Dequeue move action if close enough
             /*if ((agent.transform.position - target.destination).sqrMagnitude < 4) {
                 commandBuffer.Dequeue();

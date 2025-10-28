@@ -62,20 +62,44 @@ export class GTFOManager {
     public setupIPC(ipc: Electron.IpcMain) {
         let messageId = 0;
         // TO BE REMOVED
-        ipc.handle("mindControlPosition", async (_, id: number, x: number, y: number, z:number) => {
+        ipc.handle("mindControlPosition", async (_, id: number[], x: number, y: number, z:number) => {
             if (!this.client.active()) return;
             const packet = new ByteStream();
-            BitHelper.writeInt(id, packet);
+            
             BitHelper.writeHalf(x, packet);
             BitHelper.writeHalf(y, packet);
             BitHelper.writeHalf(z, packet);
+
+            BitHelper.writeInt(id.length, packet);
+            for (const i of id) {
+                BitHelper.writeUShort(i, packet);
+            }
+
             this.client.send("mindControlPosition", packet);
         });
-        ipc.handle("mindControlClear", async (_, id: number) => {
+        ipc.handle("mindControlClear", async (_, id: number[]) => {
             if (!this.client.active()) return;
             const packet = new ByteStream();
-            BitHelper.writeInt(id, packet);
+            
+            BitHelper.writeInt(id.length, packet);
+            for (const i of id) {
+                BitHelper.writeUShort(i, packet);
+            }
+
             this.client.send("mindControlClear", packet);
+        });
+        ipc.handle("mindControlAttack", async (_, id: number[], slot: number) => {
+            if (!this.client.active()) return;
+            const packet = new ByteStream();
+            
+            BitHelper.writeByte(slot, packet);
+
+            BitHelper.writeInt(id.length, packet);
+            for (const i of id) {
+                BitHelper.writeUShort(i, packet);
+            }
+
+            this.client.send("mindControlAttack", packet);
         });
 
         ipc.handle("sendChatMessage", async (_, message: string) => {

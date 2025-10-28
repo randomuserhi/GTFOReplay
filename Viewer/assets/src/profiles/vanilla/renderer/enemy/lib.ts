@@ -109,7 +109,10 @@ Target: `;
         };
         this.tmp.text += target;
 
-        this.tmp.visible = EnemyModelWrapper.showInfo() || Controls.selected() === enemy.id;
+        this.tmp.visible = EnemyModelWrapper.showInfo();
+        if (Controls.selected() !== undefined && Controls.selected()!.some(e => e === enemy.id)) {
+            this.tmp.visible = true;
+        }
 
         this.orientateText(this.tmp, camera, 0.3, 0.05);
         this.orientateText(this.tag, camera, 0.5, 0.1);

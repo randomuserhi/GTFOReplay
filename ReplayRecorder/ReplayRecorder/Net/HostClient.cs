@@ -413,25 +413,48 @@ namespace ReplayRecorder.Net {
                 case MessageType.MindControlClear: {
                     if (!SNet.IsMaster) return;
 
-                    int selectedEnemy = BitHelper.ReadInt(buffer, ref index);
-                    if (selectedEnemy != int.MaxValue && EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                        MainThread.Run(() => {
-                            controller.ClearPositions();
-                        });
-                    }
+                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
+                    MainThread.Run(() => {
+                        for (int i = 0; i < numEnemies; ++i) {
+                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
+                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                                controller.ClearCommands();
+                            }
+                        }
+                    });
                     break;
                 }
                 case MessageType.MindControlPosition: {
                     if (!SNet.IsMaster) return;
 
-                    int selectedEnemy = BitHelper.ReadInt(buffer, ref index);
                     Vector3 pos = BitHelper.ReadHalfVector3(buffer, ref index);
-                    if (selectedEnemy != int.MaxValue && EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                        MainThread.Run(() => {
-                            controller.ClearPositions();
-                            controller.AddPosition(pos);
-                        });
-                    }
+                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
+                    MainThread.Run(() => {
+                        for (int i = 0; i < numEnemies; ++i) {
+                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
+                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                                controller.ClearCommands();
+                                controller.AddPosition(pos);
+                            }
+                        }
+                    });
+                    break;
+                }
+                case MessageType.MindControlAttack: {
+                    if (!SNet.IsMaster) return;
+
+                    byte slot = BitHelper.ReadByte(buffer, ref index);
+                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
+                    MainThread.Run(() => {
+                        for (int i = 0; i < numEnemies; ++i) {
+                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
+                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                                controller.ClearCommands();
+                                // TODO(randomuserhi): Check support for 8-player mod
+                                controller.AddTarget(SNet.Slots.PlayerSlots[slot].player.m_playerAgent.Cast<PlayerAgent>());
+                            }
+                        }
+                    });
                     break;
                 }
                 default: {
@@ -508,7 +531,8 @@ namespace ReplayRecorder.Net {
             InGameMessage,
 
             MindControlPosition,
-            MindControlClear
+            MindControlClear,
+            MindControlAttack
         }
 
         private const int mainVPort = 10420;

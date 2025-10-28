@@ -19,7 +19,8 @@ namespace ReplayRecorder.Net {
             AckInGameMessage,   // client -> viewer : host has acknowledged and recieved the sent chat message
 
             MindControlPosition,// viewer -> client : send location to move enemy
-            MindControlClear    // viewer -> client : clear commands on enemy
+            MindControlClear,   // viewer -> client : clear commands on enemy
+            MindControlAttack   // viewer -> client : enemy attack a given target 
         }
 
         public static TCPServer socket = new TCPServer();
@@ -83,6 +84,16 @@ namespace ReplayRecorder.Net {
                 if (endPointToSteam.ContainsKey(endPoint)) {
                     // Convert message type
                     BitHelper.WriteBytes((ushort)HostClient.MessageType.MindControlClear, buffer, 0);
+
+                    // Forward in game messages via slave socket to avoid congestion with replay stream
+                    endPointToSteam[endPoint].slave.Send(buffer);
+                }
+                break;
+            }
+            case MessageType.MindControlAttack: {
+                if (endPointToSteam.ContainsKey(endPoint)) {
+                    // Convert message type
+                    BitHelper.WriteBytes((ushort)HostClient.MessageType.MindControlAttack, buffer, 0);
 
                     // Forward in game messages via slave socket to avoid congestion with replay stream
                     endPointToSteam[endPoint].slave.Send(buffer);

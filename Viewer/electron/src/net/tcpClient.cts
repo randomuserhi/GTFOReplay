@@ -21,6 +21,7 @@ interface MessageTypes
 
     "mindControlPosition": void;
     "mindControlClear": void;
+    "mindControlAttack": void;
 }
 const messageTypes: (keyof MessageTypes)[] = [
     "startGame",
@@ -33,7 +34,8 @@ const messageTypes: (keyof MessageTypes)[] = [
     "ackInGameMessage",
 
     "mindControlPosition",
-    "mindControlClear"
+    "mindControlClear",
+    "mindControlAttack"
 ];
 const messageTypeMap: Map<keyof MessageTypes, number>  = new Map([...messageTypes.entries()].map(([id, type]) => [type, id]));
 
