@@ -410,60 +410,60 @@ export class Controls {
         // to be removed
         if (this.doSelect) {
             this.doSelect = false;
-            if (this.enableMindControl) {
-                const selectedEnemies: number[] = [];
-                const minX = Math.min(this.selectStart.x, this.selectEnd.x);
-                const minY = Math.min(this.selectStart.y, this.selectEnd.y);
-                const maxX = Math.max(this.selectStart.x, this.selectEnd.x);
-                const maxY = Math.max(this.selectStart.y, this.selectEnd.y);
+            const selectedEnemies: number[] = [];
+            const minX = Math.min(this.selectStart.x, this.selectEnd.x);
+            const minY = Math.min(this.selectStart.y, this.selectEnd.y);
+            const maxX = Math.max(this.selectStart.x, this.selectEnd.x);
+            const maxY = Math.max(this.selectStart.y, this.selectEnd.y);
 
-                const { dir } = Controls.FUNC_update;
+            const { dir } = Controls.FUNC_update;
 
-                const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
-                for (const e of enemies.values()) {
-                    if (e.dimension !== renderer.get("Dimension")) continue;
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
+            for (const e of enemies.values()) {
+                if (e.dimension !== renderer.get("Dimension")) continue;
 
+                dir.copy(e.position);
+                dir.setY(e.position.y + 1);
+                dir.project(camera.root);
+                if (dir.x > minX && dir.x < maxX && dir.y > minY && dir.y < maxY) {
                     dir.copy(e.position);
                     dir.setY(e.position.y + 1);
-                    dir.project(camera.root);
-                    if (dir.x > minX && dir.x < maxX && dir.y > minY && dir.y < maxY) {
-                        dir.copy(e.position);
-                        dir.setY(e.position.y + 1);
-                        const dist = dir.distanceToSquared(camera.root.position);
-                        let skip = false;
+                    const dist = dir.distanceToSquared(camera.root.position);
+                    let skip = false;
 
-                        // check line of sight
-                        this.raycaster.set(camera.root.position, dir.sub(camera.root.position));
-                        const geometryGroups = renderer.getOrDefault("Maps", Factory("Map"));
-                        const group = geometryGroups.get(renderer.get("Dimension")!);
-                        if (group !== undefined) {
-                            for (const geom of group) {
-                                const intersects = this.raycaster.intersectObject(geom, false);
-                                if (intersects.length > 0) {
-                                    for (let i = 0; i < intersects.length; ++i) {
-                                        const p = intersects[i].point;
-                                        const d = camera.root.position.distanceToSquared(p);
-                                        if (d < dist) {
-                                            skip = true;
-                                            break;
-                                        }
+                    // check line of sight
+                    this.raycaster.set(camera.root.position, dir.sub(camera.root.position));
+                    const geometryGroups = renderer.getOrDefault("Maps", Factory("Map"));
+                    const group = geometryGroups.get(renderer.get("Dimension")!);
+                    if (group !== undefined) {
+                        for (const geom of group) {
+                            const intersects = this.raycaster.intersectObject(geom, false);
+                            if (intersects.length > 0) {
+                                for (let i = 0; i < intersects.length; ++i) {
+                                    const p = intersects[i].point;
+                                    const d = camera.root.position.distanceToSquared(p);
+                                    if (d < dist) {
+                                        skip = true;
+                                        break;
                                     }
                                 }
                             }
                         }
-
-                        if (!skip) selectedEnemies.push(e.id);
                     }
-                }
 
-                if (selectedEnemies.length > 0) {
-                    Controls.selected(selectedEnemies);
-                    console.log(`Selected: ${Controls.selected()}`);
-                } else {
-                    Controls.selected(undefined);
+                    if (!skip) selectedEnemies.push(e.id);
                 }
             }
-        } else if (this.enableMindControl) {
+
+            if (selectedEnemies.length > 0) {
+                Controls.selected(selectedEnemies);
+                console.log(`Selected: ${Controls.selected()}`);
+            } else {
+                Controls.selected(undefined);
+            }
+        } 
+        
+        if (this.enableMindControl) {
             if (this.mouseRight && !this.clicked1) {
                 this.clicked1 = true;
 
