@@ -226,19 +226,35 @@ export class Controls {
     
             case 49:
                 e.preventDefault();
-                this.targetSlot(0);
+                if (e.altKey) {
+                    window.api.invoke("mindControlAttack", Controls.selected(), 0);
+                } else {
+                    this.targetSlot(0);
+                }
                 break;
             case 50:
                 e.preventDefault();
-                this.targetSlot(1);
+                if (e.altKey) {
+                    window.api.invoke("mindControlAttack", Controls.selected(), 1);
+                } else {
+                    this.targetSlot(1);
+                }
                 break;
             case 51:
                 e.preventDefault();
-                this.targetSlot(2);
+                if (e.altKey) {
+                    window.api.invoke("mindControlAttack", Controls.selected(), 2);
+                } else {
+                    this.targetSlot(2);
+                }
                 break;
             case 52:
                 e.preventDefault();
-                this.targetSlot(3);
+                if (e.altKey) {
+                    window.api.invoke("mindControlAttack", Controls.selected(), 3);
+                } else {
+                    this.targetSlot(3);
+                }
                 break;
     
             case 38:

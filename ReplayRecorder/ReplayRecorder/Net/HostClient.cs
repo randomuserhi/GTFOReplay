@@ -446,12 +446,17 @@ namespace ReplayRecorder.Net {
                     byte slot = BitHelper.ReadByte(buffer, ref index);
                     int numEnemies = BitHelper.ReadInt(buffer, ref index);
                     MainThread.Run(() => {
-                        for (int i = 0; i < numEnemies; ++i) {
-                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
-                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                                controller.ClearCommands();
-                                // TODO(randomuserhi): Check support for 8-player mod
-                                controller.AddTarget(SNet.Slots.PlayerSlots[slot].player.m_playerAgent.Cast<PlayerAgent>());
+                        if (slot < SNet.Slots.PlayerSlots.Length) {
+                            // TODO(randomuserhi): Check support for 8-player mod
+                            PlayerAgent? player = SNet.Slots.PlayerSlots[slot].player.m_playerAgent.TryCast<PlayerAgent>();
+                            if (player != null) {
+                                for (int i = 0; i < numEnemies; ++i) {
+                                    ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
+                                    if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                                        controller.ClearCommands();
+                                        controller.AddTarget(player);
+                                    }
+                                }
                             }
                         }
                     });

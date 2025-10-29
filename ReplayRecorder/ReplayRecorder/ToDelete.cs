@@ -28,6 +28,9 @@ namespace ReplayRecorder {
                 // No controlling pouncers - they are broken
                 if (agent.GetComponent<PouncerBehaviour>() != null) return;
 
+                // Flyers are broken
+                if (agent.EnemyBehaviorData.IsFlyer) return;
+
                 EnemyController controller = agent.gameObject.AddComponent<EnemyController>();
                 controller.AssignAgent(agent);
             }
@@ -187,7 +190,11 @@ namespace ReplayRecorder {
         }
 
         public void AddTarget(PlayerAgent target) {
-            commandBuffer.Enqueue(new Command(target));
+            if (target.m_alive) {
+                commandBuffer.Enqueue(new Command(target));
+            } else {
+                commandBuffer.Enqueue(new Command(target.m_position));
+            }
         }
 
         public void ClearCommands() {
