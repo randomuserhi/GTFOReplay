@@ -56,6 +56,7 @@ export class Controls {
     backward: boolean;
     left: boolean;
     right: boolean;
+    shift: boolean;
 
     mouseRight: boolean = false;
     mouseLeft: boolean = false;
@@ -180,6 +181,11 @@ export class Controls {
                 }
                 break;
     
+            case 16: // shift key
+                e.preventDefault();
+                this.shift = false;
+                break;
+
             case 9:
                 e.preventDefault();
                 if (this.focus) display.scoreboard.wrapper.style.display = "none";
@@ -286,6 +292,11 @@ export class Controls {
                     this.selectStart.set((mouse.x / rect.width) * 2 - 1, -(mouse.y / rect.height) * 2 + 1);
                     this.selectStartScreen.set(mouse.x + rect.left, mouse.y + rect.top);
                 }
+                break;
+
+            case 16: // shift key
+                e.preventDefault();
+                this.shift = true;
                 break;
 
             case 67: // c key
@@ -526,7 +537,7 @@ export class Controls {
                         window.api.invoke("mindControlAttack", Controls.selected(), player.slot);
                     } else if (point !== undefined) {
                         console.log('Clicked point on mesh:', point);
-                        window.api.invoke("mindControlPosition", Controls.selected(), -point.x, point.y, point.z);
+                        window.api.invoke(this.shift ? "mindControlPosition" : "mindControlAttackPosition", Controls.selected(), -point.x, point.y, point.z);
                     }
                 }
             } else if (!this.mouseRight) {

@@ -440,6 +440,22 @@ namespace ReplayRecorder.Net {
                     });
                     break;
                 }
+                case MessageType.MindControlAttackPosition: {
+                    if (!SNet.IsMaster) return;
+
+                    Vector3 pos = BitHelper.ReadHalfVector3(buffer, ref index);
+                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
+                    MainThread.Run(() => {
+                        for (int i = 0; i < numEnemies; ++i) {
+                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
+                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
+                                controller.ClearCommands();
+                                controller.AddAttackPosition(pos);
+                            }
+                        }
+                    });
+                    break;
+                }
                 case MessageType.MindControlAttack: {
                     if (!SNet.IsMaster) return;
 
@@ -537,7 +553,8 @@ namespace ReplayRecorder.Net {
 
             MindControlPosition,
             MindControlClear,
-            MindControlAttack
+            MindControlAttack,
+            MindControlAttackPosition
         }
 
         private const int mainVPort = 10420;

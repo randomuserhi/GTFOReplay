@@ -53,21 +53,38 @@ namespace ReplayRecorder {
             [HarmonyPatch(typeof(EB_InCombat_MoveToPoint), nameof(EB_InCombat_MoveToPoint.UpdateBehaviour))]
             [HarmonyPrefix]
             private static bool Prefix_UpdateBehaviour(EB_InCombat_MoveToPoint __instance) {
-                return DisableWhenControlledPatch(__instance.m_ai);
-            }
-
-            [HarmonyPatch(typeof(EB_InCombat_MoveToPoint_Flyer), nameof(EB_InCombat_MoveToPoint_Flyer.UpdateBehaviour))]
-            [HarmonyPrefix]
-            private static bool Prefix_FlyerUpdateBehaviour(EB_InCombat_MoveToPoint_Flyer __instance) {
-                return DisableWhenControlledPatch(__instance.m_ai);
-            }
-
-            private static bool DisableWhenControlledPatch(EnemyAI ai) {
                 if (!SNet.IsMaster) return true;
+                EnemyAI ai = __instance.m_ai;
                 if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return true;
 
-                // Only disable behaviour updates if type is not attack
-                return controller.commandBuffer.Peek().type == Command.Type.Attack;
+                switch (controller.commandBuffer.Peek().type) {
+                case Command.Type.Attack:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+
+            private static bool patch = true;
+            [HarmonyPatch(typeof(EnemyCourseNavigation), nameof(EnemyCourseNavigation.UpdateTracking))]
+            [HarmonyPostfix]
+            [HarmonyPriority(Priority.Last)]
+            private static void UpdateTracking(EnemyCourseNavigation __instance) {
+                if (!patch) return;
+                if (!SNet.IsMaster) return;
+                EnemyAI ai = __instance.m_owner.AI;
+                if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return;
+
+                Command command = controller.commandBuffer.Peek();
+                if (command.type == Command.Type.Attack && command.target != null) {
+                    patch = false;
+                    ai.SetTarget(command.target);
+                    patch = true;
+                } else if (command.type == Command.Type.MoveAttack && controller.currentTarget != null) {
+                    patch = false;
+                    ai.SetTarget(controller.currentTarget);
+                    patch = true;
+                }
             }
 
             [HarmonyPatch(typeof(EB_InCombat), nameof(EB_InCombat.TryAttacks))]
@@ -77,10 +94,11 @@ namespace ReplayRecorder {
                 EnemyAI ai = __instance.m_ai;
                 if (!controllers.TryGetValue(ai.m_enemyAgent.GlobalID, out var controller) || !controller.IsControlled) return true;
 
-                if (controller.commandBuffer.Peek().type == Command.Type.Attack) {
-                    // Allow attacks
+                switch (controller.commandBuffer.Peek().type) {
+                case Command.Type.Attack:
+                case Command.Type.MoveAttack:
                     return true;
-                } else {
+                default:
                     // Disable attacks for other commands
                     __result = false;
                     return false;
@@ -138,12 +156,14 @@ namespace ReplayRecorder {
         private EnemyLocomotion locomotion;
         private EnemyBehaviour behaviour;
         private EnemyBehaviourData behaviourData;
+        private EB_InCombat EBInCombat;
 #pragma warning restore CS8618
 
         public class Command {
             public enum Type {
                 Move,
-                Attack
+                Attack,
+                MoveAttack
             }
 
             public Type type;
@@ -175,6 +195,7 @@ namespace ReplayRecorder {
             locomotion = agent.Locomotion;
             ai = agent.AI;
             behaviour = ai.m_behaviour;
+            EBInCombat = behaviour.m_states[(int)EB_States.InCombat].Cast<EB_InCombat>();
             behaviourData = ai.m_behaviourData;
             controllers.Add(globalId, this);
         }
@@ -187,6 +208,12 @@ namespace ReplayRecorder {
         // Test methods
         public void AddPosition(Vector3 pos) {
             commandBuffer.Enqueue(new Command(pos));
+        }
+
+        public void AddAttackPosition(Vector3 pos) {
+            Command test = new Command(pos);
+            test.type = Command.Type.MoveAttack;
+            commandBuffer.Enqueue(test);
         }
 
         public void AddTarget(PlayerAgent target) {
@@ -223,6 +250,7 @@ namespace ReplayRecorder {
             Command command = commandBuffer.Peek();
 
             switch (command.type) {
+            case Command.Type.MoveAttack:
             case Command.Type.Move:
                 MoveCommand(command);
                 break;
@@ -266,7 +294,49 @@ namespace ReplayRecorder {
             }
         }
 
+        private PlayerAgent? currentTarget = null;
         private void MoveCommand(Command command) {
+            if (command.type == Command.Type.MoveAttack) {
+                if (currentTarget != null) {
+                    float meleeDistSqrd = agent.EnemyBehaviorData.MeleeAttackDistance.Max;
+                    float rangedDistSqrd = agent.EnemyBehaviorData.RangedAttackDistance.Max;
+                    float dist = (currentTarget.m_position - agent.m_position).sqrMagnitude;
+                    if ((ai.Abilities.HasAbility(AgentAbility.Melee) && dist >= meleeDistSqrd) &&
+                        (ai.Abilities.HasAbility(AgentAbility.Ranged) && dist >= rangedDistSqrd)) {
+                        currentTarget = null;
+                    }
+                }
+
+                if (currentTarget == null) {
+                    float dist = float.MaxValue;
+                    foreach (PlayerAgent p in PlayerManager.PlayerAgentsInLevel) {
+                        if (p.m_alive) {
+                            float d = (p.m_position - agent.m_position).sqrMagnitude;
+                            if (d < dist) {
+                                dist = d;
+                                currentTarget = p;
+                            }
+                        }
+                    }
+                }
+
+                if (currentTarget != null && currentTarget.m_alive) {
+                    ai.SetTarget(currentTarget);
+
+                    if (EBInCombat.TryAttacks()) {
+                        return;
+                    }
+
+                    // Allow attacks
+                    switch (locomotion.CurrentStateEnum) {
+                    case ES_StateEnum.ShooterAttack:
+                    case ES_StateEnum.StrikerAttack:
+                    case ES_StateEnum.StrikerMelee:
+                        return;
+                    }
+                }
+            }
+
             // Allow hitreact and ladders
             switch (locomotion.CurrentStateEnum) {
             case ES_StateEnum.Hitreact:

@@ -77,6 +77,21 @@ export class GTFOManager {
 
             this.client.send("mindControlPosition", packet);
         });
+        ipc.handle("mindControlAttackPosition", async (_, id: number[], x: number, y: number, z:number) => {
+            if (!this.client.active()) return;
+            const packet = new ByteStream();
+            
+            BitHelper.writeHalf(x, packet);
+            BitHelper.writeHalf(y, packet);
+            BitHelper.writeHalf(z, packet);
+
+            BitHelper.writeInt(id.length, packet);
+            for (const i of id) {
+                BitHelper.writeUShort(i, packet);
+            }
+
+            this.client.send("mindControlAttackPosition", packet);
+        });
         ipc.handle("mindControlClear", async (_, id: number[]) => {
             if (!this.client.active()) return;
             const packet = new ByteStream();
