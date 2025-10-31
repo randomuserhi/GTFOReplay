@@ -378,6 +378,8 @@ namespace ReplayRecorder {
                 Patches.DontRecurse = false;
             }
 
+            EBInCombat.UpdateAvoidance();
+
             // Set pathing goal
             if (ai.m_navMeshAgent.isOnNavMesh) {
 
@@ -396,7 +398,7 @@ namespace ReplayRecorder {
 
             // TODO(randomuserhi)
             // Dequeue move action if close enough
-            /*if ((agent.transform.position - target.destination).sqrMagnitude < 4) {
+            /*if (state != null && (agent.transform.position - target.destination).sqrMagnitude < 4) {
                 commandBuffer.Dequeue();
                 APILogger.Debug("Destination reached!");
             }*/
