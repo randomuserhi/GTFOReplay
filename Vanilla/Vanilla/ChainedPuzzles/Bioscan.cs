@@ -12,7 +12,7 @@ namespace Vanilla.ChainedPuzzles {
     internal struct BioscanTransform : IReplayTransform {
         private CP_Bioscan_Core bioscan;
 
-        public bool active => bioscan != null;
+        public bool active => bioscan != null && bioscan.m_courseNode?.m_dimension != null;
         public byte dimensionIndex => (byte)bioscan.m_courseNode.m_dimension.DimensionIndex;
         public Vector3 position => bioscan.transform.position;
         public Quaternion rotation => Quaternion.identity;
