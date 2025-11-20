@@ -12,13 +12,21 @@ namespace Vanilla.ChainedPuzzles {
     internal struct BioscanTransform : IReplayTransform {
         private CP_Bioscan_Core bioscan;
 
-        public bool active => bioscan != null && bioscan.m_courseNode?.m_dimension != null;
-        public byte dimensionIndex => (byte)bioscan.m_courseNode.m_dimension.DimensionIndex;
+        public bool active => bioscan != null;
+        public byte dimensionIndex => _dimensionIndex;
         public Vector3 position => bioscan.transform.position;
         public Quaternion rotation => Quaternion.identity;
 
+        private byte _dimensionIndex;
+
         public BioscanTransform(CP_Bioscan_Core bioscan) {
             this.bioscan = bioscan;
+            if (bioscan?.m_courseNode?.m_dimension != null) {
+                _dimensionIndex = (byte)bioscan.m_courseNode.m_dimension.DimensionIndex;
+            } else {
+                APILogger.Warn("Failed to get bioscan dimension, falling back to local player's dimension.");
+                _dimensionIndex = (byte)PlayerManager.GetLocalPlayerAgent().DimensionIndex;
+            }
         }
     }
 
