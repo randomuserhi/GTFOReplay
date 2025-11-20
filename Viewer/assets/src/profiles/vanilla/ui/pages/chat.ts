@@ -162,7 +162,7 @@ export const Chat = () => {
                     ${document.createTextNode(`${spectator} (${player.nickname})`)}
                 </div>`}
                 <div class="${messageStyle.text}">
-                    ${document.createTextNode(match !== null ? message.replace(match[0], "").trim() : message.replace(">", "").trim())}
+                    ${document.createTextNode(match !== null ? message.replace(match[0], "").trim() : message.replace("<#3ef>>", "").trim())}
                 </div>
             </li>
             `;
