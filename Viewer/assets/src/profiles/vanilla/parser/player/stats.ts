@@ -62,6 +62,7 @@ const updateStats = (stats: Map<number, PlayerStats>, status: PlayerStats, snaps
         const playerStats = StatTracker.getPlayer(player.snet, statTracker);
         if (playerStats._downedTimeStamp === undefined && status.health <= 0) {
             playerStats._downedTimeStamp = time;
+            playerStats.timesDowned += 1;
         } else if (playerStats._downedTimeStamp !== undefined && status.health > 0) {
             playerStats.timeSpentDowned += time - playerStats._downedTimeStamp;
             playerStats._downedTimeStamp = undefined;

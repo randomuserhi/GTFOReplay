@@ -672,6 +672,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
         const dom = html<{
             wrapper: html<typeof FeatureWrapper>;
             revives: Signal<string>;
+            downed: Signal<string>;
             silent: Signal<string>;
             hasReplayMod: Signal<string>;
         }>/**//*html*/`
@@ -692,6 +693,11 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                             <span>${html.bind(signal(""), "revives")}</span>
                         </li>
                         <li style="display: flex">
+                            <span>Times Downed</span>
+                            <div style="flex: 1"></div>
+                            <span>${html.bind(signal(""), "downed")}</span>
+                        </li>
+                        <li style="display: flex">
                             <span>Silent Shots</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "silent")}</span>
@@ -701,7 +707,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             ${html.close()}
         `;
 
-        const { revives, silent, hasReplayMod } = dom;
+        const { revives, silent, hasReplayMod, downed } = dom;
 
         v.on((view) => {
             if (view === undefined) return;
@@ -714,6 +720,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const snet = self.dropdown.value();
                 if (snet === undefined) {
                     revives(`0`);
+                    downed(`0`);
                     silent(`0`);
                     hasReplayMod(`-`);
                     return;
@@ -722,6 +729,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const player = StatTracker.getPlayer(snet, StatTracker.from(api));
 
                 revives(`${player.revives}`);
+                downed(`${player.timesDowned}`);
                 silent(`${player.silentShots}`);
                 const players = api.getOrDefault("Vanilla.Player.Snet", Factory("Map"));
                 const p = players.get(snet);

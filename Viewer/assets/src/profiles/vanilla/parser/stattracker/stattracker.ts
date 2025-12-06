@@ -76,6 +76,7 @@ export interface PlayerStats {
     _isSolo: boolean;
     _timeSpentSoloTimeStamp?: number;
     silentShots: number;
+    timesDowned: number;
 }
 
 function PlayerStats(snet: bigint): PlayerStats {
@@ -99,6 +100,7 @@ function PlayerStats(snet: bigint): PlayerStats {
         _isSolo: false,
         _timeSpentSoloTimeStamp: undefined,
         silentShots: 0,
+        timesDowned: 0,
     };
 }
 
