@@ -410,74 +410,6 @@ namespace ReplayRecorder.Net {
                     }
                     break;
                 }
-                case MessageType.MindControlClear: {
-                    if (!SNet.IsMaster) return;
-
-                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
-                    MainThread.Run(() => {
-                        for (int i = 0; i < numEnemies; ++i) {
-                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
-                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                                controller.ClearCommands();
-                            }
-                        }
-                    });
-                    break;
-                }
-                case MessageType.MindControlPosition: {
-                    if (!SNet.IsMaster) return;
-
-                    Vector3 pos = BitHelper.ReadHalfVector3(buffer, ref index);
-                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
-                    MainThread.Run(() => {
-                        for (int i = 0; i < numEnemies; ++i) {
-                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
-                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                                controller.ClearCommands();
-                                controller.AddPosition(pos);
-                            }
-                        }
-                    });
-                    break;
-                }
-                case MessageType.MindControlAttackPosition: {
-                    if (!SNet.IsMaster) return;
-
-                    Vector3 pos = BitHelper.ReadHalfVector3(buffer, ref index);
-                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
-                    MainThread.Run(() => {
-                        for (int i = 0; i < numEnemies; ++i) {
-                            ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
-                            if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                                controller.ClearCommands();
-                                controller.AddAttackPosition(pos);
-                            }
-                        }
-                    });
-                    break;
-                }
-                case MessageType.MindControlAttack: {
-                    if (!SNet.IsMaster) return;
-
-                    byte slot = BitHelper.ReadByte(buffer, ref index);
-                    int numEnemies = BitHelper.ReadInt(buffer, ref index);
-                    MainThread.Run(() => {
-                        if (slot < SNet.Slots.PlayerSlots.Length) {
-                            // TODO(randomuserhi): Check support for 8-player mod
-                            PlayerAgent? player = SNet.Slots.PlayerSlots[slot].player.m_playerAgent.TryCast<PlayerAgent>();
-                            if (player != null) {
-                                for (int i = 0; i < numEnemies; ++i) {
-                                    ushort selectedEnemy = BitHelper.ReadUShort(buffer, ref index);
-                                    if (EnemyController.controllers.TryGetValue(selectedEnemy, out var controller)) {
-                                        controller.ClearCommands();
-                                        controller.AddTarget(player);
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    break;
-                }
                 default: {
                     APILogger.Error($"[SlaveServer] No behaviour defined for message of type '{type}'");
                     break;
@@ -550,11 +482,6 @@ namespace ReplayRecorder.Net {
             ForwardMessage,
             Connected,
             InGameMessage,
-
-            MindControlPosition,
-            MindControlClear,
-            MindControlAttack,
-            MindControlAttackPosition
         }
 
         private const int mainVPort = 10420;

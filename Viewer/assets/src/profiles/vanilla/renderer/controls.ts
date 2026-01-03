@@ -1,12 +1,10 @@
-import { Enemy } from "@asl/vanilla/parser/enemy/enemy.js";
 import { signal } from "@esm/@/rhu/signal.js";
 import { DataStore } from "@esm/@root/replay/datastore.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import type { Renderer } from "@esm/@root/replay/renderer.js";
-import { PerspectiveCamera, Quaternion, Raycaster, Sphere, Vector2, Vector3, Vector3Like } from "@esm/three";
+import { PerspectiveCamera, Quaternion, Vector2, Vector3, Vector3Like } from "@esm/three";
 import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js";
 import { Factory } from "../library/factory.js";
-import { Player } from "../parser/player/player.js";
 import { dispose, ui } from "../ui/main.js";
 import { Camera } from "./renderer.js";
 
@@ -62,12 +60,6 @@ export class Controls {
     mouseLeft: boolean = false;
     mouseMiddle: boolean = false;
     mousePos: Vector2 = new Vector2();
-    
-    isSelecting = signal<boolean>(false);
-    doSelect: boolean = false;
-    selectStart = new Vector2();
-    selectStartScreen = new Vector2();
-    selectEnd = new Vector2();
 
     speed: number;
 
@@ -171,15 +163,6 @@ export class Controls {
                 e.preventDefault();
                 this.backward = false;
                 break;
-
-            case 81: // q key
-                {
-                    const rect = canvas.getBoundingClientRect();
-                    this.selectEnd.set((mouse.x / rect.width) * 2 - 1, -(mouse.y / rect.height) * 2 + 1);
-                    this.isSelecting(false);
-                    this.doSelect = true;
-                }
-                break;
     
             case 16: // shift key
                 e.preventDefault();
@@ -232,37 +215,21 @@ export class Controls {
     
             case 49:
                 e.preventDefault();
-                if (e.altKey) {
-                    window.api.invoke("mindControlAttack", Controls.selected(), 0);
-                } else {
-                    this.targetSlot(0);
-                }
+                this.targetSlot(0);
                 break;
             case 50:
                 e.preventDefault();
-                if (e.altKey) {
-                    window.api.invoke("mindControlAttack", Controls.selected(), 1);
-                } else {
-                    this.targetSlot(1);
-                }
+                this.targetSlot(1);
                 break;
             case 51:
                 e.preventDefault();
-                if (e.altKey) {
-                    window.api.invoke("mindControlAttack", Controls.selected(), 2);
-                } else {
-                    this.targetSlot(2);
-                }
+                this.targetSlot(2);
                 break;
             case 52:
                 e.preventDefault();
-                if (e.altKey) {
-                    window.api.invoke("mindControlAttack", Controls.selected(), 3);
-                } else {
-                    this.targetSlot(3);
-                }
+                this.targetSlot(3);
                 break;
-    
+
             case 38:
                 e.preventDefault();
                 view.time(view.time() + 10000);
@@ -285,25 +252,9 @@ export class Controls {
                 display.scoreboard.wrapper.style.display = "block";
                 break;
 
-            case 81: // q key
-                {
-                    this.isSelecting(true);
-                    const rect = canvas.getBoundingClientRect();
-                    this.selectStart.set((mouse.x / rect.width) * 2 - 1, -(mouse.y / rect.height) * 2 + 1);
-                    this.selectStartScreen.set(mouse.x + rect.left, mouse.y + rect.top);
-                }
-                break;
-
             case 16: // shift key
                 e.preventDefault();
                 this.shift = true;
-                break;
-
-            case 67: // c key
-                // to be removed
-                if (this.enableMindControl && Controls.selected() !== undefined) {
-                    window.api.invoke("mindControlClear", Controls.selected());
-                }
                 break;
             }
         };
@@ -367,18 +318,6 @@ export class Controls {
         canvas.addEventListener("mouseup", this.mouseup, { signal: dispose.signal });
     }
 
-    // to be removed... testing clicking stuff
-    private raycaster = new Raycaster();
-    private clicked1 = false;
-    private clicked2 = false;
-
-    public static selected = signal<number[] | undefined>(undefined);
-    private clickSphere: Sphere = new Sphere(undefined, 1);
-    public enableMindControl = false;
-
-    private static FUNC_update = {
-        dir: new Vector3()
-    } as const;
     public update(snapshot: ReplayApi, dt: number) {
         const renderer = this.renderer;
         const camera = this.camera;
@@ -398,151 +337,6 @@ export class Controls {
             camera.root.getWorldPosition(worldPos);
             camera.root.parent = renderer.scene;
             camera.root.position.copy(worldPos);
-        }
-
-        this.raycaster.setFromCamera(this.mousePos, camera.root);
-
-        if (this.mouseMiddle && !this.clicked2) {
-            this.clicked2 = true;
-
-            let enemy: Enemy | undefined = undefined;
-            let dist: number | undefined = undefined;
-
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
-            for (const e of enemies.values()) {
-                if (e.dimension !== renderer.get("Dimension")) continue;
-
-                this.clickSphere.center.copy(e.position);
-                this.clickSphere.center.setY(this.clickSphere.center.y + 1);
-                if (this.raycaster.ray.intersectsSphere(this.clickSphere)) {
-                    const p = e.position;
-                    const d = camera.root.position.distanceToSquared(p);
-                    if (enemy === undefined || dist === undefined || d < dist) {
-                        dist = d;
-                        enemy = e;
-                    }
-                }
-            }
-
-            if (enemy !== undefined) {
-                Controls.selected([enemy.id]);
-                console.log(`Selected: ${Controls.selected()}`);
-            } else {
-                Controls.selected(undefined);
-            }
-        } else if (!this.mouseMiddle) {
-            this.clicked2 = false;
-        }
-
-        // to be removed
-        if (this.doSelect) {
-            this.doSelect = false;
-            const selectedEnemies: number[] = [];
-            const minX = Math.min(this.selectStart.x, this.selectEnd.x);
-            const minY = Math.min(this.selectStart.y, this.selectEnd.y);
-            const maxX = Math.max(this.selectStart.x, this.selectEnd.x);
-            const maxY = Math.max(this.selectStart.y, this.selectEnd.y);
-
-            const { dir } = Controls.FUNC_update;
-
-            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
-            for (const e of enemies.values()) {
-                if (e.dimension !== renderer.get("Dimension")) continue;
-
-                dir.copy(e.position);
-                dir.setY(e.position.y + 1);
-                dir.project(camera.root);
-                if (dir.x > minX && dir.x < maxX && dir.y > minY && dir.y < maxY) {
-                    dir.copy(e.position);
-                    dir.setY(e.position.y + 1);
-                    const dist = dir.distanceToSquared(camera.root.position);
-                    let skip = false;
-
-                    // check line of sight
-                    this.raycaster.set(camera.root.position, dir.sub(camera.root.position));
-                    const geometryGroups = renderer.getOrDefault("Maps", Factory("Map"));
-                    const group = geometryGroups.get(renderer.get("Dimension")!);
-                    if (group !== undefined) {
-                        for (const geom of group) {
-                            const intersects = this.raycaster.intersectObject(geom, false);
-                            if (intersects.length > 0) {
-                                for (let i = 0; i < intersects.length; ++i) {
-                                    const p = intersects[i].point;
-                                    const d = camera.root.position.distanceToSquared(p);
-                                    if (d < dist) {
-                                        skip = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (!skip) selectedEnemies.push(e.id);
-                }
-            }
-
-            if (selectedEnemies.length > 0) {
-                Controls.selected(selectedEnemies);
-                console.log(`Selected: ${Controls.selected()}`);
-            } else {
-                Controls.selected(undefined);
-            }
-        } 
-        
-        if (this.enableMindControl) {
-            if (this.mouseRight && !this.clicked1) {
-                this.clicked1 = true;
-
-                let player: Player | undefined = undefined;
-                let point: Vector3 | undefined = undefined;
-                let dist: number | undefined = undefined;
-
-                // Click geometry
-                const geometryGroups = renderer.getOrDefault("Maps", Factory("Map"));
-                const group = geometryGroups.get(renderer.get("Dimension")!);
-                if (group !== undefined) {
-                    for (const geom of group) {
-                        const intersects = this.raycaster.intersectObject(geom, false);
-                        if (intersects.length > 0) {
-                            for (let i = 0; i < intersects.length; ++i) {
-                                const p = intersects[i].point;
-                                const d = camera.root.position.distanceToSquared(p);
-                                if (point === undefined || dist === undefined || d < dist) {
-                                    dist = d;
-                                    point = p;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Click player
-                const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-                for (const p of players.values()) {
-                    this.clickSphere.center.copy(p.position);
-                    this.clickSphere.center.setY(this.clickSphere.center.y + 1);
-                    if (this.raycaster.ray.intersectsSphere(this.clickSphere)) {
-                        const d = camera.root.position.distanceToSquared(p.position);
-                        if (player === undefined || dist === undefined || d < dist) {
-                            dist = d;
-                            player = p;
-                        }
-                    }
-                }
-
-                if (Controls.selected !== undefined) {
-                    if (player !== undefined) {
-                        console.log('Clicked on player: ', player.slot);
-                        window.api.invoke("mindControlAttack", Controls.selected(), player.slot);
-                    } else if (point !== undefined) {
-                        console.log('Clicked point on mesh:', point);
-                        window.api.invoke(this.shift ? "mindControlPosition" : "mindControlAttackPosition", Controls.selected(), -point.x, point.y, point.z);
-                    }
-                }
-            } else if (!this.mouseRight) {
-                this.clicked1 = false;
-            }
         }
 
         if (this.slot !== undefined) {

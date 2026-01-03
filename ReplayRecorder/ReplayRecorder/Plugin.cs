@@ -22,8 +22,6 @@ public class Plugin : BasePlugin {
         ClassInjector.RegisterTypeInIl2Cpp<SnapshotInstance>();
         ClassInjector.RegisterTypeInIl2Cpp<MainThread>();
 
-        ClassInjector.RegisterTypeInIl2Cpp<EnemyController>(); // ToDelete
-
         Replay.RegisterAll();
 
         RundownManager.OnExpeditionGameplayStarted += (Action)OnGameplayStart;
