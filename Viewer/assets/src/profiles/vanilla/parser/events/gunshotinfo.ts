@@ -48,10 +48,16 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots.Info", "0.0.1", {
                 hits: 0, 
                 crits: 0, 
                 pierceHits: 0, 
-                pierceCrits: 0 
+                pierceCrits: 0,
+                pierceCount: new Map()
             });
         }
         const accuracy = stats.accuracy.get(gear.hash)!;
+        
+        let count = accuracy.pierceCount.get(hits);
+        if (count === undefined) count = 0;
+        accuracy.pierceCount.set(hits, ++count);
+
         accuracy.pierceHits += hits;
         accuracy.pierceCrits += crits;
         accuracy.hits += hits > 0 ? 1 : 0;

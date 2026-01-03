@@ -1,5 +1,5 @@
 import { html, Mutable } from "@esm/@/rhu/html.js";
-import { Signal, signal } from "@esm/@/rhu/signal.js";
+import { computed, Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
@@ -225,8 +225,32 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             hitRate: Signal<string>;
             critRate: Signal<string>;
             avgHitPerShot: Signal<string>;
+            pierceHits: Signal<Map<number, number>>
         }>) => {
             if (el === undefined) {
+                const pierceHits = signal<Map<number, number>>(new Map());
+                const sortedPierceHits = computed((set) => { set([...pierceHits().entries()].sort((a, b) => b[0] - a[0])); }, [pierceHits]);
+                const pierceHitsList = html.map(sortedPierceHits, undefined, (kv, el?: html<{ 
+                    pierceCount: Signal<number>,
+                    count: Signal<number>
+                }>) => {
+                    if (el === undefined) {
+                        el = html`
+                        <li style="display: flex">
+                            <span>${html.bind(signal(""), "pierceCount")}</span>
+                            <div style="flex: 1"></div>
+                            <span>${html.bind(signal(""), "count")}</span>
+                        </li>
+                        `;
+                    }
+                    const [,v] = kv;
+
+                    el.pierceCount(v[0]);
+                    el.count(v[1]);
+
+                    return el;
+                });
+
                 el = html`
                 <ul>
                     <li style="margin-bottom: 5px;">
@@ -247,8 +271,21 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                         <div style="flex: 1"></div>
                         <span>${html.bind(signal(""), "avgHitPerShot")}</span>
                     </li>
+                    <li style="padding: 5px 0;">
+                        <div style="width: 100%; height: 1px; background-color: grey;"></div>
+                    </li>
+                    <li style="display: flex; flex-direction: column;">
+                        <div style="display: flex">
+                        <span>Hits</span>
+                        <div style="flex: 1"></div>
+                        <span>Count</span>
+                        </div>
+                        <ul>${pierceHitsList}</ul>
+                    </li>
                 </ul>
                 `;
+
+                el.pierceHits = pierceHits;
             }
 
             const [,v] = kv;
@@ -263,6 +300,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             el.hitRate(`${Math.round((v.hits / Math.clamp(v.total, 1, Infinity)) * 1000) / 10}%`);
             el.critRate(`${Math.round((v.crits / Math.clamp(v.hits, 1, Infinity)) * 1000) / 10}%`);
             el.avgHitPerShot(`${Math.round((v.pierceHits / Math.clamp(v.hits, 1, Infinity)) * 10) / 10}`);
+            el.pierceHits(v.pierceCount);
 
             return el;
         });

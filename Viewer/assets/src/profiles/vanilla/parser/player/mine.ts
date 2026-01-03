@@ -123,7 +123,8 @@ mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
 export interface MineDetonate {
     id: number;
     time: number;
-    trigger: number;
+    snet: bigint; // mine owner
+    trigger: number; // who triggered the mine (owner if enemy triggered)
     shot: boolean;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
@@ -167,7 +168,7 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
             directions.push([{ x: tempV.x, y: tempV.y, z: tempV.z }, r() * 8, scale]);
         }
 
-        detonations.set(id, { ...data, time: snapshot.time(), position: mine.position, rotation: mine.rotation, directions });
+        detonations.set(id, { ...data, snet: mine.snet, time: snapshot.time(), position: mine.position, rotation: mine.rotation, directions });
     }
 });
 

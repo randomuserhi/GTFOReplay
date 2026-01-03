@@ -58,7 +58,7 @@ function EnemyDamage(): EnemyDamage {
 
 export interface PlayerStats {
     snet: bigint;
-    accuracy: Map<IdentifierHash, { gear: Identifier, total: number, hits: number, crits: number, pierceHits: number, pierceCrits: number }>;
+    accuracy: Map<IdentifierHash, { gear: Identifier, total: number, hits: number, crits: number, pierceHits: number, pierceCrits: number, pierceCount: Map<number, number> }>;
     enemyDamage: EnemyDamage;
     playerDamage: PlayerDamage;
     revives: number;

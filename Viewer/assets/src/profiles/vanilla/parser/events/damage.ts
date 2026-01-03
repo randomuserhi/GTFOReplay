@@ -50,15 +50,11 @@ EnemyOnDeathEvents.register("Vanilla", (snapshot, enemy, hitData) => {
         lastHit = players.get(hitData.source)!.snet;
     } else if(hitData.type === "Explosive") {
         const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
-        const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
     
         const detonation = detonations.get(hitData.source);
         if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
     
-        const mine = mines.get(hitData.source);
-        if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
-    
-        lastHit = mine.snet;
+        lastHit = detonation.snet;
     }
     if (lastHit === undefined) throw new Error(`Could not find player '${hitData.source}'.`);
                     
@@ -119,13 +115,9 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             let sourceSnet = players.get(source)?.snet;
             if (type === "Explosive") {
                 const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
-                const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
 
                 const detonation = detonations.get(source);
                 if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
-
-                const mine = mines.get(source);
-                if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
 
                 if (detonation.shot === true) {
                     const player = players.get(detonation.trigger);
@@ -133,7 +125,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
                     enemy.players.add(player.snet);
                 }
 
-                sourceSnet = mine.snet;
+                sourceSnet = detonation.snet;
             }
             if (sourceSnet === undefined) {
                 throw new Error(`Unable to get player snet ${source}`);
@@ -162,15 +154,11 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             // TODO(randomuserhi): Damage Taken Stats
         } else if (type === "Explosive") {
             const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
-            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
 
             const detonation = detonations.get(source);
             if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
-            
-            const mine = mines.get(source);
-            if (mine === undefined) throw new Error("Explosive damage was dealt, but cannot find mine.");
         
-            const sourceStats = StatTracker.getPlayer(mine.snet, statTracker);
+            const sourceStats = StatTracker.getPlayer(detonation.snet, statTracker);
             
             if (players.has(target)) {
                 const player = players.get(target)!;
