@@ -10,8 +10,8 @@ namespace Vanilla.Player {
         private static void Spawn(PlayerAgent agent) {
             rPlayer player = new rPlayer(agent);
             Replay.Spawn(player);
-            if (BoosterImplantManager.TryGetPlayerBoosterImplantState(agent.Owner, out var state)) {
-                Replay.Spawn(new rPlayerBoosters(state));
+            if (BoosterImplantManager.TryGetPlayerBoosterImplantState(agent.Owner, out var state) && state != null) {
+                Replay.Spawn(new rPlayerBoosters(agent, state));
             }
             Replay.Spawn(new rPlayerAnimation(agent));
             Replay.Spawn(new rPlayerBackpack(agent));

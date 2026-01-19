@@ -1,4 +1,5 @@
 ﻿using BoosterImplants;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -7,12 +8,13 @@ namespace Vanilla.Player {
     [ReplayData("Vanilla.Player.Boosters", "0.0.1")]
     internal class rPlayerBoosters : ReplayDynamic {
         PlayerBoosterImplantState state;
-
-        public rPlayerBoosters(PlayerBoosterImplantState state) : base(state.m_playerAgent.GlobalID) {
+        PlayerAgent player;
+        public rPlayerBoosters(PlayerAgent player, PlayerBoosterImplantState state) : base(player.GlobalID) {
+            this.player = player;
             this.state = state;
         }
 
-        public override bool Active => state != null && state.m_playerAgent != null;
+        public override bool Active => state != null && player != null;
         public override bool IsDirty {
             get {
                 if (conditionsMet == null) return false;
