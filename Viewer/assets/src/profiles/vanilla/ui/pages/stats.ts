@@ -479,12 +479,14 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
 
         const dom = html<{
             wrapper: html<typeof FeatureWrapper>;
+            note: Signal<string>;
         }>/**//*html*/`
             ${html.open(FeatureWrapper("Boosters")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
                     <span>Boosters</span>
+                    <span>${html.bind(signal(""), "note")}</span>
                     ${list}
                 </div>
             ${html.close()}
@@ -501,6 +503,11 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const snet = self.dropdown.value();
                 const player = api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(snet);
                 const booster = player ? api.getOrDefault("Vanilla.Player.Boosters", Factory("Map")).get(player.id) : undefined;
+                if (booster === undefined) {
+                    dom.note("This player has no booster information.");
+                } else {
+                    dom.note("No boosters equipped.");
+                }
                 boosters(booster);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
