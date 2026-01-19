@@ -11,6 +11,8 @@ export default class Updater {
     static win: Electron.BrowserWindow | null;
     static app: Electron.App;
 
+    static cancelled = false;
+
     private static onWindowAllClosed(): void {
         Updater.dispose();
 
@@ -55,7 +57,7 @@ export default class Updater {
             if (e.senderFrame === null) return;
             if (!Updater.isTrustedFrame(e.senderFrame)) return;
             if (Updater.win === null) return;
-            
+
             Updater.win.close();
         });
         ipcMain.handle("download-package", async () => {
@@ -105,6 +107,11 @@ export default class Updater {
                     let downloaded = 0;
                     let result;
                     while (!(result = await reader.read()).done) {
+                        if (Updater.cancelled) {
+                            reader.cancel();
+                            break;
+                        }
+
                         downloaded += result.value.length;
                         fileStream.write(result.value);
 
@@ -112,6 +119,11 @@ export default class Updater {
                     }
 
                     fileStream.end();
+                }
+
+                if (Updater.cancelled) {
+                    console.log("cancelled!");
+                    return undefined;
                 }
 
                 // Extract package zip
@@ -247,6 +259,8 @@ export default class Updater {
     }
 
     static dispose() {
+        Updater.cancelled = true;
+
         // Clean up left over folders
         if (fs.existsSync(packagePath)) {
             fs.unlinkSync(packagePath);
