@@ -505,8 +505,10 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const booster = player ? api.getOrDefault("Vanilla.Player.Boosters", Factory("Map")).get(player.id) : undefined;
                 if (booster === undefined) {
                     dom.note("This player has no booster information.");
-                } else {
+                } else if (booster.implants.length === 0) {
                     dom.note("No boosters equipped.");
+                } else {
+                    dom.note("");
                 }
                 boosters(booster);
             }, { signal: dispose.signal });
