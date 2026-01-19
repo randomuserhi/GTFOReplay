@@ -1,5 +1,5 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Color, Mesh, MeshStandardMaterial, PlaneGeometry, Vector3 } from "@esm/three";
+import { Color, Mesh, MeshBasicMaterial, PlaneGeometry, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { getPlayerColor } from "../datablocks/player/player.js";
 import { Factory } from "../library/factory.js";
@@ -43,7 +43,7 @@ const icons: Partial<Record<PingStyle, string>> = {
 const geometry = new PlaneGeometry();
 class PingModel extends Model<[ping: Ping, camera: Camera]> {
     private quad: Mesh;
-    private material: MeshStandardMaterial;
+    private material: MeshBasicMaterial;
 
     private tag?: Text;
     private label?: Text;
@@ -85,7 +85,7 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
         this.tag.position.set(0, -0.2, 0);
         this.root.add(this.tag);
 
-        this.material = new MeshStandardMaterial({
+        this.material = new MeshBasicMaterial({
             color: new Color(0xffffff),
             transparent: true,
             depthTest: false,
@@ -111,9 +111,19 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
 
         const icon = icons[ping.style];
         if (icon !== undefined) {
-            loadTexture(icon).then((texture) => { this.material.map = texture; });
+            loadTexture(icon).then((texture) => { 
+                if (this.material.map != texture) {
+                    this.material.map = texture; 
+                    this.material.needsUpdate = true;
+                }
+            });
         } else {
-            loadTexture(defaultIcon).then((texture) => { this.material.map = texture; });
+            loadTexture(defaultIcon).then((texture) => {
+                if (this.material.map != texture) {
+                    this.material.map = texture; 
+                    this.material.needsUpdate = true;
+                }
+            });
         }
         this.material.color.set(ping.slot !== 255 ? getPlayerColor(ping.slot) : 0xebab34);
 

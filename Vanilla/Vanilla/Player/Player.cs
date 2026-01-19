@@ -1,4 +1,5 @@
-﻿using Player;
+﻿using BoosterImplants;
+using Player;
 using ReplayRecorder;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
@@ -9,6 +10,9 @@ namespace Vanilla.Player {
         private static void Spawn(PlayerAgent agent) {
             rPlayer player = new rPlayer(agent);
             Replay.Spawn(player);
+            if (BoosterImplantManager.TryGetPlayerBoosterImplantState(agent.Owner, out var state)) {
+                Replay.Spawn(new rPlayerBoosters(state));
+            }
             Replay.Spawn(new rPlayerAnimation(agent));
             Replay.Spawn(new rPlayerBackpack(agent));
             Replay.Spawn(new rPlayerStats(agent));
@@ -16,6 +20,7 @@ namespace Vanilla.Player {
 
         [ReplayOnPlayerDespawn]
         private static void Despawn(int id) {
+            Replay.TryDespawn<rPlayerBoosters>(id);
             Replay.TryDespawn<rPlayerAnimation>(id);
             Replay.TryDespawn<rPlayerBackpack>(id);
             Replay.TryDespawn<rPlayerStats>(id);

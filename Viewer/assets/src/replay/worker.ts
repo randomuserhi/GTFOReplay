@@ -135,7 +135,7 @@ let replay: Replay | undefined = undefined;
                 const size = await BitHelper.readInt(bytes);
                 for (let i = 0; i < size; ++i) {
                     const id = await BitHelper.readInt(bytes);
-                    const data = await func.main.parse(bytes, api);
+                    const data = await func.main.parse(bytes, api, id);
                     dynamics.push({ id, data });
 
                     if (!exists.has(type)) exists.set(type, new Map());

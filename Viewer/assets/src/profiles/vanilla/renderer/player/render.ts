@@ -30,6 +30,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
             const ragdolls = snapshot.getOrDefault("RagdollMode.Ragdoll", Factory("Map")); // NOTE(randomuserhi): Integrated into vanilla for ease of implementation
+            const boosters = snapshot.getOrDefault("Vanilla.Player.Boosters", Factory("Map"));
             for (const [id, player] of players) {
                 if (!models.has(id)) {
                     const model = new PlayerModel();
@@ -43,7 +44,7 @@ ModuleLoader.registerRender("Players", (name, api) => {
                 
                 const anim = anims.get(id);
                 if (anim !== undefined) {
-                    model.render(dt, time, camera, database, player, anim, stats.get(id), backpacks.get(id), sentries, ragdolls.get(id));
+                    model.render(dt, time, camera, database, player, anim, stats.get(id), backpacks.get(id), sentries, ragdolls.get(id), boosters.get(id));
                 }
             }
 

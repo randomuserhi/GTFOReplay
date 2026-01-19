@@ -49,15 +49,15 @@ export interface HeaderApi {
 }
 
 export interface DynamicParser<T extends Typemap.DynamicNames> {
-    parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Dynamics[T]["parse"]>;
+    parse(bytes: ByteStream, snapshot: ReplayApi, id: number): Promise<Typemap.Dynamics[T]["parse"]>;
     exec(id: number, data: Typemap.Dynamics[T]["parse"], snapshot: ReplayApi, lerp: number): void;
 }
 export interface DynamicSpawner<T extends Typemap.DynamicNames> {
-    parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Dynamics[T]["spawn"]>;
+    parse(bytes: ByteStream, snapshot: ReplayApi, id: number): Promise<Typemap.Dynamics[T]["spawn"]>;
     exec(id: number, data: Typemap.Dynamics[T]["spawn"], snapshot: ReplayApi): void;
 }
 export interface DynamicDespawner<T extends Typemap.DynamicNames> {
-    parse(bytes: ByteStream, snapshot: ReplayApi): Promise<Typemap.Dynamics[T]["despawn"]>;
+    parse(bytes: ByteStream, snapshot: ReplayApi, id: number): Promise<Typemap.Dynamics[T]["despawn"]>;
     exec(id: number, data: Typemap.Dynamics[T]["despawn"], snapshot: ReplayApi): void;
 }
 

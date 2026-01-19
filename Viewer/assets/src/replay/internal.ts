@@ -33,7 +33,7 @@ export namespace Internal {
                 if (spawn === undefined) throw new ModuleNotFound(`Could not find spawn module of type '${type}'.`); 
                 return {
                     id, type,
-                    detail: await spawn(data, snapshot)
+                    detail: await spawn(data, snapshot, id)
                 };
             }
         },
@@ -47,7 +47,7 @@ export namespace Internal {
                 if (despawn === undefined) throw new ModuleNotFound(`Could not find despawn module of type '${type}'.`); 
                 return {
                     id, type,
-                    detail: await despawn(data, snapshot)
+                    detail: await despawn(data, snapshot, id)
                 };
             }
         }

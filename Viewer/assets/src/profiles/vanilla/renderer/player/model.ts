@@ -14,6 +14,7 @@ import { white, zeroQ, zeroV } from "../../library/constants.js";
 import { Identifier, IdentifierData } from "../../parser/identifier.js";
 import { PlayerAnimState } from "../../parser/player/animation.js";
 import { InventorySlot, inventorySlotMap, inventorySlots, PlayerBackpack } from "../../parser/player/backpack.js";
+import { PlayerBoosters } from "../../parser/player/boosters.js";
 import { Player } from "../../parser/player/player.js";
 import { Sentry } from "../../parser/player/sentry.js";
 import { PlayerStats } from "../../parser/player/stats.js";
@@ -22,6 +23,7 @@ import { GearModel } from "../models/gear.js";
 import { ItemModel } from "../models/items.js";
 import { StickFigure } from "../models/stickfigure.js";
 import { Camera } from "../renderer.js";
+import { BoosterModel } from "./booster.js";
 
 const upperBodyMask: HumanMask = {
     joints: { 
@@ -138,7 +140,7 @@ class EquippedItem {
 
 const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
 
-export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll]> {
+export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll, boosters?: PlayerBoosters]> {
     public static showFlashlightLineOfSight = signal(false);
     
     private aimIK: IKSolverAim = new IKSolverAim();
@@ -164,6 +166,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private animOffset: number = Math.random() * 10;
 
     private tmp?: Text;
+    private boosterRoot: Group;
+    private boosterModels: BoosterModel[] = [];
 
     private flashlightLOS: Mesh;
     private flashlightMaterial: MeshPhongMaterial;
@@ -182,6 +186,10 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
         this.anchor.add(this.tmp);
+
+        // Setup booters
+        this.boosterRoot = new Group();
+        this.tmp.add(this.boosterRoot);
 
         // Setup backpack
         this.visual.joints.spine1.add(this.backpack);
@@ -261,7 +269,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.handAttachment.add(test); }*/
     }
 
-    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll) {
+    public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll, boosters?: PlayerBoosters) {
         if (!this.isVisible()) return;
 
         this.updateBackpack(database, player, backpack, sentries);
@@ -272,6 +280,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         this.visual.joints.rightHand.add(this.handAttachment);
     
         this.updateTmp(player, camera, stats, backpack);
+        this.updateBoosters(boosters);
     }
     
     private animate(dt: number, time: number, player: Player, anim: PlayerAnimState, ragdoll?: Ragdoll) {
@@ -693,6 +702,37 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         }
     }
 
+    private updateBoosters(boosters?: PlayerBoosters) {
+        if (boosters === undefined) {
+            this.boosterRoot.visible = false;
+            return;
+        }
+
+        this.boosterRoot.visible = true;
+
+        while (this.boosterModels.length < boosters.implants.length) {
+            this.boosterModels.push(new BoosterModel());
+        }
+        if (this.boosterModels.length > boosters.implants.length) {
+            const removeList = this.boosterModels.splice(boosters.implants.length);
+            for (const obj of removeList) {
+                obj.root.removeFromParent();
+            }
+        }
+
+        for (let i = 0; i < this.boosterModels.length; ++i) {
+            const obj = this.boosterModels[i];
+            const conditionMet = boosters.conditionsMet[i];
+            const implant = boosters.implants[i];
+
+            obj.update(implant, conditionMet);
+
+            obj.root.position.set(i * 1 - (this.boosterModels.length - 1) / 2, 0, 0);
+
+            this.boosterRoot.add(obj.root);
+        }
+    }
+
     private static FUNC_updateTmp = {
         tmpPos: new Vector3(),
         camPos: new Vector3(),
@@ -748,6 +788,10 @@ ${stamina}`;
             const lerp = Math.clamp01(camPos.distanceTo(tmpPos) / 30);
             this.tmp.fontSize = lerp * 0.3 + 0.05;
             this.tmp.lookAt(camPos);
+
+            const scale = lerp * 1 + 0.1;
+            this.boosterRoot.position.set(0, 2 * lerp + 0.4, 0);
+            this.boosterRoot.scale.set(scale, scale, scale);
         }
     }
 

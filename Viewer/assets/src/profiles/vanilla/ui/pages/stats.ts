@@ -2,11 +2,13 @@ import { html, Mutable } from "@esm/@/rhu/html.js";
 import { computed, Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import Fuse from "@esm/fuse.js";
+import { BoosterConditionDatablock, BoosterDatablock, BoosterEffectDatablock } from "../../datablocks/boosters/boosters.js";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { PlayerDatablock } from "../../datablocks/player/player.js";
 import { Factory } from "../../library/factory.js";
 import { Identifier, IdentifierHash } from "../../parser/identifier.js";
+import { PlayerBoosters } from "../../parser/player/boosters.js";
 import { PlayerStats, StatTracker } from "../../parser/stattracker/stattracker.js";
 import { Dropdown } from "../components/dropdown.js";
 import { dispose } from "../main.js";
@@ -384,6 +386,122 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 bulletDamage(`${Math.round((Math.round([...player.playerDamage.bulletDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
                 sentryDamage(`${Math.round((Math.round([...player.playerDamage.sentryDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
                 explosiveDamage(`${Math.round((Math.round([...player.playerDamage.explosiveDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
+
+        return dom.wrapper;
+    },
+    (self, v) => {
+        const boosters = signal<PlayerBoosters | undefined>(undefined);
+        const list = html.map(boosters, function* (b) { 
+            if (b) { 
+                for (let i = 0; i < b.implants.length; ++i) {
+                    yield [i, { implant: b.implants[i], conditionMet: b.conditionsMet[i] }];
+                } 
+            } 
+        }, (kv, el?: html<{
+            type: Signal<string>;
+            effects: Signal<{ type: number; value: number; }[]>;
+            conditions: Signal<number[]>;
+            active: Signal<string>;
+        }>) => {
+            if (el === undefined) {
+                const effects = signal<{ type: number; value: number; }[]>([]);
+                const effectList = html.map(effects, undefined, (kv, el?: html<{ name: Signal<string>, value: Signal<string> }>) => {
+                    if (el === undefined) {
+                        el = html`
+                        <li style="display: flex">
+                            <span>${html.bind(signal(""), "name")}</span>
+                            <div style="flex: 1"></div>
+                            <span>${html.bind(signal(""), "value")}</span>
+                        </li>`;
+                    }
+
+                    const [_, v] = kv;
+
+                    const datablock = BoosterEffectDatablock.get(v.type);
+                    
+                    el.name(datablock ? datablock.name : `Unknown(${v.type})`);
+                    el.value(`${(Math.round(v.value * 100) / 100)}`);
+
+                    return el;
+                });
+
+                const conditions = signal<number[]>([]);
+                const conditionlist = html.map(conditions, undefined, (kv, el?: html<{ name: Signal<string> }>) => {
+                    if (el === undefined) {
+                        el = html`
+                        <li style="display: flex">
+                            <span>${html.bind(signal(""), "name")}</span>
+                        </li>`;
+                    }
+
+                    const [_, v] = kv;
+
+                    const datablock = BoosterConditionDatablock.get(v);
+                    
+                    el.name(datablock ? datablock.name : `Unknown(${v})`);
+
+                    return el;
+                });
+
+                el = html`
+                <ul>
+                    <li style="margin-bottom: 5px; display: flex;">
+                        <span>${html.bind(signal(""), "type")}</span>
+                        <div style="flex: 1"></div>
+                        <span>${html.bind(signal(""), "active")}</span>
+                    </li>
+                    <li style="margin-bottom: 5px; display: flex">
+                        <ul style="width: 100%;">${effectList}</ul>
+                    </li>
+                    <li style="display: flex">
+                        <ul style="width: 100%;">${conditionlist}</ul>
+                    </li>
+                </ul>
+                `;
+
+                el.effects = effects;
+                el.conditions = conditions;
+            }
+
+            const [_, v] = kv;
+
+            const datablock = BoosterDatablock.get(v.implant.id);
+
+            el.active(v.conditionMet ? "Active" : "Inactive");
+            el.type(datablock ? datablock.category : `Unknown(${v.implant.id})`);
+            el.effects(v.implant.effects);
+            el.conditions(v.implant.conditions);
+
+            return el;
+        });
+
+        const dom = html<{
+            wrapper: html<typeof FeatureWrapper>;
+        }>/**//*html*/`
+            ${html.open(FeatureWrapper("Boosters")).bind("wrapper")}
+                <div class="${style.row}" style="
+                gap: 10px;
+                ">
+                    <span>Boosters</span>
+                    ${list}
+                </div>
+            ${html.close()}
+        `;
+
+        v.on((view) => {
+            if (view === undefined) return;
+
+            view.api.on((api) => {
+                if (!self.active()) return;
+
+                if (api === undefined) return;
+
+                const snet = self.dropdown.value();
+                const player = api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(snet);
+                const booster = player ? api.getOrDefault("Vanilla.Player.Boosters", Factory("Map")).get(player.id) : undefined;
+                boosters(booster);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 

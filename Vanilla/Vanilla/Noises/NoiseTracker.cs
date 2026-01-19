@@ -118,12 +118,19 @@ namespace Vanilla.Noises {
                 if (NoiseManager.noiseDataToProcess.Count + 1 != noises.Count) {
                     APILogger.Error("Noises are desynced for an unknown reason...");
                     noises.Clear();
-                    while (NoiseManager.noiseDataToProcess.Count + 1 != noises.Count) {
+
+                    // NOTE(randomuserhi): Causes lag when a bunch of unknown noises are triggered, notably from some modded
+                    //                     rundowns.
+                    /*while (NoiseManager.noiseDataToProcess.Count + 1 != noises.Count) {
                         noises.Enqueue(null);
-                    }
+                    }*/
                 }
 
-                currentNoise = noises.Dequeue();
+                if (noises.Count > 0) {
+                    currentNoise = noises.Dequeue();
+                } else {
+                    currentNoise = null;
+                }
             }
             [HarmonyPatch(typeof(NoiseManager), nameof(NoiseManager.ProcessNoise))]
             [HarmonyPostfix]

@@ -113,7 +113,14 @@ ModuleLoader.registerDynamic("Vanilla.Objectives.Reactor", "0.0.1", {
 
             // Find terminal and spawn an item to generate an item finder entry 
             const terminals = snapshot.header.getOrDefault("Vanilla.Map.Terminals", Factory("Map"));
-            if (!terminals.has(data.masterTerminal)) throw new Error(`Could not find reactor's master terminal '${data.masterTerminal}'.`);
+            if (!terminals.has(data.masterTerminal)) {
+                //throw new Error(`Could not find reactor's master terminal '${data.masterTerminal}'.`);
+
+                // NOTE(randomuserhi): Bug -> some levels do not properly save the terminal for the reactor for an unknown reason
+                //                     thus we can only warn and cannot properly throw an error.
+                console.warn(`Could not find reactor's master terminal '${data.masterTerminal}'.`);
+                return;
+            }
             const terminal = terminals.get(data.masterTerminal)!;
 
             const items = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
