@@ -166,7 +166,6 @@ ModuleLoader.registerDynamic("Vanilla.Map.WeakDoor", "0.0.1", {
     },
     spawn: {
         parse: async (data) => {
-            console.log("Spawned Door!");
             return {
                 maxHealth: await BitHelper.readHalf(data),
                 lock0: lockType[await BitHelper.readByte(data)],
