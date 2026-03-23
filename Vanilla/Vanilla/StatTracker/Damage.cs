@@ -140,7 +140,7 @@ namespace Vanilla.StatTracker {
                         if (!sentry) {
                             // Get weapon used
                             ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                            if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
+                            if (currentEquipped != null && currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
                                 gear = Identifier.From(currentEquipped);
                             }
                         } else {
@@ -199,7 +199,7 @@ namespace Vanilla.StatTracker {
                     if (player != null) {
                         // Get weapon used
                         ItemEquippable currentEquipped = player.Inventory.WieldedItem;
-                        if (currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
+                        if (currentEquipped != null && currentEquipped.IsWeapon && currentEquipped.TryCast<BulletWeapon>() != null) {
                             gear = Identifier.From(currentEquipped);
                         }
                     }
