@@ -129,7 +129,7 @@ ModuleLoader.registerDynamic("Vanilla.Map.Items", "0.0.1", {
         parse: async () => {
         }, 
         exec: (id, data, snapshot) => {
-            const items = snapshot.getOrDefault("Vanilla.Map.WeakDoor", Factory("Map"));
+            const items = snapshot.getOrDefault("Vanilla.Map.Items", Factory("Map"));
 
             if (!items.has(id)) throw new ItemNotFound(`Item of id '${id}' did not exist.`);
             items.delete(id);

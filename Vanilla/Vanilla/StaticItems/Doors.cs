@@ -17,7 +17,7 @@ namespace Vanilla.StaticItems {
         }
 
         private int id;
-        private LG_Gate gate;
+        public LG_Gate gate;
         private MonoBehaviourExtended mono;
         private ushort serialNumber;
         private bool isCheckpoint;
@@ -100,6 +100,14 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnHeaderCompletion]
         private static void WriteWeakDoors() {
+            // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+            rWeakDoor[] old = weakDoors.ToArray();
+            weakDoors.Clear();
+            foreach (rWeakDoor door in old) {
+                if (door.door != null)
+                    weakDoors.Add(door);
+            }
+
             foreach (rWeakDoor weakDoor in weakDoors) {
                 Replay.Spawn(weakDoor);
             }
@@ -191,6 +199,14 @@ namespace Vanilla.StaticItems {
             [HarmonyPatch(typeof(GS_ReadyToStopElevatorRide), nameof(GS_ReadyToStopElevatorRide.Enter))]
             [HarmonyPostfix]
             private static void StopElevatorRide() {
+                // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+                rDoor[] old = DoorReplayManager.doors.ToArray();
+                DoorReplayManager.doors.Clear();
+                foreach (rDoor door in old) {
+                    if (door.gate != null)
+                        DoorReplayManager.doors.Add(door);
+                }
+
                 Replay.Trigger(new rDoors(DoorReplayManager.doors));
             }
         }
@@ -201,7 +217,7 @@ namespace Vanilla.StaticItems {
             Hackable
         }
 
-        private LG_WeakDoor door;
+        public LG_WeakDoor door;
         private LG_WeakDoor_Destruction destruction;
 
         public override string? Debug => $"{id} - {destruction.m_health}/{door.m_healthMax}";

@@ -11,7 +11,7 @@ namespace Vanilla.StaticItems {
         public readonly int id;
         public readonly ushort serialNumber;
 
-        private LG_ComputerTerminal terminal;
+        public LG_ComputerTerminal terminal;
 
         public Vector3 position {
             get => terminal.transform.position;
@@ -48,6 +48,12 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnElevatorStop]
         private static void Trigger() {
+            // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+            foreach (int id in terminals.Keys.ToArray()) {
+                if (terminals.ContainsKey(id) && terminals[id].terminal == null)
+                    terminals.Remove(id);
+            }
+
             Replay.Trigger(new rTerminals());
         }
 

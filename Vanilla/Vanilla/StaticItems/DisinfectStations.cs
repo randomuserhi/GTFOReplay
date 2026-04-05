@@ -36,6 +36,12 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnElevatorStop]
         private static void Trigger() {
+            // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+            foreach (int id in disinfectStations.Keys.ToArray()) {
+                if (disinfectStations.ContainsKey(id) && disinfectStations[id].core == null)
+                    disinfectStations.Remove(id);
+            }
+
             Replay.Trigger(new rDisinfectStations());
             disinfectStations.Clear();
         }

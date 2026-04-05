@@ -51,10 +51,17 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnElevatorStop]
         private static void Trigger() {
+            // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+            foreach (int id in generators.Keys.ToArray()) {
+                if (generators.ContainsKey(id) && generators[id].core == null)
+                    generators.Remove(id);
+            }
+
             Replay.Trigger(new rGenerators());
 
             foreach (rGenerator generator in generators.Values) {
-                if (!generator.core.m_powerCellInteraction.Cast<LG_GenericCarryItemInteractionTarget>().isActiveAndEnabled)
+                var core = generator.core.m_powerCellInteraction.TryCast<LG_GenericCarryItemInteractionTarget>();
+                if (core == null || !core.isActiveAndEnabled)
                     continue;
                 Replay.Spawn(generator);
             }

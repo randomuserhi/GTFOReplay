@@ -36,6 +36,12 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnElevatorStop]
         private static void Trigger() {
+            // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+            foreach (int id in bulkheadControllers.Keys.ToArray()) {
+                if (bulkheadControllers.ContainsKey(id) && bulkheadControllers[id].core == null)
+                    bulkheadControllers.Remove(id);
+            }
+
             Replay.Trigger(new rBulkheadControllers());
             bulkheadControllers.Clear();
         }

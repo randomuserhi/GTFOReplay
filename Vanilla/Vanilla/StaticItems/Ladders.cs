@@ -9,7 +9,7 @@ namespace Vanilla.StaticItems {
     internal class rLadder {
         public readonly byte dimension;
 
-        private LG_Ladder ladder;
+        public LG_Ladder ladder;
         public Vector3 top {
             get => ladder.m_ladderTop;
         }
@@ -43,6 +43,14 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnElevatorStop]
         private static void Trigger() {
+            // AutoGen rundown and other modded content requires a filter to ensure all objects are still valid
+            rLadder[] old = ladders.ToArray();
+            ladders.Clear();
+            foreach (rLadder ladder in old) {
+                if (ladder.ladder != null)
+                    ladders.Add(ladder);
+            }
+
             Replay.Trigger(new rLadders());
         }
 
