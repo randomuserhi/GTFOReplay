@@ -2,6 +2,7 @@
 
 using API;
 using HarmonyLib;
+using ReplayRecorder.BepInEx;
 using SNetwork;
 using Steamworks;
 using System.Collections.Concurrent;
@@ -30,6 +31,7 @@ namespace ReplayRecorder.Steam {
         [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.PostSetup))]
         [HarmonyPrefix]
         private static void Prefix_Setup() {
+            if (ConfigManager.DisableSteamAPI) return;
             if (initialized) return;
             initialized = true;
 
@@ -63,6 +65,7 @@ namespace ReplayRecorder.Steam {
         [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.Update))]
         [HarmonyPrefix]
         private static void Prefix_Update() {
+            if (ConfigManager.DisableSteamAPI) return;
             SteamAPI.RunCallbacks();
             SteamNetworkingSockets.RunCallbacks();
         }
@@ -70,6 +73,7 @@ namespace ReplayRecorder.Steam {
         [HarmonyPatch(typeof(SNet_Core_STEAM), nameof(SNet_Core_STEAM.OnQuit))]
         [HarmonyPostfix]
         private static void Postfix_OnQuit() {
+            if (ConfigManager.DisableSteamAPI) return;
             if (!initialized) return;
 
             onDispose?.Invoke();

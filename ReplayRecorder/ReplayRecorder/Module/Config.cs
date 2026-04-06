@@ -77,6 +77,12 @@ namespace ReplayRecorder.BepInEx {
                 false,
                 "When set to true, disables the spectator chat.");
 
+            disableSteamAPI = configFile.Bind(
+                "Settings",
+                "disableSteamAPI",
+                false,
+                "When set to true, disables steamAPI setup and thus disables the spectate feature. This is here to allow use with cracked versions.");
+
             configWatcher = new FileSystemWatcher(Paths.ConfigPath, file) {
                 NotifyFilter = NotifyFilters.LastWrite,
                 EnableRaisingEvents = true
@@ -179,5 +185,11 @@ namespace ReplayRecorder.BepInEx {
             set { separateByRundown.Value = value; }
         }
         private static ConfigEntry<bool> separateByRundown;
+
+        public static bool DisableSteamAPI {
+            get { return disableSteamAPI.Value; }
+            set { disableSteamAPI.Value = value; }
+        }
+        private static ConfigEntry<bool> disableSteamAPI;
     }
 }
