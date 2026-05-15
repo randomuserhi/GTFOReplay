@@ -63,7 +63,7 @@ export const View = () => {
         refresh(): void;
         resize(): void;
         
-        addLog(message: string): void;
+        addLog(err: { message: string, verbose: string, type: undefined | "warning" | "error" }): void;
         clearLogs(): void;
 
         readonly renderer: Renderer;
@@ -85,13 +85,13 @@ export const View = () => {
         prevTime: number;
     }
     
-    const logs = signal<string[]>([], always);
+    const logs = signal<{ message: string, verbose: string, type: undefined | "warning" | "error" }[]>([], always);
     const logList = html.map(logs, undefined, (kv, el?: html<{message: Signal<string>; text: HTMLSpanElement; close: HTMLButtonElement, index: number}>) => {
         const [k,v] = kv;
         
         if (el === undefined) {
             el = html`
-            <div class="${style.log}">
+            <div class="${style.log}" style="display:${k < 3 ? "block" : "hidden"}; background-color: ${v.type == "warning" ? "orange" : "red"};">
                 <span m-id="text" class="${style.logText}">${html.bind(signal(""), "message")}</span>
                 <span style="flex: 1;"></span>
                 <button m-id="close" class="${style.cross}">${icons.cross()}</button>
@@ -111,7 +111,7 @@ export const View = () => {
         }
 
         el.index = k;
-        el.message(v);
+        el.message(v.message);
 
         return el;
     });
@@ -212,9 +212,9 @@ export const View = () => {
         return Math.clamp(time, 0, replay !== undefined ? replay.length() : 0);
     };
     
-    dom.addLog = (message) => {
+    dom.addLog = (log) => {
         const l = logs();
-        l.unshift(message);
+        l.unshift(log);
         logs(l);
     };
 

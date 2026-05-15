@@ -1,6 +1,7 @@
 import { signal, Signal } from "@/rhu/signal.js";
 import { Internal } from "./internal.js";
 import { ModuleDesc, ModuleLoader, NoExecFunc, ReplayApi, Typemap, UnknownModuleType } from "./moduleloader.js";
+import { ASL_VM } from "./vm.js";
 
 export declare namespace Timeline {
     interface Event<T = unknown> {
@@ -128,52 +129,55 @@ export class Replay {
 
         // perform events
         for (const { type, data, delta } of snapshot.events) {
-            const module = this.typemap.get(type);
-            if (module === undefined) throw new UnknownModuleType(`Unknown module type '${type}'.`);
-            const timeOfEvent = snapshot.time - delta;
-            const runEvent = time >= timeOfEvent;
-            const adjustedAPI = { ...api, time() { return timeOfEvent; }, tick() { return snapshot.tick; } };
-            if (module.typename === "ReplayRecorder.Spawn" || module.typename === "ReplayRecorder.Despawn") {
-                // Special case for spawn events
-                const isSpawn = module.typename === "ReplayRecorder.Spawn";
-                const isDespawn = module.typename === "ReplayRecorder.Despawn";
-                const exec = Internal.DynamicExec[module.typename][module.version];
-                if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
+            try {
+                const module = this.typemap.get(type);
+                if (module === undefined) throw new UnknownModuleType(`Unknown module type '${type}'.`);
+                const timeOfEvent = snapshot.time - delta;
+                const runEvent = time >= timeOfEvent;
+                const adjustedAPI = { ...api, time() { return timeOfEvent; }, tick() { return snapshot.tick; } };
+                if (module.typename === "ReplayRecorder.Spawn" || module.typename === "ReplayRecorder.Despawn") {
+                    // Special case for spawn events
+                    const isSpawn = module.typename === "ReplayRecorder.Spawn";
+                    const isDespawn = module.typename === "ReplayRecorder.Despawn";
+                    const exec = Internal.DynamicExec[module.typename][module.version];
+                    if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
 
-                if (runEvent) {
-                    exec(data, this, adjustedAPI);
-                    if (isSpawn || isDespawn) {
-                        const dynamicType: number = (data as any).type;
-                        const id = (data as any).id;
+                    if (runEvent) {
+                        if (isSpawn || isDespawn) {
+                            const dynamicType: number = (data as any).type;
+                            const id = (data as any).id;
 
-                        if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
-                        const collection = exists.get(dynamicType)!;
+                            if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
+                            const collection = exists.get(dynamicType)!;
 
-                        if (isDespawn) { // Despawn event has been triggered
-                            collection.set(id, false);
-                        } else if (isSpawn) { // Spawn event has been triggered
-                            collection.set(id, true);
-                        }
-                    }
-                } else {
-                    if (isSpawn || isDespawn) {
-                        const dynamicType: number = (data as any).type;
-                        const id = (data as any).id;
-
-                        if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
-                        const collection = exists.get(dynamicType)!;
-
-                        if (isSpawn) { // Spawn event has not yet been triggered
-                            if (!collection.has(id)) {
+                            if (isDespawn) { // Despawn event has been triggered
                                 collection.set(id, false);
+                            } else if (isSpawn) { // Spawn event has been triggered
+                                collection.set(id, true);
+                            }
+                        }
+                    } else {
+                        if (isSpawn || isDespawn) {
+                            const dynamicType: number = (data as any).type;
+                            const id = (data as any).id;
+
+                            if (!exists.has(dynamicType)) exists.set(dynamicType, new Map());
+                            const collection = exists.get(dynamicType)!;
+
+                            if (isSpawn) { // Spawn event has not yet been triggered
+                                if (!collection.has(id)) {
+                                    collection.set(id, false);
+                                }
                             }
                         }
                     }
+                } else if (runEvent) {
+                    const exec = ModuleLoader.getEvent(module as any)?.exec;
+                    if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
+                    exec(data as never, adjustedAPI);
                 }
-            } else if (runEvent) {
-                const exec = ModuleLoader.getEvent(module as any)?.exec;
-                if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
-                exec(data as never, adjustedAPI);
+            } catch (err) {
+                console.error(ASL_VM.verboseError(err));
             }
         }
 
@@ -216,9 +220,13 @@ export class Replay {
 
                 const exec = ModuleLoader.getDynamic(module as any).main.exec;
                 for (const { id, data } of collection) {
-                    const exist = exists.get(type)?.get(id);
-                    if (exist === undefined || exist === true) {
-                        exec(id, data as never, currentApi, lerp);
+                    try {
+                        const exist = exists.get(type)?.get(id);
+                        if (exist === undefined || exist === true) {
+                            exec(id, data as never, currentApi, lerp);
+                        }
+                    } catch (err) {
+                        console.error(ASL_VM.verboseError(err));
                     }
                 }
                 
@@ -230,7 +238,11 @@ export class Replay {
         state.time = currentTime;
 
         for (const tick of ModuleLoader.library.tick) {
-            tick(api);
+            try {
+                tick(api);
+            } catch (err) {
+                console.error(ASL_VM.verboseError(err));
+            }
         }
     }
 

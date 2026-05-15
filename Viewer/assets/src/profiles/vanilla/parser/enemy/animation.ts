@@ -223,12 +223,13 @@ export interface EnemyAnimState {
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
     main: {
         parse: async (data) => {
-            return {
+            const v = {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 state: states[await BitHelper.readByte(data)],
                 up: await BitHelper.readBool(data),
                 detect: await BitHelper.readByte(data) / 255
             };
+            return v;
         }, 
         exec: (id, data, snapshot, lerp) => {
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));

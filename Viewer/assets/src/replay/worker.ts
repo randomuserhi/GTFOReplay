@@ -101,7 +101,13 @@ let replay: Replay | undefined = undefined;
                         });
                         const exec = Internal.DynamicExec[module.typename][module.version];
                         if (exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                        exec(data, replay, api);
+                        try {
+                            exec(data, replay, api);
+                        } catch (err) {
+                            if (!(err instanceof RangeError)) {
+                                ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}`, type: "warning" });
+                            }
+                        }
 
                         if (!exists.has(data.type)) exists.set(data.type, new Map());
                         exists.get(data.type)!.set(data.id, module.typename === "ReplayRecorder.Spawn");
@@ -116,7 +122,13 @@ let replay: Replay | undefined = undefined;
                             data
                         });
                         if (func.exec === undefined) throw new NoExecFunc(`No valid exec function was found for '${module.typename}(${module.version})'.`);
-                        func.exec(data as never, api);
+                        try {
+                            func.exec(data as never, api);
+                        }  catch (err) {
+                            if (!(err instanceof RangeError)) {
+                                ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}`, type: "warning" });
+                            }
+                        }
                     }
                 }
 
@@ -140,7 +152,13 @@ let replay: Replay | undefined = undefined;
 
                     if (!exists.has(type)) exists.set(type, new Map());
                     if (exists.get(type)!.get(id) !== false) {
-                        func.main.exec(id, data, api, 1);
+                        try {
+                            func.main.exec(id, data, api, 1);
+                        } catch (err) {
+                            if (!(err instanceof RangeError)) {
+                                ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}`, type: "warning" });
+                            }
+                        }
                     }
                 }
                 return [dynamics, type];
@@ -165,6 +183,7 @@ let replay: Replay | undefined = undefined;
                 } as any;
 
                 exists.clear();
+
                 snapshot.events = await parseEvents(bytes); // parse events
                 const nDynamicCollections = await BitHelper.readUShort(bytes);
                 for (let i = 0; i < nDynamicCollections; ++i) {
@@ -181,6 +200,8 @@ let replay: Replay | undefined = undefined;
         } catch (err) {
             if (!(err instanceof RangeError)) {
                 ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}` });
+            } else {
+                console.log(`Finished parsing with:\n${vm.verboseError(err)}`);
             }
         }
 

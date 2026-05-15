@@ -43,7 +43,7 @@ namespace Vanilla.Enemy {
         private bool detect => tendril.m_state == ScoutAntenna.eTendrilState.MovingInDetect;
         private bool _detect = false;
 
-        public override bool Active => tendril != null;
+        public override bool Active => tendril != null && owner != null;
 
         public override bool IsDirty {
             get {

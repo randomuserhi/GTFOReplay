@@ -92,9 +92,13 @@ export const Player = () => {
         this.parser.addEventListener("end", () => {
             window.api.send("close");
         });
-        this.parser.addEventListener("error", ((err: { message: string, verbose: string }) => {
-            console.error(err.verbose);
-            this.view.addLog(err.message);
+        this.parser.addEventListener("error", ((err: { message: string, verbose: string, type: undefined | "warning" | "error" }) => {
+            if (err.type == "warning") {
+                console.warn(err.verbose);
+            } else {
+                console.error(err.verbose);
+            }
+            this.view.addLog(err);
         }) as any);
 
         if (path !== undefined) {
