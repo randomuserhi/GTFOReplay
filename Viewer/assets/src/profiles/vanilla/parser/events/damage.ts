@@ -101,7 +101,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             staggerDamage: await BitHelper.readHalf(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         const statTracker = StatTracker.from(snapshot);

@@ -25,7 +25,7 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Revive", "0.0.1", {
             target: await BitHelper.readUShort(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const statTracker = StatTracker.from(snapshot);
 

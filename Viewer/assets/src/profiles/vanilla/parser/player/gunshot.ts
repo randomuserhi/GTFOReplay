@@ -49,7 +49,7 @@ let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
             silent: false,
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const time = snapshot.time();
 
         const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", Factory("Array"));

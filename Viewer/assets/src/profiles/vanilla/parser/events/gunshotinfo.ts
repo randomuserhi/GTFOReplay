@@ -30,7 +30,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Gunshots.Info", "0.0.1", {
             crits: await BitHelper.readByte(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const statTracker = StatTracker.from(snapshot);
 

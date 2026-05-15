@@ -223,13 +223,12 @@ export interface EnemyAnimState {
 ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
     main: {
         parse: async (data) => {
-            const v = {
+            return {
                 velocity: { x: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, y: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10, z: (await BitHelper.readByte(data) / 255 * 2 - 1) * 10 },
                 state: states[await BitHelper.readByte(data)],
                 up: await BitHelper.readBool(data),
                 detect: await BitHelper.readByte(data) / 255
             };
-            return v;
         }, 
         exec: (id, data, snapshot, lerp) => {
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
@@ -318,7 +317,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.AttackWindup", "0.0.1", {
             animIndex: await BitHelper.readByte(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -341,7 +340,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
             type: hitreactTypes[await BitHelper.readByte(bytes)],
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -369,7 +368,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Melee", "0.0.1", {
             type: meleeTypes[await BitHelper.readByte(bytes)],
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -391,7 +390,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Jump", "0.0.1", {
             animIndex: await BitHelper.readByte(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -409,7 +408,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Heartbeat", "0.0.1", {
             animIndex: await BitHelper.readByte(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -428,7 +427,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Wakeup", "0.0.1", {
             turn: await BitHelper.readBool(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -446,7 +445,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerGrab", "0.0.1", {
             id: await BitHelper.readInt(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -463,7 +462,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.PouncerSpit", "0.0.1", {
             id: await BitHelper.readInt(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -481,7 +480,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.ScoutScream", "0.0.1", {
             start: await BitHelper.readBool(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
@@ -501,7 +500,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.BigFlyerCharge", "0.0.1", {
             charge: await BitHelper.readHalf(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;

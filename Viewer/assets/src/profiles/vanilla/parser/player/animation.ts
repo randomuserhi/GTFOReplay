@@ -192,7 +192,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.MeleeSwing", "0.0.1", {
             charged: await BitHelper.readBool(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         
         const id = data.owner;
@@ -209,7 +209,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.MeleeShove", "0.0.1", {
             owner: await BitHelper.readInt(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         
         const id = data.owner;
@@ -225,7 +225,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.ConsumableThrow", "0.0.1", 
             owner: await BitHelper.readInt(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         
         const id = data.owner;
@@ -241,7 +241,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.Revive", "0.0.1", {
             owner: await BitHelper.readInt(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         
         const id = data.owner;
@@ -258,7 +258,7 @@ ModuleLoader.registerEvent("Vanilla.Player.Animation.Downed", "0.0.1", {
             owner: await BitHelper.readInt(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
         
         const id = data.owner;

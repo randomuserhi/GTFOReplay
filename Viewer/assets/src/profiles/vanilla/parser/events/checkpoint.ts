@@ -22,7 +22,7 @@ export interface Checkpoint {
 ModuleLoader.registerEvent("Vanilla.Checkpoint", "0.0.1", {
     parse: async (bytes, snapshot) => {
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const checkpoints = snapshot.getOrDefault("Vanilla.Checkpoint", Factory("Array"));
         checkpoints.push({
             time: snapshot.time()

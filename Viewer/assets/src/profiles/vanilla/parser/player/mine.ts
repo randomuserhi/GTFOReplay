@@ -142,7 +142,7 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
             shot: await BitHelper.readBool(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
         const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
         

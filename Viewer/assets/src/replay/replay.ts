@@ -1,7 +1,6 @@
 import { signal, Signal } from "@/rhu/signal.js";
 import { Internal } from "./internal.js";
 import { ModuleDesc, ModuleLoader, NoExecFunc, ReplayApi, Typemap, UnknownModuleType } from "./moduleloader.js";
-import { ASL_VM } from "./vm.js";
 
 export declare namespace Timeline {
     interface Event<T = unknown> {
@@ -143,6 +142,7 @@ export class Replay {
                     if (exec === undefined) throw new NoExecFunc(`Could not find exec function for '${module.typename}(${module.version})'.`);
 
                     if (runEvent) {
+                        exec(data, this, adjustedAPI);
                         if (isSpawn || isDespawn) {
                             const dynamicType: number = (data as any).type;
                             const id = (data as any).id;
@@ -177,7 +177,7 @@ export class Replay {
                     exec(data as never, adjustedAPI);
                 }
             } catch (err) {
-                console.error(ASL_VM.verboseError(err));
+                console.error(err);
             }
         }
 
@@ -220,13 +220,14 @@ export class Replay {
 
                 const exec = ModuleLoader.getDynamic(module as any).main.exec;
                 for (const { id, data } of collection) {
+                    const exist = exists.get(type)?.get(id);
                     try {
-                        const exist = exists.get(type)?.get(id);
                         if (exist === undefined || exist === true) {
                             exec(id, data as never, currentApi, lerp);
                         }
                     } catch (err) {
-                        console.error(ASL_VM.verboseError(err));
+                        console.log(exist);
+                        console.error(err);
                     }
                 }
                 
@@ -241,7 +242,7 @@ export class Replay {
             try {
                 tick(api);
             } catch (err) {
-                console.error(ASL_VM.verboseError(err));
+                console.error(err);
             }
         }
     }

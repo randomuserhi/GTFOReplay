@@ -37,7 +37,7 @@ ModuleLoader.registerEvent("EWC.Explosion", "0.0.1", {
             radius: await BitHelper.readHalf(bytes),
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const explosionEffects = snapshot.getOrDefault("EWC.Explosion.ExplosionEffect", Factory("Array"));
 
         const time = snapshot.time();

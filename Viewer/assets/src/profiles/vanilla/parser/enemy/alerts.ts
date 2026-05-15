@@ -32,7 +32,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Alert", "0.0.1", {
             slot: await BitHelper.readByte(bytes)
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const { enemy, slot } = data;
         let player: number | undefined = undefined;

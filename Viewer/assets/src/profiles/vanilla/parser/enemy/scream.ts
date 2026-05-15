@@ -48,7 +48,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Scream", "0.0.1", {
             type: screamTypes[await BitHelper.readByte(bytes)]
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.enemy;

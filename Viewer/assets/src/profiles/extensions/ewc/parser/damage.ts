@@ -72,7 +72,7 @@ let parser = ModuleLoader.registerEvent("EWC.Damage", "0.0.1", {
             isSentry: false
         };
     },
-    exec: async (data, snapshot) => {
+    exec: (data, snapshot) => {
         const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         const statTracker = StatTracker.from(snapshot);
