@@ -312,12 +312,18 @@ namespace ReplayRecorder.Snapshot {
                 bs.Reserve(sizeof(ushort), true);
 
                 foreach (DynamicCollection collection in dynamics.Values) {
+                    // Keep note of where the buffer of this collection starts
+                    // Allows us to restore the buffer if required
+                    int restore = bs.count;
                     try {
                         if (collection.Write(bs, now) > 0) {
                             ++numWritten;
                         }
                     } catch (Exception ex) {
                         APILogger.Error($"Unexpected error occured whilst trying to write DynamicCollection[{collection.Type}] at [{now}ms]:\n{ex}\n{ex.StackTrace}");
+
+                        // Restore byte buffer to prior collection being written
+                        bs.count = restore;
                     }
                 }
 
