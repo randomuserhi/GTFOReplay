@@ -96,23 +96,35 @@ namespace Vanilla.Mines {
                 Replay.Trigger(MineManager.currentDetonateEvent);
             }
 
+            private static int? currentMineId = null;
+
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
             [HarmonyPrefix]
             private static void Prefix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
-                DetonateMine(GetMineId(__instance));
+                currentMineId = GetMineId(__instance);
+                DetonateMine(currentMineId.Value);
             }
-
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
             [HarmonyPostfix]
             private static void Postfix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
                 MineManager.currentDetonateEvent = null;
-                Replay.Despawn(Replay.Get<rMine>(GetMineId(__instance)));
+                if (currentMineId != null)
+                    Replay.Despawn(Replay.Get<rMine>(currentMineId.Value));
+                currentMineId = null;
+            }
+
+            [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
+            [HarmonyPrefix]
+            private static void Prefix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
+                currentMineId = GetMineId(__instance);
             }
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
             [HarmonyPostfix]
             private static void Postfix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
                 MineManager.currentDetonateEvent = null;
-                Replay.Despawn(Replay.Get<rMine>(GetMineId(__instance)));
+                if (currentMineId != null)
+                    Replay.Despawn(Replay.Get<rMine>(currentMineId.Value));
+                currentMineId = null;
             }
         }
 
