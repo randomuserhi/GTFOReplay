@@ -8,6 +8,7 @@ using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
 using ReplayRecorder.SNetUtils;
 using SNetwork;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using Vanilla.Noises;
 
@@ -52,7 +53,7 @@ namespace Vanilla.Mines {
             [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedPickup))]
             [HarmonyPrefix]
             private static void SyncedPickup(MineDeployerInstance __instance) {
-                Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
+                Replay.Despawn(Replay.Get<rMine>(GetMineId(__instance)));
             }
 
             public static PlayerAgent? player = null;
@@ -72,7 +73,7 @@ namespace Vanilla.Mines {
             private static void Prefix_SyncedTrigger(MineDeployerInstance __instance) {
                 if (!SNet.IsMaster) return;
 
-                rMine mine = Replay.Get<rMine>(__instance.gameObject.GetInstanceID());
+                rMine mine = Replay.Get<rMine>(GetMineId(__instance));
 
                 if (player != null) {
                     mine.shot = true;
@@ -98,21 +99,31 @@ namespace Vanilla.Mines {
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
             [HarmonyPrefix]
             private static void Prefix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
-                DetonateMine(__instance.gameObject.GetInstanceID());
+                DetonateMine(GetMineId(__instance));
             }
 
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
             [HarmonyPostfix]
             private static void Postfix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
                 MineManager.currentDetonateEvent = null;
-                Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
+                Replay.Despawn(Replay.Get<rMine>(GetMineId(__instance)));
             }
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
             [HarmonyPostfix]
             private static void Postfix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
                 MineManager.currentDetonateEvent = null;
-                Replay.Despawn(Replay.Get<rMine>(__instance.gameObject.GetInstanceID()));
+                Replay.Despawn(Replay.Get<rMine>(GetMineId(__instance)));
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetMineId(MineDeployerInstance instance) {
+            return instance.Replicator.Key;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetMineId(MineDeployerInstance_Detonate_Explosive instance) {
+            return GetMineId(instance.GetComponent<MineDeployerInstance>());
         }
 
         public bool shot = false;
@@ -128,7 +139,7 @@ namespace Vanilla.Mines {
 
         private Identifier item = Identifier.unknown;
 
-        public rMine(PlayerAgent player, MineDeployerInstance mine, Identifier item) : base(mine.gameObject.GetInstanceID(), new MineTransform(mine)) {
+        public rMine(PlayerAgent player, MineDeployerInstance mine, Identifier item) : base(GetMineId(mine), new MineTransform(mine)) {
             this.instance = mine;
             laser = mine.m_detection.TryCast<MineDeployerInstance_Detect_Laser>();
             this.item = item;
