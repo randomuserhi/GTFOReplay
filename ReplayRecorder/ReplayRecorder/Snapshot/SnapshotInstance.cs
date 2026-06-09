@@ -382,7 +382,10 @@ namespace ReplayRecorder.Snapshot {
             string path = Utils.RemoveInvalidCharacters(ConfigManager.ReplayFolder);
             filename = Utils.RemoveInvalidCharacters(filename, isFullPath: false);
 
-            Directory.CreateDirectory(path);
+            if (path != string.Empty) {
+                Directory.CreateDirectory(path);
+            }
+
             if (!Directory.Exists(path)) {
                 path = "./";
             }
