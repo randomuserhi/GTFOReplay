@@ -9,6 +9,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
             "ReplayRecorder.Header": {
                 version: string;
                 isMaster: boolean;
+                recorder?: bigint;
             }
         }
     }
@@ -20,6 +21,17 @@ ModuleLoader.registerHeader("ReplayRecorder.Header", "0.0.1", {
         header.set("ReplayRecorder.Header", {
             version: await BitHelper.readString(data),
             isMaster: await BitHelper.readByte(data) == 1
+        });
+    }
+});
+
+ModuleLoader.registerHeader("ReplayRecorder.Header", "0.0.2", { 
+    parse: async (data, header) => {
+        if (header.has("ReplayRecorder.Header")) throw new Error("Replay header was already written.");
+        header.set("ReplayRecorder.Header", {
+            version: await BitHelper.readString(data),
+            isMaster: await BitHelper.readByte(data) == 1,
+            recorder: await BitHelper.readLong(data)
         });
     }
 });

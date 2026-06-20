@@ -15,7 +15,7 @@ namespace ReplayRecorder.Core {
         }
     }
 
-    [ReplayData("ReplayRecorder.Header", "0.0.1")]
+    [ReplayData("ReplayRecorder.Header", "0.0.2")]
     internal class HeaderData : ReplayHeader {
         [ReplayInit]
         private static void Init() {
@@ -25,6 +25,7 @@ namespace ReplayRecorder.Core {
         public override void Write(ByteBuffer buffer) {
             BitHelper.WriteBytes(Module.Version, buffer);
             BitHelper.WriteBytes(SNetwork.SNet.IsMaster, buffer);
+            BitHelper.WriteBytes(SNetwork.SNet.LocalPlayer.Lookup, buffer);
         }
     }
 }
