@@ -351,13 +351,13 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     <span>Damage Dealt to Players</span>
                     <ul style="display: flex; flex-direction: column; gap: 10px;">
                         <li>
-                            ${html.bind(TypeList("Bullet Damage", "inherit"), "bulletDamage")}
+                            ${html.bind(TypeList("Bullet Damage", "inherit", "%"), "bulletDamage")}
                         </li>
                         <li>
-                            ${html.bind(TypeList("Sentry Damage", "inherit"), "sentryDamage")}
+                            ${html.bind(TypeList("Sentry Damage", "inherit", "%"), "sentryDamage")}
                         </li>
                         <li>
-                            ${html.bind(TypeList("Explosive Damage", "inherit"), "explosiveDamage")}
+                            ${html.bind(TypeList("Explosive Damage", "inherit", "%"), "explosiveDamage")}
                         </li>
                     </ul>
                 </div>
