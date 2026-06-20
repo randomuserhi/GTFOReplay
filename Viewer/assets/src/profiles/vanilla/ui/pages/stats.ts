@@ -62,7 +62,7 @@ const Item = (inKey: string) => {
     return dom as html<Item>;
 };
 
-export const TypeList = (inTitle: string) => {
+export const TypeList = (inTitle: string, titleFontSize: string = "20", units: string = "") => {
     interface TypeList {
         readonly values: Signal<[key: string, value: number][]>;
     }
@@ -89,15 +89,15 @@ export const TypeList = (inTitle: string) => {
         if (el === undefined) {
             el = Item(key);
         }
-        el.value(`${value}`);
+        el.value(`${value}${units}`);
         return el;
     });
 
     const dom = html<Mutable<Private & TypeList>>/**//*html*/`
         <div style="display: flex">
-            <span style="font-size: 20px;">${title}</span>
+            <span style="font-size: ${titleFontSize}px;">${title}</span>
             <div style="flex: 1"></div>
-            <span>${total}</span>
+            <span>${total}${units}</span>
         </div>
         <span m-id="empty" style="display: block;">None</span>
         <ul>
@@ -340,30 +340,24 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
     (self, v) => {
         const dom = html<{
             wrapper: html<typeof FeatureWrapper>;
-            bulletDamage: Signal<string>;
-            sentryDamage: Signal<string>;
-            explosiveDamage: Signal<string>;
+            bulletDamage: html<typeof TypeList>;
+            sentryDamage: html<typeof TypeList>;
+            explosiveDamage: html<typeof TypeList>;
         }>/**//*html*/`
             ${html.open(FeatureWrapper("Damage Dealt to Players")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
                     <span>Damage Dealt to Players</span>
-                    <ul>
-                        <li style="display: flex">
-                            <span>Bullet Damage</span>
-                            <div style="flex: 1"></div>
-                            <span>${html.bind(signal(""), "bulletDamage")}</span>
+                    <ul style="display: flex; flex-direction: column; gap: 10px;">
+                        <li>
+                            ${html.bind(TypeList("Bullet Damage", "inherit"), "bulletDamage")}
                         </li>
-                        <li style="display: flex">
-                            <span>Sentry Damage</span>
-                            <div style="flex: 1"></div>
-                            <span>${html.bind(signal(""), "sentryDamage")}</span>
+                        <li>
+                            ${html.bind(TypeList("Sentry Damage", "inherit"), "sentryDamage")}
                         </li>
-                        <li style="display: flex">
-                            <span>Explosive Damage</span>
-                            <div style="flex: 1"></div>
-                            <span>${html.bind(signal(""), "explosiveDamage")}</span>
+                        <li>
+                            ${html.bind(TypeList("Explosive Damage", "inherit"), "explosiveDamage")}
                         </li>
                     </ul>
                 </div>
@@ -383,9 +377,9 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const snet = self.dropdown.value();
                 const player = StatTracker.getPlayer(snet, StatTracker.from(api));
                 
-                bulletDamage(`${Math.round((Math.round([...player.playerDamage.bulletDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
-                sentryDamage(`${Math.round((Math.round([...player.playerDamage.sentryDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
-                explosiveDamage(`${Math.round((Math.round([...player.playerDamage.explosiveDamage.values()].reduce((p, c) => p + c, 0) * 10) / 10) / PlayerDatablock.health * 1000) / 10}%`);
+                bulletDamage.values([...player.playerDamage.bulletDamage.entries()].map((kv) => [api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(kv[0])!.nickname, Math.round(Math.round(kv[1] * 10) / 10 / PlayerDatablock.health * 1000) / 10]));
+                sentryDamage.values([...player.playerDamage.sentryDamage.entries()].map((kv) => [api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(kv[0])!.nickname, Math.round(Math.round(kv[1] * 10) / 10 / PlayerDatablock.health * 1000) / 10]));
+                explosiveDamage.values([...player.playerDamage.explosiveDamage.entries()].map((kv) => [api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(kv[0])!.nickname, Math.round(Math.round(kv[1] * 10) / 10 / PlayerDatablock.health * 1000) / 10]));
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
