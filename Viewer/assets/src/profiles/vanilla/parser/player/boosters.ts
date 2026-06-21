@@ -34,13 +34,13 @@ export interface PlayerBoosters {
     id: number;
     implants: BoosterImplant[];
     conditionsMet: boolean[];
+    deleted: boolean;
 }
 
 const parser: ModuleLoader.DynamicModule<"Vanilla.Player.Boosters"> = ModuleLoader.registerDynamic("Vanilla.Player.Boosters", "0.0.1", {
     main: {
         parse: async (data, snapshot, id) => {
             const boosters = snapshot.getOrDefault("Vanilla.Player.Boosters", Factory("Map"));
-    
             if (!boosters.has(id)) throw new Error(`Player boosters of id '${id}' was not found.`);
             const booster = boosters.get(id)!;
             
@@ -94,9 +94,9 @@ const parser: ModuleLoader.DynamicModule<"Vanilla.Player.Boosters"> = ModuleLoad
         exec: (id, data, snapshot) => {
             const boosters = snapshot.getOrDefault("Vanilla.Player.Boosters", Factory("Map"));
         
-            if (boosters.has(id)) throw new Error(`Player boosters of id '${id}' already exists.`);
+            if (boosters.get(id)?.deleted === false) throw new Error(`Player boosters of id '${id}' already exists.`);
             const booster = { 
-                id, ...data, conditionsMet: new Array(data.implants.length)
+                id, ...data, conditionsMet: new Array(data.implants.length), deleted: false
             };
             for (let i = 0; i < booster.conditionsMet.length; ++i) {
                 booster.conditionsMet[i] = false;
@@ -112,7 +112,7 @@ const parser: ModuleLoader.DynamicModule<"Vanilla.Player.Boosters"> = ModuleLoad
             const boosters = snapshot.getOrDefault("Vanilla.Player.Boosters", Factory("Map"));
 
             if (!boosters.has(id)) throw new Error(`Player of id '${id}' did not exist.`);
-            boosters.delete(id);
+            boosters.get(id)!.deleted = true;
         }
     }
 });
