@@ -3,7 +3,7 @@ import { GearPartStockDatablock } from "@asl/vanilla/datablocks/gear/parts/stock
 
 GearPartStockDatablock.clear();
 
-const root = `../js3party/models/GearParts/Stock`;
+const root = `../gear/GearParts/Stock`;
 
 GearPartStockDatablock.set(12, {
     path: `${root}/Stock_Precision_1.glb`,

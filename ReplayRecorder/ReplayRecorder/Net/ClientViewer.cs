@@ -26,10 +26,11 @@ namespace ReplayRecorder.Net {
         public static Dictionary<EndPoint, HostClient.Connection> endPointToSteam = new Dictionary<EndPoint, HostClient.Connection>();
 
         static ClientViewer() {
-            socket.onAccept += onAccept;
-            socket.onReceive += onReceive;
-            socket.onClose += onClose;
-            socket.onDisconnect += onDisconnect;
+            // Socket I/O runs off-thread; Steam connections and lobby state belong to the game thread.
+            socket.onAccept += endpoint => MainThread.Run(() => Steam.SteamPacketIO.Guard("Viewer accepted", () => onAccept(endpoint)));
+            socket.onReceive += (bytes, endpoint) => MainThread.Run(() => Steam.SteamPacketIO.Guard("Viewer message", () => onReceive(bytes, endpoint)));
+            socket.onClose += () => MainThread.Run(() => Steam.SteamPacketIO.Guard("Viewer closed", onClose));
+            socket.onDisconnect += endpoint => MainThread.Run(() => Steam.SteamPacketIO.Guard("Viewer disconnected", () => onDisconnect(endpoint)));
             socket.Bind(new IPEndPoint(IPAddress.Any, 56759));
         }
 

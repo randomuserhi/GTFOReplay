@@ -1,7 +1,7 @@
 import { Vector3Like } from "@esm/three";
 import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../../renderer/animations/gearfold.js";
-import { HumanAnimation } from "../../renderer/animations/human.js";
+import { PlayerAnimation } from "../../renderer/animations/human.js";
 import { GearModel } from "../../renderer/models/gear.js";
 import { AlignType, ComponentType, componentTypes, GearComp, GearJSON } from "../../renderer/models/gearjson.js";
 import { Archetype } from "../items/item.js";
@@ -10,16 +10,17 @@ import { Datablock } from "../lib.js";
 if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
 export interface MeleeArchetype {
-    equipAnim: HumanAnimation,
-    movementAnim: HumanAnimation,
-    jumpAnim: HumanAnimation,
-    fallAnim: HumanAnimation,
-    landAnim: HumanAnimation,
-    attackAnim: HumanAnimation,
-    chargeAnim: HumanAnimation,
-    chargeIdleAnim: HumanAnimation,
-    releaseAnim: HumanAnimation,
-    shoveAnim: HumanAnimation,
+    grip: "hammer" | "spear" | "knife" | "bat";
+    equipAnim: PlayerAnimation,
+    movementAnim: PlayerAnimation,
+    jumpAnim: PlayerAnimation,
+    fallAnim: PlayerAnimation,
+    landAnim: PlayerAnimation,
+    attackAnim: PlayerAnimation,
+    chargeAnim: PlayerAnimation,
+    chargeIdleAnim: PlayerAnimation,
+    releaseAnim: PlayerAnimation,
+    shoveAnim: PlayerAnimation,
 }
 
 export interface GunArchetype {

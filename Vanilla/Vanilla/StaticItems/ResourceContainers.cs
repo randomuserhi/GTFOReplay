@@ -12,9 +12,8 @@ using Vanilla.BepInEx;
 using Vanilla.Metadata;
 
 namespace Vanilla.StaticItems {
-    [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.1")]
+    [ReplayData("Vanilla.Map.ResourceContainers.State", "0.0.2")]
     internal class rContainer : ReplayDynamic {
-        private LG_ResourceContainer_Storage container;
         private LG_WeakResourceContainer core;
         private LG_ResourceContainer_Sync sync;
 
@@ -28,52 +27,52 @@ namespace Vanilla.StaticItems {
         public Vector3 position;
         public Quaternion rotation;
         public ushort serialNumber => (ushort)core.m_serialNumber;
+        public readonly Vector3 scale;
+        public string modelName => core.gameObject.name;
+        public LG_WeakLock? weakLock => core.m_weakLock;
 
         public rContainer(LG_ResourceContainer_Storage container, bool isLocker, byte dimension) : base(container.GetInstanceID()) {
-            this.container = container;
             this.isLocker = isLocker;
             this.dimension = dimension;
             core = container.m_core.Cast<LG_WeakResourceContainer>();
             sync = core.m_sync.Cast<LG_ResourceContainer_Sync>();
 
-            position = container.transform.position;
-            rotation = container.transform.rotation;
+            // Storage is a generation helper and may be destroyed before header capture.
+            // Keep its placement as values, just like position and rotation.
+            var transform = container.transform;
+            position = transform.position;
+            rotation = transform.rotation;
+            scale = transform.lossyScale;
         }
 
-        public override bool Active => core != null;
-        public override bool IsDirty => _closed != closed;
+        public override bool Active => core != null && sync != null;
+        public override bool IsDirty => _closed != closed || _lockType != lockType;
 
         private bool closed => sync.m_stateReplicator.State.status != eResourceContainerStatus.Open;
         private bool _closed = true;
 
-        private bool weaklock => core.m_weakLock != null && core.m_weakLock.Status == eWeakLockStatus.LockedMelee;
-        private bool hacklock => core.m_weakLock != null && core.m_weakLock.Status == eWeakLockStatus.LockedHackable;
+        private byte lockType => core.m_weakLock == null ? (byte)0 : core.m_weakLock.Status switch {
+            eWeakLockStatus.LockedMelee => (byte)1,
+            eWeakLockStatus.LockedHackable => (byte)2,
+            _ => (byte)0
+        };
+        private byte _lockType;
 
         public override void Write(ByteBuffer buffer) {
             _closed = closed;
+            _lockType = lockType;
 
             BitHelper.WriteBytes(_closed, buffer);
+            BitHelper.WriteBytes(_lockType, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {
             Write(buffer);
-            eWeakLockType type = eWeakLockType.None;
-            if (core.m_weakLock != null) {
-                switch (core.m_weakLock.Status) {
-                case eWeakLockStatus.LockedMelee:
-                    type = eWeakLockType.Melee;
-                    break;
-                case eWeakLockStatus.LockedHackable:
-                    type = eWeakLockType.Hackable;
-                    break;
-                }
-            }
-            BitHelper.WriteBytes((byte)type, buffer);
         }
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.ResourceContainers", "0.0.3")]
+    [ReplayData("Vanilla.Map.ResourceContainers", "0.0.5")]
     internal class rContainers : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -186,9 +185,12 @@ namespace Vanilla.StaticItems {
 
         [ReplayOnElevatorStop]
         private static void Trigger() {
-            Replay.Trigger(new rContainers());
+            // Generation may discard entire containers. Header and dynamic spawns must
+            // describe the same surviving set, without dereferencing destroyed cores.
+            var captured = containers.Values.Where(container => container.Active).ToArray();
+            Replay.Trigger(new rContainers(captured));
 
-            foreach (rContainer container in containers.Values) {
+            foreach (rContainer container in captured) {
                 Replay.Spawn(container);
             }
 
@@ -202,11 +204,17 @@ namespace Vanilla.StaticItems {
 
         internal static Dictionary<int, rContainer> containers = new Dictionary<int, rContainer>();
 
-        public override void Write(ByteBuffer buffer) {
-            // TODO(randomuserhi): Throw error on too many containers
-            BitHelper.WriteBytes((ushort)containers.Count, buffer);
+        private readonly rContainer[] captured;
 
-            foreach (rContainer container in containers.Values) {
+        internal rContainers(rContainer[] captured) {
+            this.captured = captured;
+        }
+
+        public override void Write(ByteBuffer buffer) {
+            if (captured.Length > ushort.MaxValue) throw new InvalidOperationException("Too many resource containers.");
+            BitHelper.WriteBytes((ushort)captured.Length, buffer);
+
+            foreach (rContainer container in captured) {
                 BitHelper.WriteBytes(container.id, buffer);
                 BitHelper.WriteBytes(container.dimension, buffer);
                 BitHelper.WriteBytes(container.position, buffer);
@@ -216,6 +224,15 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(container.consumableType, buffer);
                 BitHelper.WriteBytes(container.registered, buffer);
                 BitHelper.WriteBytes((byte)container.assignedLock, buffer);
+                BitHelper.WriteBytes(container.scale, buffer);
+                var weakLock = container.weakLock;
+                BitHelper.WriteBytes(weakLock != null, buffer);
+                if (weakLock != null) {
+                    BitHelper.WriteBytes(weakLock.transform.position, buffer);
+                    BitHelper.WriteHalf(weakLock.transform.rotation, buffer);
+                    BitHelper.WriteBytes(weakLock.transform.lossyScale, buffer);
+                }
+                BitHelper.WriteBytes(container.modelName, buffer);
             }
         }
     }

@@ -2,7 +2,7 @@ import { GearPartHandleDatablock } from "./handle.js";
 
 GearPartHandleDatablock.clear();
 
-const root = `../js3party/models/GearParts/Handle`;
+const root = `../gear/GearParts/Handle`;
 
 GearPartHandleDatablock.set(2, {
     path: `${root}/Handle_Hammer_1.glb`,    

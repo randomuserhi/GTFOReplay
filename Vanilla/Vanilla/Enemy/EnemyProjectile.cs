@@ -30,6 +30,7 @@ namespace Vanilla.Enemy {
             [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.DoFireTargeting))]
             [HarmonyPostfix]
             private static void DoFireTargeting(ProjectileManager __instance, ProjectileManager.pFireTargeting data) {
+                if (!Replay.Active) return;
                 GameObject projectile = ProjectileManager.s_tempGO;
                 if (projectile == null) return;
 
@@ -38,14 +39,15 @@ namespace Vanilla.Enemy {
 
             [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.OnDestroy))]
             [HarmonyPrefix]
-            private static void OnDestroy(ProjectileBase __instance) {
-                Replay.Despawn(Replay.Get<rEnemyProjectile>(__instance.gameObject.GetInstanceID()));
-            }
+            private static void OnDestroy(ProjectileBase __instance) => OnProjectileEnd(__instance);
 
             [HarmonyPatch(typeof(ProjectileBase), nameof(ProjectileBase.Collision))]
             [HarmonyPrefix]
-            private static void OnCollision(ProjectileBase __instance) {
-                Replay.Despawn(Replay.Get<rEnemyProjectile>(__instance.gameObject.GetInstanceID()));
+            private static void OnProjectileEnd(ProjectileBase __instance) {
+                // Collision may run repeatedly before destruction, and cleanup
+                // still runs after a recording has stopped or failed.
+                if (!Replay.Active) return;
+                Replay.TryDespawn<rEnemyProjectile>(__instance.gameObject.GetInstanceID());
             }
         }
 

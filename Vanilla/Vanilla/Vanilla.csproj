@@ -21,6 +21,7 @@
 	</Target>
 
 	<ItemGroup>
+		<EmbeddedResource Include="../../Viewer/assets/assets/environment/architecture/manifest.json" LogicalName="Vanilla.NativeSurfaces.json" />
 		<Reference Include="..\..\Dependencies\ExtraWeaponCustomization.dll" Private="false" />
 		<Reference Include="$(AdditionalIncludes)\ReplayRecorder\ReplayRecorder.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />

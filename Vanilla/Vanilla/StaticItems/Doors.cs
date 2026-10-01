@@ -60,10 +60,12 @@ namespace Vanilla.StaticItems {
             BitHelper.WriteBytes(isCheckpoint, buffer);
             BitHelper.WriteBytes((byte)type, buffer);
             BitHelper.WriteBytes(size, buffer);
+            BitHelper.WriteBytes(mono.transform.lossyScale, buffer);
+            BitHelper.WriteBytes(mono.gameObject.name, buffer);
         }
     }
 
-    [ReplayData("Vanilla.Map.Doors", "0.0.1")]
+    [ReplayData("Vanilla.Map.Doors", "0.0.2")]
     internal class rDoors : ReplayHeader {
         List<rDoor> doors;
 

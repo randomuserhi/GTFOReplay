@@ -43,6 +43,7 @@ module.exports = function ( { types: t } ) {
                         }
           
                         const statements = [];
+                        if (specifiers.length === 0) statements.push(`await require("${source}", "${type}")`);
                         if (defaultSpecifiers.length > 0) statements.push(defaultSpecifiers.join(";\n"));
                         if (importSpecifiers.length > 0) statements.push(`const { ${importSpecifiers.join(", ")} } = await require("${source}", "${type}")`);
                         if (namespaceSpecifiers.length > 0) statements.push(namespaceSpecifiers.join(";\n"));

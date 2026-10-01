@@ -2,7 +2,7 @@ import { GearPartDeliveryDatablock } from "@asl/vanilla/datablocks/gear/parts/de
 
 GearPartDeliveryDatablock.clear();
 
-const root = `../js3party/models/GearParts/Delivery`;
+const root = `../gear/GearParts/Delivery`;
 
 GearPartDeliveryDatablock.set(2, {
     path: `${root}/Delivery_Mine_Deployer_Direct_1.glb`,

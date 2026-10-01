@@ -65,7 +65,7 @@ namespace Vanilla.Enemy {
         private static void Postfix_Scream(ES_Scream __instance) {
             if (!SNet.IsMaster) return;
 
-            Replay.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent, (byte)__instance.m_lastAnimIndex));
+            rEnemyAnimation.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent, (byte)__instance.m_lastAnimIndex));
         }
         [HarmonyPatch(typeof(ES_Scream), nameof(ES_Scream.Update))]
         [HarmonyPrefix]
@@ -84,7 +84,7 @@ namespace Vanilla.Enemy {
 
             Il2CppSystem.Action<pES_EnemyScreamData>? previous = __instance.m_screamPacket.ReceiveAction;
             __instance.m_screamPacket.ReceiveAction = (Action<pES_EnemyScreamData>)((packet) => {
-                Replay.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent, packet.AnimIndex));
+                rEnemyAnimation.Trigger(new rEnemyScream(__instance.m_ai.m_enemyAgent, packet.AnimIndex));
                 previous?.Invoke(packet);
             });
         }
@@ -107,7 +107,7 @@ namespace Vanilla.Enemy {
                 }
 
                 EnemyAgent self = __instance.m_enemyAgent;
-                Replay.Trigger(new rEnemyScream(self, (byte)__instance.m_lastAnimIndex, rEnemyScream.Type.Scout));
+                rEnemyAnimation.Trigger(new rEnemyScream(self, (byte)__instance.m_lastAnimIndex, rEnemyScream.Type.Scout));
                 if (!SNet.IsMaster) {
                     Replay.Trigger(new rEnemyAlert(self));
                     APILogger.Debug("Client-side scout wake up.");

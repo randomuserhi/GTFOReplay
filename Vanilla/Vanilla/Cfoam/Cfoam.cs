@@ -1,12 +1,10 @@
 ﻿using API;
 using HarmonyLib;
-using Player;
+using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.Core;
-using ReplayRecorder.SNetUtils;
-using SNetwork;
 using UnityEngine;
 using Vanilla.Map;
 
@@ -34,18 +32,11 @@ namespace Vanilla.Cfoam {
             [HarmonyPatch(typeof(ProjectileManager), nameof(ProjectileManager.SpawnGlueGunProjectileIfNeeded))]
             [HarmonyPostfix]
             private static void SpawnGlueGunProjectile(ProjectileManager __instance, GlueGunProjectile __result) {
-                if (__result == null) return;
+                if (!Replay.Active || __result == null) return;
 
-                PlayerAgent player = PlayerManager.GetLocalPlayerAgent();
-                byte dimension;
-                if (SNetUtils.TryGetSender(__instance.m_fireGlue.m_packet, out SNet_Player? sender) && sender.PlayerAgent != null) {
-                    dimension = (byte)sender.PlayerAgent.Cast<PlayerAgent>().DimensionIndex;
-                } else if (player != null) {
-                    dimension = (byte)player.DimensionIndex;
-                } else {
-                    dimension = 0;
-                    APILogger.Error("Could not get dimension of cfoam blob.");
-                }
+                // Level-placed foam can spawn before any player agent exists.
+                // The native spawn position owns its dimension, not the local viewer.
+                byte dimension = (byte)Dimension.GetDimensionFromPos(__result.transform.position).DimensionIndex;
 
                 int id = __result.GetInstanceID();
                 if (Replay.Has<rCfoam>(id)) {

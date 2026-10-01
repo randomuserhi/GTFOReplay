@@ -2,7 +2,7 @@ import { GearPartGripDatablock } from "@asl/vanilla/datablocks/gear/parts/grip.j
 
 GearPartGripDatablock.clear();
 
-const root = `../js3party/models/GearParts/Grip`;
+const root = `../gear/GearParts/Grip`;
 
 GearPartGripDatablock.set(2, {
     path: `${root}/Grip_1.glb`,

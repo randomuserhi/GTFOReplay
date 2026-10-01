@@ -1,5 +1,6 @@
 ﻿using API;
 using HarmonyLib;
+using AIGraph;
 using LevelGeneration;
 using ReplayRecorder;
 using ReplayRecorder.API;
@@ -280,7 +281,7 @@ namespace Vanilla.Map {
                     MapUtils.lowestPoint[(byte)dimension.DimensionIndex] = low;
                 }
 
-                Replay.Trigger(new rMapGeometry((byte)dimension.DimensionIndex, surface));
+                Replay.Trigger(new rMapGeometry(dimension, surface));
                 surfaces[i].mesh = null;
 
                 GC.Collect();
@@ -304,31 +305,61 @@ namespace Vanilla.Map {
 
             APILogger.Debug($"Generating map navmesh...");
 
-            for (int i = 0; i < dimensions.Count; ++i) {
-                // Clear navmesh
+            try {
+                for (int i = 0; i < dimensions.Count; ++i) {
+                    NavMesh.RemoveAllNavMeshData();
+                    NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
+                    GenerateMeshSurfaces(dimensions[i]);
+                }
+            } finally {
+                // Capture failures must never leave the game's navigation graph replaced.
+                APILogger.Debug("Re-constructing navmesh...");
                 NavMesh.RemoveAllNavMeshData();
-                NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
-                GenerateMeshSurfaces(dimensions[i]);
-            }
-
-            APILogger.Debug($"Re-constructing navmesh...");
-
-            NavMesh.RemoveAllNavMeshData();
-            for (int i = 0; i < dimensions.Count; ++i) {
-                // Clear navmesh
-                dimensions[i].NavmeshInstance = NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
+                for (int i = 0; i < dimensions.Count; ++i) {
+                    dimensions[i].NavmeshInstance = NavMesh.AddNavMeshData(dimensions[i].NavmeshData);
+                }
             }
         }
     }
 
-    [ReplayData("Vanilla.Map.Geometry", "0.0.1")]
+    [ReplayData("Vanilla.Map.Geometry", "0.0.4")]
     internal class rMapGeometry : ReplayHeader {
         private byte dimension;
         private Surface surface;
+        private byte[] themes;
+        private static bool themeCaptureFailed;
 
-        public rMapGeometry(byte dimension, Surface surface) {
-            this.dimension = dimension;
+        [ReplayInit]
+        private static void InitThemes() { themeCaptureFailed = false; }
+
+        public rMapGeometry(Dimension dimension, Surface surface) {
+            this.dimension = (byte)dimension.DimensionIndex;
             this.surface = surface;
+            var vertices = surface.mesh!.vertices;
+            var indices = surface.mesh.triangles;
+            themes = new byte[indices.Length / 3];
+            if (themeCaptureFailed) return;
+            try {
+                string? dimensionGeomorph = dimension.DimensionData?.DimensionGeomorph;
+                int? complex = dimension.ResourceData == null ? null : (int)dimension.ResourceData.ComplexType;
+                int unknown = 0;
+                for (int i = 0; i < indices.Length; i += 3) {
+                    MeshUtils.CalcTriangleProps(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]], out var center, out var height);
+                    int? subComplex = null;
+                    string? geomorph = null;
+                    if (AIG_CourseNode.TryGetCourseNode(dimension.DimensionIndex, center, Mathf.Max(2f, height * 2f), out var node) && node != null) {
+                        if (node.m_zone?.m_settings?.m_zoneData != null) subComplex = (int)node.m_zone.m_settings.m_zoneData.SubComplex;
+                        geomorph = node.m_area?.m_geomorph?.gameObject.name;
+                    }
+                    themes[i / 3] = (byte)FloorThemeCodec.FromSource(dimensionGeomorph, geomorph, complex, subComplex);
+                    if (themes[i / 3] == 0) ++unknown;
+                }
+                if (unknown > 0) APILogger.Debug($"Floor themes: {unknown}/{themes.Length} triangles have no verified source theme in dimension {this.dimension}.");
+            } catch (Exception error) {
+                themeCaptureFailed = true;
+                Array.Clear(themes, 0, themes.Length);
+                APILogger.Error($"Floor theme capture failed; unresolved surfaces are explicitly unknown for this recording. {error}");
+            }
         }
 
         public override void Write(ByteBuffer buffer) {
@@ -348,6 +379,16 @@ namespace Vanilla.Map {
             BitHelper.WriteBytes((uint)indices.Length, buffer);
             for (int j = 0; j < vertices.Length; ++j) BitHelper.WriteBytes(vertices[j], buffer);
             for (int j = 0; j < indices.Length; ++j) BitHelper.WriteBytes((ushort)indices[j], buffer);
+            foreach (byte theme in themes) BitHelper.WriteBytes(theme, buffer);
+            // Navmesh height describes agent navigation, not the visible support.
+            // Keep it for queries and record actual static collision height separately.
+            foreach (var vertex in vertices) {
+                var height = vertex.y - 0.1f;
+                if (Physics.Raycast(vertex + Vector3.up * 0.25f, Vector3.down,
+                    out var hit, 1.75f, LayerManager.MASK_WORLD, QueryTriggerInteraction.Ignore)
+                    && hit.normal.y > 0.2f) height = hit.point.y;
+                BitHelper.WriteBytes(height, buffer);
+            }
         }
     }
 

@@ -3,25 +3,21 @@ using UnityEngine;
 
 namespace ReplayRecorder {
     public class MainThread : MonoBehaviour {
-        private static MainThread? _instance;
-        private static MainThread Instance {
-            get {
-                if (_instance == null) {
-                    _instance = new GameObject().AddComponent<MainThread>();
-                }
-                return _instance;
-            }
-        }
-
-        private ConcurrentQueue<Action> queue = new ConcurrentQueue<Action>();
+        private static readonly ConcurrentQueue<Action> queue = new();
+        private static int pending;
 
         public static void Run(Action action) {
-            Instance.queue.Enqueue(action);
+            if (Interlocked.Increment(ref pending) > 4096) {
+                Interlocked.Decrement(ref pending);
+                throw new IOException("Recorder main-thread callback queue exceeded its limit.");
+            }
+            queue.Enqueue(action);
         }
 
         private void Update() {
-            while (queue.TryDequeue(out Action? action)) {
-                action?.Invoke();
+            for (int i = 0; i < 128 && queue.TryDequeue(out Action? action); ++i) {
+                Interlocked.Decrement(ref pending);
+                if (action != null) Snapshot.SnapshotManager.Guard("Main-thread callback", action);
             }
         }
     }

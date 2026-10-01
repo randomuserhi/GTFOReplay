@@ -2,7 +2,7 @@ import { GearPartHeadDatablock } from "./head.js";
 
 GearPartHeadDatablock.clear();
 
-const root = `../js3party/models/GearParts/Head`;
+const root = `../gear/GearParts/Head`;
 
 GearPartHeadDatablock.set(2, {
     path: `${root}/Head_Hammer_5.glb`

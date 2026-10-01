@@ -5,6 +5,7 @@ import { PlayerAnimDatablock } from "../player/animation.js";
 import { GearDatablock, MeleeArchetype } from "./models.js";
 
 export const hammerArchetype: MeleeArchetype = {
+    grip: "hammer",
     equipAnim: PlayerAnimDatablock.Equip_Melee,
     movementAnim: PlayerAnimDatablock.hammerMovement,
     jumpAnim: PlayerAnimDatablock.SledgeHammer_Jump,
@@ -18,6 +19,7 @@ export const hammerArchetype: MeleeArchetype = {
 };
 
 export const spearArchetype: MeleeArchetype = {
+    grip: "spear",
     equipAnim: PlayerAnimDatablock.Equip_Melee,
     movementAnim: PlayerAnimDatablock.spearMovement,
     jumpAnim: PlayerAnimDatablock.Spear_Jump,
@@ -31,6 +33,7 @@ export const spearArchetype: MeleeArchetype = {
 };
 
 export const knifeArchetype: MeleeArchetype = {
+    grip: "knife",
     equipAnim: PlayerAnimDatablock.Equip_Melee,
     movementAnim: PlayerAnimDatablock.knifeMovement,
     jumpAnim: PlayerAnimDatablock.Knife_Jump,
@@ -44,6 +47,7 @@ export const knifeArchetype: MeleeArchetype = {
 };
 
 export const batArchetype: MeleeArchetype = {
+    grip: "bat",
     equipAnim: PlayerAnimDatablock.Equip_Melee,
     movementAnim: PlayerAnimDatablock.batMovement,
     jumpAnim: PlayerAnimDatablock.Knife_Jump,

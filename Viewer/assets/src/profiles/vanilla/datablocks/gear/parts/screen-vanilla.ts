@@ -2,7 +2,7 @@ import { GearPartScreenDatablock } from "./screen.js";
 
 GearPartScreenDatablock.clear();
 
-const root = `../js3party/models/GearParts/Screen`;
+const root = `../gear/GearParts/Screen`;
 
 GearPartScreenDatablock.set(2, {
     path: `${root}/Screen_1.glb`

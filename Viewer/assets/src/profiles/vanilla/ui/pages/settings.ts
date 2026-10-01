@@ -1,3 +1,4 @@
+import { ui, uiText, uiAttribute } from "@esm/@root/main/i18n.js";
 import { html, Mutable } from "@esm/@/rhu/html.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -23,90 +24,18 @@ export const FeatureWrapper = (tag: string) => {
     }
 
     const dom = html<Mutable<Private & Public>>/**//*html*/`
-        <div m-id="body"></div>
+        <div m-id="body" class="setting-row"></div>
         `;
     html(dom).box().children((children) => {
         dom.body.append(...children);
     });
 	
-    dom.tag = tag;
+    Object.defineProperty(dom, "tag", { get: () => `${tag} ${ui(tag)}` });
 
     return dom;
 };
 
 const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<boolean>) => html<typeof FeatureWrapper>)[] = [
-    (v) => {
-        const dom = html<{
-            wrapper: html<typeof FeatureWrapper>;
-            slider: HTMLInputElement;
-            text: HTMLInputElement;
-        }>/**//*html*/`
-            ${html.open(FeatureWrapper("Timescale")).bind("wrapper")}
-                <div class="${style.row}" style="
-                gap: 10px;
-                ">
-                    <span>Timescale</span>
-                    <div class="${style.row}" style="
-                        flex-direction: row;
-                        gap: 20px;
-                        align-items: center;
-                        ">
-                        <input m-id="slider" style="
-                        flex: 1;
-                        " type="range" min="-3" max="3" value="1" step="0.1" />
-                        <input m-id="text" style="
-                        width: 50px;
-                        " class="${style.search}" type="text" spellcheck="false" autocomplete="false" value="1"/>
-                    </div>
-                </div>
-            ${html.close()}
-        `;
-
-        const { text, slider } = dom;
-
-        let active = false;
-        slider.addEventListener("mousedown", () => {
-            active = true;
-        });
-        window.addEventListener("mouseup", () => {
-            active = false;
-        }, { signal: dispose.signal });
-        const change = () => {
-            if (!active) return;
-            text.value = slider.value;
-
-            const view = v();
-            if (view === undefined) return;
-
-            view.timescale(parseFloat(slider.value));
-        };
-        slider.addEventListener("mousemove", change);
-        slider.addEventListener("change", change);
-
-        v.on((view) => {
-            if (view === undefined) {
-                return;
-            }
-            
-            view.timescale.on(value => {
-                slider.value = `${value}`;
-                text.value = `${value}`;
-            }, { signal: dispose.signal });
-        }, { signal: dispose.signal });
-
-        text.addEventListener("keyup", () => {
-            slider.value = text.value;
-
-            const view = v();
-            if (view === undefined) return;
-
-            view.timescale(parseFloat(text.value));
-        });
-
-        setInputFilter(text, function(value) { return /^-?\d*[.,]?\d*$/.test(value); });
-
-        return dom.wrapper;
-    },
     (v) => {
         const dom = html<{
             wrapper: html<typeof FeatureWrapper>;
@@ -117,16 +46,16 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span>Render Distance</span>
+                    <span>${uiText("Render Distance")}</span>
                     <div class="${style.row}" style="
                     flex-direction: row;
                     gap: 20px;
                     align-items: center;
                     ">
-                        <input m-id="slider" style="
+                        <input m-id="slider" aria-label="${ui("Render Distance")}" style="
                         flex: 1;
                         " type="range" min="50" max="500" value="100" step="10" />
-                        <input m-id="text" style="
+                        <input m-id="text" aria-label="${ui("Render Distance")}" style="
                         width: 50px;
                         " class="${style.search}" type="text" spellcheck="false" autocomplete="false" value="1"/>
                     </div>
@@ -136,15 +65,7 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
 
         const { text, slider } = dom;
 
-        let active = false;
-        slider.addEventListener("mousedown", () => {
-            active = true;
-        });
-        window.addEventListener("mouseup", () => {
-            active = false;
-        }, { signal: dispose.signal });
         const change = () => {
-            if (!active) return;
             text.value = slider.value;
 
             const view = v();
@@ -154,7 +75,7 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
 
             camera.renderDistance(parseFloat(slider.value));
         };
-        slider.addEventListener("mousemove", change);
+        slider.addEventListener("input", change);
         slider.addEventListener("change", change);
 
         v.on((view) => {
@@ -173,84 +94,19 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
         }, { signal: dispose.signal });
 
         text.addEventListener("keyup", () => {
-            slider.value = text.value;
+            const value = Number(text.value.replace(",", "."));
+            if (!text.value.trim() || !Number.isFinite(value)) return;
+            slider.value = String(Math.min(Number(slider.max), Math.max(Number(slider.min), value)));
 
             const view = v();
             if (view === undefined) return;
             const camera = view.renderer.get("Camera");
             if (camera === undefined) return;
 
-            camera.renderDistance(parseFloat(text.value));
+            camera.renderDistance(Number(slider.value));
         });
 
         setInputFilter(text, function(value) { return /^-?\d*[.,]?\d*$/.test(value); });
-
-        return dom.wrapper;
-    },
-    (v, active) => {
-        const dom = html<{
-            wrapper: html<typeof FeatureWrapper>;
-            dropdown: html<typeof Dropdown>;
-        }>/**//*html*/`
-            ${html.open(FeatureWrapper("Follow Player")).bind("wrapper")}
-                <div class="${style.row}" style="
-                gap: 10px;
-                ">
-                    <span style="flex: 1; padding-top: 1px;">Follow Player</span>
-                    ${html.bind(Dropdown(), "dropdown").transform(d => d.wrapper.style.width = "100%")}
-                </div>
-            ${html.close()}
-        `;
-        
-        const { dropdown } = dom;
-        
-        dropdown.value.on((value: number) => {
-            const view = v();
-            if (view === undefined) return;
-            const controls = view.renderer.get("Controls");
-            if (controls === undefined) return;
-
-            controls.targetSlot(value);
-        });
-
-        v.on((view) => {
-            if (view === undefined) {
-                dropdown.options([]);
-                return;
-            }
-            
-            view.renderer.watch("Controls").on(controls => {
-                if (controls === undefined) return;
-                
-                controls.targetSlot.on(value => {
-                    dropdown.value(value);
-                });
-            }, { signal: dispose.signal });
-
-            view.api.on((api) => {
-                if (!active()) return;
-
-                if (api === undefined) {
-                    dropdown.options([]);
-                    return;
-                }
-
-                const all = api.get("Vanilla.Player");
-                if (all === undefined) {
-                    dropdown.options([]);
-                    return;
-                }
-
-                const players: [key: string, value: any][] = [];
-                for (const player of all.values()) {
-                    players.push([
-                        player.nickname,
-                        player.slot
-                    ]);
-                }
-                dropdown.options(players);
-            }, { signal: dispose.signal });
-        }, { signal: dispose.signal });
 
         return dom.wrapper;
     },
@@ -265,8 +121,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Relative Rotation</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Relative Rotation")}</span>
+                    ${html.bind(Toggle("Relative Rotation"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -307,8 +163,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Dimension</span>
-                    ${html.bind(Dropdown(), "dropdown").transform(d => d.wrapper.style.width = "100%")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Dimension")}</span>
+                    ${html.bind(Dropdown("Dimension"), "dropdown").transform(d => d.wrapper.style.width = "100%")}
                 </div>
             ${html.close()}
         `;
@@ -348,7 +204,7 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                     const dimensions: [key: string, value: any][] = [];
                     for (const dimension of map.keys()) {
                         dimensions.push([
-                            dimension === 0 ? `Reality` : `Dimension ${dimension}`,
+                            dimension === 0 ? ui("Reality") : ui("Dimension {{dimension}}", { dimension }),
                             dimension
                         ]);
                     }
@@ -370,8 +226,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Transparent Resource Containers</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Transparent Resource Containers")}</span>
+                    ${html.bind(Toggle("Transparent Resource Containers"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -399,8 +255,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Debug Resource Containers</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Debug Resource Containers")}</span>
+                    ${html.bind(Toggle("Debug Resource Containers"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -446,8 +302,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Show Enemy Info</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Show Enemy Info")}</span>
+                    ${html.bind(Toggle("Show Enemy Info"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -475,8 +331,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Colour Enemy Based on Aggro</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Colour Enemy Based on Aggro")}</span>
+                    ${html.bind(Toggle("Colour Enemy Based on Aggro"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -504,8 +360,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Show Enemy Ragdolls</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Show Enemy Ragdolls")}</span>
+                    ${html.bind(Toggle("Show Enemy Ragdolls"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -551,8 +407,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Show Fog Repeller Radius</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Show Fog Repeller Radius")}</span>
+                    ${html.bind(Toggle("Show Fog Repeller Radius"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -580,8 +436,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Show Explosion Radius</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Show Explosion Radius")}</span>
+                    ${html.bind(Toggle("Show Explosion Radius"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -609,8 +465,8 @@ const featureList: ((v: Signal<html<typeof View> | undefined>, active: Signal<bo
                 gap: 20px;
                 align-items: center;
                 ">
-                    <span style="flex: 1; padding-top: 1px;">Show Flashlight Line of Sight</span>
-                    ${html.bind(Toggle(), "toggle")}
+                    <span style="flex: 1; padding-top: 1px;">${uiText("Show Flashlight Line of Sight")}</span>
+                    ${html.bind(Toggle("Show Flashlight Line of Sight"), "toggle")}
                 </div>
             ${html.close()}
         `;
@@ -641,19 +497,8 @@ export const Settings = () => {
 
     const dom = html<Mutable<Private & Settings>>/**//*html*/`
         <div class="${style.wrapper}">
-            <div style="margin-bottom: 20px;">
-                <h1>SETTINGS</h1>
-                <p>Change the way the viewer behaves</p>
-            </div>
-            <div style="
-            position: sticky; 
-            padding: 20px 0; 
-            top: 0px; 
-            background-color: #1f1f29;
-            margin-bottom: 10px;
-            z-index: 100;
-            ">
-                <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+            <div class="settings-search">
+                <input m-id="search" placeholder="${ui("Search ...")}" class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
             </div>
             <div m-id="body" class="${style.body}">
             </div>
@@ -673,16 +518,29 @@ export const Settings = () => {
         const f = feature(dom.view, dom.active);
         features.push(f);
 
-        dom.body.append(...f);
+
     }
 
+    const grouped = () => {
+        const groups = [["Camera", 0, 3], ["Resource containers", 3, 5], ["Enemies", 5, 8], ["Overlays", 8, features.length]] as const;
+        dom.body.replaceChildren();
+        for (const [title, start, end] of groups) {
+            const section = document.createElement("section"); section.className = "settings-group";
+            const heading = html`<h2>${uiText(title)}</h2>`; section.append(...heading);
+            for (const feature of features.slice(start, end)) section.append(...feature);
+            dom.body.append(section);
+        }
+    };
+    grouped();
+    uiAttribute(dom.search, "placeholder", "Search ...", dispose.signal);
     dom.search.addEventListener("keyup", () => {
         let value = dom.search.value;
         value = value.trim();
         if (value.length === 0) {
-            html.replaceChildren(dom.body, ...features);
+            grouped();
             return;
         }
+        fuse.setCollection(features);
         const results = fuse.search(value).map((n) => n.item);
         html.replaceChildren(dom.body, ...results);
     });

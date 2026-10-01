@@ -8,13 +8,14 @@ using Player;
 using ReplayRecorder.API;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Core;
+using ReplayRecorder.IO;
 using ReplayRecorder.Net;
 using ReplayRecorder.Snapshot.Exceptions;
 using ReplayRecorder.Steam;
 using Steamworks;
 using System.Collections;
 using System.Diagnostics;
-using System.IO.Compression;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace ReplayRecorder.Snapshot {
@@ -23,28 +24,29 @@ namespace ReplayRecorder.Snapshot {
             private ushort id;
             private ReplayEvent eventObj;
             internal ByteBuffer? eventBuffer; // Required to capture state at point of event
+            private readonly BufferPool owner;
             internal long now;
 
             public string? Debug => eventObj.Debug;
 
-            public EventWrapper(long now, ReplayEvent e, ByteBuffer buffer) {
+            public EventWrapper(long now, ReplayEvent e, BufferPool owner) {
                 this.now = now;
+                this.owner = owner;
                 eventObj = e;
-                eventBuffer = buffer;
-                e.Write(eventBuffer);
-                id = SnapshotManager.types[e.GetType()];
-            }
-
-            ~EventWrapper() {
-                Dispose();
+                eventBuffer = owner.Checkout();
+                try {
+                    e.Write(eventBuffer);
+                    id = SnapshotManager.types[e.GetType()];
+                } catch {
+                    Dispose();
+                    throw;
+                }
             }
 
             public void Dispose() {
                 if (eventBuffer == null) return;
 
-                if (SnapshotManager.instance != null) {
-                    SnapshotManager.instance.pool.Release(eventBuffer);
-                }
+                owner.Release(eventBuffer);
                 eventBuffer = null;
             }
 
@@ -184,7 +186,7 @@ namespace ReplayRecorder.Snapshot {
                         try {
                             Replay.DynamicHooks[dynType]?.Invoke(now, dynamic);
                         } catch (Exception e) {
-                            APILogger.Error($"[DynamicCollection] Failed to trigger hooks for [{dynType}]: {e}.");
+                            throw new InvalidOperationException($"Dynamic hook {dynType}({dynamic.id}) failed.", e);
                         }
                     }
 
@@ -203,7 +205,7 @@ namespace ReplayRecorder.Snapshot {
                                         try {
                                             Replay.DirtyDynamicHooks[dynType]?.Invoke(now, dynamic);
                                         } catch (Exception e) {
-                                            APILogger.Error($"[DynamicCollection] Failed to trigger dirty hooks for [{dynType}]: {e}.");
+                                            throw new InvalidOperationException($"Dirty dynamic hook {dynType}({dynamic.id}) failed.", e);
                                         }
                                     }
 
@@ -214,11 +216,7 @@ namespace ReplayRecorder.Snapshot {
                                 } catch (Exception ex) {
                                     // Restore buffer write point
                                     buffer.count = writeIndex;
-                                    if (!dynamic.remove) {
-                                        instance.Despawn(dynamic);
-                                        APILogger.Warn($"[DynamicCollection] Despawning due to Error {Type} {dynamic.id}");
-                                        APILogger.Error($"Unexpected error occured whilst trying to write Dynamic[{Type}]({dynamic.id}) at [{instance.Now}ms]:\n{ex}\n{ex.StackTrace}");
-                                    }
+                                    throw new InvalidDataException($"Could not serialize dynamic {Type}({dynamic.id}) at {instance.Now}ms.", ex);
                                 }
                             }
                         }
@@ -269,15 +267,18 @@ namespace ReplayRecorder.Snapshot {
         }
 
         private class DeltaState {
+            internal long eventBytes;
             internal List<EventWrapper> events = new List<EventWrapper>();
             internal Dictionary<Type, DynamicCollection> dynamics = new Dictionary<Type, DynamicCollection>();
 
             internal void Clear() {
+                foreach (var e in events) e.Dispose();
                 events.Clear();
+                eventBytes = 0;
                 dynamics.Clear();
             }
 
-            internal bool Write(long now, ByteBuffer bs) {
+            internal bool Write(long now, ByteBuffer bs, bool includeDynamics = true) {
                 // Tick header
                 BitHelper.WriteBytes((uint)now, bs);
 
@@ -303,6 +304,7 @@ namespace ReplayRecorder.Snapshot {
                 bool eventsWritten = events.Count != 0;
                 if (ConfigManager.DebugTicks) APILogger.Debug($"[Events] {events.Count} events written.");
                 events.Clear();
+                eventBytes = 0;
 
                 // Serialize dynamic properties
                 int numWritten = 0;
@@ -312,6 +314,7 @@ namespace ReplayRecorder.Snapshot {
                 bs.Reserve(sizeof(ushort), true);
 
                 foreach (DynamicCollection collection in dynamics.Values) {
+                    if (!includeDynamics) break;
                     // Keep note of where the buffer of this collection starts
                     // Allows us to restore the buffer if required
                     int restore = bs.count;
@@ -320,10 +323,9 @@ namespace ReplayRecorder.Snapshot {
                             ++numWritten;
                         }
                     } catch (Exception ex) {
-                        APILogger.Error($"Unexpected error occured whilst trying to write DynamicCollection[{collection.Type}] at [{now}ms]:\n{ex}\n{ex.StackTrace}");
-
                         // Restore byte buffer to prior collection being written
                         bs.count = restore;
+                        throw new InvalidDataException($"Could not serialize dynamic collection {collection.Type} at {now}ms.", ex);
                     }
                 }
 
@@ -337,28 +339,47 @@ namespace ReplayRecorder.Snapshot {
             }
         }
 
-        public void Flush() {
-            if (fs == null) return;
-            fs.Flush();
-        }
-
         private FileStream? fs;
-        public int byteOffset = 0;
+        private ReplayContainer? container;
+        // Only expose a prefix that the disk worker has completely written and flushed.
+        public int byteOffset => checked((int)(container?.WrittenBytes ?? 0));
+        private int networkOffset;
+        private int queuedOffset;
+        internal async Task<int> WaitForWrittenPrefix() {
+            int target = Volatile.Read(ref queuedOffset);
+            while ((diskWrites?.WrittenBytes ?? 0) < target) {
+                if (diskWrites?.Error != null) throw new IOException("Replay disk write failed.", diskWrites.Error);
+                await Task.Delay(10).ConfigureAwait(false);
+            }
+            if (container != null && container.WrittenBytes < target) await container.Flush().ConfigureAwait(false);
+            return target;
+        }
         private DeltaState state = new DeltaState();
         private ByteBuffer buffer = new ByteBuffer();
-        private ByteBuffer _buffer = new ByteBuffer();
-        // private ByteBuffer header = new ByteBuffer();
-        internal BufferPool pool = new BufferPool(); // TODO(randomuserhi): Consider creating a new pool to shrink it every so often to keep memory usage low [This can be done by watching number of in use buffers over time]
-        private Task? writeTask;
+        internal BufferPool pool = new BufferPool();
+        private BufferWriteQueue? diskWrites;
+        private BufferWriteQueue? liveWrites;
+        private readonly RecordingStatus health = new();
+        private string? recordingError {
+            get => health.Error;
+            set { if (value != null) health.Fail(value); }
+        }
+        private bool closing;
+        private bool liveFailed;
+        [HideFromIl2Cpp]
+        internal void FailRecording(string operation, Exception error) {
+            if (recordingError != null) return;
+            recordingError = $"{operation}: {error.Message}";
+            APILogger.Error($"Recording stopped. Session={SessionId}, Time={Now}ms, Path='{fullpath}'. Last complete chunks are retained. {error}");
+        }
 
-        public bool Ready => Active && completedHeader;
-        public bool Active => fs != null;
+        public bool Ready => Active && headers.Complete;
+        public bool Active => fs != null && !closing && recordingError == null;
 
         private long start = 0;
         private long Now => Raudy.Now - start;
 
-        private bool completedHeader = false;
-        private HashSet<Type> unwrittenHeaders = new HashSet<Type>();
+        private HeaderSequence headers = new HeaderSequence(Array.Empty<Type>());
 
         // Used by Net code to determine which replay bytes belong to
         private static byte _replayInstanceId = 0;
@@ -366,8 +387,14 @@ namespace ReplayRecorder.Snapshot {
 
         internal string fullpath = "replay.gtfo";
         internal string filename = "replay.gtfo";
+        internal string SessionId { get; } = Guid.NewGuid().ToString("N");
+        internal string StartedUtc { get; private set; } = "";
+        internal string Expedition { get; private set; } = "";
+        internal string LevelName { get; private set; } = "";
+        internal string RundownName { get; private set; } = "";
         internal void Init() {
             if (fs != null) throw new ReplaySnapshotAlreadyInitialized();
+            RecordingStatus.Current = health;
 
             start = Raudy.Now;
 
@@ -377,18 +404,16 @@ namespace ReplayRecorder.Snapshot {
             string shortName = Utils.RemoveHTMLTags(levelData.GetShortName(expedition.expeditionIndex));
             string levelName = Utils.RemoveHTMLTags(levelData.Descriptive.PublicName);
             DateTime now = DateTime.Now;
+            StartedUtc = DateTimeOffset.UtcNow.ToString("O");
+            Expedition = shortName;
+            LevelName = levelName;
+            RundownName = data.name;
 
             filename = string.Format(ConfigManager.ReplayFileName, shortName, now, levelName);
             string path = Utils.RemoveInvalidCharacters(ConfigManager.ReplayFolder);
             filename = Utils.RemoveInvalidCharacters(filename, isFullPath: false);
 
-            if (path != string.Empty) {
-                Directory.CreateDirectory(path);
-            }
-
-            if (!Directory.Exists(path)) {
-                path = "./";
-            }
+            if (path == string.Empty) path = "./";
 
             string dirPath;
             if (ConfigManager.SeparateByRundown) {
@@ -399,29 +424,38 @@ namespace ReplayRecorder.Snapshot {
                 fullpath = Path.Combine(dirPath, filename);
             }
 
-            APILogger.Warn($"REPLAY LOCATION: {fullpath}");
             try {
                 Directory.CreateDirectory(dirPath);
-                fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                // A session never overwrites another run, including restarts within the same minute.
+                filename += $" {now:HHmmssfff}-{Guid.NewGuid():N}.gtfo";
+                fullpath = Path.Combine(dirPath, filename);
+                fs = new FileStream(fullpath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, 65536, FileOptions.Asynchronous);
             } catch (Exception ex) {
-                APILogger.Error($"Failed to create filestream, falling back to 'replay.gtfo': {ex.Message}");
-                fullpath = "replay.gtfo";
-                fs = new FileStream(fullpath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                recordingError = ex.Message;
+                APILogger.Error($"Recording could not start at '{fullpath}': {ex}");
+                return;
             }
+            APILogger.Warn($"REPLAY LOCATION: {fullpath}");
+            health.Path = fullpath;
+            var stream = fs;
+            container = new ReplayContainer(stream);
+            diskWrites = new BufferWriteQueue(async bytes => {
+                await container.WriteFrame(bytes).ConfigureAwait(false);
+                Interlocked.Exchange(ref health.Bytes, container.PhysicalBytes);
+            });
+            liveWrites = new BufferWriteQueue(SendBufferOverNetwork, 128, 32 * 1024 * 1024);
 
             spectators.Clear();
             alertedPlayers.Clear();
             alertedPlayers.Add(PlayerManager.GetLocalPlayerAgent().Owner.Lookup);
             pool = new BufferPool();
 
-            byteOffset = 0;
+            networkOffset = 0;
             buffer.Clear();
             buffer.Reserve(sizeof(int), true); // Reserve space to write size of buffer
             SnapshotManager.types.Write(buffer);
 
-            foreach (Type t in SnapshotManager.types.headers) {
-                unwrittenHeaders.Add(t);
-            }
+            headers = new HeaderSequence(SnapshotManager.types.headers);
 
             state.Clear();
             foreach (Type t in SnapshotManager.types.dynamics) {
@@ -429,34 +463,33 @@ namespace ReplayRecorder.Snapshot {
             }
 
             replayInstanceId = _replayInstanceId++;
+            // Notify only after successful initialization, so plugins see the actual session path.
+            CallbackGuard.Invoke("Recording start", Replay.OnStartRecording, fullpath, SnapshotManager.Report);
         }
 
         [HideFromIl2Cpp]
         internal void Trigger(ReplayHeader header) {
-            if (fs == null) throw new ReplaySnapshotNotInitialized();
+            SnapshotManager.Guard($"Header {header.GetType().FullName}", () => WriteHeader(header));
+        }
+        [HideFromIl2Cpp]
+        private void WriteHeader(ReplayHeader header) {
+            if (!Active) return;
 
             Type headerType = header.GetType();
 
-            if (completedHeader || unwrittenHeaders.Count == 0) {
-                completedHeader = true;
-                throw new ReplayAllHeadersAlreadyWritten($"Cannot write header '{headerType.FullName}' as all headers have been written already.");
-            }
-
-            unwrittenHeaders.Remove(headerType);
-
-            ushort id = SnapshotManager.types[headerType];
-            APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
-            BitHelper.WriteBytes(id, buffer);
-            header.Write(buffer);
-
-            if (unwrittenHeaders.Count == 0) {
-                completedHeader = true;
-                OnHeaderComplete();
-            }
+            bool complete = headers.Write(headerType, () => {
+                ushort id = SnapshotManager.types[headerType];
+                APILogger.Debug($"[Header: {headerType.FullName}({id})]{(header.Debug != null ? $": {header.Debug}" : "")}");
+                BitHelper.WriteBytes(id, buffer);
+                header.Write(buffer);
+            });
+            if (complete) OnHeaderComplete();
         }
 
         [HideFromIl2Cpp]
-        private async Task SendBufferOverNetwork(ByteBuffer buffer) {
+        private Task SendBufferOverNetwork(ReadOnlyMemory<byte> data) {
+            if (!MemoryMarshal.TryGetArray(data, out var bytes)) throw new InvalidOperationException("Expected owned array memory.");
+            var buffer = new ByteBuffer(bytes) { count = bytes.Count };
             if (HostClient.Main.readyConnections.Count > 0) {
                 int numBytes = buffer.count; // For debugging
 
@@ -475,7 +508,7 @@ namespace ReplayRecorder.Snapshot {
                         BitHelper.WriteBytes(sizeOfHeader + bytesToSend, packet); // message size in bytes
                         BitHelper.WriteBytes((ushort)ClientViewer.MessageType.LiveBytes, packet); // message type
                         BitHelper.WriteBytes(replayInstanceId, packet); // replay instance id
-                        BitHelper.WriteBytes(byteOffset + bytesSent, packet); // offset
+                        BitHelper.WriteBytes(networkOffset + bytesSent, packet); // offset
                         BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
                         BitHelper.WriteBytes(new ArraySegment<byte>(buffer._array.Array!, buffer._array.Offset + bytesSent, bytesToSend), packet, false); // file-bytes
 
@@ -495,7 +528,25 @@ namespace ReplayRecorder.Snapshot {
                     APILogger.Error($"Unable to send snapshot bytes: {e}");
                 }
             }
-            byteOffset += buffer.count;
+            networkOffset += buffer.count;
+            return Task.CompletedTask;
+        }
+
+        private bool QueueBuffer() {
+            if (diskWrites == null || !diskWrites.TryWrite(buffer.Array.AsSpan())) {
+                FailRecording("Queue recording frame", diskWrites?.Error ?? new IOException("Disk write backlog exceeded the recording memory budget."));
+                return false;
+            }
+            Interlocked.Add(ref queuedOffset, buffer.Count);
+            if (!liveFailed && liveWrites != null && !liveWrites.TryWrite(buffer.Array.AsSpan())) {
+                liveFailed = true;
+                APILogger.Error("Live view stopped: spectator backlog exceeded its memory budget. Local recording continues.");
+                foreach (var connection in HostClient.Main.readyConnections.Keys) {
+                    SteamNetworkingSockets.CloseConnection(connection, 0, "Live replay backlog exceeded", false);
+                }
+                HostClient.Main.readyConnections.Clear();
+            }
+            return true;
         }
 
         private void OnHeaderComplete() {
@@ -515,12 +566,11 @@ namespace ReplayRecorder.Snapshot {
             BitHelper.WriteBytes(buffer.count - sizeof(int), buffer._array, ref index);
             APILogger.Debug($"Header size: {buffer.count - sizeof(int)}");
 
-            // NOTE(randomuserhi): Have to wait for headers to complete before continuing
-            Task.WaitAll(buffer.AsyncFlush(fs), SendBufferOverNetwork(buffer));
+            if (!QueueBuffer()) return;
+            health.Phase = RecordingPhase.Recording;
             buffer.Clear();
-            buffer.Shrink();
 
-            Replay.OnHeaderCompletion?.Invoke();
+            SnapshotManager.Invoke("Header complete", Replay.OnHeaderCompletion);
         }
 
         [HideFromIl2Cpp]
@@ -533,24 +583,34 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal bool Trigger(ReplayEvent e) {
+            if (!Active) return false;
             Type evType = e.GetType();
             long now = Now;
+            Interlocked.Exchange(ref health.DurationMs, now);
 
             // Trigger hooks
             if (Replay.EventHooks.ContainsKey(evType)) {
                 try {
                     Replay.EventHooks[evType]?.Invoke(now, e);
                 } catch (Exception ex) {
-                    APILogger.Error($"Failed to trigger event hooks for [{evType}]: {ex}.");
+                    FailRecording($"Event hook {evType}", ex);
+                    return false;
                 }
             }
 
             try {
-                EventWrapper ev = new EventWrapper(now, e, pool.Checkout());
+                if (state.events.Count >= 65536) throw new InvalidDataException("Pending event count exceeded 65,536.");
+                EventWrapper ev = new EventWrapper(now, e, pool);
+                long bytes = ev.eventBuffer!.Count + 4L;
+                if (state.eventBytes + bytes > 64 * 1024 * 1024) {
+                    ev.Dispose();
+                    throw new InvalidDataException("Pending events exceeded the 64 MB memory budget.");
+                }
+                state.eventBytes += bytes;
                 state.events.Add(ev);
                 return true;
             } catch (Exception ex) {
-                APILogger.Error($"Unexpected error occured whilst trying to write Event[{evType}] at [{Raudy.Now}ms]:\n{ex}\n{ex.StackTrace}");
+                FailRecording($"Event {evType}", ex);
             }
             return false;
         }
@@ -586,6 +646,7 @@ namespace ReplayRecorder.Snapshot {
 
         [HideFromIl2Cpp]
         internal void Spawn(ReplayDynamic dynamic, bool errorOnDuplicate = true) {
+            if (!Active) return;
             Type dynType = dynamic.GetType();
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
@@ -607,12 +668,13 @@ namespace ReplayRecorder.Snapshot {
                 try {
                     Replay.SpawnHooks[dynType]?.Invoke(Now, dynamic);
                 } catch (Exception ex) {
-                    APILogger.Error($"Failed to trigger spawn hooks for [{dynType}]: {ex}.");
+                    FailRecording($"Spawn hook {dynType}({dynamic.id})", ex);
                 }
             }
         }
         [HideFromIl2Cpp]
         internal void Despawn(ReplayDynamic dynamic, bool errorOnNotFound = true) {
+            if (!Active) return;
             Type dynType = dynamic.GetType();
             if (!state.dynamics.ContainsKey(dynType)) throw new ReplayTypeDoesNotExist($"Type '{dynType.FullName}' does not exist.");
 
@@ -632,7 +694,7 @@ namespace ReplayRecorder.Snapshot {
                 try {
                     Replay.DespawnHooks[dynType]?.Invoke(Now, dynamic);
                 } catch (Exception ex) {
-                    APILogger.Error($"Failed to trigger despawn hooks for [{dynType}]: {ex}.");
+                    FailRecording($"Despawn hook {dynType}({dynamic.id})", ex);
                 }
             }
 
@@ -640,6 +702,7 @@ namespace ReplayRecorder.Snapshot {
         }
 
         private Stopwatch stopwatch = new Stopwatch();
+        private readonly RecordingDiagnostics diagnostics = new();
 
         private int bufferShrinkTick = 0; // tick count to check when to clear buffers
         private int peakInUse = 0;
@@ -652,13 +715,16 @@ namespace ReplayRecorder.Snapshot {
             }
 
             stopwatch.Restart();
+            long allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
             if (fs == null) throw new ReplaySnapshotNotInitialized();
 
             // Invoke tick processes
-            Replay.OnTick?.Invoke();
+            SnapshotManager.Invoke("Recorder tick", Replay.OnTick);
+            if (!Active) return;
 
             // Prepare time
             long now = Now;
+            Interlocked.Exchange(ref health.DurationMs, now);
             if (now > uint.MaxValue) {
                 Dispose();
                 throw new ReplayInvalidTimestamp($"ReplayRecorder does not support replays longer than {uint.MaxValue}ms.");
@@ -673,62 +739,80 @@ namespace ReplayRecorder.Snapshot {
                 success = state.Write(now, buffer);
             } catch (Exception ex) {
                 success = false;
-                APILogger.Error($"Unexpected error occured whilst trying to write tick at [{now}ms]:\n{ex}\n{ex.StackTrace}");
+                FailRecording($"Tick at {now}ms", ex);
             }
 
-            if (success) {
+            if (success && Active) {
                 // insert size of buffer to start
                 int index = 0;
                 BitHelper.WriteBytes(buffer.Count - sizeof(int), buffer._array, ref index);
 
-                float startWait = stopwatch.ElapsedMilliseconds;
-                if (writeTask != null) {
-                    writeTask.Wait();
-                }
-                waitForWrite = stopwatch.ElapsedMilliseconds - startWait;
-
-                // Create write task
-                ByteBuffer writeBuffer = buffer;
-                writeTask = Task.Run(() => {
-                    Task.WaitAll(writeBuffer.AsyncFlush(fs), SendBufferOverNetwork(writeBuffer));
-                    writeBuffer.Clear();
-                });
-
-                // Swap internal buffers
-                ByteBuffer temp = _buffer;
-                _buffer = buffer;
-                buffer = temp;
+                QueueBuffer();
             }
             stopwatch.Stop();
+            diagnostics.Tick(stopwatch.Elapsed.TotalMilliseconds, GC.GetAllocatedBytesForCurrentThread() - allocatedBefore, queuedBytes);
 
             const float alpha = 0.9f;
-            tickTime = alpha * tickTime + (1.0f - alpha) * stopwatch.ElapsedMilliseconds;
+            tickTime = alpha * tickTime + (1.0f - alpha) * (float)stopwatch.Elapsed.TotalMilliseconds;
         }
         internal float tickTime = 1.0f;
-        internal float waitForWrite = 1.0f;
+        internal long queuedBytes => diskWrites?.PendingBytes ?? 0;
 
         internal void Dispose() {
+            if (closing) return;
+            closing = true;
+            if (recordingError == null) health.Phase = RecordingPhase.Saving;
             APILogger.Debug("Ending Replay...");
-
-            if (fs != null) {
-                fs.Flush();
-                fs.Dispose();
-
-                // Zip replay
-                Task.Run(() => {
-                    try {
-                        using (FileStream zipToOpen = new FileStream($"{fullpath}.compressed", FileMode.Create)) {
-                            using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Create)) {
-                                archive.CreateEntryFromFile(fullpath, filename, System.IO.Compression.CompressionLevel.SmallestSize);
-                            }
-                        }
-                        File.Delete(fullpath);
-                    } catch (Exception ex) {
-                        APILogger.Error($"Failed to compress replay:\n{ex}");
+            try {
+                if (fs != null && headers.Complete && recordingError == null) {
+                    buffer.Clear();
+                    buffer.Reserve(sizeof(int), true);
+                    // End-game objects may already be torn down: capture queued events without polling them.
+                    if (state.Write(Now, buffer, includeDynamics: false)) {
+                        int index = 0;
+                        BitHelper.WriteBytes(buffer.Count - sizeof(int), buffer._array, ref index);
+                        QueueBuffer();
                     }
-                });
-
+                }
+            } catch (Exception ex) {
+                recordingError = ex.Message;
+                APILogger.Error($"Failed to capture final replay events: {ex}");
+            }
+            try {
+                // Waiting is restricted to teardown; ordinary recording ticks never wait for I/O.
+                diskWrites?.CompleteAsync().GetAwaiter().GetResult();
+            } catch (Exception ex) {
+                recordingError = ex.Message;
+                APILogger.Error($"Replay queue failed: {ex}");
+            }
+            if (!headers.Complete && recordingError == null) recordingError = "Recording ended before level metadata was complete.";
+            try {
+                // Retain accepted frames even after capture fails, without claiming completion.
+                container?.Flush().GetAwaiter().GetResult();
+                string report = diagnostics.Report(diskWrites?.WrittenBytes ?? 0, container?.PhysicalBytes ?? 0, SessionId, recordingError);
+                APILogger.Warn($"REPLAY DIAGNOSTICS: {report}");
+                container?.WriteDiagnostics(report).GetAwaiter().GetResult();
+                if (headers.Complete && recordingError == null) {
+                    container?.Complete((uint)Now).GetAwaiter().GetResult();
+                }
+                Interlocked.Exchange(ref health.Bytes, container?.PhysicalBytes ?? 0);
+                fs?.Flush(true);
+            } catch (Exception ex) {
+                recordingError = ex.Message;
+                APILogger.Error($"Replay write failed: {ex}");
+            } finally {
+                fs?.Dispose();
                 fs = null;
+                state.Clear();
+            }
+            try {
+                liveWrites?.CompleteAsync().GetAwaiter().GetResult();
+            } catch (Exception ex) {
+                APILogger.Error($"Live replay delivery failed: {ex}");
+            }
+            if (headers.Complete && recordingError == null) {
+                health.Phase = RecordingPhase.Saved;
+                APILogger.Warn($"REPLAY SAVED: {health.Path}");
             }
 
             Destroy(gameObject);
@@ -741,13 +825,28 @@ namespace ReplayRecorder.Snapshot {
         internal HashSet<HSteamNetConnection> spectators = new HashSet<HSteamNetConnection>();
 
         public float tickRate = 1f / 20f;
+        internal void MarkerAdded() {
+            ++health.Markers;
+            APILogger.Warn($"Replay marker {health.Markers} at {Now / 1000d:0.0}s");
+        }
         private float timer = 0;
         private void Update() {
-            if (fs == null || !completedHeader) {
+            SnapshotManager.Guard("Recorder update", UpdateRecording);
+        }
+        [HideFromIl2Cpp]
+        private void UpdateRecording() {
+            var writeError = diskWrites?.Error ?? container?.Error;
+            if (writeError != null && recordingError == null) {
+                FailRecording("Background disk writer", writeError);
+            }
+            if (!Active || !headers.Complete) {
                 return;
             }
 
             float rate;
+            if (ConfigManager.MarkerKey != KeyCode.None && Input.GetKeyDown(ConfigManager.MarkerKey)) {
+                ReplayMarker.Add($"Marker {health.Markers + 1}");
+            }
             // Change tick rate based on state:
             switch (DramaManager.CurrentStateEnum) {
             case DRAMA_State.Encounter:
@@ -815,6 +914,10 @@ namespace ReplayRecorder.Snapshot {
 
                 Tick();
             }
+        }
+
+        private void OnApplicationQuit() {
+            SnapshotManager.Guard("Application quit", Dispose);
         }
     }
 }

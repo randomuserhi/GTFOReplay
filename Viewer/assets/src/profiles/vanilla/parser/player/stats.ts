@@ -3,6 +3,7 @@ import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { ByteStream } from "@esm/@root/replay/stream.js";
 import { Factory } from "../../library/factory.js";
 import { StatTracker } from "../stattracker/stattracker.js";
+import type { StatFeedback } from "../../library/statFeedback.js";
 
 ModuleLoader.registerASLModule(module.src);
 
@@ -23,6 +24,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 }
 
 export interface PlayerStats {
+    feedback?: Partial<Record<'health' | 'infection' | 'primaryAmmo' | 'secondaryAmmo' | 'toolAmmo', StatFeedback>>;
     id: number;
     health: number;
     infection: number;
@@ -47,7 +49,7 @@ const parse = async (data: ByteStream): Promise<Omit<PlayerStats, "id">> => {
         consumableAmmo: await BitHelper.readByte(data) / 255,
         resourceAmmo: await BitHelper.readByte(data) / 255,
 
-        stamina: 1
+        stamina: await BitHelper.readByte(data) / 255
     };
 };
 
@@ -70,13 +72,17 @@ const updateStats = (stats: Map<number, PlayerStats>, status: PlayerStats, snaps
     }
 };
 
-let parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.3", {
     main: {
-        parse, exec: (id, data, snapshot) => {
+        parse,
+        exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
-            
-            if (!stats.has(id)) throw new Error(`PlayerStats of id '${id}' was not found.`);
+            if (!stats.has(id))
+                throw new Error(`PlayerStats of id '${id}' was not found.`);
             const status = stats.get(id)!;
+            if (data.health < status.health) {
+                (status.feedback ??= {}).health = { time: snapshot.time(), color: 0xff4545 };
+            }
             status.health = data.health;
             status.infection = data.infection;
             status.primaryAmmo = data.primaryAmmo;
@@ -85,56 +91,31 @@ let parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.1", {
             status.consumableAmmo = data.consumableAmmo;
             status.resourceAmmo = data.resourceAmmo;
             status.stamina = data.stamina;
-
-            updateStats(stats, status, snapshot);            
+            updateStats(stats, status, snapshot);
         }
     },
     spawn: {
-        parse, exec: (id, data, snapshot) => {
+        parse,
+        exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
-
-            if (stats.has(id)) throw new Error(`PlayerStats of id '${id}' already exists.`);
-            const status = { 
+            if (stats.has(id))
+                throw new Error(`PlayerStats of id '${id}' already exists.`);
+            const status = {
                 id, ...data
             };
             stats.set(id, status);
-
             updateStats(stats, status, snapshot);
         }
     },
     despawn: {
         parse: async () => {
-        }, 
+        },
         exec: (id, data, snapshot) => {
             const stats = snapshot.getOrDefault("Vanilla.Player.Stats", Factory("Map"));
-
-            if (!stats.has(id)) throw new Error(`PlayerStats of id '${id}' did not exist.`);
-
+            if (!stats.has(id))
+                throw new Error(`PlayerStats of id '${id}' did not exist.`);
             updateStats(stats, stats.get(id)!, snapshot);
-
             stats.delete(id);
-        }
-    }
-});
-parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.2", {
-    ...parser
-});
-parser = ModuleLoader.registerDynamic("Vanilla.Player.Stats", "0.0.3", {
-    ...parser,
-    main: {
-        ...parser.main,
-        parse: async (data) => {
-            const result = await parse(data);
-            result.stamina = await BitHelper.readByte(data) / 255;
-            return result;
-        }
-    },
-    spawn: {
-        ...parser.spawn,
-        parse: async (data) => {
-            const result = await parse(data);
-            result.stamina = await BitHelper.readByte(data) / 255;
-            return result;
         }
     }
 });

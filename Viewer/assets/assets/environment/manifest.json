@@ -1,0 +1,1758 @@
+{
+  "version": 1,
+  "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+  "models": [
+    {
+      "id": "ladder",
+      "assetId": "ladder",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "prop_generic_ladder_a_tile_4m_01",
+      "sourceSha256": "931b19c6ac2b8c7e4fd8dba82b85b406ad99a94d4c739c9be8c5ac361fc670f4",
+      "originalSourceFile": "artifacts/fixture-review/ladder.glb",
+      "originalRevision": "2d16cdc151c5149febfbb9c55d74405331e839d5214b0a3a1d26eead79e68766",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/prop_generic_ladder_a_tile_4m_01",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/prop_generic_ladder_a_tile_4m_01",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Static authored ladder segment. Full ladders are runtime LG_Ladder assemblies; no invented placement or animation."
+      ],
+      "file": "low/ladder.glb",
+      "revision": "3bd84f64c0c2932a6ad5b89d52d89ad97a10bd80ec8c40985c8449289b7e60c0",
+      "triangles": 8368,
+      "sourceRevision": "2d16cdc151c5149febfbb9c55d74405331e839d5214b0a3a1d26eead79e68766",
+      "sourceFile": "artifacts/rebuilt-models/models/ladder-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "ladder-2m",
+      "assetId": "ladder-2m",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "prop_generic_ladder_a_tile_2m_01",
+      "sourceSha256": "95123e7e68b6b587ebc80afb61a7a79941072b860a2551187b98c30713111606",
+      "originalSourceFile": "artifacts/fixture-review/ladder-2m.glb",
+      "originalRevision": "b4059de550f8e3d9c2b79cdbd620c122a71a4511702a877564f330712b39b7dd",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/prop_generic_ladder_a_tile_2m_01",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/prop_generic_ladder_a_tile_2m_01",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Static authored ladder segment. Full ladders are runtime LG_Ladder assemblies; no invented placement or animation."
+      ],
+      "file": "low/ladder-2m.glb",
+      "revision": "175bbc6ac68decf3c8e0e8caff1fe05365b538b088433d967753aecc84d0c43e",
+      "triangles": 4208,
+      "sourceRevision": "b4059de550f8e3d9c2b79cdbd620c122a71a4511702a877564f330712b39b7dd",
+      "sourceFile": "artifacts/rebuilt-models/models/ladder-2m-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "ladder-1m",
+      "assetId": "ladder-1m",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "prop_generic_ladder_a_tile_1m_01",
+      "sourceSha256": "2b5b8ce088fb3d6b1edcccfb48016d04aeadf0da40a9dc5fee447a228fa32557",
+      "originalSourceFile": "artifacts/fixture-review/ladder-1m.glb",
+      "originalRevision": "e46cb545870381a24a91d3bac43640659453c0703f5b83517fcfaf548fbd1b06",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/prop_generic_ladder_a_tile_1m_01",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/prop_generic_ladder_a_tile_1m_01",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Static authored ladder segment. Full ladders are runtime LG_Ladder assemblies; no invented placement or animation."
+      ],
+      "file": "low/ladder-1m.glb",
+      "revision": "d0e17a422c83ec5c3ed9fd538b1eec3beaf63481c8b72ca211093e905141d15a",
+      "triangles": 2128,
+      "sourceRevision": "e46cb545870381a24a91d3bac43640659453c0703f5b83517fcfaf548fbd1b06",
+      "sourceFile": "artifacts/rebuilt-models/models/ladder-1m-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "ladder-05m",
+      "assetId": "ladder-05m",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "prop_generic_ladder_a_tile_05m_01",
+      "sourceSha256": "51c5f708c1790bacca0af1187c509e6ca248677f907002c16c17639296b82bbd",
+      "originalSourceFile": "artifacts/fixture-review/ladder-05m.glb",
+      "originalRevision": "f9ed7ebbb85d0410f2d7edf71652bcf806961e7826fadcde14603b3588d8bc5e",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/prop_generic_ladder_a_tile_05m_01",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/prop_generic_ladder_a_tile_05m_01",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Static authored ladder segment. Full ladders are runtime LG_Ladder assemblies; no invented placement or animation."
+      ],
+      "file": "low/ladder-05m.glb",
+      "revision": "9740563e35de525569a13839c3055729f7b74408d9d7e0f4f87e0beb778a956f",
+      "triangles": 1088,
+      "sourceRevision": "f9ed7ebbb85d0410f2d7edf71652bcf806961e7826fadcde14603b3588d8bc5e",
+      "sourceFile": "artifacts/rebuilt-models/models/ladder-05m-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "ladder-top",
+      "assetId": "ladder-top",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "prop_generic_ladder_a_top_01",
+      "sourceSha256": "d3a0f68d372a384c118be0581f76049fefd21c09be9bd8ebfe2e6966fbae9844",
+      "originalSourceFile": "artifacts/fixture-review/ladder-top.glb",
+      "originalRevision": "7b7b9a3aafadd893b8be224e40a7552125e146f49ce1f92f4fceb498868fb3c8",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/prop_generic_ladder_a_top_01",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/prop_generic_ladder_a_top_01",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Static authored ladder segment. Full ladders are runtime LG_Ladder assemblies; no invented placement or animation."
+      ],
+      "file": "low/ladder-top.glb",
+      "revision": "b3b16b1a1d6adde5f4ce895ad9b06488567d6d2a7fa602ebcb0cf032e042492f",
+      "triangles": 6656,
+      "sourceRevision": "7b7b9a3aafadd893b8be224e40a7552125e146f49ce1f92f4fceb498868fb3c8",
+      "sourceFile": "artifacts/rebuilt-models/models/ladder-top-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "ladder-bottom",
+      "assetId": "ladder-bottom",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "prop_generic_ladder_a_bottom_01",
+      "sourceSha256": "67ca42acb83a28718e5a99849880b710267401e377c9d3b277431056c7774a14",
+      "originalSourceFile": "artifacts/fixture-review/ladder-bottom.glb",
+      "originalRevision": "4e403b2886f4696b93616e8e3b6598732e7692d314b99ce463dbef255afcb93f",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/prop_generic_ladder_a_bottom_01",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/prop_generic_ladder_a_bottom_01",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Static authored ladder segment. Full ladders are runtime LG_Ladder assemblies; no invented placement or animation."
+      ],
+      "file": "low/ladder-bottom.glb",
+      "revision": "3f25a9b7f08405cd43e6622a88eabea7bc16140deaebcd19e5b2d896205602ae",
+      "triangles": 752,
+      "sourceRevision": "4e403b2886f4696b93616e8e3b6598732e7692d314b99ce463dbef255afcb93f",
+      "sourceFile": "artifacts/rebuilt-models/models/ladder-bottom-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "spitter",
+      "assetId": "spitter",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "InfectionSpitter",
+      "sourceSha256": "e686b292cb3ba8ad4d10905b4df02a6fccb617bd6cbe393c52a483592cef049a",
+      "originalSourceFile": "artifacts/fixture-review/spitter.glb",
+      "originalRevision": "19f4a1d6b4876b85868633023da17fcb79c0911e6f0296d9b54e0e59bdd7d0a8",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/InfectionSpitter",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/InfectionSpitter",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Expanded source mesh. Native shader _Blend/_VecDisp animation, object-space normal blending, glow, glue, SSS and projected decals are not baked into GLB. This source has no skeleton or AnimationClip."
+      ],
+      "file": "low/spitter.glb",
+      "revision": "d56a26e1e4d543acdb41e6b87bcda63a7ff5154efedbde9a5a5c218e806847d9",
+      "triangles": 27794,
+      "sourceRevision": "19f4a1d6b4876b85868633023da17fcb79c0911e6f0296d9b54e0e59bdd7d0a8",
+      "sourceFile": "artifacts/rebuilt-models/models/spitter-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "bulkhead-controller",
+      "assetId": "bulkhead-controller",
+      "defaultScale": [
+        1.000000238418579,
+        1.0000001192092896,
+        1
+      ],
+      "animations": [],
+      "source": "Bulkhead_Door_Controller",
+      "sourceSha256": "7448253889cf39a1995bcbe139a51100ef1023ec423cf7d27af51c11c918f22d",
+      "originalSourceFile": "artifacts/fixture-review/bulkhead-controller.glb",
+      "originalRevision": "b5cd5a9cd3a9d3a3e71fb865bef76f275f727762767621e511a3951d50a7aa45",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/Bulkhead_Door_Controller",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/Bulkhead_Door_Controller",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Runtime text, screen contents and lock-state colors are not baked; this source has no skeletal animation."
+      ],
+      "file": "low/bulkhead-controller.glb",
+      "revision": "59dcdc3016c4bb0904086aaa7ab051dadf75765c98c1c7a48caaedd9172ecba5",
+      "triangles": 4393,
+      "sourceRevision": "b5cd5a9cd3a9d3a3e71fb865bef76f275f727762767621e511a3951d50a7aa45",
+      "sourceFile": "artifacts/rebuilt-models/models/bulkhead-controller-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "padlock",
+      "assetId": "padlock",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "WeakLockBreaks",
+        "WeakLockHit",
+        "WeakLockIdle"
+      ],
+      "source": "MeleeLock",
+      "sourceSha256": "9261523fff7d64eef21e8f2c6b45bf5f8b9ea2797463afb7395d7f9d08f43725",
+      "originalSourceFile": "artifacts/fixture-review/padlock.glb",
+      "originalRevision": "eef855539ad832f39ecb97bbc80a4912107e044579df5e80d128637fd1cde9ec",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/MeleeLock",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/MeleeLock",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Native rigid transform animations sampled at the source clip rate. Inactive broken rigidbody debris is excluded; this GLB does not simulate destruction physics."
+      ],
+      "file": "low/padlock.glb",
+      "revision": "27a39975ac517477f5d0fd7236d2fe809f1528bb29423c950e9a110fe38f385e",
+      "triangles": 2602,
+      "sourceRevision": "eef855539ad832f39ecb97bbc80a4912107e044579df5e80d128637fd1cde9ec",
+      "sourceFile": "artifacts/rebuilt-models/models/padlock-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "resource-lock",
+      "assetId": "resource-lock",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "WeakLockBreaks",
+        "WeakLockHit",
+        "WeakLockIdle"
+      ],
+      "source": "WeakLock_ResourceContainer",
+      "sourceSha256": "0c26dcde0361dcc7486fbfbc06c014060da193a256e173e7143e6a286b723b80",
+      "originalSourceFile": "artifacts/fixture-review/resource-lock.glb",
+      "originalRevision": "afba87bdb5670de46779168a14035827a0a412a5bc182e47ec9087159d31493f",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/WeakLock_ResourceContainer",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/WeakLock_ResourceContainer",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/resource-lock.glb",
+      "revision": "6cbeb53683c97cbc646c221063902470e14c04aeb7b36f86f55ac94378696e5a",
+      "triangles": 2602,
+      "sourceRevision": "afba87bdb5670de46779168a14035827a0a412a5bc182e47ec9087159d31493f",
+      "sourceFile": "artifacts/rebuilt-models/models/resource-lock-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "resource-hack-lock",
+      "assetId": "resource-hack-lock",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "WeakLock_ResourceContainer",
+      "sourceSha256": "2354191af0a02fc9793b0a035063051974e05d8eae767da3367e5b7e6f6423e7",
+      "originalSourceFile": "artifacts/fixture-review/resource-hack-lock.glb",
+      "originalRevision": "72402098ac281b820b4593971e6e495ff4a20c3219b712bafe8a2db02f14bd38",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/WeakLock_ResourceContainer",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/WeakLock_ResourceContainer",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/resource-hack-lock.glb",
+      "revision": "947aa7c45b635690bcbbb79521fdcfabe89246d36b0a12a3298a0d029cc34502",
+      "triangles": 746,
+      "sourceRevision": "72402098ac281b820b4593971e6e495ff4a20c3219b712bafe8a2db02f14bd38",
+      "sourceFile": "artifacts/rebuilt-models/models/resource-hack-lock-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "door-lock",
+      "assetId": "door-lock",
+      "defaultScale": [
+        1.399999976158142,
+        1.399999976158142,
+        1.399999976158142
+      ],
+      "animations": [
+        "WeakLockBreaks",
+        "WeakLockHit",
+        "WeakLockIdle"
+      ],
+      "source": "WeakLock_DoorButton",
+      "sourceSha256": "6f5073ec5f4bcb2f68f861bd7b7e9265908f98b9fe584acc66c0d73f418b4ef3",
+      "originalSourceFile": "artifacts/fixture-review/door-lock.glb",
+      "originalRevision": "8248bd64a0c23d0e06c936a66762111a16d35dd473e2268863cc05f4110862a5",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/WeakLock_DoorButton",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/WeakLock_DoorButton",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/door-lock.glb",
+      "revision": "a3379d9a575a6204844c055e4786b6eff055abd5fefc02d2114cd5ef7f05e4b0",
+      "triangles": 2590,
+      "sourceRevision": "8248bd64a0c23d0e06c936a66762111a16d35dd473e2268863cc05f4110862a5",
+      "sourceFile": "artifacts/rebuilt-models/models/door-lock-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "door-hack-lock",
+      "assetId": "door-hack-lock",
+      "defaultScale": [
+        1.399999976158142,
+        1.399999976158142,
+        1.399999976158142
+      ],
+      "animations": [],
+      "source": "WeakLock_DoorButton",
+      "sourceSha256": "1de8137a6a701d9f74818cb6f36d2dd426bc3fdead81648e5957b2c6ccc6f744",
+      "originalSourceFile": "artifacts/fixture-review/door-hack-lock.glb",
+      "originalRevision": "f181eaee081987a2ae73507943eb1de3b1d3087f7fcfe221362a42beabe41845",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/WeakLock_DoorButton",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/WeakLock_DoorButton",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/door-hack-lock.glb",
+      "revision": "bda2d6eae129c836de3b82b939192edb4aa19d1364aeb835ed429f33ac489d89",
+      "triangles": 722,
+      "sourceRevision": "f181eaee081987a2ae73507943eb1de3b1d3087f7fcfe221362a42beabe41845",
+      "sourceFile": "artifacts/rebuilt-models/models/door-hack-lock-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "terminal",
+      "assetId": "terminal",
+      "defaultScale": [
+        1.000000238418579,
+        1.0000001192092896,
+        1
+      ],
+      "animations": [],
+      "source": "Terminal_Floor",
+      "sourceSha256": "772bb13d850a60ec41ac09f039acb41a7ff4872332772801b6f71cba80a39043",
+      "originalSourceFile": "artifacts/fixture-review/terminal.glb",
+      "originalRevision": "3a96c64cc3096948359a41bfcf8d2938f52dcf47ed5231b47762c8f7126a4987",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/Terminal_Floor",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/Terminal_Floor",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/terminal.glb",
+      "revision": "febc6492a76770b74d62d2ea76e84a7ba89d2c29d654d4bea8c15a02750d43dd",
+      "triangles": 2244,
+      "sourceRevision": "3a96c64cc3096948359a41bfcf8d2938f52dcf47ed5231b47762c8f7126a4987",
+      "sourceFile": "artifacts/rebuilt-models/models/terminal-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "terminal-mini",
+      "assetId": "terminal-mini",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "Terminal_Mini",
+      "sourceSha256": "0e0b371aea8c563e1a016d310598c755763f23295d001267058572930b2b413e",
+      "originalSourceFile": "artifacts/fixture-review/terminal-mini.glb",
+      "originalRevision": "b768911e70c2a99b3c3226a65ec1f532d0fe78362ef2dcaa948cb2f3da240c21",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/Terminal_Mini",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/Terminal_Mini",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/terminal-mini.glb",
+      "revision": "be06e7ce5f3a1e5365eaf6aa3483a67f96ca072243acc30c6c94349754843990",
+      "triangles": 1638,
+      "sourceRevision": "b768911e70c2a99b3c3226a65ec1f532d0fe78362ef2dcaa948cb2f3da240c21",
+      "sourceFile": "artifacts/rebuilt-models/models/terminal-mini-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "disinfect-station",
+      "assetId": "disinfect-station",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "Disinfection_Station",
+      "sourceSha256": "37bc81013f02e89e9a748405fdebee21f054d1db8a472609c8db364b2e02f45b",
+      "originalSourceFile": "artifacts/fixture-review/disinfect-station.glb",
+      "originalRevision": "3022d97934bc88039d4b1bd85fea7f7358cd9a9c1f83bc21df2e25d925b192ce",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/Disinfection_Station",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/Disinfection_Station",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/disinfect-station.glb",
+      "revision": "c2e4da55d965251ec4de60275a424d7a8fe2a411b25c52b86794ef1c4c750ed7",
+      "triangles": 2931,
+      "sourceRevision": "3022d97934bc88039d4b1bd85fea7f7358cd9a9c1f83bc21df2e25d925b192ce",
+      "sourceFile": "artifacts/rebuilt-models/models/disinfect-station-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "generator",
+      "assetId": "generator",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "source": "Generator_Slot_a",
+      "sourceSha256": "5023be32e011d26c2680b393a14770bafb542177ae545d824384171c98d6ffdf",
+      "originalSourceFile": "artifacts/fixture-review/generator.glb",
+      "originalRevision": "8b867cb60ae523170d7aa5cef6f2de1554aefdceb82a63d004a45b8a1ae7bb5c",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/Generator_Slot_a",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/Generator_Slot_a",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/generator.glb",
+      "revision": "806085e02ff64c734a7a0825797feb589d90a5c1ea008095ae6508e83c87ff9b",
+      "triangles": 2664,
+      "sourceRevision": "8b867cb60ae523170d7aa5cef6f2de1554aefdceb82a63d004a45b8a1ae7bb5c",
+      "sourceFile": "artifacts/rebuilt-models/models/generator-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "hack-lock",
+      "assetId": "hack-lock",
+      "defaultScale": [
+        1.0499999523162842,
+        1.0499999523162842,
+        1.0499999523162842
+      ],
+      "animations": [],
+      "source": "HackLockDoor",
+      "sourceSha256": "c3af71544f7d311fa53d8cf5acb104707b6482ca1c7079089bc737ca3324f00b",
+      "originalSourceFile": "artifacts/fixture-review/hack-lock.glb",
+      "originalRevision": "40382c82d1a5a48768f33151851b97bcd2022a1d4b6ef4322747a2423567045e",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/HackLockDoor",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/HackLockDoor",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Runtime text, screen contents and lock-state colors are not baked; this source has no skeletal animation."
+      ],
+      "file": "low/hack-lock.glb",
+      "revision": "490b7c67e295c04bf175f801ca9320b9d4b17a0bd0bae8e2b215660452f7decc",
+      "triangles": 716,
+      "sourceRevision": "40382c82d1a5a48768f33151851b97bcd2022a1d4b6ef4322747a2423567045e",
+      "sourceFile": "artifacts/rebuilt-models/models/hack-lock-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "resource-box",
+      "assetId": "resource-box",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "SupplyBoxOpen",
+        "SupplyBoxOpenIdle"
+      ],
+      "source": "BoxWeakLock",
+      "sourceSha256": "9118e838bfe499f5488c32b7b07006aabb0a0439df8cee02793a85d2816db547",
+      "originalSourceFile": "artifacts/environment-review/resource-box.glb",
+      "originalRevision": "6a22982c885ab091118e9c312ead2aedfa345b5c0515b6c92a8f13b53141c2a4",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/BoxWeakLock",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/BoxWeakLock",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/resource-box.glb",
+      "revision": "4c20425753b2dbba45d3948816b7de29247f39a365536ed17d4db91146a936ea",
+      "triangles": 1520,
+      "sourceRevision": "6a22982c885ab091118e9c312ead2aedfa345b5c0515b6c92a8f13b53141c2a4",
+      "sourceFile": "artifacts/rebuilt-models/models/resource-box-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "resource-locker",
+      "assetId": "resource-locker",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "SupplyLocker_open",
+        "SupplyLocker_closedIdle",
+        "SupplyLocker_openIdle"
+      ],
+      "source": "LockerWeakLock",
+      "sourceSha256": "5d50f2c7fe664efd45f09e0793e743733131092dc0c721765f13447cd9b2a1f6",
+      "originalSourceFile": "artifacts/environment-review/resource-locker.glb",
+      "originalRevision": "0116fb3d2cca1b8f2fb10c79c0ddc3a5509690174307e9efa12d8df46b0d65ce",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/LockerWeakLock",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/LockerWeakLock",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/resource-locker.glb",
+      "revision": "e8210f0e6a34d404a3987e0e140a09917a55b4184349284fa0304829cee28097",
+      "triangles": 1618,
+      "sourceRevision": "0116fb3d2cca1b8f2fb10c79c0ddc3a5509690174307e9efa12d8df46b0d65ce",
+      "sourceFile": "artifacts/rebuilt-models/models/resource-locker-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "weak-door-4x4",
+      "assetId": "weak-door-4x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "WeakDoor_Idle",
+        "WeakDoor_Open",
+        "WeakDoor_Open_idle",
+        "WeakDoor_Open_Jammed",
+        "WeakDoor_Open_Jammed_Glue"
+      ],
+      "source": "gate_4x4_weak_door",
+      "sourceSha256": "37b45885a246d38c05bc53d55ab80f8c52fc1f2af0d960b91743afb369aae06b",
+      "originalSourceFile": "artifacts/environment-review/weak-door-4x4.glb",
+      "originalRevision": "ca75f7b2078b4750add6f8fb73d542ecd802e441ef4012e2dc36b7949b74deae",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_4x4_weak_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_4x4_weak_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/weak-door-4x4.glb",
+      "revision": "d3bcf779405eadd80638e11d07e963ac43c08378c668bf5ad1f6c7c6d631b9c7",
+      "triangles": 17516,
+      "sourceRevision": "ca75f7b2078b4750add6f8fb73d542ecd802e441ef4012e2dc36b7949b74deae",
+      "sourceFile": "artifacts/rebuilt-models/models/weak-door-4x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "weak-door-8x4",
+      "assetId": "weak-door-8x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "WeakDoor_Idle",
+        "WeakDoor_Open",
+        "WeakDoor_Open_idle",
+        "WeakDoor_Open_Jammed",
+        "WeakDoor_Open_Jammed_Glue"
+      ],
+      "source": "gate_8x4_weak_door",
+      "sourceSha256": "9c33a698eccb895420d7bc06886cdfa649957292b9731a53eba059036f7581ad",
+      "originalSourceFile": "artifacts/environment-review/weak-door-8x4.glb",
+      "originalRevision": "827ac20d803dd181cce7fb405b9d401fd36b740cfc820ebc69460fcf3b9eaab0",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_8x4_weak_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_8x4_weak_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/weak-door-8x4.glb",
+      "revision": "eeb21391893e0f9856ce46a5c6a35df1731a0c5536dcb869eecdcdc167098537",
+      "triangles": 18524,
+      "sourceRevision": "827ac20d803dd181cce7fb405b9d401fd36b740cfc820ebc69460fcf3b9eaab0",
+      "sourceFile": "artifacts/rebuilt-models/models/weak-door-8x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "weak-door-damaged-4x4",
+      "assetId": "weak-door-damaged-4x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "WeakDoor_Idle",
+        "WeakDoor_Open",
+        "WeakDoor_Open_idle",
+        "WeakDoor_Open_Jammed",
+        "WeakDoor_Open_Jammed_Glue",
+        "PunchBlend1",
+        "PunchBlend2",
+        "PunchBlend3",
+        "PunchBlend4",
+        "Shake"
+      ],
+      "source": "gate_4x4_weak_door",
+      "sourceSha256": "85f507eb9638fbe4db15635da12fc3d203d8a7726946f4565ec3971b87dcbd9e",
+      "originalSourceFile": "artifacts/environment-review/weak-door-damaged-4x4.glb",
+      "originalRevision": "9018cd837d90cc6095cfb07517e1645ef12ca7fde0ee799c5b1d88dcbddd4c68",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_4x4_weak_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_4x4_weak_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Original deformable blade bones, weights and inverse bind matrices retained. Hit-driven bone deformation and detached rigid-body debris are game simulation, not prerecorded AnimationClips."
+      ],
+      "file": "low/weak-door-damaged-4x4.glb",
+      "revision": "98f02ebf4c010f2b11d0ec91b4bf9ff16993e2339a462b5f8dbd8cf48c0d074b",
+      "triangles": 23050,
+      "sourceRevision": "9018cd837d90cc6095cfb07517e1645ef12ca7fde0ee799c5b1d88dcbddd4c68",
+      "sourceFile": "artifacts/rebuilt-models/models/weak-door-damaged-4x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "weak-door-damaged-8x4",
+      "assetId": "weak-door-damaged-8x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "WeakDoor_Idle",
+        "WeakDoor_Open",
+        "WeakDoor_Open_idle",
+        "WeakDoor_Open_Jammed",
+        "WeakDoor_Open_Jammed_Glue",
+        "PunchBlend1",
+        "PunchBlend2",
+        "PunchBlend3",
+        "PunchBlend4",
+        "Shake"
+      ],
+      "source": "gate_8x4_weak_door",
+      "sourceSha256": "e105df5aea977eb19390feed1cea1882953f03ec56761967f9ef4c4f09ff779b",
+      "originalSourceFile": "artifacts/environment-review/weak-door-damaged-8x4.glb",
+      "originalRevision": "f11a4c678031b365b1b5f67069f05eab425f78faeb124816d1e9c8cf669dbf7f",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_8x4_weak_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_8x4_weak_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement.",
+        "Original deformable blade bones, weights and inverse bind matrices retained. Hit-driven bone deformation and detached rigid-body debris are game simulation, not prerecorded AnimationClips."
+      ],
+      "file": "low/weak-door-damaged-8x4.glb",
+      "revision": "795ef901912952305b0d004477fb83a95bbfb59e657216483fad4b8f392fa80d",
+      "triangles": 24378,
+      "sourceRevision": "f11a4c678031b365b1b5f67069f05eab425f78faeb124816d1e9c8cf669dbf7f",
+      "sourceFile": "artifacts/rebuilt-models/models/weak-door-damaged-8x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "security-door-4x4",
+      "assetId": "security-door-4x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "ClosedIdle",
+        "OpenDoor2",
+        "OpenIdle",
+        "PullHandle",
+        "OpenClamps",
+        "ReleaseClampsIdle",
+        "OpenDoor1",
+        "PullHandleIdle",
+        "OpenDoorQuick"
+      ],
+      "source": "gate_4x4_security_door",
+      "sourceSha256": "d7c85165d85ac7995970146a172aab53b4648ee2d3cdf90cea7af7097d185d70",
+      "originalSourceFile": "artifacts/environment-review/security-door-4x4.glb",
+      "originalRevision": "5d6cb36b44e9acfc57c394090eb076363534276e071a0270fb827dd35ffe2890",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_4x4_security_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_4x4_security_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/security-door-4x4.glb",
+      "revision": "387fcd81109e4a9efffbe63fad839e7799d1e4b24ab879dc91539a2944df7ebd",
+      "triangles": 11388,
+      "sourceRevision": "5d6cb36b44e9acfc57c394090eb076363534276e071a0270fb827dd35ffe2890",
+      "sourceFile": "artifacts/rebuilt-models/models/security-door-4x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "security-door-8x4",
+      "assetId": "security-door-8x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "ClosedIdle",
+        "OpenDoor2",
+        "OpenIdle",
+        "PullHandle",
+        "ReleaseClamps",
+        "ReleaseClampsIdle",
+        "OpenDoor1",
+        "PullHandleIdle",
+        "OpenDoorQuick"
+      ],
+      "source": "gate_8x4_security_door",
+      "sourceSha256": "b20e1a9638ae47d6968cd92e449a74628dff16e26796131ddfff73517d6b8626",
+      "originalSourceFile": "artifacts/environment-review/security-door-8x4.glb",
+      "originalRevision": "7c2a67480328158787fa6305fb34a6d3b7a62fc9ad377afb413cd99f6cab42b4",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_8x4_security_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_8x4_security_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/security-door-8x4.glb",
+      "revision": "e7aed5fa630ac772f2be5aa50073a6c7d0977800d4a040e75b793c6cbd43e10b",
+      "triangles": 11268,
+      "sourceRevision": "7c2a67480328158787fa6305fb34a6d3b7a62fc9ad377afb413cd99f6cab42b4",
+      "sourceFile": "artifacts/rebuilt-models/models/security-door-8x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "bulkhead-door-4x4",
+      "assetId": "bulkhead-door-4x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "door_closed_idle",
+        "door_open",
+        "door_open_idle",
+        "lock_open"
+      ],
+      "source": "gate_4x4_bulkhead_door",
+      "sourceSha256": "ccb922fdb6761b275562781b82de1c330052f6cdfb662c913f0587e320d0b940",
+      "originalSourceFile": "artifacts/environment-review/bulkhead-door-4x4.glb",
+      "originalRevision": "1662adeb93b55eb3aaedaf98b84edce9ae21ab09c2bde2c9fc06a336e8660503",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_4x4_bulkhead_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_4x4_bulkhead_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/bulkhead-door-4x4.glb",
+      "revision": "589195cf618bfb826eab20a1bb1421009f5e7addc7dcd0178755a1088e5a15e7",
+      "triangles": 14154,
+      "sourceRevision": "1662adeb93b55eb3aaedaf98b84edce9ae21ab09c2bde2c9fc06a336e8660503",
+      "sourceFile": "artifacts/rebuilt-models/models/bulkhead-door-4x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "bulkhead-door-8x4",
+      "assetId": "bulkhead-door-8x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "door_closed_idle",
+        "door_open",
+        "door_open_idle",
+        "lock_open"
+      ],
+      "source": "gate_8x4_bulkhead_door",
+      "sourceSha256": "27e6bd0bd09ad50d804a2e4a35d86fe42d1bbe0805f9fd2a8699672100877276",
+      "originalSourceFile": "artifacts/environment-review/bulkhead-door-8x4.glb",
+      "originalRevision": "1106b2685ddd49fae06ff77771dec8ab417db8587dda28477d1f9427aa839e41",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_8x4_bulkhead_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_8x4_bulkhead_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/bulkhead-door-8x4.glb",
+      "revision": "54998eae73c377080212ef0fc133442e0216c1ff69bb75fe6d865328b7b13fa3",
+      "triangles": 16138,
+      "sourceRevision": "1106b2685ddd49fae06ff77771dec8ab417db8587dda28477d1f9427aa839e41",
+      "sourceFile": "artifacts/rebuilt-models/models/bulkhead-door-8x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "bulkhead-main-door-4x4",
+      "assetId": "bulkhead-main-door-4x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "ClosedIdle",
+        "OpenDoor2",
+        "OpenIdle",
+        "PullHandle",
+        "OpenClamps",
+        "ReleaseClampsIdle",
+        "OpenDoor1",
+        "PullHandleIdle",
+        "OpenDoorQuick"
+      ],
+      "source": "gate_4x4_main_path_bulkhead_door",
+      "sourceSha256": "60f6552b1502f83c9b7332e4438b5253aa80888873ecdbf75bbc08f69e3235d2",
+      "originalSourceFile": "artifacts/environment-review/bulkhead-main-door-4x4.glb",
+      "originalRevision": "38164603b94aeda00f3ce45329283e2c1e75e2c20b55013f41ee8729f4092ced",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_4x4_main_path_bulkhead_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_4x4_main_path_bulkhead_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/bulkhead-main-door-4x4.glb",
+      "revision": "1ebab3d5241fb0b64bd01199bc1c7b1d354d204801282316dfb59845f9f9a621",
+      "triangles": 9407,
+      "sourceRevision": "38164603b94aeda00f3ce45329283e2c1e75e2c20b55013f41ee8729f4092ced",
+      "sourceFile": "artifacts/rebuilt-models/models/bulkhead-main-door-4x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "bulkhead-main-door-8x4",
+      "assetId": "bulkhead-main-door-8x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "ClosedIdle",
+        "OpenDoor2",
+        "OpenIdle",
+        "PullHandle",
+        "ReleaseClamps",
+        "ReleaseClampsIdle",
+        "OpenDoor1",
+        "PullHandleIdle",
+        "OpenDoorQuick"
+      ],
+      "source": "gate_8x4_main_path_bulkhead_door",
+      "sourceSha256": "7a42e25f86721522816365656b146ffbcf3f5437cf55050e0d97aae4c2fea60c",
+      "originalSourceFile": "artifacts/environment-review/bulkhead-main-door-8x4.glb",
+      "originalRevision": "9152640010711fb82c57540f7add9bdac36df2d714836effaf2bb9e602bac6cc",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_8x4_main_path_bulkhead_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_8x4_main_path_bulkhead_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/bulkhead-main-door-8x4.glb",
+      "revision": "4d19eafe3ad0e5c49f5ca5a023116e9aab531b496168e0fbbf8eb3d267d02b6a",
+      "triangles": 8168,
+      "sourceRevision": "9152640010711fb82c57540f7add9bdac36df2d714836effaf2bb9e602bac6cc",
+      "sourceFile": "artifacts/rebuilt-models/models/bulkhead-main-door-8x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "apex-door-4x4",
+      "assetId": "apex-door-4x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "ApexDoorClosed_idle",
+        "ApexDoorOpen1",
+        "ApexDoorOpen2",
+        "ApexDoorReleaseClamp",
+        "ApexDoorReleaseClampIdle",
+        "ApexDoorOpen_idle",
+        "ApexDoorUnlock",
+        "ApexDoorUnlockIdle"
+      ],
+      "source": "gate_4x4_apex_door",
+      "sourceSha256": "5bb75154ba7d538ca2e95666aeef016518a69373d0a00f1a3ee90642f9f07065",
+      "originalSourceFile": "artifacts/environment-review/apex-door-4x4.glb",
+      "originalRevision": "97bc8c1374dc47f6a413495149e9c522f8a628c693d7b9a5781c53d689dbc456",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_4x4_apex_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_4x4_apex_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/apex-door-4x4.glb",
+      "revision": "a0c46373d136287ae137eb34ace4c70bb6f7c716213e59da94910fafc5265661",
+      "triangles": 13250,
+      "sourceRevision": "97bc8c1374dc47f6a413495149e9c522f8a628c693d7b9a5781c53d689dbc456",
+      "sourceFile": "artifacts/rebuilt-models/models/apex-door-4x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "apex-door-8x4",
+      "assetId": "apex-door-8x4",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [
+        "ApexDoorClosed_idle",
+        "ApexDoorOpen1",
+        "ApexDoorOpen2",
+        "ApexDoorReleaseClamp",
+        "ApexDoorReleaseClampIdle",
+        "ApexDoorOpen_idle",
+        "ApexDoorUnlock",
+        "ApexDoorUnlockIdle"
+      ],
+      "source": "gate_8x4_apex_door",
+      "sourceSha256": "61849f1eb548b1f9e3351de48dec82f18bb69e8a614ab8ecad4c3e70654724c9",
+      "originalSourceFile": "artifacts/environment-review/apex-door-8x4.glb",
+      "originalRevision": "d9addd1d46eb62f3e00a31079ca66e53dcde9ad71a2ecb6e969abd2e490c8591",
+      "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+      "normalization": {
+        "sourceRoot": "/gate_8x4_apex_door",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "sourceRoot": "/gate_8x4_apex_door",
+      "limitations": [
+        "Unreduced source geometry and source-resolution decoded texture maps. Portable glTF PBR converts Unity normal/metallic channels; this is not a lossless Unity shader export.",
+        "Unity CMS procedural surface layers are not reproduced.",
+        "Review candidate; no runtime performance measurement."
+      ],
+      "file": "low/apex-door-8x4.glb",
+      "revision": "84563d46cb1e12a8b3847c04ba4673b25f0b7273d0f23b5e2d72ec76b3188113",
+      "triangles": 16138,
+      "sourceRevision": "d9addd1d46eb62f3e00a31079ca66e53dcde9ad71a2ecb6e969abd2e490c8591",
+      "sourceFile": "artifacts/rebuilt-models/models/apex-door-8x4-low.glb",
+      "level": "low"
+    },
+    {
+      "id": "terminal-cyberdeck",
+      "source": "Terminal_CyberDeck",
+      "file": "low/terminal-cyberdeck.glb",
+      "revision": "3780b8b5d9cf9239875caf426a27922c0102cf50594cd7ec32442725c2f800c1",
+      "level": "low",
+      "defaultScale": [
+        1,
+        1,
+        1
+      ],
+      "animations": [],
+      "parts": [
+        {
+          "assetId": "architecture-77f7560bc8437794",
+          "revision": "a91ed3a75b5f15d9d220718faacbbb879c6c5bf8371d3af3931ad05b56f5561e",
+          "sourceFile": "artifacts/rebuilt-models/models/architecture-77f7560bc8437794-low.glb",
+          "originalFile": "artifacts/native-gap-review/models/architecture-77f7560bc8437794.glb"
+        },
+        {
+          "assetId": "architecture-1e4e4cd0a4cf4d18",
+          "revision": "fb03c90b645ddea206773f227a7c0939027096c31f41500ddc064bc536471609",
+          "sourceFile": "artifacts/rebuilt-models/models/architecture-1e4e4cd0a4cf4d18-low.glb",
+          "originalFile": "artifacts/native-gap-review/models/architecture-1e4e4cd0a4cf4d18.glb"
+        },
+        {
+          "assetId": "architecture-32477bf17f441192",
+          "revision": "0a6c6d0801a46734058a9f9a912a8fa7294dadd6c0128ae2224374c2b23ee599",
+          "sourceFile": "artifacts/rebuilt-models/models/architecture-32477bf17f441192-low.glb",
+          "originalFile": "artifacts/native-gap-review/models/architecture-32477bf17f441192.glb"
+        }
+      ],
+      "triangles": 4980
+    }
+  ],
+  "resources": [
+    {
+      "property": "_VecDisp",
+      "file": "displacement.png",
+      "sourceFile": "artifacts/fixture-review/shader/displacement.png",
+      "nativeSource": "resources.assets-646",
+      "name": "parasite_dis_vec",
+      "width": 256,
+      "height": 256,
+      "sha256": "0e6f062352519fa7b50f934b465002e07938d8589008eedb6dcb9628fd94fad1",
+      "runtimePath": "Runtime/environment/spitter-shader/displacement.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_MainTex",
+      "file": "expanded-color.png",
+      "sourceFile": "artifacts/fixture-review/shader/expanded-color.png",
+      "nativeSource": "resources.assets-1570",
+      "name": "ParasiteExpanded_df",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "2111975755cfd02c126813a670bc358bb855025a7bc841dbbecc388b12ee3a06",
+      "runtimePath": "Runtime/environment/spitter-shader/expanded-color.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_MainTex_B",
+      "file": "retracted-color.png",
+      "sourceFile": "artifacts/fixture-review/shader/retracted-color.png",
+      "nativeSource": "resources.assets-516",
+      "name": "ParasiteSmall_df",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "695793044a5aacf59015342e218271194efd83deea7888baf0001e7dc53444f2",
+      "runtimePath": "Runtime/environment/spitter-shader/retracted-color.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_lBumpMap",
+      "file": "expanded-normal.png",
+      "sourceFile": "artifacts/fixture-review/shader/expanded-normal.png",
+      "nativeSource": "resources.assets-907",
+      "name": "ParasiteExpanded_wsn",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "b77e0a558bd53ae419a75d26e3143ef1a8bdf0448b4a6de2fc73d314aa8b5fbd",
+      "runtimePath": "Runtime/environment/spitter-shader/expanded-normal.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_lBumpMapB",
+      "file": "retracted-normal.png",
+      "sourceFile": "artifacts/fixture-review/shader/retracted-normal.png",
+      "nativeSource": "resources.assets-1156",
+      "name": "ParasiteSmall_wsn",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "9bbd3e373263dff976cb1d36343d8425367a98f2421ca3865e6d37531139b94d",
+      "runtimePath": "Runtime/environment/spitter-shader/retracted-normal.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_MetallicGlossMap",
+      "file": "expanded-surface.png",
+      "sourceFile": "artifacts/fixture-review/shader/expanded-surface.png",
+      "nativeSource": "resources.assets-721",
+      "name": "ParasiteExpanded_mt",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "d8b0c2c459afcdde15f6308948539d0bcecb1c7c9502b8a27af3e185dd721849",
+      "runtimePath": "Runtime/environment/spitter-shader/expanded-surface.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_MetallicGlossMap_B",
+      "file": "retracted-surface.png",
+      "sourceFile": "artifacts/fixture-review/shader/retracted-surface.png",
+      "nativeSource": "resources.assets-567",
+      "name": "ParasiteSmall_mt",
+      "width": 2048,
+      "height": 2048,
+      "sha256": "a6f8b040d1b10486d3369e228cb7b5bf4245ffe2d519066142ae4df4948dfde3",
+      "runtimePath": "Runtime/environment/spitter-shader/retracted-surface.png",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "property": "_VolumeNoise",
+      "file": "noise.rgba",
+      "sourceFile": "artifacts/fixture-review/shader/noise.rgba",
+      "nativeSource": "resources.assets-3105",
+      "format": "R8G8B8A8_UNorm",
+      "width": 64,
+      "height": 64,
+      "depth": 64,
+      "sha256": "5f3b4fe508f854aa0c873b64d3a0a71f18f9ff3c99087e6cff4949a9ebdb49e2",
+      "runtimePath": "Runtime/environment/spitter-shader/noise.rgba",
+      "assetId": "spitter",
+      "level": "original"
+    },
+    {
+      "runtimePath": "Runtime/environment/spitter-shader/manifest.json",
+      "sourceFile": "artifacts/fixture-review/shader/manifest.json",
+      "assetId": "spitter",
+      "level": "original"
+    }
+  ]
+}

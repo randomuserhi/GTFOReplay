@@ -45,6 +45,18 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Pack", "0.0.1", {
         const target = players.get(data.target);
         if (target === undefined) throw new Error(`${data.source} does not exist.`);
 
+        const status = snapshot.get("Vanilla.Player.Stats")?.get(data.target);
+        if (status) {
+            const feedback = status.feedback ??= {};
+            const flash = { time: snapshot.time(), color: 0x45e887 };
+            switch (data.type) {
+            case 'Ammo': feedback.primaryAmmo = flash; feedback.secondaryAmmo = flash; break;
+            case 'Tool': feedback.toolAmmo = flash; break;
+            case 'Healing': feedback.health = flash; break;
+            case 'Disinfect': feedback.infection = flash; break;
+            }
+        }
+
         if (source !== target) {
             const sourceStats = StatTracker.getPlayer(source.snet, statTracker)!;
             const packsGiven = sourceStats.packsGiven;

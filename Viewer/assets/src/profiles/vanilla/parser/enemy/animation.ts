@@ -82,6 +82,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Enemy.Animation": Map<number, EnemyAnimState>;
+            "Vanilla.Enemy.Animation.Despawned": Set<number>;
         }
     }
 }
@@ -265,6 +266,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
             const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
 
             if (anims.has(id)) throw new Error(`EnemyAnim of id '${id}' already exists.`);
+            snapshot.get("Vanilla.Enemy.Animation.Despawned")?.delete(id);
             anims.set(id, { 
                 ...data,
                 lastStateTime: -Infinity,
@@ -306,6 +308,7 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Animation", "0.0.1", {
 
             if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' did not exist.`);
             anims.delete(id);
+            snapshot.getOrDefault("Vanilla.Enemy.Animation.Despawned", () => new Set()).add(id);
         }
     }
 });
@@ -344,9 +347,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Hitreact", "0.0.1", {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
-        // NOTE(randomuserhi): for some reason backend reports hitreacts post-enemy death - skip error checking simply for backwards compatability
-        // TODO(randomuserhi): Update parser version in backend and verify this error still persists in latest version
-        if (!anims.has(id)) return; //throw new Error(`EnemyAnim of id '${id}' was not found.`); 
+        if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
         anim.lastHitreactTime = snapshot.time();
         anim.hitreactAnimIndex = data.animIndex;
@@ -484,9 +485,7 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.ScoutScream", "0.0.1", {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
         
         const id = data.id;
-        // NOTE(randomuserhi): for some reason backend reports screams post-enemy death - skip error checking simply for backwards compatability
-        // TODO(randomuserhi): Update parser version in backend and verify this error still persists in latest version
-        if (!anims.has(id)) return; //throw new Error(`EnemyAnim of id '${id}' was not found.`);
+        if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
         anim.lastScoutScream = snapshot.time();
         anim.scoutScreamStart = data.start;

@@ -3,8 +3,9 @@ import * as BitHelper from "./bithelper.js";
 import { Internal } from "./internal.js";
 import { IpcInterface } from "./ipc.js";
 import { ModuleDesc, ModuleLoader, ModuleNotFound, NoExecFunc, UnknownModuleType } from "./moduleloader.js";
-import { Replay, Snapshot, Timeline } from "./replay.js";
+import { Replay, Snapshot, Timeline, ReplayBlock } from "./replay.js";
 import { ByteStream, FileHandle, FileStream } from "./stream.js";
+import type { IndexedEvent } from "../main/interface.js";
 
 let replay: Replay | undefined = undefined;
 
@@ -16,8 +17,14 @@ let replay: Replay | undefined = undefined;
     });
     ipc.on("init", async (file: FileHandle, links: string[], baseURI?: string) => {
         const vm = new VM({ isParser: true }, baseURI, "../profiles");
+        try {
         await Promise.all(links.map(async link => (vm.load(link)).then(module => module.execution)));
-        parse(vm, file);
+        await parse(vm, file);
+        } catch (err) {
+            ipc.send("error", { message: String(err), verbose: vm.verboseError(err) });
+            ipc.send("end");
+            self.close();
+        }
     });
 
     async function parse(vm: VM, file: FileHandle) {
@@ -26,9 +33,7 @@ let replay: Replay | undefined = undefined;
 
         const fs = new FileStream(ipc, file);
 
-        // Cache as much available data
-        await fs.cacheAllBytes();
-        await fs.cacheNetworkBuffer();
+        // Disk files are read by range; container decoding has a bounded cache in the main process.
 
         const getModule = async (bytes: ByteStream | FileStream): Promise<[ModuleDesc, number]> => {
             if (replay === undefined) throw new Error(`No replay was found - Parsing has not yet been started.`);
@@ -39,8 +44,10 @@ let replay: Replay | undefined = undefined;
         };
 
         try {
+            await fs.cacheNetworkBuffer();
             // Parse Typemap
             const headerSize = await BitHelper.readInt(fs);
+            if (headerSize <= 0 || headerSize > 64 * 1024 * 1024 - 4) throw new Error("Invalid replay header size.");
             const bytes = await fs.getBytes(headerSize);
             const typeMapVersion = await BitHelper.readString(bytes);
             if (Internal.parsers[typeMapVersion] === undefined) {
@@ -56,6 +63,21 @@ let replay: Replay | undefined = undefined;
                 data: new Map()
             };
             const api = replay.api(state);
+            let block: ReplayBlock;
+            let eventId = 0;
+            let pendingIndex: IndexedEvent[] = [];
+            let frameIndex: typeof pendingIndex = [];
+            const sendIndex = () => {
+                if (pendingIndex.length) ipc.send("index", pendingIndex);
+                pendingIndex = [];
+            };
+            const saveBlock = async () => {
+                if (!block.timeline.length) return;
+                const id = await ipc.invoke("storeBlock", block);
+                ipc.send("block", { id, start: block.state.time, end: block.timeline[block.timeline.length - 1].time });
+                sendIndex();
+                block = { state: structuredClone(state), timeline: [] };
+            };
 
             // Initialise
             for (const init of ModuleLoader.library.init) {
@@ -72,6 +94,7 @@ let replay: Replay | undefined = undefined;
             }
 
             ipc.send("eoh", replay.typemap, replay.types, replay.header);
+            block = { state: structuredClone(state), timeline: [] };
 
             // Parse snapshots
             const exists = new Map<number, Map<number, boolean>>();
@@ -116,6 +139,9 @@ let replay: Replay | undefined = undefined;
                         const func = ModuleLoader.getEvent(module as any);
                         if (func === undefined) throw new ModuleNotFound(`No valid module was found for '${module.typename}(${module.version})'.`);
                         data = await func.parse(bytes, api);
+                        const indexed = { id: eventId++, time: state.time, kind: module.typename, data };
+                        for (const describe of ModuleLoader.library.index) describe(indexed, api);
+                        frameIndex.push(indexed);
                         events.push({
                             type,
                             delta,
@@ -163,16 +189,16 @@ let replay: Replay | undefined = undefined;
                 }
                 return [dynamics, type];
             };
-            for (;;) {
+            try { for (;;) {
                 await fs.cacheNetworkBuffer();
 
-                const snapshotSize = await BitHelper.readInt(fs);
-                if (snapshotSize <= 0) {
+                const sizeBytes = await fs.getBytes(4);
+                if (sizeBytes.bytes.length === 0) break;
+                const snapshotSize = await BitHelper.readInt(sizeBytes);
+                if (snapshotSize <= 0 || snapshotSize > 64 * 1024 * 1024 - 4) {
                     throw new Error(`Invalid Snapshot size of ${snapshotSize}.`);
                 }
                 const bytes = await fs.getBytes(snapshotSize);
-
-                if ((state.tick % 500) === 0) ipc.send("state", state);
 
                 const now = await BitHelper.readUInt(bytes);
                 state.time = now;
@@ -183,6 +209,7 @@ let replay: Replay | undefined = undefined;
                 } as any;
 
                 exists.clear();
+                frameIndex = [];
 
                 snapshot.events = await parseEvents(bytes); // parse events
                 const nDynamicCollections = await BitHelper.readUShort(bytes);
@@ -195,14 +222,17 @@ let replay: Replay | undefined = undefined;
                     tick(api);
                 }
 
-                ipc.send("snapshot", snapshot);
-            }
+                if (bytes.index !== bytes.bytes.length) throw new Error(`Snapshot at ${now} ms contains unexpected trailing bytes.`);
+                block.timeline.push(snapshot);
+                pendingIndex.push(...frameIndex);
+                if (block.timeline.length >= 100) await saveBlock();
+                else if (block.timeline.length === 1 || block.timeline.length % 20 === 0) {
+                    ipc.send("preview", block);
+                    sendIndex();
+                }
+            } } finally { await saveBlock(); }
         } catch (err) {
-            if (!(err instanceof RangeError)) {
-                ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}` });
-            } else {
-                console.log(`Finished parsing with:\n${vm.verboseError(err)}`);
-            }
+            ipc.send("error", { message: `${err}`, verbose: `${vm.verboseError(err)}` });
         }
 
         ipc.send("end");

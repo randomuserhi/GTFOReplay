@@ -64,6 +64,7 @@ export interface PlayerStats {
     revives: number;
     packsUsed: Map<PackType, number>;
     packsGiven: Map<PackType, number>;
+    packsConsumed: Map<PackType, number>;
     timeSpentDowned: number;
     timeSpentSolo: number;
     kills: Map<IdentifierHash, IdentifiedValue>;
@@ -88,6 +89,7 @@ function PlayerStats(snet: bigint): PlayerStats {
         revives: 0,
         packsUsed: new Map(),
         packsGiven: new Map(),
+        packsConsumed: new Map(),
         timeSpentDowned: 0,
         timeSpentSolo: 0,
         kills: new Map(),
@@ -105,10 +107,30 @@ function PlayerStats(snet: bigint): PlayerStats {
 }
 
 interface Database {
+    confirmedEnemyDeaths: number;
     players: Map<bigint, PlayerStats> 
 }
 
 export namespace StatTracker {
+    // Rendering statistics must not insert empty or unselected players into replay snapshots.
+    export function readPlayer(snet: bigint | undefined, snapshot: ReplayApi): PlayerStats {
+        return (snet === undefined ? undefined : snapshot.get("Vanilla.StatTracker")?.players.get(snet)) ?? PlayerStats(snet ?? 0n);
+    }
+
+    export function availability(snapshot: ReplayApi, snet?: bigint) {
+        const header = snapshot.header.get("ReplayRecorder.Header");
+        const core = [...snapshot.get("ReplayRecorder.Player")?.values() ?? []];
+        return {
+            host: header?.isMaster === true || core.some(player => player.isMaster && player.hasReplayMod),
+            accuracy: snet !== undefined && (header?.recorder === snet || core.some(player => player.snet === snet && player.hasReplayMod)),
+            dodges: header?.isMaster === true
+        };
+    }
+
+    export function clientPacksAvailable(snapshot: ReplayApi, snet?: bigint): boolean {
+        return snapshot.header.get("Vanilla.StatTracker.Client") === true && snet !== undefined && snapshot.header.get("ReplayRecorder.Header")?.recorder === snet;
+    }
+
     export function from(snapshot: ReplayApi): Database {
         return snapshot.getOrDefault("Vanilla.StatTracker", Factory("StatDatabase"));
     }
@@ -127,5 +149,6 @@ declare module "../../library/factory.js" {
 }
 
 Factory.register("StatDatabase", () => ({
+    confirmedEnemyDeaths: 0,
     players: new Map(),
 }));

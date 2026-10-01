@@ -2,7 +2,7 @@ import { GearPartTargetingDatablock } from "./targeting.js";
 
 GearPartTargetingDatablock.clear();
 
-const root = `../js3party/models/GearParts/Targeting`;
+const root = `../gear/GearParts/Targeting`;
 
 GearPartTargetingDatablock.set(1, {
     path: `${root}/Targeting_1.glb`,

@@ -1,12 +1,12 @@
-import { AnimFunc } from "../../library/animations/lib.js";
+import { mergeAnims } from "../../library/animations/lib.js";
 import { loadAllClips } from "../../library/animations/loaders.js";
-import { GearFoldJoints } from "../../renderer/animations/gearfold.js";
+import { GearFoldAnimation, GearFoldJoints } from "../../renderer/animations/gearfold.js";
 
 if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
 // NOTE(randomuserhi): These are static datablocks -> They are not designed to be changed or updated
 
-export const GearAnimDatablock: Record<GearFoldAnimations, AnimFunc<GearFoldJoints>> = {} as any;
+export const GearAnimDatablock: Record<GearFoldAnimations, GearFoldAnimation> = {} as any;
 
 const gearFoldAnimationNames = [
     "Front_AutoShotgun_1_animation_reload_0",
@@ -36,10 +36,12 @@ const gearFoldAnimationNames = [
     "Stock_Bullpup_1_reload_1",
     "Stock_Pistol_1_reload_1"
 ] as const;
-type GearFoldAnimations = typeof gearFoldAnimationNames[number];
-const gearFoldAnimations = await loadAllClips(GearFoldJoints, gearFoldAnimationNames);
+type GearFoldAnimations = typeof gearFoldAnimationNames[number] | "ShotgunReload";
+const gearFoldAnimations = await loadAllClips(GearFoldJoints, gearFoldAnimationNames, "../js3party/animations");
 
 for (const [key, anim] of Object.entries(gearFoldAnimations)) {
     if (key in GearAnimDatablock) throw new Error(`Duplicate clip '${key}' being loaded.`);
-    GearAnimDatablock[key as GearFoldAnimations] = anim;
+    GearAnimDatablock[key as GearFoldAnimations] = Object.assign(anim, { name: key });
 }
+
+GearAnimDatablock.ShotgunReload = Object.assign(mergeAnims(gearFoldAnimations.Front_Shotgun_1_animation_reload_1, gearFoldAnimations.Front_Shotgun_1_pump_0), { name: "Front_Shotgun_1_animation_reload_1" });

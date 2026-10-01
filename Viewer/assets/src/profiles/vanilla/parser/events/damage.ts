@@ -1,5 +1,5 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
-import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
+import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { Factory } from "../../library/factory.js";
 import { EnemyOnDeathEvents, TriggerEnemyOnDeathEvents } from "../enemy/enemy.js";
 import { Identifier, IdentifierData } from "../identifier.js";
@@ -41,20 +41,21 @@ declare module "../enemy/enemy.js" {
     }
 }
 
+function mineOwner(snapshot: ReplayApi, id: number): bigint {
+    const ownership = snapshot.get("Vanilla.Mine.Ownership")?.get(id);
+    if (!ownership) throw new Error(`Explosive damage references unrecorded mine '${id}'; ownership is unavailable.`);
+    return ownership.snet;
+}
+
 EnemyOnDeathEvents.register("Vanilla", (snapshot, enemy, hitData) => {
     // Update kill to last player that hit enemy
     const statTracker = StatTracker.from(snapshot);
     const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
     let lastHit: bigint | undefined;
-    if (players.has(hitData.source)) {
+    if (hitData.type === "Explosive") {
+        lastHit = mineOwner(snapshot, hitData.source);
+    } else if (players.has(hitData.source)) {
         lastHit = players.get(hitData.source)!.snet;
-    } else if(hitData.type === "Explosive") {
-        const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
-    
-        const detonation = detonations.get(hitData.source);
-        if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
-    
-        lastHit = detonation.snet;
     }
     if (lastHit === undefined) throw new Error(`Could not find player '${hitData.source}'.`);
                     
@@ -117,15 +118,14 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
                 const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
 
                 const detonation = detonations.get(source);
-                if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
 
-                if (detonation.shot === true) {
+                if (detonation?.shot === true) {
                     const player = players.get(detonation.trigger);
                     if (player === undefined) throw new Error(`Could not get player that shot mine '${detonation.trigger}'.`);
                     enemy.players.add(player.snet);
                 }
 
-                sourceSnet = detonation.snet;
+                sourceSnet = mineOwner(snapshot, source);
             }
             if (sourceSnet === undefined) {
                 throw new Error(`Unable to get player snet ${source}`);
@@ -147,27 +147,23 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
             }
         }
 
+        const enemyIdentities = snapshot.getOrDefault("Vanilla.Enemy.Identities", Factory("Map"));
         // Damage Stats
         if (type === "Projectile") {
             // TODO(randomuserhi): Damage Taken Stats
         } else if (type === "Tongue") {
             // TODO(randomuserhi): Damage Taken Stats
         } else if (type === "Explosive") {
-            const detonations = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
+            const sourceStats = StatTracker.getPlayer(mineOwner(snapshot, source), statTracker);
 
-            const detonation = detonations.get(source);
-            if (detonation === undefined) throw new Error("Explosive damage was dealt, but cannot find detonation event.");
-        
-            const sourceStats = StatTracker.getPlayer(detonation.snet, statTracker);
-            
             if (players.has(target)) {
                 const player = players.get(target)!;
                 if (!sourceStats.playerDamage.explosiveDamage.has(player.snet)) {
                     sourceStats.playerDamage.explosiveDamage.set(player.snet, 0);
                 }
                 sourceStats.playerDamage.explosiveDamage.set(player.snet, sourceStats.playerDamage.explosiveDamage.get(player.snet)! + damage);
-            } else if (enemies.has(target)) {
-                const enemy = enemies.get(target)!;
+            } else if (enemyIdentities.has(target)) {
+                const enemy = enemyIdentities.get(target)!;
                 const enemyTypeHash = enemy.type.hash;
                 if (!sourceStats.enemyDamage.explosiveDamage.has(enemyTypeHash)) {
                     sourceStats.enemyDamage.explosiveDamage.set(enemyTypeHash, { type: enemy.type, value: 0 });
@@ -198,8 +194,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
                     }
                     sourceStats.playerDamage.bulletDamage.set(player.snet, sourceStats.playerDamage.bulletDamage.get(player.snet)! + damage);
                 }
-            } else if (enemies.has(target)) {
-                const enemy = enemies.get(target)!;
+            } else if (enemyIdentities.has(target)) {
+                const enemy = enemyIdentities.get(target)!;
                 const enemyTypeHash = enemy.type.hash;
                 if (sentry) {
                     if (!sourceStats.enemyDamage.sentryDamage.has(enemyTypeHash)) {
@@ -229,8 +225,8 @@ ModuleLoader.registerEvent("Vanilla.StatTracker.Damage", "0.0.1", {
 
                 const sourceStats = StatTracker.getPlayer(player.snet, statTracker);
 
-                if (enemies.has(target)) {
-                    const enemy = enemies.get(target)!;
+                if (enemyIdentities.has(target)) {
+                    const enemy = enemyIdentities.get(target)!;
                     const enemyTypeHash = enemy.type.hash;
                     if (!sourceStats.enemyDamage.meleeDamage.has(enemyTypeHash)) {
                         sourceStats.enemyDamage.meleeDamage.set(enemyTypeHash, { type: enemy.type, value: 0 });

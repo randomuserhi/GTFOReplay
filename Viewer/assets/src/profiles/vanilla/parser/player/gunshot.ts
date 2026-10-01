@@ -37,7 +37,7 @@ export interface Gunshot {
     silent: boolean;
 }
 
-let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
+ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.2", {
     parse: async (bytes) => {
         return {
             owner: await BitHelper.readInt(bytes),
@@ -46,20 +46,17 @@ let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
             sentry: await BitHelper.readBool(bytes),
             start: await BitHelper.readVector(bytes),
             end: await BitHelper.readVector(bytes),
-            silent: false,
+            silent: await BitHelper.readBool(bytes)
         };
     },
     exec: (data, snapshot) => {
         const time = snapshot.time();
-
         const gunshots = snapshot.getOrDefault("Vanilla.Player.Gunshots", Factory("Array"));
         gunshots.push({ time, ...data });
-
         const anims = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map"));
-        if (anims.has(data.owner) && data.sentry === false) { 
+        if (anims.has(data.owner) && data.sentry === false) {
             anims.get(data.owner)!.lastShot = time;
         }
-
         // Count silent shots
         // - To handle shotguns / penetration, check when the last silent shot was received
         //   If it was recieved less than 10ms ago, then it dont count it as its probably
@@ -74,20 +71,6 @@ let parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.1", {
                 player.lastSilentShotTime = time;
             }
         }
-    }
-});
-parser = ModuleLoader.registerEvent("Vanilla.Player.Gunshots", "0.0.2", {
-    ...parser,
-    parse: async (bytes) => {
-        return {
-            owner: await BitHelper.readInt(bytes),
-            dimension: await BitHelper.readByte(bytes),
-            damage: await BitHelper.readHalf(bytes),
-            sentry: await BitHelper.readBool(bytes),
-            start: await BitHelper.readVector(bytes),
-            end: await BitHelper.readVector(bytes),
-            silent: await BitHelper.readBool(bytes)
-        };
     }
 });
 

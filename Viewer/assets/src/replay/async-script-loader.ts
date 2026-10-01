@@ -104,7 +104,8 @@ class Module {
         this.src = src;
         this._archetype = vm.baseArchetype;
 
-        const promise = new Promise<Module>((resolve) => {
+        const promise = new Promise<Module>((resolve, reject) => {
+            this.reject = reject;
             this.resolve = () => {
                 this.isReady = true;
                 resolve(this);
@@ -138,6 +139,7 @@ class Module {
     execution?: Promise<void>; // represents the execution of the module, if not fullfilled, module hasn't finished executing
     readonly resolution: Promise<Module>; // represents the resolve of the module, if not fullfilled, exports are not ready to be used
     resolve: () => void; // resolve the module exports as ready for use
+    reject: (reason: unknown) => void;
     terminate?: (reason?: any) => void; // terminate the execution of the module
     public ready() { // mark this modules exports as ready for use
         this.resolve();
@@ -403,7 +405,7 @@ export class VM<T = any> {
             // NOTE(randomuserhi): Wrap fetch in another promise to catch errors and produce a verbose one
             const module = new Module(this, path);
             this.cache.set(module.src, module);
-            this.execute(module);
+            this.execute(module).catch(error => module.reject(error));
             promise = module.resolution;
         }
 
@@ -416,7 +418,7 @@ export class VM<T = any> {
             this.requires.get(root)!.add(path);
 
             // Remove on completion
-            promise.finally(() => {
+            const clear = () => {
                 const collection = this.requires.get(root);
                 if (collection !== undefined) {
                     collection.delete(path);
@@ -424,7 +426,8 @@ export class VM<T = any> {
                         this.requires.delete(root);
                     }
                 }
-            });
+            };
+            promise.then(clear, clear);
         }
 
         return promise;
@@ -458,7 +461,7 @@ export class VM<T = any> {
         if (reimport === undefined) {
             for (const module of _reimport.values()) {
                 this.cache.set(module.src, module);
-                this.execute(module);
+                this.execute(module).catch(error => module.reject(error));
             }
         }
 
@@ -498,6 +501,9 @@ export class VM<T = any> {
             const lines = module.code!.split("\n");
             const grab = 4;
             const error = lines[line];
+            // Stack formats differ across Chromium and Node; a source excerpt
+            // must never replace the original exception with a formatting error.
+            if (error === undefined) return stack;
             const top = lines.slice(Math.max(line - grab, 1), line);
             const bottom = lines.slice(Math.min(line + 1, lines.length - 2), Math.min(line + 1 + grab, lines.length - 1));
             let point = "";

@@ -4,6 +4,7 @@ using Player;
 using ReplayRecorder.API.Attributes;
 using ReplayRecorder.BepInEx;
 using ReplayRecorder.Snapshot;
+using ReplayRecorder.IO;
 using ReplayRecorder.Steam;
 using SNetwork;
 using Steamworks;
@@ -183,31 +184,21 @@ namespace ReplayRecorder.Net {
 
                             // Send file:
                             Task.Run(async () => {
-                                if (socket == null) return;
-
-                                byte[] buffer;
-
-                                int currentOffset = instance.byteOffset;
-
-                                do {
-
-                                    instance.Flush();
-
-                                    using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-                                        using (var ms = new MemoryStream()) {
-                                            fs.CopyTo(ms);
-                                            buffer = ms.ToArray();
-                                        }
-                                    }
-
-                                } while (buffer.Length < currentOffset);
+                                var transport = socket;
+                                if (transport == null) return;
 
                                 try {
+                                    // Wait off-thread for the accepted prefix; never read a partial tick.
+                                    int currentOffset = await instance.WaitForWrittenPrefix();
+                                    using (var fs = new FileStream(instance.fullpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
                                     int bytesSent = 0;
-                                    while (bytesSent < buffer.Length) {
+                                    await ReplayContainer.ReadPrefix(fs, currentOffset, async frame => {
+                                    byte[] buffer = frame.ToArray();
+                                    int frameOffset = 0;
+                                    while (frameOffset < buffer.Length) {
                                         const int sizeOfHeader = sizeof(ushort) + 1 + sizeof(int) + sizeof(int);
 
-                                        int bytesToSend = Mathf.Min(buffer.Length - bytesSent, rSteamServer.maxPacketSize - sizeof(ushort) - sizeOfHeader - sizeof(int));
+                                        int bytesToSend = Mathf.Min(buffer.Length - frameOffset, rSteamServer.maxPacketSize - sizeof(ushort) - sizeOfHeader - sizeof(int));
 
                                         ByteBuffer packet = new ByteBuffer(new byte[sizeOfHeader + bytesToSend + sizeof(int)]);
                                         // host -> client : Forward message
@@ -219,15 +210,18 @@ namespace ReplayRecorder.Net {
                                         BitHelper.WriteBytes(instance.replayInstanceId, packet); // replay instance id
                                         BitHelper.WriteBytes(bytesSent, packet); // offset
                                         BitHelper.WriteBytes(bytesToSend, packet); // number of bytes to read
-                                        BitHelper.WriteBytes(new ArraySegment<byte>(buffer, bytesSent, bytesToSend), packet, false); // file-bytes
+                                        BitHelper.WriteBytes(new ArraySegment<byte>(buffer, frameOffset, bytesToSend), packet, false); // logical replay bytes
 
-                                        socket.SendTo(connection, packet.Array);
+                                        if (!transport.SendTo(connection, packet.Array)) throw new IOException("Spectator disconnected during initial replay transfer.");
 
                                         bytesSent += bytesToSend;
+                                        frameOffset += bytesToSend;
 
                                         APILogger.Debug($"[MainServer] Sending init {bytesSent}/{buffer.Length} ...");
 
-                                        if (bytesSent < buffer.Length) await Task.Delay(16); // NOTE(randomuserhi): Avoid straining the network
+                                        if (bytesSent < currentOffset) await Task.Delay(16);
+                                    }
+                                    });
                                     }
                                 } catch (Exception e) {
                                     APILogger.Error($"[MainServer] Unable to send initial bytes: {e}");
@@ -249,15 +243,17 @@ namespace ReplayRecorder.Net {
             private static void onDisconnect(HSteamNetConnection connection) {
                 readyConnections.Remove(connection);
 
-                if (socket != null && socket.currentConnections.ContainsKey(connection)) {
-                    APILogger.Warn($"[MainServer] {socket.currentConnections[connection].name} is no longer spectating");
+                if (socket != null && socket.currentConnections.TryGetValue(connection, out var conn)) {
+                    string name = conn.name;
+                    APILogger.Warn($"[MainServer] {name} is no longer spectating");
 
                     // Remove spectator from log list in current snapshot instance
+                    MainThread.Run(() => SteamPacketIO.Guard("Spectator leave", () => {
                     if (SnapshotManager.instance != null) {
                         SnapshotManager.instance.spectators.Remove(connection);
 
                         const int maxLen = 50;
-                        string message = $"[{socket.currentConnections[connection].name}] is no longer spectating.";
+                        string message = $"[{name}] is no longer spectating.";
                         if (!ConfigManager.DisableLeaveJoinMessages) {
                             while (message.Length > maxLen) {
                                 PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message.Substring(0, maxLen).Trim());
@@ -266,6 +262,7 @@ namespace ReplayRecorder.Net {
                             PlayerChatManager.WantToSentTextMessage(PlayerManager.GetLocalPlayerAgent(), message);
                         }
                     }
+                    }));
                 }
             }
 

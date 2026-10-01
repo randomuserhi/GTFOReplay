@@ -1,8 +1,7 @@
 import { Rest } from "@esm/@/rhu/rest.js";
 import { Anim, AvatarLike } from "./lib.js";
 
-const loadedAnims = new Map<string, Anim>();
-const loadingAnims = new Map<string, { promise: Promise<Anim>; terminate: (reason: any) => void }>();
+const animationCache = new Map<string, { promise: Promise<Anim>; terminate: (reason: any) => void }>();
 
 interface AnimJson {
     rate: number;
@@ -21,25 +20,18 @@ const fetchAnimJson = Rest.fetch<AnimJson, [path: string]>({
 });
 
 export function deleteAnimCache(path: string) {
-    loadedAnims.delete(path);
-    if (loadingAnims.has(path)) {
-        loadingAnims.get(path)!.terminate("Anim cache invalidated.");
-        loadingAnims.delete(path);
+    if (animationCache.has(path)) {
+        animationCache.get(path)!.terminate("Anim cache invalidated.");
+        animationCache.delete(path);
     }
 }
 
 export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArray<T>, path: string): Promise<Anim<T>> {
-    if (loadedAnims.has(path)) {
-        return new Promise((resolve) => {
-            resolve(loadedAnims.get(path)! as Anim<T>);
-        });
+    if (animationCache.has(path)) {
+        return animationCache.get(path)!.promise as Promise<Anim<T>>;
     }
     
-    if (loadingAnims.has(path)) {
-        return loadingAnims.get(path)!.promise as Promise<Anim<T>>;
-    }
-    
-    let terminate: ((reason: any) => void) | undefined = undefined;
+    let terminate!: (reason: unknown) => void;
     const promise = new Promise<Anim<T>>((resolve, reject) => {
         terminate = reject;
         fetchAnimJson(path).then((json) => {
@@ -49,23 +41,16 @@ export function loadAnimFromJson<T extends string = string>(joints: ReadonlyArra
             reject(error);
         });
     });
-    if (terminate !== undefined) {
-        loadingAnims.set(path, { promise, terminate });
-    } else {
-        console.warn("Unable to obtain termination from anim loading promise. This shouldn't happen!");
-    }
+    animationCache.set(path, { promise, terminate });
     return promise;
 }
 
-export async function loadAllClips<T extends string = string, Joints extends string = string>(joints: ReadonlyArray<Joints>, clips: ReadonlyArray<T> | T[]): Promise<Record<T, Anim<Joints>>> {
+export async function loadAllClips<T extends string = string, Joints extends string = string>(joints: ReadonlyArray<Joints>, clips: ReadonlyArray<T> | T[], directory: string): Promise<Record<T, Anim<Joints>>> {
     const collection: Record<T, Anim<Joints>> = {} as any;
-    const promises: Promise<any>[] = [];
-    for (const clip of clips) {
-        promises.push(loadAnimFromJson(joints, `../js3party/animations/${clip}.json`).then((anim) => {
-            if (clip in collection) throw new Error(`Duplicate clip '${clip}' being loaded.`);
-            collection[clip] = anim;
-        }));
-    }
-    await Promise.all(promises);
+    await Promise.all(clips.map(async clip => {
+        const anim = await loadAnimFromJson(joints, `${directory}/${clip}.json`);
+        if (clip in collection) throw new Error(`Duplicate clip '${clip}' being loaded.`);
+        collection[clip] = anim;
+    }));
     return collection;
 }

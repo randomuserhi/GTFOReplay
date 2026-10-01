@@ -169,13 +169,13 @@ namespace Vanilla.Enemy {
     [HarmonyPatch]
     [ReplayData("Vanilla.Enemy.Animation", "0.0.1")]
     internal class rEnemyAnimation : ReplayDynamic {
+        internal static void Trigger(Id e) {
+            // Network callbacks can arrive after the enemy has been despawned.
+            if (Replay.Active && Replay.Has<rEnemy>(e.id) && Replay.Has<rEnemyAnimation>(e.id)) Replay.Trigger(e);
+        }
+
         [HarmonyPatch]
         private static class Patches {
-            // NOTE(randomuserhi): Since all events rely on animation being spawned, make sure that is spawned prior to triggering anything.
-            private static void Trigger(Id e) {
-                if (Replay.Has<rEnemyAnimation>(e.id)) Replay.Trigger(e);
-            }
-
             [HarmonyPatch(typeof(EB_InCombat_ChargedAttack_Flyer), nameof(EB_InCombat_ChargedAttack_Flyer.SetAI))]
             [HarmonyPostfix]
             private static void Postfix_BigFlyerAttack_Client(EB_InCombat_ChargedAttack_Flyer __instance) {

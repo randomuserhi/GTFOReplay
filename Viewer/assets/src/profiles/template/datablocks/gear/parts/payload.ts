@@ -1,6 +1,6 @@
 import { GearPartPayloadDatablock } from "@asl/vanilla/datablocks/gear/parts/payload.js";
 
-const root = `../js3party/models/GearParts/Payload`;
+const root = `../gear/GearParts/Payload`;
 
 GearPartPayloadDatablock.clear();
 

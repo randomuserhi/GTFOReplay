@@ -1,12 +1,13 @@
-import { Group, Sphere, Vector3, Vector3Like } from "@esm/three";
-import { ObjectWrapper } from "../../renderer/objectwrapper.js";
+import { Group, Sphere, Vector3Like } from "@esm/three";
+import { ModelGroup, ObjectWrapper } from "../../renderer/objectwrapper.js";
 import { Camera } from "../../renderer/renderer.js";
 
 export class Model<T extends any[] = any[]> extends ObjectWrapper<Group> {
+    public cullingRadius = 2;
     constructor() {
         super();
 
-        this.root = new Group();
+        this.root = new ModelGroup();
     }
 
     public render(dt: number, time: number, ...params: T) {
@@ -19,19 +20,20 @@ export class Model<T extends any[] = any[]> extends ObjectWrapper<Group> {
 }
 
 const FUNC_isCulled = {
-    sphere: new Sphere(),
-    diff: new Vector3()
+    sphere: new Sphere()
 } as const;
 export function isCulled(position: Vector3Like, radius: number, camera: Camera) {
     if (radius === Infinity) {
         return false;
     }
 
-    const { sphere, diff } = FUNC_isCulled;
+    const { sphere } = FUNC_isCulled;
     sphere.center.copy(position);
     sphere.radius = radius;
-    const renderDistance = camera.renderDistance();
-    if (camera.root.getWorldPosition(diff).sub(position).lengthSq() > renderDistance * renderDistance ||
+    // Test the nearest edge, so a large room does not vanish while its floor
+    // still intersects the viewing distance.
+    const renderDistance = camera.renderDistance() + radius;
+    if (camera.worldPosition.distanceToSquared(sphere.center) > renderDistance * renderDistance ||
         !camera.frustum.intersectsSphere(sphere)) {
         return true;
     }

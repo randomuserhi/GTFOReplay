@@ -1,3 +1,4 @@
+import { readScale } from "./transform.js";
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
@@ -11,7 +12,9 @@ export interface Terminal {
     dimension: number;
     position: Pod.Vector;
     rotation: Pod.Quaternion;
-    serialNumber: number; // 65535 - ushort.MaxValue indicates no serial number is available (old version)
+    scale: Pod.Vector;
+    modelName: string;
+    serialNumber: number;
 }
 
 declare module "@esm/@root/replay/moduleloader.js" {
@@ -22,24 +25,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
     }
 }
 
-ModuleLoader.registerHeader("Vanilla.Map.Terminals", "0.0.1", {
-    parse: async (data, header) => {
-        const terminals = header.getOrDefault("Vanilla.Map.Terminals", Factory("Map"));
-        const count = await BitHelper.readUShort(data);
-        for (let i = 0; i < count; ++i) {
-            const id = await BitHelper.readInt(data);
-            terminals.set(id, {
-                id,
-                dimension: await BitHelper.readByte(data),
-                position: await BitHelper.readVector(data),
-                rotation: await BitHelper.readHalfQuaternion(data),
-                serialNumber: 65535
-            });
-        }
-    }
-});
-
-ModuleLoader.registerHeader("Vanilla.Map.Terminals", "0.0.2", {
+ModuleLoader.registerHeader("Vanilla.Map.Terminals", "0.0.3", {
     parse: async (data, header, snapshot) => {
         const terminals = header.getOrDefault("Vanilla.Map.Terminals", Factory("Map"));
         const count = await BitHelper.readUShort(data);
@@ -50,7 +36,9 @@ ModuleLoader.registerHeader("Vanilla.Map.Terminals", "0.0.2", {
                 dimension: await BitHelper.readByte(data),
                 position: await BitHelper.readVector(data),
                 rotation: await BitHelper.readHalfQuaternion(data),
-                serialNumber: await BitHelper.readUShort(data)
+                serialNumber: await BitHelper.readUShort(data),
+                scale: await readScale(data),
+                modelName: await BitHelper.readString(data)
             };
             terminals.set(id, terminal);
 

@@ -3,7 +3,7 @@ import { GearPartReceiverDatablock } from "@asl/vanilla/datablocks/gear/parts/re
 
 GearPartReceiverDatablock.clear();
 
-const root = `../js3party/models/GearParts/Receiver`;
+const root = `../gear/GearParts/Receiver`;
 
 GearPartReceiverDatablock.set(5, {
     path: `${root}/Receiver_MapperDisplay_c.glb`,

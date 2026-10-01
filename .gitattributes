@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+Viewer/assets/assets/**/*.glb -text
+Viewer/assets/assets/**/*.webp -text
+Viewer/assets/assets/**/*.ktx2 -text
+Viewer/assets/assets/player-animations/*.json -text

@@ -417,7 +417,7 @@ const enemyAnimationClipNames = [
     "FD_Ability_Use_Out_A",
 ] as const;
 export type EnemyAnimationClips = typeof enemyAnimationClipNames[number];
-const enemyAnimationClips = await loadAllClips(HumanJoints, enemyAnimationClipNames);
+const enemyAnimationClips = await loadAllClips(HumanJoints, enemyAnimationClipNames, "../js3party/animations");
 
 const enemyRunnerMovement = new AnimBlend(HumanJoints, [
     { anim: enemyAnimationClips.RU_Walk_Fwd, x: 0, y: 2.2 },

@@ -58,23 +58,18 @@ async function parseSlots(snapshot: ReplayApi, data: ByteStream, numSlots: numbe
     return items;
 }
 
-let parser = ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.2", {
     main: {
         parse: async (data, snapshot) => {
-            const vanity = new Array(vanitySlots.length);
-            for (let i = 0; i < vanity.length; ++i) {
-                vanity[i] = Identifier.unknown;
-            }
-
             return {
                 slots: await parseSlots(snapshot, data, inventorySlots.length),
-                vanity
+                vanity: await parseSlots(snapshot, data, vanitySlots.length),
             };
-        }, 
+        },
         exec: (id, data, snapshot) => {
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
-
-            if (!backpacks.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
+            if (!backpacks.has(id))
+                throw new Error(`Dynamic of id '${id}' was not found.`);
             const backpack = backpacks.get(id)!;
             backpack.slots = data.slots;
             backpack.vanity = data.vanity;
@@ -82,52 +77,26 @@ let parser = ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.1", {
     },
     spawn: {
         parse: async (data, snapshot) => {
-            const vanity = new Array(vanitySlots.length);
-            for (let i = 0; i < vanity.length; ++i) {
-                vanity[i] = Identifier.unknown;
-            }
-            
             return {
                 slots: await parseSlots(snapshot, data, inventorySlots.length),
-                vanity
+                vanity: await parseSlots(snapshot, data, vanitySlots.length),
             };
         },
         exec: (id, data, snapshot) => {
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
-
-            if (backpacks.has(id)) throw new Error(`Backpack of id '${id}' already exists.`);
+            if (backpacks.has(id))
+                throw new Error(`Backpack of id '${id}' already exists.`);
             backpacks.set(id, { ...data });
         }
     },
     despawn: {
         parse: async () => {
-        }, 
+        },
         exec: (id, data, snapshot) => {
             const backpacks = snapshot.getOrDefault("Vanilla.Player.Backpack", Factory("Map"));
-
-            if (!backpacks.has(id)) throw new Error(`Backpack of id '${id}' did not exist.`);
+            if (!backpacks.has(id))
+                throw new Error(`Backpack of id '${id}' did not exist.`);
             backpacks.delete(id);
         }
     }
-});
-parser = ModuleLoader.registerDynamic("Vanilla.Player.Backpack", "0.0.2", {
-    ...parser,
-    main: {
-        ...parser.main,
-        parse: async (data, snapshot) => {
-            return {
-                slots: await parseSlots(snapshot, data, inventorySlots.length),
-                vanity: await parseSlots(snapshot, data, vanitySlots.length),
-            };
-        }
-    },
-    spawn: {
-        ...parser.spawn,
-        parse: async (data, snapshot) => {
-            return {
-                slots: await parseSlots(snapshot, data, inventorySlots.length),
-                vanity: await parseSlots(snapshot, data, vanitySlots.length),
-            };
-        }
-    },
 });

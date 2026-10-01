@@ -2,7 +2,7 @@ import { GearPartSightDatablock } from "@asl/vanilla/datablocks/gear/parts/sight
 
 GearPartSightDatablock.clear();
 
-const root = `../js3party/models/GearParts/Sight`;
+const root = `../gear/GearParts/Sight`;
 
 GearPartSightDatablock.set(11, {
     path: `${root}/Sight_1.glb`,

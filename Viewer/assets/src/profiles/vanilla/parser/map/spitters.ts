@@ -20,7 +20,14 @@ export interface Spitter {
     scale: number;
 }
 
+export interface SpitterAppearance {
+    blend: number;
+    glow: [number, number, number, number];
+    scale: Pod.Vector;
+}
+
 export interface SpitterState {
+    appearance?: SpitterAppearance;
     id: number;
     state: SpitterStatus;
     lastStateTime: number;
@@ -37,9 +44,11 @@ declare module "@esm/@root/replay/moduleloader.js" {
             "Vanilla.Enemy.Spitters.State":  {
                 parse: {
                     state: SpitterStatus;
+                    appearance?: SpitterAppearance;
                 };
                 spawn: {
                     state: SpitterStatus;
+                    appearance?: SpitterAppearance;
                 };
                 despawn: void;
             };
@@ -79,11 +88,21 @@ ModuleLoader.registerHeader("Vanilla.Enemy.Spitters", "0.0.1", {
     }
 });
 
-ModuleLoader.registerDynamic("Vanilla.Enemy.Spitters.State", "0.0.1", {
+async function readAppearance(data: Parameters<typeof BitHelper.readHalf>[0]): Promise<SpitterAppearance | undefined> {
+    if (!await BitHelper.readBool(data)) return undefined;
+    return {
+        blend: await BitHelper.readHalf(data),
+        glow: [await BitHelper.readHalf(data), await BitHelper.readHalf(data), await BitHelper.readHalf(data), await BitHelper.readHalf(data)],
+        scale: { x: await BitHelper.readHalf(data), y: await BitHelper.readHalf(data), z: await BitHelper.readHalf(data) }
+    };
+}
+
+ModuleLoader.registerDynamic("Vanilla.Enemy.Spitters.State", "0.0.2", {
     main: {
         parse: async (data) => {
             return {
-                state: state[await BitHelper.readByte(data)]
+                state: state[await BitHelper.readByte(data)],
+                appearance: await readAppearance(data)
             };
         }, 
         exec: (id, data, snapshot) => {
@@ -91,14 +110,16 @@ ModuleLoader.registerDynamic("Vanilla.Enemy.Spitters.State", "0.0.1", {
     
             if (!spitters.has(id)) throw new Error(`Generator of id '${id}' was not found.`);
             const spitter = spitters.get(id)!;
+            if (spitter.state !== data.state) spitter.lastStateTime = snapshot.time();
             spitter.state = data.state;
-            spitter.lastStateTime = snapshot.time();
+            spitter.appearance = data.appearance;
         }
     },
     spawn: {
         parse: async (data) => {
             return {
-                state: state[await BitHelper.readByte(data)]
+                state: state[await BitHelper.readByte(data)],
+                appearance: await readAppearance(data)
             };
         },
         exec: (id, data, snapshot) => {

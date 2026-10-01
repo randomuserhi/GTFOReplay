@@ -40,9 +40,9 @@ namespace Vanilla.Mines {
             [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.OnSpawn))]
             [HarmonyPostfix]
             private static void Spawn(MineDeployerInstance __instance, pItemSpawnData spawnData) {
-                // NOTE(randomuserhi): Fairly sure throws an exception with mine when owner leaves lobby :(
+                if (!Replay.Active) return;
                 SNet_Player player;
-                if (spawnData.owner.TryGetPlayer(out player)) {
+                if (spawnData.owner.TryGetPlayer(out player) && player.PlayerAgent != null) {
                     PlayerAgent owner = player.PlayerAgent.Cast<PlayerAgent>();
                     APILogger.Debug($"Mine Spawn ID - {spawnData.itemData.itemID_gearCRC}");
                     Identifier item = Identifier.From(spawnData.itemData);
@@ -53,14 +53,14 @@ namespace Vanilla.Mines {
             [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedPickup))]
             [HarmonyPrefix]
             private static void SyncedPickup(MineDeployerInstance __instance) {
-                Replay.Despawn(Replay.Get<rMine>(GetMineId(__instance)));
+                Replay.TryDespawn<rMine>(GetMineId(__instance));
             }
 
             public static PlayerAgent? player = null;
             [HarmonyPatch(typeof(GenericDamageComponent), nameof(GenericDamageComponent.BulletDamage))]
             [HarmonyPrefix]
             private static void Prefix_BulletDamage(float dam, Agent sourceAgent) {
-                player = sourceAgent.TryCast<PlayerAgent>();
+                player = sourceAgent == null ? null : sourceAgent.TryCast<PlayerAgent>();
             }
             [HarmonyPatch(typeof(GenericDamageComponent), nameof(GenericDamageComponent.BulletDamage))]
             [HarmonyPostfix]
@@ -71,71 +71,62 @@ namespace Vanilla.Mines {
             [HarmonyPatch(typeof(MineDeployerInstance), nameof(MineDeployerInstance.SyncedTrigger))]
             [HarmonyPrefix]
             private static void Prefix_SyncedTrigger(MineDeployerInstance __instance) {
-                if (!SNet.IsMaster) return;
-
-                rMine mine = Replay.Get<rMine>(GetMineId(__instance));
+                if (!SNet.IsMaster || !Replay.TryGet<rMine>(GetMineId(__instance), out var mine)) return;
 
                 if (player != null) {
                     mine.shot = true;
                     mine.trigger = player;
-                } else if (SNetUtils.TryGetSender(__instance.m_itemActionPacket, out SNet_Player? sender)) {
+                } else if (SNetUtils.TryGetSender(__instance.m_itemActionPacket, out SNet_Player? sender) && sender.PlayerAgent != null) {
                     mine.shot = true;
                     mine.trigger = sender.PlayerAgent.Cast<PlayerAgent>();
                 }
             }
 
-            private static void DetonateMine(int mineId) {
-                rMine mine = Replay.Get<rMine>(mineId);
+            // Native initialization and teardown can explode an untracked mine.
+            // Harmony state belongs to each call, including nested chain explosions.
+            private readonly record struct Detonation(rMine? Mine, rMineDetonate? Previous);
 
-                APILogger.Debug($"shot: {mine.shot}");
-                APILogger.Debug($"trigger: {mine.trigger.Owner.NickName}");
-
-                NoiseTracker.TrackNextNoise(new NoiseInfo(mine.trigger));
-
-                MineManager.currentDetonateEvent = new rMineDetonate(mineId, mine.trigger.GlobalID, mine.shot);
-                Replay.Trigger(MineManager.currentDetonateEvent);
+            private static Detonation BeginDetonation(MineDeployerInstance instance, bool explosive) {
+                var previous = MineManager.currentDetonateEvent;
+                MineManager.currentDetonateEvent = null;
+                if (instance == null || !Replay.TryGet<rMine>(GetMineId(instance), out var mine))
+                    return new Detonation(null, previous);
+                if (explosive && mine.trigger != null) {
+                    NoiseTracker.TrackNextNoise(new NoiseInfo(mine.trigger));
+                    MineManager.currentDetonateEvent = new rMineDetonate(mine.id, mine.trigger.GlobalID, mine.shot);
+                    Replay.Trigger(MineManager.currentDetonateEvent);
+                }
+                return new Detonation(mine, previous);
             }
 
-            private static int? currentMineId = null;
+            private static void EndDetonation(Detonation state) {
+                MineManager.currentDetonateEvent = state.Previous;
+                if (state.Mine != null) Replay.TryDespawn<rMine>(state.Mine.id);
+            }
 
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
             [HarmonyPrefix]
-            private static void Prefix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
-                currentMineId = GetMineId(__instance);
-                DetonateMine(currentMineId.Value);
+            private static void Prefix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance, out Detonation __state) {
+                __state = BeginDetonation(__instance.GetComponent<MineDeployerInstance>(), true);
             }
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Explosive), nameof(MineDeployerInstance_Detonate_Explosive.DoExplode))]
-            [HarmonyPostfix]
-            private static void Postfix_Detonate_Explosive(MineDeployerInstance_Detonate_Explosive __instance) {
-                MineManager.currentDetonateEvent = null;
-                if (currentMineId != null)
-                    Replay.Despawn(Replay.Get<rMine>(currentMineId.Value));
-                currentMineId = null;
-            }
+            [HarmonyFinalizer]
+            private static void Finalize_Detonate_Explosive(Detonation __state) => EndDetonation(__state);
 
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
             [HarmonyPrefix]
-            private static void Prefix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
-                currentMineId = GetMineId(__instance);
+            private static void Prefix_Detonate_Glue(MineDeployerInstance_Detonate_Glue __instance, out Detonation __state) {
+                __state = BeginDetonation(__instance.GetComponent<MineDeployerInstance>(), false);
             }
             [HarmonyPatch(typeof(MineDeployerInstance_Detonate_Glue), nameof(MineDeployerInstance_Detonate_Glue.DoExplode))]
-            [HarmonyPostfix]
-            private static void Postfix_Detonate_Glue(MineDeployerInstance_Detonate_Explosive __instance) {
-                MineManager.currentDetonateEvent = null;
-                if (currentMineId != null)
-                    Replay.Despawn(Replay.Get<rMine>(currentMineId.Value));
-                currentMineId = null;
-            }
+            [HarmonyFinalizer]
+            private static void Finalize_Detonate_Glue(Detonation __state) => EndDetonation(__state);
+
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMineId(MineDeployerInstance instance) {
             return instance.Replicator.Key;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetMineId(MineDeployerInstance_Detonate_Explosive instance) {
-            return GetMineId(instance.GetComponent<MineDeployerInstance>());
         }
 
         public bool shot = false;

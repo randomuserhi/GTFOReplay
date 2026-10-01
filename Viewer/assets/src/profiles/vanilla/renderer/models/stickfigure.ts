@@ -6,7 +6,8 @@ import { AvatarSkeleton, AvatarStructure, createAvatarStruct } from "../../libra
 import { upV, zeroQ, zeroV } from "../../library/constants.js";
 import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { Model } from "../../library/models/lib.js";
-import { defaultHumanPose, defaultHumanStructure, HumanJoints, HumanSkeleton } from "../animations/human.js";
+import { defaultHumanPose, defaultHumanStructure, fingerParents, HumanFingerJoints, HumanJoints, HumanSkeleton, PlayerJoints } from "../animations/human.js";
+import { Actor } from "./actor.js";
 
 const transparentMaskedParts = new Map<StickModelType, DynamicInstanceManager>();
 const transparentParts = new Map<StickModelType, DynamicInstanceManager>();
@@ -108,7 +109,7 @@ export interface StickFigureSettings {
 
     transparent?: boolean;
 
-    structure?: Partial<AvatarStructure<HumanJoints, Vector3>>;
+    structure?: Partial<AvatarStructure<PlayerJoints, Vector3>>;
 
     points?: StickModelType;
     parts?: Partial<{
@@ -137,7 +138,7 @@ export interface StickFigureSettings {
         rightLowerArm: boolean;
     }>;
 
-    defaultPose?: Partial<AvatarStructure<HumanJoints, QuaternionLike>>;
+    defaultPose?: Partial<AvatarStructure<PlayerJoints, QuaternionLike>>;
 
     headScale?: Vector3Like;
     neckScale?: Vector3Like;
@@ -153,7 +154,7 @@ export interface StickFigureSettings {
     color?: ColorRepresentation;
 }
 
-function getWorldPos(worldPos: AvatarStructure<HumanJoints, Vector3>, skeleton: HumanSkeleton): AvatarStructure<HumanJoints, Vector3> {  
+function getWorldPos<Joints extends string>(worldPos: AvatarStructure<Joints, Vector3>, skeleton: AvatarSkeleton<Joints>): AvatarStructure<Joints, Vector3> {
     for (const key of skeleton.keys) {
         skeleton.joints[key].getWorldPosition(worldPos[key]);
     }
@@ -165,12 +166,32 @@ function valueOrUndefined(obj: any, value: any): boolean {
     return (obj === undefined || obj === value);
 }
 
-export class StickFigure<T extends any[] = []> extends Model<T> {
-    private worldPos: AvatarStructure<HumanJoints, Vector3> = createAvatarStruct(HumanJoints, () => new Vector3());
+export interface FingerRig<Joints extends HumanFingerJoints = HumanFingerJoints> {
+    joints: readonly Joints[];
+    positions: AvatarStructure<Joints>;
+    rotations: AvatarStructure<Joints, QuaternionLike>;
+}
 
-    public skeleton: HumanSkeleton = new AvatarSkeleton(HumanJoints);
-    public visual: HumanSkeleton = new AvatarSkeleton(HumanJoints);
-    private inverseMatrix: AvatarStructure<HumanJoints, Matrix4> = createAvatarStruct(HumanJoints, () => new Matrix4());
+export class StickFigure<T extends any[] = [], ExtraJoints extends HumanFingerJoints = never> extends Model<T> {
+    protected actor?: Actor;
+    get hasNativeModel() { return this.actor?.loaded === true; }
+    public useActor(id: string) {
+        if (this.actor?.descriptor.id === id) return;
+        this.actor?.dispose();
+        const reference = new AvatarSkeleton(this.skeleton.keys);
+        StickFigure.construct(reference, this.fingers);
+        reference.joints.hip.updateMatrixWorld(true);
+        const inverse = new Map<HumanJoints | ExtraJoints, Matrix4>();
+        for (const joint of reference.keys) inverse.set(joint, reference.joints[joint].matrixWorld.clone().invert());
+        this.actor = new Actor(id, this.offset, this.visual, inverse);
+        this.cullingRadius = this.actor.cullingRadius * (this.settings.scale ?? 1);
+    }
+    public dispose() { this.actor?.dispose(); super.dispose(); }
+    private worldPos: AvatarStructure<HumanJoints | ExtraJoints, Vector3>;
+
+    public skeleton: HumanSkeleton<ExtraJoints>;
+    public visual: HumanSkeleton<ExtraJoints>;
+    private inverseMatrix: AvatarStructure<HumanJoints | ExtraJoints, Matrix4>;
 
     public anchor: Group = new Group();
     protected offset: Group = new Group();
@@ -180,7 +201,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
     public settings: StickFigureSettings = {};
 
     private static FUNC_applySettings = {
-        tempAvatar: createAvatarStruct(HumanJoints, () => new Quaternion()),
+        tempAvatar: createAvatarStruct(PlayerJoints, () => new Quaternion()),
         oldScale: new Vector3()
     } as const;
     public applySettings(settings?: StickFigureSettings) {
@@ -194,7 +215,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         } else {
             this.anchor.scale.set(this.settings.figureScale, this.settings.figureScale, this.settings.figureScale);
         }
-        for (const joint of HumanJoints) {
+        for (const joint of this.skeleton.keys) {
             tempAvatar[joint].copy(this.visual.joints[joint].quaternion); // Save original pose
 
             const quaternion = this.settings.defaultPose === undefined ? undefined : this.settings.defaultPose[joint];
@@ -204,7 +225,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
                 this.visual.joints[joint].quaternion.set(0, 0, 0, 1);   
             }
         }
-        for (const joint of HumanJoints) {
+        for (const joint of this.skeleton.keys) {
             this.visual.joints[joint].updateWorldMatrix(true, true);
             this.inverseMatrix[joint].copy(this.visual.joints[joint].matrixWorld).invert();
         }
@@ -217,7 +238,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         }
 
         // Restore original pose
-        for (const joint of HumanJoints) {
+        for (const joint of this.skeleton.keys) {
             this.visual.joints[joint].quaternion.copy(tempAvatar[joint]);
         }
 
@@ -272,7 +293,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         }
 
         if (this.settings.structure !== undefined) {
-            for (const joint of HumanJoints) {
+            for (const joint of this.skeleton.keys) {
                 const position = this.settings.structure[joint];
                 if (position !== undefined) {
                     this.skeleton.joints[joint].position.copy(position);
@@ -286,7 +307,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         }
     }
 
-    public static construct(skeleton: HumanSkeleton) {
+    public static construct<Joints extends HumanFingerJoints>(skeleton: HumanSkeleton<Joints>, fingers?: FingerRig<Joints>) {
         skeleton.joints.hip.add(
             skeleton.joints.spine0,
             skeleton.joints.leftUpperLeg,
@@ -311,8 +332,16 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         skeleton.joints.rightLowerArm.add(skeleton.joints.rightHand!);
         skeleton.joints.neck.add(skeleton.joints.head);
         
-        skeleton.setPos(defaultHumanStructure);
-        skeleton.setRot(defaultHumanPose);
+        for (const joint of HumanJoints) {
+            skeleton.joints[joint].position.copy(defaultHumanStructure[joint]);
+            skeleton.joints[joint].quaternion.copy(defaultHumanPose[joint]);
+        }
+        if (fingers) for (const joint of fingers.joints) {
+            const parent = fingerParents[joint] as HumanJoints | Joints;
+            skeleton.joints[parent].add(skeleton.joints[joint]);
+            skeleton.joints[joint].position.copy(fingers.positions[joint]);
+            skeleton.joints[joint].quaternion.copy(fingers.rotations[joint]);
+        }
     }
 
     // NOTE(randomuserhi): object is positioned at offset from base position if skeleton was in T-pose
@@ -324,11 +353,16 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         obj.applyMatrix4(this.inverseMatrix[limb]);
     }
 
-    constructor() {
+    constructor(private readonly fingers?: FingerRig<ExtraJoints>) {
         super();
+        const joints: readonly (HumanJoints | ExtraJoints)[] = [...HumanJoints, ...(fingers?.joints ?? [])];
+        this.skeleton = new AvatarSkeleton(joints);
+        this.visual = new AvatarSkeleton(joints);
+        this.worldPos = createAvatarStruct(joints, () => new Vector3());
+        this.inverseMatrix = createAvatarStruct(joints, () => new Matrix4());
 
-        StickFigure.construct(this.skeleton);
-        StickFigure.construct(this.visual);
+        StickFigure.construct(this.skeleton, fingers);
+        StickFigure.construct(this.visual, fingers);
         this.offset.add(this.visual.joints.hip, this.skeleton.joints.hip);
         this.anchor.add(this.offset);
         this.root.add(this.anchor);
@@ -337,7 +371,7 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
     }
 
     protected smoothFactor = 50;
-    protected updateSkeleton(dt: number, position: Vector3Like, rotation: QuaternionLike) {
+    protected updateRootTransform(position: Vector3Like, rotation: QuaternionLike) {
         this.root.position.copy(position);
         this.anchor.quaternion.copy(rotation);
         if (this.settings.rotOffset !== undefined) {
@@ -348,9 +382,12 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
         if (this.settings.posOffset !== undefined) {
             this.anchor.position.copy(this.settings.posOffset);
         }
+    }
 
+    protected updateSkeleton(dt: number, position: Vector3Like, rotation: QuaternionLike) {
+        this.updateRootTransform(position, rotation);
         const blendFactor = Math.clamp01(dt * this.smoothFactor);
-        for (const key of HumanJoints) {
+        for (const key of this.skeleton.keys) {
             this.visual.joints[key].quaternion.slerp(this.skeleton.joints[key].quaternion, blendFactor);
         }
         this.visual.joints["hip"].position.lerp(this.skeleton.joints["hip"].position, blendFactor);
@@ -358,6 +395,9 @@ export class StickFigure<T extends any[] = []> extends Model<T> {
 
     // NOTE(randomuserhi): requires updateSkeleton to be called prior
     protected draw() {
+        // Native actors draw their skin, so cylinder/sphere instance transforms
+        // (and their per-joint world queries) have no consumer in this path.
+        if (this.actor) return;
         this.computeMatrices();
 
         if (this.settings.transparent) {

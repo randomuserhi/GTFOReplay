@@ -47,12 +47,18 @@ export class DynamicInstanceManager {
                 this.mesh.getMatrixAt(i, mat);
                 instance.setMatrixAt(i, mat);
 
-                this.mesh.getColorAt(i, temp);
-                instance.setColorAt(i, temp);
+                if (this.mesh.instanceColor !== null) {
+                    this.mesh.getColorAt(i, temp);
+                    instance.setColorAt(i, temp);
+                }
             }
             instance.count = this.mesh.count;
-            this.mesh.count = 0;
-            this.mesh.dispose();
+            const previous = this.mesh;
+            const parent = previous.parent;
+            previous.count = 0;
+            previous.removeFromParent();
+            if (parent) parent.add(instance);
+            previous.dispose();
 
             this.mesh = instance;
             this.capacity = newCapacity;

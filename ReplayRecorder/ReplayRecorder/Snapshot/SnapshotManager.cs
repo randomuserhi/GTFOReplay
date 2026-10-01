@@ -6,6 +6,16 @@ namespace ReplayRecorder.Snapshot {
     internal static partial class SnapshotManager {
         internal static SnapshotTypeManager types = new SnapshotTypeManager();
         internal static SnapshotInstance? instance;
+        internal static void Guard(string operation, Action action) {
+            IO.CallbackGuard.Run(operation, action, Report);
+        }
+        internal static void Report(string operation, Exception error) {
+            global::API.APILogger.Error($"Recorder failure in {operation}: {error}");
+            instance?.FailRecording(operation, error);
+        }
+        internal static void Invoke(string operation, Action? callbacks) {
+            IO.CallbackGuard.Invoke(operation, callbacks, Report);
+        }
         internal static void OnElevatorStart() {
             if (instance == null) {
                 instance = new GameObject().AddComponent<SnapshotInstance>();
@@ -22,10 +32,10 @@ namespace ReplayRecorder.Snapshot {
         }
         internal static void OnExpeditionEnd() {
             if (instance != null) {
-                instance.Dispose();
+                Guard("End recording", instance.Dispose);
                 instance = null;
 
-                Replay.OnExpeditionEnd?.Invoke();
+                Invoke("Expedition end", Replay.OnExpeditionEnd);
             }
         }
     }

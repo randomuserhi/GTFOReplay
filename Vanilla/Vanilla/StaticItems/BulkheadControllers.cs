@@ -22,7 +22,7 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.BulkheadControllers", "0.0.1")]
+    [ReplayData("Vanilla.Map.BulkheadControllers", "0.0.2")]
     internal class rBulkheadControllers : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -78,6 +78,7 @@ namespace Vanilla.StaticItems {
                         BitHelper.WriteBytes(false, buffer);
                     }
                 }
+                BitHelper.WriteBytes(controller.core.transform.lossyScale, buffer);
             }
         }
     }

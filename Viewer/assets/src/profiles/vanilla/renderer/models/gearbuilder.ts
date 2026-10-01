@@ -1,5 +1,5 @@
 import * as Pod from "@esm/@root/replay/pod.js";
-import { ColorRepresentation, Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3, Vector3Like } from "@esm/three";
+import { Group, Matrix4, Object3D, Quaternion, Vector3, Vector3Like } from "@esm/three";
 import { GearDatablock } from "../../datablocks/gear/models.js";
 import { GearPartDeliveryDatablock } from "../../datablocks/gear/parts/delivery.js";
 import { GearPartFlashlightDatablock } from "../../datablocks/gear/parts/flashlight.js";
@@ -21,33 +21,36 @@ import { GearPartTargetingDatablock } from "../../datablocks/gear/parts/targetin
 import { ItemDatablock } from "../../datablocks/items/item.js";
 import { Joint } from "../../library/animations/lib.js";
 import { loadGLTF } from "../../library/modelloader.js";
+import { disposeModelMaterials } from "../../library/modelMaterials.js";
 import { Identifier } from "../../parser/identifier.js";
 import { GearFoldAnimation } from "../animations/gearfold.js";
 import { GearModel } from "./gear.js";
 import { AlignType, ComponentType, componentTypes, GearComp, GearJSON } from "./gearjson.js";
 
+import { BasicModel, hasModelGeometry } from "./basicModel.js";
+import { WeaponView, type WeaponViewData } from "@esm/@root/replay/native-weapon-view.js";
+
+const viewResponse=await fetch(new URL("../player-animations/weapon-view.json",module.baseURI));
+if (!viewResponse.ok) throw Error(`Could not load native weapon poses: ${viewResponse.status}`);
+const viewData:WeaponViewData=await viewResponse.json();
+if(viewData.version!==1) throw Error("Unsupported native weapon pose package");
+
 export class GearBuilder extends GearModel {
+    private disposed = false;
+    private fallback?: BasicModel;
+    private loadedParts = new Set<Group>();
+    readonly ready: Promise<void>;
     readonly json: string;
-    schematic: GearJSON;
+    schematic!: GearJSON;
 
     readonly parts = new Group();
+    override get nativeScale() { return 1 / this.parts.scale.x; }
 
     aligns: Partial<Record<
     "sight" | "mag" | "flashlight" | "head" | "payload" | "screen" | "targeting" | "front" | "receiver" | "lefthand" | "righthand", 
     { obj: Object3D, source: ComponentType }>> = {};
 
     foldObjects: { obj: Object3D, offset: Quaternion, anim?: GearFoldAnimation }[] = [];
-
-    public material = new MeshPhongMaterial({ color: 0xcccccc });
-    public color: ColorRepresentation = 0xcccccc;
-    public reloadColor: ColorRepresentation = 0x999999;
-
-    private setMaterial = (obj: Object3D) => {
-        const mesh = obj as Mesh;
-        if (mesh.isMesh === true) {
-            mesh.material = this.material;
-        }
-    };
 
     constructor(gearJSON: string, onBuild?: (gear: GearBuilder) => void) {
         super();
@@ -57,9 +60,25 @@ export class GearBuilder extends GearModel {
         this.parts.scale.set(0.8, 0.8, 0.8);
 
         this.json = gearJSON;
-        this.schematic = JSON.parse(this.json).Packet;
-        this.build().then(() => {
+        this.ready = (async () => {
+            this.schematic = JSON.parse(this.json).Packet;
+            await this.build();
+            if (this.disposed) return;
+            if (!hasModelGeometry(this.parts)) throw new Error("The gear has no renderable parts.");
             if (onBuild !== undefined) onBuild(this);
+            if (this.reloadAnimation && this.rightHandGrip) {
+                this.view=new WeaponView(viewData,Object.values(this.schematic.Comps).filter((v):v is GearComp=>typeof v==='object'));
+                this.reset();this.view.measure(this.root,this.nativeScale);
+            }
+        })().catch(error => {
+            if (this.disposed) return;
+            this.clearParts();
+            this.root.add(this.parts);
+            this.parts.position.set(0, 0, 0);
+            this.parts.quaternion.identity();
+            this.parts.scale.setScalar(.8);
+            this.fallback = new BasicModel(`gear ${this.json}`, error, [.15, .2, .65]);
+            this.parts.add(this.fallback);
         });
     }
 
@@ -179,11 +198,15 @@ export class GearBuilder extends GearModel {
             } break;
             case "LeftHand": {
                 if (this.aligns.lefthand === undefined || this.higherPriority(this.aligns.lefthand.source, component, align.alignType, partAlignPriority)) {
+                    // Gear exports preserve Blender's node basis. Native Unity
+                    // wrist rotations differ by -90 degrees about local X.
+                    object.rotateX(-Math.PI / 2);
                     this.aligns.lefthand = { obj: object, source: component };
                 }
             } break;
             case "RightHand": {
                 if (this.aligns.righthand === undefined || this.higherPriority(this.aligns.righthand.source, component, align.alignType, partAlignPriority)) {
+                    object.rotateX(-Math.PI / 2);
                     this.aligns.righthand = { obj: object, source: component };
                 }
             } break;
@@ -204,7 +227,9 @@ export class GearBuilder extends GearModel {
             if (path === undefined) throw new Error(`Could not find payload type of '${payloadType}'.`);
 
             const gltf = typeof(path) === "string" ? await loadGLTF(path) : path;
+            if (this.disposed) throw new Error("Gear instance was disposed while loading.");
             const model = gltf();
+            this.loadedParts.add(model);
             if (part.offsetPos !== undefined) {
                 model.position.copy(part.offsetPos);
             }
@@ -235,7 +260,6 @@ export class GearBuilder extends GearModel {
                     this.foldObjects.push(f);
                 }
             }
-            root.traverse(this.setMaterial);
             return root;
         }  catch (err) {
             throw module.error(err, `Failed to load payload part '${payloadType}' - '${path}'`);
@@ -251,7 +275,9 @@ export class GearBuilder extends GearModel {
         }[]) {
         try {
             const gltf = typeof(part.path) === "string" ? await loadGLTF(part.path) : part.path;
+            if (this.disposed) throw new Error("Gear instance was disposed while loading.");
             const model = gltf();
+            this.loadedParts.add(model);
             if (part.offsetPos !== undefined) {
                 model.position.copy(part.offsetPos);
             }
@@ -282,7 +308,6 @@ export class GearBuilder extends GearModel {
                     this.foldObjects.push(f);
                 }
             }
-            root.traverse(this.setMaterial);
             return root;
         }  catch (err) {
             throw module.error(err, `Failed to load part '${part.path}'`);
@@ -393,6 +418,9 @@ export class GearBuilder extends GearModel {
 
     private static FUNC_build = {
         worldPos: new Vector3(),
+        grip: new Matrix4(),
+        gripRotation: new Quaternion(),
+        gripScale: new Vector3(),
         root: new Object3D()
     } as const;
     private build() {
@@ -466,7 +494,7 @@ export class GearBuilder extends GearModel {
             switch (type) {
             case "StockPart": {
                 const part = GearPartStockDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find stock part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find stock part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.stock !== undefined) console.warn("Multiple stock parts found, the last to load will be used.");
@@ -476,7 +504,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "FrontPart": {
                 const part = GearPartFrontDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find front part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find front part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.front !== undefined) console.warn("Multiple front parts found, the last to load will be used.");
@@ -486,7 +514,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ReceiverPart": {
                 const part = GearPartReceiverDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find receiver part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find receiver part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.receiver !== undefined) console.warn("Multiple receiver parts found, the last to load will be used.");
@@ -496,7 +524,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "MagPart": {
                 const part = GearPartMagDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find mag part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find mag part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.mag !== undefined) console.warn("Multiple mag parts found, the last to load will be used.");
@@ -506,7 +534,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "SightPart": {
                 const part = GearPartSightDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find sight part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find sight part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.sight !== undefined) console.warn("Multiple sight parts found, the last to load will be used.");
@@ -516,7 +544,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "FlashlightPart": {
                 const part = GearPartFlashlightDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find flashlight part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find flashlight part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.flashlight !== undefined) console.warn("Multiple flashlight parts found, the last to load will be used.");
@@ -526,7 +554,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "MeleeHandlePart": {
                 const part = GearPartHandleDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find melee handle part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find melee handle part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.handle !== undefined) console.warn("Multiple melee handle parts found, the last to load will be used.");
@@ -536,7 +564,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "MeleeHeadPart": {
                 const part = GearPartHeadDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find melee head part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find melee head part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.head !== undefined) console.warn("Multiple melee head parts found, the last to load will be used.");
@@ -546,7 +574,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "MeleeNeckPart": {
                 const part = GearPartNeckDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find melee neck part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find melee neck part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.neck !== undefined) console.warn("Multiple melee neck parts found, the last to load will be used.");
@@ -556,7 +584,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "MeleePommelPart": {
                 const part = GearPartPommelDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find melee pommel part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find melee pommel part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.pommel !== undefined) console.warn("Multiple melee pommel parts found, the last to load will be used.");
@@ -566,7 +594,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ToolDeliveryPart": {
                 const part = GearPartDeliveryDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find tool delivery part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find tool delivery part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.delivery !== undefined) console.warn("Multiple tool delivery parts found, the last to load will be used.");
@@ -576,7 +604,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ToolGripPart": {
                 const part = GearPartGripDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find tool grip part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find tool grip part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.grip !== undefined) console.warn("Multiple tool grip parts found, the last to load will be used.");
@@ -586,7 +614,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ToolMainPart": {
                 const part = GearPartMainDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find tool main part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find tool main part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.main !== undefined) console.warn("Multiple tool main parts found, the last to load will be used.");
@@ -596,7 +624,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ToolPayloadPart": {
                 const part = GearPartPayloadDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find tool payload part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find tool payload part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPayloadPart(type, this.payloadType, part, partAlignPriority).then((model) => {
                         if (this.payload !== undefined) console.warn("Multiple tool payload parts found, the last to load will be used.");
@@ -606,7 +634,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ToolScreenPart": {
                 const part = GearPartScreenDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find tool screen part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find tool screen part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.screen !== undefined) console.warn("Multiple tool screen parts found, the last to load will be used.");
@@ -616,7 +644,7 @@ export class GearBuilder extends GearModel {
             } break;
             case "ToolTargetingPart": {
                 const part = GearPartTargetingDatablock.get(component.v);
-                if (part === undefined) console.warn(`Could not find tool targeting part '${component.v}'.`);
+                if (part === undefined) { if (component.v !== 0) pending = pending.then(() => { throw new Error(`Could not find tool targeting part '${component.v}'.`); }); }
                 else {
                     pending = pending.then(async () => await this.loadPart(type, part, partAlignPriority).then((model) => {
                         if (this.targeting !== undefined) console.warn("Multiple tool targeting parts found, the last to load will be used.");
@@ -628,6 +656,7 @@ export class GearBuilder extends GearModel {
         }
 
         return pending.then(() => {
+            if (this.disposed) return;
             const { worldPos, root } = GearBuilder.FUNC_build;
 
             // Set root to origin (makes transforms relative to gun when we detach parts)
@@ -690,41 +719,41 @@ export class GearBuilder extends GearModel {
                 console.warn(`No reload animation was found for '${this.json}'`);
             }
 
-            // Set equip offset (right hand align) and left hand placement (left hand align)
-
-            const baseItemModel = this.baseItem?.model === undefined ? undefined : this.baseItem.model();
-
-            if (this.aligns.lefthand !== undefined) {
-                this.aligns.lefthand.obj.getWorldPosition(worldPos);
-                this.leftHandGrip = worldPos.clone();
-
-                // this.aligns.lefthand.obj.add(new Mesh(UnitySphere, this.material));
-            } else if (baseItemModel !== undefined) {
-                // Fall back to base item, when available
-                this.leftHandGrip = baseItemModel.leftHandGrip;
-                if (baseItemModel.leftHand === undefined) this.leftHand = undefined;
-            } else {
-                // No left hand offset specified
-                this.leftHand = undefined;
-            }
-
-            if (this.aligns.righthand !== undefined) {
-                this.aligns.righthand.obj.getWorldPosition(worldPos);
-                this.equipOffsetPos = worldPos.multiplyScalar(-1).clone().add({ x: -0.05, y: -0.015, z: -0.15 }); // Offset as needs to match hand not handAttachment
-
-                // this.aligns.righthand.obj.add(new Mesh(UnitySphere, this.material));
-            } else if (baseItemModel !== undefined) {
-                // Fall back to base item when available
-                this.equipOffsetPos = baseItemModel.equipOffsetPos;
-                this.equipOffsetRot = baseItemModel.equipOffsetRot;
-            }
-
             // Re-attach root to parent
             if (rootParent !== undefined && rootParent !== null) {
                 rootParent.add(this.parts);
                 this.parts.position.copy(root.position);
                 this.parts.quaternion.copy(root.quaternion);
                 this.parts.scale.copy(root.scale);
+            }
+
+            // Wrist targets are complete transforms in the item root, including
+            // the assembled parts' scale. The Blender node scale is not hand size.
+            this.root.updateWorldMatrix(true, true);
+            const { grip, gripRotation, gripScale } = GearBuilder.FUNC_build;
+            const readGrip = (object: Object3D) => {
+                grip.copy(this.root.matrixWorld).invert().multiply(object.matrixWorld);
+                grip.decompose(worldPos, gripRotation, gripScale);
+                return { pos: worldPos.clone(), rot: gripRotation.clone() };
+            };
+            const baseItemModel = this.baseItem?.model?.();
+            if (this.aligns.lefthand !== undefined) {
+                const target = readGrip(this.aligns.lefthand.obj);
+                this.leftHandGrip = target.pos;
+                this.leftHandGripRotation = target.rot;
+            } else if (baseItemModel !== undefined) {
+                this.leftHandGrip = baseItemModel.leftHandGrip;
+                this.leftHandGripRotation = baseItemModel.leftHandGripRotation;
+                if (baseItemModel.leftHand === undefined) this.leftHand = undefined;
+            } else {
+                this.leftHand = undefined;
+            }
+            if (this.aligns.righthand !== undefined) {
+                this.rightHandGrip = readGrip(this.aligns.righthand.obj);
+            } else if (baseItemModel !== undefined) {
+                this.rightHandGrip = baseItemModel.rightHandGrip;
+                this.equipOffsetPos = baseItemModel.equipOffsetPos;
+                this.equipOffsetRot = baseItemModel.equipOffsetRot;
             }
         }).catch((e) => {
             throw module.error(e);
@@ -748,70 +777,50 @@ export class GearBuilder extends GearModel {
     }
 
     private static FUNC_animatePart = {
-        tempVec: new Vector3(),
-        tempObj: new Object3D(),
-        tempRoot: new Object3D(),
+        parent: new Matrix4(), pose: new Matrix4(), local: new Matrix4(),
+        position: new Vector3(), rotation: new Quaternion(), scale: new Vector3(),
+        rootRotation: new Quaternion(),
     } as const;
     private animatePart(obj: Object3D, ref: Object3D, frame: Joint) {
-        const { tempVec, tempObj, tempRoot } = GearBuilder.FUNC_animatePart;
-
-        // Set root to origin (makes transforms relative to gun when we detach parts)
-        const rootParent = this.parts.parent;
-        tempRoot.position.copy(this.parts.position);
-        tempRoot.quaternion.copy(this.parts.quaternion);
-        tempRoot.scale.copy(this.parts.scale);
-        this.parts.removeFromParent();
-        this.parts.position.set(0, 0, 0);
-        this.parts.scale.set(1, 1, 1);
-        this.parts.quaternion.set(0, 0, 0, 1);
-
-        // Detach part from parent to apply transforms in world space 
-        // (ignore scale issues etc... due to blender models being scaled 0.01 and rotated 90 deg on X axis)
-        // refer to https://discussions.unity.com/t/fbx-scale-0-01-blend-file-scale-1-1-1/514915/2
-        const parent = ref.parent;
-        ref.getWorldPosition(tempObj.position);
-        ref.getWorldQuaternion(tempObj.quaternion);
-        ref.getWorldScale(tempObj.scale);
-        ref.removeFromParent();
-        ref.position.copy(tempObj.position);
-        ref.quaternion.copy(tempObj.quaternion);
-        ref.scale.copy(tempObj.scale);
-        
-        if (frame.pos !== undefined) ref.position.copy(frame.pos);
-        if (frame.rot !== undefined) ref.quaternion.copy(frame.rot);
-
-        // Re-attach part to parent
-        if (parent !== undefined && parent !== null) {
-            parent.attach(ref);
+        const {parent, pose, local, position, rotation, scale, rootRotation} = GearBuilder.FUNC_animatePart;
+        // The clip is expressed in the parts container's unscaled coordinates.
+        // Resolve that basis directly; animating a magazine must not detach the
+        // entire weapon and repeatedly walk the player's world hierarchy.
+        parent.identity();
+        for (let node = ref.parent; node && node !== this.parts; node = node.parent) {
+            node.updateMatrix();
+            parent.premultiply(node.matrix);
         }
-
-        // Re-attach root to parent
-        if (rootParent !== undefined && rootParent !== null) {
-            rootParent.add(this.parts);
-            this.parts.position.copy(tempRoot.position);
-            this.parts.quaternion.copy(tempRoot.quaternion);
-            this.parts.scale.copy(tempRoot.scale);
+        ref.updateMatrix();
+        pose.multiplyMatrices(parent, ref.matrix).decompose(position, rotation, scale);
+        if (frame.pos !== undefined) position.copy(frame.pos);
+        if (frame.rot !== undefined) rotation.copy(frame.rot);
+        pose.compose(position, rotation, scale);
+        local.copy(parent).invert().multiply(pose).decompose(ref.position, ref.quaternion, ref.scale);
+        if (obj === this.leftHand) {
+            this.parts.updateWorldMatrix(true, false);
+            local.multiplyMatrices(this.parts.matrixWorld, pose).decompose(position, rotation, scale);
+            position.applyMatrix4(local.copy(obj.parent!.matrixWorld).invert());
+            obj.position.copy(position);
+            obj.parent!.matrixWorld.decompose(position, rootRotation, scale);
+            obj.quaternion.copy(rootRotation.invert()).multiply(rotation);
+        } else {
+            obj.position.setFromMatrixPosition(pose);
         }
-		
-        ref.getWorldPosition(tempVec);
-        this.parts.worldToLocal(tempVec);
-        obj.position.copy(tempVec);
     }
 
     private static FUNC_animate = {
         temp: new Quaternion(),
         tempObj: new Object3D(),
     } as const;
+    get reloadAnimation() { return this.datablock?.gunArchetype?.gunFoldAnim ?? this.gunFoldAnim?.anim; }
+
     public animate(t: number): void {
+        if (this.disposed || this.fallback) return;
         const { temp, tempObj } = GearBuilder.FUNC_animate;
 
-        this.material.color.set(this.reloadColor);
-
         if (this.datablock !== undefined) {
-            let gunAnim = this.datablock.gunArchetype?.gunFoldAnim;
-            if (gunAnim === undefined) {
-                gunAnim = this.gunFoldAnim?.anim;
-            }
+            const gunAnim = this.reloadAnimation;
             if (gunAnim !== undefined) {
 
                 const frame = gunAnim.sample(t * gunAnim.duration);
@@ -869,6 +878,22 @@ export class GearBuilder extends GearModel {
     public reset(): void {
         super.reset();
         this.animate(0);
-        this.material.color.set(this.color);
+    }
+
+    private clearParts() {
+        for (const model of this.loadedParts) { disposeModelMaterials(model); model.removeFromParent(); }
+        this.loadedParts.clear();
+        this.parts.clear();
+        this.aligns = {};
+        this.foldObjects.length = 0;
+        this.gunFoldAnim = undefined;
+    }
+
+    public dispose(): void {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.fallback?.dispose();
+        this.fallback = undefined;
+        this.clearParts();
     }
 }

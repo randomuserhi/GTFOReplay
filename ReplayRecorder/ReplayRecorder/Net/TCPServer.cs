@@ -1,6 +1,9 @@
-﻿using System.Collections.Concurrent;
+using System.Buffers.Binary;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using ReplayRecorder.IO;
+using ReplayRecorder.Steam;
 
 namespace ReplayRecorder {
     internal class TCPServer : IDisposable {
@@ -8,217 +11,123 @@ namespace ReplayRecorder {
         public delegate void OnReceive(ArraySegment<byte> buffer, EndPoint endpoint);
         public delegate void OnDisconnect(EndPoint endpoint);
         public delegate void OnClose();
-
+        public OnAccept? onAccept;
+        public OnReceive? onReceive;
+        public OnDisconnect? onDisconnect;
+        public OnClose? onClose;
         private readonly int bufferSize;
         private Socket? socket;
+        private readonly ConcurrentDictionary<EndPoint, Connection> acceptedConnections = new();
+        public ICollection<EndPoint> Connections => acceptedConnections.Keys;
 
-        public OnAccept? onAccept = null;
-        public OnReceive? onReceive = null;
-        public OnDisconnect? onDisconnect = null;
-        public OnClose? onClose = null;
-
-        private class Connection : IDisposable {
-            public enum State {
-                waiting,
-                reading
-            }
-
-            public Socket socket;
-            public readonly EndPoint remoteEP;
-            public byte[] recvBuffer;
-            public byte[] sendBuffer;
-            public byte[] messageBuffer;
-
-            public SemaphoreSlim semaphoreSend = new SemaphoreSlim(1);
-            public State state = State.waiting;
-            public int messageSize = 0;
-            public int bytesWritten = 0;
-
-            public Connection(Socket socket, int bufferSize) {
-                this.socket = socket;
-                remoteEP = socket.RemoteEndPoint!;
-                messageBuffer = new byte[bufferSize];
-                recvBuffer = new byte[bufferSize];
-                sendBuffer = new byte[bufferSize];
-            }
-
-            public void Dispose() {
-                semaphoreSend.Dispose();
-                socket.Dispose();
-            }
+        private sealed class Connection {
+            public readonly Socket socket;
+            public readonly EndPoint endpoint;
+            public readonly SemaphoreSlim sending = new(1);
+            public int closed;
+            public long pendingBytes;
+            public int pendingMessages;
+            public Connection(Socket socket) { this.socket = socket; endpoint = socket.RemoteEndPoint!; }
         }
-        private ConcurrentDictionary<EndPoint, Connection> acceptedConnections = new ConcurrentDictionary<EndPoint, Connection>();
-        public ICollection<EndPoint> Connections {
-            get => acceptedConnections.Keys;
-        }
-
         public TCPServer(int bufferSize = 8192) {
-            if (bufferSize < sizeof(int)) throw new ArgumentException("Buffer size cannot be smaller than a message header [sizeof(int)].");
+            if (bufferSize < 4 || bufferSize > 81920) throw new ArgumentOutOfRangeException(nameof(bufferSize));
             this.bufferSize = bufferSize;
         }
-
-        private void Open() {
-            if (socket != null) Dispose();
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
-        }
-
-        public EndPoint Bind(EndPoint remoteEP, int backlog = 5) {
-            Open();
-            socket!.Bind(remoteEP);
-            socket!.Listen(backlog);
-            _ = Listen(); // NOTE(randomuserhi): Start listen loop, not sure if `Bind` should automatically start the listen loop
-            return socket.LocalEndPoint!;
-        }
-
-        private async Task Listen() {
-            if (socket == null) return;
-            Socket incoming = await socket.AcceptAsync().ConfigureAwait(false);
-
-            EndPoint? remoteEndPoint = incoming.RemoteEndPoint;
-            if (remoteEndPoint != null) {
-                Connection connection = new Connection(incoming, bufferSize);
-                acceptedConnections.AddOrUpdate(remoteEndPoint, connection, (key, old) => { incoming.Dispose(); return old; });
-                onAccept?.Invoke(remoteEndPoint);
-                _ = ListenTo(connection);
-            } else {
-                incoming.Dispose();
-            }
-
-            _ = Listen(); // Start new listen task => async loop
-        }
-
-        private async Task ListenTo(Connection connection) {
-            try {
-                Socket socket = connection.socket;
-                int receivedBytes = await socket.ReceiveAsync(connection.recvBuffer, SocketFlags.None).ConfigureAwait(false);
-
-                if (receivedBytes > 0) {
-                    int bytesLeft = receivedBytes;
-                    int bytesRead = 0;
-                    do {
-                        switch (connection.state) {
-                        case Connection.State.waiting: {
-                            connection.messageSize = BitHelper.ReadInt(connection.recvBuffer, ref bytesRead);
-                            connection.bytesWritten = 0;
-
-                            if (connection.messageSize > 0) {
-                                connection.state = Connection.State.reading;
-                            }
-                            break;
-                        }
-                        case Connection.State.reading: {
-                            int bytesToWrite = bytesLeft;
-                            if (connection.bytesWritten + bytesLeft > connection.messageSize) {
-                                bytesToWrite = connection.messageSize - connection.bytesWritten;
-                            }
-                            Array.Copy(connection.recvBuffer, bytesRead, connection.messageBuffer, connection.bytesWritten, bytesToWrite);
-                            connection.bytesWritten += bytesToWrite;
-                            bytesRead += bytesToWrite;
-
-                            if (connection.bytesWritten == connection.messageSize) {
-                                connection.state = Connection.State.waiting;
-                                onReceive?.Invoke(new ArraySegment<byte>(connection.messageBuffer, 0, connection.messageSize), connection.remoteEP);
-                            }
-                            break;
-                        }
-                        }
-
-                        bytesLeft = receivedBytes - bytesRead;
-                    } while (bytesLeft > 0);
-
-                    _ = ListenTo(connection); // Start new listen task => async loop
-                } else {
-                    Dispose(connection);
-                    onDisconnect?.Invoke(connection.remoteEP);
-                }
-            } catch (ObjectDisposedException) {
-                // NOTE(randomuserhi): Socket was disposed during ReceiveAsync
-                Dispose(connection);
-                onDisconnect?.Invoke(connection.remoteEP);
-            }
-        }
-
-        private void Dispose(Connection connection) {
-            acceptedConnections.Remove(connection.socket.RemoteEndPoint!, out _);
-            connection.Dispose();
-        }
-
-        public async Task Send(ArraySegment<byte> data) {
-            List<Task> tasks = new List<Task>();
-            foreach (EndPoint remoteEP in acceptedConnections.Keys) {
-                tasks.Add(SendTo(data, remoteEP));
-            }
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-
-        public async Task RawSendTo(ArraySegment<byte> data, EndPoint remoteEP) {
-            if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
-                await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
-                try {
-                    int sent = await connection.socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
-                    while (sent < data.Count) {
-                        sent += await connection.socket.SendAsync(new ArraySegment<byte>(data.Array!, data.Offset + sent, data.Count - sent), SocketFlags.None).ConfigureAwait(false);
-                    }
-                } catch (SocketException) {
-                    return;
-                } finally {
-                    connection.semaphoreSend.Release();
-                }
-            }
-        }
-
-        public async Task SendTo(ArraySegment<byte> data, EndPoint remoteEP) {
-            if (acceptedConnections.TryGetValue(remoteEP, out Connection? connection)) {
-                await connection.semaphoreSend.WaitAsync().ConfigureAwait(false);
-                try {
-                    if (data.Count > int.MaxValue) {
-                        return; // TODO(randomuserhi): Throw exception...
-                    }
-                    int size = sizeof(int) + data.Count;
-                    int capacity = connection.sendBuffer.Length;
-                    while (capacity < size) {
-                        capacity *= 2;
-                    }
-                    if (capacity > connection.sendBuffer.Length) {
-                        connection.sendBuffer = new byte[capacity];
-                    }
-                    int index = 0;
-                    BitHelper.WriteBytes(data.Count, connection.sendBuffer, ref index);
-                    Array.Copy(data.Array!, data.Offset, connection.sendBuffer, index, data.Count);
-
-                    int sent = await connection.socket.SendAsync(new ArraySegment<byte>(connection.sendBuffer, 0, size), SocketFlags.None).ConfigureAwait(false);
-                    while (sent < size) {
-                        sent += await connection.socket.SendAsync(new ArraySegment<byte>(connection.sendBuffer, sent, size - sent), SocketFlags.None).ConfigureAwait(false);
-                    }
-                } catch (SocketException) {
-                    return;
-                } finally {
-                    connection.semaphoreSend.Release();
-                }
-            }
-        }
-
-        public void Disconnect() {
+        public EndPoint Bind(EndPoint endpoint, int backlog = 5) {
             Dispose();
+            var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            try {
+                listener.Bind(endpoint);
+                listener.Listen(backlog);
+                socket = listener;
+                _ = Listen(listener);
+                return listener.LocalEndPoint!;
+            } catch { listener.Dispose(); throw; }
         }
-
-        public void DisconnectClients() {
-            foreach (Connection? connection in acceptedConnections.Values) {
-                connection.Dispose();
+        private async Task Listen(Socket listener) {
+            try {
+                while (ReferenceEquals(socket, listener)) {
+                    var incoming = await listener.AcceptAsync().ConfigureAwait(false);
+                    if (!ReferenceEquals(socket, listener)) { incoming.Dispose(); break; }
+                    var conn = new Connection(incoming);
+                    if (!acceptedConnections.TryAdd(conn.endpoint, conn)) { incoming.Dispose(); continue; }
+                    try { onAccept?.Invoke(conn.endpoint); }
+                    catch (Exception error) { SteamPacketIO.Report("TCP accept callback", error); Close(conn); continue; }
+                    _ = Receive(conn);
+                }
+            } catch (Exception error) {
+                if (ReferenceEquals(socket, listener)) {
+                    SteamPacketIO.Report("TCP accept", error);
+                    Dispose();
+                }
             }
-            acceptedConnections.Clear();
         }
-
+        private async Task Receive(Connection conn) {
+            var buffer = new byte[bufferSize];
+            var framer = new MessageFramer(bufferSize);
+            try {
+                while (Volatile.Read(ref conn.closed) == 0) {
+                    int count = await conn.socket.ReceiveAsync(buffer, SocketFlags.None).ConfigureAwait(false);
+                    if (count == 0) { framer.Complete(); break; }
+                    framer.Feed(buffer.AsSpan(0, count), data => onReceive?.Invoke(data, conn.endpoint));
+                }
+            } catch (Exception error) {
+                if (Volatile.Read(ref conn.closed) == 0) SteamPacketIO.Report($"TCP receive/{conn.endpoint}", error);
+            } finally { Close(conn); }
+        }
+        private void Close(Connection conn) {
+            if (Interlocked.Exchange(ref conn.closed, 1) != 0) return;
+            acceptedConnections.TryRemove(conn.endpoint, out _);
+            conn.socket.Dispose();
+            SteamPacketIO.Guard($"TCP disconnect/{conn.endpoint}", () => onDisconnect?.Invoke(conn.endpoint));
+            // Pending sends still release this managed semaphore after socket disposal.
+        }
+        public Task Send(ArraySegment<byte> data) => Task.WhenAll(acceptedConnections.Keys.Select(endpoint => SendTo(data, endpoint)));
+        public Task RawSendTo(ArraySegment<byte> data, EndPoint endpoint) => QueueSend(data, endpoint, false);
+        public Task SendTo(ArraySegment<byte> data, EndPoint endpoint) => QueueSend(data, endpoint, true);
+        private Task QueueSend(ArraySegment<byte> data, EndPoint endpoint, bool framed) {
+            if (!acceptedConnections.TryGetValue(endpoint, out var conn) || Volatile.Read(ref conn.closed) != 0) return Task.CompletedTask;
+            int length = data.Count + (framed ? 4 : 0);
+            int messages = Interlocked.Increment(ref conn.pendingMessages);
+            long pending = Interlocked.Add(ref conn.pendingBytes, length);
+            if (data.Count <= 0 || data.Count > 81920 || messages > 128 || pending > 8 * 1024 * 1024) {
+                Interlocked.Decrement(ref conn.pendingMessages);
+                Interlocked.Add(ref conn.pendingBytes, -length);
+                SteamPacketIO.Report($"TCP send/{endpoint}", new IOException("Viewer send exceeded the packet or backlog limit."));
+                Close(conn);
+                return Task.CompletedTask;
+            }
+            var owned = new byte[length];
+            if (framed) BinaryPrimitives.WriteInt32LittleEndian(owned, data.Count);
+            data.AsSpan().CopyTo(owned.AsSpan(framed ? 4 : 0));
+            return SendOwned(conn, owned);
+        }
+        private async Task SendOwned(Connection conn, byte[] data) {
+            await conn.sending.WaitAsync().ConfigureAwait(false);
+            try {
+                int offset = 0;
+                while (offset < data.Length && Volatile.Read(ref conn.closed) == 0) {
+                    int sent = await conn.socket.SendAsync(new ArraySegment<byte>(data, offset, data.Length - offset), SocketFlags.None).ConfigureAwait(false);
+                    if (sent == 0) throw new EndOfStreamException("Viewer socket closed during send.");
+                    offset += sent;
+                }
+            } catch (Exception error) {
+                if (Volatile.Read(ref conn.closed) == 0) SteamPacketIO.Report($"TCP send/{conn.endpoint}", error);
+                Close(conn);
+            } finally {
+                Interlocked.Add(ref conn.pendingBytes, -data.Length);
+                Interlocked.Decrement(ref conn.pendingMessages);
+                conn.sending.Release();
+            }
+        }
+        public void Disconnect() => Dispose();
+        public void DisconnectClients() { foreach (var conn in acceptedConnections.Values) Close(conn); }
         public void Dispose() {
-            if (socket == null) return;
-
+            var listener = Interlocked.Exchange(ref socket, null);
+            if (listener == null) return;
+            listener.Dispose();
             DisconnectClients();
-
-            socket.Dispose();
-            socket = null;
-
-            onClose?.Invoke();
+            SteamPacketIO.Guard("TCP closed", () => onClose?.Invoke());
         }
     }
 }

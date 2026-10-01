@@ -1,7 +1,6 @@
-import { html, Mutable } from "@esm/@/rhu/html.js";
+import { uiAttribute } from "@esm/@root/main/i18n.js";
+import { html } from "@esm/@/rhu/html.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
-import { Style } from "@esm/@/rhu/style.js";
-import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
 import { Render } from "@esm/@root/main/routes/player/index.js";
 
@@ -36,7 +35,6 @@ module.destructor = () => {
 module.ready();
 
 /* eslint-disable-next-line sort-imports */
-import { Bar, Button } from "./components/bar.js";
 import { Display } from "./display.js";
 import { Chat } from "./pages/chat.js";
 import { Finder } from "./pages/finder.js";
@@ -44,147 +42,56 @@ import { Info } from "./pages/info.js";
 import { Settings } from "./pages/settings.js";
 import { Stats } from "./pages/stats.js";
 
-const style = Style(({ css }) => {
-    const wrapper = css.class`
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    `;
-
-    const body = css.class`
-    position: relative;
-    flex: 1;
-    `;
-    
-    const window = css.class`
-    height: 100%;
-    flex-shrink: 0;
-    width: auto;
-    background-color: #1f1f29;
-    overflow-y: auto;
-    overflow-x: hidden;
-    `;
-
-    return {
-        wrapper,
-        window,
-        body
-    };
-});
-
 interface Page {
     readonly view: Signal<html<typeof View> | undefined>;
     readonly active: Signal<boolean>;
 }
-
 const UI = () => {
-    interface UI {
-        load(page: html<Page>): void;
-
-        readonly view: Signal<html<typeof View> | undefined>;
-
-        readonly display: html<typeof Display>;
-
-        readonly settings: html<typeof Button>;
-        readonly stats: html<typeof Button>;
-        readonly finder: html<typeof Button>;
-        readonly chat: html<typeof Button>;
-        readonly info: html<typeof Button>;
-    }
-    interface Private {
-        readonly window: HTMLDivElement;
-
-        readonly pages: Map<html<typeof Button>, html<Page>>;
-        readonly loadedPage?: html<Page>;
-    }
-
-    const dom = html<Mutable<Private & UI>>/**//*html*/`
-        <div class="${style.wrapper}">
-            ${html.open(Bar())}
-                ${html.open(Button()).bind("settings")}
-                    ${icons.gear()}
-                ${html.close()}
-                ${html.open(Button()).bind("stats")}
-                    ${icons.stats()}
-                ${html.close()}
-                ${html.open(Button()).bind("finder")}
-                    ${icons.finder()}
-                ${html.close()}
-                <div style="flex: 1"></div>
-                ${html.open(Button()).bind("chat")}
-                    ${icons.chat()}
-                ${html.close()}
-                ${html.open(Button()).bind("info")}
-                    ${icons.info()}
-                ${html.close()}
-            ${html.close()}
-            <div m-id="window" class="${style.window}" style="display: none;">
-            </div>
-            <div class="${style.body}">
-                ${html.bind(Display(), "display")}
-            </div>
-        </div>
-        `;
+    const dom = html<{
+        display: html<typeof Display>; window: HTMLDivElement; close: HTMLButtonElement; content: HTMLDivElement;
+        view: Signal<html<typeof View> | undefined>;
+    }>`
+        <div class="replay-workspace">
+            <div data-replay-nav></div>
+            <div data-react-panel></div>
+            <aside m-id="window" class="legacy-panel" hidden>
+                <button m-id="close" class="panel-close" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+                <div m-id="content"></div>
+            </aside>
+            <div class="replay-stage">${html.bind(Display(), "display")}</div>
+        </div>`;
     html(dom).box();
-    
     dom.view = signal<html<typeof View> | undefined>(undefined);
-
-    dom.pages = new Map();
-
-    dom.load = function load(page?: html<Page>) {
-        const view = this.display.view();
-        if (this.loadedPage === page) page = undefined;
-        this.loadedPage = page;
-        
-        for (const [button, page] of this.pages) {
-            if (page !== this.loadedPage) {
-                button.toggle(false);
-                page.active(false);
-            } else {
-                button.toggle(true);
-                page.active(true);
-            }
-        }
-
-        if (page !== undefined) {
-            this.window.replaceChildren(...page);
-            this.window.style.display = "block";
-        } else {
-            if (view) view.canvas.focus();
-            this.window.replaceChildren();
-            this.window.style.display = "none";
-        }
-        if (view) view.resize();
-    };
-
-    dom.pages.set(dom.settings, Settings());
-    dom.pages.set(dom.finder, Finder());
-    dom.pages.set(dom.info, Info());
-    dom.pages.set(dom.stats, Stats());
-    dom.pages.set(dom.chat, Chat());
-
-    for(const [button, page] of dom.pages) {
-        button.button.addEventListener("click", () => {
-            dom.load(page);
-        });
-    }
-    
-    dom.view.on((view) => {
-        if (view === undefined) return;
-
+    const pages = new Map<string, html<Page>>([
+        ["players", Stats()], ["finder", Finder()], ["info", Info()], ["chat", Chat()]
+    ]);
+    const settings = Settings(), settingsContent = document.createElement("div");
+    settingsContent.append(...settings);
+    window.addEventListener("replay-settings-open", ((event: CustomEvent<boolean>) => { settings.active(event.detail); }) as EventListener, { signal: dispose.signal });
+    window.dispatchEvent(new CustomEvent("replay-settings-content", { detail: settingsContent }));
+    dispose.signal.addEventListener("abort", () => window.dispatchEvent(new CustomEvent("replay-settings-content")), { once: true });
+    const panelObserver = new ResizeObserver(() => dom.display.view()?.resize());
+    panelObserver.observe(dom.window);
+    const wrapper = dom.window.parentElement;
+    if (wrapper) panelObserver.observe(wrapper);
+    dispose.signal.addEventListener("abort", () => panelObserver.disconnect(), { once: true });
+    window.addEventListener("replay-panel", ((event: CustomEvent<string | undefined>) => {
+        const current = event.detail ? pages.get(event.detail) : undefined;
+        for (const page of pages.values()) page.active(page === current);
+        dom.window.hidden = !current;
+        dom.content.replaceChildren(...(current ?? []));
+        dom.display.view()?.resize();
+    }) as EventListener, { signal: dispose.signal });
+    // Navigation owns the selected page; the close button asks it to clear selection.
+    dom.close.addEventListener("click", () => window.dispatchEvent(new Event("replay-close-panel")));
+    uiAttribute(dom.close, "aria-label", "Close", dispose.signal);
+    dom.view.on(view => {
         dom.display.view(view);
-        for (const page of dom.pages.values()) {
-            page.view(view);
-        }
+        settings.view(view);
+        for (const page of pages.values()) page.view(view);
     }, { signal: dispose.signal });
-
-    return dom as html<UI>;
+    return dom;
 };
-
 Render((doc, view) => {
-    const main = ui();
-    main.view(view);
-    doc.append(...main);
+    const main = ui(); main.view(view); doc.append(...main);
 });

@@ -1,36 +1,13 @@
-import { html, Mutable } from "@esm/@/rhu/html.js";
-import { Signal, signal } from "@esm/@/rhu/signal.js";
-import { pageStyles } from "../pages/lib.js";
-
-const style = pageStyles;
-
-export const Toggle = () => {
-    interface Toggle {
-        readonly value: Signal<boolean>;
-    }
-    interface Private {
-        readonly button: HTMLButtonElement
-    }
-
-    const dom = html<Mutable<Private & Toggle>>/**//*html*/`
-        <button m-id="button" class="${style.toggle}"></button>
-		`;
-    html(dom).box();
-
-    dom.value = signal(false);
-
-    dom.value.on((value) => {
-        if (value) dom.button.classList.add(`${style.active}`);
-        else dom.button.classList.remove(`${style.active}`);
-    });
-
-    dom.button.addEventListener("click", () => {
-        dom.value(!dom.value());
-    });
-
-    dom.button.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-    });
-
-    return dom as html<Toggle>;
+import { html } from "@esm/@/rhu/html.js";
+import { signal, Signal } from "@esm/@/rhu/signal.js";
+import { dispose } from "../main.js";
+export const Toggle = (label = "Toggle") => {
+    const dom = html<{ value: Signal<boolean>; mount: HTMLSpanElement }>`<span m-id="mount"></span>`;
+    html(dom).box(); dom.value = signal(false);
+    const mounted = window.ReplayInterface.mountSwitch(dom.mount, false, value => dom.value(value), window.ReplayInterface.ui(label));
+    const update = () => mounted.update(dom.value(), window.ReplayInterface.ui(label));
+    dom.value.on(update, { signal: dispose.signal });
+    window.addEventListener("replay-language-changed", update, { signal: dispose.signal });
+    dispose.signal.addEventListener("abort", () => mounted.unmount(), { once: true });
+    return dom;
 };

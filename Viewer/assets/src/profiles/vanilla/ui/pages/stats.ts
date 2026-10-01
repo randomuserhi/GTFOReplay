@@ -1,3 +1,4 @@
+import { ui, uiText, uiAttribute, language } from "@esm/@root/main/i18n.js";
 import { html, Mutable } from "@esm/@/rhu/html.js";
 import { computed, Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -31,7 +32,7 @@ export const FeatureWrapper = (tag: string) => {
         dom.body.append(...children);
     });
     
-    dom.tag = tag;
+    Object.defineProperty(dom, "tag", { get: () => `${tag} ${ui(tag)}` });
 
     return dom;
 };
@@ -65,13 +66,16 @@ const Item = (inKey: string) => {
 export const TypeList = (inTitle: string, titleFontSize: string = "20", units: string = "") => {
     interface TypeList {
         readonly values: Signal<[key: string, value: number][]>;
+        readonly available: Signal<boolean>;
     }
     interface Private {
         readonly empty: HTMLSpanElement;
     }
 
-    const title = signal(inTitle);
+    const title = uiText(inTitle);
     const total = signal("total");
+    const available = signal(true);
+    const emptyText = computed<string>(set => { set(available() ? ui("None") : window.ReplayInterface.t("statsUnavailable")); }, [available, language]);
 
     const values = signal<[key: string, value: number][]>([], (a, b) => {
         if (a === undefined && b === undefined) return true;
@@ -99,7 +103,7 @@ export const TypeList = (inTitle: string, titleFontSize: string = "20", units: s
             <div style="flex: 1"></div>
             <span>${total}${units}</span>
         </div>
-        <span m-id="empty" style="display: block;">None</span>
+        <span m-id="empty" style="display: block;">${emptyText}</span>
         <ul>
             ${list}
         </ul>
@@ -107,20 +111,24 @@ export const TypeList = (inTitle: string, titleFontSize: string = "20", units: s
     html(dom).box();
 
     dom.values = values;
+    dom.available = available;
 
-    values.on((values) => {
+    const updateTotal = () => {
+        const entries = values();
         let vtotal = 0;
-        for (const [, value] of values) {
+        for (const [, value] of entries) {
             vtotal += value;
         }
-        total(`${vtotal}`);
+        total(entries.length === 0 && !available() ? "—" : `${vtotal}`);
 
-        if (values.length === 0) {
+        if (entries.length === 0) {
             dom.empty.style.display = "block";
         } else {
             dom.empty.style.display = "none";
         }
-    }, { signal: dispose.signal });
+    };
+    values.on(updateTotal, { signal: dispose.signal });
+    available.on(updateTotal, { signal: dispose.signal });
 
     return dom as html<TypeList>;
 };
@@ -156,35 +164,35 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span>Damage Dealt to Enemies</span>
+                    <span>${uiText("Damage Dealt to Enemies")}</span>
                     <ul>
                         <li style="display: flex">
-                            <span>Bullet Damage</span>
+                            <span>${uiText("Bullet Damage")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "bulletDamage")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Melee Damage</span>
+                            <span>${uiText("Melee Damage")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "meleeDamage")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Sentry Damage</span>
+                            <span>${uiText("Sentry Damage")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "sentryDamage")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Explosive Damage</span>
+                            <span>${uiText("Explosive Damage")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "explosiveDamage")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Stagger Damage</span>
+                            <span>${uiText("Stagger Damage")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "staggerDamage")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Sentry Stagger Damage</span>
+                            <span>${uiText("Sentry Stagger Damage")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "sentryStaggerDamage")}</span>
                         </li>
@@ -205,7 +213,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 bulletDamage(`${Math.round([...player.enemyDamage.bulletDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
                 meleeDamage(`${Math.round([...player.enemyDamage.meleeDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
@@ -215,6 +223,14 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 sentryStaggerDamage(`${Math.round([...player.enemyDamage.sentryStaggerDamage.values()].reduce((p, c) => p + c.value, 0) * 10) / 10}`);
 
                 customSignal(player.enemyDamage.custom);
+                if (!StatTracker.availability(api).host) {
+                    if (!player.enemyDamage.bulletDamage.size) bulletDamage("—");
+                    if (!player.enemyDamage.meleeDamage.size) meleeDamage("—");
+                    if (!player.enemyDamage.sentryDamage.size) sentryDamage("—");
+                    if (!player.enemyDamage.explosiveDamage.size) explosiveDamage("—");
+                    if (!player.enemyDamage.staggerDamage.size) staggerDamage("—");
+                    if (!player.enemyDamage.sentryStaggerDamage.size) sentryStaggerDamage("—");
+                }
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
@@ -259,17 +275,17 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                         <span>${html.bind(signal(""), "name")}</span>
                     </li>
                     <li style="display: flex">
-                        <span>Hit Rate</span>
+                        <span>${uiText("Hit Rate")}</span>
                         <div style="flex: 1"></div>
                         <span>${html.bind(signal(""), "hitRate")}</span>
                     </li>
                     <li style="display: flex">
-                        <span>Crit Rate</span>
+                        <span>${uiText("Crit Rate")}</span>
                         <div style="flex: 1"></div>
                         <span>${html.bind(signal(""), "critRate")}</span>
                     </li>
                     <li style="display: flex">
-                        <span>Average Hit Per Bullet</span>
+                        <span>${uiText("Average Hit Per Bullet")}</span>
                         <div style="flex: 1"></div>
                         <span>${html.bind(signal(""), "avgHitPerShot")}</span>
                     </li>
@@ -278,9 +294,9 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     </li>
                     <li style="display: flex; flex-direction: column;">
                         <div style="display: flex">
-                        <span>Hits</span>
+                        <span>${uiText("Hits")}</span>
                         <div style="flex: 1"></div>
-                        <span>Count</span>
+                        <span>${uiText("Count")}</span>
                         </div>
                         <ul>${pierceHitsList}</ul>
                     </li>
@@ -314,7 +330,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span>Accuracy</span>
+                    <span>${uiText("Accuracy")}</span>
                     ${list}
                 </div>
             ${html.close()}
@@ -329,7 +345,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
                 
                 gears(player.accuracy);
             }, { signal: dispose.signal });
@@ -348,7 +364,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span>Damage Dealt to Players</span>
+                    <span>${uiText("Damage Dealt to Players")}</span>
                     <ul style="display: flex; flex-direction: column; gap: 10px;">
                         <li>
                             ${html.bind(TypeList("Bullet Damage", "inherit", "%"), "bulletDamage")}
@@ -375,9 +391,10 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
                 
                 bulletDamage.values([...player.playerDamage.bulletDamage.entries()].map((kv) => [api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(kv[0])!.nickname, Math.round(Math.round(kv[1] * 10) / 10 / PlayerDatablock.health * 1000) / 10]));
+                for (const list of [bulletDamage, sentryDamage, explosiveDamage]) list.available(StatTracker.availability(api).host);
                 sentryDamage.values([...player.playerDamage.sentryDamage.entries()].map((kv) => [api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(kv[0])!.nickname, Math.round(Math.round(kv[1] * 10) / 10 / PlayerDatablock.health * 1000) / 10]));
                 explosiveDamage.values([...player.playerDamage.explosiveDamage.entries()].map((kv) => [api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(kv[0])!.nickname, Math.round(Math.round(kv[1] * 10) / 10 / PlayerDatablock.health * 1000) / 10]));
             }, { signal: dispose.signal });
@@ -463,7 +480,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
 
             const datablock = BoosterDatablock.get(v.implant.id);
 
-            el.active(v.conditionMet ? "Active" : "Inactive");
+            el.active(v.conditionMet ? ui("Active") : ui("Inactive"));
             el.type(datablock ? datablock.category : `Unknown(${v.implant.id})`);
             el.effects(v.implant.effects);
             el.conditions(v.implant.conditions);
@@ -479,7 +496,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span>Boosters</span>
+                    <span>${uiText("Boosters")}</span>
                     <span>${html.bind(signal(""), "note")}</span>
                     ${list}
                 </div>
@@ -498,9 +515,9 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const player = api.getOrDefault("Vanilla.Player.Snet", Factory("Map")).get(snet);
                 const booster = player ? api.getOrDefault("Vanilla.Player.Boosters", Factory("Map")).get(player.id) : undefined;
                 if (booster === undefined) {
-                    dom.note("This player has no booster information.");
+                    dom.note(ui("This player has no booster information."));
                 } else if (booster.implants.length === 0) {
-                    dom.note("No boosters equipped.");
+                    dom.note(ui("No boosters equipped."));
                 } else {
                     dom.note("");
                 }
@@ -536,7 +553,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const count of player.kills.values()) {
@@ -551,6 +568,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(name, total.get(name)! + count.value);
                 }
+                list.available(StatTracker.availability(api).host);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
@@ -583,7 +601,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const count of player.sentryKills.values()) {
@@ -598,6 +616,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(name, total.get(name)! + count.value);
                 }
+                list.available(StatTracker.availability(api).host);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
@@ -630,7 +649,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const count of player.mineKills.values()) {
@@ -645,6 +664,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(name, total.get(name)! + count.value);
                 }
+                list.available(StatTracker.availability(api).host);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
@@ -677,7 +697,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const count of player.assists.values()) {
@@ -692,6 +712,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(name, total.get(name)! + count.value);
                 }
+                list.available(StatTracker.availability(api).host);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
@@ -724,7 +745,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const count of player.tongueDodges.values()) {
@@ -739,6 +760,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(name, total.get(name)! + count.value);
                 }
+                list.available(StatTracker.availability(api).dodges);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
@@ -750,11 +772,11 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
             wrapper: html<typeof FeatureWrapper>;
             list: html<typeof TypeList>;
         }>/**//*html*/`
-            ${html.open(FeatureWrapper("Packs Used")).bind("wrapper")}
+            ${html.open(FeatureWrapper("Packs Received")).bind("wrapper")}
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    ${html.bind(TypeList("Packs Used"), "list")}
+                    ${html.bind(TypeList("Packs Received"), "list")}
                 </div>
             ${html.close()}
         `;
@@ -771,7 +793,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const [type, count] of player.packsUsed) {
@@ -780,6 +802,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(type, total.get(type)! + count);
                 }
+                list.available(StatTracker.availability(api).host);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
@@ -812,7 +835,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 if (api === undefined) return;
 
                 const snet = self.dropdown.value();
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 total.clear();
                 for (const [type, count] of player.packsGiven) {
@@ -821,11 +844,27 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     }
                     total.set(type, total.get(type)! + count);
                 }
+                list.available(StatTracker.availability(api).host);
                 list.values([...total.entries()]);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
         return dom.wrapper;
+    },
+    (self, v) => {
+        const wrapper = FeatureWrapper("Packs Consumed (Local)");
+        const list = TypeList("Packs Consumed (Local)");
+        html.append(wrapper.body, list);
+        v.on(view => {
+            if (!view) return;
+            view.api.on(api => {
+                if (!self.active() || !api) return;
+                const snet = self.dropdown.value();
+                list.available(StatTracker.clientPacksAvailable(api, snet));
+                list.values([...StatTracker.readPlayer(snet, api).packsConsumed]);
+            }, { signal: dispose.signal });
+        }, { signal: dispose.signal });
+        return wrapper;
     },
     (self, v) => {
         const dom = html<{
@@ -839,25 +878,25 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 <div class="${style.row}" style="
                 gap: 10px;
                 ">
-                    <span>Miscellaneous</span>
+                    <span>${uiText("Miscellaneous")}</span>
                     <ul>
                         <li style="display: flex">
-                            <span>HasReplayMod</span>
+                            <span>${uiText("HasReplayMod")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "hasReplayMod")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Revives</span>
+                            <span>${uiText("Revives")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "revives")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Times Downed</span>
+                            <span>${uiText("Times Downed")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "downed")}</span>
                         </li>
                         <li style="display: flex">
-                            <span>Silent Shots</span>
+                            <span>${uiText("Silent Shots")}</span>
                             <div style="flex: 1"></div>
                             <span>${html.bind(signal(""), "silent")}</span>
                         </li>
@@ -885,7 +924,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                     return;
                 }
 
-                const player = StatTracker.getPlayer(snet, StatTracker.from(api));
+                const player = StatTracker.readPlayer(snet, api);
 
                 revives(`${player.revives}`);
                 downed(`${player.timesDowned}`);
@@ -896,7 +935,7 @@ const featureList: ((self: html<typeof Stats>, v: Signal<html<typeof View> | und
                 const core = api.getOrDefault("ReplayRecorder.Player", Factory("Map"));
                 const c = core.get(p.id);
                 if (c === undefined) throw new Error(`Could not find player with id '${p.id}'`);
-                hasReplayMod(`${(c.hasReplayMod ? "True" : "False")}`);
+                hasReplayMod(`${(c.hasReplayMod ? ui("True") : ui("False"))}`);
             }, { signal: dispose.signal });
         }, { signal: dispose.signal });
 
@@ -915,27 +954,31 @@ export const Stats = () => {
         readonly search: HTMLInputElement;
     }
     
-    const dropdown = Dropdown();
+    const dropdown = Dropdown("Track player statistics");
     dropdown.wrapper.style.width = "100%";
+    const atTime = signal("00:00");
+    const recordingHint = computed<string>(set => { set(window.ReplayInterface.t("statsAtTime", { time: atTime() })); }, [language, atTime]);
 
     const dom = html<Mutable<Private & Settings>>/**//*html*/`
         <div class="${style.wrapper}">
             <div style="margin-bottom: 20px;">
-                <h1>STATS</h1>
-                <p>View player statistics</p>
+                <h1>${uiText("STATS")}</h1>
+                <p>${uiText("View player statistics")}</p>
+                <p style="font-size: 12px; line-height: 1.6; color: #a7b1c1;">${recordingHint}</p>
             </div>
             <div style="
             position: sticky; 
             padding: 20px 0; 
             top: 0px; 
-            background-color: #1f1f29;
+            background-color: #171c24;
             margin-bottom: 10px;
             z-index: 100;
             ">
-                <input m-id="search" placeholder="Search ..." class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
+                <input m-id="search" placeholder="${ui("Search ...")}" class="${style.search}" type="text" spellcheck="false" autocomplete="false"/>
                 <div class="${style.row}" style="
                 margin-top: 20px;
                 ">
+                    <span class="field-caption">${uiText("Track player statistics")}</span>
                     ${dropdown}
                 </div>
             </div>
@@ -961,6 +1004,7 @@ export const Stats = () => {
         dom.body.append(...f);
     }
     
+    uiAttribute(dom.search, "placeholder", "Search ...", dispose.signal);
     dom.search.addEventListener("keyup", () => {
         let value = dom.search.value;
         value = value.trim();
@@ -968,6 +1012,7 @@ export const Stats = () => {
             html.replaceChildren(dom.body, ...features);
             return;
         }
+        fuse.setCollection(features);
         const results = fuse.search(value).map((n) => n.item);
         html.replaceChildren(dom.body, ...results);
     });
@@ -985,6 +1030,10 @@ export const Stats = () => {
                 dropdown.options([]);
                 return;
             }
+
+            const seconds = Math.floor(api.time() / 1000);
+            const hours = Math.floor(seconds / 3600);
+            atTime(`${hours ? `${hours}:` : ""}${String(hours ? Math.floor(seconds / 60) % 60 : Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`);
 
             const all = api.get("Vanilla.Player.Snet");
             if (all === undefined) {

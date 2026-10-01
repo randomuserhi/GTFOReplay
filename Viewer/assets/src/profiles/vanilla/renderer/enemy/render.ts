@@ -4,6 +4,13 @@ import { Factory } from "../../library/factory.js";
 import { isCulled } from "../../library/models/lib.js";
 import { UnitySphere } from "../../library/models/primitives.js";
 import { EnemyModelWrapper } from "./lib.js";
+import { StickFigure } from "../models/stickfigure.js";
+
+ModuleLoader.registerDispose(renderer => {
+    for (const key of ["Enemies", "Enemies.Ragdolls"] as const)
+        for (const wrapper of renderer.get(key)?.values() ?? []) wrapper.dispose();
+    for (const limb of renderer.get("Enemy.LimbCustom")?.values() ?? []) limb.material.dispose();
+});
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -38,15 +45,18 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
 
                 const wrapper = models.get(id)!;
                 const model = wrapper.model;
-                model.setVisible(enemy.dimension === renderer.get("Dimension"));
+                model.setVisible(enemy.dimension === renderer.get("Dimension") && !isCulled(enemy.position, model.cullingRadius, camera));
                 
                 if (anims.has(id)) {
                     const anim = anims.get(id)!;
 
-                    if (isCulled(enemy.position, anim.state === "ScoutDetection" ? Infinity : 2, camera)) model.setVisible(false);
-
                     model.render(dt, time, enemy, anim);
                     wrapper.updateTmp(enemy, anim, camera, players);
+                } else {
+                    // Custom enemies can have movement without a supported animation stream.
+                    model.root.position.copy(enemy.position);
+                    model.root.quaternion.copy(enemy.rotation);
+                    wrapper.updateTmp(enemy, undefined, camera, players);
                 }
             }
 
@@ -74,7 +84,8 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
 
                 const wrapper = models.get(id)!;
                 const model = wrapper.model;
-                model.setVisible(ragdoll.dimension === renderer.get("Dimension") && EnemyModelWrapper.showRagdolls());
+                model.setVisible(ragdoll.dimension === renderer.get("Dimension") && EnemyModelWrapper.showRagdolls() &&
+                    !isCulled(ragdoll.position, model.cullingRadius, camera));
                 
                 model.render(dt, time, ragdoll, undefined, ragdoll);
                 wrapper.updateTmp(ragdoll, undefined, camera, players);
@@ -122,7 +133,7 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                     renderer.scene.add(mesh);
                 }
                 const model = models.get(id)!;
-                if (!skeleton.model.isVisible()) {
+                if (!skeleton.model.isVisible() || (skeleton.model instanceof StickFigure && skeleton.model.hasNativeModel)) {
                     model.mesh.visible = false;
                     continue;
                 }
@@ -132,10 +143,6 @@ ModuleLoader.registerRender("Enemies", (name, api) => {
                 model.mesh.scale.set(limb.scale, limb.scale, limb.scale);
                 model.mesh.quaternion.set(0, 0, 0, 1);
                 model.mesh.position.set(limb.offset.x, limb.offset.y, limb.offset.z);
-                if (limb.fixScale) {
-                    // NOTE(randomuserhi): Backwards compatability with old recorded limbs that had improper offsets
-                    model.mesh.position.divideScalar(enemy.scale);    
-                }
                 skeleton.addToLimb(model.mesh, limb.bone);
             }
 

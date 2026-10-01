@@ -11,94 +11,108 @@ import { dispose } from "../main.js";
 const style = Style(({ css }) => {
     const wrapper = css.class`
     position: absolute;
-    top: 15px;
-    padding: 10px;
-    width: 100%;
-    min-height: 100px;
-
-    font-size: 18px;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    width: min(620px, calc(100% - 32px));
+    padding: 14px 20px 16px;
+    border-radius: 8px;
+    background: #111820ed;
+    box-shadow: 0 6px 24px #00000040;
+    font-family: Oxanium, "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
     text-align: center;
-
-    display: flex;
+    display: none;
     align-items: center;
-    justify-content: center;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
+    pointer-events: none;
     `;
 
-    const controls = css.class<{
-        button: ClassName;
-        active: ClassName;
-    }>`
-    margin-top: 5px;
-
+    const controls = css.class<{button: ClassName; active: ClassName;}>`
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-
-    color: white;
-
-    -webkit-user-select: none;
-    -ms-user-select: none;
+    gap: 12px;
+    width: 100%;
+    color: #c2cbd5;
+    font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
     user-select: none;
     `;
-
     controls.button = css.class`
-    padding-bottom: 5px;
-    color: #444;
+    display: grid;
+    place-items: center;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 5px;
+    border: 1px solid #35404b;
+    border-radius: 4px;
+    background: transparent;
+    color: #778491;
+    pointer-events: auto;
     `;
-    
     controls.active = css.class`
-    color: #fff;
+    color: #edf0f4;
     cursor: pointer;
     `;
-
+    const heading = css.class`
+    font-size: clamp(15px, 1.5vw, 19px);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: .025em;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    `;
     const timeWrapper = css.class`
     display: flex;
-    gap: 10px;
-    font-size: 18px;
-    color: white;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #edf0f4;
     `;
-
     const progressWrapper = css.class`
-    display: block;
     position: relative;
-    width: 80%;
-    max-width: 800px;
-    height: 2px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    width: 100%;
+    height: 6px;
+    margin-top: 4px;
+    border-radius: 3px;
+    overflow: hidden;
     `;
-
     const progressBackground = css.class`
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 50px;
-    background-color: white;
+    inset: 0;
+    background: #35404b;
     `;
-
     const progressForeground = css.class`
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0 auto 0 0;
     width: 0%;
-    height: 100%;
-    border-radius: 50px;
+    border-radius: 3px;
     `;
-
     const codeWrapper = css.class`
     display: none;
-    gap: 10px;
-    font-size: 18px;
-    color: white;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    width: 100%;
+    padding-top: 4px;
+    color: #c2cbd5;
+    font-size: 12px;
+    overflow-wrap: anywhere;
     `;
-
     const code = css.class`
-    color: #34abeb;
+    color: #83ccf4;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: .06em;
     `;
 
     const warmup = css.class`
@@ -112,25 +126,35 @@ const style = Style(({ css }) => {
 
     css`
     ${warmup}${wrapper} {
-        color: orange;
+        color: #e5ba68;
     }
     ${verify}${wrapper} {
-        color: #34abeb;
+        color: #83ccf4;
     }
     ${intense}${wrapper} {
-        color: #ff3030;
+        color: #ff8580;
     }
     
     ${warmup} ${progressForeground} {
-        background-color: orange;
+        background-color: #e5ba68;
     }
     ${verify} ${progressForeground} {
-        background-color: #34abeb;
+        background-color: #83ccf4;
     }
     ${intense} ${progressForeground} {
-        background-color: #ff3030;
+        background-color: #ff8580;
     }
 
+    ${wrapper}[data-event="survival"] ${controls} {
+        color: inherit;
+        font-family: inherit;
+        font-size: 16px;
+        line-height: 1.4;
+    }
+    ${controls.button}[hidden] { display: none; }
+    ${controls.active}:hover { background: #28303b; }
+    ${controls.button}:focus-visible { outline: 2px solid #e5ba68; outline-offset: 2px; }
+    ${heading}:empty { display: none; }
     ${verify} ${codeWrapper} {
         display: flex;
     }
@@ -139,6 +163,7 @@ const style = Style(({ css }) => {
     return {
         wrapper,
         controls,
+        heading,
         timeWrapper,
         progressWrapper,
         progressBackground,
@@ -162,8 +187,8 @@ export const ObjectiveDisplay = () => {
         readonly timeWrapper: HTMLDivElement;
         readonly progress: HTMLDivElement;
         readonly controls: HTMLDivElement;
-        readonly left: HTMLSpanElement;
-        readonly right: HTMLSpanElement;
+        readonly left: HTMLButtonElement;
+        readonly right: HTMLButtonElement;
     }
 
     const reactorText = signal("REACTOR_111");
@@ -175,19 +200,15 @@ export const ObjectiveDisplay = () => {
     const dom = html<Mutable<Private & ReactorObjective>>/**//*html*/`
         <div m-id="wrapper" class="${style.wrapper}">
             <div m-id="controls" class="${style.controls}">
-                <span m-id="left" class="${style.controls.button}">${icons.chevronLeft()}</span>
+                <button type="button" aria-label="Previous objective" m-id="left" class="${style.controls.button}">${icons.chevronLeft()}</button>
                 <span style="min-width: 100px;">${reactorText}</span>
-                <span m-id="right" class="${style.controls.button}">${icons.chevronRight()}</span>
+                <button type="button" aria-label="Next objective" m-id="right" class="${style.controls.button}">${icons.chevronRight()}</button>
             </div>
-            <div m-id="progressWrapper" class="${style.progressWrapper}">
+            <div class="${style.heading}">${title}</div>
+            <div m-id="timeWrapper" class="${style.timeWrapper}"><span>${time}</span></div>
+            <div m-id="progressWrapper" class="${style.progressWrapper}" role="progressbar" aria-label="Objective progress" aria-valuemin="0" aria-valuemax="100">
                 <div class="${style.progressBackground}"></div>
                 <div m-id="progress" class="${style.progressForeground}"></div>
-            </div> <!-- progress bar -->
-            <div>
-                <span>${title}</span>
-            </div>
-            <div m-id="timeWrapper" class="${style.timeWrapper}">
-                <span>${time}</span>
             </div>
             <div class="${style.codeWrapper}">
                 <span>${codeText}</span>
@@ -201,6 +222,12 @@ export const ObjectiveDisplay = () => {
     dom.index = signal(0);
 
     let api: ReplayApi | undefined = undefined;
+
+    const setProgress = (value: number) => {
+        const percent = Number.isFinite(value) ? Math.max(0, Math.min(100, value * 100)) : 0;
+        dom.progress.style.width = `${percent}%`;
+        dom.progressWrapper.setAttribute("aria-valuenow", `${Math.round(percent)}`);
+    };
 
     const hide = () => {
         dom.wrapper.style.display = "none";
@@ -222,17 +249,15 @@ export const ObjectiveDisplay = () => {
 
         const totalNumEvents = activeReactors.length + activeSurvivalEvents.length;
 
-        if (totalNumEvents > 1) {
-            dom.controls.style.display = "flex";
-        } else {
-            dom.controls.style.display = "none";
-        }
+        dom.left.hidden = dom.right.hidden = totalNumEvents <= 1;
 
         let index = dom.index();
         if (index < 0 || index >= totalNumEvents) {
             index = 0;
         }
         dom.index(index);
+        dom.left.disabled = index === 0;
+        dom.right.disabled = index >= totalNumEvents - 1;
 
         if (index === 0) {
             dom.left.classList.remove(`${style.controls.active}`);
@@ -253,6 +278,7 @@ export const ObjectiveDisplay = () => {
         dom.wrapper.style.display = "flex";
 
         if (index < activeReactors.length) {
+            dom.wrapper.dataset.event = "reactor";
             dom.timeWrapper.style.display = "flex";
             dom.progressWrapper.style.display = "block";
     
@@ -261,7 +287,7 @@ export const ObjectiveDisplay = () => {
             reactorText(`REACTOR_${reactor.serialNumber}`);
     
             time(`TIME LEFT: ${msToTime(reactor.waveDuration * (1 - reactor.waveProgress) * 1000, true, false)}`);
-            dom.progress.style.width = `${reactor.waveProgress * 100}%`;
+            setProgress(reactor.waveProgress);
     
             switch (reactor.status) {
             case "Startup_intro":{
@@ -296,7 +322,7 @@ export const ObjectiveDisplay = () => {
                 dom.timeWrapper.style.display = "none";
     
                 title(`REACTOR STARTUP COMPLETE`);
-                dom.progress.style.width = `100%`;
+                setProgress(1);
             } break;
     
             case "Shutdown_intro": {
@@ -331,7 +357,7 @@ export const ObjectiveDisplay = () => {
                 dom.timeWrapper.style.display = "none";
     
                 title(`COMPLETE SCAN TO FINISH REACTOR SHUTDOWN`);
-                dom.progress.style.width = `100%`;
+                setProgress(1);
             } break;
             case "Shutdown_complete": {
                 dom.wrapper.classList.add(`${style.warmup}`);
@@ -340,7 +366,7 @@ export const ObjectiveDisplay = () => {
                 dom.timeWrapper.style.display = "none";
     
                 title(`REACTOR SHUTDOWN COMPLETE`);
-                dom.progress.style.width = `100%`;
+                setProgress(1);
             } break;
     
             default: {
@@ -356,6 +382,7 @@ export const ObjectiveDisplay = () => {
         index -= activeReactors.length;
         if (index < 0) return;
         if (index < activeSurvivalEvents.length) {
+            dom.wrapper.dataset.event = "survival";
             dom.timeWrapper.style.display = "flex";
             dom.progressWrapper.style.display = "none";
 

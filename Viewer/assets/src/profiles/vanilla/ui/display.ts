@@ -1,266 +1,125 @@
 import { html, Mutable } from "@esm/@/rhu/html.js";
-import { effect, Signal, signal } from "@esm/@/rhu/signal.js";
-import { Style } from "@esm/@/rhu/style.js";
-import * as icons from "@esm/@root/main/global/components/atoms/icons/index.js";
+import { Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
-import { DataStore } from "@esm/@root/replay/datastore.js";
-import { Seeker } from "./components/seeker.js";
-import { msToTime } from "./helper.js";
 import { Debug } from "./hud/debug.js";
 import { ObjectiveDisplay } from "./hud/objectives.js";
-import { dispose, ui } from "./main.js";
+import { TacticalDisplay } from "./hud/tactical.js";
+import { dispose } from "./main.js";
 import { Scoreboard } from "./scoreboard.js";
-
-declare module "@esm/@root/replay/datastore.js" {
-    interface DataStoreTypes {
-        "DisplayState": {
-            pause: boolean;
-            live: boolean;
-        } 
-    }
-}
-
-module.destructor = () => {
-    const display = ui()?.display;
-    if (display === undefined) return;
-
-    display.saveState();
-};
-
-const style = Style(({ css }) => {
-    const wrapper = css.class`
-    width: 100%;
-    height: 100%;
-    position: relative;
-    `;
-
-    const bottom = css.class`
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    z-index: 1;
-    width: 100%;
-    height: 50px;
-    `;
-
-    const view = css.class`
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    `;
-
-    const scoreboard = css.class`
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 1;
-    width: 80%;
-    max-width: 900px;
-    max-height: 500px;
-    transform: translate(-50%, -50%);
-    `;
-    
-    return {
-        wrapper,
-        bottom,
-        view,
-        scoreboard
-    };
-});
-
-const controls = Style(({ css }) => {
-    const button = css.class`
-    color: white;
-    padding: 0 15px;
-    align-items: center;
-    display: flex;
-    `;
-    css`
-    ${button}:focus {
-        outline:0;
-    }
-    `;
-
-    const time = css.class`
-    align-items: center;
-    display: flex;
-    padding: 0 10px;
-    `;
-
-    const dot = css.class`
-    width: 8px;
-    height: 8px;
-    background-color: red;
-    border-radius: 100px;
-    margin: 0 10px; 
-    transition: all 200ms;
-    `;
-
-    return {
-        button,
-        time,
-        dot
-    };
-});
+import { intervalStats } from "../library/interval-stats.js";
+import { StatTracker } from "../parser/stattracker/stattracker.js";
+import { eventLeadIn, resolveEventFocus } from "../library/eventCamera.js";
+import { validateRange } from "@esm/@root/replay/transport.js";
 
 export const Display = () => {
     interface Display {
-        saveState(): void;
-        restoreState(): void;
-
-        readonly pause: Signal<boolean>;
-
         readonly view: Signal<html<typeof View> | undefined>;
         readonly scoreboard: html<typeof Scoreboard>;
         readonly mount: HTMLDivElement;
-        
         readonly debug: html<typeof Debug>;
     }
     interface Private {
-        readonly seeker: html<typeof Seeker>;
-        readonly pauseButton: HTMLButtonElement;
-        readonly pauseIcon: html<typeof icons.pause>;
-        readonly playIcon: html<typeof icons.play>;
-        readonly liveButton: HTMLButtonElement;
-        readonly liveDot: HTMLSpanElement;
+        readonly controls: HTMLDivElement;
         readonly objective: html<typeof ObjectiveDisplay>;
+        readonly tactical: html<typeof TacticalDisplay>;
     }
-
-    const time = signal("00:00 / 00:00");
-    const length = signal(0);
-
-    const dom = html<Mutable<Private & Display>>/**//*html*/`
-        <div m-id="mount" class="${style.view}"></div>
-        ${html.bind(Scoreboard(), "scoreboard").transform((macro) => macro.wrapper.classList.add(`${style.scoreboard}`))}
-        <div class="${style.bottom}">
-            ${html.open(Seeker()).bind("seeker")}
-                <button m-id="pauseButton" class="${controls.button}" style="padding: 0 5px;">
-                    ${html.bind(icons.pause(), "pauseIcon")}
-                    ${html.bind(icons.play(), "playIcon")}
-                </button>
-                <div class="${controls.time}">${time}</div>
-                <div style="flex: 1; user-drag: none; user-select: none;"></div>
-                <button m-id="liveButton" class="${controls.button}">
-                    <span m-id="liveDot" class="${controls.dot}"></span>
-                    <span>LIVE</span>
-                </button>
-            ${html.close()}
-        </div>
+    const dom = html<Mutable<Display & Private>>`
+        <div m-id="mount" style="position:absolute;inset:0 0 96px;"></div>
+        ${html.bind(Scoreboard(), "scoreboard").transform(macro => {
+            Object.assign(macro.wrapper.style, { position: "absolute", top: "50%", left: "50%", zIndex: "1", width: "80%", maxWidth: "900px", maxHeight: "500px", transform: "translate(-50%, -50%)" });
+        })}
         ${html.bind(Debug(), "debug")}
         ${html.bind(ObjectiveDisplay(), "objective")}
-        `;
+        ${html.bind(TacticalDisplay(), "tactical")}
+        <div m-id="controls" style="position:absolute;bottom:0;left:0;right:0;z-index:3;"></div>
+    `;
     html(dom).box();
-    
     dom.view = signal<html<typeof View> | undefined>(undefined);
-    dom.pause = signal(false);
-
-    dom.saveState = function saveState() {
-        const view = this.view();
-        if (view === undefined) return;
-
-        DataStore.set("DisplayState", {
-            pause: this.pause(),
-            live: view.live()
-        });
-    };
-
-    dom.restoreState = function restoreState() {
-        const view = this.view();
-        if (view === undefined) return;
-
-        const state = DataStore.get("DisplayState");
-        if (state === undefined) return;
-        const { pause, live } = state;
-
-        this.pause(pause);
-        view.live(live);
-    };
-
-    dom.view.on((view) => {
-        if (view === undefined) return;
-
-        dom.restoreState();
-
+    let unmount: (() => void) | undefined;
+    const observer = new ResizeObserver(() => {
+        dom.mount.style.bottom = `${dom.controls.getBoundingClientRect().height}px`;
+        dom.tactical.wrapper.style.bottom = `${dom.controls.getBoundingClientRect().height + 16}px`;
+        dom.view()?.resize();
+    });
+    observer.observe(dom.controls);
+    dispose.signal.addEventListener("abort", () => { unmount?.(); observer.disconnect(); }, { once: true });
+    dom.view.on(view => {
+        unmount?.();
+        if (!view) return;
+        dom.mount.replaceChildren(...view);
         dom.scoreboard.view(view);
         dom.debug.view(view);
         dom.objective.view(view);
-
-        dom.mount.replaceChildren(...view);
-
-        // Reset pause on new replay
-        view.replay.on(() => {
-            dom.pause(false);
-        }, { signal: dispose.signal });
-
-        // Live Button
-        dom.liveButton.addEventListener("click", () => {
-            view.live(!view.live());
-            view.canvas.focus();
-        });
-        view.live.on((value) => dom.liveDot.style.backgroundColor = value ? "red" : "#eee", 
-            { signal: dispose.signal }
-        );
-
-        // Time display
-        effect(() => {
-            time(`${msToTime(view.time())} / ${msToTime(length())}`);
-        }, [view.time, length], { signal: dispose.signal });
-
-        // Pause button
-        dom.pauseButton.addEventListener("click", () => {
-            dom.pause(!dom.pause());
-            view.canvas.focus();
-        });
-        dom.pause.on((value) => {
-            view.pause(value);
-            if (value) {
-                (html(dom.playIcon).firstNode as HTMLElement).style.display = "block";
-                (html(dom.pauseIcon).firstNode as HTMLElement).style.display = "none";
-            } else {
-                (html(dom.playIcon).firstNode as HTMLElement).style.display = "none";
-                (html(dom.pauseIcon).firstNode as HTMLElement).style.display = "block";
-            }
-        });
-
-        // Update seeker when time / length changes
-        effect(() => {
-            const replay = view.replay();
-            if (replay === undefined) return;
-        
-            if (!dom.seeker.seeking()) {
-                dom.seeker.value(view.time() / length());
-            }
-        }, [view.time, length], { signal: dispose.signal });
-
-        view.length.on((inLength) => {
-            if (!dom.seeker.seeking()) {
-                length(inLength);
-            }
-        }, { signal: dispose.signal });
-
-        // Update time when seeker changes
-        dom.seeker.value.on((value) => {
-            const replay = view.replay();
-            if (replay === undefined) return;
-
-            if (dom.seeker.seeking()) {
-                view.time(value * length());
-            }
-        });
-
-        // Pause view when seeking
-        dom.seeker.seeking.on((seeking) => {
-            if (seeking) {
-                view.pause(seeking);
-                requestAnimationFrame(() => view.canvas.focus());
-            } else {
-                view.pause(dom.pause());
-                length(view.length());
+        dom.tactical.view(view);
+        const identity = () => {
+            const id = view.replay()?.identity;
+            if (!id) throw new Error("This stream has no persistent replay identity.");
+            return id;
+        };
+        let focusRequest = 0;
+        unmount = window.ReplayInterface.mountControls(dom.controls, {
+            follow: slot => { ++focusRequest; view.renderer.get("Controls")?.followPlayer(slot); },
+            autoCamera: () => { ++focusRequest; view.renderer.get("Controls")?.enableAutoCamera(); },
+            firstPerson: enabled => { ++focusRequest; view.renderer.get("Controls")?.setFirstPerson(enabled); },
+            copyText: text => window.api.invoke("copyText", text),
+            screenshot: async () => {
+                const blob = await new Promise<Blob>((resolve, reject) => requestAnimationFrame(() => {
+                    try {
+                        const api = view.api();
+                        if (!api) throw new Error("No rendered replay frame is available.");
+                        view.renderer.render(0, api);
+                        view.canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Screenshot capture failed.")), "image/png");
+                    } catch (error) { reject(error); }
+                }));
+                return window.api.invoke("saveReplayScreenshot", new Uint8Array(await blob.arrayBuffer()));
+            },
+            statistics: async (start, end) => {
+                const replay = view.replay();
+                if (!replay) return { players: [], confirmedEnemyDeaths: null };
+                validateRange({ start, end }, replay.length());
+                const before = await replay.getSnapshot(start - 0.001);
+                const after = await replay.getSnapshot(end);
+                if (!before || !after) throw new Error("Replay interval is not available yet.");
+                const a = replay.api(before), b = replay.api(after);
+                const names = new Map<bigint, string>();
+                for (const api of [a, b]) for (const player of api.get("Vanilla.Player.Snet")?.values() ?? []) names.set(player.snet, player.nickname);
+                return {
+                    players: intervalStats(a.get("Vanilla.StatTracker")?.players ?? new Map(), b.get("Vanilla.StatTracker")?.players ?? new Map(), names, id => ({ ...StatTracker.availability(b, id), clientPacks: StatTracker.clientPacksAvailable(b, id) })),
+                    confirmedEnemyDeaths: b.header.get("Vanilla.StatTracker.Client") === true ? (b.get("Vanilla.StatTracker")?.confirmedEnemyDeaths ?? 0) - (a.get("Vanilla.StatTracker")?.confirmedEnemyDeaths ?? 0) : null
+                };
+            },
+            focusEvent: async event => {
+                const replay = view.replay(), controls = view.renderer.get("Controls");
+                if (!replay || !controls) return false;
+                const request = ++focusRequest;
+                controls.cancelEventFocus();
+                const revision = controls.revision;
+                const time = eventLeadIn(event.time, replay.startTime);
+                view.pause(true); view.live(false); view.time(time);
+                const state = await replay.getSnapshot(Math.max(replay.startTime, event.time - .001));
+                // A late chunk read must not steal the camera from a newer click or manual input.
+                if (request !== focusRequest || controls.revision !== revision || view.replay() !== replay || view.time() !== time || !view.pause() || dispose.signal.aborted || dom.view() !== view) return true;
+                if (!state) return false;
+                const api = replay.api(state);
+                const target = resolveEventFocus(event, api.get('Vanilla.Player') ?? new Map(), api.get('Vanilla.Enemy') ?? new Map());
+                if (!target) return false;
+                controls.focusEvent(target, time);
+                return true;
+            },
+            bookmarks: async () => window.api.invoke("replayBookmarks", identity()),
+            saveBookmarks: async bookmarks => window.api.invoke("saveReplayBookmarks", identity(), bookmarks),
+            state: () => ({ players: [...(view.api()?.get("Vanilla.Player")?.values() ?? [])].map(p => ({ slot: p.slot, nickname: p.nickname })), following: view.renderer.get("Controls")?.targetSlot(), cameraAuto: view.renderer.get("Controls")?.autoCamera() ?? true, firstPerson: view.renderer.get("Controls")?.firstPerson() ?? false, cameraTarget: view.renderer.get("Controls")?.targetName(), identity: view.replay()?.identity, startTime: view.replay()?.startTime ?? 0, time: view.time(), duration: view.replay()?.length() ?? 0, loadedUntil: view.replay()?.loadedLength() ?? 0, loadFailed: !!view.replay()?.error, live: view.replay()?.endTime === undefined, paused: view.pause(), speed: view.timescale(), indexing: view.replay()?.complete !== true, events: view.replay()?.events ?? [] }),
+            seek: time => { ++focusRequest; view.renderer.get("Controls")?.cancelEventFocus(); view.live(false); view.time(time); },
+            pause: value => view.pause(value),
+            speed: value => view.timescale(value),
+            step: async direction => {
+                ++focusRequest; view.renderer.get("Controls")?.cancelEventFocus();
+                view.pause(true);
+                view.live(false);
+                const replay = view.replay();
+                if (replay) view.time(await replay.step(view.time(), direction));
             }
         });
     }, { signal: dispose.signal });
-
     return dom as html<Display>;
 };

@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, shell } from "electron";
+import { BrowserWindow, ipcMain, shell, clipboard } from "electron";
 import * as path from "path";
 import { FileManager } from "./replay/filemanager.cjs";
 import { GTFOManager } from "./replay/gtfomanager.cjs";
@@ -43,9 +43,16 @@ export default class Program {
 
         Program.fileManager = new FileManager();
         Program.fileManager.setupIPC(ipcMain);
-        Program.app.on("before-quit", () => {
-            // NOTE(randomuserhi): Clean up temporary files generated 
-            Program.fileManager?.dispose();
+        let shutdownComplete = false, shuttingDown = false;
+        Program.app.on("before-quit", event => {
+            if (shutdownComplete) return;
+            event.preventDefault();
+            if (shuttingDown) return;
+            shuttingDown = true;
+            void Program.fileManager.dispose().catch(error => console.error("Viewer shutdown:", error)).finally(() => {
+                shutdownComplete = true;
+                Program.app.quit();
+            });
         });
 
         Program.gtfoManager = new GTFOManager(Program.fileManager);
@@ -71,6 +78,11 @@ export default class Program {
     }
 
     private static setupIPC(): void {
+        ipcMain.handle("copyText", (event, text: unknown) => {
+            if (!event.senderFrame || !Program.isTrustedFrame(event.senderFrame)) throw new Error("Untrusted clipboard request.");
+            if (typeof text !== "string") throw new Error("Clipboard text must be a string.");
+            clipboard.writeText(text);
+        });
         ipcMain.on("closeWindow", (e) => {
             if (e.senderFrame === null) return;
             if (!Program.isTrustedFrame(e.senderFrame)) return;

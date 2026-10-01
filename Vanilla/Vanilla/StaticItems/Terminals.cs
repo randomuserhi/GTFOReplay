@@ -29,7 +29,7 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.Terminals", "0.0.2")]
+    [ReplayData("Vanilla.Map.Terminals", "0.0.3")]
     internal class rTerminals : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -74,6 +74,8 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(terminal.position, buffer);
                 BitHelper.WriteHalf(terminal.rotation, buffer);
                 BitHelper.WriteBytes(terminal.serialNumber, buffer);
+                BitHelper.WriteBytes(terminal.terminal.transform.lossyScale, buffer);
+                BitHelper.WriteBytes(terminal.terminal.gameObject.name, buffer);
             }
             terminals.Clear();
         }

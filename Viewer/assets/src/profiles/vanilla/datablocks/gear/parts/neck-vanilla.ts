@@ -1,6 +1,6 @@
 import { GearPartNeckDatablock } from "./neck.js";
 
-const root = `../js3party/models/GearParts/Neck`;
+const root = `../gear/GearParts/Neck`;
 
 GearPartNeckDatablock.clear();
 

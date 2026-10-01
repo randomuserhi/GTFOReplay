@@ -64,7 +64,7 @@ export class AvatarSkeleton<T extends string = string> {
         }
     }
 
-    public override(frame: AvatarLike<T>, mask?: AvatarMask<T>): AvatarSkeleton<T> {
+    public override(frame: AvatarLike<string>, mask?: AvatarMask<T>): AvatarSkeleton<T> {
         for (const key of this.keys) {
             if (mask === undefined || mask.joints[key] === true) {
                 if (frame.joints[key].rot !== undefined) this.joints[key].quaternion.copy(frame.joints[key].rot!);
@@ -74,7 +74,7 @@ export class AvatarSkeleton<T extends string = string> {
         return this;
     }
     
-    public additive(diff: AvatarLike<T>, weight: number, mask?: AvatarMask<T>): AvatarSkeleton<T> {
+    public additive(diff: AvatarLike<string>, weight: number, mask?: AvatarMask<T>): AvatarSkeleton<T> {
         for (const key of this.keys) {
             if (mask === undefined || mask.joints[key] === true) {
                 if (diff.joints[key].rot !== undefined) {
@@ -91,7 +91,7 @@ export class AvatarSkeleton<T extends string = string> {
         return this;
     }
 
-    public blend(frame: AvatarLike<T>, weight:number, mask?: AvatarMask<T>) {
+    public blend(frame: AvatarLike<string>, weight:number, mask?: AvatarMask<T>) {
         if (weight === 0) return this;
         for (const key of this.keys) {
             if (mask === undefined || mask.joints[key] === true) {

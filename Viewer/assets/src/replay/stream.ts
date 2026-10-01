@@ -37,13 +37,8 @@ export class FileStream {
         this.cacheStart = this.index;
         this.cacheEnd = this.index + numBytes;
     }
-    public async cacheAllBytes(): Promise<void> {
-        this.cache = await this.ipc.invoke("getAllBytes");
-        //console.log(`cached: ${this.cache!.byteLength} bytes!`);
-        this.cacheStart = 0;
-        this.cacheEnd = 0 + this.cache!.byteLength;
-    }
     public async cacheNetworkBuffer(): Promise<boolean> {
+        if (this.file.path !== undefined) return false;
         if (this.index >= this.cacheStart && this.index < this.cacheEnd) {
             return false;
         }
@@ -76,7 +71,18 @@ export class FileStream {
     }
 
     public async peekBytes(numBytes: number): Promise<ByteStream> {
-        return new ByteStream(await this.ipc.invoke("getBytes", this.index, numBytes, !this.finite));
+        if (this.cache !== undefined && this.index >= this.cacheStart && this.index + numBytes <= this.cacheEnd) {
+            return new ByteStream(this.cache.subarray(this.index - this.cacheStart, this.index - this.cacheStart + numBytes));
+        }
+        // Keep disk parsing independent of render-frame IPC latency. Live sources
+        // still request only the bytes needed, so read-ahead never delays a tick.
+        const readAhead = this.finite && this.file.path !== undefined ? 1024 * 1024 : 0;
+        const bytes: Uint8Array | undefined = await this.ipc.invoke("getBytes", this.index, numBytes, !this.finite, readAhead);
+        if (bytes === undefined) return new ByteStream();
+        this.cache = bytes;
+        this.cacheStart = this.index;
+        this.cacheEnd = this.index + bytes.byteLength;
+        return new ByteStream(bytes.subarray(0, numBytes));
     }
 }
 

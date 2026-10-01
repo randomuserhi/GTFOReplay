@@ -1,5 +1,8 @@
 import { signal, Signal } from "@/rhu/signal.js";
 import { Internal } from "./internal.js";
+import type { IndexedEvent } from "../main/interface.js";
+import { TimeRange, validateRange } from "./transport.js";
+import type { ClipSelection } from "../../../shared/clip.js";
 import { ModuleDesc, ModuleLoader, NoExecFunc, ReplayApi, Typemap, UnknownModuleType } from "./moduleloader.js";
 
 export declare namespace Timeline {
@@ -30,28 +33,48 @@ export interface Snapshot {
     data: Map<string, unknown>;
 }
 
-// TODO(randomuserhi): For the sake of RAM usage, I should store a m3u8 format for timestamps to files which contain snapshots + timeline data
-//                     Have the data split up across Storage and RAM much like how mp4 or streaming videos work with m3u8 to minimise RAM usage. 
+export interface ReplayBlock { state: Snapshot; timeline: Timeline.Snapshot[] }
 
 // TODO(randomuserhi): should be configurable along side player lerp -> since they are related maybe tie them together?
 export const largestTickRate = 200; //ms -> tick rate of 100ms (1/10) so longest possible time is 100ms. We add lee-way of an extra tick for variance.
 
 export class Replay {
+    identity?: string;
+    cacheToken?: string;
+    startTime = 0;
+    endTime?: number;
+    events: IndexedEvent[] = [];
+    range?: TimeRange;
+    looping = false;
+    setRange(range: TimeRange) { validateRange(range, this.length()); if (range.start < this.startTime) throw new Error("Interval begins before this clip."); this.range = range; }
+    clipSelection(start: number, end: number): ClipSelection {
+        if (this.error) throw new Error("Cannot export a replay with a parsing or rendering error. Export its diagnostic report instead.");
+        validateRange({ start, end }, this.length());
+        if (!this.complete || start < this.startTime) throw new Error("Wait for replay indexing before exporting an interval.");
+        const first = this.blocks.findIndex(block => block.end >= start);
+        const blocks = this.blocks.slice(first).filter(block => block.start <= end + largestTickRate);
+        if (first < 0 || !blocks.length) throw new Error("Replay interval is unavailable.");
+        return { start, end, sourceIdentity: this.identity, blocks, typemap: this.typemap, types: this.types, header: this.header, events: this.events.filter(event => event.time >= start && event.time <= end) };
+    }
     typemap: Map<number, ModuleDesc>;
     types: Map<string, number>;
-    timeline: Timeline.Snapshot[];
-    snapshots: Snapshot[];
+    readonly blocks: { id: number; start: number; end: number }[] = [];
+    loadBlock?: (id: number) => Promise<ReplayBlock>;
+    preview?: ReplayBlock;
+    loading = false;
+    complete = false;
+    error?: Error;
+    private readonly loadedBlocks = new Map<number, ReplayBlock>();
+    private cursor?: { block: ReplayBlock; next?: ReplayBlock; timeline: Timeline.Snapshot[];
+        state: Snapshot; tick: number; exists: Map<number, Map<number, boolean>> };
     header: Map<string, unknown>;
     private signals: Map<string, Signal<any>>;
-    private cache: Snapshot | undefined;
 
     constructor() {
         this.signals = new Map();
         this.typemap = new Map();
         this.types = new Map();
         this.header = new Map();
-        this.timeline = [];
-        this.snapshots = [];
     }
     
     public getOrDefault<T extends keyof Typemap.Headers>(typename: T, def: () => Typemap.Headers[T]): Typemap.Headers[T] {
@@ -247,57 +270,86 @@ export class Replay {
         }
     }
 
-    private getNearestSnapshot(time: number): Snapshot {
-        // Binary search to find nearest snapshot
-        let min = 0;
-        let max = this.snapshots.length;
-        let prev = -1;
-        while (max != min) {
-            const midpoint = Math.floor((max + min) / 2);
-            if (midpoint == prev) break;
-            prev = midpoint;
-            if (this.snapshots[midpoint].time > time)
-                max = midpoint;
-            else
-                min = midpoint;
+    private async block(id: number): Promise<ReplayBlock> {
+        let block = this.loadedBlocks.get(id);
+        if (block === undefined) {
+            if (!this.loadBlock) throw new Error("Replay cache is unavailable.");
+            this.loading = true;
+            try { block = await this.loadBlock(id); }
+            finally { this.loading = false; }
         }
-        return this.snapshots[min];
+        this.loadedBlocks.delete(id);
+        this.loadedBlocks.set(id, block);
+        while (this.loadedBlocks.size > 2) this.loadedBlocks.delete(this.loadedBlocks.keys().next().value!);
+        return block;
     }
 
-    public getSnapshot(time: number): Snapshot | undefined {
-        if (this.snapshots.length === 0) return undefined;
-
-        // Get nearest snapshot from cache
-        if (this.cache === undefined || time < this.cache.time || time - this.cache.time >= 24000) {
-            this.cache = this.getNearestSnapshot(time);
+    public async getSnapshot(time: number): Promise<Snapshot | undefined> {
+        if (time > this.loadedLength()) return undefined;
+        let min = 0, max = this.blocks.length;
+        while (min < max) {
+            const mid = (min + max) >>> 1;
+            if (this.blocks[mid].end < time) min = mid + 1;
+            else max = mid;
         }
-        const state = structuredClone(this.cache);
+        let block: ReplayBlock | undefined;
+        let next: ReplayBlock | undefined;
+        if (min < this.blocks.length) {
+            block = await this.block(this.blocks[min].id);
+            if (time + largestTickRate >= this.blocks[min].end) {
+                next = min + 1 < this.blocks.length ? await this.block(this.blocks[min + 1].id) : this.preview;
+            }
+        } else block = this.preview ?? (this.complete && this.blocks.length ? await this.block(this.blocks[this.blocks.length - 1].id) : undefined);
+        if (!block) return undefined;
+        // Retain only committed ticks. Interpolated/future state belongs to the
+        // returned frame and must never feed the next frame's event execution.
+        let cursor = this.cursor;
+        if (!cursor || cursor.block !== block || cursor.next !== next || time < cursor.state.time) {
+            const state = structuredClone(block.state);
+            const timeline = next ? [...block.timeline, ...next.timeline] : block.timeline;
+            cursor = this.cursor = {block, next, timeline, state, tick: 0, exists: new Map()};
+            const api = this.api(state);
+            while (cursor.tick < timeline.length && timeline[cursor.tick].time <= state.time)
+                this.exec(time, api, state, timeline[cursor.tick++]);
+        }
+        const {timeline} = cursor;
+        const committedApi = this.api(cursor.state);
+        while (cursor.tick < timeline.length && timeline[cursor.tick].time <= time) {
+            this.exec(time, committedApi, cursor.state, timeline[cursor.tick++], cursor.exists);
+        }
+        const state = structuredClone(cursor.state);
         const api = this.api(state);
-
-        // extrapolate snapshot until time
-        let tick = state.tick; 
-        for (; tick < this.timeline.length; ++tick) {
-            const snapshot = this.timeline[tick];
-            if (snapshot.time > state.time) break;
-            this.exec(time, api, state, snapshot);
-        }
-        
-        // NOTE(randomuserhi): Process extra snapshots to account for largestTickRate that can be encountered to smoothen
-        //                     animations which occure every other tick etc...
-
-        // Persistent exist map needs to be used to prevent error from dynamics not yet being spawned
-        const exists = new Map<number, Map<number, boolean>>();
+        let tick = cursor.tick;
+        const exists = new Map([...cursor.exists].map(([type, ids]) => [type, new Map(ids)]));
         const future = new Set<number>(); // Persistent future set to only process each dynamic type once in the future
-        for (; tick < this.timeline.length; ++tick) {
-            const snapshot = this.timeline[tick];
+        for (; tick < timeline.length; ++tick) {
+            const snapshot = timeline[tick];
             this.exec(time, api, state, snapshot, exists, future);
             if (snapshot.time > state.time + largestTickRate) break;
         }
 
+        // The completion timestamp can follow the final tick. Hold that state
+        // through the recording's tail without inventing further game updates.
+        if (this.complete && !this.error && time > timeline[timeline.length - 1]?.time) state.time = time;
         return state;
     }
 
     public length(): number {
-        return this.timeline.length === 0 ? 0 : this.timeline[this.timeline.length - 1].time;
+        return this.endTime ?? this.loadedLength();
+    }
+    public loadedLength(): number {
+        if (this.complete && !this.error && this.endTime !== undefined) return this.endTime;
+        return Math.min(this.endTime ?? Infinity, this.preview?.timeline[this.preview.timeline.length - 1]?.time ?? this.blocks[this.blocks.length - 1]?.end ?? 0);
+    }
+    public async step(time: number, direction: number): Promise<number> {
+        let index = this.blocks.findIndex(block => block.end >= time);
+        if (index < 0) index = this.blocks.length;
+        const frames: Timeline.Snapshot[] = [];
+        for (let i = Math.max(0, index - 1); i <= Math.min(this.blocks.length - 1, index + 1); ++i) {
+            frames.push(...(await this.block(this.blocks[i].id)).timeline);
+        }
+        if (index >= this.blocks.length - 1 && this.preview) frames.push(...this.preview.timeline);
+        const times = frames.map(frame => frame.time).filter(time => time >= this.startTime && time <= this.loadedLength());
+        return direction < 0 ? [...times].reverse().find(value => value < time) ?? this.startTime : times.find(value => value > time) ?? this.loadedLength();
     }
 }

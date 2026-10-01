@@ -22,7 +22,7 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.DisinfectStations", "0.0.1")]
+    [ReplayData("Vanilla.Map.DisinfectStations", "0.0.2")]
     internal class rDisinfectStations : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -63,6 +63,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(station.position, buffer);
                 BitHelper.WriteHalf(station.rotation, buffer);
                 BitHelper.WriteBytes(station.serialNumber, buffer);
+                BitHelper.WriteBytes(station.core.transform.lossyScale, buffer);
             }
         }
     }

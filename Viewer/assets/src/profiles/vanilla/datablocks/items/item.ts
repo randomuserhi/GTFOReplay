@@ -1,5 +1,5 @@
 import { Identifier } from "../../parser/identifier.js";
-import { HumanAnimation } from "../../renderer/animations/human.js";
+import { PlayerAnimation } from "../../renderer/animations/human.js";
 import { ItemModel } from "../../renderer/models/items.js";
 import { Datablock } from "../lib.js";
 
@@ -13,10 +13,10 @@ export type Archetype =
     "default";
 
 export interface ItemArchetype {
-    equipAnim?: HumanAnimation;
-    throwAnim?: HumanAnimation;
-    chargeAnim?: HumanAnimation;
-    chargeIdleAnim?: HumanAnimation;
+    equipAnim?: PlayerAnimation;
+    throwAnim?: PlayerAnimation;
+    chargeAnim?: PlayerAnimation;
+    chargeIdleAnim?: PlayerAnimation;
 }
     
 export interface ItemDatablock {

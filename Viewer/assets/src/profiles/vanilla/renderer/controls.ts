@@ -8,8 +8,10 @@ import { OrbitControls } from "@esm/three/examples/jsm/controls/OrbitControls.js
 import { Factory } from "../library/factory.js";
 import { dispose, ui } from "../ui/main.js";
 import { Camera } from "./renderer.js";
+import { continuityFocus, EventDirector, resolveEventFocus, type EventFocus } from "../library/eventCamera.js";
 
-// TODO(randomuserhi): Cleanup and rework
+const cameraProbeOffsets = [[0,0,0],[.2,0,0],[-.2,0,0],[0,.2,0],[0,0,.2],[0,0,-.2]];
+const automaticShots: [number, number, number][] = [[3.4,1.4,-3.4],[-3.6,2.1,-2.8],[3.2,1.7,3.5],[-2.8,2.4,3.1]];
 
 declare module "@esm/@root/replay/datastore.js" {
     interface DataStoreTypes {
@@ -20,12 +22,16 @@ declare module "@esm/@root/replay/datastore.js" {
             frotation: Quaternion;
             targetSlot?: number;
             relativeRot: boolean;
+            autoCamera: boolean;
+            firstPerson: boolean;
+            subject?: EventFocus;
         }
     }
 }
 
 const move = new Vector3();
-const tp_temp = new Vector3();
+const worldUp = new Vector3(0, 1, 0);
+
 export class Controls {
     readonly camera: Camera;
     readonly renderer: Renderer;
@@ -38,6 +44,7 @@ export class Controls {
 
     private readonly keydown: (e: KeyboardEvent) => void;
     private readonly keyup: (e: KeyboardEvent) => void;
+    private readonly blur: () => void;
 
     private readonly mousedown: (e: MouseEvent) => void;
     private readonly mousemove: (e: MouseEvent) => void;
@@ -48,6 +55,100 @@ export class Controls {
     slot?: number;
     targetSlot = signal<number | undefined>(undefined);
     relativeRot = signal(false);
+    autoCamera = signal(true);
+    firstPerson = signal(false);
+    public get firstPersonPlayer() {
+        return this.firstPerson() && this.slot !== undefined && this.subject?.type === 'player' ? this.subject.id : undefined;
+    }
+    targetName = signal<string | undefined>(undefined);
+    revision = 0;
+    private readonly director = new EventDirector();
+    private subject?: EventFocus;
+    private pendingFocus?: { target: EventFocus; time: number };
+    private transition?: { position: Vector3; rotation: Quaternion; elapsed: number };
+    private readonly desiredPosition = new Vector3();
+    private readonly desiredRotation = new Quaternion();
+    private readonly subjectRotation = new Quaternion();
+    private readonly cameraAnchor = new Vector3();
+    private readonly cameraDirection = new Vector3();
+    private readonly cameraProbe = new Vector3();
+    private readonly cameraRay = new Raycaster();
+    private automaticShot = 0;
+    private shotSubject?: string;
+
+    private cameraClearance(position: Vector3, dimension: number) {
+        const length = this.cameraDirection.copy(position).sub(this.cameraAnchor).length();
+        if (length < .001) return 0;
+        this.cameraDirection.divideScalar(length);
+        let clear = length;
+        // Parallel probes reserve space around the lens, not just its centre.
+        for (const [x,y,z] of cameraProbeOffsets) {
+            this.cameraProbe.set(x,y,z).add(this.cameraAnchor);
+            this.cameraRay.set(this.cameraProbe,this.cameraDirection);
+            this.cameraRay.near=0; this.cameraRay.far=length+.25;
+            let distance=this.renderer.get('NativeSurfaces')?.cameraDistance(this.cameraRay,dimension) ?? this.cameraRay.far;
+            for (const door of this.renderer.get('Doors')?.values() ?? []) {
+                if (door.door.dimension !== dimension || this.cameraAnchor.distanceToSquared(door.root.position)>225) continue;
+                door.native.root.updateWorldMatrix(true,true);
+                const hit=this.cameraRay.intersectObject(door.native.root,true)[0];
+                if(hit) distance=Math.min(distance,hit.distance);
+            }
+            clear=Math.min(clear,Math.max(0,distance-.25));
+        }
+        return clear;
+    }
+
+    private keepCameraVisible(position: Vector3, dimension: number) {
+        position.sub(this.cameraAnchor).clampLength(0,5).add(this.cameraAnchor);
+        const clear=this.cameraClearance(position,dimension);
+        position.sub(this.cameraAnchor).setLength(clear).add(this.cameraAnchor);
+    }
+
+    public cancelEventFocus() { ++this.revision; this.pendingFocus = undefined; this.director.reset(); }
+
+    public followPlayer(slot?: number) {
+        this.cancelEventFocus(); this.autoCamera(false);
+        this.orbitControls.maxDistance = 30;
+        if (slot === undefined) this.firstPerson(false);
+        this.subject = undefined; this.targetName(undefined); this.targetSlot(slot);
+        this.transition = undefined;
+    }
+
+    public setFirstPerson(enabled: boolean) {
+        if (enabled && this.targetSlot() === undefined) return;
+        this.cancelEventFocus(); this.autoCamera(false);
+        this.orbitControls.maxDistance = 30;
+        this.firstPerson(enabled); this.transition = undefined;
+        this.orbitControls.enabled = !enabled && !!this.subject && this.subject.type !== 'point';
+    }
+
+    public enableAutoCamera() {
+        this.cancelEventFocus(); this.firstPerson(false); this.autoCamera(true); this.targetSlot(undefined);
+        this.orbitControls.maxDistance = 5;
+        this.shotSubject = undefined;
+        if (this.fakeCamera.position.lengthSq()<1) this.fakeCamera.position.set(0,2,-4);
+        this.up = this.down = this.forward = this.backward = this.left = this.right = false;
+    }
+
+    public focusEvent(target: EventFocus, time: number) {
+        this.cancelEventFocus();
+        this.firstPerson(false);
+        this.pendingFocus = { target, time };
+    }
+
+    private frameSubject(target: EventFocus) {
+        if (this.subject?.key !== target.key) {
+            this.transition = { position: this.camera.root.position.clone(), rotation: this.camera.root.quaternion.clone(), elapsed: 0 };
+        }
+        if (this.autoCamera() && this.shotSubject !== target.key) {
+            this.shotSubject = target.key;
+            this.fakeCamera.position.set(...automaticShots[this.automaticShot++ % automaticShots.length]);
+        }
+        this.subject = target;
+        this.targetSlot(!this.autoCamera() && target.type === 'player' ? target.slot : undefined);
+        this.targetName(target.name);
+        this.moveTime = 0;
+    }
 
     up: boolean = false;
     down: boolean = false;
@@ -69,6 +170,7 @@ export class Controls {
     selectEnd = new Vector2();
 
     speed: number;
+    private moveTime = 0;
 
     public static hooks = new Set<(self: Controls, snapshot: ReplayApi, dt: number) => void>();
     public static keydownhooks = new Set<(self: Controls, e: KeyboardEvent) => boolean>();
@@ -82,6 +184,9 @@ export class Controls {
             frotation: this.fakeCamera.quaternion.clone(),
             targetSlot: this.targetSlot(),
             relativeRot: this.relativeRot(),
+            autoCamera: this.autoCamera(),
+            firstPerson: this.firstPerson(),
+            subject: this.subject,
         });
     }
 
@@ -89,7 +194,7 @@ export class Controls {
         const state = DataStore.get("ControlState");
         if (state === undefined) return;
 
-        const { position, fposition, rotation, frotation, targetSlot, relativeRot } = state;
+        const { position, fposition, rotation, frotation, targetSlot, relativeRot, autoCamera, firstPerson, subject } = state;
 
         this.camera.root.position.copy(position);
         this.camera.root.quaternion.copy(rotation);
@@ -97,6 +202,10 @@ export class Controls {
         this.fakeCamera.quaternion.copy(frotation);
         this.targetSlot(targetSlot);
         this.relativeRot(relativeRot);
+        this.autoCamera(autoCamera);
+        this.orbitControls.maxDistance = autoCamera ? 5 : 30;
+        this.firstPerson(firstPerson);
+        this.subject = subject; this.targetName(subject?.name);
     }
 
     constructor(camera: Camera, renderer: Renderer) {
@@ -107,6 +216,9 @@ export class Controls {
         this.fakeCamera = this.camera.root.clone();
         this.orbitControls = new OrbitControls(this.fakeCamera, this.renderer.renderer.domElement);
         this.orbitControls.enablePan = false;
+        this.orbitControls.enabled = false;
+        this.orbitControls.minDistance = 2;
+        this.orbitControls.maxDistance = 5;
 
         this.speed = 20;
         const mouse = {
@@ -115,10 +227,10 @@ export class Controls {
             left: false,
             right: false
         };
-        const origin = { x: 0, y: 0 };
         const old = { x: 0, y: 0 };
         this.wheel = (e: WheelEvent) => {
-            if (this.slot !== undefined) return;
+            if (!this.autoCamera()) this.cancelEventFocus();
+            if (this.subject || this.slot !== undefined) return;
             
             e.preventDefault();
             this.speed *= Math.sign(e.deltaY) < 0 ? 10/9 : 9/10;
@@ -134,7 +246,7 @@ export class Controls {
         canvas.addEventListener("focusin", () => {
             this.focus = true;
         }, { signal: dispose.signal });
-        canvas.addEventListener("blur", () => {
+        this.blur = () => {
             this.focus = false;
             this.up = false;
             this.down = false;
@@ -142,7 +254,11 @@ export class Controls {
             this.right = false;
             this.forward = false;
             this.backward = false;
-        }, { signal: dispose.signal });
+            this.shift = false;
+            this.moveTime = 0;
+        };
+        canvas.addEventListener("blur", this.blur, { signal: dispose.signal });
+        window.addEventListener("blur", this.blur, { signal: dispose.signal });
 
         this.keyup = (e) => {
             if (!this.focus) return;
@@ -154,10 +270,6 @@ export class Controls {
             }
 
             switch (e.keyCode) {
-            case 32:
-                e.preventDefault();
-                this.up = false;
-                break;
             case 17:
                 e.preventDefault();
                 this.down = false;
@@ -191,6 +303,7 @@ export class Controls {
             case 16: // shift key
                 e.preventDefault();
                 this.shift = false;
+                this.up = false;
                 break;
 
             case 9:
@@ -198,6 +311,7 @@ export class Controls {
                 if (this.focus) display.scoreboard.wrapper.style.display = "none";
                 break;
             }
+            if (!this.forward && !this.backward && !this.left && !this.right) this.moveTime = 0;
         };
         this.keydown = (e: KeyboardEvent) => {
             if (!this.focus) return;
@@ -211,14 +325,11 @@ export class Controls {
                 if (!keydownhook(this, e)) return;
             }
 
+            if ([16, 17, 65, 68, 83, 87].includes(e.keyCode)) this.followPlayer();
             switch (e.keyCode) {
             case 70:
                 e.preventDefault();
-                display.pause(!display.pause());
-                break;
-            case 32:
-                e.preventDefault();
-                this.up = true;
+                view.pause(!view.pause());
                 break;
             case 17:
                 e.preventDefault();
@@ -249,14 +360,6 @@ export class Controls {
                 e.preventDefault();
                 view.time(view.time() - 10000);
                 break;
-            case 37:
-                e.preventDefault();
-                view.time(view.time() - 5000);
-                break;
-            case 39:
-                e.preventDefault();
-                view.time(view.time() + 5000);
-                break;
     
             case 9:
                 e.preventDefault();
@@ -275,32 +378,32 @@ export class Controls {
             case 16: // shift key
                 e.preventDefault();
                 this.shift = true;
+                this.up = true;
                 break;
 
             case 49:
                 e.preventDefault();
-                this.targetSlot(0);
+                this.followPlayer(0);
                 break;
             case 50:
                 e.preventDefault();
-                this.targetSlot(1);
+                this.followPlayer(1);
                 break;
             case 51:
                 e.preventDefault();
-                this.targetSlot(2);
+                this.followPlayer(2);
                 break;
             case 52:
                 e.preventDefault();
-                this.targetSlot(3);
+                this.followPlayer(3);
                 break;
             }
         };
         window.addEventListener("keydown", this.keydown, { signal: dispose.signal });
         window.addEventListener("keyup", this.keyup, { signal: dispose.signal });
         this.mousedown = (e: MouseEvent) => {
+            canvas.focus({ preventScroll: true });
             this.focus = true;
-            
-            //e.preventDefault();
 
             if (e.button === 0) {
                 mouse.left = true;
@@ -315,8 +418,9 @@ export class Controls {
 
             old.x = mouse.x;
             old.y = mouse.y;
-            origin.x = mouse.x;
-            origin.y = mouse.y;
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = old.x = e.clientX - rect.left;
+            mouse.y = old.y = e.clientY - rect.top;
         };
         canvas.addEventListener("mousedown", this.mousedown, { signal: dispose.signal });
         this.mousemove = (e) => {
@@ -325,8 +429,8 @@ export class Controls {
             mouse.y = e.clientY - rect.top;
 
             this.mousePos.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
-            
-            if (mouse.left) {
+
+            if (mouse.left && !this.subject && this.slot === undefined) {
                 const deltaY = mouse.x - old.x;
                 const deltaX = mouse.y - old.y;
                 
@@ -351,7 +455,7 @@ export class Controls {
                 e.preventDefault();
             }
         };
-        canvas.addEventListener("mouseup", this.mouseup, { signal: dispose.signal });
+        window.addEventListener("mouseup", this.mouseup, { signal: dispose.signal });
     }
 
     public raycaster = new Raycaster();
@@ -361,29 +465,51 @@ export class Controls {
     private clickSphere: Sphere = new Sphere(undefined, 1);
     public enableMindControl = false;
 
-    private static FUNC_update = {
-        dir: new Vector3()
-    } as const;
     public update(snapshot: ReplayApi, dt: number) {
         const renderer = this.renderer;
         const camera = this.camera;
 
         const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
         const slots = new Map([...players.values()].map(p => [p.slot, p]));
-        const targetSlot = this.targetSlot();
-        if (targetSlot !== undefined) {
-            const followTarget = slots.get(targetSlot);
-            if (followTarget !== undefined) {
-                this.slot = targetSlot;
-            }
-        } else {
-            this.slot = undefined;
-
-            const worldPos = new Vector3();
-            camera.root.getWorldPosition(worldPos);
-            camera.root.parent = renderer.scene;
-            camera.root.position.copy(worldPos);
+        const view = ui().display.view();
+        const pending = this.pendingFocus;
+        if (pending && view?.time() !== pending.time) this.pendingFocus = undefined;
+        else if (pending && Math.abs(snapshot.time() - pending.time) < 1) {
+            this.pendingFocus = undefined; this.frameSubject(pending.target);
         }
+        const replay = view?.replay();
+        if (this.autoCamera() && replay) {
+            const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
+            const animations = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
+            const alive = (id: number) => {
+                const enemy = enemies.get(id);
+                return !!enemy && enemy.health > 0 && !animations.get(id)?.state.startsWith('Dead');
+            };
+            const next = this.director.update(replay.events, snapshot.time(), dt, view!.timescale(), !view!.pause() && !replay.loading,
+                event => {
+                    // Combat coverage follows the participating player, rather than cutting to every victim.
+                    const focus = resolveEventFocus(event.kind === 'Vanilla.StatTracker.Damage'
+                        ? { ...event, participants: event.participants?.filter(person => person.type === 'player') }
+                        : event, players, enemies);
+                    return focus?.type === 'enemy' && !alive(focus.id!) ? undefined : focus;
+                }, {
+                    current: this.subject,
+                    valid: focus => focus.type === 'enemy' ? alive(focus.id!) : focus.type === 'player' ? players.has(focus.id!) : true,
+                    continuation: recent => continuityFocus(players, enemies, this.subject ?? { position: camera.root.position, dimension: renderer.get("Dimension") ?? 0 }, recent)
+                });
+            if (next) this.frameSubject(next);
+            else if (next === null) {
+                this.subject = undefined; this.targetSlot(undefined); this.targetName(undefined); this.transition = undefined;
+            }
+        }
+        const targetSlot = this.targetSlot();
+        if (!this.subject && targetSlot !== undefined) {
+            const player = slots.get(targetSlot);
+            if (player) this.frameSubject({ ...player, key: `player:${player.id}`, type: 'player', name: player.nickname });
+        }
+        this.slot = this.subject?.type === 'player' ? players.get(this.subject.id!)?.slot : undefined;
+        this.targetSlot(this.autoCamera() ? undefined : this.slot);
+        this.orbitControls.enabled = !this.firstPerson() && !!this.subject && (this.autoCamera() || this.subject.type !== 'point');
 
         this.raycaster.setFromCamera(this.mousePos, camera.root);
 
@@ -428,7 +554,7 @@ export class Controls {
             const maxX = Math.max(this.selectStart.x, this.selectEnd.x);
             const maxY = Math.max(this.selectStart.y, this.selectEnd.y);
 
-            const { dir } = Controls.FUNC_update;
+            const dir = new Vector3();
 
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
             for (const e of enemies.values()) {
@@ -479,56 +605,73 @@ export class Controls {
             hook(this, snapshot, dt);
         }
 
-        if (this.slot !== undefined) {
+        if (this.subject) {
+            this.moveTime = 0;
             if (this.forward || this.backward || this.left || this.right || this.up || this.down) {
-                this.targetSlot(undefined);
+                this.followPlayer();
             } else {
-                const models = renderer.getOrDefault("Players", Factory("Map"));
-                const first = slots.get(this.slot);
-                if (first !== undefined) {
-                    renderer.set("Dimension", first.dimension);
-                    
-                    const model = models.get(first.id)!;
-                    if (model !== undefined) {
-                        const relativeRot = this.relativeRot();
-                        if (relativeRot === true) {
-                            if (camera.root.parent !== model.anchor) {
-                                camera.root.parent = model.anchor;
-                            }
-                        } else {
-                            if (camera.root.parent !== model.root) {
-                                camera.root.parent = model.root;
-                            }
-                        }
-
-                        camera.root.position.copy(this.fakeCamera.position);
-                        camera.root.translateY(1);
-                        camera.root.quaternion.copy(this.fakeCamera.quaternion);
+                const target = this.subject;
+                const entity = target.type === 'player' ? players.get(target.id!) : target.type === 'enemy' ? snapshot.getOrDefault("Vanilla.Enemy", Factory("Map")).get(target.id!) : undefined;
+                // Manual event inspection retains its last frame; the director retires invalid subjects above.
+                if (entity) { target.position = entity.position; target.dimension = entity.dimension; }
+                if (this.firstPerson() && target.type === 'player') {
+                    const anim = snapshot.getOrDefault("Vanilla.Player.Animation", Factory("Map")).get(target.id!);
+                    this.transition = undefined;
+                    // Camera transforms are not recorded. Reconstruct a stable eye height from stance.
+                    // Keep the last view when the tracked player or their animation is absent.
+                    if (entity && anim) {
+                        const height = anim.state === 'downed' ? .55 : 1.65 - .55 * Math.max(0, Math.min(1, anim.crouch));
+                        camera.root.position.copy(entity.position).y += height;
+                        const direction = this.desiredPosition.copy(anim.targetLookDir);
+                        if (direction.lengthSq() > 0) camera.root.lookAt(direction.add(camera.root.position));
+                        renderer.set("Dimension", entity.dimension);
                     }
+                    return;
+                }
+                const offset = this.desiredPosition.copy(this.fakeCamera.position);
+                if (this.autoCamera() && offset.lengthSq()<1) offset.set(0,2,-4);
+                if (this.autoCamera()) offset.clampLength(2,5);
+                offset.y += 1;
+                this.desiredRotation.copy(this.fakeCamera.quaternion);
+                if (this.relativeRot() && entity) {
+                    this.subjectRotation.copy(entity.rotation);
+                    offset.applyQuaternion(this.subjectRotation);
+                    this.desiredRotation.premultiply(this.subjectRotation);
+                }
+                offset.add(target.position);
+                const dimensionChanged = renderer.get("Dimension") !== target.dimension;
+                renderer.set("Dimension", target.dimension);
+                if (this.autoCamera()) {
+                    this.cameraAnchor.copy(target.position).y += 1.2;
+                    this.keepCameraVisible(offset,target.dimension);
+                }
+                const transition = this.transition;
+                // Long map jumps and dimension changes use a clean cut, not a flight through walls.
+                if (transition && !dimensionChanged && transition.position.distanceToSquared(offset) < 35 * 35 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    transition.elapsed += Math.max(0, dt);
+                    const t = Math.min(1, transition.elapsed / .65), eased = t * t * (3 - 2 * t);
+                    camera.root.position.lerpVectors(transition.position, offset, eased);
+                    camera.root.quaternion.slerpQuaternions(transition.rotation, this.desiredRotation, eased);
+                    if (t === 1) this.transition = undefined;
+                } else {
+                    camera.root.position.copy(offset); camera.root.quaternion.copy(this.desiredRotation); this.transition = undefined;
+                }
+                if (this.autoCamera()) {
+                    this.keepCameraVisible(camera.root.position,target.dimension);
+                    camera.root.lookAt(this.cameraAnchor);
                 }
             }
         } else {
             const speed = this.speed * dt;
-            if (this.forward) {
-                const fwd = move.set(0, 0, 1).multiplyScalar(speed);
-                fwd.applyQuaternion(camera.root.quaternion);
-                camera.root.position.sub(fwd);
-            }
-            if (this.backward) {
-                const bwd = move.set(0, 0, -1).multiplyScalar(speed);
-                bwd.applyQuaternion(camera.root.quaternion);
-                camera.root.position.sub(bwd);
-            }
-
-            if (this.left) {
-                const left = move.set(-1, 0, 0).multiplyScalar(speed);
-                left.applyQuaternion(camera.root.quaternion);
-                camera.root.position.add(left);
-            }
-            if (this.right) {
-                const right = move.set(1, 0, 0).multiplyScalar(speed);
-                right.applyQuaternion(camera.root.quaternion);
-                camera.root.position.add(right);
+            move.set(Number(this.right) - Number(this.left), 0, Number(this.backward) - Number(this.forward));
+            if (move.lengthSq() > 0) {
+                // Ramp from 1x to 4x over three seconds; pitch never changes height or speed.
+                const previousTime = this.moveTime;
+                this.moveTime = Math.min(3, this.moveTime + dt);
+                move.normalize().applyAxisAngle(worldUp, camera.root.rotation.y);
+                camera.root.position.addScaledVector(move, speed * (1 + (previousTime + this.moveTime) / 2));
+            } else {
+                this.moveTime = 0;
             }
 
             if (this.up) {
@@ -543,26 +686,24 @@ export class Controls {
     }
 
     public tp(position: Vector3Like, dimension: number) {
-        const camera = this.renderer.get("Camera")!;
+        this.followPlayer();
         this.renderer.set("Dimension", dimension);
-
-        this.targetSlot(undefined);
-        
-        camera.root.parent = this.renderer.scene;
-        tp_temp.copy(position).sub(camera.root.position).normalize().multiplyScalar(3);
-        camera.root.position.copy(position).sub(tp_temp);
-        camera.root.lookAt(tp_temp.copy(position));
+        this.camera.root.position.copy(position).add(new Vector3(0, 3, -6));
+        this.camera.root.lookAt(position.x, position.y, position.z);
     }
 
     public dispose() {
+        this.orbitControls.dispose();
         const canvas = this.renderer.canvas;
         
         window.removeEventListener("keyup", this.keyup);
         window.removeEventListener("keydown", this.keydown);
+        window.removeEventListener("blur", this.blur);
+        canvas.removeEventListener("blur", this.blur);
         canvas.removeEventListener("mount", this.mount);
         canvas.removeEventListener("wheel", this.wheel);
         canvas.removeEventListener("mousedown", this.mousedown);
-        canvas.removeEventListener("mouseup", this.mouseup);
+        window.removeEventListener("mouseup", this.mouseup);
         window.removeEventListener("mousemove", this.mousemove);
     }
 }

@@ -2,7 +2,7 @@ import { GearPartMagDatablock } from "@asl/vanilla/datablocks/gear/parts/mag.js"
 
 GearPartMagDatablock.clear();
 
-const root = `../js3party/models/GearParts/Mag`;
+const root = `../gear/GearParts/Mag`;
 
 GearPartMagDatablock.set(2, {
     path: `${root}/Mag_556_30rnds_B.glb`,    

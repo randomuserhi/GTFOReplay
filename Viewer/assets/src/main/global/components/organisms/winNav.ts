@@ -1,461 +1,67 @@
-import { html, Mutable } from "@/rhu/html.js";
-import { computed, signal, Signal } from "@/rhu/signal.js";
-import { Style } from "@/rhu/style.js";
-import Fuse from "fuse.js";
+import { ui, uiAttribute } from "../../../i18n.js";
+import { html } from "@/rhu/html.js";
+import { signal, Signal } from "@/rhu/signal.js";
 import { app } from "../../../app.js";
-import * as icons from "../atoms/icons/index.js";
-
-const moduleListStyles = Style(({ css }) => {
-    const wrapper = css.class`
-    display: none;
-    background-color: #2a2a43;
-    border-radius: 7px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: #2f2e44;
-    font-size: 0.75rem;
-    min-width: 100px;
-    flex-shrink: 0;
-    `;
-
-    const sticky = css.class`
-    display: flex;
-    background-color: #2a2a43;
-    padding: 5px;
-    border-radius: 4px 4px 0 0;
-    `;
-
-    const filter = css.class`
-    background-color: #12121a;
-    padding: 3px 5px;
-    border-radius: 4px;
-    color: white;
-    width: 100%;
-    `;
-
-    const mount = css.class`
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    color: white;
-    padding: 5px;
-    max-height: 300px;
-    overflow: auto;
-    `;
-
-    const item = css.class`
-    padding: 3px 5px;
-    cursor: pointer;
-    `;
-    css`
-    ${item}:hover {
-        background-color: #12121a;
-        border-radius: 4px;
-    }
-    `;
-
-    return {
-        wrapper,
-        filter,
-        mount,
-        item,
-        sticky
-    };
-});
-
-const ModuleItem = (key: string) => {
-    interface ModuleItem {
-        readonly button: HTMLLIElement;
-        readonly key: Signal<string>;
-    }
-    interface Private {
-
-    }
-
-    const k = signal(key);
-    
-    const dom = html<Mutable<Private & ModuleItem>>/**//*html*/`
-            <li m-id="button" class="${moduleListStyles.item}">${k}</li>
-        `;
-    
-    html(dom).box();
-
-    dom.key = k;
-
-    return dom as html<ModuleItem>;
-};
-
-const ModuleList = () => {
-    interface ModuleList {
-        readonly values: Signal<string[]>;
-    }
-    interface Private {
-        readonly input: HTMLInputElement;
-    }
-
-    const filter = signal("");
-    const validation = new Set<string>();
-    const values = signal<string[]>([]);
-    const fuse = new Fuse(values(), { keys: ["key"] });
-    const filtered = computed<string[]>((set) => {
-        let filteredValues = values();
-        fuse.setCollection(filteredValues);
-        const str = filter();
-        if (str.trim() !== "") {
-            fuse.setCollection(filteredValues);
-            filteredValues = fuse.search(str).map((n) => n.item);
-        }
-        set(filteredValues);
-    }, [values, filter], (a, b) => {
-        if (a === undefined && b === undefined) return true;
-        if (a === undefined || b === undefined) return false;
-        if (a.length !== b.length) return false;
-        validation.clear();
-        for (let i = 0; i < a.length; ++i) {
-            validation.add(a[i]);
-            if (!validation.has(b[i])) return false;
-        }
-        return true;
-    });
-
-    const list = html.map(filtered, undefined, (kv, el?: html<typeof ModuleItem>) => {
-        const [, value] = kv;
-        if (value == "extensions") return undefined; // NOTE(randomuserhi): Skip extension folder
-
-        if (el === undefined) {
-            const el = ModuleItem(value);
-            el.button.addEventListener("click", () => {
-                // Unlink when changing profile
-                app.player.unlink();
-
-                // (To aid Garbage Collection, refresh window via electron instead of reloading using hot-reload mechanism)
-                //window.api.send("defaultModule", item.key());
-                window.api.invoke("loadModule", el.key()).then((response) => {
-                    app.onLoadModule(response);
-                });
-            });
-            return el;
-        } else {
-            el.key(value);
-            return el;
-        }
-    });
-
-    const dom = html<Mutable<Private & ModuleList>>/**//*html*/`
-        <div class="${moduleListStyles.wrapper}">
-            <div class="${moduleListStyles.sticky}">
-                <input m-id="input" placeholder="Search ..." class="${moduleListStyles.filter}" type="text" spellcheck="false" autocomplete="false" value=""/>
-            </div>
-            <ul m-id="mount" class="${moduleListStyles.mount}">
-                ${list}
-            </ul>
-        </div>
-        `;
-    html(dom).box();
-
-    dom.values = values;
-
-    return dom as html<ModuleList>;
-};
-
-const style = Style(({ css }) => {
-    const height = "40px";
-
-    const wrapper = css.class`
-    display: flex;
-    justify-content: flex-start;
-    flex-direction: row-reverse;
-    align-items: stretch;
-    height: ${height};
-    background-color: #11111B; /*TODO: Theme-ColorScheme*/
-
-    z-index: 3001;
-    -webkit-app-region: drag;
-    -ms-flex-negative: 0;
-    flex-shrink: 0;
-
-    border-bottom-style: solid;
-    border-bottom-width: 2px;
-    border-bottom-color: #2f2e44;
-    `;
-    const button = css.class`
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-
-    position: relative;
-    width: 45px;
-    height: ${height};
-    color: #B9BBBE; /*TODO: Theme-ColorScheme*/
-
-    -webkit-app-region: no-drag;
-    pointer-events: auto;
-    `;
-    css`
-    ${button}:focus {
-        outline:0;
-    }
-    ${button}:hover {
-        color: white;
-        background-color: #272733; /*TODO: Theme-ColorScheme*/
-    }
-    `;
-    const text = css.class`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    margin-left: 10px;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 0.75rem;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    `;
-
-    const popup = css.class`
-    display: none;
-    padding: 5px 10px;
-    background-color: #11111B; /*TODO: Theme-ColorScheme*/
-    border-radius: 7px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: #2f2e44;
-    font-size: 0.75rem;
-    flex-shrink: 0;
-    `;
-    css`
-    ${button}:hover + div ${popup} {
-        display: block;
-    }
-    `;
-
-    const active = css.class``;
-    css`
-    ${active} ${popup} {
-        display: block;
-    }
-    ${active} ${moduleListStyles.wrapper} {
-        display: block;
-    }
-    `;
-
-    const error = css.class`
-    background-color: #2d1623;
-    border-color: #e81b23;
-    `;
-
-    const mount = css.class`
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 5px;
-    display: flex; 
-    gap: 5px;
-    color: white;
-    `;
-
-    const icon = css.class``;
-
-    const linkMount = css.class`
-    position: absolute;
-    top: calc(100%);
-    left: 5px;
-    display: none; 
-    gap: 5px;
-    color: white;
-    padding-top: 5px;
-    z-index: 1000;
-    `;
-
-    const link = css.class`
-    background-color: #2a2a43;
-    border-radius: 7px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: #2f2e44;
-    font-size: 0.75rem;
-    min-width: 100px;
-    flex-shrink: 0;
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px
-    `;
-    css`
-    ${icon}:hover ${linkMount} {
-        display: flex;
-    }
-    `;
-
-    const linkInput = css.class`
-    background-color: #12121a;
-    padding: 3px 5px;
-    border-radius: 4px;
-    color: white;
-    width: 100%;
-    `;
-
-    return {
-        wrapper,
-        button,
-        text,
-        popup,
-        mount,
-        active,
-        error,
-        link,
-        linkInput,
-        icon,
-        linkMount
-    };
-});
+import { rug } from "../atoms/icons/rug.js";
 
 export const WinNav = () => {
-    interface WinNav {
-        readonly module: Signal<string>;
-        readonly error: Signal<boolean>;
-        readonly moduleList: html<typeof ModuleList>;
-        readonly activeModuleList: Signal<boolean>;
-        readonly icon: HTMLButtonElement;
-        readonly linkedStatus: Signal<string>;
-        readonly linkInput: HTMLInputElement;
-    }
-    interface Private {
-        readonly close: HTMLButtonElement;
-        readonly max: HTMLButtonElement;
-        readonly min: HTMLButtonElement;
-        readonly plugin: HTMLButtonElement;
-        readonly mount: HTMLDivElement;
-        readonly moduleListMount: HTMLDivElement;
-        readonly moduleWrapper: HTMLDivElement;
-    }
-    
-    const module = signal("No profile loaded!");
-    const moduleList = ModuleList();
-    const linkedStatus = signal("Not Linked");
-
-    const dom = html<Mutable<Private & WinNav>>/**//*html*/`
-        <nav class="${style.wrapper}">
-            <div m-id="close" class="${style.button}" tabindex="-1" role="button" aria-label="Close">
-                ${icons.cross()}
-            </div>
-            <div m-id="max" class="${style.button}" tabindex="-1" role="button" aria-label="Maximize">
-                ${icons.square()}
-            </div>
-            <div m-id="min" class="${style.button}" tabindex="-1" role="button" aria-label="Minimize">
-                ${icons.line()}
-            </div>
-            <div m-id="mount" class="${style.text}">
-            </div>
-            <span style="position: relative;">
-                <div m-id="plugin" class="${style.button}" style="padding: 10px;" tabindex="-1" role="button">
-                    ${icons.plugin()}
-                </div>
-                <div m-id="moduleListMount" class="${style.mount}">
-                    ${moduleList}
-                    <span style="flex-shrink: 0; margin-top: 5px;"><div m-id="moduleWrapper" class="${style.popup} ${style.error}">
-                        ${module}
-                    </div></span>
-                </div>
-            </span>
-            <span style="position: relative;" class="${style.icon}">
-                <div m-id="icon" class="${style.button}" style="padding: 10px; width: 60px;" tabindex="-1" role="button" aria-label="Load Replay">
-                    ${icons.rug()}
-                </div>
-                <div class="${style.linkMount}">
-                    <div class="${style.link}">
-                        <input m-id="linkInput" placeholder="User SteamID" class="${style.linkInput}" type="text" spellcheck="false" autocomplete="false" value=""/>
-                        <div>${linkedStatus}</div>
-                    </div>
-                </div>
-            </span>
-        </nav>
-        `;
-    
-    dom.module = module;
-    dom.moduleList = moduleList;
-
-    const { close, max, min, mount, plugin, moduleListMount, moduleWrapper } = dom;
-    
-    html(dom).box().children((children) => {
-        mount.append(...children);
-    });
-    
-    dom.linkedStatus = linkedStatus;
-
-    dom.linkInput.addEventListener("change", async () => {
-        let id: bigint;
-        try {
-            id = BigInt(dom.linkInput.value.trim());
-        } catch (e) {
-            linkedStatus("Invalid SteamID");
-            console.error(e);
-            return;
+    const dom = html<{
+        linkedStatus: Signal<string>; module: Signal<string>; error: Signal<boolean>; moduleList: { values: Signal<string[]> }; activeModuleList: Signal<boolean>;
+        icon: HTMLButtonElement; mount: HTMLDivElement; settings: HTMLDivElement; live: HTMLDivElement; language: HTMLDivElement;
+        close: HTMLButtonElement; min: HTMLButtonElement; max: HTMLButtonElement;
+    }>`<nav class="app-header">
+        <button m-id="icon" class="brand-mark" type="button">${rug()}</button>
+        <div m-id="mount" class="app-brand"></div>
+        <div m-id="settings" hidden></div>
+        <div class="header-spacer"></div>
+        <div m-id="live"></div>
+        <div m-id="language" class="header-language"></div>
+        <div class="window-actions">
+            <button m-id="min" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" /></svg></button>
+            <button m-id="max" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="10" height="10" /></svg></button>
+            <button m-id="close" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 3 10 10M13 3 3 13" /></svg></button>
+        </div>
+    </nav>`;
+    html(dom).box().children(children => dom.mount.append(...children));
+    dom.module = signal(""); dom.error = signal(true); dom.moduleList = { values: signal<string[]>([]) }; dom.activeModuleList = signal(false);
+    let settingsContent: HTMLElement | undefined;
+    const props = () => ({
+        content: settingsContent,
+        label: window.ReplayInterface.t("profile"), placeholder: window.ReplayInterface.t("chooseProfile"), value: dom.module(),
+        options: dom.moduleList.values().filter(value => value !== "extensions").map(value => ({ value, label: value })),
+        open: dom.activeModuleList(), onOpenChange: (value: boolean) => dom.activeModuleList(value),
+        onChange: (value: string) => {
+            dom.activeModuleList(false); app.player.unlink();
+            void window.api.invoke("loadModule", value).then(response => app.onLoadModule(response)).catch(error => window.ReplayInterface.notify(String(error)));
         }
-
-        const resp: string | undefined = await window.api.invoke("link", "127.0.0.1", 56759);
-        if (resp !== undefined) {
-            dom.linkInput.disabled = false;
-            dom.linkInput.style.display = "block";
-
-            linkedStatus(`Failed to link`);
-            console.error(`Failed to link: ${resp}`);
-            return;
-        }
-
-        dom.linkInput.value = "";
-        dom.linkInput.disabled = true;
-        dom.linkInput.style.display = "none";
-        window.api.invoke("goLive", id);
-        linkedStatus(`Connecting to ${id}`);
     });
-
-    window.api.on("liveConnected", () => {
-        dom.linkInput.disabled = false;
-        dom.linkInput.style.display = "block";
-        linkedStatus("Linked!");
-    });
-
-    window.api.on("liveFailedToConnect", () => {
-        dom.linkInput.disabled = false;
-        dom.linkInput.style.display = "block";
-        linkedStatus("Failed to link");
-    });
-
-    close.onclick = () => {
-        window.api.closeWindow();
+    const selected = window.ReplayInterface.mountSettings(dom.settings, props());
+    window.ReplayInterface.mountLanguage(dom.language);
+    const update = () => {
+        selected.update(props());
+        window.dispatchEvent(new CustomEvent("replay-settings-open", { detail: dom.activeModuleList() }));
     };
-    max.onclick = () => {
-        window.api.maximizeWindow();
-    };
-    min.onclick = () => {
-        window.api.minimizeWindow();
-    };
-    
-    dom.activeModuleList = signal(false);
-    dom.activeModuleList.on((value) => {
-        if (value) moduleListMount.classList.add(`${style.active}`);
-        else moduleListMount.classList.remove(`${style.active}`);
-    });
-
-    plugin.addEventListener("click", () => {
-        dom.activeModuleList(!dom.activeModuleList());
-    });
-    
-    dom.error = signal(true);
-    dom.error.on(value => {
-        if (value) moduleWrapper.classList.add(`${style.error}`);
-        else moduleWrapper.classList.remove(`${style.error}`);
-    });
-
-    return dom as html<WinNav>;
+    dom.module.on(update); dom.moduleList.values.on(update); dom.activeModuleList.on(update);
+    window.addEventListener("replay-language-changed", update); update();
+    window.addEventListener("replay-open-settings", () => dom.activeModuleList(true));
+    window.addEventListener("replay-settings-content", ((event: CustomEvent<HTMLElement | undefined>) => {
+        settingsContent = event.detail; update();
+    }) as EventListener);
+    dom.linkedStatus = signal("Not Linked");
+    let targetId = "";
+    const connection = window.ReplayInterface.mountConnection(dom.live, async id => {
+        targetId = id; dom.linkedStatus("Connecting to {{id}}");
+        try { await app.player.link(id); }
+        catch (error) { dom.linkedStatus("Failed to link"); throw error; }
+    }, ui(dom.linkedStatus()));
+    const updateConnection = () => connection.update(ui(dom.linkedStatus(), { id: targetId }));
+    dom.linkedStatus.on(updateConnection);
+    window.api.on("liveConnected", () => dom.linkedStatus("Linked!"));
+    window.api.on("liveFailedToConnect", () => { dom.linkedStatus("Failed to link"); window.ReplayInterface.notify(ui(dom.linkedStatus())); });
+    window.addEventListener("replay-language-changed", updateConnection);
+    for (const [button, label] of [[dom.close, "Close"], [dom.max, "Maximize"], [dom.min, "Minimize"], [dom.icon, "Load Replay"]] as const) {
+        uiAttribute(button, "aria-label", label); uiAttribute(button, "data-tooltip", label);
+    }
+    dom.close.onclick = () => window.api.closeWindow(); dom.max.onclick = () => window.api.maximizeWindow(); dom.min.onclick = () => window.api.minimizeWindow();
+    return dom;
 };

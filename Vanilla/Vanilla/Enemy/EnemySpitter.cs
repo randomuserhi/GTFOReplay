@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using API;
 using ReplayRecorder;
 using ReplayRecorder.API;
 using ReplayRecorder.API.Attributes;
@@ -6,7 +7,7 @@ using ReplayRecorder.Core;
 using UnityEngine;
 
 namespace Vanilla.Enemy {
-    [ReplayData("Vanilla.Enemy.Spitters.State", "0.0.1")]
+    [ReplayData("Vanilla.Enemy.Spitters.State", "0.0.2")]
     public class rSpitter : ReplayDynamic {
         public Vector3 position;
         public Quaternion rotation;
@@ -24,14 +25,57 @@ namespace Vanilla.Enemy {
         }
 
         public override bool Active => spitter != null;
-        public override bool IsDirty => _state != state;
+        public override bool IsDirty {
+            get {
+                CaptureAppearance();
+                return _state != state || hasAppearance != _hasAppearance ||
+                    (hasAppearance && (blend != _blend || glow != _glow || localScale != _localScale));
+            }
+        }
 
         private InfectionSpitter.eSpitterState state => spitter.m_currentState;
         private InfectionSpitter.eSpitterState _state = InfectionSpitter.eSpitterState.Frozen;
+        private bool hasAppearance, _hasAppearance, appearanceFailed;
+        private float blend, _blend;
+        private Color glow, _glow;
+        private Vector3 localScale, _localScale;
+
+        private static float Quantize(float value) => (float)(Half)value;
+
+        private void CaptureAppearance() {
+            hasAppearance = false;
+            if (appearanceFailed) return;
+            try {
+                var properties = spitter.m_propBlock;
+                if (properties == null) return;
+                blend = Quantize(properties.GetFloat(InfectionSpitter.s_retractionID));
+                var color = properties.GetColor(InfectionSpitter.s_glowColorID);
+                glow = new Color(Quantize(color.r), Quantize(color.g), Quantize(color.b), Quantize(color.a));
+                var scale = spitter.transform.localScale;
+                localScale = new Vector3(Quantize(scale.x), Quantize(scale.y), Quantize(scale.z));
+                hasAppearance = true;
+            } catch (Exception exception) {
+                appearanceFailed = true;
+                APILogger.Error($"Could not capture native spitter appearance for {id}: {exception}");
+            }
+        }
 
         public override void Write(ByteBuffer buffer) {
+            CaptureAppearance();
             _state = state;
             BitHelper.WriteBytes((byte)_state, buffer);
+            _hasAppearance = hasAppearance;
+            BitHelper.WriteBytes(_hasAppearance, buffer);
+            if (!_hasAppearance) return;
+            _blend = blend;
+            _glow = glow;
+            _localScale = localScale;
+            BitHelper.WriteHalf(_blend, buffer);
+            BitHelper.WriteHalf(_glow.r, buffer);
+            BitHelper.WriteHalf(_glow.g, buffer);
+            BitHelper.WriteHalf(_glow.b, buffer);
+            BitHelper.WriteHalf(_glow.a, buffer);
+            BitHelper.WriteHalf(_localScale, buffer);
         }
 
         public override void Spawn(ByteBuffer buffer) {

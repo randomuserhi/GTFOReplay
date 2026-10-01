@@ -11,7 +11,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
         }
 
         interface RenderData {
-            "Holopath": Map<number, { mesh: Mesh, geometry: DynamicSplineGeometry }>;
+            "Holopath": Map<number, { mesh: Mesh, geometry: DynamicSplineGeometry, progress?: number, spline: Pod.Vector[] }>;
         }
     }
 }
@@ -34,10 +34,19 @@ ModuleLoader.registerRender("Holopath", (name, api) => {
 
                     const mesh = new Mesh(geometry, material);
 
-                    models.set(id, { mesh, geometry });
+                    models.set(id, { mesh, geometry, spline: [] });
                     renderer.scene.add(mesh);
                 }
                 const model = models.get(id)!;
+                model.mesh.visible = holopath.dimension === renderer.get("Dimension");
+                if (!model.mesh.visible) continue;
+                const changed = model.spline.length !== holopath.spline.length || holopath.spline.some((p, i) => {
+                    const previous = model.spline[i];
+                    return !previous || p.x !== previous.x || p.y !== previous.y || p.z !== previous.z;
+                });
+                if (!changed && model.progress === holopath.progress) continue;
+                if (changed) model.spline = holopath.spline.map(p => ({...p}));
+                model.progress = holopath.progress;
 
                 let totalLength = 0;
                 for (let i = 1; i < holopath.spline.length; ++i) {
@@ -64,12 +73,13 @@ ModuleLoader.registerRender("Holopath", (name, api) => {
                 }
 
                 model.geometry.morph(points);
-                model.mesh.visible = holopath.dimension === renderer.get("Dimension");
             }
 
             for (const [id, model] of [...models.entries()]) {
                 if (!holopaths.has(id)) {
                     renderer.scene.remove(model.mesh);
+                    model.geometry.dispose();
+                    (model.mesh.material as MeshPhongMaterial).dispose();
                     models.delete(id);
                 }
             }
@@ -77,3 +87,10 @@ ModuleLoader.registerRender("Holopath", (name, api) => {
     }]);
 });
 
+
+ModuleLoader.registerDispose(renderer => {
+    for (const model of renderer.get("Holopath")?.values() ?? []) {
+        model.geometry.dispose();
+        (model.mesh.material as MeshPhongMaterial).dispose();
+    }
+});

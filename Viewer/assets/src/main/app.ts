@@ -1,3 +1,4 @@
+import { translated } from "./i18n.js";
 import { html, Mutable } from "@/rhu/html.js";
 import { Signal, signal } from "@/rhu/signal.js";
 import { Style } from "@/rhu/style.js";
@@ -47,7 +48,11 @@ const App = () => {
     interface App {
         load(page: html): void;
         onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }): void;
-        chooseFile(): void;
+        chooseFile(): Promise<void>;
+        openFile(path: string): Promise<void>;
+        showLibrary(): void;
+        showHome(): void;
+        reportOpenError(message: string): void;
         
         readonly nav: html<typeof WinNav>;
         readonly player: html<typeof Player>;
@@ -57,12 +62,14 @@ const App = () => {
 
         readonly main: html<typeof Main>;
         readonly profile: Signal<string | undefined>;
+        readonly libraryButton: HTMLButtonElement;
     }
 
     const dom = html<Mutable<Private & App>>/**//*html*/`
         <div class="${theme} ${style.wrapper}">
             ${html.open(WinNav()).bind("nav")}
                 <span>GTFO Replay</span>
+                <button m-id="libraryButton" type="button">${translated("library.title")}</button>
             ${html.close()}
             <!-- Content goes here -->
             <div m-id="body" class="${style.body}">
@@ -75,57 +82,50 @@ const App = () => {
     dom.player = Player();
     dom.main = Main();
 
-    dom.onLoadModule = function onLoadModule(response: { success: boolean; module: string; error: string | undefined; scripts: string[] | undefined }) {
-        if (response.success === false) {
-            console.error(response.error);
+    let profileGeneration = 0;
+    let profileTask: Promise<void> = Promise.resolve();
+    dom.onLoadModule = function onLoadModule(response) {
+        const generation = ++profileGeneration;
+        profileTask = profileTask.then(async () => {
+            if (generation !== profileGeneration) return;
             this.profile(undefined);
-            return;
-        }
-        if (response.module === undefined || response.scripts === undefined) {
-            console.error("Module was undefined despite success.");
-            this.profile(undefined);
-            return;
-        }
-
-        // Close modulelist
-        this.nav.activeModuleList(false);
-
-        // Close & Refresh player
-        this.player.close();
-
-        // Reset modules
-        ModuleLoader.clear();
-        
-        // Reset cache
-        ASL_VM.dispose();
-        response.scripts.forEach((p: string) => {
-            ASL_VM.load(p);
-        });
-
-        // Get last opened file
-        window.api.invoke("lastFile").then((path) => {
-            this.player.path = path;
-
-            // Show loading screen
-            this.main.video.play();
-            this.main.loading(this.player.path !== undefined);
+            this.player.close();
+            this.main.loading(true);
+            this.main.error("");
             this.load(this.main);
-
+            if (!response.success || !response.module || !response.scripts) {
+                throw new Error(response.error ?? "Replay profile is incomplete.");
+            }
+            this.nav.activeModuleList(false);
+            await ASL_VM.dispose();
+            ModuleLoader.clear();
+            const results = await Promise.allSettled(response.scripts.map(async p => { const loaded = await ASL_VM.load(p); await loaded.execution; }));
+            if (generation !== profileGeneration) return;
+            const failed = results.find(result => result.status === "rejected");
+            if (failed?.status === "rejected") throw failed.reason;
+            this.player.refresh();
+            const path = await window.api.invoke("lastFile");
+            if (generation !== profileGeneration) return;
             this.profile(response.module);
-
-            if (this.player.path !== undefined) {
-                ASL_VM.onNoExecutionsLeft(() => this.player.open(this.player.path), { once: true });
+            this.main.loading(false);
+            if (path) await this.openFile(path);
+        }).catch(error => {
+            console.error(error);
+            if (generation === profileGeneration) {
+                this.profile(undefined);
+                this.reportOpenError(String(error));
             }
         });
     };
 
     dom.load = function load(page: html) {
         this.body.replaceChildren(...page);
+        this.main.active(page === this.main);
     };
 
     dom.profile.on(value => {
         if (value === undefined) {
-            dom.nav.module("No profile loaded!");
+            dom.nav.module("");
             dom.nav.error(true);
             return;
         } 
@@ -139,7 +139,7 @@ const App = () => {
     // hot reload event
     window.api.on("loadScript", async (paths: string[]) => {
         for (const p of paths) {
-            ASL_VM.load(p);
+            try { await ASL_VM.load(p); } catch (error) { dom.reportOpenError(String(error)); }
         }
     });
 
@@ -186,11 +186,36 @@ const App = () => {
             console.log("LIVE VIEW OPEN GAME");
             dom.main.loading(true);
             dom.load(dom.main);
-            dom.player.open();
+            void dom.player.open().catch(error => dom.reportOpenError(String(error)));
         }
     }); // Temporary for live viewing games
 
     let isChoosingFile = false;
+    dom.openFile = async function openFile(file) {
+        if (dom.profile() === undefined) {
+            dom.nav.activeModuleList(true);
+            throw new Error(window.ReplayInterface.t("library.profileRequired"));
+        }
+        dom.main.loading(true);
+        dom.main.error("");
+        dom.load(dom.main);
+        try { await dom.player.open(file); }
+        catch (error) { dom.main.loading(false); throw error; }
+    };
+    dom.showLibrary = () => {
+        dom.player.close();
+        window.api.send("forgetReplay");
+        dom.main.loading(false);
+        dom.main.error("");
+        dom.main.libraryVisible(true);
+        dom.load(dom.main);
+    };
+    dom.showHome = () => {
+        dom.player.close(); window.api.send("forgetReplay");
+        dom.main.loading(false); dom.main.error(""); dom.main.libraryVisible(false); dom.load(dom.main);
+    };
+    dom.reportOpenError = message => { dom.main.loading(false); dom.main.error(message); dom.load(dom.main); };
+    dom.libraryButton.addEventListener("click", dom.showLibrary);
     dom.chooseFile = async function chooseFile() {
         if (isChoosingFile) return;
         isChoosingFile = true;
@@ -204,29 +229,22 @@ const App = () => {
             if (loaded !== 1) throw new Error("Can only load 1 file.");
             const file = files[0];
 
-            if (dom.profile() === undefined) {
-                dom.nav.activeModuleList(true);
-                console.error("Unable to load replay as no profile was loaded.");
-            } else {
-                dom.main.loading(true);
-                dom.load(dom.main);
-                console.log(`OPEN FILE FROM DISK ${file}`);
-                dom.player.open(file);
-            }
+            await dom.openFile(file);
         } catch (err) {
             console.error(err);
+            throw err;
         } finally {
             isChoosingFile = false;
         }
     };
 
     dom.nav.icon.addEventListener("click", async () => {
-        dom.chooseFile();
+        dom.showHome();
     });
 
     // Upon all modules loading, refresh player
     ASL_VM.onNoExecutionsLeft(() => {
-        dom.player.refresh();
+        if (dom.profile() !== undefined) dom.player.refresh();
     });
 
     // reload module list on click

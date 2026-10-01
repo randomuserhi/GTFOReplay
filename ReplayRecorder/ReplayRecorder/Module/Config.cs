@@ -36,6 +36,12 @@ namespace ReplayRecorder.BepInEx {
                 false,
                 "Shows the amount of memory buffers used and time taken to write a snapshot to disk. Useful to know the performance impact of this mod.");
 
+            showRecordingStatus = configFile.Bind(
+                "Settings", "showRecordingStatus", true,
+                "Shows replay recording status, duration and size beside the in-game heart rate. Failures remain in the BepInEx log.");
+            markerKey = configFile.Bind("Settings", "markerKey", UnityEngine.KeyCode.F8,
+                "Adds a timestamped local replay marker during recording. None disables the shortcut.");
+
             replayFolder = configFile.Bind(
                 "Settings",
                 "replayFolder",
@@ -102,9 +108,11 @@ namespace ReplayRecorder.BepInEx {
 
         private static void LoadSpectatorWhiteList() {
             steamIDWhitelist.Clear();
+            allowAnySpectator = false;
             if (SpectatorWhiteList.Trim().ToLower() != "all") {
                 string[] IDs = SpectatorWhiteList.Split(",");
                 foreach (string ID in IDs) {
+                    if (string.IsNullOrWhiteSpace(ID)) continue;
                     if (ulong.TryParse(ID.Trim(), out ulong id)) {
                         steamIDWhitelist.Add(id);
                     } else {
@@ -130,6 +138,11 @@ namespace ReplayRecorder.BepInEx {
             set { performanceDebug.Value = value; }
         }
         private static ConfigEntry<bool> performanceDebug;
+
+        private static ConfigEntry<bool> showRecordingStatus;
+        private static ConfigEntry<UnityEngine.KeyCode> markerKey;
+        public static UnityEngine.KeyCode MarkerKey => markerKey.Value;
+        public static bool ShowRecordingStatus => showRecordingStatus.Value;
 
         // TODO(randomuserhi): Convert to string and have space seperated debug filters "ALL" etc...
         public static bool DebugDynamics {

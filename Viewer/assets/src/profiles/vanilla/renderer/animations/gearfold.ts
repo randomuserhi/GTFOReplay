@@ -11,7 +11,7 @@ export type GearFoldAvatar = Avatar<GearFoldJoints>;
 export type GearFoldAvatarLike = AvatarLike<GearFoldJoints>;
 export type GearFoldAnim = Anim<GearFoldJoints>;
 export type GearFoldAnimBlend = AnimBlend<GearFoldJoints>;
-export type GearFoldAnimation = AnimFunc<GearFoldJoints>;
+export type GearFoldAnimation = AnimFunc<GearFoldJoints> & { name?: string };
 export type GearFoldSkeleton = AvatarSkeleton<GearFoldJoints>;
 export type GearFoldMask = AvatarMask<GearFoldJoints>;
 

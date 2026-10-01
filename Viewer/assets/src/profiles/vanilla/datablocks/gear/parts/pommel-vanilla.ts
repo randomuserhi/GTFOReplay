@@ -1,6 +1,6 @@
 import { GearPartPommelDatablock } from "./pommel.js";
 
-const root = `../js3party/models/GearParts/Pommel`;
+const root = `../gear/GearParts/Pommel`;
 
 GearPartPommelDatablock.clear();
 

@@ -1,7 +1,6 @@
 import * as BitHelper from "@esm/@root/replay/bithelper.js";
 import { ModuleLoader, ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { backwardsCompatEnemyHp } from "../../datablocks/enemy/backwards-compat.js";
 import { Factory } from "../../library/factory.js";
 import { DynamicTransform } from "../../library/helpers.js";
 import { DeathCross } from "../deathcross.js";
@@ -20,9 +19,9 @@ declare module "@esm/@root/replay/moduleloader.js" {
                     position: Pod.Vector;
                     rotation: Pod.Quaternion;
                     tagged: boolean;
-                    consumedPlayerSlotIndex: number;
-                    targetPlayerSlotIndex: number;
-                    stagger: number;
+                    consumedPlayerSlotIndex?: number;
+                    targetPlayerSlotIndex?: number;
+                    stagger?: number;
                     canStagger: boolean;
                 };
                 spawn: {
@@ -40,6 +39,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Enemy": Map<number, Enemy>;
+            "Vanilla.Enemy.Identities": Map<number, { type: Identifier }>;
         }
     }
 }
@@ -89,30 +89,33 @@ export function TriggerEnemyOnDeathEvents(snapshot: ReplayApi, enemy: Enemy) {
     }
 }
 
-let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.5", {
     main: {
         parse: async (data) => {
             const transform = await DynamicTransform.parse(data);
-            const result = {
-                ...transform,
-                tagged: await BitHelper.readBool(data),
-                consumedPlayerSlotIndex: await BitHelper.readByte(data),
-                targetPlayerSlotIndex: 255,
-                stagger: Infinity,
-                canStagger: true,
+            const mask = await BitHelper.readByte(data);
+            if (mask & 224)
+                throw new Error("Invalid enemy state mask.");
+            return {
+                ...transform, tagged: !!(mask & 1), canStagger: !!(mask & 2),
+                consumedPlayerSlotIndex: mask & 4 ? await BitHelper.readByte(data) : undefined,
+                targetPlayerSlotIndex: mask & 8 ? await BitHelper.readByte(data) : undefined,
+                stagger: mask & 16 ? await BitHelper.readByte(data) / 255 : undefined
             };
-            return result;
-        }, 
+        },
         exec: (id, data, snapshot, lerp) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
-        
-            if (!enemies.has(id)) throw new Error(`Enemy of id '${id}' was not found.`);
+            if (!enemies.has(id))
+                throw new Error(`Enemy of id '${id}' was not found.`);
             const enemy = enemies.get(id)!;
             DynamicTransform.lerp(enemy, data, lerp);
             enemy.tagged = data.tagged;
-            enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
-            enemy.targetPlayerSlotIndex = data.targetPlayerSlotIndex;
-            enemy.stagger = data.stagger;
+            if (data.consumedPlayerSlotIndex !== undefined)
+                enemy.consumedPlayerSlotIndex = data.consumedPlayerSlotIndex;
+            if (data.targetPlayerSlotIndex !== undefined)
+                enemy.targetPlayerSlotIndex = data.targetPlayerSlotIndex;
+            if (data.stagger !== undefined)
+                enemy.stagger = data.stagger;
             enemy.canStagger = data.canStagger;
         }
     },
@@ -124,22 +127,20 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
                 animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
                 scale: await BitHelper.readHalf(data),
                 type: await Identifier.parse(IdentifierData(snapshot), data),
-                maxHealth: Infinity
+                maxHealth: await BitHelper.readHalf(data)
             };
             return result;
         },
         exec: (id, data, snapshot) => {
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
-        
-            if (enemies.has(id)) throw new Error(`Enemy of id '${id}' already exists.`);
-            const backwardsCompatHp = backwardsCompatEnemyHp.get(data.type.id);
-            let health = data.maxHealth;
-            if (health === Infinity && backwardsCompatHp !== undefined) {
-                health = backwardsCompatHp;
-            }
-            enemies.set(id, { 
+            if (enemies.has(id))
+                throw new Error(`Enemy of id '${id}' already exists.`);
+            // Host damage can arrive after the local enemy despawn. Retain only
+            // its recorded identity for statistics, not its render/simulation state.
+            snapshot.getOrDefault("Vanilla.Enemy.Identities", Factory("Map")).set(id, { type: data.type });
+            enemies.set(id, {
                 id, ...data,
-                health,
+                health: data.maxHealth,
                 head: true,
                 players: new Set(),
                 tagged: false,
@@ -152,74 +153,20 @@ let enemyParser: ModuleLoader.DynamicModule<"Vanilla.Enemy"> = ModuleLoader.regi
     },
     despawn: {
         parse: async () => {
-        }, 
+        },
         exec: (id, data, snapshot) => {
             // TODO(randomuserhi): Cleanup code
             const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
-
-            if (!enemies.has(id)) throw new Error(`Enemy of id '${id}' did not exist.`);
+            if (!enemies.has(id))
+                throw new Error(`Enemy of id '${id}' did not exist.`);
             const enemy = enemies.get(id)!;
             DeathCross.spawn(snapshot, id, enemy.dimension, enemy.position);
             enemies.delete(id);
-
             // Check kill stats in the event enemy health prediction fails -> To prevent rewarding kills to enemies despawned by world event - only count enemies that died within 1 second of being hit
             if (enemy.health > 0) {
                 TriggerEnemyOnDeathEvents(snapshot, enemy);
             }
             enemy.health = 0;
-        }
-    }
-});
-enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.2", {
-    ...enemyParser,
-    spawn: {
-        ...enemyParser.spawn,
-        parse: async (data, snapshot) => {
-            const spawn = await DynamicTransform.spawn(data);
-            const result = {
-                ...spawn,
-                animHandle: AnimHandles.FlagMap.get(await BitHelper.readUShort(data)),
-                scale: await BitHelper.readHalf(data),
-                type: await Identifier.parse(IdentifierData(snapshot), data),
-                maxHealth: await BitHelper.readHalf(data)
-            };
-            return result;
-        }
-    },
-});
-enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.3", {
-    ...enemyParser,
-    main: {
-        ...enemyParser.main,
-        parse: async (data) => {
-            const transform = await DynamicTransform.parse(data);
-            const result = {
-                ...transform,
-                tagged: await BitHelper.readBool(data),
-                consumedPlayerSlotIndex: await BitHelper.readByte(data),
-                targetPlayerSlotIndex: await BitHelper.readByte(data),
-                stagger: Infinity,
-                canStagger: true
-            };
-            return result;
-        }
-    }
-});
-enemyParser = ModuleLoader.registerDynamic("Vanilla.Enemy", "0.0.4", {
-    ...enemyParser,
-    main: {
-        ...enemyParser.main,
-        parse: async (data) => {
-            const transform = await DynamicTransform.parse(data);
-            const result = {
-                ...transform,
-                tagged: await BitHelper.readBool(data),
-                consumedPlayerSlotIndex: await BitHelper.readByte(data),
-                targetPlayerSlotIndex: await BitHelper.readByte(data),
-                stagger: await BitHelper.readByte(data) / 255,
-                canStagger: await BitHelper.readBool(data)
-            };
-            return result;
         }
     }
 });

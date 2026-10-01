@@ -1,0 +1,3934 @@
+[
+  {
+    "id": "item-114",
+    "name": "Glow Sticks",
+    "itemIds": [
+      114
+    ],
+    "assetId": "item-114",
+    "sourceSha256": "20cdd7fd800ccf89d3383548fd01fa56ced6dc2ddeb2fe7ad282cc5ff21b721a",
+    "heldAssetId": "item-114-held",
+    "heldSourceSha256": "24433460370895eb3cc4e1e1d05009e3af7a4ad566af5c8799110b5b31b66c40",
+    "heldRevision": "24433460370895eb3cc4e1e1d05009e3af7a4ad566af5c8799110b5b31b66c40",
+    "heldTriangles": 1162,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-114-pickup-0.glb",
+    "originalRevision": "a9275ac8f4990553e8107a02e9bdcc22608834c9030ab5e524d7c3da2ea93797",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-114-held-0.glb",
+    "heldOriginalRevision": "186471f966841ae660af1a0cdb98423e761f6f4684afdfed75b552ef373cbdd3",
+    "sourceRootTransform": {
+      "id": "sharedassets6.assets-500",
+      "name": "Consumable_GlowStick_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets6.assets",
+      "pathId": 79,
+      "name": "Consumable_GlowStick_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.060412995517253876,
+        "y": -0.03302939972235146,
+        "z": -0.1603867135694471
+      },
+      "rot": {
+        "x": -0.4816040275941315,
+        "y": -0.5344909181561258,
+        "z": -0.42365250211965705,
+        "w": 0.5503594974755015
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.12349745631217957,
+        "y": -0.09080151216100515,
+        "z": -0.11222327043344305
+      },
+      "rot": {
+        "x": 0.44329276173502596,
+        "y": 0.15910234381956,
+        "z": 0.7775840117286121,
+        "w": -0.41658261640218947
+      }
+    },
+    "file": "low/item-114.glb",
+    "revision": "20cdd7fd800ccf89d3383548fd01fa56ced6dc2ddeb2fe7ad282cc5ff21b721a",
+    "triangles": 1248,
+    "sourceRevision": "a9275ac8f4990553e8107a02e9bdcc22608834c9030ab5e524d7c3da2ea93797",
+    "sourceFile": "artifacts/rebuilt-models/models/item-114-low.glb",
+    "level": "low",
+    "heldFile": "low/item-114-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-114-held-low.glb"
+  },
+  {
+    "id": "item-174",
+    "name": "Glow Stick Yellow",
+    "itemIds": [
+      174
+    ],
+    "assetId": "item-174",
+    "sourceSha256": "97556657b9aa93dff88e08b78c3c9fb0a41f1e83f4f3a264508166f4b9d9fc7e",
+    "heldAssetId": "item-174-held",
+    "heldSourceSha256": "8cecdabe2f5dfa5cf9bf323f94ee80e720ef0822db6e5043dafeed0103969f64",
+    "heldRevision": "8cecdabe2f5dfa5cf9bf323f94ee80e720ef0822db6e5043dafeed0103969f64",
+    "heldTriangles": 1162,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-174-pickup-0.glb",
+    "originalRevision": "52266d7330806c0aa3d07960aefbaf138dfc4efe79248534e9c88130e421dd10",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-174-held-0.glb",
+    "heldOriginalRevision": "d801460588a84bb47ad33a0d0e4dfff76d3faa34c92fba4afe1b10d7e063bb39",
+    "sourceRootTransform": {
+      "id": "sharedassets6.assets-498",
+      "name": "Consumable_GlowStick_Pickup_Yellow",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets6.assets",
+      "pathId": 77,
+      "name": "Consumable_GlowStick_Pickup_Yellow"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.060412995517253876,
+        "y": -0.03302939972235146,
+        "z": -0.1603867135694471
+      },
+      "rot": {
+        "x": -0.4816040275941315,
+        "y": -0.5344909181561258,
+        "z": -0.42365250211965705,
+        "w": 0.5503594974755015
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.12349745631217957,
+        "y": -0.09080151216100515,
+        "z": -0.11222327043344305
+      },
+      "rot": {
+        "x": 0.44329276173502596,
+        "y": 0.15910234381956,
+        "z": 0.7775840117286121,
+        "w": -0.41658261640218947
+      }
+    },
+    "file": "low/item-174.glb",
+    "revision": "97556657b9aa93dff88e08b78c3c9fb0a41f1e83f4f3a264508166f4b9d9fc7e",
+    "triangles": 5032,
+    "sourceRevision": "52266d7330806c0aa3d07960aefbaf138dfc4efe79248534e9c88130e421dd10",
+    "sourceFile": "artifacts/rebuilt-models/models/item-174-low.glb",
+    "level": "low",
+    "heldFile": "low/item-174-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-174-held-low.glb"
+  },
+  {
+    "id": "item-30",
+    "name": "Long Range Flashlight",
+    "itemIds": [
+      30
+    ],
+    "assetId": "item-30",
+    "sourceSha256": "161e7a6872267f1e0589b180949d91984320843a82c29e30e11b75c05aa6cab2",
+    "heldAssetId": "item-30-held",
+    "heldSourceSha256": "381e36f1ab1cb3d47a6df467aef858a256deaec7c15e0a3d7bf46caa2b22087b",
+    "heldRevision": "381e36f1ab1cb3d47a6df467aef858a256deaec7c15e0a3d7bf46caa2b22087b",
+    "heldTriangles": 5999,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-30-pickup-0.glb",
+    "originalRevision": "251667ea11c2a055c7e1dd5dbdc60213274df90ae290b7b64b58caef4a836e39",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-30-held-1.glb",
+    "heldOriginalRevision": "1e63803de19226d375b64759933e0075503c5820935d316dab2a645339dd8c68",
+    "sourceRootTransform": {
+      "id": "sharedassets4.assets-73",
+      "name": "Consumable_MediumFlashlight_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets4.assets",
+      "pathId": 44,
+      "name": "Consumable_MediumFlashlight_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.15657778084278107,
+        "y": -0.025992309793496076,
+        "z": -0.203052477105318
+      },
+      "rot": {
+        "x": -0.369677630477492,
+        "y": -0.5212545331426313,
+        "z": -0.4109349704830004,
+        "w": 0.6502035152449887
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.09627801924943924,
+        "y": -0.1470772675036863,
+        "z": -0.09350836638838979
+      },
+      "rot": {
+        "x": 0.5349825691159363,
+        "y": 0.45314638568488497,
+        "z": 0.6731869987994487,
+        "w": -0.23509842307048545
+      }
+    },
+    "file": "low/item-30.glb",
+    "revision": "161e7a6872267f1e0589b180949d91984320843a82c29e30e11b75c05aa6cab2",
+    "triangles": 4467,
+    "sourceRevision": "251667ea11c2a055c7e1dd5dbdc60213274df90ae290b7b64b58caef4a836e39",
+    "sourceFile": "artifacts/rebuilt-models/models/item-30-low.glb",
+    "level": "low",
+    "heldFile": "low/item-30-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-30-held-low.glb"
+  },
+  {
+    "id": "item-140",
+    "name": "I2-LP Syringe",
+    "itemIds": [
+      140
+    ],
+    "assetId": "item-140",
+    "sourceSha256": "b3032e8380d8bf214fd9e4df39e6869ac3bb3edd9517092160df16ecaaeb4fb5",
+    "heldAssetId": "item-140-held",
+    "heldSourceSha256": "ef4faa0e6a04b8fcfcf6ce28e64067e84a341c8e540f4ffd4287c41c18a3e76e",
+    "heldRevision": "ef4faa0e6a04b8fcfcf6ce28e64067e84a341c8e540f4ffd4287c41c18a3e76e",
+    "heldTriangles": 5999,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-140-pickup-0.glb",
+    "originalRevision": "cd9adbee64273d74f5837c817249edf7de1b7c5c7916f31ace04e5d652f9ff80",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-140-held-0.glb",
+    "heldOriginalRevision": "6f3013962135a5529e256e853ec7fcc74346ecd2280428d7f27d96d86d15e6b1",
+    "sourceRootTransform": {
+      "id": "sharedassets6.assets-518",
+      "name": "Consumable_Syringe_Health_Pickup",
+      "parent": null,
+      "position": [
+        -1.9900000095367432,
+        -0.6499999761581421,
+        1.2200000286102295
+      ],
+      "rotation": [
+        0.7071068286895752,
+        -0.7071068286895752,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets6.assets",
+      "pathId": 223,
+      "name": "Consumable_Syringe_Health_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": 0.018940241950676562,
+        "y": 0.00911172231031858,
+        "z": 0.13702534224319785
+      },
+      "rot": {
+        "x": 0.40327315261660535,
+        "y": 0.6162276247943762,
+        "z": -0.5750948863265591,
+        "w": 0.35623047390697415
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.15099994808435646,
+        "y": 0.03700001629864699,
+        "z": 0.1299999922297931
+      },
+      "rot": {
+        "x": 0.19944917923863323,
+        "y": 0.977260006810011,
+        "z": 0.0020828303943228963,
+        "w": -0.07196225266263669
+      }
+    },
+    "file": "low/item-140.glb",
+    "revision": "b3032e8380d8bf214fd9e4df39e6869ac3bb3edd9517092160df16ecaaeb4fb5",
+    "triangles": 2825,
+    "sourceRevision": "cd9adbee64273d74f5837c817249edf7de1b7c5c7916f31ace04e5d652f9ff80",
+    "sourceFile": "artifacts/rebuilt-models/models/item-140-low.glb",
+    "level": "low",
+    "heldFile": "low/item-140-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-140-held-low.glb"
+  },
+  {
+    "id": "item-142",
+    "name": "IIX Syringe",
+    "itemIds": [
+      142
+    ],
+    "assetId": "item-142",
+    "sourceSha256": "eb3c96c2d0e21b65bdbbe70d4d5e27ac0c834f825732d948e2139129e12a2d98",
+    "heldAssetId": "item-142-held",
+    "heldSourceSha256": "1d3f2a6846a5505cd59edd0db4eb077dcc3d9be6fdee33bc61cc6a92fe2e131e",
+    "heldRevision": "1d3f2a6846a5505cd59edd0db4eb077dcc3d9be6fdee33bc61cc6a92fe2e131e",
+    "heldTriangles": 5999,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-142-pickup-0.glb",
+    "originalRevision": "07211dcdb6d30d86509982b7be8486620659abd501ede7e09420d884352e9ed0",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-142-held-0.glb",
+    "heldOriginalRevision": "a8929ad04665a112026687f350fa94c5d1874955fa9787d21900b74c8b53ec1a",
+    "sourceRootTransform": {
+      "id": "sharedassets6.assets-519",
+      "name": "Consumable_Syringe_MeleeBuff_Pickup",
+      "parent": null,
+      "position": [
+        -1.9900000095367432,
+        -0.6499999761581421,
+        1.2200000286102295
+      ],
+      "rotation": [
+        0.7071068286895752,
+        -0.7071068286895752,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets6.assets",
+      "pathId": 224,
+      "name": "Consumable_Syringe_MeleeBuff_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": 0.018940241950676562,
+        "y": 0.00911172231031858,
+        "z": 0.13702534224319785
+      },
+      "rot": {
+        "x": 0.40327315261660535,
+        "y": 0.6162276247943762,
+        "z": -0.5750948863265591,
+        "w": 0.35623047390697415
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.15099994808435646,
+        "y": 0.03700001629864699,
+        "z": 0.1299999922297931
+      },
+      "rot": {
+        "x": 0.19944917923863323,
+        "y": 0.977260006810011,
+        "z": 0.0020828303943228963,
+        "w": -0.07196225266263669
+      }
+    },
+    "file": "low/item-142.glb",
+    "revision": "eb3c96c2d0e21b65bdbbe70d4d5e27ac0c834f825732d948e2139129e12a2d98",
+    "triangles": 2825,
+    "sourceRevision": "07211dcdb6d30d86509982b7be8486620659abd501ede7e09420d884352e9ed0",
+    "sourceFile": "artifacts/rebuilt-models/models/item-142-low.glb",
+    "level": "low",
+    "heldFile": "low/item-142-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-142-held-low.glb"
+  },
+  {
+    "id": "item-115",
+    "name": "Cfoam Grenade",
+    "itemIds": [
+      115
+    ],
+    "assetId": "item-115",
+    "sourceSha256": "7b884f014c491ebd0bcb004af104f37c61f3ca2779ac166d346fb21172ccad99",
+    "heldAssetId": "item-115-held",
+    "heldSourceSha256": "5e56237ea2178b7143c551c34e5d9eaddb00f901e170e0d8b002750a1f377f30",
+    "heldRevision": "5e56237ea2178b7143c551c34e5d9eaddb00f901e170e0d8b002750a1f377f30",
+    "heldTriangles": 5999,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-115-pickup-0.glb",
+    "originalRevision": "ee6b1f1bfc29d869f154a8630d4d2c9aeef498ccac59e68b739030c62fa6d436",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-115-held-0.glb",
+    "heldOriginalRevision": "23ddbf9674b7ec2ecfe7f988d29dc33ac1a43f315412813e9938a85509b4b0ab",
+    "sourceRootTransform": {
+      "id": "sharedassets7.assets-282",
+      "name": "Consumable_GlueGrenade_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets7.assets",
+      "pathId": 120,
+      "name": "Consumable_GlueGrenade_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.1133446916937828,
+        "y": -0.030399986907623095,
+        "z": -0.10401612019199834
+      },
+      "rot": {
+        "x": -0.6759804483105921,
+        "y": -0.4023295256700042,
+        "z": -0.2731407123051245,
+        "w": 0.5536926381643608
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.0745113343000412,
+        "y": -0.18515666054387375,
+        "z": -0.05341623443574415
+      },
+      "rot": {
+        "x": 0.48744709874886183,
+        "y": 0.1127432628060595,
+        "z": 0.8656197616773842,
+        "w": -0.019664963939702258
+      }
+    },
+    "file": "low/item-115.glb",
+    "revision": "7b884f014c491ebd0bcb004af104f37c61f3ca2779ac166d346fb21172ccad99",
+    "triangles": 5999,
+    "sourceRevision": "ee6b1f1bfc29d869f154a8630d4d2c9aeef498ccac59e68b739030c62fa6d436",
+    "sourceFile": "artifacts/rebuilt-models/models/item-115-low.glb",
+    "level": "low",
+    "heldFile": "low/item-115-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-115-held-low.glb"
+  },
+  {
+    "id": "item-116",
+    "name": "Lock Melter",
+    "itemIds": [
+      116
+    ],
+    "assetId": "item-116",
+    "sourceSha256": "27028eb9befdf7809922b95610009a4fedf03e6b7541b3400c8c3973a9d02434",
+    "heldAssetId": "item-116-held",
+    "heldSourceSha256": "3cbf883866f289fe2c5d61430f40d994ece0104b796c36c9280d229e587a14eb",
+    "heldRevision": "3cbf883866f289fe2c5d61430f40d994ece0104b796c36c9280d229e587a14eb",
+    "heldTriangles": 2183,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-116-pickup-0.glb",
+    "originalRevision": "7a33e45d06b8c7fed95ddec28f86f6c361e6b7795e749e6491773cabce1bcc99",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-116-held-0.glb",
+    "heldOriginalRevision": "455f01f68ba6e294ab0b38c3b99ba445c17ddc037c0cd8fc5c70c9da3b66b521",
+    "sourceRootTransform": {
+      "id": "sharedassets8.assets-26",
+      "name": "Consumable_LockMelter_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets8.assets",
+      "pathId": 23,
+      "name": "Consumable_LockMelter_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.04195556557507047,
+        "y": -0.11677685542241749,
+        "z": -0.13572359281097254
+      },
+      "rot": {
+        "x": -0.408758834501794,
+        "y": -0.6966750723020383,
+        "z": -0.17833725711861573,
+        "w": 0.561921597354198
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.10252099111448795,
+        "y": -0.03789038137958376,
+        "z": -0.10526965116789415
+      },
+      "rot": {
+        "x": 0.5513038614885704,
+        "y": 0.6798190490769166,
+        "z": 0.29834336456324717,
+        "w": -0.38065909898625766
+      }
+    },
+    "file": "low/item-116.glb",
+    "revision": "27028eb9befdf7809922b95610009a4fedf03e6b7541b3400c8c3973a9d02434",
+    "triangles": 1560,
+    "sourceRevision": "7a33e45d06b8c7fed95ddec28f86f6c361e6b7795e749e6491773cabce1bcc99",
+    "sourceFile": "artifacts/rebuilt-models/models/item-116-low.glb",
+    "level": "low",
+    "heldFile": "low/item-116-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-116-held-low.glb"
+  },
+  {
+    "id": "item-117",
+    "name": "Fog Repeller",
+    "itemIds": [
+      117
+    ],
+    "assetId": "item-117",
+    "sourceSha256": "36d64175c20ada81c90327c1a3f340659c47b306ad0511d6f990849201a70c47",
+    "heldAssetId": "item-117-held",
+    "heldSourceSha256": "db39806f379b79813f9c3a6968563e538273318d6a55e72d78c9ac469510a071",
+    "heldRevision": "db39806f379b79813f9c3a6968563e538273318d6a55e72d78c9ac469510a071",
+    "heldTriangles": 6000,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-117-pickup-0.glb",
+    "originalRevision": "ea3a0084806eeb91156d829cb9c1aef7b498f4d177645b44d86a709eafa5907e",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-117-held-0.glb",
+    "heldOriginalRevision": "e9befc3d6e3069616e84bc53c3ed970f12eb9d838303e8ba0f0cb4e531ce36e2",
+    "sourceRootTransform": {
+      "id": "sharedassets9.assets-274",
+      "name": "Consumable_FogRepeller_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets9.assets",
+      "pathId": 154,
+      "name": "Consumable_FogRepeller_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.05444307625293732,
+        "y": 0.18627912111982578,
+        "z": -0.27441928020067674
+      },
+      "rot": {
+        "x": 0.6617622284948935,
+        "y": 0.18269461111388213,
+        "z": 0.7269109489611024,
+        "w": -0.017143636950464676
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.05718692019581795,
+        "y": -0.032813419960446656,
+        "z": -0.004617305875048296
+      },
+      "rot": {
+        "x": 0.16507877593076176,
+        "y": -0.04288654381625445,
+        "z": 0.9851835914061239,
+        "w": 0.017973127741982956
+      }
+    },
+    "file": "low/item-117.glb",
+    "revision": "36d64175c20ada81c90327c1a3f340659c47b306ad0511d6f990849201a70c47",
+    "triangles": 2164,
+    "sourceRevision": "ea3a0084806eeb91156d829cb9c1aef7b498f4d177645b44d86a709eafa5907e",
+    "sourceFile": "artifacts/rebuilt-models/models/item-117-low.glb",
+    "level": "low",
+    "heldFile": "low/item-117-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-117-held-low.glb"
+  },
+  {
+    "id": "item-139",
+    "name": "Explosive Tripmine",
+    "itemIds": [
+      139
+    ],
+    "assetId": "item-139",
+    "sourceSha256": "c86cf7810051c8c64a512f18b4f23107a290653333dfeece6b84e59676c7db2b",
+    "heldAssetId": "item-139-held",
+    "heldSourceSha256": "736612b70bb99cd1124d096ac5794225f3405c5466fd99dff01bb630cdbc04cf",
+    "heldRevision": "736612b70bb99cd1124d096ac5794225f3405c5466fd99dff01bb630cdbc04cf",
+    "heldTriangles": 1009,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-139-pickup-0.glb",
+    "originalRevision": "21b29215f408ff63bfac230a06345e928ea139c6a9dc8939cbd452221242aae5",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-139-held-0.glb",
+    "heldOriginalRevision": "bfcf201562bccd85bd13068111c6e9921ceee7b8a6a83ae79d24ae9e5ec9c774",
+    "sourceRootTransform": {
+      "id": "sharedassets9.assets-298",
+      "name": "Consumable_Tripmine_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets9.assets",
+      "pathId": 207,
+      "name": "Consumable_Tripmine_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.10359448194503784,
+        "y": 0.18306557834148407,
+        "z": -0.0855550765991211
+      },
+      "rot": {
+        "x": -0.27256307662169343,
+        "y": -0.1510498042521643,
+        "z": -0.7688578942583086,
+        "w": 0.5583465450189329
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.10108452290296555,
+        "y": 0.15156841278076172,
+        "z": -0.11699981242418289
+      },
+      "rot": {
+        "x": -0.3179117481350181,
+        "y": -0.09435360811107646,
+        "z": -0.6090689320777721,
+        "w": 0.7204613473405777
+      }
+    },
+    "file": "low/item-139.glb",
+    "revision": "c86cf7810051c8c64a512f18b4f23107a290653333dfeece6b84e59676c7db2b",
+    "triangles": 1009,
+    "sourceRevision": "21b29215f408ff63bfac230a06345e928ea139c6a9dc8939cbd452221242aae5",
+    "sourceFile": "artifacts/rebuilt-models/models/item-139-low.glb",
+    "level": "low",
+    "heldFile": "low/item-139-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-139-held-low.glb"
+  },
+  {
+    "id": "item-144",
+    "name": "Cfoam Tripmine",
+    "itemIds": [
+      144
+    ],
+    "assetId": "item-144",
+    "sourceSha256": "0b126be82990662aa7285bc240917baf2646e643986797540d7b53aba961549f",
+    "heldAssetId": "item-144-held",
+    "heldSourceSha256": "46607c443aa99d437b9f5ae437d8ec0246bbf9812129233caa7e97bece5a57e3",
+    "heldRevision": "46607c443aa99d437b9f5ae437d8ec0246bbf9812129233caa7e97bece5a57e3",
+    "heldTriangles": 6000,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-144-pickup-0.glb",
+    "originalRevision": "338246407159afae90442d0b85eba161345f241b84606585ac5987b6abddadfa",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-144-held-0.glb",
+    "heldOriginalRevision": "c33140ce265fae2d435235fbee5464f2279d56bf925f7c4f14629e530639d3f8",
+    "sourceRootTransform": {
+      "id": "sharedassets9.assets-296",
+      "name": "Consumable_Tripmine_Glue_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets9.assets",
+      "pathId": 205,
+      "name": "Consumable_Tripmine_Glue_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.10359448194503784,
+        "y": 0.18306557834148407,
+        "z": -0.0855550765991211
+      },
+      "rot": {
+        "x": -0.27256307662169343,
+        "y": -0.1510498042521643,
+        "z": -0.7688578942583086,
+        "w": 0.5583465450189329
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.10108452290296555,
+        "y": 0.15156841278076172,
+        "z": -0.11699981242418289
+      },
+      "rot": {
+        "x": -0.3179117481350181,
+        "y": -0.09435360811107646,
+        "z": -0.6090689320777721,
+        "w": 0.7204613473405777
+      }
+    },
+    "file": "low/item-144.glb",
+    "revision": "0b126be82990662aa7285bc240917baf2646e643986797540d7b53aba961549f",
+    "triangles": 1955,
+    "sourceRevision": "338246407159afae90442d0b85eba161345f241b84606585ac5987b6abddadfa",
+    "sourceFile": "artifacts/rebuilt-models/models/item-144-low.glb",
+    "level": "low",
+    "heldFile": "low/item-144-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-144-held-low.glb"
+  },
+  {
+    "id": "item-131",
+    "name": "Power Cell",
+    "itemIds": [
+      131
+    ],
+    "assetId": "item-131",
+    "sourceSha256": "764bf1e2e62eb173a0a75738fa672bf2e2b0fc22c55085bba9e32232d21533eb",
+    "heldAssetId": "item-131-held",
+    "heldSourceSha256": "972efe4f00fd76a4553d8f6717cfa1f240c902e96761a842bed20bd7a8e187a3",
+    "heldRevision": "972efe4f00fd76a4553d8f6717cfa1f240c902e96761a842bed20bd7a8e187a3",
+    "heldTriangles": 4910,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-131-pickup-1.glb",
+    "originalRevision": "6bf313178d9a1512ed23edd7e26961fd56a600d6634ad665f436619fd9f6dd49",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-131-held-1.glb",
+    "heldOriginalRevision": "95453ef1e9dc9860332e0e37af746514e6b1a2e333ad2f807802d95549ae3c3e",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1295",
+      "name": "Generator_Cell_pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 770,
+      "name": "Generator_Cell_pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.2898000104336507,
+        "y": -0.14630003779668577,
+        "z": -0.24920000987650218
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-131.glb",
+    "revision": "764bf1e2e62eb173a0a75738fa672bf2e2b0fc22c55085bba9e32232d21533eb",
+    "triangles": 5113,
+    "sourceRevision": "6bf313178d9a1512ed23edd7e26961fd56a600d6634ad665f436619fd9f6dd49",
+    "sourceFile": "artifacts/rebuilt-models/models/item-131-low.glb",
+    "level": "low",
+    "heldFile": "low/item-131-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-131-held-low.glb"
+  },
+  {
+    "id": "item-133",
+    "name": "Fog Turbine",
+    "itemIds": [
+      133
+    ],
+    "assetId": "item-133",
+    "sourceSha256": "d983142dcfa18c43588b6fd29921f2b96db87ec123ef347fa5e2ef51cf68d2ec",
+    "heldAssetId": "item-133-held",
+    "heldSourceSha256": "4954b036e6d9eaf790c86e01c436d0659dd9821a473881124ea9877312d7a3e3",
+    "heldRevision": "4954b036e6d9eaf790c86e01c436d0659dd9821a473881124ea9877312d7a3e3",
+    "heldTriangles": 6000,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-133-pickup-1.glb",
+    "originalRevision": "d3fc4fe9f591bbe623be34826feed7d1797cb37575059b6141b840908808c9ab",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-133-held-1.glb",
+    "heldOriginalRevision": "6a2b5b16b29cd1a0936d979dac4d661f3055aec98158673400977eafce9dc80d",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1019",
+      "name": "DefoggerBig_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 542,
+      "name": "DefoggerBig_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.21609166855718676,
+        "y": -0.03982092485963937,
+        "z": -0.2535387236571395
+      },
+      "rot": {
+        "x": 0.5547516297579824,
+        "y": 0.6486730545977426,
+        "z": 0.40255959770344596,
+        "w": -0.33078643838062094
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.3063893315813922,
+        "y": -0.0046664423764971605,
+        "z": 0.003002792843795558
+      },
+      "rot": {
+        "x": 0.4579510669366929,
+        "y": 0.6108639903780752,
+        "z": 0.5133176133077333,
+        "w": -0.3919579485339874
+      }
+    },
+    "file": "low/item-133.glb",
+    "revision": "d983142dcfa18c43588b6fd29921f2b96db87ec123ef347fa5e2ef51cf68d2ec",
+    "triangles": 11216,
+    "sourceRevision": "d3fc4fe9f591bbe623be34826feed7d1797cb37575059b6141b840908808c9ab",
+    "sourceFile": "artifacts/rebuilt-models/models/item-133-low.glb",
+    "level": "low",
+    "heldFile": "low/item-133-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-133-held-low.glb"
+  },
+  {
+    "id": "item-137",
+    "name": "Neonate",
+    "itemIds": [
+      137
+    ],
+    "assetId": "item-137",
+    "sourceSha256": "ee00bf2cf154c78d2c85359533c18ab5b495c2e5aa2b9e4b76c26dcbbb1d84fc",
+    "heldAssetId": "item-137-held",
+    "heldSourceSha256": "ec58cdd07e411ad12301cc0f5a0895dffdb6d3c5b12ff4217a7597633c8d24d0",
+    "heldRevision": "ec58cdd07e411ad12301cc0f5a0895dffdb6d3c5b12ff4217a7597633c8d24d0",
+    "heldTriangles": 1293,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-137-pickup-0.glb",
+    "originalRevision": "5758ed61a0b8f1602444af511493fc9f5716e05f9f860b08b5bf748b80fb3af7",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-137-held-1.glb",
+    "heldOriginalRevision": "04e7bc8c4616cef18f76c23f0324e9f48fe203cbeac50ff0ae1efcbc07fc0d68",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-994",
+      "name": "HSUSmall_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 319,
+      "name": "HSUSmall_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.21559999516010286,
+        "y": -0.013299999345839031,
+        "z": -0.2345000018477439
+      },
+      "rot": {
+        "x": 0.4628640064379037,
+        "y": 0.5972291228318034,
+        "z": 0.47033035064324324,
+        "w": -0.45592065938012816
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.28140000221729267,
+        "y": -0.13999999970197674,
+        "z": 0.13090000227689735
+      },
+      "rot": {
+        "x": 0.6746163053111945,
+        "y": 0.03343961231788689,
+        "z": 0.7367748276801069,
+        "w": -0.030618396973898718
+      }
+    },
+    "file": "low/item-137.glb",
+    "revision": "ee00bf2cf154c78d2c85359533c18ab5b495c2e5aa2b9e4b76c26dcbbb1d84fc",
+    "triangles": 1345,
+    "sourceRevision": "5758ed61a0b8f1602444af511493fc9f5716e05f9f860b08b5bf748b80fb3af7",
+    "sourceFile": "artifacts/rebuilt-models/models/item-137-low.glb",
+    "level": "low",
+    "heldFile": "low/item-137-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-137-held-low.glb"
+  },
+  {
+    "id": "item-141",
+    "name": "NEONATE HSU",
+    "itemIds": [
+      141
+    ],
+    "assetId": "item-141",
+    "sourceSha256": "db76e44cdc0756df757710df06d01eadf86a3d3a44bc4ad30a036ec4cf17d1ca",
+    "heldAssetId": "item-141-held",
+    "heldSourceSha256": "8c63654611be418b65d4be50fe73fa7dca8e10e9a303112727dc407707b35523",
+    "heldRevision": "8c63654611be418b65d4be50fe73fa7dca8e10e9a303112727dc407707b35523",
+    "heldTriangles": 2688,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-141-pickup-0.glb",
+    "originalRevision": "de0648edfb512c9e11f11580a602082977691f18864ebe0b3443a97e3dd9ec75",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-141-held-1.glb",
+    "heldOriginalRevision": "69ec8c3a933f5fd51235f5c375195246b20f4fc3d6d75a872df32a260aeff929",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-997",
+      "name": "HSUSmall_Pickup_Stage_2",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 322,
+      "name": "HSUSmall_Pickup_Stage_2"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.26180001191134517,
+        "y": -0.013300048730713776,
+        "z": -0.4704000434090046
+      },
+      "rot": {
+        "x": -0.21176779241208807,
+        "y": -0.581034400657218,
+        "z": -0.5265740209516715,
+        "w": 0.5833294333467212
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.2127999694019418,
+        "y": -0.2835000779120431,
+        "z": -0.23169999223107107
+      },
+      "rot": {
+        "x": 0.6611497213767665,
+        "y": 0.17923209595687012,
+        "z": 0.7078787129495354,
+        "w": -0.17223422846589082
+      }
+    },
+    "file": "low/item-141.glb",
+    "revision": "db76e44cdc0756df757710df06d01eadf86a3d3a44bc4ad30a036ec4cf17d1ca",
+    "triangles": 20445,
+    "sourceRevision": "de0648edfb512c9e11f11580a602082977691f18864ebe0b3443a97e3dd9ec75",
+    "sourceFile": "artifacts/rebuilt-models/models/item-141-low.glb",
+    "level": "low",
+    "heldFile": "low/item-141-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-141-held-low.glb"
+  },
+  {
+    "id": "item-143",
+    "name": "NEONATE HSU",
+    "itemIds": [
+      143
+    ],
+    "assetId": "item-143",
+    "sourceSha256": "a494b9b5516005f76568fedad7bbcf47289c845aa74acefbae7f9d6f0c053699",
+    "heldAssetId": "item-143-held",
+    "heldSourceSha256": "68c7456b91ed507cf4d340d1b46522f783e96e04474dea1d5cb5277db0728310",
+    "heldRevision": "68c7456b91ed507cf4d340d1b46522f783e96e04474dea1d5cb5277db0728310",
+    "heldTriangles": 5997,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-143-pickup-0.glb",
+    "originalRevision": "70f2b5dc4f676de375e5ccf6537630ae8a42eb3033012620e01ef39bfd639d0c",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-143-held-1.glb",
+    "heldOriginalRevision": "8c0f9ec865acaf893d2ed9685f64007da95aea4a7f465399dd1a85668418329d",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-996",
+      "name": "HSUSmall_Pickup_Stage_3",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 321,
+      "name": "HSUSmall_Pickup_Stage_3"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.2261000058293341,
+        "y": -0.013299999345839031,
+        "z": -0.1756999879956247
+      },
+      "rot": {
+        "x": 0.48900653657265686,
+        "y": 0.5701754695785135,
+        "z": 0.4430869662208851,
+        "w": -0.48933268994142276
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.22539999399185184,
+        "y": -0.13299999606609347,
+        "z": 0.13789999548196796
+      },
+      "rot": {
+        "x": 0.6634250962177869,
+        "y": 0.12685592610602467,
+        "z": 0.725372739637669,
+        "w": -0.13269930034007504
+      }
+    },
+    "file": "low/item-143.glb",
+    "revision": "a494b9b5516005f76568fedad7bbcf47289c845aa74acefbae7f9d6f0c053699",
+    "triangles": 19548,
+    "sourceRevision": "70f2b5dc4f676de375e5ccf6537630ae8a42eb3033012620e01ef39bfd639d0c",
+    "sourceFile": "artifacts/rebuilt-models/models/item-143-low.glb",
+    "level": "low",
+    "heldFile": "low/item-143-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-143-held-low.glb"
+  },
+  {
+    "id": "item-170",
+    "name": "NEONATE HSU",
+    "itemIds": [
+      170
+    ],
+    "assetId": "item-170",
+    "sourceSha256": "5514ad0c4127844e11cf7791cfaa4b09bbf0a1f71f79c8901af6f2c7e38f1599",
+    "heldAssetId": "item-170-held",
+    "heldSourceSha256": "85e50c6885352c087535f5832936636a783ab599d264b64ae7084dc1110b62ba",
+    "heldRevision": "85e50c6885352c087535f5832936636a783ab599d264b64ae7084dc1110b62ba",
+    "heldTriangles": 58373,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-170-pickup-0.glb",
+    "originalRevision": "a62b06d0f73064191df212dab85ebc7cb91bfb908fa37aab2fb930b353508e4f",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-170-held-1.glb",
+    "heldOriginalRevision": "5cff94b098674d0dabb5947504d883d9407a92d038d558b7f581e6abc4f8ce24",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1251",
+      "name": "HSUSmall_Pickup_Stage_5",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 822,
+      "name": "HSUSmall_Pickup_Stage_5"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.19040000710487348,
+        "y": 0.030799999308586123,
+        "z": -0.2345000018477439
+      },
+      "rot": {
+        "x": -0.03518028746101145,
+        "y": -0.652860109971673,
+        "z": -0.35324598941335084,
+        "w": 0.6691437029109057
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.2449999916553498,
+        "y": -0.10430000097751613,
+        "z": 0.08819999991655347
+      },
+      "rot": {
+        "x": 0.6407570877672929,
+        "y": 0.17204287001432356,
+        "z": 0.6940053284208605,
+        "w": -0.27962154687481783
+      }
+    },
+    "file": "low/item-170.glb",
+    "revision": "5514ad0c4127844e11cf7791cfaa4b09bbf0a1f71f79c8901af6f2c7e38f1599",
+    "triangles": 58576,
+    "sourceRevision": "a62b06d0f73064191df212dab85ebc7cb91bfb908fa37aab2fb930b353508e4f",
+    "sourceFile": "artifacts/rebuilt-models/models/item-170-low.glb",
+    "level": "low",
+    "heldFile": "low/item-170-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-170-held-low.glb"
+  },
+  {
+    "id": "item-145",
+    "name": "IMPRINTED NEONATE HSU",
+    "itemIds": [
+      145
+    ],
+    "assetId": "item-145",
+    "sourceSha256": "0c3560aa20dbb2bb9408bc3f5b772b6b7c0f85747244c8cdf94968594cd62a7f",
+    "heldAssetId": "item-145-held",
+    "heldSourceSha256": "9cd685ea08ac0733a1fb153e22e16543cddae465c1b6cef11da5f57ca4dc95c1",
+    "heldRevision": "9cd685ea08ac0733a1fb153e22e16543cddae465c1b6cef11da5f57ca4dc95c1",
+    "heldTriangles": 5639,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-145-pickup-0.glb",
+    "originalRevision": "c05878481120311cd24e7aa2e40a703e8abf9b5ae141d49e3a6ba2095e500c11",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-145-held-1.glb",
+    "heldOriginalRevision": "73c094c020f6e71adc5ea21ead7fd7246222f16b8fbb2f9b8f96577fd45f03fe",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-998",
+      "name": "DataSphere_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 323,
+      "name": "DataSphere_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.21070002097899324,
+        "y": -0.3801000448512508,
+        "z": -0.18479996667074633
+      },
+      "rot": {
+        "x": 0.3596552652443315,
+        "y": -0.11509541513503865,
+        "z": 0.8228420371959551,
+        "w": 0.4246552924668822
+      }
+    },
+    "file": "low/item-145.glb",
+    "revision": "0c3560aa20dbb2bb9408bc3f5b772b6b7c0f85747244c8cdf94968594cd62a7f",
+    "triangles": 5867,
+    "sourceRevision": "c05878481120311cd24e7aa2e40a703e8abf9b5ae141d49e3a6ba2095e500c11",
+    "sourceFile": "artifacts/rebuilt-models/models/item-145-low.glb",
+    "level": "low",
+    "heldFile": "low/item-145-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-145-held-low.glb"
+  },
+  {
+    "id": "item-175",
+    "name": "IMPRINTED NEONATE HSU",
+    "itemIds": [
+      175
+    ],
+    "assetId": "item-175",
+    "sourceSha256": "017519e3aa18fd09f9e1a6c82ae4b71fe498dbe840151f94d3ad9146ef5e7f23",
+    "heldAssetId": "item-175-held",
+    "heldSourceSha256": "80ca7376d4dfaa84bf7cc34f1471d5c0669c54adb9709fbd463389645f7e3d40",
+    "heldRevision": "80ca7376d4dfaa84bf7cc34f1471d5c0669c54adb9709fbd463389645f7e3d40",
+    "heldTriangles": 5994,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-175-pickup-0.glb",
+    "originalRevision": "6d137c231272a91d963bb50268ac53c6cbcc6947b217b40aea54809a090f5979",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-175-held-1.glb",
+    "heldOriginalRevision": "e3b857fe9cff16f427427c3d121fcf2db2a8716794e53123ab86a57ead5c87fd",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-993",
+      "name": "HSUSmall_Pickup_Stage_4",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 318,
+      "name": "HSUSmall_Pickup_Stage_4"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.24570000349283205,
+        "y": -0.013299999345839031,
+        "z": -0.20789999011755
+      },
+      "rot": {
+        "x": 0.4628640064379037,
+        "y": 0.5972291228318034,
+        "z": 0.47033035064324324,
+        "w": -0.45592065938012816
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.22189999738931654,
+        "y": -0.13369999747276307,
+        "z": 0.13090000227689735
+      },
+      "rot": {
+        "x": 0.6746163053111945,
+        "y": 0.03343961231788689,
+        "z": 0.7367748276801069,
+        "w": -0.030618396973898718
+      }
+    },
+    "file": "low/item-175.glb",
+    "revision": "017519e3aa18fd09f9e1a6c82ae4b71fe498dbe840151f94d3ad9146ef5e7f23",
+    "triangles": 23997,
+    "sourceRevision": "6d137c231272a91d963bb50268ac53c6cbcc6947b217b40aea54809a090f5979",
+    "sourceFile": "artifacts/rebuilt-models/models/item-175-low.glb",
+    "level": "low",
+    "heldFile": "low/item-175-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-175-held-low.glb"
+  },
+  {
+    "id": "item-177",
+    "name": "IMPRINTED NEONATE HSU",
+    "itemIds": [
+      177
+    ],
+    "assetId": "item-177",
+    "sourceSha256": "e4a1c3aecacfb8cec2630f95b4e5cbc4afdaea8c6d93563a52172f8b07578199",
+    "heldAssetId": "item-177-held",
+    "heldSourceSha256": "80ca7376d4dfaa84bf7cc34f1471d5c0669c54adb9709fbd463389645f7e3d40",
+    "heldRevision": "80ca7376d4dfaa84bf7cc34f1471d5c0669c54adb9709fbd463389645f7e3d40",
+    "heldTriangles": 5994,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-177-pickup-0.glb",
+    "originalRevision": "b738d662bb105978e37d2d1d879426b1e52c1c6ba62efd461163bf6c75ee526d",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-175-held-1.glb",
+    "heldOriginalRevision": "e3b857fe9cff16f427427c3d121fcf2db2a8716794e53123ab86a57ead5c87fd",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-995",
+      "name": "HSUSmall_Pickup_Stage_4_static",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 320,
+      "name": "HSUSmall_Pickup_Stage_4_static"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.24570000349283205,
+        "y": -0.013299999345839031,
+        "z": -0.20789999011755
+      },
+      "rot": {
+        "x": 0.4628640064379037,
+        "y": 0.5972291228318034,
+        "z": 0.47033035064324324,
+        "w": -0.45592065938012816
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.22189999738931654,
+        "y": -0.13369999747276307,
+        "z": 0.13090000227689735
+      },
+      "rot": {
+        "x": 0.6746163053111945,
+        "y": 0.03343961231788689,
+        "z": 0.7367748276801069,
+        "w": -0.030618396973898718
+      }
+    },
+    "file": "low/item-177.glb",
+    "revision": "e4a1c3aecacfb8cec2630f95b4e5cbc4afdaea8c6d93563a52172f8b07578199",
+    "triangles": 23997,
+    "sourceRevision": "b738d662bb105978e37d2d1d879426b1e52c1c6ba62efd461163bf6c75ee526d",
+    "sourceFile": "artifacts/rebuilt-models/models/item-177-low.glb",
+    "level": "low",
+    "heldFile": "low/item-177-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-177-held-low.glb"
+  },
+  {
+    "id": "item-164",
+    "name": "Matter Wave Projector",
+    "itemIds": [
+      164,
+      166
+    ],
+    "assetId": "item-164",
+    "sourceSha256": "3c081b3285a5cb55427be3a205e6e5d1e76214e77ffabb8a82bedf53d2285076",
+    "heldAssetId": "item-164-held",
+    "heldSourceSha256": "f6ceeb75e5c06662d390cabca9c055280d826d89b41a4b02626512632de19a11",
+    "heldRevision": "f6ceeb75e5c06662d390cabca9c055280d826d89b41a4b02626512632de19a11",
+    "heldTriangles": 8225,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-164-pickup-1.glb",
+    "originalRevision": "0f213d2927f379a72bf865b973118c0c3db4b5706139d88dce26046521a7066a",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-164-held-1.glb",
+    "heldOriginalRevision": "901f9c69f3301d7c9f64f36cf31f9a58efeb282885a17e65e68559c681212b77",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1296",
+      "name": "MWP_pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 771,
+      "name": "MWP_pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.2898000104336507,
+        "y": -0.14630003779668577,
+        "z": -0.24920000987650218
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-164.glb",
+    "revision": "3c081b3285a5cb55427be3a205e6e5d1e76214e77ffabb8a82bedf53d2285076",
+    "triangles": 8601,
+    "sourceRevision": "0f213d2927f379a72bf865b973118c0c3db4b5706139d88dce26046521a7066a",
+    "sourceFile": "artifacts/rebuilt-models/models/item-164-low.glb",
+    "level": "low",
+    "heldFile": "low/item-164-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-164-held-low.glb"
+  },
+  {
+    "id": "item-151",
+    "name": "Data Sphere",
+    "itemIds": [
+      151,
+      181
+    ],
+    "assetId": "item-151",
+    "sourceSha256": "0c3560aa20dbb2bb9408bc3f5b772b6b7c0f85747244c8cdf94968594cd62a7f",
+    "heldAssetId": "item-151-held",
+    "heldSourceSha256": "9cd685ea08ac0733a1fb153e22e16543cddae465c1b6cef11da5f57ca4dc95c1",
+    "heldRevision": "9cd685ea08ac0733a1fb153e22e16543cddae465c1b6cef11da5f57ca4dc95c1",
+    "heldTriangles": 5639,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-145-pickup-0.glb",
+    "originalRevision": "c05878481120311cd24e7aa2e40a703e8abf9b5ae141d49e3a6ba2095e500c11",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-145-held-1.glb",
+    "heldOriginalRevision": "73c094c020f6e71adc5ea21ead7fd7246222f16b8fbb2f9b8f96577fd45f03fe",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-998",
+      "name": "DataSphere_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 323,
+      "name": "DataSphere_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.21070002097899324,
+        "y": -0.3801000448512508,
+        "z": -0.18479996667074633
+      },
+      "rot": {
+        "x": 0.3596552652443315,
+        "y": -0.11509541513503865,
+        "z": 0.8228420371959551,
+        "w": 0.4246552924668822
+      }
+    },
+    "file": "low/item-151.glb",
+    "revision": "0c3560aa20dbb2bb9408bc3f5b772b6b7c0f85747244c8cdf94968594cd62a7f",
+    "triangles": 5867,
+    "sourceRevision": "c05878481120311cd24e7aa2e40a703e8abf9b5ae141d49e3a6ba2095e500c11",
+    "sourceFile": "artifacts/rebuilt-models/models/item-151-low.glb",
+    "level": "low",
+    "heldFile": "low/item-151-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-151-held-low.glb"
+  },
+  {
+    "id": "item-138",
+    "name": "Cargo Crate",
+    "itemIds": [
+      138
+    ],
+    "assetId": "item-138",
+    "sourceSha256": "8d4c53b74fbbb65f4ad387f3c7e25e6b1cb58f0febf35094f0bfb29c381aae84",
+    "heldAssetId": "item-138-held",
+    "heldSourceSha256": "eca4fe96260d4d97f4ad24db59ae95d2c59d7358aff8afc233193658cc781056",
+    "heldRevision": "eca4fe96260d4d97f4ad24db59ae95d2c59d7358aff8afc233193658cc781056",
+    "heldTriangles": 3318,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-138-pickup-1.glb",
+    "originalRevision": "78632b0855807de2d43775470331e9e1d675cd0a107e3069d18edcf3152698ec",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-138-held-1.glb",
+    "heldOriginalRevision": "4948c254d9248d909717ae4aebb6e5a446ef4cd327b72ec8052ebebdb0f5a67d",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1151",
+      "name": "CargoCrate_HighSecurity_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 769,
+      "name": "CargoCrate_HighSecurity_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.28980001251880494,
+        "y": -0.18620003706973312,
+        "z": -0.22820000121721098
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-138.glb",
+    "revision": "8d4c53b74fbbb65f4ad387f3c7e25e6b1cb58f0febf35094f0bfb29c381aae84",
+    "triangles": 3456,
+    "sourceRevision": "78632b0855807de2d43775470331e9e1d675cd0a107e3069d18edcf3152698ec",
+    "sourceFile": "artifacts/rebuilt-models/models/item-138-low.glb",
+    "level": "low",
+    "heldFile": "low/item-138-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-138-held-low.glb"
+  },
+  {
+    "id": "item-176",
+    "name": "Cargo Crate",
+    "itemIds": [
+      176
+    ],
+    "assetId": "item-176",
+    "sourceSha256": "efaf55912932b7bf4329a0223be9fd0f0206e6679fef78a1d1314036e8975553",
+    "heldAssetId": "item-176-held",
+    "heldSourceSha256": "d5c5b41cfb16aaecc08cf2d123323e5d44207cb6dc858eba6f7ae86fe75f2767",
+    "heldRevision": "d5c5b41cfb16aaecc08cf2d123323e5d44207cb6dc858eba6f7ae86fe75f2767",
+    "heldTriangles": 1740,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-176-pickup-1.glb",
+    "originalRevision": "dd01cf08d048dbce322475d4abed2406b2aefa248273fc29acb1c35eac89f6cb",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-176-held-1.glb",
+    "heldOriginalRevision": "04a0f3389bd48f73965e1f90b6a99ed096297d3eb0257328fea0a0ee892bf095",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1291",
+      "name": "CargoCrate_Generic_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 655,
+      "name": "CargoCrate_Generic_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.28980001251880494,
+        "y": -0.18620003706973312,
+        "z": -0.22820000121721098
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-176.glb",
+    "revision": "efaf55912932b7bf4329a0223be9fd0f0206e6679fef78a1d1314036e8975553",
+    "triangles": 1812,
+    "sourceRevision": "dd01cf08d048dbce322475d4abed2406b2aefa248273fc29acb1c35eac89f6cb",
+    "sourceFile": "artifacts/rebuilt-models/models/item-176-low.glb",
+    "level": "low",
+    "heldFile": "low/item-176-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-176-held-low.glb"
+  },
+  {
+    "id": "item-154",
+    "name": "Hisec Cargo Crate",
+    "itemIds": [
+      154
+    ],
+    "assetId": "item-154",
+    "sourceSha256": "8d4c53b74fbbb65f4ad387f3c7e25e6b1cb58f0febf35094f0bfb29c381aae84",
+    "heldAssetId": "item-154-held",
+    "heldSourceSha256": "eca4fe96260d4d97f4ad24db59ae95d2c59d7358aff8afc233193658cc781056",
+    "heldRevision": "eca4fe96260d4d97f4ad24db59ae95d2c59d7358aff8afc233193658cc781056",
+    "heldTriangles": 3318,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-138-pickup-1.glb",
+    "originalRevision": "78632b0855807de2d43775470331e9e1d675cd0a107e3069d18edcf3152698ec",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-138-held-1.glb",
+    "heldOriginalRevision": "4948c254d9248d909717ae4aebb6e5a446ef4cd327b72ec8052ebebdb0f5a67d",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1151",
+      "name": "CargoCrate_HighSecurity_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 769,
+      "name": "CargoCrate_HighSecurity_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.28980001251880494,
+        "y": -0.18620003706973312,
+        "z": -0.22820000121721098
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-154.glb",
+    "revision": "8d4c53b74fbbb65f4ad387f3c7e25e6b1cb58f0febf35094f0bfb29c381aae84",
+    "triangles": 3456,
+    "sourceRevision": "78632b0855807de2d43775470331e9e1d675cd0a107e3069d18edcf3152698ec",
+    "sourceFile": "artifacts/rebuilt-models/models/item-154-low.glb",
+    "level": "low",
+    "heldFile": "low/item-154-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-154-held-low.glb"
+  },
+  {
+    "id": "item-155",
+    "name": "Cargo Crate High Security Open",
+    "itemIds": [
+      155
+    ],
+    "assetId": "item-155",
+    "sourceSha256": "4e36b7231f6a476a8ff7659b13099508d78fe6a623b64970503f22ad8b0c67a4",
+    "heldAssetId": "item-155-held",
+    "heldSourceSha256": "75e7f351879a4243f9018f9564c8e2a0cc069cd090f02a499c7c78dc04f5ca50",
+    "heldRevision": "75e7f351879a4243f9018f9564c8e2a0cc069cd090f02a499c7c78dc04f5ca50",
+    "heldTriangles": 4266,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-155-pickup-1.glb",
+    "originalRevision": "c42a3da9fbe21ed9f0dc05197c9a722615348c46795014a5b4afbdd546f4f945",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-155-held-1.glb",
+    "heldOriginalRevision": "651c95b9f15dc360d93f3887419ea6c4c2f5b85272b258615c240aa4f550e434",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1165",
+      "name": "CargoCrate_HighSecurity_open_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 786,
+      "name": "CargoCrate_HighSecurity_open_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.28980001251880494,
+        "y": -0.18620003706973312,
+        "z": -0.22820000121721098
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-155.glb",
+    "revision": "4e36b7231f6a476a8ff7659b13099508d78fe6a623b64970503f22ad8b0c67a4",
+    "triangles": 4444,
+    "sourceRevision": "c42a3da9fbe21ed9f0dc05197c9a722615348c46795014a5b4afbdd546f4f945",
+    "sourceFile": "artifacts/rebuilt-models/models/item-155-low.glb",
+    "level": "low",
+    "heldFile": "low/item-155-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-155-held-low.glb"
+  },
+  {
+    "id": "item-148",
+    "name": "Cryo",
+    "itemIds": [
+      148
+    ],
+    "assetId": "item-148",
+    "sourceSha256": "199b5c08c3953f91beecd1a87ec3bef8a8ee927b1709ce12177116ba46daf990",
+    "heldAssetId": "item-148-held",
+    "heldSourceSha256": "b2534cd01dccd7a1394c9963a2c1fbd5b8c9a7b545a0bedbbae369693519ebc6",
+    "heldRevision": "b2534cd01dccd7a1394c9963a2c1fbd5b8c9a7b545a0bedbbae369693519ebc6",
+    "heldTriangles": 18916,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-148-pickup-1.glb",
+    "originalRevision": "f3c022566e26c457e57a9de7bd8c4c24b59658d19a04d72fde3f6a5cb4aaf956",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-148-held-1.glb",
+    "heldOriginalRevision": "7c1350053b0b93ddd7315aa3e3c896d13d1331e949d92fce8689ff3c6b79dc01",
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1345",
+      "name": "CryoHardcase_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 597,
+      "name": "CryoHardcase_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.0422821114042139,
+        "y": 0.03246152103696074,
+        "z": -0.4185827724477304
+      },
+      "rot": {
+        "x": 0.8098550662295038,
+        "y": 0.12422167737414985,
+        "z": 0.5448109408093516,
+        "w": 0.17856311306422765
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": -0.28980001251880494,
+        "y": -0.18620003706973312,
+        "z": -0.22820000121721098
+      },
+      "rot": {
+        "x": 0.8239296949861185,
+        "y": 0.15547029565198037,
+        "z": 0.4996737987665717,
+        "w": 0.21747399779318793
+      }
+    },
+    "file": "low/item-148.glb",
+    "revision": "199b5c08c3953f91beecd1a87ec3bef8a8ee927b1709ce12177116ba46daf990",
+    "triangles": 18916,
+    "sourceRevision": "f3c022566e26c457e57a9de7bd8c4c24b59658d19a04d72fde3f6a5cb4aaf956",
+    "sourceFile": "artifacts/rebuilt-models/models/item-148-low.glb",
+    "level": "low",
+    "heldFile": "low/item-148-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-148-held-low.glb"
+  },
+  {
+    "id": "item-173",
+    "name": "Collection Case",
+    "itemIds": [
+      173
+    ],
+    "assetId": "item-173",
+    "sourceSha256": "9530cbb7a10b80ecae1c61c016c2199df468ca906ba616b0ee22486a3166118a",
+    "heldAssetId": "item-173-held",
+    "heldSourceSha256": "b43837014836fa120482e0ddddb74ba9443c5671c9a92074b71c5488acd8f89b",
+    "heldRevision": "b43837014836fa120482e0ddddb74ba9443c5671c9a92074b71c5488acd8f89b",
+    "heldTriangles": 30800,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-173-pickup-1.glb",
+    "originalRevision": "6b620ca8375dadd5af811a47a1f3c484d58708ad3c22aa74f96bb5579fc0e889",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-173-held-1.glb",
+    "heldOriginalRevision": "e4befe70af9f828c659f5ecb274f9015620dab8a8d289f936f5760da1308a183",
+    "sourceRootTransform": {
+      "id": "sharedassets6.assets-471",
+      "name": "Sedatives_Case_Pickup",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets6.assets",
+      "pathId": 270,
+      "name": "Sedatives_Case_Pickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.2610999953876812,
+        "y": 0.03499997438789999,
+        "z": -0.34090003304527644
+      },
+      "rot": {
+        "x": 0.5264675877881113,
+        "y": 0.4780923460253732,
+        "z": 0.5483720554669574,
+        "w": -0.43994053741780426
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.29610000048930857,
+        "y": -0.01680000989072451,
+        "z": 0.07350000445381513
+      },
+      "rot": {
+        "x": 0.408306096493213,
+        "y": 0.5645663162552658,
+        "z": 0.6101775250573285,
+        "w": -0.3771397539790093
+      }
+    },
+    "file": "low/item-173.glb",
+    "revision": "9530cbb7a10b80ecae1c61c016c2199df468ca906ba616b0ee22486a3166118a",
+    "triangles": 30800,
+    "sourceRevision": "6b620ca8375dadd5af811a47a1f3c484d58708ad3c22aa74f96bb5579fc0e889",
+    "sourceFile": "artifacts/rebuilt-models/models/item-173-low.glb",
+    "level": "low",
+    "heldFile": "low/item-173-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-173-held-low.glb"
+  },
+  {
+    "id": "item-168",
+    "name": "Data Cube",
+    "itemIds": [
+      168,
+      165,
+      178
+    ],
+    "assetId": "item-168",
+    "sourceSha256": "87c3150adce52a3f896d5342a9ad37a934823cceba6c5eeffa07be3b12f294e8",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-168-pickup-1.glb",
+    "originalRevision": "66e946bfa8fb26c45afcb318c32dd1590539706243f14299a64a0ee6a050f92d",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1102",
+      "name": "MWP_DataCube",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 485,
+      "name": "MWP_DataCube"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-168.glb",
+    "revision": "87c3150adce52a3f896d5342a9ad37a934823cceba6c5eeffa07be3b12f294e8",
+    "triangles": 220,
+    "sourceRevision": "66e946bfa8fb26c45afcb318c32dd1590539706243f14299a64a0ee6a050f92d",
+    "sourceFile": "artifacts/rebuilt-models/models/item-168-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-179",
+    "name": "DATA_CUBES",
+    "itemIds": [
+      179
+    ],
+    "assetId": "item-179",
+    "sourceSha256": "d0be5546a9c339a8624d24f227afecf3c8deac43d18457d0b6c1b1eca3ec01f7",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-179-pickup-0.glb",
+    "originalRevision": "fa33cdd3738614979c0f296777804042cc3adf5ee1bca51ae0655539271926a9",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1101",
+      "name": "MWP_DataCubes",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 484,
+      "name": "MWP_DataCubes"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-179.glb",
+    "revision": "d0be5546a9c339a8624d24f227afecf3c8deac43d18457d0b6c1b1eca3ec01f7",
+    "triangles": 660,
+    "sourceRevision": "fa33cdd3738614979c0f296777804042cc3adf5ee1bca51ae0655539271926a9",
+    "sourceFile": "artifacts/rebuilt-models/models/item-179-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-146",
+    "name": "Bulkhead Key",
+    "itemIds": [
+      146
+    ],
+    "assetId": "item-146",
+    "sourceSha256": "ecc5163cf80b2c8c5c3c45c547818d4a973d370d09ba917812adc98bacf476ac",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-146-pickup-1.glb",
+    "originalRevision": "d317a22ed63a705ea8ef8e8e4296a85195d2002e13465567c8b1f6d5e0a719ff",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-851",
+      "name": "keycard_bulkhead",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        1.5579999685287476,
+        -3.8010001182556152
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 257,
+      "name": "keycard_bulkhead"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-146.glb",
+    "revision": "ecc5163cf80b2c8c5c3c45c547818d4a973d370d09ba917812adc98bacf476ac",
+    "triangles": 1292,
+    "sourceRevision": "d317a22ed63a705ea8ef8e8e4296a85195d2002e13465567c8b1f6d5e0a719ff",
+    "sourceFile": "artifacts/rebuilt-models/models/item-146-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-128",
+    "name": "Personnel Id",
+    "itemIds": [
+      128
+    ],
+    "assetId": "item-128",
+    "sourceSha256": "9d1922fa2b680b832f5a24b7c73b78e18f700c9e6249bf9a8cc4720d79ccbebb",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-128-pickup-1.glb",
+    "originalRevision": "6c2d5cab04676d840f858453e9b737ff5547f27df4a9c0876aaf6df717c5e1aa",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1016",
+      "name": "id_tag_a",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        1.8471301794052124,
+        -4.040389537811279
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 443,
+      "name": "id_tag_a"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-128.glb",
+    "revision": "9d1922fa2b680b832f5a24b7c73b78e18f700c9e6249bf9a8cc4720d79ccbebb",
+    "triangles": 262,
+    "sourceRevision": "6c2d5cab04676d840f858453e9b737ff5547f27df4a9c0876aaf6df717c5e1aa",
+    "sourceFile": "artifacts/rebuilt-models/models/item-128-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-129",
+    "name": "Partial Decoder",
+    "itemIds": [
+      129
+    ],
+    "assetId": "item-129",
+    "sourceSha256": "6750576e834a386c2f4667aa7771c1f448d4d267ab68b8b25d89c50a1df38c29",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-129-pickup-1.glb",
+    "originalRevision": "4ad2f5f35decfd467196aac81c44862b8cd82d02935f8681faffb511d9893a78",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-938",
+      "name": "PartialDecoder",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        8.146034247147327e-8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 683,
+      "name": "PartialDecoder"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-129.glb",
+    "revision": "6750576e834a386c2f4667aa7771c1f448d4d267ab68b8b25d89c50a1df38c29",
+    "triangles": 158,
+    "sourceRevision": "4ad2f5f35decfd467196aac81c44862b8cd82d02935f8681faffb511d9893a78",
+    "sourceFile": "artifacts/rebuilt-models/models/item-129-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-147",
+    "name": "Hard Drive",
+    "itemIds": [
+      147,
+      183
+    ],
+    "assetId": "item-147",
+    "sourceSha256": "e2205e88e819339369d74e3311243214ef92f245e3d872d8573cfc32cfa3e587",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-147-pickup-1.glb",
+    "originalRevision": "858bdc142a5172eac92b49a8e10552373eb1e13294f2c96a5f3d08a89b0688ef",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-939",
+      "name": "Harddrive",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        8.146034247147327e-8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 684,
+      "name": "Harddrive"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-147.glb",
+    "revision": "e2205e88e819339369d74e3311243214ef92f245e3d872d8573cfc32cfa3e587",
+    "triangles": 124,
+    "sourceRevision": "858bdc142a5172eac92b49a8e10552373eb1e13294f2c96a5f3d08a89b0688ef",
+    "sourceFile": "artifacts/rebuilt-models/models/item-147-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-180",
+    "name": "Hard_drive",
+    "itemIds": [
+      180
+    ],
+    "assetId": "item-180",
+    "sourceSha256": "9099c2f3a8df85d6c1d6977b63019e1acbe4b7b0324d8a67d21f2f10aae70bb4",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-180-pickup-0.glb",
+    "originalRevision": "82764004fb6d0bb3b48e8870305810a4ee0e8f14ab1022e6d0d1901d348fcb48",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-935",
+      "name": "Harddrive_Interactable",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        8.146034247147327e-8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 680,
+      "name": "Harddrive_Interactable"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-180.glb",
+    "revision": "9099c2f3a8df85d6c1d6977b63019e1acbe4b7b0324d8a67d21f2f10aae70bb4",
+    "triangles": 124,
+    "sourceRevision": "82764004fb6d0bb3b48e8870305810a4ee0e8f14ab1022e6d0d1901d348fcb48",
+    "sourceFile": "artifacts/rebuilt-models/models/item-180-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-149",
+    "name": "GLP 1",
+    "itemIds": [
+      149
+    ],
+    "assetId": "item-149",
+    "sourceSha256": "714347467bd198720e7b478ac339b8e91798e645be2f7e238c2df474bf4f4875",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-149-pickup-1.glb",
+    "originalRevision": "b9d82a71d4a27962dd52b65c98ce58561f91eb798ff711b56f12807dff31cbcd",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-936",
+      "name": "GLP-1_container",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        8.146034247147327e-8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 681,
+      "name": "GLP-1_container"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-149.glb",
+    "revision": "714347467bd198720e7b478ac339b8e91798e645be2f7e238c2df474bf4f4875",
+    "triangles": 1733,
+    "sourceRevision": "b9d82a71d4a27962dd52b65c98ce58561f91eb798ff711b56f12807dff31cbcd",
+    "sourceFile": "artifacts/rebuilt-models/models/item-149-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-169",
+    "name": "GLP 2",
+    "itemIds": [
+      169
+    ],
+    "assetId": "item-169",
+    "sourceSha256": "9ad76c12b3ca741cd6593a0cc4f913ee31737d1b88756959f15e524af43f6f27",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-169-pickup-1.glb",
+    "originalRevision": "ddb7c79a43ad1d9a0105c30fd6d4d9ded40be7f8b0c76deebc118aefc75f8426",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-940",
+      "name": "GLP-2_container",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        8.146034247147327e-8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 685,
+      "name": "GLP-2_container"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-169.glb",
+    "revision": "9ad76c12b3ca741cd6593a0cc4f913ee31737d1b88756959f15e524af43f6f27",
+    "triangles": 3952,
+    "sourceRevision": "ddb7c79a43ad1d9a0105c30fd6d4d9ded40be7f8b0c76deebc118aefc75f8426",
+    "sourceFile": "artifacts/rebuilt-models/models/item-169-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-150",
+    "name": "OSIP",
+    "itemIds": [
+      150
+    ],
+    "assetId": "item-150",
+    "sourceSha256": "a92e54452703c3067c2e394d2363cda62b9a8a86f83723524eccde4a539d4c4a",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-150-pickup-1.glb",
+    "originalRevision": "71aa04b308b9324645d01ea228a280c2eb80e94e602c2c96e3b85995169aead4",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-937",
+      "name": "OSIP_container",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        8.146034247147327e-8,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 682,
+      "name": "OSIP_container"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-150.glb",
+    "revision": "a92e54452703c3067c2e394d2363cda62b9a8a86f83723524eccde4a539d4c4a",
+    "triangles": 1298,
+    "sourceRevision": "71aa04b308b9324645d01ea228a280c2eb80e94e602c2c96e3b85995169aead4",
+    "sourceFile": "artifacts/rebuilt-models/models/item-150-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-153",
+    "name": "Plant Sample",
+    "itemIds": [
+      153
+    ],
+    "assetId": "item-153",
+    "sourceSha256": "024653ad140df7950176b4b15e7fcd6b3e878aba2b30fb7057e4707858d7b981",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-153-pickup-1.glb",
+    "originalRevision": "28a2ac1398470dcdd6b445cb90a3d2cf7614aefe2a442283637bea287ddb9128",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-880",
+      "name": "plant_sample",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 636,
+      "name": "plant_sample"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-153.glb",
+    "revision": "024653ad140df7950176b4b15e7fcd6b3e878aba2b30fb7057e4707858d7b981",
+    "triangles": 1410,
+    "sourceRevision": "28a2ac1398470dcdd6b445cb90a3d2cf7614aefe2a442283637bea287ddb9128",
+    "sourceFile": "artifacts/rebuilt-models/models/item-153-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-171",
+    "name": "Memory Stick",
+    "itemIds": [
+      171
+    ],
+    "assetId": "item-171",
+    "sourceSha256": "119c6c83ba719c4447dc288be41e3871b8db40d9cd5e4eb87833b3c41ba4c923",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-171-pickup-0.glb",
+    "originalRevision": "7648f518396b1dbd4402de7082f94dd6224a174e4332120271309f572927a3be",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1220",
+      "name": "Prop_Memory_Stick",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 472,
+      "name": "Prop_Memory_Stick"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-171.glb",
+    "revision": "119c6c83ba719c4447dc288be41e3871b8db40d9cd5e4eb87833b3c41ba4c923",
+    "triangles": 6322,
+    "sourceRevision": "7648f518396b1dbd4402de7082f94dd6224a174e4332120271309f572927a3be",
+    "sourceFile": "artifacts/rebuilt-models/models/item-171-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-172",
+    "name": "Memory_Stick",
+    "itemIds": [
+      172
+    ],
+    "assetId": "item-172",
+    "sourceSha256": "d75f3fbbbde8b6282ab3379e1c43649ac477bceb41ed58a40889584f9c411a29",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-172-pickup-0.glb",
+    "originalRevision": "ef8683c62c1b77a3c1acb32a99b0173c07ee170bb973901478424c3166141675",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-1221",
+      "name": "Prop_Memory_Stick_Interact",
+      "parent": null,
+      "position": [
+        0,
+        0,
+        0.00017241000023204833
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 473,
+      "name": "Prop_Memory_Stick_Interact"
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-172.glb",
+    "revision": "d75f3fbbbde8b6282ab3379e1c43649ac477bceb41ed58a40889584f9c411a29",
+    "triangles": 6322,
+    "sourceRevision": "ef8683c62c1b77a3c1acb32a99b0173c07ee170bb973901478424c3166141675",
+    "sourceFile": "artifacts/rebuilt-models/models/item-172-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-102",
+    "name": "Medical Pack",
+    "itemIds": [
+      102
+    ],
+    "assetId": "item-102",
+    "sourceSha256": "8dd5b0c14eaaa5165a1001495eb083a3430bde92d43ca27d3342096c33ef4bfc",
+    "heldAssetId": "item-102-held",
+    "heldSourceSha256": "b129b30ae7ff468b3603aa4305a1f1d0932bcb7a42bb6cca6f0ab95f55f999f7",
+    "heldRevision": "b129b30ae7ff468b3603aa4305a1f1d0932bcb7a42bb6cca6f0ab95f55f999f7",
+    "heldTriangles": 3365,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-102-pickup-0.glb",
+    "originalRevision": "042e51f2b735dfa2aa4cec137b99f25a4c8e2549dfe5001397d01b841c5a0488",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-102-held-1.glb",
+    "heldOriginalRevision": "105abf05de690242a76bf0f429dc7947cbc7dcaafba389fcdba0a517ade9ce26",
+    "sourceRootTransform": {
+      "id": "sharedassets14.assets-148",
+      "name": "MediPackPickup",
+      "parent": null,
+      "position": [
+        4.019000053405762,
+        -1.8650000095367432,
+        -20.91200065612793
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets14.assets",
+      "pathId": 92,
+      "name": "MediPackPickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.16125242084695823,
+        "y": 0.08381253849595759,
+        "z": -0.12336610406669839
+      },
+      "rot": {
+        "x": -0.5641356007735248,
+        "y": -0.561712195985667,
+        "z": -0.3176731881619314,
+        "w": 0.5150865736397019
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.16513067767190875,
+        "y": 0.07116074474807821,
+        "z": -0.10093461005025939
+      },
+      "rot": {
+        "x": 0.5414183535596099,
+        "y": 0.5065126287692807,
+        "z": 0.5850590280154102,
+        "w": -0.3286594849744907
+      }
+    },
+    "file": "low/item-102.glb",
+    "revision": "8dd5b0c14eaaa5165a1001495eb083a3430bde92d43ca27d3342096c33ef4bfc",
+    "triangles": 2220,
+    "sourceRevision": "042e51f2b735dfa2aa4cec137b99f25a4c8e2549dfe5001397d01b841c5a0488",
+    "sourceFile": "artifacts/rebuilt-models/models/item-102-low.glb",
+    "level": "low",
+    "heldFile": "low/item-102-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-102-held-low.glb"
+  },
+  {
+    "id": "item-101",
+    "name": "Ammo Pack",
+    "itemIds": [
+      101
+    ],
+    "assetId": "item-101",
+    "sourceSha256": "bbd7912d0937406b3de341758161cc5c6064eb96350296ae697d5e9d8113ca8d",
+    "heldAssetId": "item-101-held",
+    "heldSourceSha256": "1b4bbd6f86c601f34d4a44d6d59100cbb67d7c39b66525fbc2e49b4b85208155",
+    "heldRevision": "1b4bbd6f86c601f34d4a44d6d59100cbb67d7c39b66525fbc2e49b4b85208155",
+    "heldTriangles": 2982,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-101-pickup-0.glb",
+    "originalRevision": "6ac9eec05d0f169475666eda0956c6022256c73767a1589b5afd2f7d8a5bf6cb",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-101-held-1.glb",
+    "heldOriginalRevision": "24f9e9181f769208ce1daafb0f08fa4f676e71d40555b188ec1d7762ac6a9ede",
+    "sourceRootTransform": {
+      "id": "sharedassets16.assets-255",
+      "name": "AmmoPackWeaponPickup",
+      "parent": null,
+      "position": [
+        4.019000053405762,
+        -1.8650000095367432,
+        -20.91200065612793
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets16.assets",
+      "pathId": 181,
+      "name": "AmmoPackWeaponPickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.1700768768787384,
+        "y": 0.12414112687110901,
+        "z": -0.09990029782056808
+      },
+      "rot": {
+        "x": -0.5641356710105638,
+        "y": -0.5617120288130232,
+        "z": -0.31767296945808,
+        "w": 0.515086813902185
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.04951804503798485,
+        "y": 0.006242148112505674,
+        "z": -0.14200137555599213
+      },
+      "rot": {
+        "x": 0.7549895019545849,
+        "y": 0.34364196208785913,
+        "z": 0.32421579798971667,
+        "w": -0.4547363743584468
+      }
+    },
+    "file": "low/item-101.glb",
+    "revision": "bbd7912d0937406b3de341758161cc5c6064eb96350296ae697d5e9d8113ca8d",
+    "triangles": 1639,
+    "sourceRevision": "6ac9eec05d0f169475666eda0956c6022256c73767a1589b5afd2f7d8a5bf6cb",
+    "sourceFile": "artifacts/rebuilt-models/models/item-101-low.glb",
+    "level": "low",
+    "heldFile": "low/item-101-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-101-held-low.glb"
+  },
+  {
+    "id": "item-127",
+    "name": "Tool Refill Pack",
+    "itemIds": [
+      127
+    ],
+    "assetId": "item-127",
+    "sourceSha256": "b7b3829ed32c943c95aef7bbca4126831bd39343bfef59caa1410ed8587afe7f",
+    "heldAssetId": "item-127-held",
+    "heldSourceSha256": "cd9915595959eb3b25d4ba1e45966294ce6053a99f355377060b85cd86d3f9a1",
+    "heldRevision": "cd9915595959eb3b25d4ba1e45966294ce6053a99f355377060b85cd86d3f9a1",
+    "heldTriangles": 3421,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-127-pickup-0.glb",
+    "originalRevision": "3663671862dfad2e5bfda57284115f98e78184815a682d0c6f200b004c86ad49",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-127-held-1.glb",
+    "heldOriginalRevision": "6ac529e28aeb199bdacb6bc231aeb01b99d2dc853ff7711f018aa4977c8699e0",
+    "sourceRootTransform": {
+      "id": "sharedassets16.assets-222",
+      "name": "AmmoPackToolPickup",
+      "parent": null,
+      "position": [
+        4.019000053405762,
+        -1.8650000095367432,
+        -20.91200065612793
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets16.assets",
+      "pathId": 138,
+      "name": "AmmoPackToolPickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.1700768768787384,
+        "y": 0.12414112687110901,
+        "z": -0.09990029782056808
+      },
+      "rot": {
+        "x": -0.5641356710105638,
+        "y": -0.5617120288130232,
+        "z": -0.31767296945808,
+        "w": 0.515086813902185
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.04951804503798485,
+        "y": 0.006242148112505674,
+        "z": -0.14200137555599213
+      },
+      "rot": {
+        "x": 0.7549895019545849,
+        "y": 0.34364196208785913,
+        "z": 0.32421579798971667,
+        "w": -0.4547363743584468
+      }
+    },
+    "file": "low/item-127.glb",
+    "revision": "b7b3829ed32c943c95aef7bbca4126831bd39343bfef59caa1410ed8587afe7f",
+    "triangles": 1839,
+    "sourceRevision": "3663671862dfad2e5bfda57284115f98e78184815a682d0c6f200b004c86ad49",
+    "sourceFile": "artifacts/rebuilt-models/models/item-127-low.glb",
+    "level": "low",
+    "heldFile": "low/item-127-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-127-held-low.glb"
+  },
+  {
+    "id": "item-132",
+    "name": "Disinfection Pack",
+    "itemIds": [
+      132
+    ],
+    "assetId": "item-132",
+    "sourceSha256": "061792d3ebc0b905f040c49dffa753ad0338ff9913494779d93b26dc701b6e43",
+    "heldAssetId": "item-132-held",
+    "heldSourceSha256": "9ef6e2f9fe4a1def136c9fcc24596ee2debde1a500820fc331898ae96aca67c3",
+    "heldRevision": "9ef6e2f9fe4a1def136c9fcc24596ee2debde1a500820fc331898ae96aca67c3",
+    "heldTriangles": 3944,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/item-material-review/models/item-132-pickup-0.glb",
+    "originalRevision": "6695cea682c56d1972fddf23170c1a22bb82bbc243a845b84acf338c76280440",
+    "heldOriginalExportFile": "artifacts/item-material-review/models/item-132-held-1.glb",
+    "heldOriginalRevision": "0b33bef324edbe247b5cc99a5cd9566a4191666ba3c2d9a97b7e9eb2a1c83220",
+    "sourceRootTransform": {
+      "id": "sharedassets16.assets-221",
+      "name": "DisinfectonPackPickup",
+      "parent": null,
+      "position": [
+        4.019000053405762,
+        -1.8650000095367432,
+        -20.91200065612793
+      ],
+      "rotation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets16.assets",
+      "pathId": 137,
+      "name": "DisinfectonPackPickup"
+    },
+    "rightHandGrip": {
+      "pos": {
+        "x": -0.13899999856948853,
+        "y": 0.13199999928474426,
+        "z": -0.09799999743700027
+      },
+      "rot": {
+        "x": 0.4777482809259252,
+        "y": 0.6368092828141062,
+        "z": 0.3882586022585831,
+        "w": -0.46420445405695804
+      }
+    },
+    "leftHandGrip": {
+      "pos": {
+        "x": 0.22599999606609344,
+        "y": 0.11999999731779099,
+        "z": 0.052000001072883606
+      },
+      "rot": {
+        "x": 0.4147380282283601,
+        "y": 0.652830898387083,
+        "z": 0.5774099216515906,
+        "w": -0.2615376998267559
+      }
+    },
+    "file": "low/item-132.glb",
+    "revision": "061792d3ebc0b905f040c49dffa753ad0338ff9913494779d93b26dc701b6e43",
+    "triangles": 1748,
+    "sourceRevision": "6695cea682c56d1972fddf23170c1a22bb82bbc243a845b84acf338c76280440",
+    "sourceFile": "artifacts/rebuilt-models/models/item-132-low.glb",
+    "level": "low",
+    "heldFile": "low/item-132-held.glb",
+    "heldLevel": "low",
+    "heldSourceFile": "artifacts/rebuilt-models/models/item-132-held-low.glb"
+  },
+  {
+    "id": "item-27",
+    "name": "Key Red",
+    "itemIds": [
+      27
+    ],
+    "assetId": "item-27",
+    "sourceSha256": "31ebc601a063dacf2d34942c93af3a82c2bbf5790862ad8d816ed20ffb4696db",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-27.glb",
+    "originalRevision": "00727ced5d583ea7b8fb72e3f32e5dd9d3e888c2b435395048342437dd877812",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-842",
+      "name": "keycard_red_pickup",
+      "parent": null,
+      "position": [
+        4.624000549316406,
+        2.105271339416504,
+        -3.804446220397949
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 248,
+      "name": "keycard_red_pickup",
+      "meshPathId": 221,
+      "materialPathId": 30,
+      "materialName": "basicKeyCardRed",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 27,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_red_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-27.glb",
+    "revision": "31ebc601a063dacf2d34942c93af3a82c2bbf5790862ad8d816ed20ffb4696db",
+    "triangles": 1358,
+    "sourceRevision": "00727ced5d583ea7b8fb72e3f32e5dd9d3e888c2b435395048342437dd877812",
+    "sourceFile": "artifacts/rebuilt-models/models/item-27-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-85",
+    "name": "Key Blue",
+    "itemIds": [
+      85
+    ],
+    "assetId": "item-85",
+    "sourceSha256": "eb88e8346e1545e0ad1ef8ed8c42a1aca2ad1f8dfdd644dad1c9356f59f1e4db",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-85.glb",
+    "originalRevision": "1edce6e4ecafb551d5bdf2efea76b5b0b21a01b2e6a015ce3081df69e0de3e67",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-846",
+      "name": "keycard_blue_pickup",
+      "parent": null,
+      "position": [
+        4.62399959564209,
+        1.5589884519577026,
+        -4.052267074584961
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 252,
+      "name": "keycard_blue_pickup",
+      "meshPathId": 221,
+      "materialPathId": 23,
+      "materialName": "basicKeyCardBlue",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 85,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_blue_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-85.glb",
+    "revision": "eb88e8346e1545e0ad1ef8ed8c42a1aca2ad1f8dfdd644dad1c9356f59f1e4db",
+    "triangles": 1358,
+    "sourceRevision": "1edce6e4ecafb551d5bdf2efea76b5b0b21a01b2e6a015ce3081df69e0de3e67",
+    "sourceFile": "artifacts/rebuilt-models/models/item-85-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-86",
+    "name": "Key Green",
+    "itemIds": [
+      86
+    ],
+    "assetId": "item-86",
+    "sourceSha256": "2694dad946fc9529b42a3eba8e90b687dc4a064fef8c64c4e60ea719fa95de4c",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-86.glb",
+    "originalRevision": "8810937c6e4a3e9465a8fe14ac40cc9feaf16ba64592c78a8933a8430e546fbf",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-848",
+      "name": "keycard_green_pickup",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        1.8471301794052124,
+        -4.040389537811279
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 254,
+      "name": "keycard_green_pickup",
+      "meshPathId": 221,
+      "materialPathId": 27,
+      "materialName": "basicKeyCardGreen",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 86,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_green_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-86.glb",
+    "revision": "2694dad946fc9529b42a3eba8e90b687dc4a064fef8c64c4e60ea719fa95de4c",
+    "triangles": 1358,
+    "sourceRevision": "8810937c6e4a3e9465a8fe14ac40cc9feaf16ba64592c78a8933a8430e546fbf",
+    "sourceFile": "artifacts/rebuilt-models/models/item-86-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-87",
+    "name": "Key Yellow",
+    "itemIds": [
+      87
+    ],
+    "assetId": "item-87",
+    "sourceSha256": "2877b0ed71587981e6fe96f100f39d168f429b5405958388dfc342b1c0f0009d",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-87.glb",
+    "originalRevision": "6b5e7a570beb1964e4bbcf4d47de72d07d2b934622057f84be9b30cf99e299be",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-844",
+      "name": "keycard_yellow_pickup",
+      "parent": null,
+      "position": [
+        4.62399959564209,
+        2.381308078765869,
+        -4.056122779846191
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 250,
+      "name": "keycard_yellow_pickup",
+      "meshPathId": 221,
+      "materialPathId": 32,
+      "materialName": "basicKeyCardYellow",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 87,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_yellow_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-87.glb",
+    "revision": "2877b0ed71587981e6fe96f100f39d168f429b5405958388dfc342b1c0f0009d",
+    "triangles": 1358,
+    "sourceRevision": "6b5e7a570beb1964e4bbcf4d47de72d07d2b934622057f84be9b30cf99e299be",
+    "sourceFile": "artifacts/rebuilt-models/models/item-87-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-88",
+    "name": "Key White",
+    "itemIds": [
+      88
+    ],
+    "assetId": "item-88",
+    "sourceSha256": "08bafcfe8cdc82e550fd4bff04b8bc694d490923f3dd0f678a49e21f1f5d2c26",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-88.glb",
+    "originalRevision": "7301107e3bc58508d04f527bacebb78bed2257f79f182ab2dd75a498246c581e",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-853",
+      "name": "keycard_white_pickup",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        2.0889039039611816,
+        -3.5455050468444824
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 259,
+      "name": "keycard_white_pickup",
+      "meshPathId": 221,
+      "materialPathId": 31,
+      "materialName": "basicKeyCardWhite",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 88,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_white_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-88.glb",
+    "revision": "08bafcfe8cdc82e550fd4bff04b8bc694d490923f3dd0f678a49e21f1f5d2c26",
+    "triangles": 1358,
+    "sourceRevision": "7301107e3bc58508d04f527bacebb78bed2257f79f182ab2dd75a498246c581e",
+    "sourceFile": "artifacts/rebuilt-models/models/item-88-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-89",
+    "name": "Key Black",
+    "itemIds": [
+      89
+    ],
+    "assetId": "item-89",
+    "sourceSha256": "01f7e19e151928a3f97e0bc2ddbd9209e0ddd10303b045defe8d8df0df6a537e",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-89.glb",
+    "originalRevision": "ace019ec92b58505668dee348094fac48359d457213f8e7ac9a26a1b0c8feecc",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-845",
+      "name": "keycard_black_pickup",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        2.367649555206299,
+        -3.798715353012085
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 251,
+      "name": "keycard_black_pickup",
+      "meshPathId": 221,
+      "materialPathId": 22,
+      "materialName": "basicKeyCardBlack",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 89,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_black_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-89.glb",
+    "revision": "01f7e19e151928a3f97e0bc2ddbd9209e0ddd10303b045defe8d8df0df6a537e",
+    "triangles": 1358,
+    "sourceRevision": "ace019ec92b58505668dee348094fac48359d457213f8e7ac9a26a1b0c8feecc",
+    "sourceFile": "artifacts/rebuilt-models/models/item-89-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-90",
+    "name": "Key Grey",
+    "itemIds": [
+      90
+    ],
+    "assetId": "item-90",
+    "sourceSha256": "0703145e296e251e9a37ccef0c8e2a895cf9e701bbb13ad3fa1d24fa50227b3b",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-90.glb",
+    "originalRevision": "1b49fb9d778b6f8bbbcacdce4c5d5483773f23981656bc700e377d3844f59c85",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-843",
+      "name": "keycard_grey_pickup",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        1.8224705457687378,
+        -3.7941768169403076
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 249,
+      "name": "keycard_grey_pickup",
+      "meshPathId": 221,
+      "materialPathId": 26,
+      "materialName": "basicKeyCardGray",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 90,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_grey_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-90.glb",
+    "revision": "0703145e296e251e9a37ccef0c8e2a895cf9e701bbb13ad3fa1d24fa50227b3b",
+    "triangles": 1358,
+    "sourceRevision": "1b49fb9d778b6f8bbbcacdce4c5d5483773f23981656bc700e377d3844f59c85",
+    "sourceFile": "artifacts/rebuilt-models/models/item-90-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-91",
+    "name": "Key Orange",
+    "itemIds": [
+      91
+    ],
+    "assetId": "item-91",
+    "sourceSha256": "2a7e29a638b4ac4101749cebbb2081fee3d3e900fe897c11260ffba2688b6742",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-91.glb",
+    "originalRevision": "384f6656183cbdb754b8a8c873537a68dee79de78619dc89a1fd604398dfbbfd",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-850",
+      "name": "keycard_orange_pickup",
+      "parent": null,
+      "position": [
+        4.62399959564209,
+        1.8261033296585083,
+        -3.5370185375213623
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 256,
+      "name": "keycard_orange_pickup",
+      "meshPathId": 221,
+      "materialPathId": 28,
+      "materialName": "basicKeyCardOrange",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 91,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_orange_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-91.glb",
+    "revision": "2a7e29a638b4ac4101749cebbb2081fee3d3e900fe897c11260ffba2688b6742",
+    "triangles": 1358,
+    "sourceRevision": "384f6656183cbdb754b8a8c873537a68dee79de78619dc89a1fd604398dfbbfd",
+    "sourceFile": "artifacts/rebuilt-models/models/item-91-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-92",
+    "name": "Key Purple",
+    "itemIds": [
+      92
+    ],
+    "assetId": "item-92",
+    "sourceSha256": "f4a0c113b6aeba089b63d8b94ab503abd2bbc2bf87f04bb30b1707df304b3dd0",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-92.glb",
+    "originalRevision": "be48684f44e681143c3c08e208387fe044c785e0760d3929e45ef428c137fd6e",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-849",
+      "name": "keycard_purple_pickup",
+      "parent": null,
+      "position": [
+        4.624000549316406,
+        2.106034278869629,
+        -4.042832374572754
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 255,
+      "name": "keycard_purple_pickup",
+      "meshPathId": 221,
+      "materialPathId": 29,
+      "materialName": "basicKeyCardPurple",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 92,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_purple_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-92.glb",
+    "revision": "f4a0c113b6aeba089b63d8b94ab503abd2bbc2bf87f04bb30b1707df304b3dd0",
+    "triangles": 1358,
+    "sourceRevision": "be48684f44e681143c3c08e208387fe044c785e0760d3929e45ef428c137fd6e",
+    "sourceFile": "artifacts/rebuilt-models/models/item-92-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-93",
+    "name": "Key Gold",
+    "itemIds": [
+      93
+    ],
+    "assetId": "item-93",
+    "sourceSha256": "0138a750b74d8d44c3ffe3e638b1030ee63452899e05db3cbf2234aa2b656cb7",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-93.glb",
+    "originalRevision": "9626e020e62f1c8cb6f6c31f9c87801d4330e93f1a76dd32e549933402eca2ed",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-847",
+      "name": "keycard_gold_pickup",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        1.552402377128601,
+        -3.552288293838501
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 253,
+      "name": "keycard_gold_pickup",
+      "meshPathId": 221,
+      "materialPathId": 25,
+      "materialName": "basicKeyCardGold",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 93,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_gold_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-93.glb",
+    "revision": "0138a750b74d8d44c3ffe3e638b1030ee63452899e05db3cbf2234aa2b656cb7",
+    "triangles": 1358,
+    "sourceRevision": "9626e020e62f1c8cb6f6c31f9c87801d4330e93f1a76dd32e549933402eca2ed",
+    "sourceFile": "artifacts/rebuilt-models/models/item-93-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "item-94",
+    "name": "Key Brown",
+    "itemIds": [
+      94
+    ],
+    "assetId": "item-94",
+    "sourceSha256": "144e569d337f0e69e3f1af267ea2d89b0dece87c7bc0d4ab82b7949da69d6ee2",
+    "heldAssetId": null,
+    "heldSourceSha256": null,
+    "heldRevision": null,
+    "heldTriangles": null,
+    "pipelineRevision": "6124f98a2ef07de4261589a9b6c409a1c2f688fbca2e160f97af1f6da56b54d2",
+    "originalExportFile": "artifacts/key-review/item-94.glb",
+    "originalRevision": "2b68f12f68ee3750ac2ff1432dbf5037528bd69aff393316956b75bcf32f795a",
+    "heldOriginalExportFile": null,
+    "heldOriginalRevision": null,
+    "sourceRootTransform": {
+      "id": "sharedassets5.assets-852",
+      "name": "keycard_brown_pickup",
+      "parent": null,
+      "position": [
+        4.624000072479248,
+        1.5579999685287476,
+        -3.8010001182556152
+      ],
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        -0.7071068286895752
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "rootTransformPolicy": "Remove prefab editor root translation only; preserve root rotation and scale; Unity X reflection.",
+    "source": {
+      "file": "sharedassets5.assets",
+      "pathId": 258,
+      "name": "keycard_brown_pickup",
+      "meshPathId": 221,
+      "materialPathId": 24,
+      "materialName": "basicKeyCardBrown",
+      "itemDataBlock": {
+        "file": "resources.assets",
+        "pathId": 2358,
+        "persistentID": 94,
+        "pickupPrefabs": [
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/KeyItemPickup_Core.prefab",
+          "Assets/AssetPrefabs/Items/MiscPickups/Keycards/keycard_brown_pickup.prefab"
+        ]
+      }
+    },
+    "rightHandGrip": null,
+    "leftHandGrip": null,
+    "file": "low/item-94.glb",
+    "revision": "144e569d337f0e69e3f1af267ea2d89b0dece87c7bc0d4ab82b7949da69d6ee2",
+    "triangles": 1358,
+    "sourceRevision": "2b68f12f68ee3750ac2ff1432dbf5037528bd69aff393316956b75bcf32f795a",
+    "sourceFile": "artifacts/rebuilt-models/models/item-94-low.glb",
+    "level": "low",
+    "heldFile": null
+  },
+  {
+    "id": "artifact-muted",
+    "name": "Artifact",
+    "itemIds": [
+      152
+    ],
+    "assetId": "item-122",
+    "rootTransformPolicy": "Discard prefab editor root translation; retain active Muted pickup transforms; Unity X reflection.",
+    "sourceRevision": "de43a8f8cb952f31cf5e1954c141ee144cd110fe43b30c3e405f4e1791247034",
+    "sourceFile": "artifacts/rebuilt-models/models/item-122-low.glb",
+    "sourceSha256": "91bf3a07be0853327199bdc3187c4bd9601879e82a618dd0e130e35dc340e68f",
+    "level": "low",
+    "file": "low/artifact-muted.glb",
+    "revision": "0e8c4f11cc4da999affe074e5f7eafd3252eeabd2d836a15f5ee427000a836da",
+    "triangles": 256,
+    "heldFile": null,
+    "rightHandGrip": null,
+    "leftHandGrip": null
+  }
+]

@@ -16,15 +16,18 @@ export class HumanoidEnemyModel extends StickFigure<[enemy: Enemy, anim?: EnemyA
     constructor(wrapper: EnemyModelWrapper) {
         super();  
         this.wrapper = wrapper;
-        this.wrapper.tagTarget = this.visual.joints.spine1;
+        this.wrapper.tagTarget = this.visual.joints.head;
     }
 
     public render(dt: number, time: number, enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll) {
         if (!this.isVisible()) return;
 
-        if (enemy.head === false) this._applySettings({ headScale: zeroV });
+        if (!this.actor && enemy.head === false) this._applySettings({ headScale: zeroV });
         this.animate(dt, time, enemy, anim, ragdoll);
         this.draw();
+        this.actor?.update(enemy.head !== false,
+            EnemyModelWrapper.aggroColour() && enemy.targetPlayerSlotIndex !== 255 ? getPlayerColor(enemy.targetPlayerSlotIndex) : undefined,
+            this.settings.transparent, time);
     }
 
     protected animate(dt: number, time: number, enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll) {

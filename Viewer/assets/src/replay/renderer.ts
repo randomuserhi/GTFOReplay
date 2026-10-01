@@ -5,6 +5,7 @@ import { DynamicInstanceManager } from "./instancing.js";
 import { HeaderApi, ModuleLoader, ReplayApi, Typemap } from "./moduleloader.js";
 import { Replay } from "./replay.js";
 import { ASL_VM } from "./vm.js";
+import { configureModelLoader } from "./model-loader.js";
 
 export interface RendererApi {
     getRenderLoop(): RenderPass[];
@@ -60,6 +61,7 @@ export class Renderer {
 
         this.scene = new Scene();
         this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
+        configureModelLoader(this.renderer);
         this.composer = new EffectComposer(this.renderer);
 
         this.listeners = new Map();
@@ -94,6 +96,7 @@ export class Renderer {
         
         this.scene = new Scene();
         this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
+        configureModelLoader(this.renderer);
         this.composer = new EffectComposer(this.renderer);
 
         this.dispatchEvent(new CustomEvent("pre-refresh"));
@@ -196,7 +199,7 @@ export class Renderer {
             try {
                 func.pass(this, header);
             } catch (e) {
-                console.error(`An error occured executing render init pass '${func.name}':\n\n${ASL_VM.verboseError(e)}`);
+                throw new Error(`Render init pass '${func.name}' failed:\n${ASL_VM.verboseError(e)}`);
             }
         }
     }
@@ -210,7 +213,7 @@ export class Renderer {
             try {
                 func.pass(this, snapshot, dt);
             } catch (e) {
-                console.error(`An error occured executing render pass '${func.name}':\n\n${ASL_VM.verboseError(e)}`);
+                throw new Error(`Render pass '${func.name}' failed:\n${ASL_VM.verboseError(e)}`);
             }
         }
         for (const manager of DynamicInstanceManager.all) {

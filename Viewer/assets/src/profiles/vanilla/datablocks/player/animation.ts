@@ -1,12 +1,12 @@
 import { AnimBlend, AnimFunc } from "../../library/animations/lib.js";
 import { loadAllClips } from "../../library/animations/loaders.js";
-import { HumanJoints } from "../../renderer/animations/human.js";
+import { PlayerJoints } from "../../renderer/animations/human.js";
 
 if (module.metadata.isParser) console.warn("Datablocks should not be loaded by the parser. This degrades performance greatly.");
 
 // NOTE(randomuserhi): These are static datablocks -> They are not designed to be changed or updated
 
-export const PlayerAnimDatablock: Record<PlayerAnimationClips | PlayerAnimations, AnimFunc<HumanJoints>> = {} as any;
+export const PlayerAnimDatablock: Record<PlayerAnimationClips | PlayerAnimations, AnimFunc<PlayerJoints>> = {} as any;
 
 export const animVelocity = {
     x: 0,
@@ -266,9 +266,9 @@ const playerAnimationClipNames = [
     "Knife_Fall",
 ] as const;
 export type PlayerAnimationClips = typeof playerAnimationClipNames[number];
-const playerAnimationClips = await loadAllClips(HumanJoints, playerAnimationClipNames);
+const playerAnimationClips = await loadAllClips(PlayerJoints, playerAnimationClipNames, "../player-animations");
 
-const rifleStandMovement = new AnimBlend(HumanJoints, [
+const rifleStandMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Rifle_Jog_Forward, x: 0, y: 3.5 },
     { anim: playerAnimationClips.Rifle_Jog_Backward, x: 0, y: -3.5 },
     { anim: playerAnimationClips.Rifle_Jog_Right, x: 3.5, y: 0 },
@@ -298,7 +298,7 @@ const rifleStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Rifle_SprintFwdLoop_Right, x: 1.25, y: 5.85 },
 ], animVelocity);
 
-const rifleCrouchMovement = new AnimBlend(HumanJoints, [
+const rifleCrouchMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Rifle_Crouch_WalkBwd, x: 0, y: -2 },
     { anim: playerAnimationClips.Rifle_Crouch_WalkFwd, x: 0, y: 2 },
     { anim: playerAnimationClips.Rifle_Crouch_WalkLt, x: -2, y: 0 },
@@ -306,12 +306,12 @@ const rifleCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Rifle_CrouchLoop, x: 0, y: 0 },
 ], animVelocity);
 
-const rifleMovement = new AnimBlend(HumanJoints, [
+const rifleMovement = new AnimBlend(PlayerJoints, [
     { anim: rifleStandMovement, x: 0, y: 0 },
     { anim: rifleCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
-const pistolStandMovement = new AnimBlend(HumanJoints, [
+const pistolStandMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Pistol_Jog_Forward, x: 0, y: 3.5 },
     { anim: playerAnimationClips.Pistol_Jog_Backward, x: 0, y: -3.5 },
     { anim: playerAnimationClips.Pistol_Jog_Right, x: 3.5, y: 0 },
@@ -339,7 +339,7 @@ const pistolStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Pistol_StrafeRun135RightLoop, x: -4.34, y: -4.34 },
 ], animVelocity);
 
-const pistolCrouchMovement = new AnimBlend(HumanJoints, [
+const pistolCrouchMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Pistol_Crouch_WalkBwd, x: 0, y: -2 },
     { anim: playerAnimationClips.Pistol_Crouch_WalkFwd, x: 0, y: 2 },
     { anim: playerAnimationClips.Pistol_Crouch_WalkLt, x: -2, y: 0 },
@@ -347,12 +347,12 @@ const pistolCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Pistol_CrouchLoop, x: 0, y: 0 },
 ], animVelocity);
 
-const pistolMovement = new AnimBlend(HumanJoints, [
+const pistolMovement = new AnimBlend(PlayerJoints, [
     { anim: pistolStandMovement, x: 0, y: 0 },
     { anim: pistolCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
-const defaultStandMovement = new AnimBlend(HumanJoints, [
+const defaultStandMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.RunFwdLoop, x: 0, y: 3.4 },
     { anim: playerAnimationClips.RunBwdLoop, x: 0, y: -2.1 },
     { anim: playerAnimationClips.RunRtLoop, x: 2.1, y: 0 },
@@ -372,7 +372,7 @@ const defaultStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Idle_1, x: 0, y: 0 },
 ], animVelocity);
 
-const defaultCrouchMovement = new AnimBlend(HumanJoints, [
+const defaultCrouchMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Crouch_WalkFwd_new, x: 0, y: 1.54 },
     { anim: playerAnimationClips.Crouch_WalkBwd_new, x: 0, y: -1.74 },
     { anim: playerAnimationClips.Crouch_WalkLt45_new, x: -1, y: 1 },
@@ -384,18 +384,18 @@ const defaultCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Crouch_Idle, x: 0, y: 0 },
 ], animVelocity);
 
-const defaultMovement = new AnimBlend(HumanJoints, [
+const defaultMovement = new AnimBlend(PlayerJoints, [
     { anim: defaultStandMovement, x: 0, y: 0 },
     { anim: defaultCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
-const ladderMovement = new AnimBlend(HumanJoints, [
+const ladderMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Player_Climb_Ladder_Up_A, x: 0, y: 0.5 },
     { anim: playerAnimationClips.Player_Climb_Ladder_Idle_A, x: 0, y: 0 },
     { anim: playerAnimationClips.Player_Climb_Ladder_Down_A, x: 0, y: -0.5 },
 ], animVelocity);
 
-const hammerStandMovement = new AnimBlend(HumanJoints, [
+const hammerStandMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.SledgeHammer_Jog_Forward, x: 0, y: 3.5 },
     { anim: playerAnimationClips.SledgeHammer_Jog_Backward, x: 0, y: -3.5},
     { anim: playerAnimationClips.SledgeHammer_Jog_Right, x: 3.5, y: 0 },
@@ -416,7 +416,7 @@ const hammerStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Sledgehammer_Stand_Idle, x: 0, y: 0 },
 ], animVelocity);
 
-const hammerCrouchMovement = new AnimBlend(HumanJoints, [
+const hammerCrouchMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.SledgeHammer_Crouch_WalkBwd, x: 0, y: -2 },
     { anim: playerAnimationClips.SledgeHammer_Crouch_WalkFwd, x: 0, y: 2 },
     { anim: playerAnimationClips.SledgeHammer_Crouch_WalkLt, x: -2, y: 0 },
@@ -424,37 +424,37 @@ const hammerCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Sledgehammer_Crouch_Idle, x: 0, y: 0 },
 ], animVelocity);
 
-const hammerMovement = new AnimBlend(HumanJoints, [
+const hammerMovement = new AnimBlend(PlayerJoints, [
     { anim: hammerStandMovement, x: 0, y: 0 },
     { anim: hammerCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
-const hammerCharge = new AnimBlend(HumanJoints, [
+const hammerCharge = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge, x: 0, y: 0 },
     { anim: playerAnimationClips.Sledgehammer_Crouch_SwingLeft_Charge, x: 1, y: 0 }
 ], animCrouch);
 
-const hammerChargeIdle = new AnimBlend(HumanJoints, [
+const hammerChargeIdle = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge_Idle, x: 0, y: 0 },
     { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge_Idle, x: 1, y: 0 }
 ], animCrouch);
 
-const hammerRelease = new AnimBlend(HumanJoints, [
+const hammerRelease = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge_Release, x: 0, y: 0 },
-    { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge_Release, x: 1, y: 0 }
+    { anim: playerAnimationClips.Sledgehammer_Crouch_SwingLeft_Charge_Release, x: 1, y: 0 }
 ], animCrouch);
 
-const hammerSwing = new AnimBlend(HumanJoints, [
+const hammerSwing = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge_Release, x: 0, y: 0 },
-    { anim: playerAnimationClips.Sledgehammer_Stand_SwingLeft_Charge_Release, x: 1, y: 0 }
+    { anim: playerAnimationClips.Sledgehammer_Crouch_SwingLeft_Charge_Release, x: 1, y: 0 }
 ], animCrouch);
 
-const hammerShove = new AnimBlend(HumanJoints, [
+const hammerShove = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Sledgehammer_Stand_Shove, x: 0, y: 0 },
     { anim: playerAnimationClips.Sledgehammer_Crouch_Shove, x: 1, y: 0 }
 ], animCrouch);
 
-const knifeStandMovement = new AnimBlend(HumanJoints, [
+const knifeStandMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Knife_SprintFwdLoop, x: 0, y: 6 },
     { anim: playerAnimationClips.Knife_Jog_BackwardLeft, x: -2.56, y: -2.56 },
     { anim: playerAnimationClips.Knife_Jog_BackwardRight, x: 2.56, y: -2.56 },
@@ -467,7 +467,7 @@ const knifeStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Knife_Idle_0, x: 0, y: 0 },
 ], animVelocity);
 
-const knifeCrouchMovement = new AnimBlend(HumanJoints, [
+const knifeCrouchMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Knife_Crouch_WalkBwd, x: 0, y: -2 },
     { anim: playerAnimationClips.Knife_Crouch_WalkFwd, x: 0, y: 2 },
     { anim: playerAnimationClips.Knife_Crouch_WalkLt, x: -2, y: 0 },
@@ -475,37 +475,37 @@ const knifeCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Knife_Crouch_Idle, x: 0, y: 0 },
 ], animVelocity);
 
-const knifeMovement = new AnimBlend(HumanJoints, [
+const knifeMovement = new AnimBlend(PlayerJoints, [
     { anim: knifeStandMovement, x: 0, y: 0 },
     { anim: knifeCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
-const knifeCharge = new AnimBlend(HumanJoints, [
+const knifeCharge = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Knife_Stand_Chargeup, x: 0, y: 0 },
     { anim: playerAnimationClips.Knife_Crouch_Chargeup, x: 1, y: 0 }
 ], animCrouch);
 
-const knifeChargeIdle = new AnimBlend(HumanJoints, [
+const knifeChargeIdle = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Knife_Stand_ChargeupIdle, x: 0, y: 0 },
     { anim: playerAnimationClips.Knife_Stand_ChargeupIdle, x: 1, y: 0 }
 ], animCrouch);
 
-const knifeRelease = new AnimBlend(HumanJoints, [
+const knifeRelease = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Knife_Stand_ChargeRelease, x: 0, y: 0 },
     { anim: playerAnimationClips.Knife_Crouch_ChargeRelease, x: 1, y: 0 }
 ], animCrouch);
 
-const knifeSwing = new AnimBlend(HumanJoints, [
+const knifeSwing = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Knife_Stand_SwingRight, x: 0, y: 0 },
     { anim: playerAnimationClips.Knife_Crouch_SwingRight, x: 1, y: 0 }
 ], animCrouch);
 
-const knifeShove = new AnimBlend(HumanJoints, [
+const knifeShove = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Bat_Stand_Shove, x: 0, y: 0 },
     { anim: playerAnimationClips.Bat_Crouch_Shove, x: 1, y: 0 }
 ], animCrouch);
 
-const spearStandMovement = new AnimBlend(HumanJoints, [
+const spearStandMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Spear_SprintFwdLoop, x: 0, y: 6 },
     { anim: playerAnimationClips.Spear_Jog_BackwardLeft, x: -2.56, y: -2.56 },
     { anim: playerAnimationClips.Spear_Jog_BackwardRight, x: 2.56, y: -2.56 },
@@ -518,7 +518,7 @@ const spearStandMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Spear_Idle, x: 0, y: 0 },
 ], animVelocity);
 
-const spearCrouchMovement = new AnimBlend(HumanJoints, [
+const spearCrouchMovement = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Spear_Crouch_WalkBwd, x: 0, y: -2 },
     { anim: playerAnimationClips.Spear_Crouch_WalkFwd, x: 0, y: 2 },
     { anim: playerAnimationClips.Spear_Crouch_WalkLt, x: -2, y: 0 },
@@ -526,56 +526,56 @@ const spearCrouchMovement = new AnimBlend(HumanJoints, [
     { anim: playerAnimationClips.Spear_Crouch_Idle, x: 0, y: 0 },
 ], animVelocity);
 
-const spearMovement = new AnimBlend(HumanJoints, [
+const spearMovement = new AnimBlend(PlayerJoints, [
     { anim: spearStandMovement, x: 0, y: 0 },
     { anim: spearCrouchMovement, x: 1, y: 0 }
 ], animCrouch);
 
-const spearCharge = new AnimBlend(HumanJoints, [
+const spearCharge = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Spear_Stand_Charge, x: 0, y: 0 },
     { anim: playerAnimationClips.Spear_Crouch_Charge, x: 1, y: 0 }
 ], animCrouch);
 
-const spearChargeIdle = new AnimBlend(HumanJoints, [
+const spearChargeIdle = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Spear_Stand_ChargeIdle, x: 0, y: 0 },
     { anim: playerAnimationClips.Spear_Stand_ChargeIdle, x: 1, y: 0 }
 ], animCrouch);
 
-const spearRelease = new AnimBlend(HumanJoints, [
+const spearRelease = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Spear_Stand_ChargeRelease, x: 0, y: 0 },
     { anim: playerAnimationClips.Spear_Crouch_ChargeRelease, x: 1, y: 0 }
 ], animCrouch);
 
-const spearSwing = new AnimBlend(HumanJoints, [
+const spearSwing = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Spear_Stand_SwingRight, x: 0, y: 0 },
     { anim: playerAnimationClips.Spear_Crouch_SwingRight, x: 1, y: 0 }
 ], animCrouch);
 
-const spearShove = new AnimBlend(HumanJoints, [
-    { anim: playerAnimationClips.Bat_Stand_Shove, x: 0, y: 0 },
-    { anim: playerAnimationClips.Bat_Crouch_Shove, x: 1, y: 0 }
+const spearShove = new AnimBlend(PlayerJoints, [
+    { anim: playerAnimationClips.Spear_Stand_Shove, x: 0, y: 0 },
+    { anim: playerAnimationClips.Spear_Crouch_Shove, x: 1, y: 0 }
 ], animCrouch);
 
 const batStandMovement = knifeStandMovement;
 const batCrouchMovement = knifeCrouchMovement;
 const batMovement = knifeMovement;
 
-const batCharge = new AnimBlend(HumanJoints, [
+const batCharge = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Bat_Stand_Chargeup, x: 0, y: 0 },
     { anim: playerAnimationClips.Bat_Crouch_Chargeup, x: 1, y: 0 }
 ], animCrouch);
 
-const batChargeIdle = new AnimBlend(HumanJoints, [
+const batChargeIdle = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Bat_Stand_ChargeupIdle, x: 0, y: 0 },
     { anim: playerAnimationClips.Bat_Stand_ChargeupIdle, x: 1, y: 0 }
 ], animCrouch);
 
-const batRelease = new AnimBlend(HumanJoints, [
+const batRelease = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Bat_Stand_ChargeRelease, x: 0, y: 0 },
     { anim: playerAnimationClips.Bat_Crouch_ChargeRelease, x: 1, y: 0 }
 ], animCrouch);
 
-const batSwing = new AnimBlend(HumanJoints, [
+const batSwing = new AnimBlend(PlayerJoints, [
     { anim: playerAnimationClips.Bat_Stand_SwingRight, x: 0, y: 0 },
     { anim: playerAnimationClips.Bat_Crouch_SwingRight, x: 1, y: 0 }
 ], animCrouch);

@@ -33,7 +33,7 @@ namespace Vanilla.Sentries {
             [HarmonyPatch(typeof(SentryGunInstance), nameof(SentryGunInstance.OnDespawn))]
             [HarmonyPostfix]
             private static void Postfix_OnDespawn(SentryGunInstance __instance) {
-                Replay.Despawn(Replay.Get<rSentry>(__instance.GetInstanceID()));
+                if (Replay.TryGet<rSentry>(__instance.GetInstanceID(), out var sentry)) Replay.Despawn(sentry);
             }
         }
 

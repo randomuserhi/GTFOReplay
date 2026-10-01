@@ -4,7 +4,9 @@ namespace ReplayRecorder.API {
     /// <summary>
     /// Represents a header data type.
     /// 
-    /// Header data types are triggered once prior any events or dynamics. 
+    /// Header records are triggered before any events or dynamics. A type may
+    /// emit multiple records (for example, one per map surface) until all
+    /// registered header types have emitted, including section end markers.
     /// They contain no time information and are written in any order.
     /// 
     /// All headers must be written before any events or dynamics can be written, providing

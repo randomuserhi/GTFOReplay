@@ -50,8 +50,12 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Scream", "0.0.1", {
     },
     exec: (data, snapshot) => {
         const anims = snapshot.getOrDefault("Vanilla.Enemy.Animation", Factory("Map"));
+        const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         
         const id = data.enemy;
+        // Existing recordings contain network screams after despawn. Keep the
+        // indexed event, but it cannot animate or emit an effect for a dead entity.
+        if (!anims.has(id) && !enemies.has(id) && snapshot.get("Vanilla.Enemy.Animation.Despawned")?.has(id)) return;
         if (!anims.has(id)) throw new Error(`EnemyAnim of id '${id}' was not found.`);
         const anim = anims.get(id)!;
 
@@ -59,7 +63,6 @@ ModuleLoader.registerEvent("Vanilla.Enemy.Animation.Scream", "0.0.1", {
         anim.screamAnimIndex = data.animIndex;
         anim.screamType = data.type;
 
-        const enemies = snapshot.getOrDefault("Vanilla.Enemy", Factory("Map"));
         if (!enemies.has(id)) throw new Error(`Enemy of id '${id}' was not found.`);
         const enemy = enemies.get(id)!;
 

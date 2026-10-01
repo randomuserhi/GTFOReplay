@@ -99,7 +99,6 @@ class SentryModel extends ObjectWrapper<Group> {
             this.current = backpack.slots[inventorySlotMap.tool];
             if (this.gearModel !== undefined) this.gearModel.removeFromParent();
             this.gearModel = new GearBuilder(this.current.stringKey, (gearModel) => {
-                gearModel.material.color = this.color;
                 this.yaw = gearModel.findObjectByName(gearModel.root, "a_yaw");
                 this.pitch = gearModel.findObjectByName(gearModel.root, "a_pitch");
             });

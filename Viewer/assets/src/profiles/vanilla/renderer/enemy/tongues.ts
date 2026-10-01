@@ -3,7 +3,6 @@ import * as Pod from "@esm/@root/replay/pod.js";
 import { Mesh, MeshPhongMaterial, Vector3 } from "@esm/three";
 import { DynamicSplineGeometry } from "../../library/dynamicspline.js";
 import { Factory } from "../../library/factory.js";
-import { HumanoidEnemyModel } from "./models/humanoid.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
@@ -18,7 +17,6 @@ declare module "@esm/@root/replay/moduleloader.js" {
 }
 
 const temp = Pod.Vec.zero();
-const originThree = new Vector3(0, 0, 0);
 ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
     const renderLoop = api.getRenderLoop();
     api.setRenderLoop([...renderLoop, { 
@@ -52,59 +50,30 @@ ModuleLoader.registerRender("Enemy.Tongue", (name, api) => {
                     continue;
                 }
                 
-                originThree.copy(owner.position);
-                if (wrapper !== undefined && Object.prototype.isPrototypeOf.call(HumanoidEnemyModel.prototype, wrapper.model)) {
-                    const humanoidModel: HumanoidEnemyModel = wrapper.model as HumanoidEnemyModel;
-                    if (owner.head)  {
-                        originThree.setFromMatrixPosition(humanoidModel.head);
-                    } else {
-                        originThree.setFromMatrixPosition(humanoidModel.neck);
-                    }
-                }
-
-                const origin: Pod.Vector = {
-                    x: originThree.x,
-                    y: originThree.y,
-                    z: originThree.z
-                };
-
+                // The game records the spline's actual mouth anchor. A reconstructed
+                // head matrix can be stale or absent while the enemy is visible.
                 let totalLength = 0;
-                for (let i = 0; i < tongue.spline.length; ++i) {
-                    if (i === 0) {
-                        totalLength += Pod.Vec.length(Pod.Vec.sub(temp, tongue.spline[i], origin));
-                    } else {
-                        totalLength += Pod.Vec.length(Pod.Vec.sub(temp, tongue.spline[i], tongue.spline[i - 1]));
-                    }
+                for (let i = 1; i < tongue.spline.length; ++i) {
+                    totalLength += Pod.Vec.dist(tongue.spline[i], tongue.spline[i - 1]);
                 }
                 const distance = tongue.progress * totalLength;
-                const points: Vector3[] = [new Vector3(origin.x, origin.y, origin.z)];
-                for (let i = 0, d = 0; d <= distance && i < tongue.spline.length; ++i) {
-                    let diff: Pod.Vector;
-                    if (i === 0) {
-                        diff = Pod.Vec.sub(temp, tongue.spline[i], origin);
-                    } else {
-                        diff = Pod.Vec.sub(temp, tongue.spline[i], tongue.spline[i - 1]);
-                    }
+                const start = tongue.spline[0];
+                const points: Vector3[] = [new Vector3(start.x, start.y, start.z)];
+                for (let i = 1, d = 0; d < distance && i < tongue.spline.length; ++i) {
+                    const diff = Pod.Vec.sub(temp, tongue.spline[i], tongue.spline[i - 1]);
                     const dist = Pod.Vec.length(diff);
+                    if (dist === 0) continue;
                     
                     let lerp = 1;
                     const diffDist = distance - d;
                     if (diffDist < dist) {
                         lerp = diffDist / dist;
                     }
-                    if (i === 0) {
-                        points.push(new Vector3(
-                            origin.x + diff.x * lerp,
-                            origin.y + diff.y * lerp,
-                            origin.z + diff.z * lerp
-                        ));
-                    } else {
-                        points.push(new Vector3(
-                            tongue.spline[i-1].x + diff.x * lerp,
-                            tongue.spline[i-1].y + diff.y * lerp,
-                            tongue.spline[i-1].z + diff.z * lerp
-                        ));
-                    }
+                    points.push(new Vector3(
+                        tongue.spline[i-1].x + diff.x * lerp,
+                        tongue.spline[i-1].y + diff.y * lerp,
+                        tongue.spline[i-1].z + diff.z * lerp
+                    ));
                     
                     d += dist;
                 }

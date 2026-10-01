@@ -34,17 +34,11 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
         interface Data {
             "Vanilla.Mine": Map<number, Mine>
+            "Vanilla.Mine.Ownership": Map<number, { snet: bigint }>
             "Vanilla.Mine.Detonate": Map<number, MineDetonate>
         }
     }
 }
-
-// NOTE(randomuserhi): Converts old mine types to their item IDs for backwards compatability
-const mineTypemap: number[] = [
-    125,
-    144,
-    139
-];
 
 export interface Mine extends DynamicTransform.Type {
     id: number;
@@ -54,7 +48,7 @@ export interface Mine extends DynamicTransform.Type {
     length: number;
 }
 
-let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
     main: {
         parse: async (data) => {
             const result = await DynamicTransform.parse(data);
@@ -62,51 +56,17 @@ let mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.1", {
                 ...result,
                 length: await BitHelper.readHalf(data)
             };
-        }, 
+        },
         exec: (id, data, snapshot, lerp) => {
             const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
-    
-            if (!mines.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
+            if (!mines.has(id))
+                throw new Error(`Dynamic of id '${id}' was not found.`);
             const mine = mines.get(id)!;
             DynamicTransform.lerp(mine, data, lerp);
             mine.length = data.length;
         }
     },
     spawn: {
-        parse: async (data) => {
-            const spawn = await DynamicTransform.spawn(data);
-            const result = {
-                ...spawn,
-                item: Identifier.create("Item", mineTypemap[await BitHelper.readByte(data)]),
-                owner: await BitHelper.readUShort(data)
-            };
-            return result;
-        },
-        exec: (id, data, snapshot) => {
-            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
-            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-        
-            if (mines.has(id)) throw new Error(`Mine of id '${id}' already exists.`);
-            if (!players.has(data.owner)) throw new Error(`Mine owner, '${data.owner}', does not exist.`);
-            const player = players.get(data.owner)!;
-            mines.set(id, { id, ...data, snet: player.snet, length: 0 });
-        }
-    },
-    despawn: {
-        parse: async () => {
-        }, 
-        exec: (id, data, snapshot) => {
-            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
-
-            if (!mines.has(id)) throw new Error(`Mine of id '${id}' did not exist.`);
-            mines.delete(id);
-        }
-    }
-});
-mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
-    ...mineDynamicParser,
-    spawn: {
-        ...mineDynamicParser.spawn,
         parse: async (data, snapshot) => {
             const spawn = await DynamicTransform.spawn(data);
             const result = {
@@ -114,14 +74,39 @@ mineDynamicParser = ModuleLoader.registerDynamic("Vanilla.Mine", "0.0.2", {
                 item: await Identifier.parse(IdentifierData(snapshot), data),
                 owner: await BitHelper.readUShort(data)
             };
-            if (result.item.type !== "Item") throw new Error(`Mine had an incompatible identifier of ${result.item.hash}`);
+            if (result.item.type !== "Item")
+                throw new Error(`Mine had an incompatible identifier of ${result.item.hash}`);
             return result;
+        },
+        exec: (id, data, snapshot) => {
+            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
+            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
+            if (mines.has(id))
+                throw new Error(`Mine of id '${id}' already exists.`);
+            if (!players.has(data.owner))
+                throw new Error(`Mine owner, '${data.owner}', does not exist.`);
+            const player = players.get(data.owner)!;
+            mines.set(id, { id, ...data, snet: player.snet, length: 0 });
+            // Damage is host-synchronized; the local explosion can arrive later
+            // or be absent. Ownership is recorded at spawn and survives despawn.
+            snapshot.getOrDefault("Vanilla.Mine.Ownership", Factory("Map")).set(id, { snet: player.snet });
+        }
+    },
+    despawn: {
+        parse: async () => {
+        },
+        exec: (id, data, snapshot) => {
+            const mines = snapshot.getOrDefault("Vanilla.Mine", Factory("Map"));
+            if (!mines.has(id))
+                throw new Error(`Mine of id '${id}' did not exist.`);
+            mines.delete(id);
         }
     }
 });
 
 export interface MineDetonate {
     id: number;
+    dimension: number;
     time: number;
     snet: bigint; // mine owner
     trigger: number; // who triggered the mine (owner if enemy triggered)
@@ -168,11 +153,11 @@ ModuleLoader.registerEvent("Vanilla.Mine.Detonate", "0.0.1", {
             directions.push([{ x: tempV.x, y: tempV.y, z: tempV.z }, r() * 8, scale]);
         }
 
-        detonations.set(id, { ...data, snet: mine.snet, time: snapshot.time(), position: mine.position, rotation: mine.rotation, directions });
+        detonations.set(id, { ...data, snet: mine.snet, dimension: mine.dimension, time: snapshot.time(), position: mine.position, rotation: mine.rotation, directions });
     }
 });
 
-// NOTE(randomuserhi): Keep detonation events around for 1 second to watch for explosion damage events that may reference it
+// This cache owns only short-lived explosion effects, not damage ownership.
 const detonateClearTime = 1000;
 export const duration = 250; // Animation duration
 ModuleLoader.registerTick((snapshot) => {

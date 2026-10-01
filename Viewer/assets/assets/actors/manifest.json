@@ -1,0 +1,512 @@
+[
+  {
+    "id": "bishop",
+    "name": "Bishop",
+    "group": "characters",
+    "sourceRevision": "5a3ba914c82a955b40a1aeac073ebdf7ee454fbfc8169b6bbf7dcb6ad47dff82",
+    "radius": 2.3395209293806727,
+    "model": {
+      "file": "low/bishop.glb",
+      "revision": "9d5132134bc9db6ac11dfd21d12f640a2dfa53d76e3de51a35592f8580cbf3a7",
+      "radius": 2.3395209293806727,
+      "triangles": 15267
+    }
+  },
+  {
+    "id": "woods",
+    "name": "Woods",
+    "group": "characters",
+    "sourceRevision": "4aa68fbbe5aec9019b0911c5202fccc982829a8c095d8800aa57cf62d977a895",
+    "radius": 2.339216467780845,
+    "model": {
+      "file": "low/woods.glb",
+      "revision": "940c3d73d79ff81601184cce67029854b4909664ab6411ed55cd08dc4bae3f83",
+      "radius": 2.339216467780845,
+      "triangles": 17987
+    }
+  },
+  {
+    "id": "hackett",
+    "name": "Hackett",
+    "group": "characters",
+    "sourceRevision": "38fcdb8f03c16cde05312ba1fd41f377c9d4d10e7ff9a4e2a1a80f82d8b44dd3",
+    "radius": 2.322187564408945,
+    "model": {
+      "file": "low/hackett.glb",
+      "revision": "f9e045916dc2a88296fc82da60a7e07a77a3cc808e1002402f91d694c3467368",
+      "radius": 2.322187564408945,
+      "triangles": 14269
+    }
+  },
+  {
+    "id": "dauda",
+    "name": "Dauda",
+    "group": "characters",
+    "sourceRevision": "b404c907be533a684fb1e93abc06df182d6d9f62dc8310f08e276d8dea8d78b8",
+    "radius": 2.3065768986911,
+    "model": {
+      "file": "low/dauda.glb",
+      "revision": "55beaaaa989d4f58d5444bd3bb6b073f3e3923cbdd9a44d2081514e1b61eade5",
+      "radius": 2.3065768986911,
+      "triangles": 14285
+    }
+  },
+  {
+    "id": "striker",
+    "name": "Striker",
+    "group": "enemies",
+    "enemyIds": [
+      13,
+      24,
+      31,
+      32,
+      49
+    ],
+    "sourceRevision": "d331b9a695c0e68f9a37fb997cd5e97b1c05753a7f3dc5955f9fe752a42c9083",
+    "radius": 2.387136924495486,
+    "model": {
+      "file": "low/striker.glb",
+      "revision": "5bd1accc20e73046682db7da27df46c8b901b7aa0b1361ad5d8cf8ac87d4e7de",
+      "radius": 2.387136924495486,
+      "triangles": 4936
+    }
+  },
+  {
+    "id": "big-striker",
+    "name": "Big Striker",
+    "group": "enemies",
+    "enemyIds": [
+      16,
+      28,
+      50
+    ],
+    "sourceRevision": "01c978de7552d1e0d4dcbf2aa83c69fea6e32252e895694c76e772e5adee9e81",
+    "radius": 2.44232169515303,
+    "model": {
+      "file": "low/big-striker.glb",
+      "revision": "65716c9a800955a18bb3b286c338f62208132b15eb6c24f861a14c7e6a5c57bd",
+      "radius": 2.44232169515303,
+      "triangles": 5059
+    }
+  },
+  {
+    "id": "baby",
+    "name": "Baby",
+    "group": "enemies",
+    "enemyIds": [
+      38,
+      48
+    ],
+    "sourceRevision": "07266303f4b4dc344645dfdff7727403374f8d025cc4c06bb1071a7e85703aa1",
+    "radius": 2.7814590107808943,
+    "model": {
+      "file": "low/baby.glb",
+      "revision": "082662e0f66d6c99a7ba0c9ee23ec9ba773d972595ebe2bac68b46b13fa1a674",
+      "radius": 2.7814590107808943,
+      "triangles": 5058
+    }
+  },
+  {
+    "id": "shooter",
+    "name": "Shooter",
+    "group": "enemies",
+    "enemyIds": [
+      11,
+      26,
+      51
+    ],
+    "sourceRevision": "f9d0d7076985dbc5a297aa50d9329c39dfa213cd1ff7d0faeea069efb1f720ed",
+    "radius": 2.0139479158196916,
+    "model": {
+      "file": "low/shooter.glb",
+      "revision": "d828fd01520a8cd1dfb8c9f1e8d8d6c51aa8d4f4fe54df33baa85602d2c35699",
+      "radius": 2.0139479158196916,
+      "triangles": 4376
+    }
+  },
+  {
+    "id": "big-shooter",
+    "name": "Big Shooter",
+    "group": "enemies",
+    "enemyIds": [
+      18
+    ],
+    "sourceRevision": "7c5fa8dac5a78304d1618707da669bcc43bf755a74f087cb3c8433201c1ef8fc",
+    "radius": 1.903191127011854,
+    "model": {
+      "file": "low/big-shooter.glb",
+      "revision": "31ca5aa2ec056477bf647505859acec6f24c0f3dc1994e87ab22136f9e872178",
+      "radius": 1.903191127011854,
+      "triangles": 3166
+    }
+  },
+  {
+    "id": "scout",
+    "name": "Scout",
+    "group": "enemies",
+    "enemyIds": [
+      20
+    ],
+    "sourceRevision": "600cbf659e2371501f6b00565339a8a00d04c6051a7b40651568957cc456a146",
+    "radius": 2.1089521619478977,
+    "model": {
+      "file": "low/scout.glb",
+      "revision": "582d89110923bc0c634ece004a94f8ef345da8ebd1c008467c59d91dd8aae1ff",
+      "radius": 2.1089521619478977,
+      "triangles": 3602
+    }
+  },
+  {
+    "id": "zoomer-scout",
+    "name": "Zoomer Scout",
+    "group": "enemies",
+    "enemyIds": [
+      54
+    ],
+    "sourceRevision": "1bc0bb546632bf10733e308738fd611aa449d9aa3a0fd8552fb9352925d04872",
+    "radius": 2.0510106920785027,
+    "model": {
+      "file": "low/zoomer-scout.glb",
+      "revision": "80859bc911c46ec365bc000826c550cf5a137976f181fb4614a19377f21ebf24",
+      "radius": 2.0510106920785027,
+      "triangles": 3603
+    }
+  },
+  {
+    "id": "shadow",
+    "name": "Shadow",
+    "group": "enemies",
+    "enemyIds": [
+      21
+    ],
+    "sourceRevision": "dd32860ae3e2a6247b9dc22f0facd09635200f04929a1d6fe67e4887f74e5bec",
+    "radius": 2.387136990993961,
+    "model": {
+      "file": "low/shadow.glb",
+      "revision": "488ed14d2c530c04a826297805e55af738e15dd133e67aad5dbdb830f17f1119",
+      "radius": 2.387136990993961,
+      "triangles": 5058
+    }
+  },
+  {
+    "id": "big-shadow",
+    "name": "Big Shadow",
+    "group": "enemies",
+    "enemyIds": [
+      35
+    ],
+    "sourceRevision": "b4b00d3887428cb7fe9325affcd7bb3efbdf8f65a37655b2b37300400beb8c60",
+    "radius": 2.1425672616555698,
+    "model": {
+      "file": "low/big-shadow.glb",
+      "revision": "18cf6a550d25f0dd2222311b4482cf2266762d42ff72a6951ce1900288307ae1",
+      "radius": 2.1425672616555698,
+      "triangles": 5056
+    }
+  },
+  {
+    "id": "shadow-scout",
+    "name": "Shadow Scout",
+    "group": "enemies",
+    "enemyIds": [
+      40
+    ],
+    "sourceRevision": "58b392308d6f8d09d0bcb1470d6ec3f8dfde42d9164bfa845bd597dc9e6b4554",
+    "radius": 2.6544054514648927,
+    "model": {
+      "file": "low/shadow-scout.glb",
+      "revision": "e844cc64aae7deaf1e91f5f18a914dd5d24e4827cdd9b6a73e6c8c5d87a48e7f",
+      "radius": 2.6544054514648927,
+      "triangles": 5058
+    }
+  },
+  {
+    "id": "charger",
+    "name": "Charger",
+    "group": "enemies",
+    "enemyIds": [
+      30
+    ],
+    "sourceRevision": "1878427263dfd346521335c34212689e128b3c243f40bd2e8bc7261d0e2bc593",
+    "radius": 2.7241584929153877,
+    "model": {
+      "file": "low/charger.glb",
+      "revision": "b40888de0f6b1187525f3d0dc5cf25bec38710964b1e5c9e892122ec89b4df73",
+      "radius": 2.7241584929153877,
+      "triangles": 5020
+    }
+  },
+  {
+    "id": "big-charger",
+    "name": "Big Charger",
+    "group": "enemies",
+    "enemyIds": [
+      39
+    ],
+    "sourceRevision": "ae446f1a36fb56da0df453f4491e7a99304a8e55bc9c9bfcad393c289ad00aad",
+    "radius": 2.588888684171827,
+    "model": {
+      "file": "low/big-charger.glb",
+      "revision": "d626ba54b8bd8122d75733d34e96816fae39d9b06ce72f95c9b343921ccda7e2",
+      "radius": 2.588888684171827,
+      "triangles": 5020
+    }
+  },
+  {
+    "id": "charger-scout",
+    "name": "Charger Scout",
+    "group": "enemies",
+    "enemyIds": [
+      41
+    ],
+    "sourceRevision": "f2ed7850ba3a820cc88dd6b238ad99089d2fb4620c0ad1ba03ded50164f0bdd2",
+    "radius": 2.827455372854424,
+    "model": {
+      "file": "low/charger-scout.glb",
+      "revision": "c7b0af6e8bf22434484e575234bdc61ba55e84339c3b7053ab07be7770a14387",
+      "radius": 2.827455372854424,
+      "triangles": 5158
+    }
+  },
+  {
+    "id": "hybrid",
+    "name": "Hybrid",
+    "group": "enemies",
+    "enemyIds": [
+      33
+    ],
+    "sourceRevision": "868824688ecf1938bacb3af322dc19d0273db00b77f8925589181fdfd4bc7497",
+    "radius": 2.295327817020355,
+    "model": {
+      "file": "low/hybrid.glb",
+      "revision": "4d3d1cd1a78b6a389f3ac8ae9baeafcd7858ae98ea4ce93a90a342665663e11a",
+      "radius": 2.295327817020355,
+      "triangles": 5630
+    }
+  },
+  {
+    "id": "nightmare-striker",
+    "name": "Nightmare Striker",
+    "group": "enemies",
+    "enemyIds": [
+      53
+    ],
+    "sourceRevision": "ec2d6b1765987f5f03d2b0bb7633806090a360059806d7859228f9af63390a2e",
+    "radius": 3.4135399330352607,
+    "model": {
+      "file": "low/nightmare-striker.glb",
+      "revision": "ba60031b2f2354dcc36035b0c49307fc6829d87238add7e44eaddb35f4603e86",
+      "radius": 3.4135399330352607,
+      "triangles": 3746
+    }
+  },
+  {
+    "id": "nightmare-shooter",
+    "name": "Nightmare Shooter",
+    "group": "enemies",
+    "enemyIds": [
+      52
+    ],
+    "sourceRevision": "8daff2b85fae5f90d25f20ad42ac4b1bb30e1f57d700ebf6e486b1843ec2a772",
+    "radius": 2.4452372355747145,
+    "model": {
+      "file": "low/nightmare-shooter.glb",
+      "revision": "af894a7745985113adea6e1ca13e780911656b3347e08d40e4dcfb46d1d98c84",
+      "radius": 2.4452372355747145,
+      "triangles": 3593
+    }
+  },
+  {
+    "id": "nightmare-scout",
+    "name": "Nightmare Scout",
+    "group": "enemies",
+    "enemyIds": [
+      56
+    ],
+    "sourceRevision": "b8d7a5c6ae3e4b3a7cd32ddb23909382c0c02732c3417b434ed1ef3eab2e79a9",
+    "radius": 3.264694528202584,
+    "model": {
+      "file": "low/nightmare-scout.glb",
+      "revision": "d70f4f4987b6a152dc96cfe0229bd52886a1f12a2729ebc1cacdee84b0c434e3",
+      "radius": 3.264694528202584,
+      "triangles": 4662
+    }
+  },
+  {
+    "id": "nightmare-baby",
+    "name": "Nightmare Baby",
+    "group": "enemies",
+    "enemyIds": [
+      63
+    ],
+    "sourceRevision": "db0eb31ddda5ae80200cdfec9a44a702485c033d9c4b413f29d84b40e853c5ca",
+    "radius": 5.068071288801105,
+    "model": {
+      "file": "low/nightmare-baby.glb",
+      "revision": "08861ea61eebeaf3f3331f35f5cc1a48f9bed56d1e9a62ea6a876cf0a3fa41a3",
+      "radius": 5.068071288801105,
+      "triangles": 5571
+    }
+  },
+  {
+    "id": "nightmare-giant",
+    "name": "Nightmare Giant / Potatoe",
+    "group": "enemies",
+    "enemyIds": [
+      62
+    ],
+    "sourceRevision": "fe7fbae77c7f9fe0919078f319ebb5c5f88dcf2860a2d502ed72b74d75fc14a7",
+    "radius": 2.8601897654638084,
+    "model": {
+      "file": "low/nightmare-giant.glb",
+      "revision": "cf3bcf97a0acc76455e34f6e904b6b1960e04b0a6655599159413b44ca2a09cf",
+      "radius": 2.8601897654638084,
+      "triangles": 6778
+    }
+  },
+  {
+    "id": "snatcher",
+    "name": "Snatcher",
+    "group": "enemies",
+    "enemyIds": [
+      46
+    ],
+    "sourceRevision": "c0f22b989926eeecc24d0f64c2457eb32979e984f1a00a5b294e2d43466845a1",
+    "radius": 4.890187483384425,
+    "model": {
+      "file": "low/snatcher.glb",
+      "revision": "925d7832b30978bf9f7ec9c482c168e5d32beea4aca4755cd1a6b3c5915cff4a",
+      "radius": 4.890187483384425,
+      "triangles": 9304
+    }
+  },
+  {
+    "id": "tank",
+    "name": "Tank",
+    "group": "enemies",
+    "enemyIds": [
+      29
+    ],
+    "sourceRevision": "2ce3fb9e82057c37ff9b9d11008af03e09c4480f3fa338507704cd5dad4e4bba",
+    "radius": 2.6474807229367117,
+    "model": {
+      "file": "low/tank.glb",
+      "revision": "ea191c7eb4e8a27f1f89d4b66ae0209a424ed5cfe67e2db8192e4d6d5c0a037d",
+      "radius": 2.6474807229367117,
+      "triangles": 11846
+    }
+  },
+  {
+    "id": "immortal-tank",
+    "name": "Immortal Tank",
+    "group": "enemies",
+    "enemyIds": [
+      47
+    ],
+    "sourceRevision": "02d10bf695ea4a712363fe35a38b62b0eb1f8f21f0bb32e3d02aa416b0722947",
+    "radius": 3.085178140311419,
+    "model": {
+      "file": "low/immortal-tank.glb",
+      "revision": "cc4c299a9026ae6c32f76916552ebde022ede26b6abe3753e3b02d9f2e698ee6",
+      "radius": 3.085178140311419,
+      "triangles": 9777
+    }
+  },
+  {
+    "id": "mother",
+    "name": "Mother",
+    "group": "enemies",
+    "enemyIds": [
+      36
+    ],
+    "sourceRevision": "aa48c368c7a37eae18b23c24c68e0b772960010a150a0cef4dc08df811807ed8",
+    "radius": 2.4604596837537787,
+    "model": {
+      "file": "low/mother.glb",
+      "revision": "c604d6ede9943c1e6abb3c4d5d8e45d9b5e0fc4fbf73ed5bdd6e1b08d5f31c5e",
+      "radius": 2.4604596837537787,
+      "triangles": 8872
+    }
+  },
+  {
+    "id": "big-mother",
+    "name": "Big Mother",
+    "group": "enemies",
+    "enemyIds": [
+      37
+    ],
+    "sourceRevision": "e0e72dcf9c3c193e4286867409499c84726bac9b7044cfc5e77778dde8ce00a0",
+    "radius": 2.6993875706459236,
+    "model": {
+      "file": "low/big-mother.glb",
+      "revision": "831b7b664558a9bef0041033b2198381699c1470e55a7f4a5f45c1561b33d967",
+      "radius": 2.6993875706459236,
+      "triangles": 9446
+    }
+  },
+  {
+    "id": "mega-mother",
+    "name": "Mega Mother",
+    "group": "enemies",
+    "enemyIds": [
+      55
+    ],
+    "sourceRevision": "95b1695934554954d57617f16655773e50dee252c18390b8ff32f560283c8a50",
+    "radius": 2.6579449962171884,
+    "model": {
+      "file": "low/mega-mother.glb",
+      "revision": "60bd5b7386a1944510781b1c4a4ab9f5146222d43bb3a87ea7a5c44748dc04bd",
+      "radius": 2.6579449962171884,
+      "triangles": 9300
+    }
+  },
+  {
+    "id": "flyer",
+    "name": "Flyer",
+    "group": "enemies",
+    "enemyIds": [
+      42
+    ],
+    "sourceRevision": "776957e4cb6d30d82438231b7df3e4d15aac6657fba0f7f9758e9629d25979e9",
+    "radius": 5.068286668142945,
+    "model": {
+      "file": "low/flyer.glb",
+      "revision": "ba4f9c3fa50f173fba1099ebb898b226815400fc6999b22caa4cbaadf2f17ad4",
+      "radius": 5.068286668142945,
+      "triangles": 9835
+    }
+  },
+  {
+    "id": "big-flyer",
+    "name": "Big Flyer",
+    "group": "enemies",
+    "enemyIds": [
+      45
+    ],
+    "sourceRevision": "517f786b628909c3c98bd14e1a4f6cd7ca4a575cff1ffb77712817c9f46359da",
+    "radius": 7.089098599625789,
+    "model": {
+      "file": "low/big-flyer.glb",
+      "revision": "6c265e0fd4261be415b841513de334b2193c4eacb3633181921ecc52a3ad0d41",
+      "radius": 7.089098599625789,
+      "triangles": 17723
+    }
+  },
+  {
+    "id": "squid",
+    "name": "Squid",
+    "group": "enemies",
+    "enemyIds": [
+      43,
+      44
+    ],
+    "sourceRevision": "15008559b4e2bf09fbf72fa2841d7c4164e83bec1f8a880edab94829057f8826",
+    "radius": 546.189504542514,
+    "model": {
+      "file": "low/squid.glb",
+      "revision": "b54f03c1952f1eaaa5526aab5256d49db555c7a15016107c4f28a710980b5b64",
+      "radius": 546.189504542514,
+      "triangles": 18990
+    }
+  }
+]

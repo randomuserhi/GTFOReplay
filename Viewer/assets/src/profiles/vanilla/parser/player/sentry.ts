@@ -30,16 +30,16 @@ export interface Sentry extends DynamicTransform.Type {
     baseRot: Pod.Quaternion;
 }
 
-let parser = ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.2", {
     main: {
         parse: async (data) => {
             const result = await DynamicRotation.parse(data);
             return result;
-        }, 
+        },
         exec: (id, data, snapshot, lerp) => {
             const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
-    
-            if (!sentries.has(id)) throw new Error(`Dynamic of id '${id}' was not found.`);
+            if (!sentries.has(id))
+                throw new Error(`Dynamic of id '${id}' was not found.`);
             const sentry = sentries.get(id)!;
             DynamicRotation.lerp(sentry, data, lerp);
         }
@@ -49,39 +49,25 @@ let parser = ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.1", {
             const spawn = await DynamicTransform.spawn(data);
             const result = {
                 ...spawn,
-                owner: await BitHelper.readUShort(data)
+                owner: await BitHelper.readBool(data) ? await BitHelper.readUShort(data) : undefined
             };
             return result;
         },
         exec: (id, data, snapshot) => {
             const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
-        
-            if (sentries.has(id)) throw new Error(`Sentry of id '${id}' already exists.`);
+            if (sentries.has(id))
+                throw new Error(`Sentry of id '${id}' already exists.`);
             sentries.set(id, { id, ...data, baseRot: { ...data.rotation } });
         }
     },
     despawn: {
         parse: async () => {
-        }, 
+        },
         exec: (id, data, snapshot) => {
             const sentries = snapshot.getOrDefault("Vanilla.Sentry", Factory("Map"));
-
-            if (!sentries.has(id)) throw new Error(`Sentry of id '${id}' did not exist.`);
+            if (!sentries.has(id))
+                throw new Error(`Sentry of id '${id}' did not exist.`);
             sentries.delete(id);
         }
     }
-});
-parser = ModuleLoader.registerDynamic("Vanilla.Sentry", "0.0.2", {
-    ...parser,
-    spawn: {
-        ...parser.spawn,
-        parse: async (data) => {
-            const spawn = await DynamicTransform.spawn(data);
-            const result = {
-                ...spawn,
-                owner: await BitHelper.readBool(data) ? await BitHelper.readUShort(data) : undefined
-            };
-            return result;
-        }
-    },
 });

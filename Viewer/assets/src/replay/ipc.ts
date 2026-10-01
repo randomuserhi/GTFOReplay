@@ -23,7 +23,7 @@ export class IpcInterface {
     
     private api: IpcAPI;
     private listeners: Map<string, Set<(...args: any[]) => void>>;
-    private promises: Map<string, Map<number, (value: any) => void>>;
+    private promises: Map<string, Map<number, { resolve(value: any): void; reject(error: Error): void }>>;
     private responses: Map<string, (...args: any[]) => Promise<{ data?: any, args?: any[] }>>;
     constructor(api: IpcAPI) {
         this.api = api;
@@ -39,12 +39,14 @@ export class IpcInterface {
                 this.listeners.get(event)?.forEach(cb => cb(...data));
             } else {
                 if (type === "in") {
-                    if (error !== undefined) throw new IpcError(error);
-                    const resolve = this.promises.get(event)?.get(id);
-                    if (resolve !== undefined) resolve(data[0]);
+                    const pending = this.promises.get(event)?.get(id);
+                    this.promises.get(event)?.delete(id);
+                    if (error !== undefined) pending?.reject(new IpcError(error));
+                    else pending?.resolve(data[0]);
                 } else {
                     if (this.responses.has(event)) {
                         const resp = this.responses.get(event)!;
+                        try {
                         const handle = await resp(...data);
                         const message: IpcMessage = {
                             key: IpcInterface.key,
@@ -55,6 +57,9 @@ export class IpcInterface {
                         };
                         if (handle.args !== undefined) this.api.send(message, ...handle.args);
                         else this.api.send(message);
+                        } catch (error) {
+                            this.api.send({ key: IpcInterface.key, event, id, type: "in", error: String(error), data: [] });
+                        }
                     } else {
                         this.api.send({
                             key: IpcInterface.key,
@@ -118,11 +123,11 @@ export class IpcInterface {
             id: this.getMessageId(),
             data: args
         };
-        const promise = new Promise((resolve) => {
+        const promise = new Promise((resolve, reject) => {
             if (!this.promises.has(event)) this.promises.set(event, new Map());
             const collection = this.promises.get(event)!;
             if (collection.has(message.id!)) throw new IpcDuplicateMessageId(`Duplicate message id of '${message.id}'.`);
-            collection.set(message.id!, resolve);
+            collection.set(message.id!, { resolve, reject });
         });
         this.api.send(message);
         return promise;

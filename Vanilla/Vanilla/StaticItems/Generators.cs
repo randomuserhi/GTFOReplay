@@ -37,7 +37,7 @@ namespace Vanilla.StaticItems {
     }
 
     [HarmonyPatch]
-    [ReplayData("Vanilla.Map.Generators", "0.0.1")]
+    [ReplayData("Vanilla.Map.Generators", "0.0.2")]
     internal class rGenerators : ReplayHeader {
         [HarmonyPatch]
         private static class Patches {
@@ -86,6 +86,7 @@ namespace Vanilla.StaticItems {
                 BitHelper.WriteBytes(generator.position, buffer);
                 BitHelper.WriteHalf(generator.rotation, buffer);
                 BitHelper.WriteBytes(generator.serialNumber, buffer);
+                BitHelper.WriteBytes(generator.core.transform.lossyScale, buffer);
             }
         }
     }

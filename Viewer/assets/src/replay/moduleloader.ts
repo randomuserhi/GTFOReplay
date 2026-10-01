@@ -1,5 +1,6 @@
 import { Renderer, RendererApi } from "./renderer.js";
 import { ByteStream } from "./stream.js";
+import type { IndexedEvent } from "../main/interface.js";
 
 export declare namespace Typemap {
     interface Headers {
@@ -70,6 +71,13 @@ export interface HeaderParser {
 }
 
 export namespace ModuleLoader {
+    // Async asset failures must remain visible without stopping replay simulation.
+    const warnings: string[] = [];
+    export function reportWarning(message: string) {
+        if (warnings.length < 500 && !warnings.includes(message)) warnings.push(message);
+    }
+    export function consumeWarnings(): string[] { return warnings.splice(0); }
+
     interface HeaderModule extends HeaderParser { 
     }
     interface EventModule<T extends Typemap.EventNames = never> extends EventParser<T> {
@@ -91,6 +99,7 @@ export namespace ModuleLoader {
         dynamic: ModuleLibrary<DynamicModule>
         render: Map<string, RenderModule>
         tick: Set<(snapshot: ReplayApi) => void>
+        index: Set<(event: IndexedEvent, snapshot: ReplayApi) => void>
         dispose: Set<(renderer: Renderer) => void>
     } = {
         init: new Set(),
@@ -99,16 +108,19 @@ export namespace ModuleLoader {
         dynamic: new Map(),
         render: new Map(),
         tick: new Set(),
+        index: new Set(),
         dispose: new Set(),
     };
 
     export function clear() {
+        warnings.length = 0;
         library.init.clear();
         library.header.clear();
         library.event.clear();
         library.dynamic.clear();
         library.render.clear();
         library.tick.clear();
+        library.index.clear();
         library.dispose.clear();
     }
 

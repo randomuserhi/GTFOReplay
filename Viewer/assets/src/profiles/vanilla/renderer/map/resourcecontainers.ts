@@ -1,99 +1,49 @@
 import { signal } from "@esm/@/rhu/signal.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { Color, Group, Mesh, MeshPhongMaterial, Vector3 } from "@esm/three";
+import { Group, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { ItemDatablock } from "../../datablocks/items/item.js";
-import { black, white } from "../../library/constants.js";
 import { Factory } from "../../library/factory.js";
-import { loadGLTFGeometry } from "../../library/modelloader.js";
 import { Identifier } from "../../parser/identifier.js";
 import { ResourceContainer, ResourceContainerState } from "../../parser/map/resourcecontainer.js";
-import { ObjectWrapper } from "../objectwrapper.js";
 import { Camera } from "../renderer.js";
+import { EnvironmentLock, EnvironmentModel, environmentAssetForPrefab } from "./environment.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
-        interface RenderPasses {
-            "Vanilla.ResourceContainers": void;
-        }
-
-        interface RenderData {
-            "ResourceContainers": Map<number, ResourceContainerModel>;
-        }
+        interface RenderPasses { "Vanilla.ResourceContainers": void; }
+        interface RenderData { "ResourceContainers": Map<number, ResourceContainerModel>; }
     }
 }
 
-const materialOrange = new MeshPhongMaterial({
-    color: 0xc57000,
-    transparent: true
-});
-
-const materialGrey = new MeshPhongMaterial({
-    color: 0x777777,
-    transparent: true
-});
-
-const materialGreyUnregistered = new MeshPhongMaterial({
-    color: 0x777777,
-    transparent: true,
-    opacity: 0.1
-});
-const materialOrangeUnregistered = new MeshPhongMaterial({
-    color: 0xc57000,
-    transparent: true,
-    opacity: 0.1
-});
-
-export class ResourceContainerModel extends ObjectWrapper<Group> {
+export class ResourceContainerModel extends EnvironmentModel {
     static transparent = signal(false);
     static debug = signal(false);
+    private content = new Group();
+    private lock: EnvironmentLock;
+    private tmp: Text;
+    private disposedContainer = false;
 
-    anchor: Group;
-
-    hacklock: Group;
-    padlock: Group;
-
-    lockColor: Color;
-    lockMaterial: MeshPhongMaterial;
-
-    container: ResourceContainer;
-
-    private tmp?: Text;
-    tmpAnchor: Group = new Group();
-
-    constructor(container: ResourceContainer) {
-        super();
-        this.container = container;
-
-        this.root = new Group();
-        this.anchor = new Group();
-        this.root.add(this.anchor);
-
-        this.root.position.copy(container.position);
-        this.root.quaternion.copy(container.rotation);
-    
-        this.hacklock = new Group();
-        this.padlock = new Group();
-
-        this.lockColor = new Color(0xffffff);
-        this.lockMaterial = new MeshPhongMaterial();
-        this.lockMaterial.color = this.lockColor;
-        this.lockMaterial.specular = black;
-        loadGLTFGeometry("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
-        loadGLTFGeometry("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
-
-        this.hacklock.add(this.padlock);
-        this.anchor.add(this.hacklock);
-
-        this.padlock.scale.set(0.2, 0.2, 0.2);
-        this.padlock.position.set(0, -0.5, 0.1);
-
-        this.hacklock.visible = false;
-        this.padlock.visible = false;
-
-        this.anchor.visible = this.container.registered || ResourceContainerModel.debug();
-
-        // Setup tmp
+    constructor(readonly container: ResourceContainer) {
+        const expected = container.isLocker ? "resource-locker" : "resource-box";
+        const asset = environmentAssetForPrefab(container.modelName);
+        super(asset === expected ? asset : `unregistered-container:${container.modelName}`, container, container.isLocker ? [1, 2, .6] : [1, .7, .7]);
+        this.root.add(this.content);
+        this.lock = new EnvironmentLock("resource", container.lockTransform);
+        this.ready.then(() => {
+            if (!this.model) return;
+            this.content.add(this.model);
+            if (container.lockTransform) {
+                // Captured lock transforms are world-space. Keep the lock independent
+                // of lid/door animation, as in the native resource-container core.
+                this.content.updateWorldMatrix(true, false);
+                this.content.attach(this.lock.root);
+            } else if (container.assignedLock !== "None") {
+                const align = this.node("WeakLock_align");
+                if (!align) { this.useBasicShape(new Error(`Missing source lock attachment in ${this.assetId}.`)); return; }
+                align.add(this.lock.root);
+            }
+        });
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
         this.tmp.fontSize = 0.2;
@@ -103,10 +53,16 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
         this.tmp.anchorY = "bottom";
         this.tmp.color = 0xffffff;
         this.tmp.visible = false;
-        this.tmpAnchor.add(this.tmp);
-        this.root.add(this.tmpAnchor);
-
+        this.root.add(this.tmp);
         this.updateStateless();
+    }
+
+    override dispose() {
+        if (this.disposedContainer) return;
+        this.disposedContainer = true;
+        this.lock.melee.dispose(); this.lock.hack.dispose();
+        this.tmp.dispose();
+        super.dispose();
     }
 
     private static FUNC_updateStateless = {
@@ -114,7 +70,8 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
         tmpPos: new Vector3()
     } as const;
     public updateStateless(camera?: Camera, state?: ResourceContainerState) {
-        this.anchor.visible = this.container.registered || ResourceContainerModel.debug();
+        this.content.visible = this.container.registered || ResourceContainerModel.debug();
+        this.setBasicVisible(this.content.visible);
 
         if (this.tmp !== undefined) {
             this.tmp.visible = ResourceContainerModel.debug();
@@ -129,7 +86,7 @@ export class ResourceContainerModel extends ObjectWrapper<Group> {
                 }
             }
 
-            this.tmp.text = `lock: ${this.container.assignedLock === undefined ? "Unknown" : this.container.assignedLock} 
+            this.tmp.text = `lock: ${this.container.assignedLock}
 type: ${name}`;
 
             if (this.tmp.visible && camera !== undefined) {
@@ -145,173 +102,38 @@ type: ${name}`;
         }
     }
 
-    public update(time: number, state: ResourceContainerState) {
-        if (state.closed) {
-            this.hacklock.visible = state.lockType === "Hackable" || state.lockType === "Melee";
-            this.padlock.visible = state.lockType === "Melee";
-
-            if (state.lockType === "Melee") {
-                this.lockMaterial.specular = white;
-            } else {
-                this.lockMaterial.specular = black;
-            }
-
-            if (state.lockType === "Hackable") {
-                this.lockColor.set(0x6666ff);
-            } else {
-                this.lockColor.set(0x666666);
-            }
-        }
-    }
-}
-
-class Locker extends ResourceContainerModel {
-    back: Group;
-    left: Group;
-    right: Group;
-    pivot: Group;
-
-    constructor(container: ResourceContainer) {
-        super(container);
-
-        this.back = new Group();
-        this.left = new Group();
-        this.right = new Group();
-        this.pivot = new Group();
-        this.left.add(this.right);
-        this.pivot.add(this.left);
-        this.anchor.add(this.back, this.pivot);
-
-        this.anchor.scale.set(0.43, 0.43, 0.43);
-        this.anchor.position.set(0.5, -0.225, 1);
-        
-        this.left.scale.set(-1, 1, 1);
-        this.left.position.set(1.1, 0, -0.55 + 0.045);
-
-        this.right.scale.set(-1, 1, 1);
-        this.right.position.set(0, 0, 0);
-
-        this.pivot.position.set(-1.1, 0, 0.55);
-
-        loadGLTFGeometry("../js3party/models/StorageContainers/locker back.glb", false).then((model) => this.back.add(new Mesh(model, container.registered ? materialGrey : materialGreyUnregistered)));
-        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.left.add(new Mesh(model, container.registered ? materialOrange : materialOrangeUnregistered)));
-        loadGLTFGeometry("../js3party/models/StorageContainers/locker front.glb", false).then((model) => this.right.add(new Mesh(model, container.registered ? materialOrange : materialOrangeUnregistered)));
-        
-        this.hacklock.position.set(0, 0.575, 0.6);
-        
-        this.anchor.rotateX(Math.PI / 2);
-        this.tmpAnchor.position.copy(this.anchor.position);
-        this.tmpAnchor.rotation.copy(this.anchor.rotation);
-    }
-
-    public update(time: number, container: ResourceContainerState): void {
-        super.update(time, container);
-        
-        if (container.closed) {
-            this.pivot.rotation.set(0, 0, 0);
-            this.right.position.set(0, 0, 0);
-            return;
-        }
-
-        this.hacklock.visible = false;
-        this.padlock.visible = false;
-
-        const animDuration = 700;
-        const lerp = Math.clamp01((time - container.lastCloseTime) / animDuration);
-        this.pivot.rotation.set(0, -70 * Math.deg2rad * lerp, 0);
-        this.right.position.set(0.8 * lerp, 0, -0.05);
-    }
-}
-
-class Box extends ResourceContainerModel {
-    bottom: Group;
-    top: Group;
-    pivot: Group;
-
-    constructor(container: ResourceContainer) {
-        super(container);
-
-        this.bottom = new Group();
-        this.top = new Group();
-        this.pivot = new Group();
-        this.pivot.add(this.top);
-        this.anchor.add(this.bottom, this.pivot);
-        
-        this.top.position.set(0, 0.4, 1);
-        this.pivot.position.set(0, 0.42, -1);
-        
-        this.anchor.scale.set(0.25, 0.25, 0.25);
-        this.anchor.position.set(0, 0, 0.1);
-
-        loadGLTFGeometry("../js3party/models/StorageContainers/box bottom.glb", false).then((model) => this.bottom.add(new Mesh(model, container.registered ? materialGrey : materialGreyUnregistered)));
-        loadGLTFGeometry("../js3party/models/StorageContainers/box top.glb", false).then((model) => this.top.add(new Mesh(model, container.registered ? materialOrange : materialOrangeUnregistered)));
-        
-        this.hacklock.position.set(0, 0.4, 1);
-        this.hacklock.scale.set(1.72, 1.72, 1.72);
-
-        this.anchor.rotateX(Math.PI / 2);
-        this.tmpAnchor.position.copy(this.anchor.position);
-        this.tmpAnchor.rotation.copy(this.anchor.rotation);
-    }
-
-    public update(time: number, state: ResourceContainerState): void {
-        super.update(time, state);
-
-        if (state.closed) {
-            this.pivot.rotation.set(0, 0, 0);
-            return;
-        }
-
-        this.hacklock.visible = false;
-        this.padlock.visible = false;
-
-        const animDuration = 400;
-        this.pivot.rotation.set(-90 * Math.deg2rad * Math.clamp01((time - state.lastCloseTime) / animDuration), 0, 0);
+    public update(time: number, state?: ResourceContainerState) {
+        this.setOpacity(!this.container.registered ? 0.1 : ResourceContainerModel.transparent() ? 0.5 : 1);
+        const closed = state?.closed ?? true;
+        const openTime = closed ? 0 : (time - state!.lastCloseTime) / 1000;
+        this.sampleAnimation(this.container.isLocker ? "SupplyLocker_open" : "SupplyBoxOpen", openTime);
+        this.lock.update(closed ? state?.lockType ?? "None" : "None");
     }
 }
 
 ModuleLoader.registerRender("Vanilla.ResourceContainers", (name, api) => {
-    const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([...renderLoop, { 
+    api.setRenderLoop([...api.getRenderLoop(), {
         name, pass: (renderer, snapshot) => {
-            if (ResourceContainerModel.transparent()) {
-                materialOrange.opacity = 0.5;
-                materialOrange.depthWrite = false;
-
-                materialGrey.opacity = 0.5;
-                materialGrey.depthWrite = false;
-            } else {
-                materialOrange.opacity = 1;
-                materialOrange.depthWrite = true;
-
-                materialGrey.opacity = 1;
-                materialGrey.depthWrite = true;
-            }
-
             const time = snapshot.time();
             const containers = snapshot.header.getOrDefault("Vanilla.Map.ResourceContainers", Factory("Map"));
             const states = snapshot.getOrDefault("Vanilla.Map.ResourceContainers.State", Factory("Map"));
             const models = renderer.getOrDefault("ResourceContainers", Factory("Map"));
             const camera = renderer.get("Camera")!;
-            for (const [id, container] of containers.entries()) {
+            for (const [id, container] of containers) {
                 if (!models.has(id)) {
-                    const model = container.isLocker ? new Locker(container) : new Box(container);
+                    const model = new ResourceContainerModel(container);
                     models.set(id, model);
                     model.addToScene(renderer.scene);
                 }
-
                 const model = models.get(id)!;
-                const visible = container.dimension === renderer.get("Dimension");
+                const visible = container.dimension === renderer.get("Dimension") && model.inView(camera);
                 model.setVisible(visible);
-
                 if (visible) {
                     const state = states.get(id);
                     model.updateStateless(camera, state);
-                    
-                    if (state === undefined) continue;
                     model.update(time, state);
                 }
             }
-        } 
+        }
     }]);
 });

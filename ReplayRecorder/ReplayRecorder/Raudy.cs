@@ -12,7 +12,9 @@ using UnityEngine;
 
 namespace ReplayRecorder {
     public static class Raudy {
-        public static long Now => ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+        private static readonly long epoch = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        private static readonly System.Diagnostics.Stopwatch clock = System.Diagnostics.Stopwatch.StartNew();
+        public static long Now => epoch + clock.ElapsedMilliseconds;
     }
 
     public class BitHelperBufferTooLarge : Exception {
@@ -20,7 +22,7 @@ namespace ReplayRecorder {
     }
 
     public class ByteBuffer {
-        internal ArraySegment<byte> _array = new byte[1024];
+        internal ArraySegment<byte> _array;
         internal ArraySegment<byte> Array => new ArraySegment<byte>(_array.Array!, _array.Offset, count);
 
         public ByteBuffer() {
@@ -49,23 +51,16 @@ namespace ReplayRecorder {
         }
 
         internal void Reserve(int size, bool increment = false) {
+            const int limit = 64 * 1024 * 1024;
+            if (size < 0 || count < 0 || size > limit - count) throw new BitHelperBufferTooLarge("Replay buffer exceeded 64 MB.");
             if (_array.Count - count < size) {
-                byte[] newArray = new byte[Mathf.Max(_array.Count * 2, count + size)];
+                byte[] newArray = new byte[Math.Min(limit, Math.Max(_array.Count * 2, count + size))];
                 System.Array.Copy(_array.Array!, _array.Offset, newArray, 0, _array.Count);
                 _array = newArray;
             }
             if (increment) count += size;
         }
 
-        internal async Task AsyncFlush(FileStream fs) {
-            if (ConfigManager.DebugTicks) APILogger.Debug($"Async Flushed snapshot: {count} bytes.");
-            await fs.WriteAsync(Array).ConfigureAwait(false);
-        }
-
-        internal void Shrink() {
-            _array = new byte[1024];
-            GC.Collect();
-        }
     }
 
     public interface BufferWriteable {

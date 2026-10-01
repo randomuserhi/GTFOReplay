@@ -23,14 +23,6 @@ namespace Vanilla.Enemy {
             private static void OnDespawn(EnemySync __instance) {
                 Despawn(__instance.m_agent);
             }
-            [HarmonyPatch(typeof(EnemyBehaviour), nameof(EnemyBehaviour.ChangeState), new Type[] { typeof(EB_States) })]
-            [HarmonyPrefix]
-            private static void Behaviour_ChangeState(EnemyBehaviour __instance, EB_States state) {
-                if (__instance.m_currentStateName != state && state == EB_States.Dead) {
-                    Despawn(__instance.m_ai.m_enemyAgent);
-                    return;
-                }
-            }
         }
 
         public static void Spawn(EnemyAgent enemy) {
@@ -64,7 +56,7 @@ namespace Vanilla.Enemy {
         }
     }
 
-    [ReplayData("Vanilla.Enemy", "0.0.4")]
+    [ReplayData("Vanilla.Enemy", "0.0.5")]
     public class rEnemy : DynamicTransform {
         [HarmonyPatch]
         private static class Patches {
@@ -87,6 +79,7 @@ namespace Vanilla.Enemy {
         public PlayerAgent? targetPlayer;
 
         public EnemyAgent agent;
+        internal bool deathRecorded;
 
         public rEnemy(EnemyAgent enemy) : base(enemy.GlobalID, new EnemyTransform(enemy)) {
             agent = enemy;
@@ -162,22 +155,16 @@ namespace Vanilla.Enemy {
 
         public override void Write(ByteBuffer buffer) {
             base.Write(buffer);
-
             tagged = _tagged;
-            BitHelper.WriteBytes(tagged, buffer);
-
             consumedPlayer = _consumedPlayer;
-            BitHelper.WriteBytes(consumedPlayer, buffer);
-
             target = _target;
-            BitHelper.WriteBytes(target, buffer);
-
             stagger = _stagger;
-            BitHelper.WriteBytes(stagger, buffer);
-
             canStagger = _canStagger;
-            BitHelper.WriteBytes(canStagger, buffer);
+            Span<byte> fields = stackalloc byte[4];
+            int count = stateCodec.Write(fields, tagged, canStagger, consumedPlayer, target, stagger);
+            for (int i = 0; i < count; ++i) BitHelper.WriteBytes(fields[i], buffer);
         }
+        private EnemyStateCodec stateCodec;
 
         public override void Spawn(ByteBuffer buffer) {
             // TODO(randomuserhi): Error handling on IDs larger than ushort.MaxValue

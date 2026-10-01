@@ -2,7 +2,7 @@ import { GearPartFlashlightDatablock } from "@asl/vanilla/datablocks/gear/parts/
 
 GearPartFlashlightDatablock.clear();
 
-const root = `../js3party/models/GearParts/Flashlight`;
+const root = `../gear/GearParts/Flashlight`;
 
 GearPartFlashlightDatablock.set(2, {
     path: `${root}/Flashlight_A.glb`,

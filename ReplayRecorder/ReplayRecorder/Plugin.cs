@@ -21,6 +21,7 @@ public class Plugin : BasePlugin {
 
         ClassInjector.RegisterTypeInIl2Cpp<SnapshotInstance>();
         ClassInjector.RegisterTypeInIl2Cpp<MainThread>();
+        AddComponent<MainThread>();
 
         Replay.RegisterAll();
 
@@ -33,7 +34,7 @@ public class Plugin : BasePlugin {
     }
 
     private static void OnGameplayStart() {
-        Replay.OnGameplayStart?.Invoke();
+        SnapshotManager.Invoke("Gameplay start", Replay.OnGameplayStart);
     }
 
     private static Harmony? harmony;

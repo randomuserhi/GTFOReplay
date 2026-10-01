@@ -1,37 +1,29 @@
 import { BufferGeometry, Group, Mesh, Texture, TextureLoader } from '@esm/three';
-import { DRACOLoader } from '@esm/three/examples/jsm/loaders/DRACOLoader.js';
-import { GLTFLoader } from '@esm/three/examples/jsm/loaders/GLTFLoader.js';
+import { modelLoader as loader } from '@esm/@root/replay/model-loader.js';
 import * as BufferGeometryUtils from '@esm/three/examples/jsm/utils/BufferGeometryUtils.js';
+import { clone as cloneSkeleton } from '@esm/three/examples/jsm/utils/SkeletonUtils.js';
+import { ownModelMaterials, disposeModelMaterials } from './modelMaterials.js';
+import { ModuleLoader } from '@esm/@root/replay/moduleloader.js';
 
-const loadedGLTFGeometry = new Map<string, BufferGeometry>();
-const loadingGLTFGeometry = new Map<string, { promise: Promise<BufferGeometry>; terminate: (reason: any) => void }>();
+ModuleLoader.registerDispose(renderer => disposeModelMaterials(renderer.scene));
 
-const loader = new GLTFLoader();
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("../js3party/three/examples/jsm/libs/draco/");
-loader.setDRACOLoader( dracoLoader );
+const geometryCache = new Map<string, { promise: Promise<BufferGeometry>; terminate: (reason: any) => void }>();
+
 
 export function deleteGLTFGeometryCache(path: string) {
-    loadedGLTFGeometry.delete(path);
-    if (loadingGLTFGeometry.has(path)) {
-        loadingGLTFGeometry.get(path)!.terminate("Model cache invalidated.");
-        loadingGLTFGeometry.delete(path);
+    if (geometryCache.has(path)) {
+        geometryCache.get(path)!.terminate("Model cache invalidated.");
+        geometryCache.delete(path);
     }
 }
 
 // NOTE(randomuserhi): `newLoader` exists due to old models being imported without transforms. All models should have transforms applied, but old models were implemented prior to this.
 export async function loadGLTFGeometry(path: string, newLoader: boolean = true): Promise<BufferGeometry> {
-    if (loadedGLTFGeometry.has(path)) {
-        return new Promise((resolve) => {
-            resolve(loadedGLTFGeometry.get(path)!);
-        });
+    if (geometryCache.has(path)) {
+        return geometryCache.get(path)!.promise;
     }
 
-    if (loadingGLTFGeometry.has(path)) {
-        return loadingGLTFGeometry.get(path)!.promise;
-    }
-
-    let terminate: ((reason: any) => void) | undefined = undefined;
+    let terminate!: (reason: unknown) => void;
     const promise = new Promise<BufferGeometry>((resolve, reject) => {
         terminate = reject;
         loader.load(path, function (gltf) {
@@ -49,7 +41,6 @@ export async function loadGLTFGeometry(path: string, newLoader: boolean = true):
                 });
                 
                 const geometry = BufferGeometryUtils.mergeGeometries(geometries);
-                loadedGLTFGeometry.set(path, geometry);
                 resolve(geometry);
             } catch(error) {
                 console.log(`Failed to load GLTF Geometry '${path}': ${error}`);
@@ -60,44 +51,31 @@ export async function loadGLTFGeometry(path: string, newLoader: boolean = true):
             reject(error);
         });
     });
-    if (terminate !== undefined) {
-        loadingGLTFGeometry.set(path, { promise, terminate });
-    } else {
-        console.warn("Unable to obtain termination from model loading promise. This shouldn't happen!");
-    }
+    geometryCache.set(path, { promise, terminate });
     return promise; 
 }
 
-const loadedGLTF = new Map<string, () => Group>();
-const loadingGLTF = new Map<string, { promise: Promise<() => Group>; terminate: (reason: any) => void }>();
+const modelCache = new Map<string, { promise: Promise<() => Group>; terminate: (reason: any) => void }>();
 
 export function deleteGLTFCache(path: string) {
-    loadedGLTF.delete(path);
-    if (loadingGLTF.has(path)) {
-        loadingGLTF.get(path)!.terminate("Model cache invalidated.");
-        loadingGLTF.delete(path);
+    if (modelCache.has(path)) {
+        modelCache.get(path)!.terminate("Model cache invalidated.");
+        modelCache.delete(path);
     }
 }
 
-// NOTE(randomuserhi): `newLoader` exists due to old models being imported without transforms. All models should have transforms applied, but old models were implemented prior to this.
 export async function loadGLTF(path: string): Promise<() => Group> {
-    if (loadedGLTF.has(path)) {
-        return new Promise((resolve) => {
-            resolve(loadedGLTF.get(path)!);
-        });
+    if (modelCache.has(path)) {
+        return modelCache.get(path)!.promise;
     }
 
-    if (loadingGLTF.has(path)) {
-        return loadingGLTF.get(path)!.promise;
-    }
-
-    let terminate: ((reason: any) => void) | undefined = undefined;
+    let terminate!: (reason: unknown) => void;
     const promise = new Promise<() => Group>((resolve, reject) => {
         terminate = reject;
         loader.load(path, function (gltf) {
             try {
-                const factory = () => gltf.scene.clone();
-                loadedGLTF.set(path, factory);
+                gltf.scene.animations = gltf.animations;
+                const factory = () => { const model = cloneSkeleton(gltf.scene) as Group; ownModelMaterials(model); return model; };
                 resolve(factory);
             } catch(error) {
                 console.log(`Failed to load GLTF '${path}': ${error}`);
@@ -108,38 +86,19 @@ export async function loadGLTF(path: string): Promise<() => Group> {
             reject(error);
         });
     });
-    if (terminate !== undefined) {
-        loadingGLTF.set(path, { promise, terminate });
-    } else {
-        console.warn("Unable to obtain termination from model loading promise. This shouldn't happen!");
-    }
+    modelCache.set(path, { promise, terminate });
     return promise; 
 }
 
-const loadedTextures = new Map<string, Texture>();
-const loadingTextures = new Map<string, { promise: Promise<Texture>; terminate: (reason: any) => void }>();
+const textureCache = new Map<string, Promise<Texture>>();
 const textureLoader = new TextureLoader();
 
 export function loadTexture(path: string): Promise<Texture> {
-    if (loadedTextures.has(path)) {
-        return new Promise((resolve) => {
-            resolve(loadedTextures.get(path)!);
-        });
+    let promise = textureCache.get(path);
+    if (!promise) {
+        // Pings need Three's placeholder texture immediately, before image decoding.
+        promise = new Promise(resolve => resolve(textureLoader.load(path)));
+        textureCache.set(path, promise);
     }
-
-    if (loadingTextures.has(path)) {
-        return loadingTextures.get(path)!.promise;
-    }
-
-    let terminate: ((reason: any) => void) | undefined = undefined;
-    const promise = new Promise<Texture>((resolve, reject) => {
-        terminate = reject;
-        resolve(textureLoader.load(path));
-    });
-    if (terminate !== undefined) {
-        loadingTextures.set(path, { promise, terminate });
-    } else {
-        console.warn("Unable to obtain termination from image loading promise. This shouldn't happen!");
-    }
-    return promise; 
+    return promise;
 }

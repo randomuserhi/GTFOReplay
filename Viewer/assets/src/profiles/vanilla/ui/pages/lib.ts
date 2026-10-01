@@ -3,22 +3,29 @@ import { Style } from "@esm/@/rhu/style.js";
 export const pageStyles = Style(({ css }) => {
     const wrapper = css.class`
     position: relative;
-    width: 400px;
-    padding: 20px;
-    color: white;
-    font-size: 15px;
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    padding: 20px 18px;
+    color: #edf0f4;
+    font-size: 13px;
     `;
     css`
     ${wrapper} h1 {
-        font-size: 30px;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 32px 8px 0;
     }
     `;
 
     const search = css.class`
-    background-color: #12121a;
+    box-sizing: border-box;
+    min-width: 0;
+    background-color: #202732;
     padding: 7px 10px;
-    border-radius: 3px;
-    color: white;
+    border-radius: 6px;
+    border: 1px solid #35404b;
+    color: #edf0f4;
     width: 100%;
     `;
 
@@ -32,35 +39,13 @@ export const pageStyles = Style(({ css }) => {
     width: 100%;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    border-bottom-color: white;
+    border-bottom-color: #edf0f4;
     `;
 
     const body = css.class`
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    `;
-
-    const active = css.class``;
-    const toggle = css.class`
-    width: 50px;
-    height: 15px;
-    border-radius: 100px;
-    border-style: solid;
-    border-width: 3px;
-
-    --color: #7169ce;
-    border-color: var(--color);
-    background-color: transparent;
-    transition: all ease-in-out 100ms;
-    `;
-    css`
-    ${toggle}:hover {
-        --color: #bfb9eb;
-    }
-    ${toggle}${active} {
-    background-color: var(--color);
-    }
+    gap: 20px;
     `;
 
     return {
@@ -68,9 +53,7 @@ export const pageStyles = Style(({ css }) => {
         search,
         row,
         divider,
-        body,
-        toggle,
-        active
+        body
     };
 });
 

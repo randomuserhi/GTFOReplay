@@ -44,27 +44,29 @@ export interface Player extends DynamicTransform.Type {
     flashlightRange: number;
 }
 
-let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.1", {
+ModuleLoader.registerDynamic("Vanilla.Player", "0.0.2", {
     main: {
         parse: async (data, snapshot) => {
             const result = await DynamicTransform.parse(data);
             return {
                 ...result,
                 equippedId: await Identifier.parse(IdentifierData(snapshot), data),
-                flashlight: false,
-                flashlightRange: 1000
+                flashlight: await BitHelper.readBool(data),
+                flashlightRange: await BitHelper.readHalf(data)
             };
-        }, 
+        },
         exec: (id, data, snapshot, lerp) => {
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-    
-            if (!players.has(id)) throw new Error(`Player of id '${id}' was not found.`);
+            if (!players.has(id))
+                throw new Error(`Player of id '${id}' was not found.`);
             const player = players.get(id)!;
             DynamicTransform.lerp(player, data, lerp);
             if (!Identifier.equals(IdentifierData(snapshot), player.equippedId, data.equippedId)) {
                 Identifier.copy(player.equippedId, data.equippedId);
                 player.lastEquippedTime = snapshot.time();
             }
+            player.flashlight = data.flashlight;
+            player.flashlightRange = data.flashlightRange;
         }
     },
     spawn: {
@@ -82,9 +84,9 @@ let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.re
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
             const snet = snapshot.getOrDefault("Vanilla.Player.Snet", Factory("Map"));
             const slots = snapshot.getOrDefault("Vanilla.Player.Slots", Factory("Array"));
-        
-            if (players.has(id)) throw new Error(`Player of id '${id}(${data.snet})' already exists.`);
-            const player = { 
+            if (players.has(id))
+                throw new Error(`Player of id '${id}(${data.snet})' already exists.`);
+            const player = {
                 id, ...data,
                 equippedId: Identifier.create(),
                 lastEquippedTime: 0,
@@ -92,7 +94,6 @@ let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.re
                 flashlight: false,
                 flashlightRange: 1000
             };
-
             players.set(id, player);
             slots[data.slot] = player;
             snet.set(data.snet, player);
@@ -100,41 +101,14 @@ let playerParser: ModuleLoader.DynamicModule<"Vanilla.Player"> = ModuleLoader.re
     },
     despawn: {
         parse: async () => {
-        }, 
+        },
         exec: (id, data, snapshot) => {
             const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
             const slots = snapshot.getOrDefault("Vanilla.Player.Slots", Factory("Array"));
-
-            if (!players.has(id)) throw new Error(`Player of id '${id}' did not exist.`);
+            if (!players.has(id))
+                throw new Error(`Player of id '${id}' did not exist.`);
             slots[players.get(id)!.slot] = undefined;
             players.delete(id);
         }
     }
-});
-playerParser = ModuleLoader.registerDynamic("Vanilla.Player", "0.0.2", {
-    ...playerParser,
-    main: {
-        parse: async (data, snapshot) => {
-            const result = await DynamicTransform.parse(data);
-            return {
-                ...result,
-                equippedId: await Identifier.parse(IdentifierData(snapshot), data),
-                flashlight: await BitHelper.readBool(data),
-                flashlightRange: await BitHelper.readHalf(data)
-            };
-        }, 
-        exec: (id, data, snapshot, lerp) => {
-            const players = snapshot.getOrDefault("Vanilla.Player", Factory("Map"));
-    
-            if (!players.has(id)) throw new Error(`Player of id '${id}' was not found.`);
-            const player = players.get(id)!;
-            DynamicTransform.lerp(player, data, lerp);
-            if (!Identifier.equals(IdentifierData(snapshot), player.equippedId, data.equippedId)) {
-                Identifier.copy(player.equippedId, data.equippedId);
-                player.lastEquippedTime = snapshot.time();
-            }
-            player.flashlight = data.flashlight;
-            player.flashlightRange = data.flashlightRange;
-        }
-    },
 });

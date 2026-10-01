@@ -1,5 +1,7 @@
+import { dispose } from "./main.js";
+import { ui, uiText, language } from "@esm/@root/main/i18n.js";
 import { html, Mutable } from "@esm/@/rhu/html.js";
-import { signal, Signal } from "@esm/@/rhu/signal.js";
+import { computed, signal, Signal } from "@esm/@/rhu/signal.js";
 import { Style } from "@esm/@/rhu/style.js";
 import { ReplayApi } from "@esm/@root/replay/moduleloader.js";
 import { PlayerDatablock } from "../datablocks/player/player.js";
@@ -29,8 +31,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "MVP",
         icon: "./medals/MVP.png",
         description: () => html`
-        <div>Deal the most damage<br/>(excluding sentry / mines)</div>
-        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> damage dealt</div>
+        <div>${uiText("Deal the most damage")}<br/>${uiText("(excluding sentry / mines)")}</div>
+        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("damage dealt")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -86,8 +88,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Imposter",
         icon: "./medals/imposter.png",
         description: () => html`
-        <div>Most damage dealt to teammates (more than 50% damage)</div>
-        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}%</span> damage dealt</div>
+        <div>${uiText("Most damage dealt to teammates (more than 50% damage)")}</div>
+        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}%</span>${uiText("damage dealt")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -133,8 +135,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Fancy Feet",
         icon: "./medals/faker.png",
         description: () => html`
-        <div>Most tongues avoided</div>
-        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> avoided</div>
+        <div>${uiText("Most tongues avoided")}</div>
+        <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("avoided")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -174,8 +176,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Guardian Angel",
         icon: "./medals/angel.png",
         description: () => html`
-            <div>Most revives</div>
-            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> revives</div>
+            <div>${uiText("Most revives")}</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("revives")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -212,8 +214,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Supporter",
         icon: "./medals/support.png",
         description: () => html`
-            <div>Most assists</div>
-            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> assists</div>
+            <div>${uiText("Most assists")}</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("assists")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -253,8 +255,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Kill Stealer",
         icon: "./medals/killstealer.png",
         description: () => html`
-            <div>Most kills (excluding sentry / mines), but not most damage</div>
-            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> kills</div>
+            <div>${uiText("Most kills (excluding sentry / mines), but not most damage")}</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("kills")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -298,8 +300,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Sleepy",
         icon: "./medals/sleepy.png",
         description: () => html`
-            <div>Most time spent downed</div>
-            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> time spent</div>
+            <div>${uiText("Most time spent downed")}</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("time spent")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -341,8 +343,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Fragile",
         icon: "./medals/fragile.png",
         description: () => html`
-            <div>Most healing items consumed</div>
-            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> items used</div>
+            <div>${uiText("Most healing items consumed")}</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("items used")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -382,8 +384,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Lazy",
         icon: "./medals/lazy.png",
         description: () => html`
-            <div>Deal more damage with your sentry than your guns.</div>
-            <div>Sentry did <span style="color: #e9bc29">${html.bind(signal(""), "value")}%</span> more damage.</div>
+            <div>${uiText("Deal more damage with your sentry than your guns.")}</div>
+            <div>${uiText("Sentry did")}<span style="color: #e9bc29">${html.bind(signal(""), "value")}%</span>${uiText("more damage.")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -437,8 +439,8 @@ export const MedalDatablock = new Map<string, MedalRequirement>(([
         name: "Lone Wolf",
         icon: "./medals/wolf.png",
         description: () => html`
-            <div>Be the longest sole player alive for atleast 1 minute.</div>
-            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span> time spent solo.</div>
+            <div>${uiText("Be the longest sole player alive for atleast 1 minute.")}</div>
+            <div><span style="color: #e9bc29">${html.bind(signal(""), "value")}</span>${uiText("time spent solo.")}</div>
         `,
         award(medals, api, players) {
             const statTracker = StatTracker.from(api);
@@ -536,8 +538,8 @@ export const Medal = () => {
                 <span style="
                     font-size: 20px;
                     margin-bottom: 0.4rem;
-                ">${key}</span>
-                <span m-id="description" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">You shouldn't be able to see this!</span>
+                ">${computed<string>(set => { set(ui(key())); }, [key, language], undefined, { signal: dispose.signal })}</span>
+                <span m-id="description" style="font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">${uiText("You shouldn't be able to see this!")}</span>
             </div>
         </div>
         `;

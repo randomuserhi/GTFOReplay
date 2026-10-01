@@ -1,7 +1,7 @@
 import { signal, Signal } from "@esm/@/rhu/signal.js";
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
 import { Renderer } from "@esm/@root/replay/renderer.js";
-import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, PointLight, Vector3, Vector3Like, VSMShadowMap } from "@esm/three";
+import { ACESFilmicToneMapping, AmbientLight, Color, DirectionalLight, FogExp2, Frustum, Matrix4, PerspectiveCamera, Vector3, Vector3Like, VSMShadowMap } from "@esm/three";
 import { RenderPass } from "@esm/three/examples/jsm/postprocessing/RenderPass.js";
 import { dispose } from "../ui/main.js";
 import { ObjectWrapper } from "./objectwrapper.js";
@@ -22,6 +22,7 @@ declare module "@esm/@root/replay/moduleloader.js" {
 
 export class Camera extends ObjectWrapper<PerspectiveCamera> {
     public frustum: Frustum = new Frustum();
+    public readonly worldPosition = new Vector3();
     public renderDistance: Signal<number>;
     
     constructor(fov: number, aspect: number, near: number = 0.1, far: number = 1000, renderDistance: number = 100) {
@@ -50,9 +51,12 @@ export class Camera extends ObjectWrapper<PerspectiveCamera> {
     } as const;
     public update() {
         const { pM, worldPos } = Camera.FUNC_update;
+        // Controls may turn or teleport this frame. Cull against that camera,
+        // not the inverse matrix left over from the previous rendered frame.
+        this.root.updateWorldMatrix(true, false);
         this.frustum.setFromProjectionMatrix(pM.multiplyMatrices(this.root.projectionMatrix, this.root.matrixWorldInverse));
-
-        this.root.getWorldPosition(worldPos);
+        worldPos.setFromMatrixPosition(this.root.matrixWorld);
+        this.worldPosition.copy(worldPos);
         this.position({ x: worldPos.x, y: worldPos.y, z: worldPos.z });
     }
 }
@@ -72,11 +76,24 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             r.renderer.toneMapping = ACESFilmicToneMapping;
 
             r.scene.fog = new FogExp2(0x333333, 0.003);
-            r.scene.add(new AmbientLight(0xFFFFFF, 0.5));
+            // Lift shaded model surfaces without extra lights or shadow passes.
+            r.scene.add(new AmbientLight(0xFFFFFF, 0.85));
 
             const camera = new Camera(75, r.canvas.width / r.canvas.height, 0.1, 1000);
             camera.addToScene(r.scene);
-            r.composer.addPass(new RenderPass(r.scene, camera.root));
+            const worldPass = new RenderPass(r.scene, camera.root);
+            const renderWorld = worldPass.render.bind(worldPass);
+            worldPass.render = (...args) => {
+                renderWorld(...args);
+                const hands = r.get("FirstPerson")?.pass;
+                if (hands?.enabled) {
+                    // Both scenes must draw into the same target. A second final
+                    // composer RenderPass sends only the hands to the screen.
+                    hands.renderToScreen = worldPass.renderToScreen;
+                    hands.render(...args);
+                }
+            };
+            r.composer.addPass(worldPass);
             camera.root.position.set(0, 0, -10);
             camera.root.rotation.set(0, 180 * Math.deg2rad, 0);
 
@@ -96,9 +113,11 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
                 controls.loadState();
             }, { signal: dispose.signal });
             
-            const pointLight = new PointLight(0xFFFFFF, 1, undefined, 1.2);
-            camera.root.add(pointLight);
-            pointLight.position.set(0, 0, 0);
+            // A viewing fill should not disappear as the camera moves away.
+            // Replaces the attenuating point light; no added lights or shadows.
+            const fillLight = new DirectionalLight(0xFFFFFF, 0.65);
+            fillLight.target.position.set(0, 0, -1);
+            camera.root.add(fillLight, fillLight.target);
 
             const light = new DirectionalLight(0xFFFFFF, 1);
             /*light.shadow.mapSize.x = 4096;
@@ -136,8 +155,8 @@ ModuleLoader.registerRender("ReplayRecorder.Init", (name, api) => {
             light.position.set(cameraPos.x, cameraPos.y + 50, cameraPos.z); 
             light.target.position.set(cameraPos.x, cameraPos.y - 10, cameraPos.z);
 
-            camera.update();
             controls.update(snapshot, dt);
+            camera.update();
         } 
     }, ...renderLoop]);
 });

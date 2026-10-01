@@ -1,3 +1,4 @@
+import { ui, uiText, language } from "@esm/@root/main/i18n.js";
 import { html, Mutable } from "@esm/@/rhu/html.js";
 import { effect, Signal, signal } from "@esm/@/rhu/signal.js";
 import type { View } from "@esm/@root/main/routes/player/components/view/index.js";
@@ -57,10 +58,14 @@ export const Info = () => {
         active: Signal<boolean>;
     }
     interface Private {
+        readonly diagnostics: HTMLPreElement;
+        readonly exportDiagnostics: HTMLButtonElement;
+        readonly sessionText: HTMLPreElement;
         readonly isMasterText: HTMLDivElement;
         readonly isNotMasterText: HTMLDivElement;
         readonly versionText: HTMLDivElement;
         readonly compatibilityText: HTMLDivElement;
+        readonly diagnosticSummary: HTMLParagraphElement;
     }
 
     const isMaster = signal("");
@@ -69,10 +74,16 @@ export const Info = () => {
     const dom = html<Mutable<Private & Info>>/**//*html*/`
         <div class="${style.wrapper}">
             <div style="margin-bottom: 20px;">
-                <h1>REPLAY INFORMATION</h1>
-                <p>Metadata of the current replay</p>
+                <h1>${uiText("REPLAY INFORMATION")}</h1>
+                <p>${uiText("Metadata of the current replay")}</p>
             </div>
             <div m-id="body" class="${style.body}">
+                <h2>${uiText("Recording diagnostics")}</h2>
+                <p>${uiText("Includes the recorder report and up to 500 viewer errors with replay timestamps. Dismissing an alert does not erase it from the report.")}</p>
+                <button m-id="exportDiagnostics" style="color:inherit;background:#303943;border:1px solid #596470;border-radius:6px;padding:10px;cursor:pointer;">${uiText("Export diagnostic report")}</button>
+                <p m-id="diagnosticSummary" style="white-space:pre-wrap;"></p>
+                <pre m-id="diagnostics" style="white-space:pre-wrap;overflow-wrap:anywhere;"></pre>
+                <pre m-id="sessionText" style="white-space: pre-wrap; overflow-wrap: anywhere;"></pre>
                 <div class="${style.row}">
                     <div class="${style.row}" style="
                     flex-direction: row;
@@ -81,32 +92,12 @@ export const Info = () => {
                     margin-bottom: 10px;
                     font-size: 20px;
                     ">
-                        <span>Is Master</span>
+                        <span>${uiText("Is Master")}</span>
                         <div style="flex: 1"></div>
                         <span>${isMaster}</span>
                     </div>
-                    <div m-id="isMasterText" style="display: none; margin-left: 10px;">
-                        This replay was recorded by the HOST player. This allows for additional information such as:
-                        <ul>
-                            <li>- Kills / assists</li>
-                            <li>- Full medal tracking</li>
-                            <li>- Enemy health tracking</li>
-                            <li>- Player stat tracking</li>
-                            <li>- Alert blame</li>
-                            <li>- Silent shot detection</li>
-                        </ul>
-                    </div>
-                    <div m-id="isNotMasterText" style="display: none; margin-left: 10px;">
-                        This replay was recorded by a CLIENT player. This has limited features:
-                        <ul>
-                            <li>- No kill / assist tracking</li>
-                            <li>- Partial medal tracking (Note that some medals may be awarded incorrectly)</li>
-                            <li>- No enemy health tracking</li>
-                            <li>- No player stat tracking</li>
-                            <li>- No alert blame </li>
-                            <li>- No silent shot detection</li>
-                        </ul>
-                    </div>
+                    <div m-id="isMasterText" style="display: none; margin-left: 10px;">${uiText("Recorded by the host. Host-authoritative events are available where the installed recorder modules captured them. Missing events are unknown, not proof that nothing happened.")}</div>
+                    <div m-id="isNotMasterText" style="display: none; margin-left: 10px;">${uiText("Recorded by a client. Local observations may be incomplete. Compatible peers can supply synchronized damage and other events; this file does not establish which peers supplied every event. Statistics describe captured evidence only.")}</div>
                 </div>
                 <div class="${style.row}">
                     <div class="${style.row}" style="
@@ -116,7 +107,7 @@ export const Info = () => {
                     margin-bottom: 10px;
                     font-size: 20px;
                     ">
-                        <span>Version</span>
+                        <span>${uiText("Version")}</span>
                         <div style="flex: 1"></div>
                         <span>${version}</span>
                     </div>
@@ -131,7 +122,7 @@ export const Info = () => {
                     margin-bottom: 10px;
                     font-size: 20px;
                     ">
-                        <span>Compatibility</span>
+                        <span>${uiText("Compatibility")}</span>
                     </div>
                     <div m-id="compatibilityText" style="margin-left: 10px;">
                     </div>
@@ -143,19 +134,40 @@ export const Info = () => {
     
     dom.view = signal<html<typeof View> | undefined>(undefined);
     dom.active = signal(false);
+    let recorderReport: Record<string, unknown> | undefined;
+    const diagnosticState = signal("This recording has no embedded diagnostics. A running or interrupted recorder may not have finalized them.");
+    const renderDiagnostics = () => {
+        dom.diagnostics.textContent = recorderReport ? JSON.stringify(recorderReport, null, 2) : ui(diagnosticState());
+        dom.diagnosticSummary.textContent = recorderReport ? [
+            recorderReport.Failure ? `${ui("Recording failure")}: ${recorderReport.Failure}` : ui("The recorder reported no capture failure."),
+            `${ui("Captured ticks")}: ${recorderReport.Ticks ?? "—"}`,
+            `${ui("Average / maximum capture time")}: ${typeof recorderReport.AverageTickMs === "number" ? recorderReport.AverageTickMs.toFixed(2) : "—"} / ${typeof recorderReport.MaxTickMs === "number" ? recorderReport.MaxTickMs.toFixed(2) : "—"} ms`
+        ].join("\n") : "";
+    };
+    language.on(renderDiagnostics, { signal: dispose.signal });
+    diagnosticState.on(renderDiagnostics, { signal: dispose.signal });
+    dom.exportDiagnostics.onclick = async () => {
+        const view = dom.view();
+        const replay = view?.replay();
+        if (!view || !replay) return;
+        dom.exportDiagnostics.disabled = true;
+        try {
+            const report = {
+                schemaVersion: 1,
+                createdUtc: new Date().toISOString(), session: replay.get("ReplayRecorder.Session"),
+                identity: replay.identity, time: view.time(), duration: replay.length(), complete: replay.complete,
+                recorder: recorderReport, recorderStatus: recorderReport ? "available" : diagnosticState(),
+                viewerError: replay.error?.stack, logs: view.diagnosticLogs(),
+                render: view.renderer.renderer.info.render, browser: navigator.userAgent
+            };
+            const saved = await window.api.invoke("exportReplayDiagnostics", JSON.stringify(report, null, 2));
+            if (saved) window.ReplayInterface.notify(ui("Diagnostic report saved."), "success");
+        } catch (error) { window.ReplayInterface.notify(`${ui("Could not export diagnostics.")} ${error}`); }
+        finally { dom.exportDiagnostics.disabled = false; }
+    };
 
     dom.view.on((view) => {
         if (view === undefined) return;
-
-        isMaster.on((value) => {
-            if (value === "TRUE") {
-                dom.isMasterText.style.display = "block";
-                dom.isNotMasterText.style.display = "none";
-            } else {
-                dom.isNotMasterText.style.display = "block";
-                dom.isMasterText.style.display = "none";
-            }
-        });
 
         version.on((value) => {
             const text = versionInfo.get(value);
@@ -165,13 +177,30 @@ export const Info = () => {
         view.replay.on((replay) => {
             if (replay === undefined) return;
 
+            recorderReport = undefined;
+            diagnosticState("Loading diagnostics…");
+            void window.api.invoke("recordingDiagnostics", replay.get("ReplayRecorder.Session")?.id).then(report => {
+                if (view.replay() !== replay) return;
+                recorderReport = report;
+                diagnosticState(report ? "" : "This recording has no embedded diagnostics. A running or interrupted recorder may not have finalized them.");
+                renderDiagnostics();
+            }).catch(error => {
+                if (view.replay() !== replay) return;
+                diagnosticState(`${ui("Could not read recorder diagnostics.")} ${error}`);
+            });
             const _header = replay.watch("ReplayRecorder.Header");
             const _metadata = replay.watch("Vanilla.Metadata");
+            const _session = replay.watch("ReplayRecorder.Session");
             effect(() => {
+                const session = _session();
+                dom.sessionText.textContent = session === undefined ? ui("Session details were not recorded in this file.") :
+                    `${session.expedition} — ${session.level}\n${session.rundown}\n${session.startedUtc}\n${ui("Game")}： ${session.gameVersion}\n${ui("Sampling")}： ${session.idleHz}–${session.combatHz} Hz\n${ui("Session")}： ${session.id}\n\n${ui("Loaded plugins")}：\n${session.plugins.map(p => `${p.id} ${p.version}`).join("\n")}`;
                 const header = _header();
                 if (header === undefined) return;
                 
-                isMaster(`${header.isMaster.toString().toUpperCase()}`);
+                isMaster(ui(header.isMaster ? "True" : "False"));
+                dom.isMasterText.style.display = header.isMaster ? "block" : "none";
+                dom.isNotMasterText.style.display = header.isMaster ? "none" : "block";
                 
                 let versionStr = "0.0.1";
                 const metadata = _metadata();
@@ -185,32 +214,32 @@ export const Info = () => {
                         compatability.push(...html`
                             <a href="https://thunderstore.io/c/gtfo/p/DarkEmperor/OldBulkheadSound/">OldBulkheadSounds</a>
                             <ul style="margin-left: 10px;">
-                                <li>- Alert blame may be incorrect for sound events triggered on security doors opening</li>
-                                <li>- Can't patch 'LG_SecurityDoor.OnDoorIsOpened' due to NativeDetour vs Harmony</li>
+                                <li>${uiText("- Alert blame may be incorrect for sound events triggered on security doors opening")}</li>
+                                <li>${uiText("- Can't patch 'LG_SecurityDoor.OnDoorIsOpened' due to NativeDetour vs Harmony")}</li>
                             </ul>
                             `);
                     }
                     if (metadata.compatibility_NoArtifact === true) {
                         compatability.push(...html`
-                            <a href="https://thunderstore.io/c/gtfo/p/Secta_aivar/PAIR/">PAIR (Or other rundowns without Artifact DB)</a>
+                            <a href="https://thunderstore.io/c/gtfo/p/Secta_aivar/PAIR/">${uiText("PAIR (Or other rundowns without Artifact DB)")}</a>
                             <ul style="margin-left: 10px;">
-                                <li>- Can't acquire resource locker debug information</li>
-                                <li>- Can't patch 'LG_ResourceContainerBuilder.SetupFunctionGO' as it causes checksum errors when no artifacts are present</li>
+                                <li>${uiText("- Can't acquire resource locker debug information")}</li>
+                                <li>${uiText("- Can't patch 'LG_ResourceContainerBuilder.SetupFunctionGO' as it causes checksum errors when no artifacts are present")}</li>
                             </ul>
                             `);
                     }
                     if (metadata.recordEnemyRagdolls === false) {
                         compatability.push(...html`
-                            <div>Enamy Ragdolls are not present in this replay.</div>
+                            <div>${uiText("Enamy Ragdolls are not present in this replay.")}</div>
                             <ul style="margin-left: 10px;">
-                                <li>- Most people disable enemy ragdolls from being recorded to reduce sizes of replays.</li>
+                                <li>${uiText("- Most people disable enemy ragdolls from being recorded to reduce sizes of replays.")}</li>
                             </ul>
                             `);
                     }
                 }
-                if (compatability.length === 0) dom.compatibilityText.innerHTML = "None";
+                if (compatability.length === 0) dom.compatibilityText.textContent = ui("None");
                 else dom.compatibilityText.replaceChildren(...compatability);
-            }, [_header, _metadata]);
+            }, [_header, _metadata, _session, language], { signal: dispose.signal });
         }, { signal: dispose.signal });
     }, { signal: dispose.signal });
 

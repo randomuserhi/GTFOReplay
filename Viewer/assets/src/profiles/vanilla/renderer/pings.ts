@@ -92,13 +92,11 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
             depthWrite: false
         });
 
-        loadTexture(defaultIcon).then((texture) => {
-            this.material.map = texture;
-            this.quad = new Mesh(geometry, this.material);
-            this.quad.renderOrder = Infinity;
-            this.quad.position.set(0, 1, 0);
-            this.root.add(this.quad);
-        });
+        this.quad = new Mesh(geometry, this.material);
+        this.quad.visible = false;
+        this.quad.renderOrder = Infinity;
+        this.quad.position.set(0, 1, 0);
+        this.root.add(this.quad);
     }
 
     private static FUNC_render = {
@@ -115,6 +113,7 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
                 if (this.material.map != texture) {
                     this.material.map = texture; 
                     this.material.needsUpdate = true;
+                    this.quad.visible = true;
                 }
             });
         } else {
@@ -122,6 +121,7 @@ class PingModel extends Model<[ping: Ping, camera: Camera]> {
                 if (this.material.map != texture) {
                     this.material.map = texture; 
                     this.material.needsUpdate = true;
+                    this.quad.visible = true;
                 }
             });
         }

@@ -3,6 +3,8 @@ import { Style } from "@/rhu/style.js";
 import { DataStore } from "../../../replay/datastore.js";
 import { Parser } from "../../../replay/parser.js";
 import { FileHandle } from "../../../replay/stream.js";
+import { Replay } from "../../../replay/replay.js";
+import type { OpenClip } from "../../../../../shared/clip.js";
 import { app } from "../../app.js";
 import { View } from "./components/view/index.js";
 
@@ -72,37 +74,99 @@ export const Player = () => {
         this.view.refresh();
     };
 
+    let opening = 0;
+    let openingTask: Promise<void> = Promise.resolve();
+    let clipToken: string | undefined;
+    const recordViewing = () => {
+        const replay = dom.view.replay();
+        if (!dom.path || !replay?.identity || !replay.complete) return;
+        void window.api.invoke("recordReplayViewing", dom.path, replay.identity, replay.length()).catch(error => {
+            console.error("Could not save replay viewing metadata:", error);
+            dom.view.addLog({ message: String(error), verbose: String(error), type: "error" });
+        });
+    };
     dom.open = async function open(path?: string) {
+        const generation = ++opening;
+        return openingTask = openingTask.catch(() => {}).then(async () => {
+        if (generation !== opening) return;
+        this.parser?.terminate();
+        if (clipToken) { const token = clipToken; clipToken = undefined; await window.api.invoke("replayCacheClose", token); }
+        if (generation !== opening) return;
+        this.parser = undefined;
+        this.view.pause(true);
+        this.view.replay(undefined);
         this.path = path;
         const file: FileHandle = {
-            path, finite: false
+            path, finite: path !== undefined
         };
+        let clip: OpenClip | undefined;
         if (path !== undefined) {
             // Open file if path is provided, otherwise assume live view
-            await window.api.invoke("open", file);
+            clip = await window.api.invoke("open", file);
         }
-        if (this.parser !== undefined) this.parser.terminate();
-        this.parser = new Parser();
-        this.view.replay(undefined);
+        if (generation !== opening) {
+            if (clip) await window.api.invoke("replayCacheClose", clip.token);
+            return;
+        }
+        if (clip) {
+            await this.unlink();
+            if (generation !== opening) { await window.api.invoke("replayCacheClose", clip.token); return; }
+            this.view.live(false); DataStore.clear(); this.view.clearLogs();
+            const replay = new Replay();
+            replay.identity = clip.manifest.identity; replay.cacheToken = clipToken = clip.token;
+            replay.startTime = clip.manifest.start; replay.endTime = clip.manifest.end;
+            replay.header = clip.manifest.header; replay.typemap = clip.manifest.typemap; replay.types = clip.manifest.types;
+            replay.events = clip.manifest.events; replay.blocks.push(...clip.blocks); replay.complete = true;
+            const token = clip.token;
+            replay.loadBlock = id => window.api.invoke("replayCacheRead", token, id);
+            replay.setRange({ start: replay.startTime, end: replay.length() });
+            this.view.replay(replay); this.view.ready(); this.view.pause(true);
+            this.view.time(replay.startTime);
+            app.load(this); recordViewing();
+            return;
+        }
+        const parser = this.parser = new Parser();
+        const info = path !== undefined ? await window.api.invoke("replayFileInfo") : undefined;
+        if (generation !== opening) return;
+        let headerReady = false;
 
         this.parser.addEventListener("eoh", () => {
+            if (this.parser !== parser) return;
+            headerReady = true;
             this.view.ready();
             app.load(this);
         });
-        this.parser.addEventListener("end", () => {
-            window.api.send("close");
+        this.parser.addEventListener("end", async () => {
+            if (this.parser !== parser) return;
+            try {
+                const info = await window.api.invoke("replayFileInfo");
+                if (this.parser !== parser) return;
+                if (info?.recovered) this.view.addLog({
+                    message: info.warning ?? window.ReplayInterface.t("interrupted"),
+                    verbose: JSON.stringify(info), type: "warning"
+                });
+                if (headerReady) recordViewing();
+                window.api.send("close");
+            } catch (error) {
+                console.error(error);
+                if (this.parser === parser) this.view.addLog({ message: String(error), verbose: String(error), type: "error" });
+            }
         });
         this.parser.addEventListener("error", ((err: { message: string, verbose: string, type: undefined | "warning" | "error" }) => {
+            if (this.parser !== parser) return;
+            if (err.type !== "warning") this.view.pause(true);
             if (err.type == "warning") {
                 console.warn(err.verbose);
             } else {
                 console.error(err.verbose);
             }
             this.view.addLog(err);
+            if (!headerReady) app.reportOpenError(err.message);
         }) as any);
 
         if (path !== undefined) {
-            this.unlink(); // Unlink if loading a regular file.
+            await this.unlink(); // Unlink if loading a regular file.
+            if (generation !== opening) return;
             this.view.live(false);
         } else {
             this.view.live(true); // Acknowledge awaiting for bytes from game
@@ -114,7 +178,11 @@ export const Player = () => {
         // Clear errors
         this.view.clearLogs();
 
-        this.view.replay(await this.parser.parse(file));
+        if (generation !== opening) return;
+        const replay = parser.parse(file);
+        replay.endTime = info?.duration;
+        this.view.replay(replay);
+        });
     };
 
     dom.link = async function link(steamId: string) {
@@ -122,33 +190,27 @@ export const Player = () => {
 
         const resp: string | undefined = await window.api.invoke("link", "127.0.0.1", 56759);
         if (resp !== undefined) {
-            // TODO(randomuserhi)
-            console.error(`Failed to link: ${resp}`);
-            return;
+            throw new Error(`Failed to link: ${resp}`);
         }
-        window.api.invoke("goLive", BigInt(steamId));
+        await window.api.invoke("goLive", BigInt(steamId));
     };
 
     dom.unlink = async function unlink() {
         await window.api.invoke("unlink");
 
         app.nav.linkedStatus("Not Linked");
-        app.nav.linkInput.value = "";
-        app.nav.linkInput.disabled = false;
-        app.nav.linkInput.style.display = "block";
     };
 
     dom.close = function close() {
+        ++opening;
         this.view.renderer.dispose();
         this.view.replay(undefined);
         this.parser?.terminate();
         this.parser = undefined;
+        if (clipToken) { void window.api.invoke("replayCacheClose", clipToken).catch(console.error); clipToken = undefined; }
         window.api.send("unlink");
 
         app.nav.linkedStatus("Not Linked");
-        app.nav.linkInput.value = "";
-        app.nav.linkInput.disabled = false;
-        app.nav.linkInput.style.display = "block";
 
         window.api.send("close");
     };

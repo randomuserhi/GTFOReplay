@@ -157,8 +157,8 @@ export class ExplosionEffectModel extends ObjectWrapper<Group> {
         this.root.position.copy(this.effect.position);
         this.root.quaternion.copy(this.effect.rotation);
 
-        if (ExplosionEffectModel.showRadius()) {
-            this.range.visible = true;
+        this.range.visible = ExplosionEffectModel.showRadius();
+        if (this.range.visible) {
             return;
         }
 
@@ -182,7 +182,7 @@ ModuleLoader.registerRender("Vanilla.Mine.ExplosionEffect", (name, api) => {
             const models = renderer.getOrDefault("Vanilla.Mine.ExplosionEffect", Factory("Array"));
             const explosionEffects = snapshot.getOrDefault("Vanilla.Mine.Detonate", Factory("Map"));
             for (const effect of explosionEffects.values()) {
-                if (t - effect.time > duration) continue;
+                if (effect.dimension !== renderer.get("Dimension") || t < effect.time || t - effect.time > duration) continue;
                 
                 const i = _models.length;
                 if (models[i] === undefined) {
@@ -191,6 +191,7 @@ ModuleLoader.registerRender("Vanilla.Mine.ExplosionEffect", (name, api) => {
                     model.addToScene(renderer.scene);
                 }
                 const model = models[i];
+                model.effect = effect;
                 model.animate(t);
 
                 _models.push(models[i]);

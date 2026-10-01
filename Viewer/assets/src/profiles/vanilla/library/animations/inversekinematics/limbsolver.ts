@@ -59,6 +59,8 @@ const _parentWorldRotation = new Quaternion();
 const _updateBendNormal_normal = new Vector3();
 export class IKSolverArm extends IKSolver {
     target: Object3D;
+    /** Authored pole target, used by the game's FPS LimbIK rig. */
+    bendGoal?: Object3D;
 
     bendNormal: Vector3;
 
@@ -162,7 +164,11 @@ export class IKSolverArm extends IKSolver {
         this.target.getWorldPosition(this.IKPosition);
         this.target.getWorldQuaternion(this.IKRotation);
 
-        this.updateBendNormal();
+        if(this.bendGoal) {
+            this.bendGoal.getWorldPosition(_onUpdate_temp0).sub(this.bone1.worldPosition());
+            _onUpdate_temp1.copy(this.IKPosition).sub(this.bone1.worldPosition());
+            this.bendNormal.crossVectors(_onUpdate_temp0,_onUpdate_temp1).normalize();
+        } else this.updateBendNormal();
 
         if (this.IKPositionWeight > 0) {
             this.bone1.sqrMag = this.bone2.worldPosition().sub(this.bone1.worldPosition()).lengthSq();

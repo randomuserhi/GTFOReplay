@@ -1,3 +1,4 @@
+import { uiText } from "@esm/@root/main/i18n.js";
 import { Mutable } from "@/rhu/html.js";
 import { html } from "@esm/@/rhu/html.js";
 import { Signal, signal } from "@esm/@/rhu/signal.js";
@@ -67,8 +68,8 @@ export const Chat = () => {
     const dom = html<Mutable<Private & Chat>>/**//*html*/`
         <div class="${style.wrapper}" style="display: flex; flex-direction: column; height: 100%; padding: 0;">
             <div style="margin-bottom: 20px; padding: 20px;">
-                <h1>Chat</h1>
-                <p>Allows spectators to chat during live view. If the connected player has chat muted, messages will not be sent.</p>
+                <h1>${uiText("Chat")}</h1>
+                <p>${uiText("Allows spectators to chat during live view. If the connected player has chat muted, messages will not be sent.")}</p>
             </div>
             <ul m-id="list" style="
                 display: flex;

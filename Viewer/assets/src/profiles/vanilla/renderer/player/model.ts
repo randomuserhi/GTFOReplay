@@ -1,11 +1,13 @@
+import { feedbackColor } from '../../library/statFeedback.js';
 import { signal } from "@esm/@/rhu/signal.js";
 import * as Pod from "@esm/@root/replay/pod.js";
-import { CylinderGeometry, Group, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "@esm/three";
+import { Color, CylinderGeometry, Group, Matrix4, Mesh, MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { Ragdoll } from "@root/profiles/extensions/ragdoll/parser/ragdoll.js";
 import { GearDatablock, GunArchetype, MeleeArchetype } from "../../datablocks/gear/models.js";
 import { Archetype, ItemArchetype, ItemDatablock } from "../../datablocks/items/item.js";
 import { animCrouch, animVelocity, PlayerAnimDatablock } from "../../datablocks/player/animation.js";
+import { sampleHands } from "../../datablocks/player/hands.js";
 import { IKSolverAim } from "../../library/animations/inversekinematics/aimsolver.js";
 import { IKSolverArm, TrigonometricBone } from "../../library/animations/inversekinematics/limbsolver.js";
 import { Bone } from "../../library/animations/inversekinematics/rootmotion.js";
@@ -18,15 +20,17 @@ import { PlayerBoosters } from "../../parser/player/boosters.js";
 import { Player } from "../../parser/player/player.js";
 import { Sentry } from "../../parser/player/sentry.js";
 import { PlayerStats } from "../../parser/player/stats.js";
-import { HumanAnimation, HumanJoints, HumanMask } from "../animations/human.js";
+import { PlayerAnimation, HumanFingerJoints, HumanJoints, PlayerMask, PlayerJoints } from "../animations/human.js";
+import { playerMeleeGrips, playerRig } from "../animations/player-rig.js";
 import { GearModel } from "../models/gear.js";
-import { ItemModel } from "../models/items.js";
+import { createItemModel, ItemModel } from "../models/items.js";
 import { StickFigure } from "../models/stickfigure.js";
 import { Camera } from "../renderer.js";
 import { BoosterModel } from "./booster.js";
 
-const upperBodyMask: HumanMask = {
-    joints: { 
+const upperBodyMask: PlayerMask = {
+    joints: {
+        ...Object.fromEntries(HumanFingerJoints.map(joint => [joint, true])),
         spine0: true,
         spine1: true,
         spine2: true,
@@ -45,6 +49,7 @@ const upperBodyMask: HumanMask = {
         head: true
     }
 };
+const bodyMask: PlayerMask = { joints: Object.fromEntries(HumanJoints.map(joint => [joint, true])) };
 
 const aimOffset = new AnimBlend(HumanJoints, [
     { anim: toAnim(HumanJoints, 0.05, 0.1, difference(new Avatar(HumanJoints), PlayerAnimDatablock.Rifle_AO_C.first(), PlayerAnimDatablock.Rifle_AO_U.first())), x: 0, y: 1 },
@@ -59,6 +64,7 @@ const aimOffset = new AnimBlend(HumanJoints, [
 ]);
 
 const defaultArchetype: MeleeArchetype = {
+    grip: "hammer",
     equipAnim: PlayerAnimDatablock.Equip_Melee,
     movementAnim: PlayerAnimDatablock.hammerMovement,
     jumpAnim: PlayerAnimDatablock.SledgeHammer_Jump,
@@ -78,6 +84,7 @@ class EquippedItem {
     model?: ItemModel | GearModel;
 
     public get(id: Identifier, includeModel: boolean = true) {
+        this.model?.dispose();
         switch (id.type) {
         case "Unknown": {
             this.itemDatablock = undefined;
@@ -87,14 +94,14 @@ class EquippedItem {
         case "Gear": {
             this.itemDatablock = undefined;
             this.gearDatablock = GearDatablock.getOrMatchCategory(id);
-            if (includeModel) this.model = this.gearDatablock?.model(id.stringKey);
+            if (includeModel) this.model = createItemModel(this.gearDatablock ? () => this.gearDatablock!.model(id.stringKey) : undefined, id.hash);
             else this.model = undefined;
         } break;
         case "Item": {
             this.gearDatablock = undefined;
             this.itemDatablock = ItemDatablock.get(id);
             const factory = this.itemDatablock?.model;
-            if (includeModel && factory !== undefined) this.model = factory();
+            if (includeModel) this.model = createItemModel(factory, id.hash);
             else this.model = undefined;
         } break;
         default: throw new Error(`Could not get equipped item ${id}`);
@@ -140,14 +147,20 @@ class EquippedItem {
 
 const cylinder = new CylinderGeometry(1, 1, 1, 10, 10).translate(0, 0.5, 0).rotateX(Math.PI * 0.5);
 
-export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll, boosters?: PlayerBoosters]> {
+export class PlayerModel extends StickFigure<[camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll, boosters?: PlayerBoosters], HumanFingerJoints> {
     public static showFlashlightLineOfSight = signal(false);
+    public firstPerson = false;
+    get firstPersonItem() {
+        return { model:this.equippedItem?.model, name:this.equippedItem?.name ?? '',
+            melee:this.equippedItem?.type === 'melee' ? this.meleeArchetype.grip : undefined };
+    }
     
     private aimIK: IKSolverAim = new IKSolverAim();
     private aimTarget: Object3D;
     
     private leftIK: IKSolverArm = new IKSolverArm();
     private leftTarget: Object3D;
+    private meleeGripTarget = new Object3D();
 
     private handAttachment: Group = new Group();
     private equipped: Group = new Group();
@@ -173,7 +186,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     private flashlightMaterial: MeshPhongMaterial;
 
     constructor() {
-        super();
+        super(playerRig);
 
         // Setup tmp
         this.tmp = new Text();
@@ -229,6 +242,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         // Setup hand attachment for holding items
         this.handAttachment.add(this.equipped);
+        this.handAttachment.add(this.meleeGripTarget);
         this.handAttachment.position.set(0.1, 0.045, 0);
         this.handAttachment.quaternion.set(0.5, 0.5, 0.5, 0.5);
         this.skeleton.joints.rightHand.add(this.handAttachment);
@@ -272,18 +286,48 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     public render(dt: number, time: number, camera: Camera, database: IdentifierData, player: Player, anim: PlayerAnimState, stats?: PlayerStats, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>, ragdoll?: Ragdoll, boosters?: PlayerBoosters) {
         if (!this.isVisible()) return;
 
-        this.updateBackpack(database, player, backpack, sentries);
+        // The recorded player schema has slots, not character/apparel identity.
+        // These are stable slot appearances, not a reconstruction of the loadout.
+        this.useActor(["woods", "bishop", "hackett", "dauda"][player.slot % 4]);
 
+        this.updateBackpack(database, player, backpack, sentries);
+        for (const item of this.slots) item.model?.render(dt, time);
+
+        // The independent FPS rig owns posing while this body is hidden. Keep
+        // equipment/current root available without running a second set of IK,
+        // animation blends, flashlight transforms and garment updates.
+        if (this.firstPerson) {
+            this.updateRootTransform(player.position, player.rotation);
+            this.actor!.update(true, undefined, false, time, true);
+            this.handAttachment.visible = this.backpack.visible = false;
+            this.tmp!.visible = this.flashlightLOS.visible = false;
+            return;
+        }
+        this.handAttachment.visible = this.backpack.visible = true;
         this.animate(dt, time, player, anim, ragdoll);
         
         this.draw();
+        this.actor!.update(true, undefined, false, time, this.firstPerson);
+        // Replay clips omit Unity's runtime foot placement. Keep grounded shoe soles
+        // above the recorded support position without changing recorded movement.
+        // Shift the shared visual/weapon rig together; airborne and ragdoll poses stay intact.
+        if (!this.firstPerson && !ragdoll?.enabled && !anim.isDowned && ["stand", "standStill", "crouch", "run", "land", "stunned", "onTerminal", "melee"].includes(anim.state)) {
+            const lift = player.position.y - this.actor!.footHeight();
+            if (lift > 0) {
+                this.offset.position.y = lift;
+                this.actor!.update(true, undefined, false, time, this.firstPerson);
+            }
+        }
         this.visual.joints.rightHand.add(this.handAttachment);
     
-        this.updateTmp(player, camera, stats, backpack);
+        this.updateTmp(player, camera, time, stats, backpack);
         this.updateBoosters(boosters);
     }
     
     private animate(dt: number, time: number, player: Player, anim: PlayerAnimState, ragdoll?: Ragdoll) {
+        this.offset.position.y = 0;
+        // Aim and grip IK read world matrices; they need this frame's root pose.
+        this.updateRootTransform(player.position, player.rotation);
         this._animate(dt, time, player, anim, ragdoll);
         this.updateSkeleton(dt, player.position, player.rotation);
 
@@ -311,7 +355,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
     private static FUNC_animate = {
         tempAvatar: (() => {
-            const avatar = new Avatar(HumanJoints);
+            const avatar = new Avatar(PlayerJoints);
             for (const joint of avatar.keys) {
                 avatar.joints[joint].rot = Pod.Quat.identity();
             }
@@ -325,6 +369,8 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         this.skeleton.joints.rightHand.add(this.handAttachment);
         this.equippedItem?.model?.reset();
+        this.leftIK.target = this.leftTarget;
+        this.leftIK.IKRotationWeight = this.equippedItem?.model?.leftHandGripRotation === undefined ? 0 : 1;
         this.equipped.visible = true;
 
         time /= 1000; // NOTE(randomuserhi): Animations are handled using seconds, convert ms to seconds
@@ -341,7 +387,9 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
         // NOTE(randomuserhi): RagdollMode mod - https://thunderstore.io/c/gtfo/p/Brandonious/Ragdoll_Mode/
         if (ragdoll !== undefined && ragdoll.enabled && ragdoll.avatar !== undefined) {
-            this.skeleton.override(ragdoll.avatar);
+            // Ragdoll Mode's recorded protocol contains only the 20 body joints.
+            this.skeleton.override(PlayerAnimDatablock.Dead.sample(0));
+            this.skeleton.override(ragdoll.avatar, bodyMask);
             return;
         }
 
@@ -498,7 +546,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                 aimOffset.point.y = -num5;
                 aimOffset.point.x = value;
 
-                this.skeleton.additive(aimOffset.sample(time), 1);
+                this.skeleton.additive(aimOffset.sample(time), 1, bodyMask);
             } break;
             }
 
@@ -515,7 +563,10 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     this.aimIK.update();
 
                     const reloadTime = time - (anim.lastReloadTransition / 1000);
-                    if (anim.isReloading && reloadTime < anim.reloadDurationInSeconds) {
+                    const reloading = anim.isReloading && anim.reloadDurationInSeconds > 0 && reloadTime >= 0 && reloadTime < anim.reloadDurationInSeconds;
+                    const weapon = this.equippedItem.model as GearModel | undefined;
+                    for (const hand of sampleHands(weapon?.reloadAnimation, undefined, reloading ? reloadTime / anim.reloadDurationInSeconds : undefined)) this.skeleton.override(hand.frame, hand.mask);
+                    if (reloading) {
                         if (this.equippedItem.model !== undefined) {
                             if (this.equippedItem.model.type === "Gear") {
                                 const model = this.equippedItem.model as GearModel;
@@ -530,6 +581,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                                     this.equippedItem.model.leftHand.position.add(this.gunArchetype.offset);
                                 }
                                 this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
+                                this.equippedItem.model.leftHand.getWorldQuaternion(this.leftTarget.quaternion);
                                 this.leftIK.update();
                             }
                         }
@@ -542,6 +594,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
                         if (this.equippedItem !== undefined && this.equippedItem.model !== undefined && this.equippedItem.model.leftHand !== undefined) {
                             this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
+                            this.equippedItem.model.leftHand.getWorldQuaternion(this.leftTarget.quaternion);
                             this.leftIK.update();
                         }
                     }
@@ -549,8 +602,9 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                 case "melee": {
                     if (!isShoving) {
                         const swingTime = time - (anim.lastSwingTime / 1000);
-                        let swingAnim: HumanAnimation | undefined = undefined;
-                        const isSwinging = swingTime < this.meleeArchetype.releaseAnim.duration;
+                        let swingAnim: PlayerAnimation | undefined = undefined;
+                        const attack = anim.chargedSwing ? this.meleeArchetype.releaseAnim : this.meleeArchetype.attackAnim;
+                        const isSwinging = swingTime >= 0 && swingTime < attack.duration;
                         if (anim.chargedSwing && isSwinging) {
                             swingAnim = this.meleeArchetype.releaseAnim;
                         } else if (!anim.chargedSwing && isSwinging) {
@@ -572,6 +626,18 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                         if (chargeTime < 0.2) {
                             this.skeleton.blend(this.meleeArchetype.chargeIdleAnim.sample(chargeTime), 1.0 - (chargeTime / 0.2), upperBodyMask);
                         }
+                    }
+                    // GTFO's MeleeWeaponThirdPerson enables left-arm IK for
+                    // the hammer and spear. The targets come from their prefabs.
+                    const grip = this.meleeArchetype.grip;
+                    for (const hand of sampleHands(undefined, grip)) this.skeleton.override(hand.frame, hand.mask);
+                    if (grip === "hammer" || grip === "spear") {
+                        this.equippedItem.model!.root.add(this.meleeGripTarget);
+                        this.meleeGripTarget.position.copy(playerMeleeGrips[grip].left.pos);
+                        this.meleeGripTarget.quaternion.copy(playerMeleeGrips[grip].left.rot);
+                        this.leftIK.target = this.meleeGripTarget;
+                        this.leftIK.IKRotationWeight = 1;
+                        this.leftIK.update();
                     }
                 } break;
                 case "consumable": {
@@ -614,6 +680,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
 
                     if (!isCharging && !isThrowing && this.equippedItem !== undefined && this.equippedItem.model !== undefined && this.equippedItem.model.leftHand !== undefined) {
                         this.equippedItem.model.leftHand.getWorldPosition(this.leftTarget.position);
+                        this.equippedItem.model.leftHand.getWorldQuaternion(this.leftTarget.quaternion);
                         this.leftIK.update();
                     }
                 } break;
@@ -630,8 +697,11 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
     }
 
     private static FUNC_updateBackpack = {
-        spearPosOffset: new Vector3(0.1, 0.3, 0),
-        spearRotOffset: new Quaternion(0, 0, -0.1736482, 0.9848078)
+        grip: new Matrix4(),
+        attachment: new Matrix4(),
+        position: new Vector3(),
+        rotation: new Quaternion(),
+        scale: new Vector3(1, 1, 1)
     } as const;
     private updateBackpack(database: IdentifierData, player: Player, backpack?: PlayerBackpack, sentries?: Map<number, Sentry>) {
         if (backpack === undefined) return;
@@ -653,16 +723,11 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         for (let i = 0; i < this.slots.length; ++i) {
             const item = this.slots[i];
 
-            if (item.model !== undefined) {
-                item.model.removeFromParent();
-            }
-
             if (item.model === undefined || !Identifier.equals(database, backpack.slots[i], item.id)) {
                 item.get(backpack.slots[i]);
             }
 
             if (item.model !== undefined) {
-                item.model.reset();
                 if (Identifier.equals(database, player.equippedId, item.id)) {
                     this.equippedItem = item;
                     this.equippedSlot = inventorySlots[i];
@@ -686,12 +751,23 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
                     } break;
                     }
 
-                    this.equipped.add(item.model.root);
-                    if (item.model.equipOffsetPos !== undefined) item.model.root.position.copy(item.model.equipOffsetPos);
-                    else item.model.root.position.copy(zeroV);
-                    if (item.model.equipOffsetRot !== undefined) item.model.root.quaternion.copy(item.model.equipOffsetRot);
-                    else item.model.root.quaternion.copy(zeroQ);
+                    if (item.model.root.parent !== this.equipped) this.equipped.add(item.model.root);
+                    const target = item.type === "melee" ? playerMeleeGrips[this.meleeArchetype.grip].right : item.model.rightHandGrip;
+                    if (target !== undefined) {
+                        // ItemEquippable.CalcRightHandGripOffset aligns both the
+                        // source wrist position and orientation before left-arm IK.
+                        const { grip, attachment, position, rotation, scale } = PlayerModel.FUNC_updateBackpack;
+                        this.handAttachment.updateMatrix();
+                        grip.compose(position.copy(target.pos), rotation.copy(target.rot), scale).invert();
+                        attachment.copy(this.handAttachment.matrix).invert().multiply(grip);
+                        attachment.decompose(item.model.root.position, item.model.root.quaternion, item.model.root.scale);
+                    } else {
+                        item.model.root.position.copy(item.model.equipOffsetPos ?? zeroV);
+                        item.model.root.quaternion.copy(item.model.equipOffsetRot ?? zeroQ);
+                    }
                 } else {
+                    if (item.model.root.parent === this.backpackAligns[i]) continue;
+                    item.model.reset();
                     this.backpackAligns[i].add(item.model.root);
                     if (item.model.offsetPos !== undefined) item.model.root.position.copy(item.model.offsetPos);
                     else item.model.root.position.copy(zeroV);
@@ -738,7 +814,7 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
         camPos: new Vector3(),
         equippable: new EquippedItem(),
     } as const;
-    private updateTmp(player: Player, camera: Camera, stats?: PlayerStats, backpack?: PlayerBackpack) {
+    private updateTmp(player: Player, camera: Camera, time: number, stats?: PlayerStats, backpack?: PlayerBackpack) {
         if (this.tmp !== undefined) {
             const { tmpPos, camPos, equippable } = PlayerModel.FUNC_updateTmp;
 
@@ -752,34 +828,28 @@ export class PlayerModel extends StickFigure<[camera: Camera, database: Identifi
             const infectionValue = Math.round(stats.infection * 100);
             const infection = `${(infectionValue >= 10 ? ` (${infectionValue.toString().padStart(3)}%)` : "")}`;
             const stamina = stats.stamina == 1 ? "" : `🏃 ${Math.round(stats.stamina * 100).toString().padStart(3)}%`;
-            if (backpack === undefined) {
-                this.tmp.text = `${nickname}
-${health}${infection}
-Main: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
-Special: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
-Tool: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%
-${stamina}`;
-                this.tmp.colorRanges = {
-                    0: this.color,
-                    [nickname.length]: 0xffffff,
-                };
-            } else {
-                const main = equippable.get(backpack.slots[inventorySlotMap.main], false).name;
-                const special = equippable.get(backpack.slots[inventorySlotMap.special], false).name;
-                const tool = equippable.get(backpack.slots[inventorySlotMap.tool], false).name;
-                this.tmp.text = `${nickname}
-${health}${infection}
-${(main !== undefined ? main : "Main")}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%
-${(special !== undefined ? special : "Special")}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%
-${(tool !== undefined ? tool : "Tool")}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%
-${stamina}`;
-                this.tmp.colorRanges = {
-                    0: this.color,
-                    [nickname.length]: 0xffffff,
-                    [nickname.length + health.length + 1]: 0x03e8fc, 
-                    [nickname.length + health.length + 1 + infection.length]: 0xffffff
-                };
+            const names = backpack ? ['main', 'special', 'tool'].map(slot => equippable.get(backpack.slots[inventorySlotMap[slot as 'main' | 'special' | 'tool']], false).name) : [];
+            const main = `${names[0] ?? 'Main'}: ${Math.round(stats.primaryAmmo * 100).toString().padStart(3)}%`;
+            const special = `${names[1] ?? 'Special'}: ${Math.round(stats.secondaryAmmo * 100).toString().padStart(3)}%`;
+            const tool = `${names[2] ?? 'Tool'}: ${Math.round(stats.toolAmmo * 100).toString().padStart(3)}%`;
+            const segments = [
+                { text: nickname, color: this.color },
+                { text: '\n' + health, color: feedbackColor(stats.feedback?.health, time) },
+                { text: infection, color: feedbackColor(stats.feedback?.infection, time, 0x03e8fc) },
+                { text: '\n' + main, color: feedbackColor(stats.feedback?.primaryAmmo, time) },
+                { text: '\n' + special, color: feedbackColor(stats.feedback?.secondaryAmmo, time) },
+                { text: '\n' + tool, color: feedbackColor(stats.feedback?.toolAmmo, time) },
+                { text: '\n' + stamina, color: 0xffffff }
+            ];
+            const ranges: Record<number, number | Color> = {};
+            let text = '';
+            for (const segment of segments) {
+                if (!segment.text) continue;
+                ranges[text.length] = segment.color;
+                text += segment.text;
             }
+            this.tmp.text = text;
+            this.tmp.colorRanges = ranges;
             this.tmp.visible = true;
 
             this.tmp.getWorldPosition(tmpPos);
@@ -797,6 +867,7 @@ ${stamina}`;
 
     public dispose(): void {
         super.dispose();
+        for (const item of this.slots) item.model?.dispose();
         this.tmp?.dispose();
         this.tmp = undefined;
     }

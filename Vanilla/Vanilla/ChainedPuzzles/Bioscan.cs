@@ -45,6 +45,9 @@ namespace Vanilla.ChainedPuzzles {
                 }
 
                 int id = __instance.GetInstanceID();
+                new rBioscanInfo(id, (byte)status, playersInScan?.Count ?? 0, playersMax,
+                    reqItemStatus?.Count(value => !value) ?? 0, __instance.IsExitPuzzle,
+                    __instance.HasAlarm, pscanner.ScanPlayersRequired.ToString()).Publish();
                 switch (status) {
                 case eBioscanStatus.Waiting:
                 case eBioscanStatus.Scanning:

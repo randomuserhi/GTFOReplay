@@ -1,271 +1,127 @@
 import { ModuleLoader } from "@esm/@root/replay/moduleloader.js";
-import { BoxGeometry, Color, Group, Mesh, MeshPhongMaterial, Quaternion, Vector3 } from "@esm/three";
-import { Bezier } from "../../library/bezier.js";
-import { black, white } from "../../library/constants.js";
+import { ui } from "@esm/@root/main/i18n.js";
+import { Group } from "@esm/three";
+import { Text } from "@esm/troika-three-text";
 import { Factory } from "../../library/factory.js";
-import { loadGLTFGeometry } from "../../library/modelloader.js";
-import { DoorState, LockType, WeakDoor } from "../../parser/map/door.js";
-import { ObjectWrapper } from "../objectwrapper.js";
-
+import { Door, DoorState, WeakDoor } from "../../parser/map/door.js";
+import { ModelGroup, ObjectWrapper } from "../objectwrapper.js";
+import { isCulled } from "../../library/models/lib.js";
+import { EnvironmentLock, EnvironmentModel, environmentAssetForPrefab } from "./environment.js";
 
 declare module "@esm/@root/replay/moduleloader.js" {
     namespace Typemap {
-        interface RenderPasses {
-            "Vanilla.Doors": void;
-        }
-
-        interface RenderData {
-            "Doors": Map<number, DoorModel>;
-            "DoorDimension": number;
-        }
+        interface RenderPasses { "Vanilla.Doors": void; }
+        interface RenderData { "Doors": Map<number, DoorModel>; "DoorDimension": number; }
     }
 }
 
-class LockModel {
-    padlock: Group;
-    hacklock: Group;
-
-    anchor: Group;
-
-    lockColor: Color;
-    lockMaterial: MeshPhongMaterial;
-
-    constructor() {
-        this.anchor = new Group();
-
-        this.hacklock = new Group();
-        this.padlock = new Group();
-
-        this.lockColor = new Color(0xffffff);
-        this.lockMaterial = new MeshPhongMaterial();
-        this.lockMaterial.color = this.lockColor;
-        loadGLTFGeometry("../js3party/models/hacklock.glb", false).then((model) => this.hacklock.add(new Mesh(model, this.lockMaterial)));
-        loadGLTFGeometry("../js3party/models/padlock.glb", false).then((model) => this.padlock.add(new Mesh(model, this.lockMaterial)));
-
-        this.hacklock.add(this.padlock);
-        this.hacklock.rotation.set(0, 0, -90 * Math.deg2rad);
-        this.anchor.add(this.hacklock);
-
-        this.padlock.scale.set(0.2, 0.2, 0.2);
-        this.padlock.position.set(0.5, 0, 0.1);
-        this.padlock.rotation.set(0, 0, 90 * Math.deg2rad);
-    }
-
-    public update(status: LockType) {
-        this.hacklock.visible = status === "Hackable" || status === "Melee";
-        this.padlock.visible = status === "Melee";
-
-        if (status === "Hackable") {
-            this.lockColor.set(0x6666ff);
-        } else {
-            this.lockColor.set(0x666666);
-        }
-
-        if (status === "Melee") {
-            this.lockMaterial.specular = white;
-        } else {
-            this.lockMaterial.specular = black;
-        }
-    }
+export function doorAsset(door: Door): string | undefined {
+    return door.modelName ? environmentAssetForPrefab(door.modelName) : undefined;
 }
 
-class DoorModel extends ObjectWrapper<Group> {
-    left: Mesh;
-    right: Mesh;
+export class DoorModel extends ObjectWrapper<Group> {
+    readonly root = new ModelGroup();
+    readonly native: EnvironmentModel;
+    private disposed = false;
+    private locks: EnvironmentLock[] = [];
+    private statusLabel = new Text();
 
-    shutter: Mesh;
-
-    mainColor: Color;
-    width: number;
-    height: number;
-
-    lock0: LockModel;
-    lock1: LockModel;
-
-    shake: number[][];
-    private position: Vector3;
-
-    constructor(width: number, height: number, color: Color) {
+    constructor(readonly door: Door) {
         super();
-        this.root = new Group();
-
-        this.mainColor = color;
-        this.width = width;
-        this.height = height;
-
-        const postWidth = 0.3;
-        const doorWidth = 0.2;
-
-        {
-            const geometry = new BoxGeometry(postWidth, this.height, postWidth);
-            const material = new MeshPhongMaterial({
-                color: 0x00ff00
+        const asset = doorAsset(door);
+        this.root.position.copy(door.position);
+        this.root.quaternion.copy(door.rotation);
+        this.root.scale.copy(door.scale);
+        this.statusLabel.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
+        this.statusLabel.fontSize = 0.2;
+        this.statusLabel.anchorX = "center";
+        this.statusLabel.color = 0xffcc66;
+        this.statusLabel.position.y = 2;
+        this.root.add(this.statusLabel);
+        const width = door.size === "Small" ? 4 : 8;
+        const height = door.size === "Large" ? 8 : 4;
+        this.native = new EnvironmentModel(asset ?? `unregistered-door:${door.modelName}`, undefined, [width, height, .2]);
+        // A recorded lossyScale already contains the prefab scale.
+        this.native.root.scale.set(1, 1, 1);
+        this.root.add(this.native.root);
+        if (door.type === "WeakDoor") {
+            this.locks = [new EnvironmentLock("door"), new EnvironmentLock("door")];
+            this.native.ready.then(() => {
+                if (this.disposed || this.native.failed) return;
+                const lockPanels = this.native.assetId.endsWith("8x4")
+                    ? ["panel_align_A01_1", "panel_align_B01_1"]
+                    : ["button_align_B01", "button_align_A01"];
+                for (let i = 0; i < this.locks.length; i++) {
+                    const align = this.native.node(lockPanels[i]);
+                    if (!align) { this.native.useBasicShape(new Error(`Missing source lock attachment in ${asset}.`)); return; }
+                    align.add(this.locks[i].root);
+                }
             });
-            material.transparent = true;
-            material.opacity = 0.8;
-            material.depthWrite = false;
-
-            this.left = new Mesh(geometry, material);
-            this.left.castShadow = true;
-            this.left.receiveShadow = true;
-            this.root.add(this.left);
-            this.left.position.set(-this.width / 2, 0, 0);
-
-            this.right = new Mesh(geometry, material);
-            this.right.castShadow = true;
-            this.right.receiveShadow = true;
-            this.root.add(this.right);
-            this.right.position.set(this.width / 2, 0, 0);
         }
-    
-        {
-            const geometry = new BoxGeometry(this.width - postWidth, this.height, doorWidth);
-            const material = new MeshPhongMaterial({
-                color: 0x00ff00
-            });
-            material.transparent = true;
-            material.opacity = 0.5;
-            material.depthWrite = false;
-
-            this.shutter = new Mesh(geometry, material);
-            this.shutter.castShadow = true;
-            this.shutter.receiveShadow = true;
-            this.root.add(this.shutter);
-            this.shutter.position.set(0, 0, 0);
-        }
-
-        this.lock0 = new LockModel();
-        this.lock1 = new LockModel();
-        this.root.add(this.lock0.anchor, this.lock1.anchor);
-
-        this.lock0.anchor.visible = false;
-        this.lock1.anchor.visible = false;
-
-        this.lock0.anchor.position.set(-width / 2 + 0.1, -height / 6, -0.5);
-        this.lock0.anchor.rotation.set(0, 180 * Math.deg2rad, 0);
-        this.lock0.anchor.scale.set(0.4, 0.4, 0.4);
-
-        this.lock1.anchor.position.set(width / 2 - 0.1, -height / 6, 0.5);
-        this.lock1.anchor.rotation.set(0, 0, 0);
-        this.lock1.anchor.scale.set(0.4, 0.4, 0.4);
-
-        const shakeAmount = 1;
-        this.shake = new Array(10);
-        for (let i = 0; i < 10; ++i) {
-            this.shake[i] = [-(shakeAmount/2) + Math.random() * shakeAmount, -(shakeAmount/2) + Math.random() * shakeAmount];
-        }
-        this.position = new Vector3();
+        this.statusLabel.visible = false;
     }
 
-    private static bezier = Bezier(0.5, 0.0, 0.5, 1);
-    public update(t: number, door: DoorState, weakDoor?: WeakDoor) {
-        switch(door.status) {
-        case "Closed":
-        case "Open": {
-            const animDuration = 4000;
-            let lerp = 1;
-            if (door.change !== undefined) {
-                if (t < door.change) throw new Error(`Door state change happened after current time step? ${t} < ${door.change}`);
-                const diff = t - door.change;
-                lerp = DoorModel.bezier(Math.clamp01(diff / animDuration));
-            }
-
-            if (door.status === "Open") {
-                this.shutter.scale.y = Math.clamp01(0.05 + (1 - lerp));
-            } else if (door.status === "Closed") {
-                this.shutter.scale.y = Math.clamp01(0.05 + (lerp));
-            }
-        } break;
-        default: this.shutter.scale.y = 1; break;
+    update(time: number, state: DoorState, weak?: WeakDoor) {
+        if (this.disposed) return;
+        const destroyed = state.status === "Destroyed";
+        const open = state.status === "Open";
+        const elapsed = state.change === undefined ? Infinity : Math.max(0, (time - state.change) / 1000);
+        const type = this.door.type;
+        const clips = type === "WeakDoor" ? ["WeakDoor_Idle", "WeakDoor_Open"]
+            : this.native.assetId.startsWith("bulkhead-door-") ? ["door_closed_idle", ["lock_open", "door_open"]]
+            : this.native.assetId.startsWith("bulkhead-main-door-") ? ["ClosedIdle", ["PullHandle",
+                this.native.assetId === "bulkhead-main-door-4x4" ? "OpenClamps" : "ReleaseClamps", "OpenDoor1", "OpenDoor2"]]
+            : this.native.assetId.startsWith("apex-door-") ? ["ApexDoorClosed_idle", "ApexDoorOpen2"]
+            : ["ClosedIdle", "OpenDoorQuick"];
+        this.native.sampleAnimation(clips[open ? 1 : 0], open ? elapsed : 0);
+        this.native.setBasicVisible(!open && !destroyed);
+        // The recorded destruction event removes the actual blade hierarchy.
+        // Rigid-body fragments and damaged skinned deformation are not recorded.
+        const blade = this.native.node(this.native.assetId.endsWith("8x4") ? "DoorBlade001" : "DoorBlade");
+        if (blade) blade.visible = !destroyed;
+        for (let i = 0; i < this.locks.length; i++) {
+            this.locks[i].update(!destroyed && !open && weak ? (i === 0 ? weak.lock0 : weak.lock1) : "None");
         }
-        this.shutter.position.set(this.shutter.position.x, this.height / 2 * (1 - this.shutter.scale.y), this.shutter.position.z);
-
-        let color = this.mainColor.getHex();
-        switch (door.status) {
-        case "Glued": color = 0x0000ff; break;
-        case "Destroyed": color = 0x444444; break;
-        }
-        (this.left.material as MeshPhongMaterial).color.setHex(color);
-        (this.right.material as MeshPhongMaterial).color.setHex(color);
-        (this.shutter.material as MeshPhongMaterial).color.setHex(color);
-
-        const isWeak = weakDoor !== undefined;
-
-        this.lock0.anchor.visible = isWeak;
-        this.lock1.anchor.visible = isWeak;
-
-        if (isWeak) {
-            this.lock0.update(weakDoor.lock0);
-            this.lock1.update(weakDoor.lock1);
-
-            const shakeDuration = 150;
-            const shakeTime = (t - weakDoor.lastPunch) / shakeDuration;
-            if (shakeTime > 0.1 && shakeTime < 1) {
-                const idx = Math.round(shakeTime * (this.shake.length - 1));
-                this.root.position.copy(this.position);
-                this.root.position.x += this.shake[idx][0] * (1 - shakeTime);
-                this.root.position.z += this.shake[idx][1] * (1 - shakeTime);
-            } else {
-                this.root.position.copy(this.position);
-            }
-        }
+        this.statusLabel.text = ui("Glued");
+        this.statusLabel.visible = state.status === "Glued";
     }
-
-    public setPosition(x: number, y: number, z: number) {
-        this.position.set(x, y + this.height / 2, z);
-        this.root.position.copy(this.position);
-    }
-    public setRotation(x: number, y: number, z: number, w: number) {
-        this.root.setRotationFromQuaternion(new Quaternion(x, y, z, w));
+    dispose() {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.native.dispose();
+        for (const lock of this.locks) { lock.melee.dispose(); lock.hack.dispose(); }
+        this.statusLabel.dispose();
+        this.root.removeFromParent();
     }
 }
 
-// TODO(randomuserhi): Proper door models
+ModuleLoader.registerDispose(renderer => { for (const model of renderer.get("Doors")?.values() ?? []) model.dispose(); });
 ModuleLoader.registerRender("Vanilla.Doors", (name, api) => {
-    const initPasses = api.getInitPasses();
-    api.setInitPasses([{ 
+    api.setInitPasses([{
         name, pass: (renderer, header) => {
             const doors = header.getOrDefault("Vanilla.Map.Doors", Factory("Map"));
             const models = renderer.getOrDefault("Doors", Factory("Map"));
             for (const [id, door] of doors) {
-                if (!models.has(id)) {
-                    const height = 4;
-                    let width = 7;
-                    switch(door.size) {
-                    case "Small": width = 4; break;
-                    }
-
-                    const model = new DoorModel(width, height, new Color(door.type === "WeakDoor" ? 0x00ff00 : 0xff5555));
-                    models.set(id, model);
-                    model.addToScene(renderer.scene);
-                }
-
-                const model = models.get(id)!;
-                model.setPosition(door.position.x, door.position.y, door.position.z);
-                model.setRotation(door.rotation.x, door.rotation.y, door.rotation.z, door.rotation.w);
+                const model = new DoorModel(door);
+                models.set(id, model);
+                model.addToScene(renderer.scene);
                 model.setVisible(false);
             }
-        } 
-    }, ...initPasses]);
-
-    const renderLoop = api.getRenderLoop();
-    api.setRenderLoop([...renderLoop, { 
+        }
+    }, ...api.getInitPasses()]);
+    api.setRenderLoop([...api.getRenderLoop(), {
         name, pass: (renderer, snapshot) => {
-            const t = snapshot.time();
-
             const doors = snapshot.header.getOrDefault("Vanilla.Map.Doors", Factory("Map"));
             const weakdoors = snapshot.getOrDefault("Vanilla.Map.WeakDoor", Factory("Map"));
             const states = snapshot.getOrDefault("Vanilla.Map.DoorState", Factory("Map"));
             const models = renderer.getOrDefault("Doors", Factory("Map"));
             for (const [id, door] of doors) {
                 const model = models.get(id)!;
-
-                if (!states.has(id)) states.set(id, { id, status: "Closed" });
-                const state = states.get(id)!;
-
-                model.update(t, state, weakdoors.get(id));
-                model.setVisible(door.dimension === renderer.get("Dimension"));
+                const radius = Math.max(model.native.cullingRadius, door.size === "Small" ? 8 : 16) * Math.max(Math.abs(door.scale.x), Math.abs(door.scale.y), Math.abs(door.scale.z));
+                const visible = door.dimension === renderer.get("Dimension") && !isCulled(door.position, radius, renderer.get("Camera")!);
+                model.setVisible(visible);
+                if (visible) model.update(snapshot.time(), states.get(id) ?? { id, status: "Closed" }, weakdoors.get(id));
             }
-        } 
+        }
     }]);
 });

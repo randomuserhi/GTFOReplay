@@ -2,7 +2,7 @@ import { GearPartMainDatablock } from "./main.js";
 
 GearPartMainDatablock.clear();
 
-const root = `../js3party/models/GearParts/Main`;
+const root = `../gear/GearParts/Main`;
 
 GearPartMainDatablock.set(1, {
     path: `${root}/Bio_Tracker_1.glb`,

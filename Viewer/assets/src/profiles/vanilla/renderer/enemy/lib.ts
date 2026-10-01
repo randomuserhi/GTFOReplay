@@ -1,5 +1,5 @@
 import { signal } from "@esm/@/rhu/signal.js";
-import { ColorRepresentation, Object3D, Vector3 } from "@esm/three";
+import { BufferGeometry, ColorRepresentation, DoubleSide, Float32BufferAttribute, Mesh, MeshBasicMaterial, Object3D, Vector3 } from "@esm/three";
 import { Text } from "@esm/troika-three-text";
 import { EnemyDatablock } from "../../datablocks/enemy/enemy.js";
 import { EnemyAnimHandle, EnemyAnimHandlesDatablock } from "../../datablocks/enemy/handles.js";
@@ -11,12 +11,22 @@ import { Player } from "../../parser/player/player.js";
 import { HumanJoints } from "../animations/human.js";
 import { Camera } from "../renderer.js";
 
+// Geometry avoids font-dependent missing glyphs; every enemy shares this marker.
+const tagGeometry = new BufferGeometry()
+    .setAttribute("position", new Float32BufferAttribute([
+        -.5,1,0, 0,0,0, .5,1,0,
+        -.39,.93,0, 0,.15,0, .39,.93,0
+    ],3))
+    .setIndex([0,1,4, 0,4,3, 1,2,5, 1,5,4, 2,0,3, 2,3,5]);
+const tagMaterial = new MeshBasicMaterial({color:0xff3b30,side:DoubleSide,depthTest:false,depthWrite:false,toneMapped:false});
+module.destructor = () => { tagGeometry.dispose(); tagMaterial.dispose(); };
+
 export class EnemyModelWrapper {
     model: Model<[enemy: Enemy, anim?: EnemyAnimState, ragdoll?: EnemyRagdoll]>;
 
     tmp?: Text;
     tmpHeight?: number;
-    tag?: Text;
+    tag?: Mesh;
 
     animHandle?: EnemyAnimHandle;
     datablock?: EnemyDatablock;
@@ -27,8 +37,9 @@ export class EnemyModelWrapper {
     constructor(enemy: Enemy) {
         this.datablock = EnemyDatablock.get(enemy.type);
         if (enemy.animHandle !== undefined) this.animHandle = EnemyAnimHandlesDatablock.get(enemy.animHandle);
-        if (this.datablock?.model !== undefined) this.model = this.datablock.model(this, enemy);
-        else this.model = new HumanoidEnemyModel(this);
+        try {
+            this.model = this.datablock?.model?.(this, enemy) ?? new BasicEnemyModel(enemy, "No registered enemy model.");
+        } catch (error) { this.model = new BasicEnemyModel(enemy, error); }
 
         this.tmp = new Text();
         this.tmp.font = "./fonts/oxanium/Oxanium-SemiBold.ttf";
@@ -42,22 +53,9 @@ export class EnemyModelWrapper {
         this.tmp.position.y = this.tmpHeight;
         this.model.root.add(this.tmp);
 
-        this.tag = new Text();
-        this.tag.font = "./fonts/oxanium/Oxanium-ExtraBold.ttf";
-        this.tag.fontSize = 0.2;
-        this.tag.textAlign = "center";
-        this.tag.anchorX = "center";
-        this.tag.anchorY = "bottom";
-        this.tag.color = 0xffffff;
+        this.tag = new Mesh(tagGeometry, tagMaterial);
+        this.tag.name = "Biotracker tag";
         this.tag.visible = false;
-        this.tag.text = `Δ
-·`;
-        this.tag.colorRanges = {
-            0: 0xff0000,
-            1: 0xffffff,
-        };
-        this.tag.material.depthTest = false;
-        this.tag.material.depthWrite = false;
         this.tag.renderOrder = Infinity;
         this.model.root.add(this.tag);
     }
@@ -84,7 +82,13 @@ export class EnemyModelWrapper {
 
         this.tag.visible = enemy.tagged;
         if (this.tagTarget !== undefined) {
-            this.tag.position.copy(this.tagTarget.getWorldPosition(tagPos).sub(this.model.root.position));
+            this.tagTarget.getWorldPosition(tagPos);
+            tagPos.y += .35 * enemy.scale;
+            this.tag.position.copy(this.model.root.worldToLocal(tagPos));
+        } else {
+            this.model.root.getWorldPosition(tagPos);
+            tagPos.y += this.tmpHeight ?? 2.2 * enemy.scale;
+            this.tag.position.copy(this.model.root.worldToLocal(tagPos));
         }
         
         let target = "Unknown";
@@ -115,7 +119,12 @@ Target: `;
         }
 
         this.orientateText(this.tmp, camera, 0.3, 0.05);
-        this.orientateText(this.tag, camera, 0.5, 0.1);
+        if (this.tag.visible) {
+            camera.root.getWorldPosition(tagPos);
+            const distance = this.tag.getWorldPosition(EnemyModelWrapper.FUNC_orientateText.tmpPos).distanceTo(tagPos);
+            this.tag.scale.setScalar(.12 + .28 * Math.clamp01(distance / 30));
+            this.tag.lookAt(tagPos);
+        }
     }
 
     public addToLimb(obj: Object3D, limb: HumanJoints) {
@@ -142,7 +151,8 @@ Target: `;
     }
 
     public dispose(): void {
-        this.tag?.dispose();
+        this.model.dispose();
+        this.tag?.removeFromParent();
         this.tag = undefined;
 
         this.tmp?.dispose();
@@ -154,6 +164,6 @@ module.ready();
 
 /* eslint-disable-next-line sort-imports */
 import { EnemyRagdoll } from "../../parser/enemy/enemyRagdoll.js";
-import { HumanoidEnemyModel } from "./models/humanoid.js";
+import { BasicEnemyModel } from "./models/basic.js";
 import { Controls } from "../controls.js";
 
